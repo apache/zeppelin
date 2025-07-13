@@ -299,6 +299,7 @@ public class MiniZeppelinServer implements AutoCloseable {
       zepServer.close();
       executor.shutdown();
       executor.shutdownNow();
+      getServiceLocator().shutdown();
       await().pollDelay(2, TimeUnit.SECONDS).atMost(3, TimeUnit.MINUTES)
           .until(checkIfServerIsNotRunningCallable());
 
