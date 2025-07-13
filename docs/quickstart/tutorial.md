@@ -31,7 +31,9 @@ Current main backend processing engine of Zeppelin is [Apache Spark](https://spa
 
 ### Data Refine
 
-Before you start Zeppelin tutorial, you will need to download [bank.zip](http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip). 
+Before you start Zeppelin tutorial, you will need to download [bank+marketing.zip](https://archive.ics.uci.edu/static/public/222/bank+marketing.zip).
+
+Unzip `bank+marketing.zip` and then use `bank.zip` file found inside.
 
 First, to transform csv format data into RDD of `Bank` objects, run following script. This will also remove header using `filter` function.
 
