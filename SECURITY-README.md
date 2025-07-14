@@ -27,8 +27,8 @@ The terms *username*, *owner*, and *principal* are used interchangeably to refer
 
 ## What Are We Securing?
 
-Zeppelin is essentially a web application that spawns remote interpreters to run commands and return HTML fragments to be displayed in the user's browser.  
-The scope of this pull request is to require user credentials to access Zeppelin. To achieve this, we use Apache Shiro.
+Zeppelin is essentially a web application that spawns remote interpreters to run commands and return HTML fragments to be displayed in the user's browser.
+To protect user data and access, Zeppelin requires users to log in before using the application. Authentication is handled using Apache Shiro.
 
 ## HTTP Endpoint Security
 
