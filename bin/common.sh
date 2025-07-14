@@ -46,7 +46,9 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
   else
     ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
-    export ZEPPELIN_WAR
+    if [[ -n "${ZEPPELIN_WAR}" ]]; then
+      export ZEPPELIN_WAR
+    fi
   fi
 fi
 
@@ -55,7 +57,9 @@ if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
     export ZEPPELIN_ANGULAR_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin"
   else
     ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
-    export ZEPPELIN_ANGULAR_WAR
+    if [[ -n "${ZEPPELIN_ANGULAR_WAR}" ]]; then
+      export ZEPPELIN_ANGULAR_WAR
+    fi
   fi
 fi
 

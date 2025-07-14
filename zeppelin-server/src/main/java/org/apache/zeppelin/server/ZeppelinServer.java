@@ -221,19 +221,14 @@ public class ZeppelinServer implements AutoCloseable {
         });
 
     // Multiple Web UI
-    String classicUiWebAppContextPath;
-    String newUiWebAppContextPath;
-    if (isNewUiDefault(zConf)) {
-      classicUiWebAppContextPath = NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
-      newUiWebAppContextPath = zConf.getServerContextPath();
-    } else {
-      classicUiWebAppContextPath = zConf.getServerContextPath();
-      newUiWebAppContextPath = NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
-    }
+    String newUiWebAppContextPath = isNewUiDefault(zConf) ?  zConf.getServerContextPath() : NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH;
+    boolean newUiWebAppShouldExist = isNewUiDefault(zConf);
+    String classicUiWebAppContextPath = !isNewUiDefault(zConf) ? zConf.getServerContextPath() : NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH;
+    boolean classicUiWebAppShouldExist = !isNewUiDefault(zConf);
     final WebAppContext newUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR),
-        newUiWebAppContextPath);
+        newUiWebAppContextPath, newUiWebAppShouldExist);
     final WebAppContext classicUiWebApp = setupWebAppContext(contexts, zConf, zConf.getString(ConfVars.ZEPPELIN_WAR),
-        classicUiWebAppContextPath);
+        classicUiWebAppContextPath, classicUiWebAppShouldExist);
 
     initWebApp(newUiWebApp);
     initWebApp(classicUiWebApp);
@@ -586,10 +581,12 @@ public class ZeppelinServer implements AutoCloseable {
   }
 
   private static WebAppContext setupWebAppContext(
-      ContextHandlerCollection contexts, ZeppelinConfiguration zConf, String warPath, String contextPath) {
+      ContextHandlerCollection contexts, ZeppelinConfiguration zConf, String warPath, String contextPath, boolean shouldExist) {
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(contextPath);
     LOGGER.info("warPath is: {}", warPath);
+    LOGGER.info("The file or directory for the warPath should exist: {}", shouldExist);
+    webApp.setThrowUnavailableOnStartupException(shouldExist);
     File warFile = new File(warPath);
     if (warFile.isDirectory()) {
       // Development mode, read from FS
