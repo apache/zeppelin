@@ -282,7 +282,7 @@ public class ZeppelinServer implements AutoCloseable {
       }
       if (!errorDatas.isEmpty()) {
         LOGGER.error("{} error(s) while starting - Termination", errorDatas.size());
-        System.exit(-1);
+        shutdown(-1);
       }
     } catch (InterruptedException e) {
       // Many fast unit tests interrupt the Zeppelin server at this point
