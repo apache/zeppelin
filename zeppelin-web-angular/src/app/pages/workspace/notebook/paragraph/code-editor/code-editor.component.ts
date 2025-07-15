@@ -23,16 +23,16 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-
-import { editor as MonacoEditor, IDisposable } from 'monaco-editor';
-import IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
-import IEditor = monaco.editor.IEditor;
+import { editor as MonacoEditor, IDisposable, KeyCode } from 'monaco-editor';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
 
 import { pt2px } from '@zeppelin/utility/css-unit-conversion';
 import { NotebookParagraphControlComponent } from '../control/control.component';
+
+type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
+type IEditor = MonacoEditor.IEditor;
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-code-editor',
@@ -66,7 +66,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     if (this.editor) {
       this.ngZone.run(() => {
         this.height =
-          this.editor.getTopForLineNumber(Number.MAX_SAFE_INTEGER) + this.editor.getConfiguration().lineHeight * 2;
+          this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
         this.editor.layout();
         this.cdr.markForCheck();
       });
@@ -106,7 +106,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
     this.editor.addCommand(
-      monaco.KeyCode.Escape,
+      KeyCode.Escape,
       () => {
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
@@ -148,7 +148,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         folding: false,
         scrollBeyondLastLine: false,
         contextmenu: false,
-        matchBrackets: false
+        matchBrackets: 'always'
       });
     }
   }
@@ -173,7 +173,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         const convertMap = {
           sh: 'shell'
         };
-        monaco.editor.setModelLanguage(model, convertMap[this.language] || this.language);
+        MonacoEditor.setModelLanguage(model, convertMap[this.language] || this.language);
       }
     } else {
       const interpreterName = this.getInterpreterName(this.text);

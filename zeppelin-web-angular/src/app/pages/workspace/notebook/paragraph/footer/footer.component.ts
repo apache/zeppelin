@@ -12,9 +12,9 @@
 
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 
-import * as distanceInWordsStrict from 'date-fns/distance_in_words_strict';
-import * as distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
-import * as format from 'date-fns/format';
+import format from 'date-fns/format';
+import formatDistanceStrict from 'date-fns/formatDistanceStrict';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-footer',
@@ -47,8 +47,8 @@ export class NotebookParagraphFooterComponent implements OnChanges {
       return '';
     }
 
-    const durationFormat = distanceInWordsStrict(start, end);
-    const endFormat = format(this.dateFinished, 'MMMM DD YYYY, h:mm:ss A');
+    const durationFormat = formatDistanceStrict(new Date(start), new Date(end));
+    const endFormat = format(new Date(this.dateFinished), 'MMMM dd yyyy, h:mm:ss a');
 
     const user = this.user === undefined || this.user === null ? 'anonymous' : this.user;
     let desc = `Took ${durationFormat}. Last updated by ${user} at ${endFormat}.`;
@@ -62,7 +62,7 @@ export class NotebookParagraphFooterComponent implements OnChanges {
 
   getElapsedTime() {
     // TODO(hsuanxyz) dateStarted undefined after start
-    return `Started ${distanceInWordsToNow(this.dateStarted || new Date())} ago.`;
+    return `Started ${formatDistanceToNow(this.dateStarted ? new Date(this.dateStarted) : new Date())} ago.`;
   }
 
   constructor() {}

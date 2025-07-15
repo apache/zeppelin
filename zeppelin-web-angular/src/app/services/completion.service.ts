@@ -11,6 +11,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { editor, languages, Position } from 'monaco-editor';
 import { Subject } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 
@@ -25,7 +26,7 @@ import { MessageService } from './message.service';
 export class CompletionService extends MessageListenersManager {
   private completionLanguages = ['python', 'scala'];
   private completionItem$ = new Subject<CompletionReceived>();
-  private receivers = new WeakMap<monaco.editor.ITextModel, string>();
+  private receivers = new WeakMap<editor.ITextModel, string>();
   private bound = false;
 
   constructor(messageService: MessageService) {
@@ -38,7 +39,7 @@ export class CompletionService extends MessageListenersManager {
     this.completionItem$.next(data);
   }
 
-  registerAsCompletionReceiver(model: monaco.editor.ITextModel, pid: string): void {
+  registerAsCompletionReceiver(model: editor.ITextModel, pid: string): void {
     if (this.receivers.has(model)) {
       return;
     }
@@ -51,7 +52,7 @@ export class CompletionService extends MessageListenersManager {
     this.receivers.set(model, pid);
   }
 
-  unregister(model: monaco.editor.ITextModel): void {
+  unregister(model: editor.ITextModel): void {
     this.receivers.delete(model);
   }
 
@@ -60,9 +61,10 @@ export class CompletionService extends MessageListenersManager {
     const that = this;
 
     this.completionLanguages.forEach(l => {
-      monaco.languages.registerCompletionItemProvider(l, {
-        provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position) {
+      languages.registerCompletionItemProvider(l, {
+        provideCompletionItems(model: editor.ITextModel, position: Position) {
           const id = that.getIdForModel(model);
+          const word = model.getWordUntilPosition(position);
 
           if (!id) {
             return { suggestions: null };
@@ -76,12 +78,19 @@ export class CompletionService extends MessageListenersManager {
               take(1),
               map(d => {
                 return {
-                  suggestions: d.completions.map(i => ({
-                    kind: monaco.languages.CompletionItemKind.Keyword,
-                    label: i.name,
-                    insertText: i.name,
-                    range: undefined
-                  }))
+                  suggestions: d.completions.map(
+                    (i): languages.CompletionItem => ({
+                      kind: languages.CompletionItemKind.Keyword,
+                      label: i.name,
+                      insertText: i.name,
+                      range: {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                      }
+                    })
+                  )
                 };
               })
             )
@@ -91,7 +100,7 @@ export class CompletionService extends MessageListenersManager {
     });
   }
 
-  private getIdForModel(model?: monaco.editor.ITextModel): string | null {
+  private getIdForModel(model?: editor.ITextModel): string | null {
     return this.receivers.get(model);
   }
 }

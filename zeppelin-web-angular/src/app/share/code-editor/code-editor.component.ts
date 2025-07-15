@@ -28,7 +28,8 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { combineLatest, fromEvent, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map, takeUntil } from 'rxjs/operators';
 
-import { warn, InputBoolean } from 'ng-zorro-antd/core';
+import { warn } from 'ng-zorro-antd/core/logger';
+import { InputBoolean } from 'ng-zorro-antd/core/util';
 
 import { CodeEditorService } from './code-editor.service';
 import { DiffEditorOptions, EditorOptions, JoinedEditorOptions, NzEditorMode } from './nz-code-editor.definitions';
@@ -162,10 +163,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   private registerResizeChange(): void {
     this.ngZone.runOutsideAngular(() => {
       fromEvent(window, 'resize')
-        .pipe(
-          debounceTime(300),
-          takeUntil(this.destroy$)
-        )
+        .pipe(debounceTime(300), takeUntil(this.destroy$))
         .subscribe(() => {
           this.layout();
         });

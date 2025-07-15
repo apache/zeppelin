@@ -53,7 +53,7 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
     glyphMargin: false,
     scrollBeyondLastLine: false,
     contextmenu: false
-  };
+  } as const;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private router: ActivatedRoute) {}
 
@@ -142,7 +142,7 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
       setTimeout(() => {
         if (this.editor) {
           this.height =
-            this.editor.getTopForLineNumber(Number.MAX_SAFE_INTEGER) + this.editor.getConfiguration().lineHeight * 2;
+            this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
           this.editor.layout();
           this.cdr.markForCheck();
         }

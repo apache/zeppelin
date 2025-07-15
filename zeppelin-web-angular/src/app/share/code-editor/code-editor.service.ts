@@ -59,7 +59,7 @@ export class CodeEditorService {
     this.option = { ...this.option, ...option };
     this.option$.next(this.option);
 
-    if (option.theme) {
+    if ('theme' in option && option.theme) {
       editor.setTheme(option.theme);
     }
   }

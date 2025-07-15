@@ -18,7 +18,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
-import { NzNoAnimationModule } from 'ng-zorro-antd/core';
+import { NzNoAnimationModule } from 'ng-zorro-antd/core/no-animation';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzFormModule } from 'ng-zorro-antd/form';

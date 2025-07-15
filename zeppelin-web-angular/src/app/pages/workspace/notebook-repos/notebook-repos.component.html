@@ -9,8 +9,11 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<zeppelin-page-header title="Notebook Repository" description="Manage your Notebook Repositories' settings.">
+<zeppelin-page-header title="Notebook Repository" [description]="notebookReposDescription">
 </zeppelin-page-header>
+<ng-template #notebookReposDescription>
+  Manage your Notebook Repositories' settings.
+</ng-template>
 <div class="content">
   <zeppelin-notebook-repo-item
     *ngFor="let repo of repositories"

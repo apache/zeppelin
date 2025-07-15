@@ -13,7 +13,7 @@
 <div class="bar" [class.simple]="looknfeel !== 'default'">
   <div class="title">
     <zeppelin-elastic-input nz-tooltip
-                            [nzTitle]="note.path"
+                            [nzTooltipTitle]="note.path"
                             [readonly]="revisionView"
                             [value]="note.name"
                             (valueUpdate)="updateNoteName($event)"></zeppelin-elastic-input>
@@ -31,7 +31,7 @@
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Show/hide the code"
+              nzTooltipTitle="Show/hide the code"
               (click)="toggleAllEditor()"
               *ngIf="!viewOnly"
               [disabled]="revisionView">
@@ -39,7 +39,7 @@
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Show/hide the output"
+              nzTooltipTitle="Show/hide the output"
               (click)="toggleAllTable()"
               *ngIf="!viewOnly"
               [disabled]="revisionView">
@@ -57,7 +57,7 @@
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Clone this note"
+              nzTooltipTitle="Clone this note"
               (click)="cloneNote()"
               *ngIf="!viewOnly"
               [disabled]="revisionView">
@@ -65,7 +65,7 @@
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Export this note"
+              nzTooltipTitle="Export this note"
               (click)="exportNote()"
               *ngIf="!viewOnly"
               [disabled]="revisionView">
@@ -73,7 +73,7 @@
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Reload from note file"
+              nzTooltipTitle="Reload from note file"
               (click)="reloadNote()"
               *ngIf="!viewOnly"
               [disabled]="revisionView">
@@ -83,7 +83,7 @@
         <ng-container [ngSwitch]="note.config.personalizedMode">
           <button *ngSwitchCase="'true'"
                   nz-tooltip
-                  nzTitle="Switch to collaboration mode"
+                  nzTooltipTitle="Switch to collaboration mode"
                   [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
                   nz-button
                   nzType="primary"
@@ -92,7 +92,7 @@
           </button>
           <button *ngSwitchDefault
                   nz-tooltip
-                  nzTitle="Switch to personal mode"
+                  nzTooltipTitle="Switch to personal mode"
                   nz-button
                   [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
                   (click)="toggleNotePersonalizedMode()">
@@ -106,10 +106,10 @@
               nz-popover
               *ngIf="!viewOnly"
               [disabled]="revisionView"
-              [(nzVisible)]="commitVisible"
-              [nzPlacement]="'right'"
-              [nzContent]="commitTpl"
-              nzTrigger="click">
+              [(nzPopoverVisible)]="commitVisible"
+              [nzPopoverPlacement]="'right'"
+              [nzPopoverContent]="commitTpl"
+              nzPopoverTrigger="click">
         <i nz-icon nzType="to-top" nzTheme="outline"></i>
       </button>
       <ng-template #commitTpl>
@@ -128,13 +128,13 @@
               nz-tooltip
               *ngIf="!viewOnly"
               [disabled]="!revisionView"
-              nzTitle="Set revision"
+              nzTooltipTitle="Set revision"
               (click)="setNoteRevision()">
         <i nz-icon nzType="rollback" nzTheme="outline"></i>
       </button>
       <button nz-button
               nz-tooltip
-              nzTitle="Compare revisions"
+              nzTooltipTitle="Compare revisions"
               [nzType]="activatedExtension === 'revisions'? 'primary' : 'default'"
               (click)="toggleExtension('revisions')">
         <i nz-icon nzType="swap" nzTheme="outline"></i>
@@ -153,14 +153,14 @@
       </nz-dropdown-menu>
     </nz-button-group>
     <nz-button-group nzSize="small">
-      <button nz-button nz-tooltip nzTitle="Search code" (click)="searchCode()">
+      <button nz-button nz-tooltip nzTooltipTitle="Search code" (click)="searchCode()">
         <i nz-icon nzType="search" nzTheme="outline"></i>
       </button>
     </nz-button-group>
     <nz-button-group nzSize="small" *ngIf="!viewOnly">
       <button nz-button
               nz-popconfirm
-              nzTitle="Remove this note permanently?"
+              nzPopconfirmTitle="Remove this note permanently?"
               *ngIf="isTrash"
               [disabled]="isNoteParagraphRunning"
               (nzOnConfirm)="deleteNote()">
@@ -168,7 +168,7 @@
       </button>
       <button nz-button
               nz-popconfirm
-              nzTitle="Move this note to trash?"
+              nzPopconfirmTitle="Move this note to trash?"
               *ngIf="!isTrash"
               [disabled]="isNoteParagraphRunning"
               (nzOnConfirm)="moveNoteToTrash()">
@@ -179,7 +179,7 @@
       <button nz-button
               nz-tooltip
               [nzType]="collaborativeModeUsers.length? 'primary' : 'default'"
-              [nzTitle]="'Users who watch this note:'+ collaborativeModeUsers.join(', ')">
+              [nzTooltipTitle]="'Users who watch this note:'+ collaborativeModeUsers.join(', ')">
         <i nz-icon nzType="eye" nzTheme="outline"></i>
         {{collaborativeModeUsers.length}}</button>
     </nz-button-group>
@@ -188,7 +188,7 @@
               nz-dropdown
               nz-tooltip
               nzSize="small"
-              nzTitle="Run scheduler"
+              nzTooltipTitle="Run scheduler"
               nzTrigger="click"
               [nzDropdownMenu]="menu"
               [disabled]="isTrash || revisionView"

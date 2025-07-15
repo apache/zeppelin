@@ -12,8 +12,11 @@
 
 <zeppelin-page-header
   title="Job"
-  description="You can monitor the status of notebook and navigate to note or paragraph."
+  [description]="jobManagerDescription"
   [divider]="true">
+  <ng-template #jobManagerDescription>
+    You can monitor the status of notebook and navigate to note or paragraph.
+  </ng-template>
   <form class="header-form" nz-form [nzLayout]="'inline'" [formGroup]="form">
     <nz-form-item>
       <nz-form-control>
