@@ -41,6 +41,7 @@ public class HiveUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveUtils.class);
   private static final int DEFAULT_QUERY_PROGRESS_INTERVAL = 1000;
+  private static final int MAX_STATEMENT_UNWRAP_DEPTH = 10;
 
   private static final Pattern JOBURL_PATTERN =
           Pattern.compile(".*Tracking URL = (\\S*).*", Pattern.DOTALL);
@@ -59,8 +60,7 @@ public class HiveUtils {
                                             InterpreterContext context,
                                             boolean displayLog,
                                             JDBCInterpreter jdbcInterpreter) {
-    HiveStatement hiveStmt = (HiveStatement)
-            ((DelegatingStatement) ((DelegatingStatement) stmt).getDelegate()).getDelegate();
+    HiveStatement hiveStmt = unwrapHiveStatement(stmt);
     String hiveVersion = HiveVersionInfo.getVersion();
     ProgressBar progressBarTemp = null;
     if (isProgressBarSupported(hiveVersion)) {
@@ -118,6 +118,27 @@ public class HiveUtils {
       // When hive < 2.3, ProgressBar will not be instanced, so it works well.
       progressBar.setInPlaceUpdateStream(hiveStmt, context.out);
     }
+  }
+
+  private static HiveStatement unwrapHiveStatement(Statement stmt) {
+
+    Statement current = stmt;
+    int unwrapAttempts = 0;
+
+    while (current instanceof DelegatingStatement && unwrapAttempts < MAX_STATEMENT_UNWRAP_DEPTH) {
+      current = ((DelegatingStatement) current).getDelegate();
+      unwrapAttempts++;
+      if (current instanceof HiveStatement) {
+        return (HiveStatement) current;
+      }
+    }
+
+    LOGGER.warn("Could not find HiveStatement within the Statement object after {} "
+                + "unwrapping attempts. Final type inspected: {} "
+                + "Hive query monitoring may not be active",
+                MAX_STATEMENT_UNWRAP_DEPTH, current != null ?
+                                            current.getClass().getName() : "null");
+    return null;
   }
 
   /**
