@@ -85,7 +85,8 @@ public class Neo4jConnectionManager {
   }
 
   private AuthToken initAuth(Properties properties) {
-    String authType = properties.getProperty(NEO4J_AUTH_TYPE);
+    String authType = properties.getProperty(NEO4J_AUTH_TYPE, "NONE");
+
     switch (Neo4jAuthType.valueOf(authType.toUpperCase())) {
       case BASIC:
         String username = properties.getProperty(NEO4J_AUTH_USER);
