@@ -72,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.Authentication;
+import org.apache.zeppelin.dep.Repository;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,7 +130,7 @@ public class InterpreterSettingManager implements NoteEventListener {
     new ConcurrentHashMap<>());
   private final Map<String, List<Meter>> interpreterSettingsMeters = new ConcurrentHashMap<>();
 
-  private final List<RemoteRepository> interpreterRepositories;
+  private final List<Repository> interpreterRepositories;
   private InterpreterOption defaultOption;
   private String defaultInterpreterGroup;
   private final Gson gson;
@@ -178,7 +179,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
     this.dependencyResolver =
         new DependencyResolver(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO), zConf);
-    this.interpreterRepositories = dependencyResolver.getRepos();
+    this.interpreterRepositories = new ArrayList<>();
+    for (RemoteRepository repo : dependencyResolver.getRepos()) {
+      this.interpreterRepositories.add(Repository.fromRemoteRepository(repo));
+    }
     this.defaultInterpreterGroup = zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     this.gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -309,10 +313,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
 
     if (infoSaving.interpreterRepositories != null) {
-      for (RemoteRepository repo : infoSaving.interpreterRepositories) {
-        if (!dependencyResolver.getRepos().contains(repo)) {
-          this.interpreterRepositories.add(repo);
-        }
+      for (Repository repo : infoSaving.interpreterRepositories) {
+        this.interpreterRepositories.add(repo);
+        dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
+                repo.getAuthentication(), repo.getProxy());
       }
 
       // force interpreter dependencies loading once the
@@ -898,17 +902,23 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public List<RemoteRepository> getRepositories() {
-    return this.interpreterRepositories;
+    List<RemoteRepository> repos = new ArrayList<>();
+    for (Repository r : this.interpreterRepositories) {
+      repos.add(r.toRemoteRepository());
+    }
+    return repos;
   }
 
-  public void addRepository(String id, String url, boolean snapshot, Authentication auth,
-      Proxy proxy) throws IOException {
-    dependencyResolver.addRepo(id, url, snapshot, auth, proxy);
+  public void addRepository(Repository repository) throws IOException {
+    dependencyResolver.addRepo(repository.getId(), repository.getUrl(), repository.isSnapshot(),
+            repository.getAuthentication(), repository.getProxy());
+    interpreterRepositories.add(repository);
     saveToFile();
   }
 
   public void removeRepository(String id) throws IOException {
     dependencyResolver.delRepo(id);
+    interpreterRepositories.removeIf(r -> r.getId().equals(id));
     saveToFile();
   }
 
