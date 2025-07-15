@@ -271,7 +271,7 @@ public class ZeppelinServer implements AutoCloseable {
       jettyWebServer.start(); // Instantiates ZeppelinServer
     } catch (Exception e) {
       LOGGER.error("Error while running jettyServer", e);
-      System.exit(-1);
+      shutdown(-1);
     }
 
     LOGGER.info("Done, zeppelin server started");
