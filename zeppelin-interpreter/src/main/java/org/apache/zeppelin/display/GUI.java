@@ -96,7 +96,17 @@ public class GUI implements Serializable {
     return params.get(id);
   }
 
+  /**
+   * Create a select form.
+   *
+   * <p>If {@code defaultValue} is a {@link java.util.Collection} the first
+   * element will be used as the actual default value.</p>
+   */
   public Object select(String id, ParamOption[] options, Object defaultValue) {
+    if (defaultValue instanceof Collection && !(defaultValue instanceof String)) {
+      Collection<?> values = (Collection<?>) defaultValue;
+      defaultValue = values.isEmpty() ? null : values.iterator().next();
+    }
     if (defaultValue == null && options != null && options.length > 0) {
       defaultValue = options[0].getValue();
     }
