@@ -17,19 +17,6 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
-import org.apache.commons.lang3.StringUtils;
-import org.neo4j.driver.AuthToken;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Config;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.SessionConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,15 +25,27 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.neo4j.driver.AuthToken;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Config;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.SessionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Neo4j connection manager for Zeppelin.
  */
 public class Neo4jConnectionManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jConnectionManager.class);
 
   public static final String NEO4J_SERVER_URL = "neo4j.url";
@@ -75,7 +74,21 @@ public class Neo4jConnectionManager {
   /**
    * Enum type for the AuthToken.
    */
-  public enum Neo4jAuthType {NONE, BASIC}
+  public enum Neo4jAuthType {
+    NONE, BASIC;
+
+    public static Neo4jAuthType fromString(String value) {
+      if (value == null) {
+        throw new IllegalArgumentException("Neo4j auth type cannot be null");
+      }
+      try {
+        return Neo4jAuthType.valueOf(value.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Unsupported Neo4j auth type: " + value, e);
+      }
+
+    }
+  }
 
   public Neo4jConnectionManager(Properties properties) {
     this.neo4jUrl = properties.getProperty(NEO4J_SERVER_URL);
@@ -87,7 +100,7 @@ public class Neo4jConnectionManager {
   private AuthToken initAuth(Properties properties) {
     String authType = properties.getProperty(NEO4J_AUTH_TYPE, "NONE");
 
-    switch (Neo4jAuthType.valueOf(authType.toUpperCase())) {
+    switch (Neo4jAuthType.fromString(authType)) {
       case BASIC:
         String username = properties.getProperty(NEO4J_AUTH_USER);
         String password = properties.getProperty(NEO4J_AUTH_PASSWORD);
@@ -96,7 +109,7 @@ public class Neo4jConnectionManager {
         LOGGER.debug("Creating NONE authentication");
         return AuthTokens.none();
       default:
-        throw new RuntimeException("Neo4j authentication type not supported");
+        throw new RuntimeException("Unexpected Neo4j auth type");
     }
   }
 
@@ -117,11 +130,11 @@ public class Neo4jConnectionManager {
 
   private Session getSession() {
     return getDriver().session(StringUtils.isNotEmpty(database) ?
-            SessionConfig.forDatabase(database) : SessionConfig.defaultConfig());
+        SessionConfig.forDatabase(database) : SessionConfig.defaultConfig());
   }
 
   public List<Record> execute(String cypherQuery,
-                              InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) {
     Map<String, Object> params = new HashMap<>();
     if (interpreterContext != null) {
       ResourcePool resourcePool = interpreterContext.getResourcePool();
@@ -137,7 +150,7 @@ public class Neo4jConnectionManager {
     LOGGER.debug("Executing cypher query {} with params {}", cypherQuery, params);
     try (Session session = getSession()) {
       final Result result = params.isEmpty()
-              ? session.run(cypherQuery) : session.run(cypherQuery, params);
+          ? session.run(cypherQuery) : session.run(cypherQuery, params);
       return result.list();
     }
   }
