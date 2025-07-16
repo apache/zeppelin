@@ -338,4 +338,47 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName());
     }
   }
+
+  @Test
+  void testShouldNotDuplicateRepoOnReloadWhenDefaultRepoIsModified() throws IOException {
+    // create user modified default repo with custom url ('central')
+    String customRepoUrl = "https://my.custom.repo/maven2";
+    RemoteRepository userModifiedRepo = new RemoteRepository.Builder("central", "default", customRepoUrl).build();
+
+    List<RemoteRepository> userReposToSave = new ArrayList<>();
+    userReposToSave.add(userModifiedRepo);
+
+    // replace interpreterRepositories with user modified repo
+    InterpreterInfoSaving infoSaving = storage.loadInterpreterSettings();
+    infoSaving.interpreterRepositories = userReposToSave;
+
+    storage.save(infoSaving);
+
+    // load it again
+    InterpreterSettingManager reloadedManager = new InterpreterSettingManager(zConf,
+            mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+            mock(ApplicationEventListener.class), storage, pluginManager);
+
+    List<RemoteRepository> reloadedRepos = reloadedManager.getRepositories();
+
+    // 1. check if there is only one repo with ID 'central'
+    // - default 'central' should not be added to reloaded repos
+    long centralRepoCount = reloadedRepos.stream()
+            .filter(repo -> "central".equals(repo.getId()))
+            .count();
+    assertEquals(1, centralRepoCount, "There should be only one 'central' repository after reloading");
+
+    // 2. check if this 'central' repo's url matches to our custom repo url
+    RemoteRepository finalCentralRepo = reloadedRepos.stream()
+            .filter(repo -> "central".equals(repo.getId()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("Central repo not found"));
+
+    assertEquals(customRepoUrl, finalCentralRepo.getUrl(), "The 'central' repo URL should be the user-modified one.");
+
+    // 3. check if non-modified default repo ('local') exists.
+    boolean localRepoExists = reloadedRepos.stream()
+            .anyMatch(repo -> "local".equals(repo.getId()));
+    assertTrue(localRepoExists, "Default 'local' repository should exist");
+  }
 }
