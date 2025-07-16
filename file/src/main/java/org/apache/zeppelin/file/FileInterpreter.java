@@ -64,8 +64,8 @@ public abstract class FileInterpreter extends Interpreter {
 
     public CommandArgs(String cmd) {
       input = cmd;
-      args = new ArrayList();
-      flags = new HashSet();
+      args = new ArrayList<>();
+      flags = new HashSet<>();
     }
 
     private void parseArg(String arg) {
