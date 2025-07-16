@@ -52,14 +52,16 @@ import java.util.regex.Pattern;
  * 
  * <p>Example usage:</p>
  * <pre>{@code
- * Repository repo = new Repository("central")
+ * Repository repo = new Repository.Builder("central")
  *     .url("https://repo.maven.apache.org/maven2/")
- *     .snapshot();
+ *     .snapshot()
+ *     .build();
  * 
- * Repository privateRepo = new Repository("private")
+ * Repository privateRepo = new Repository.Builder("private")
  *     .url("https://private.repo/maven2/")
  *     .credentials("username", "password")
- *     .proxy("HTTP", "proxy.host", 8080, "proxyUser", "proxyPass");
+ *     .proxy("HTTP", "proxy.host", 8080, "proxyUser", "proxyPass")
+ *     .build();
  * }</pre>
  * 
  * @see RemoteRepository
@@ -70,26 +72,43 @@ public class Repository implements JsonSerializable {
   private static final Gson gson = new Gson();
   private static final Pattern REPOSITORY_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9._-]+$");
 
-  private boolean snapshot = false;
-  private String id;
-  private String url;
-  private String username = null;
-  private String password = null;
-  private String proxyProtocol = "HTTP";
-  private String proxyHost = null;
-  private Integer proxyPort = null;
-  private String proxyLogin = null;
-  private String proxyPassword = null;
+  private final boolean snapshot;
+  private final String id;
+  private final String url;
+  private final String username;
+  private final String password;
+  private final String proxyProtocol;
+  private final String proxyHost;
+  private final Integer proxyPort;
+  private final String proxyLogin;
+  private final String proxyPassword;
+
+  /**
+   * Private constructor used by the Builder.
+   */
+  private Repository(Builder builder) {
+    this.id = builder.id;
+    this.url = builder.url;
+    this.snapshot = builder.snapshot;
+    this.username = builder.username;
+    this.password = builder.password;
+    this.proxyProtocol = builder.proxyProtocol;
+    this.proxyHost = builder.proxyHost;
+    this.proxyPort = builder.proxyPort;
+    this.proxyLogin = builder.proxyLogin;
+    this.proxyPassword = builder.proxyPassword;
+  }
 
   /**
    * Creates a new Repository with the specified ID.
    * 
    * @param id the repository ID, must contain only alphanumeric characters, dots, underscores, and hyphens
    * @throws RepositoryException if the ID is null, empty, or contains invalid characters
+   * @deprecated Use {@link Builder} instead
    */
+  @Deprecated
   public Repository(String id){
-    validateId(id);
-    this.id = id;
+    this(new Builder(id));
   }
 
   /**
@@ -98,16 +117,19 @@ public class Repository implements JsonSerializable {
    * @param url the repository URL, must be a valid HTTP, HTTPS, or FILE protocol URL
    * @return this Repository instance for method chaining
    * @throws RepositoryException if the URL is null, empty, or has invalid format/protocol
+   * @deprecated Use {@link Builder#url(String)} instead
    */
+  @Deprecated
   public Repository url(String url) {
-    validateUrl(url);
-    this.url = url;
-    return this;
+    return new Builder(this.id).copyFrom(this).url(url).build();
   }
 
+  /**
+   * @deprecated Use {@link Builder#snapshot()} instead
+   */
+  @Deprecated
   public Repository snapshot() {
-    snapshot = true;
-    return this;
+    return new Builder(this.id).copyFrom(this).snapshot().build();
   }
 
   public boolean isSnapshot() {
@@ -122,31 +144,36 @@ public class Repository implements JsonSerializable {
     return url;
   }
   
+  /**
+   * @deprecated Use {@link Builder#username(String)} instead
+   */
+  @Deprecated
   public Repository username(String username) {
-    this.username = username;
-    return this;
+    return new Builder(this.id).copyFrom(this).username(username).build();
   }
   
+  /**
+   * @deprecated Use {@link Builder#password(String)} instead
+   */
+  @Deprecated
   public Repository password(String password) {
-    this.password = password;
-    return this;
+    return new Builder(this.id).copyFrom(this).password(password).build();
   }
   
+  /**
+   * @deprecated Use {@link Builder#credentials(String, String)} instead
+   */
+  @Deprecated
   public Repository credentials(String username, String password) {
-    validateCredentials(username, password);
-    this.username = username;
-    this.password = password;
-    return this;
+    return new Builder(this.id).copyFrom(this).credentials(username, password).build();
   }
   
+  /**
+   * @deprecated Use {@link Builder#proxy(String, String, int, String, String)} instead
+   */
+  @Deprecated
   public Repository proxy(String protocol, String host, int port, String username, String password) {
-    validateProxy(protocol, host, port);
-    this.proxyProtocol = protocol;
-    this.proxyHost = host;
-    this.proxyPort = port;
-    this.proxyLogin = username;
-    this.proxyPassword = password;
-    return this;
+    return new Builder(this.id).copyFrom(this).proxy(protocol, host, port, username, password).build();
   }
   
   public Authentication getAuthentication() {
@@ -238,12 +265,11 @@ public class Repository implements JsonSerializable {
     if (repo == null) {
       throw new RepositoryException("RemoteRepository cannot be null");
     }
-    Repository r = new Repository(repo.getId());
-    r.url(repo.getUrl());
+    Builder builder = new Builder(repo.getId()).url(repo.getUrl());
     if (repo.getPolicy(true) != null && repo.getPolicy(true).isEnabled()) {
-      r.snapshot();
+      builder.snapshot();
     }
-    return r;
+    return builder.build();
   }
 
   // Validation methods
@@ -311,6 +337,156 @@ public class Repository implements JsonSerializable {
     }
     if (isBlank(this.url)) {
       throw new RepositoryException("Repository URL is required for RemoteRepository conversion");
+    }
+  }
+
+  /**
+   * Builder class for creating Repository instances.
+   * 
+   * <p>Example usage:</p>
+   * <pre>{@code
+   * Repository repo = new Repository.Builder("central")
+   *     .url("https://repo.maven.apache.org/maven2/")
+   *     .snapshot()
+   *     .build();
+   * 
+   * Repository privateRepo = new Repository.Builder("private")
+   *     .url("https://private.repo/maven2/")
+   *     .credentials("username", "password")
+   *     .proxy("HTTP", "proxy.host", 8080, "proxyUser", "proxyPass")
+   *     .build();
+   * }</pre>
+   */
+  public static class Builder {
+    private final String id;
+    private String url;
+    private boolean snapshot = false;
+    private String username = null;
+    private String password = null;
+    private String proxyProtocol = "HTTP";
+    private String proxyHost = null;
+    private Integer proxyPort = null;
+    private String proxyLogin = null;
+    private String proxyPassword = null;
+
+    /**
+     * Creates a new Builder with the specified repository ID.
+     * 
+     * @param id the repository ID, must contain only alphanumeric characters, dots, underscores, and hyphens
+     * @throws RepositoryException if the ID is null, empty, or contains invalid characters
+     */
+    public Builder(String id) {
+      validateId(id);
+      this.id = id;
+    }
+
+    /**
+     * Copies values from an existing Repository.
+     * 
+     * @param repository the repository to copy from
+     * @return this Builder instance for method chaining
+     */
+    Builder copyFrom(Repository repository) {
+      this.url = repository.url;
+      this.snapshot = repository.snapshot;
+      this.username = repository.username;
+      this.password = repository.password;
+      this.proxyProtocol = repository.proxyProtocol;
+      this.proxyHost = repository.proxyHost;
+      this.proxyPort = repository.proxyPort;
+      this.proxyLogin = repository.proxyLogin;
+      this.proxyPassword = repository.proxyPassword;
+      return this;
+    }
+
+    /**
+     * Sets the repository URL.
+     * 
+     * @param url the repository URL, must be a valid HTTP, HTTPS, or FILE protocol URL
+     * @return this Builder instance for method chaining
+     * @throws RepositoryException if the URL is null, empty, or has invalid format/protocol
+     */
+    public Builder url(String url) {
+      validateUrl(url);
+      this.url = url;
+      return this;
+    }
+
+    /**
+     * Marks the repository as a snapshot repository.
+     * 
+     * @return this Builder instance for method chaining
+     */
+    public Builder snapshot() {
+      this.snapshot = true;
+      return this;
+    }
+
+    /**
+     * Sets the username for authentication.
+     * 
+     * @param username the username for authentication
+     * @return this Builder instance for method chaining
+     */
+    public Builder username(String username) {
+      this.username = username;
+      return this;
+    }
+
+    /**
+     * Sets the password for authentication.
+     * 
+     * @param password the password for authentication
+     * @return this Builder instance for method chaining
+     */
+    public Builder password(String password) {
+      this.password = password;
+      return this;
+    }
+
+    /**
+     * Sets the credentials for authentication.
+     * 
+     * @param username the username for authentication
+     * @param password the password for authentication
+     * @return this Builder instance for method chaining
+     * @throws RepositoryException if credentials are incomplete
+     */
+    public Builder credentials(String username, String password) {
+      validateCredentials(username, password);
+      this.username = username;
+      this.password = password;
+      return this;
+    }
+
+    /**
+     * Sets the proxy configuration.
+     * 
+     * @param protocol the proxy protocol (HTTP or HTTPS)
+     * @param host the proxy host
+     * @param port the proxy port
+     * @param username the proxy username (optional)
+     * @param password the proxy password (optional)
+     * @return this Builder instance for method chaining
+     * @throws RepositoryException if proxy configuration is invalid
+     */
+    public Builder proxy(String protocol, String host, int port, String username, String password) {
+      validateProxy(protocol, host, port);
+      this.proxyProtocol = protocol;
+      this.proxyHost = host;
+      this.proxyPort = port;
+      this.proxyLogin = username;
+      this.proxyPassword = password;
+      return this;
+    }
+
+    /**
+     * Builds the Repository instance.
+     * 
+     * @return the configured Repository instance
+     */
+    public Repository build() {
+      return new Repository(this);
     }
   }
 }
