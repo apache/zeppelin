@@ -17,41 +17,16 @@
 
 package org.apache.zeppelin.test;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
 public class DownloadRequest {
+
   private final URL url;
   private final Optional<URL> alternativeUrl;
   private final int retries;
 
   public static final int DEFAULT_RETRIES = 3;
-
-  public DownloadRequest(String url, int retries) throws MalformedURLException {
-    this(url, null, retries);
-  }
-
-  public DownloadRequest(String url, String alternativeUrl) throws MalformedURLException {
-    this(url, alternativeUrl, DEFAULT_RETRIES);
-  }
-
-  public DownloadRequest(String url, String alternativeUrl, int retries)
-      throws MalformedURLException {
-    if (alternativeUrl != null) {
-      this.url = new URL(url);
-      this.alternativeUrl = Optional.of(new URL(alternativeUrl));
-      this.retries = retries;
-    } else {
-      this.url = new URL(url);
-      this.alternativeUrl = Optional.empty();
-      this.retries = retries;
-    }
-  }
-
-  public DownloadRequest(URL url, int retries) {
-    this(url, null, retries);
-  }
 
   public DownloadRequest(URL url, URL alternativeUrl) {
     this(url, alternativeUrl, DEFAULT_RETRIES);
@@ -75,3 +50,4 @@ public class DownloadRequest {
     return retries;
   }
 }
+
