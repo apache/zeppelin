@@ -17,6 +17,19 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
+import org.apache.commons.lang3.StringUtils;
+import org.neo4j.driver.AuthToken;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Config;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.SessionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,27 +38,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
-import org.neo4j.driver.AuthToken;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Config;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.Result;
-import org.neo4j.driver.Session;
-import org.neo4j.driver.SessionConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Neo4j connection manager for Zeppelin.
  */
 public class Neo4jConnectionManager {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(Neo4jConnectionManager.class);
 
   public static final String NEO4J_SERVER_URL = "neo4j.url";
@@ -123,11 +124,11 @@ public class Neo4jConnectionManager {
 
   private Session getSession() {
     return getDriver().session(StringUtils.isNotEmpty(database) ?
-        SessionConfig.forDatabase(database) : SessionConfig.defaultConfig());
+            SessionConfig.forDatabase(database) : SessionConfig.defaultConfig());
   }
 
   public List<Record> execute(String cypherQuery,
-      InterpreterContext interpreterContext) {
+                              InterpreterContext interpreterContext) {
     Map<String, Object> params = new HashMap<>();
     if (interpreterContext != null) {
       ResourcePool resourcePool = interpreterContext.getResourcePool();
@@ -143,7 +144,7 @@ public class Neo4jConnectionManager {
     LOGGER.debug("Executing cypher query {} with params {}", cypherQuery, params);
     try (Session session = getSession()) {
       final Result result = params.isEmpty()
-          ? session.run(cypherQuery) : session.run(cypherQuery, params);
+              ? session.run(cypherQuery) : session.run(cypherQuery, params);
       return result.list();
     }
   }
@@ -161,3 +162,4 @@ public class Neo4jConnectionManager {
     return keys;
   }
 }
+
