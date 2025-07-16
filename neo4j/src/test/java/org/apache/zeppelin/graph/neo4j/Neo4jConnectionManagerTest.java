@@ -60,7 +60,7 @@ class Neo4jConnectionManagerTest {
         new Neo4jConnectionManager(props)
     );
 
-    assertTrue(exception.getMessage().contains("Unsupported Neo4j auth type: INVALID"));
+    assertTrue(exception.getMessage().contains("Unsupported Neo4j authentication type: INVALID"));
   }
 
   @Test

@@ -74,21 +74,7 @@ public class Neo4jConnectionManager {
   /**
    * Enum type for the AuthToken.
    */
-  public enum Neo4jAuthType {
-    NONE, BASIC;
-
-    public static Neo4jAuthType fromString(String value) {
-      if (value == null) {
-        throw new IllegalArgumentException("Neo4j auth type cannot be null");
-      }
-      try {
-        return Neo4jAuthType.valueOf(value.toUpperCase());
-      } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("Unsupported Neo4j auth type: " + value, e);
-      }
-
-    }
-  }
+  public enum Neo4jAuthType {NONE, BASIC}
 
   public Neo4jConnectionManager(Properties properties) {
     this.neo4jUrl = properties.getProperty(NEO4J_SERVER_URL);
@@ -98,9 +84,16 @@ public class Neo4jConnectionManager {
   }
 
   private AuthToken initAuth(Properties properties) {
-    String authType = properties.getProperty(NEO4J_AUTH_TYPE, "NONE");
+    String authType = properties.getProperty(NEO4J_AUTH_TYPE, "NONE").toUpperCase();
 
-    switch (Neo4jAuthType.fromString(authType)) {
+    Neo4jAuthType neo4jAuthType;
+    try {
+      neo4jAuthType = Neo4jAuthType.valueOf(authType);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Unsupported Neo4j authentication type: " + authType, e);
+    }
+
+    switch (neo4jAuthType) {
       case BASIC:
         String username = properties.getProperty(NEO4J_AUTH_USER);
         String password = properties.getProperty(NEO4J_AUTH_PASSWORD);
@@ -109,7 +102,7 @@ public class Neo4jConnectionManager {
         LOGGER.debug("Creating NONE authentication");
         return AuthTokens.none();
       default:
-        throw new RuntimeException("Unexpected Neo4j auth type");
+        throw new RuntimeException("Unexpected Neo4j authentication type");
     }
   }
 
