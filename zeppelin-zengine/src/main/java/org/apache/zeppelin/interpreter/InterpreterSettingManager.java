@@ -92,6 +92,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -309,9 +310,24 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
 
     if (infoSaving.interpreterRepositories != null) {
-      for (RemoteRepository repo : infoSaving.interpreterRepositories) {
-        if (!dependencyResolver.getRepos().contains(repo)) {
-          this.interpreterRepositories.add(repo);
+      for (RemoteRepository savedRepo : infoSaving.interpreterRepositories) {
+        boolean replaced = false;
+        ListIterator<RemoteRepository> iterator = this.interpreterRepositories.listIterator();
+
+        // Check all existing(default) repos
+        while (iterator.hasNext()) {
+          RemoteRepository existingRepo = iterator.next();
+          if (existingRepo.getId().equals(savedRepo.getId())) {
+            // replace the exist repo to user saving repo if id is matched
+            iterator.set(savedRepo);
+            replaced = true;
+            break;
+          }
+        }
+
+        // if saved repo not match to any exist repo, add one.
+        if (!replaced) {
+          this.interpreterRepositories.add(savedRepo);
         }
       }
 
