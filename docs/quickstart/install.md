@@ -40,9 +40,11 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
   <tr>
     <td>OS</td>
-    <td>Mac OSX <br/> Ubuntu 18.04 <br/> Ubuntu 20.04</td>
+    <td>Mac OSX <br/> Ubuntu 24.04</td>
   </tr>
 </table>
+
+Since Zeppelin is written in Java it should run on any Linux distribution with above mentioned JDK.
 
 ### Downloading Binary Package
 
