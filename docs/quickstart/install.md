@@ -44,7 +44,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
 </table>
 
-Since Zeppelin is written in Java it should run on any Linux distribution with JDK 11.
+Since Zeppelin is written in Java it should run on any Linux distribution with above mentioned JDK.
 
 ### Downloading Binary Package
 
