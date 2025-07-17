@@ -92,8 +92,8 @@ public class Neo4jCypherInterpreterTest {
     interpreter = new Neo4jCypherInterpreter(p);
     interpreter.open();
     context = InterpreterContext.builder()
-            .setInterpreterOut(new InterpreterOutput())
-              .build();
+        .setInterpreterOut(new InterpreterOutput())
+        .build();
   }
 
   @AfterAll
