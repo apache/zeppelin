@@ -177,13 +177,13 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   private String listOne(String path, OneFileStatus fs) {
-    if (args.flags.contains(new Character('l'))) {
+    if (args.flags.contains(Character.valueOf('l'))) {
       StringBuilder sb = new StringBuilder();
-      sb.append(listPermission(fs) + "\t");
+      sb.append(listPermission(fs) + '\t');
       sb.append(((fs.replication == 0) ? "-" : fs.replication) + "\t ");
-      sb.append(fs.owner + "\t");
-      sb.append(fs.group + "\t");
-      if (args.flags.contains(new Character('h'))){ //human readable
+      sb.append(fs.owner + '\t');
+      sb.append(fs.group + '\t');
+      if (args.flags.contains(Character.valueOf('h'))){ // human readable
         sb.append(humanReadableByteCount(fs.length) + "\t\t");
       } else {
         sb.append(fs.length + "\t");
