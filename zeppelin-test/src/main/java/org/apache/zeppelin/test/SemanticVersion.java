@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Provide reading comparing capability of semantic version which is used widely in Apache projects
  */
-public class SemanticVersion {
+public class SemanticVersion implements Comparable<SemanticVersion> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SemanticVersion.class);
 
@@ -76,10 +76,15 @@ public class SemanticVersion {
   @Override
   public boolean equals(Object versionToCompare) {
     return versionToCompare instanceof SemanticVersion
-        && version == ((SemanticVersion) versionToCompare).version;
+        && this.compareTo((SemanticVersion) versionToCompare) == 0;
+  }
+
+  @Override
+  public int compareTo(SemanticVersion other) {
+    return Integer.compare(this.version, other.version);
   }
 
   public boolean equalsOrNewerThan(SemanticVersion versionToCompare) {
-    return version >= versionToCompare.version;
+    return this.compareTo(versionToCompare) >= 0;
   }
 }
