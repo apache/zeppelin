@@ -251,9 +251,30 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       });
   }
 
+  private checkAndReplaceCarriageReturn(data: string): string {
+    const str = data.replace(/\r\n/g, '\n');
+    if (/\r/.test(str)) {
+      let newGenerated = '';
+      const strArr = str.split('\n');
+
+      for (const line of strArr) {
+        if (/\r/.test(line)) {
+          const splitCR = line.split('\r');
+          newGenerated += splitCR[splitCR.length - 1] + '\n';
+        } else {
+          newGenerated += line + '\n';
+        }
+      }
+      return newGenerated.slice(0, -1);
+    } else {
+      return str;
+    }
+  }
+
   renderText(): void {
     const ansiUp = new AnsiUp();
-    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(this.result.data));
+    const processedData = this.checkAndReplaceCarriageReturn(this.result.data);
+    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(processedData));
   }
 
   renderImg(): void {
