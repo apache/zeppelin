@@ -32,14 +32,11 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
   }
 
   private final String versionString;
-  private int version;
-  private int majorVersion;
-  private int minorVersion;
-  private int patchVersion;
+  private final int version;
 
   private SemanticVersion(String versionString) {
     this.versionString = versionString;
-
+    int version;
     try {
       int pos = versionString.indexOf('-');
 
@@ -49,9 +46,9 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
       }
 
       String[] versions = numberPart.split("\\.");
-      this.majorVersion = Integer.parseInt(versions[0]);
-      this.minorVersion = Integer.parseInt(versions[1]);
-      this.patchVersion = Integer.parseInt(versions[2]);
+      int majorVersion = Integer.parseInt(versions[0]);
+      int minorVersion = Integer.parseInt(versions[1]);
+      int patchVersion = Integer.parseInt(versions[2]);
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(
           String.format("%d%02d%02d", majorVersion, minorVersion, patchVersion));
@@ -61,6 +58,7 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
       // assume it is future release
       version = 99999;
     }
+    this.version = version;
   }
 
   @Override
