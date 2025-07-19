@@ -23,22 +23,29 @@ import formatDistanceToNow from 'date-fns/formatDistanceToNow';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphFooterComponent implements OnChanges {
-  @Input() dateStarted: string;
-  @Input() dateFinished: string;
-  @Input() dateUpdated: string;
+  @Input() dateStarted?: string;
+  @Input() dateFinished?: string;
+  @Input() dateUpdated!: string;
   @Input() showExecutionTime = false;
   @Input() showElapsedTime = false;
-  @Input() user: string;
-  executionTime: string;
-  elapsedTime: string;
+  @Input() user!: string;
+  executionTime?: string;
+  elapsedTime?: string;
 
   isResultOutdated() {
-    return this.dateUpdated !== undefined && Date.parse(this.dateUpdated) > Date.parse(this.dateStarted);
+    return (
+      this.dateUpdated !== undefined &&
+      this.dateStarted !== undefined &&
+      Date.parse(this.dateUpdated) > Date.parse(this.dateStarted)
+    );
   }
 
   getExecutionTime() {
     const end = this.dateFinished;
     const start = this.dateStarted;
+    if (end === undefined || start === undefined) {
+      return '';
+    }
     const timeMs = Date.parse(end) - Date.parse(start);
     if (isNaN(timeMs) || timeMs < 0) {
       if (this.isResultOutdated()) {
@@ -48,7 +55,7 @@ export class NotebookParagraphFooterComponent implements OnChanges {
     }
 
     const durationFormat = formatDistanceStrict(new Date(start), new Date(end));
-    const endFormat = format(new Date(this.dateFinished), 'MMMM dd yyyy, h:mm:ss a');
+    const endFormat = format(new Date(end), 'MMMM dd yyyy, h:mm:ss a');
 
     const user = this.user === undefined || this.user === null ? 'anonymous' : this.user;
     let desc = `Took ${durationFormat}. Last updated by ${user} at ${endFormat}.`;

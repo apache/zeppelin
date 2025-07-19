@@ -31,19 +31,19 @@ interface TocRow {
   styleUrls: ['./note-toc.component.less']
 })
 export class NoteTocComponent implements OnInit, DoCheck {
-  @Input() note: Note['note'];
+  @Input() note!: Exclude<Note['note'], undefined>;
   @Output() readonly scrollToParagraph = new EventEmitter<string>();
   Arr = Array;
-  rows = [];
-  oldNote: Note['note'];
+  rows: TocRow[] = [];
+  oldNote!: Exclude<Note['note'], undefined>;
 
   onRowClick(id: string) {
     this.scrollToParagraph.emit(id);
   }
 
-  getResults(note: Note['note']): TocResult[] {
+  getResults(note: Exclude<Note['note'], undefined>): TocResult[] {
     const results = note.paragraphs.reduce((allResults: TocResult[], paragraph) => {
-      const newResults = [];
+      const newResults: TocResult[] = [];
       if (paragraph.results && paragraph.results.msg) {
         paragraph.results.msg.forEach(result =>
           newResults.push({
@@ -79,7 +79,7 @@ export class NoteTocComponent implements OnInit, DoCheck {
     const levelsSet: Set<number> = new Set();
     rows.forEach(row => levelsSet.add(row.level));
     const levels = Array.from(levelsSet).sort();
-    const headingLevelToTocLevelMap = {};
+    const headingLevelToTocLevelMap: Record<number, number> = {};
     levels.forEach((level, index) => (headingLevelToTocLevelMap[level] = index + 1));
     this.rows = rows.map(heading => ({ ...heading, level: headingLevelToTocLevelMap[heading.level] }));
   }

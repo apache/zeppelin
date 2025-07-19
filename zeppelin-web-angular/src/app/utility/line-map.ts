@@ -15,7 +15,7 @@ const CR_CHAR = 13;
 const LINE_SEP_CHAR = 8232;
 const PARAGRAPH_CHAR = 8233;
 
-export function computeLineStartsMap(text) {
+export function computeLineStartsMap(text: string) {
   const result = [0];
   let pos = 0;
   while (pos < text.length) {
@@ -35,7 +35,7 @@ export function computeLineStartsMap(text) {
   return result;
 }
 
-function findClosestLineStartPosition(linesMap, position, low = 0, high = linesMap.length - 1) {
+function findClosestLineStartPosition(linesMap: number[], position: number, low = 0, high = linesMap.length - 1) {
   let _low = low;
   let _high = high;
   while (_low <= _high) {
@@ -54,7 +54,7 @@ function findClosestLineStartPosition(linesMap, position, low = 0, high = linesM
   return _low - 1;
 }
 
-export function getLineAndCharacterFromPosition(lineStartsMap, position) {
+export function getLineAndCharacterFromPosition(lineStartsMap: number[], position: number) {
   const lineIndex = findClosestLineStartPosition(lineStartsMap, position);
   return { character: position - lineStartsMap[lineIndex], line: lineIndex };
 }

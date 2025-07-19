@@ -16,7 +16,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class HeliumService {
-  getSpellByMagic(magic: string): string {
+  getSpellByMagic(magic: string): string | null {
     return null;
   }
 

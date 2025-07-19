@@ -65,23 +65,23 @@ import { TableVisualization } from '@zeppelin/visualizations/table/table-visuali
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() result: ParagraphIResultsMsgItem;
-  @Input() config: ParagraphConfigResult;
-  @Input() id: string;
+  @Input() result!: ParagraphIResultsMsgItem;
+  @Input() config?: ParagraphConfigResult;
+  @Input() id!: string;
   @Input() published = false;
   @Input() currentCol = 12;
   @Output() readonly configChange = new EventEmitter<ParagraphConfigResult>();
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
-  @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet: CdkPortalOutlet;
+  @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet!: CdkPortalOutlet;
 
   private destroy$ = new Subject();
   datasetType = DatasetType;
-  angularComponent: DynamicTemplate;
+  angularComponent: DynamicTemplate | null = null;
   innerHTML: string | SafeHtml = '';
   plainText: string | SafeHtml = '';
   imgData: string | SafeUrl = '';
   tableData = new TableData();
-  frontEndError: string;
+  frontEndError?: string;
   // tslint:disable-next-line:no-any
   visualizations: any[] = [
     {
@@ -188,12 +188,18 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   switchMode(mode: VisualizationMode) {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     this.config.graph.mode = mode;
     this.renderGraph();
     this.configChange.emit(this.config);
   }
 
   switchSetting() {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     this.config.graph.optionOpen = !this.config.graph.optionOpen;
     this.renderGraph();
     this.configChange.emit(this.config);
@@ -230,7 +236,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   renderHTML(): void {
     const div = document.createElement('div');
     div.innerHTML = this.result.data;
-    const codeEle: HTMLElement = div.querySelector('pre code');
+    const codeEle = div.querySelector('pre code');
     if (codeEle) {
       hljs.highlightBlock(codeEle);
     }
@@ -261,47 +267,52 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   setGraphConfig() {
-    if (!this.config || !this.config.graph) {
+    const config = this.config;
+    if (!config || !config.graph) {
       return;
     }
-    const visualizationItem = this.visualizations.find(v => v.id === this.config.graph.mode);
+    const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
     if (!visualizationItem || !visualizationItem.instance) {
       return;
     }
-    visualizationItem.instance.setConfig(this.config.graph);
+    visualizationItem.instance.setConfig(config.graph);
   }
 
   renderGraph() {
     this.setDefaultConfig();
+    const config = this.config!;
     let instance: Visualization;
-    const visualizationItem = this.visualizations.find(v => v.id === this.config.graph.mode);
+    const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
     if (!visualizationItem) {
       return;
     }
-    this.destroyVisualizations(this.config.graph.mode);
+    this.destroyVisualizations(config.graph.mode);
     if (!visualizationItem.instance) {
       // tslint:disable-next-line:no-any
       instance = new visualizationItem.Class(
-        this.config.graph,
+        config.graph,
         this.portalOutlet,
         this.viewContainerRef,
         visualizationItem.componentFactoryResolver
       );
       visualizationItem.instance = instance;
-      visualizationItem.changeSubscription = instance.configChanged().subscribe(config => {
-        this.config.graph = config;
+      visualizationItem.changeSubscription = instance.configChanged().subscribe(c => {
+        if (!this.config) {
+          throw new Error('config is not defined');
+        }
+        this.config.graph = c;
         this.renderGraph();
         this.configChange.emit({
-          graph: config
+          graph: c
         });
       });
     } else {
       instance = visualizationItem.instance;
-      instance.setConfig(this.config.graph);
+      instance.setConfig(config.graph);
     }
     this.tableData.loadParagraphResult(this.result);
     const transformation = instance.getTransformation();
-    transformation.setConfig(this.config.graph);
+    transformation.setConfig(config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
     instance.render(transformed);
@@ -329,7 +340,10 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     if (!this.config.graph.setting) {
       this.config.graph.setting = {};
     }
-    if (!this.config.graph.setting[this.config.graph.mode]) {
+    if (
+      !(this.config.graph.mode in this.config.graph.setting) ||
+      !this.config.graph.setting[this.config.graph.mode as keyof GraphConfig['setting']]
+    ) {
       switch (this.config.graph.mode) {
         case 'multiBarChart':
           this.config.graph.setting[this.config.graph.mode] = new VisualizationMultiBarChart();
@@ -350,7 +364,13 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   onResize($event: NzResizeEvent) {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     const { width, height, col } = $event;
+    if (height === undefined) {
+      throw new Error('height is not defined');
+    }
     if (this.result.type === DatasetType.TABLE) {
       this.config.graph.height = height;
       this.setGraphConfig();

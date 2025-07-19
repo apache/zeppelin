@@ -54,6 +54,7 @@
     "@angular/cli": "~9.1.15",
     "@angular/compiler-cli": "~9.1.13",
     "@angular/language-service": "~9.1.13",
+    "@types/diff-match-patch": "^1.0.36",
     "@types/highlight.js": "^9.12.3",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",

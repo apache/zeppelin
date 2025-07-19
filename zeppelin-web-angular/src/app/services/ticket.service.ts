@@ -27,12 +27,12 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class TicketService {
-  configuration: ConfigurationsInfo['configurations'];
+  configuration?: ConfigurationsInfo['configurations'];
   ticket = new ITicketWrapped();
   originTicket = new ITicket();
   ticket$ = new Subject<ITicketWrapped>();
   logout$ = new BehaviorSubject<boolean>(false);
-  version: string;
+  version?: string;
 
   setConfiguration(conf: ConfigurationsInfo) {
     this.configuration = conf.configurations;
@@ -58,7 +58,7 @@ export class TicketService {
     let screenUsername = ticket.principal;
     if (ticket.principal.indexOf('#Pac4j') === 0) {
       const re = ', name=(.*?),';
-      screenUsername = ticket.principal.match(re)[1];
+      screenUsername = ticket.principal.match(re)![1];
     }
     this.originTicket = ticket;
     this.ticket = { ...ticket, screenUsername, ...{ init: true } };
@@ -78,9 +78,12 @@ export class TicketService {
       this.logout$.next(false);
       this.router.navigate(['/login']).then();
     };
-    return this.httpClient
-      .post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {})
-      .pipe(tap(() => nextAction(), () => nextAction()));
+    return this.httpClient.post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {}).pipe(
+      tap(
+        () => nextAction(),
+        () => nextAction()
+      )
+    );
   }
 
   login(userName: string, password: string) {
