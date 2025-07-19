@@ -70,7 +70,7 @@ public abstract class FileInterpreter extends Interpreter {
 
     private void parseArg(String arg) {
       if (arg.charAt(0) == '-') {                   // handle flags
-        for (int i = 0; i < arg.length(); i++) {
+        for (int i = 1; i < arg.length(); i++) {
           Character c = arg.charAt(i);
           flags.add(c);
         }
