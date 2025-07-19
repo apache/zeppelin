@@ -261,8 +261,7 @@ public class InterpreterRestApi extends AbstractRestApi {
   public Response addRepository(String message) {
     try {
       Repository request = Repository.fromJson(message);
-      interpreterSettingManager.addRepository(request.getId(), request.getUrl(),
-          request.isSnapshot(), request.getAuthentication(), request.getProxy());
+      interpreterSettingManager.addRepository(request);
       LOGGER.info("New repository {} added", request.getId());
     } catch (Exception e) {
       LOGGER.error("Exception in InterpreterRestApi while adding repository ", e);
