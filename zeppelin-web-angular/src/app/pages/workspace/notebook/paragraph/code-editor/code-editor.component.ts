@@ -156,7 +156,11 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       folding: false,
       scrollBeyondLastLine: false,
       contextmenu: false,
-      matchBrackets: 'always'
+      matchBrackets: 'always',
+      scrollbar: {
+        handleMouseWheel: false,
+        alwaysConsumeMouseWheel: false
+      }
     });
   }
 
