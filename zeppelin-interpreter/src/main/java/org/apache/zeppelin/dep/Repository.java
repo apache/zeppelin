@@ -98,40 +98,6 @@ public class Repository implements JsonSerializable {
     this.proxyLogin = builder.proxyLogin;
     this.proxyPassword = builder.proxyPassword;
   }
-
-  /**
-   * Creates a new Repository with the specified ID.
-   * 
-   * @param id the repository ID, must contain only alphanumeric characters, dots, underscores, and hyphens
-   * @throws RepositoryException if the ID is null, empty, or contains invalid characters
-   * @deprecated Use {@link Builder} instead
-   */
-  @Deprecated
-  public Repository(String id){
-    this(new Builder(id));
-  }
-
-  /**
-   * Sets the repository URL.
-   * 
-   * @param url the repository URL, must be a valid HTTP, HTTPS, or FILE protocol URL
-   * @return this Repository instance for method chaining
-   * @throws RepositoryException if the URL is null, empty, or has invalid format/protocol
-   * @deprecated Use {@link Builder#url(String)} instead
-   */
-  @Deprecated
-  public Repository url(String url) {
-    return new Builder(this.id).copyFrom(this).url(url).build();
-  }
-
-  /**
-   * @deprecated Use {@link Builder#snapshot()} instead
-   */
-  @Deprecated
-  public Repository snapshot() {
-    return new Builder(this.id).copyFrom(this).snapshot().build();
-  }
-
   public boolean isSnapshot() {
     return snapshot;
   }
@@ -142,38 +108,6 @@ public class Repository implements JsonSerializable {
 
   public String getUrl() {
     return url;
-  }
-  
-  /**
-   * @deprecated Use {@link Builder#username(String)} instead
-   */
-  @Deprecated
-  public Repository username(String username) {
-    return new Builder(this.id).copyFrom(this).username(username).build();
-  }
-  
-  /**
-   * @deprecated Use {@link Builder#password(String)} instead
-   */
-  @Deprecated
-  public Repository password(String password) {
-    return new Builder(this.id).copyFrom(this).password(password).build();
-  }
-  
-  /**
-   * @deprecated Use {@link Builder#credentials(String, String)} instead
-   */
-  @Deprecated
-  public Repository credentials(String username, String password) {
-    return new Builder(this.id).copyFrom(this).credentials(username, password).build();
-  }
-  
-  /**
-   * @deprecated Use {@link Builder#proxy(String, String, int, String, String)} instead
-   */
-  @Deprecated
-  public Repository proxy(String protocol, String host, int port, String username, String password) {
-    return new Builder(this.id).copyFrom(this).proxy(protocol, host, port, username, password).build();
   }
   
   public Authentication getAuthentication() {
