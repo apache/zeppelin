@@ -26,10 +26,10 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.graph.GraphResult;
 import org.apache.zeppelin.tabledata.Node;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
 import org.neo4j.driver.Driver;
@@ -51,11 +51,12 @@ import java.util.Properties;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.MethodName.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Neo4jCypherInterpreterTest {
 
-  private Neo4jCypherInterpreter interpreter;
+  private static Neo4jCypherInterpreter interpreter;
 
-  private InterpreterContext context;
+  private static InterpreterContext context;
 
   @Container
   public static Neo4jContainer<?> neo4jContainer = new Neo4jContainer<>("neo4j:4.1.1")
@@ -86,27 +87,27 @@ public class Neo4jCypherInterpreterTest {
     }
   }
 
-  @BeforeEach
-  public void setUpZeppelin() {
+  @BeforeAll
+  public static void setUpZeppelin() {
     Properties p = new Properties();
     p.setProperty(Neo4jConnectionManager.NEO4J_SERVER_URL, neo4jContainer.getBoltUrl());
     p.setProperty(Neo4jConnectionManager.NEO4J_AUTH_TYPE, Neo4jAuthType.NONE.toString());
     p.setProperty(Neo4jConnectionManager.NEO4J_MAX_CONCURRENCY, "50");
     p.setProperty(Neo4jCypherInterpreter.NEO4J_MULTI_STATEMENT, "false");
     interpreter = new Neo4jCypherInterpreter(p);
+    interpreter.open();
     context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput())
         .build();
   }
 
-  @AfterEach
-  public void tearDownZeppelin() throws Exception {
+  @AfterAll
+  public static void tearDownZeppelin() throws Exception {
     interpreter.close();
   }
 
   @Test
   void testTableWithArray() {
-    interpreter.open();
     InterpreterResult result = interpreter.interpret(
             "return 'a' as colA, 'b' as colB, [1, 2, 3] as colC", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -124,7 +125,6 @@ public class Neo4jCypherInterpreterTest {
 
   @Test
   void testCreateIndex() {
-    interpreter.open();
     InterpreterResult result = interpreter.interpret("CREATE INDEX ON :Person(name)", context);
     assertEquals(Code.SUCCESS, result.code());
     assertEquals(StringUtils.EMPTY, result.toString());
@@ -132,7 +132,6 @@ public class Neo4jCypherInterpreterTest {
 
   @Test
   void testRenderTable() {
-    interpreter.open();
     InterpreterResult result = interpreter.interpret("MATCH (n:Person) "
             + "WHERE n.name IN ['name1', 'name2', 'name3'] "
             + "RETURN n.name AS name, n.age AS age, "
@@ -147,7 +146,6 @@ public class Neo4jCypherInterpreterTest {
 
   @Test
   void testRenderMap() {
-    interpreter.open();
     final String jsonQuery =
             "RETURN {key: \"value\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]} as object";
     final String objectKey = "object.key";
@@ -234,7 +232,6 @@ public class Neo4jCypherInterpreterTest {
 
   @Test
   void testRenderNetwork() {
-    interpreter.open();
     InterpreterResult result = interpreter.interpret(
             "MATCH (n)-[r:KNOWS]-(m) RETURN n, r, m LIMIT 1", context);
     GraphResult.Graph graph = gson.fromJson(result.toString().replace(NETWORK_RESULT_PREFIX,
@@ -252,7 +249,6 @@ public class Neo4jCypherInterpreterTest {
 
   @Test
   void testFallingQuery() {
-    interpreter.open();
     final String errorMsgEmpty = "";
     InterpreterResult result = interpreter.interpret(StringUtils.EMPTY, context);
     assertEquals(Code.SUCCESS, result.code());
