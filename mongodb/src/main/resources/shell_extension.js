@@ -104,6 +104,26 @@ function printTable(dbquery, fields, flattenArray) {
     printTable(this, fields, flattenArray);
 };
 
+function ensureTableFunction() {
+    var tableFunc = function(fields, flattenArray) {
+        printTable(this, fields, flattenArray);
+        return this;
+    };
+
+    try {
+        var sampleCursor = db.getCollection('__dummy__').find({}).limit(0);
+        var proto = Object.getPrototypeOf(sampleCursor);
+
+        if (proto && !proto.table) {
+            proto.table = tableFunc;
+        }
+    } catch (e) {
+        print("Registration Error: prototype registration failed:", e.message);
+    }
+}
+
+ensureTableFunction();
+
 if (globalThis.DBCommandCursor)
     (DBCommandCursor.prototype || DBCommandCursor).table = (DBQuery.prototype || DBQuery).table;
 
