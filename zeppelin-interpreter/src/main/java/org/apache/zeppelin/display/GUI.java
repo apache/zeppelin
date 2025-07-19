@@ -103,7 +103,7 @@ public class GUI implements Serializable {
    * element will be used as the actual default value.</p>
    */
   public Object select(String id, ParamOption[] options, Object defaultValue) {
-    if (defaultValue instanceof Collection && !(defaultValue instanceof String)) {
+    if (defaultValue instanceof Collection) {
       Collection<?> values = (Collection<?>) defaultValue;
       defaultValue = values.isEmpty() ? null : values.iterator().next();
     }
