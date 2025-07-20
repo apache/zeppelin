@@ -75,4 +75,8 @@ public class SemanticVersion {
     return versionToCompare instanceof SemanticVersion
             && version == ((SemanticVersion) versionToCompare).version;
   }
+
+  public boolean equalsOrNewerThan(SemanticVersion versionToCompare) {
+    return version >= versionToCompare.version;
+  }
 }
