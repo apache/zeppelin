@@ -165,7 +165,8 @@ class HDFSFileInterpreterTest {
 
     InterpreterResult result = t.interpret("cd /tmp/ida8c06540_date040315", null);
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
-    assertEquals("/tmp/ida8c06540_date040315: No such directory", result.message().get(0).getData());
+    assertEquals("/tmp/ida8c06540_date040315: No such directory",
+            result.message().get(0).getData());
 
     t.close();
   }
