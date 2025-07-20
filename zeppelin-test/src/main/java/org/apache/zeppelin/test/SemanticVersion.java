@@ -60,18 +60,6 @@ public class SemanticVersion {
     }
   }
 
-  public int getMajorVersion() {
-    return majorVersion;
-  }
-
-  public int getMinorVersion() {
-    return minorVersion;
-  }
-
-  public int getPatchVersion() {
-    return patchVersion;
-  }
-
   @Override
   public String toString() {
     return versionString;
@@ -86,21 +74,5 @@ public class SemanticVersion {
   public boolean equals(Object versionToCompare) {
     return versionToCompare instanceof SemanticVersion
             && version == ((SemanticVersion) versionToCompare).version;
-  }
-
-  public boolean newerThan(SemanticVersion versionToCompare) {
-    return version > versionToCompare.version;
-  }
-
-  public boolean equalsOrNewerThan(SemanticVersion versionToCompare) {
-    return version >= versionToCompare.version;
-  }
-
-  public boolean olderThan(SemanticVersion versionToCompare) {
-    return version < versionToCompare.version;
-  }
-
-  public boolean equalsOrOlderThan(SemanticVersion versionToCompare) {
-    return version <= versionToCompare.version;
   }
 }
