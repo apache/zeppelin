@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { NzCardModule } from 'ng-zorro-antd/card';
 
 import { ShareModule } from '@zeppelin/share';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 import { NotebookSearchRoutingModule } from './notebook-search-routing.module';
 import { NotebookSearchComponent } from './notebook-search.component';
@@ -24,6 +25,6 @@ import { NotebookSearchResultItemComponent } from './result-item/result-item.com
 
 @NgModule({
   declarations: [NotebookSearchComponent, NotebookSearchResultItemComponent],
-  imports: [CommonModule, NotebookSearchRoutingModule, ShareModule, NzCardModule, FormsModule]
+  imports: [CommonModule, NotebookSearchRoutingModule, ShareModule, NzCardModule, FormsModule, NzIconModule]
 })
 export class NotebookSearchModule {}

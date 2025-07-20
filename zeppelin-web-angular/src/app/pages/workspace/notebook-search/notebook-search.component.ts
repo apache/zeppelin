@@ -29,12 +29,20 @@ export class NotebookSearchComponent implements OnInit, OnDestroy {
     takeUntil(this.destroy$),
     map(params => params.queryStr),
     filter(queryStr => typeof queryStr === 'string' && !!queryStr.trim()),
-    tap(() => (this.searching = true)),
+    tap(queryStr => {
+      this.searching = true;
+      this.searchTerm = queryStr;
+    }),
     switchMap(queryStr => this.notebookSearchService.search(queryStr))
   );
 
   results: NotebookSearchResultItem[] = [];
   searching = false;
+  searchTerm = '';
+
+  get hasNoResults(): boolean {
+    return !this.searching && this.results.length === 0 && this.searchTerm.length > 0;
+  }
 
   constructor(
     private cdr: ChangeDetectorRef,
