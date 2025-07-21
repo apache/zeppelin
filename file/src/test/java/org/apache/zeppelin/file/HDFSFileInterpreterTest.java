@@ -133,6 +133,56 @@ class HDFSFileInterpreterTest {
 
     t.close();
   }
+
+  @Test
+  void testCommandIsNull() {
+    HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+    t.open();
+
+    InterpreterResult result = t.interpret(null, null);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals("No command", result.message().get(0).getData());
+
+    t.close();
+  }
+
+  @Test
+  void testUnknownCommand() {
+    HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+    t.open();
+
+    InterpreterResult result = t.interpret("unknown", null);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals("Unknown command", result.message().get(0).getData());
+
+    t.close();
+  }
+
+  @Test
+  void testNoSuchDirectory() {
+    HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+    t.open();
+
+    InterpreterResult result = t.interpret("cd /tmp/ida8c06540_date040315", null);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals("/tmp/ida8c06540_date040315: No such directory",
+            result.message().get(0).getData());
+
+    t.close();
+  }
+
+  @Test
+  void testNoSuchFile() {
+    HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+    t.open();
+
+    InterpreterResult result = t.interpret("ls -l /does/not/exist", null);
+    assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals("No such File or directory", result.message().get(0).getData());
+
+    t.close();
+  }
+
 }
 
 /**
