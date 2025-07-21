@@ -13,7 +13,7 @@ There are two parts to code highlighting. First, Zeppelin uses the Ace Editor fo
 app/scripts/controllers/paragraph.js  
 Call setTheme on the editor with the theme path/name.  
 [Setting Theme on Ace Documentation](http://ace.c9.io/#nav=howto)  
-[List of themes on GitHub](https://github.com/ajaxorg/ace/tree/master/lib/ace/theme)
+[List of themes on GitHub](https://github.com/ajaxorg/ace/tree/master/src/theme)
 
 #### Style for Markdown Code Blocks
 Highlight.js parses and converts &lt;pre&gt;&lt;code&gt; blocks from markdown parser into keywords and language syntax with proper styles. It also attempts to infer the best fitting language if it is not provided. The visual style can be changed by simply including the desired [stylesheet](https://github.com/components/highlightjs/tree/master/styles) into app/index.html. See the next section on build.
