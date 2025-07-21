@@ -92,6 +92,7 @@ import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.service.auth.AuthenticationServiceFactory;
 import org.apache.zeppelin.socket.ConnectionManager;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.socket.SessionConfigurator;
@@ -188,13 +189,9 @@ public class ZeppelinServer implements AutoCloseable {
             bindAsContract(AuthorizationService.class).in(Singleton.class);
             bindAsContract(ConnectionManager.class).in(Singleton.class);
             bindAsContract(NoteManager.class).in(Singleton.class);
-            // TODO(jl): Will make it more beautiful
-            if (!StringUtils.isBlank(zConf.getShiroPath())) {
-              bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
-            } else {
-              // TODO(jl): Will be added more type
-              bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
-            }
+            bind(AuthenticationServiceFactory.getAuthServiceClass(zConf))
+                    .to(AuthenticationService.class)
+                    .in(Singleton.class);
             bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
             bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
             bindAsContract(ConfigurationService.class).in(Singleton.class);
