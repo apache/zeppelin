@@ -116,12 +116,8 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         noteInfos.putAll(listFolder(child));
       }
     } else {
-      // getPath() drops the drive on Windows, so use getURI().
-      // Decode URI to change %20 to spaces.
-      // Windows cannot handle "file:///", replace it with "/".
-      String noteFileName = URLDecoder.decode(
-          fileObject.getName().getURI(), StandardCharsets.UTF_8
-      ).replace("file:///", "/");
+      String noteFileName = fileObject.getName().getPath();
+
       if (noteFileName.endsWith(".zpln")) {
         try {
           String noteId = getNoteId(noteFileName);
