@@ -36,6 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -324,5 +327,79 @@ class SparkInterpreterLauncherTest {
       assertTrue(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").startsWith("--proxy-user|user1"));
     }
     FileUtils.deleteDirectory(localRepoPath.toFile());
+  }
+
+  @Test
+  void testDetectSparkScalaVersionResourceCleanup() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Get temp directory before test
+    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    File[] filesBeforeTest = tempDir.listFiles((dir, name) -> name.startsWith("zeppelin-spark") && name.endsWith(".out"));
+    int tempFilesCountBefore = filesBeforeTest != null ? filesBeforeTest.length : 0;
+    
+    // Use reflection to access private method
+    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersion", String.class, Map.class);
+    detectSparkScalaVersionMethod.setAccessible(true);
+    
+    Map<String, String> env = new HashMap<>();
+    
+    try {
+      // Call the method
+      String scalaVersion = (String) detectSparkScalaVersionMethod.invoke(launcher, sparkHome, env);
+      
+      // Verify we got a valid result
+      assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"), 
+          "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
+      
+      // Check that no temp files were left behind
+      File[] filesAfterTest = tempDir.listFiles((dir, name) -> name.startsWith("zeppelin-spark") && name.endsWith(".out"));
+      int tempFilesCountAfter = filesAfterTest != null ? filesAfterTest.length : 0;
+      
+      assertEquals(tempFilesCountBefore, tempFilesCountAfter, 
+          "Temporary files were not cleaned up properly");
+      
+    } catch (Exception e) {
+      // Even if the method fails, temp files should be cleaned up
+      File[] filesAfterException = tempDir.listFiles((dir, name) -> name.startsWith("zeppelin-spark") && name.endsWith(".out"));
+      int tempFilesCountAfterException = filesAfterException != null ? filesAfterException.length : 0;
+      
+      assertEquals(tempFilesCountBefore, tempFilesCountAfterException, 
+          "Temporary files were not cleaned up after exception");
+      
+      // Re-throw to fail the test if needed
+      throw e;
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionMultipleCalls() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Get temp directory
+    File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    File[] filesBeforeTest = tempDir.listFiles((dir, name) -> name.startsWith("zeppelin-spark") && name.endsWith(".out"));
+    int tempFilesCountBefore = filesBeforeTest != null ? filesBeforeTest.length : 0;
+    
+    // Use reflection to access private method
+    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersion", String.class, Map.class);
+    detectSparkScalaVersionMethod.setAccessible(true);
+    
+    Map<String, String> env = new HashMap<>();
+    
+    // Call the method multiple times to ensure resources are properly cleaned each time
+    for (int i = 0; i < 5; i++) {
+      String scalaVersion = (String) detectSparkScalaVersionMethod.invoke(launcher, sparkHome, env);
+      assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"));
+    }
+    
+    // Check that no temp files accumulated
+    File[] filesAfterTest = tempDir.listFiles((dir, name) -> name.startsWith("zeppelin-spark") && name.endsWith(".out"));
+    int tempFilesCountAfter = filesAfterTest != null ? filesAfterTest.length : 0;
+    
+    assertEquals(tempFilesCountBefore, tempFilesCountAfter, 
+        "Temporary files accumulated after multiple calls");
   }
 }
