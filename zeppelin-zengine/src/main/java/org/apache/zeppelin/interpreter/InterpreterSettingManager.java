@@ -314,9 +314,14 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     if (infoSaving.interpreterRepositories != null) {
       for (Repository repo : infoSaving.interpreterRepositories) {
-        this.interpreterRepositories.add(repo);
-        dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
-                repo.getAuthentication(), repo.getProxy());
+        // Check if repository already exists to avoid duplicates
+        boolean exists = this.interpreterRepositories.stream()
+            .anyMatch(r -> r.getId().equals(repo.getId()));
+        if (!exists) {
+          this.interpreterRepositories.add(repo);
+          dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
+                  repo.getAuthentication(), repo.getProxy());
+        }
       }
 
       // force interpreter dependencies loading once the
