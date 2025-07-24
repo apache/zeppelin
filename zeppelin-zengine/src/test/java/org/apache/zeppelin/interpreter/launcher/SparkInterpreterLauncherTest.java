@@ -31,10 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -324,5 +327,28 @@ class SparkInterpreterLauncherTest {
       assertTrue(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").startsWith("--proxy-user|user1"));
     }
     FileUtils.deleteDirectory(localRepoPath.toFile());
+  }
+
+  @Test
+  void testDetectSparkScalaVersionProcessManagement() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersion", String.class, Map.class);
+    detectSparkScalaVersionMethod.setAccessible(true);
+    
+    Map<String, String> env = new HashMap<>();
+    
+    // Call the method multiple times to ensure processes are properly cleaned
+    for (int i = 0; i < 3; i++) {
+      String scalaVersion = (String) detectSparkScalaVersionMethod.invoke(launcher, sparkHome, env);
+      assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"), 
+          "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
+    }
+    
+    // Note: We cannot easily test that processes are destroyed or that stdout is consumed
+    // without mocking ProcessBuilder, which would require significant refactoring.
+    // The test above ensures the method still works correctly with the new implementation.
   }
 }
