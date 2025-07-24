@@ -40,11 +40,14 @@ class InterpreterInfoSavingTest {
     InterpreterInfoSaving infoSaving = new InterpreterInfoSaving();
     
     // Add some repositories
-    Repository repo1 = new Repository("central");
-    repo1.url("https://repo.maven.apache.org/maven2/");
+    Repository repo1 = new Repository.Builder("central")
+        .url("https://repo.maven.apache.org/maven2/")
+        .build();
     
-    Repository repo2 = new Repository("local");
-    repo2.url("file:///home/user/.m2/repository/").snapshot();
+    Repository repo2 = new Repository.Builder("local")
+        .url("file:///home/user/.m2/repository/")
+        .snapshot()
+        .build();
     
     infoSaving.interpreterRepositories.add(repo1);
     infoSaving.interpreterRepositories.add(repo2);
@@ -75,9 +78,10 @@ class InterpreterInfoSavingTest {
   void testJsonSerialization() {
     InterpreterInfoSaving infoSaving = new InterpreterInfoSaving();
     
-    Repository repo = new Repository("test-repo");
-    repo.url("https://test.repo/maven2/")
-        .credentials("user", "pass");
+    Repository repo = new Repository.Builder("test-repo")
+        .url("https://test.repo/maven2/")
+        .credentials("user", "pass")
+        .build();
     
     infoSaving.interpreterRepositories.add(repo);
     infoSaving.interpreterSettings = new HashMap<>();

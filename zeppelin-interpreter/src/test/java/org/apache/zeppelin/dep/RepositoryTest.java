@@ -27,8 +27,9 @@ class RepositoryTest {
   @Test
   void testToRemoteRepository() {
     // Test basic repository conversion
-    Repository repo = new Repository("test-repo");
-    repo.url("https://repo.maven.apache.org/maven2/");
+    Repository repo = new Repository.Builder("test-repo")
+        .url("https://repo.maven.apache.org/maven2/")
+        .build();
     
     RemoteRepository remoteRepo = repo.toRemoteRepository();
     
@@ -41,8 +42,10 @@ class RepositoryTest {
 
   @Test
   void testToRemoteRepositoryWithSnapshot() {
-    Repository repo = new Repository("snapshot-repo");
-    repo.url("https://repo.maven.apache.org/maven2/").snapshot();
+    Repository repo = new Repository.Builder("snapshot-repo")
+        .url("https://repo.maven.apache.org/maven2/")
+        .snapshot()
+        .build();
     
     RemoteRepository remoteRepo = repo.toRemoteRepository();
     
@@ -52,9 +55,10 @@ class RepositoryTest {
 
   @Test
   void testToRemoteRepositoryWithAuthentication() {
-    Repository repo = new Repository("auth-repo");
-    repo.url("https://private.repo/maven2/")
-        .credentials("user", "pass");
+    Repository repo = new Repository.Builder("auth-repo")
+        .url("https://private.repo/maven2/")
+        .credentials("user", "pass")
+        .build();
     
     RemoteRepository remoteRepo = repo.toRemoteRepository();
     
@@ -63,9 +67,10 @@ class RepositoryTest {
 
   @Test
   void testToRemoteRepositoryWithProxy() {
-    Repository repo = new Repository("proxy-repo");
-    repo.url("https://repo.maven.apache.org/maven2/")
-        .proxy("HTTP", "proxy.host", 8080, "proxyUser", "proxyPass");
+    Repository repo = new Repository.Builder("proxy-repo")
+        .url("https://repo.maven.apache.org/maven2/")
+        .proxy("HTTP", "proxy.host", 8080, "proxyUser", "proxyPass")
+        .build();
     
     RemoteRepository remoteRepo = repo.toRemoteRepository();
     
@@ -105,8 +110,10 @@ class RepositoryTest {
   @Test
   void testRoundTripConversion() {
     // Test that conversion is consistent (with data loss for auth/proxy)
-    Repository original = new Repository("test");
-    original.url("https://test.repo/maven2/").snapshot();
+    Repository original = new Repository.Builder("test")
+        .url("https://test.repo/maven2/")
+        .snapshot()
+        .build();
     
     RemoteRepository remote = original.toRemoteRepository();
     Repository converted = Repository.fromRemoteRepository(remote);
@@ -118,10 +125,11 @@ class RepositoryTest {
 
   @Test
   void testJsonSerialization() {
-    Repository repo = new Repository("json-test");
-    repo.url("https://test.repo/")
+    Repository repo = new Repository.Builder("json-test")
+        .url("https://test.repo/")
         .credentials("user", "pass")
-        .proxy("HTTP", "proxy", 8080, "puser", "ppass");
+        .proxy("HTTP", "proxy", 8080, "puser", "ppass")
+        .build();
     
     String json = repo.toJson();
     Repository deserialized = Repository.fromJson(json);
@@ -137,101 +145,101 @@ class RepositoryTest {
   @Test
   void testInvalidRepositoryId() {
     // Test null ID
-    assertThrows(RepositoryException.class, () -> new Repository(null));
+    assertThrows(RepositoryException.class, () -> new Repository.Builder(null));
     
     // Test empty ID
-    assertThrows(RepositoryException.class, () -> new Repository(""));
+    assertThrows(RepositoryException.class, () -> new Repository.Builder(""));
     
     // Test invalid characters in ID
-    assertThrows(RepositoryException.class, () -> new Repository("repo@invalid"));
-    assertThrows(RepositoryException.class, () -> new Repository("repo with spaces"));
-    assertThrows(RepositoryException.class, () -> new Repository("repo/with/slash"));
+    assertThrows(RepositoryException.class, () -> new Repository.Builder("repo@invalid"));
+    assertThrows(RepositoryException.class, () -> new Repository.Builder("repo with spaces"));
+    assertThrows(RepositoryException.class, () -> new Repository.Builder("repo/with/slash"));
   }
 
   @Test
   void testValidRepositoryId() {
     // Test valid IDs
-    assertDoesNotThrow(() -> new Repository("central"));
-    assertDoesNotThrow(() -> new Repository("my-repo"));
-    assertDoesNotThrow(() -> new Repository("repo_123"));
-    assertDoesNotThrow(() -> new Repository("repo.with.dots"));
-    assertDoesNotThrow(() -> new Repository("123-repo-456"));
+    assertDoesNotThrow(() -> new Repository.Builder("central").build());
+    assertDoesNotThrow(() -> new Repository.Builder("my-repo").build());
+    assertDoesNotThrow(() -> new Repository.Builder("repo_123").build());
+    assertDoesNotThrow(() -> new Repository.Builder("repo.with.dots").build());
+    assertDoesNotThrow(() -> new Repository.Builder("123-repo-456").build());
   }
 
   @Test
   void testInvalidUrl() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test null URL
-    assertThrows(RepositoryException.class, () -> repo.url(null));
+    assertThrows(RepositoryException.class, () -> builder.url(null));
     
     // Test empty URL
-    assertThrows(RepositoryException.class, () -> repo.url(""));
+    assertThrows(RepositoryException.class, () -> builder.url(""));
     
     // Test invalid URL format
-    assertThrows(RepositoryException.class, () -> repo.url("not-a-url"));
-    assertThrows(RepositoryException.class, () -> repo.url("ftp://invalid-protocol"));
+    assertThrows(RepositoryException.class, () -> builder.url("not-a-url"));
+    assertThrows(RepositoryException.class, () -> builder.url("ftp://invalid-protocol"));
   }
 
   @Test
   void testValidUrl() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test valid URLs
-    assertDoesNotThrow(() -> repo.url("https://repo.maven.apache.org/maven2/"));
-    assertDoesNotThrow(() -> repo.url("http://localhost:8080/nexus/"));
-    assertDoesNotThrow(() -> repo.url("file:///home/user/.m2/repository/"));
+    assertDoesNotThrow(() -> builder.url("https://repo.maven.apache.org/maven2/").build());
+    assertDoesNotThrow(() -> builder.url("http://localhost:8080/nexus/").build());
+    assertDoesNotThrow(() -> builder.url("file:///home/user/.m2/repository/").build());
   }
 
   @Test
   void testInvalidCredentials() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test username without password
-    assertThrows(RepositoryException.class, () -> repo.credentials("user", null));
-    assertThrows(RepositoryException.class, () -> repo.credentials("user", ""));
+    assertThrows(RepositoryException.class, () -> builder.credentials("user", null));
+    assertThrows(RepositoryException.class, () -> builder.credentials("user", ""));
     
     // Test password without username
-    assertThrows(RepositoryException.class, () -> repo.credentials(null, "pass"));
-    assertThrows(RepositoryException.class, () -> repo.credentials("", "pass"));
+    assertThrows(RepositoryException.class, () -> builder.credentials(null, "pass"));
+    assertThrows(RepositoryException.class, () -> builder.credentials("", "pass"));
   }
 
   @Test
   void testValidCredentials() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test valid credentials
-    assertDoesNotThrow(() -> repo.credentials("user", "pass"));
-    assertDoesNotThrow(() -> repo.credentials(null, null));
+    assertDoesNotThrow(() -> builder.credentials("user", "pass").build());
+    assertDoesNotThrow(() -> builder.credentials(null, null).build());
   }
 
   @Test
   void testInvalidProxy() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test invalid protocol
-    assertThrows(RepositoryException.class, () -> repo.proxy("FTP", "proxy.host", 8080, null, null));
-    assertThrows(RepositoryException.class, () -> repo.proxy(null, "proxy.host", 8080, null, null));
-    assertThrows(RepositoryException.class, () -> repo.proxy("", "proxy.host", 8080, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("FTP", "proxy.host", 8080, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy(null, "proxy.host", 8080, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("", "proxy.host", 8080, null, null));
     
     // Test invalid host
-    assertThrows(RepositoryException.class, () -> repo.proxy("HTTP", null, 8080, null, null));
-    assertThrows(RepositoryException.class, () -> repo.proxy("HTTP", "", 8080, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("HTTP", null, 8080, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("HTTP", "", 8080, null, null));
     
     // Test invalid port
-    assertThrows(RepositoryException.class, () -> repo.proxy("HTTP", "proxy.host", 0, null, null));
-    assertThrows(RepositoryException.class, () -> repo.proxy("HTTP", "proxy.host", -1, null, null));
-    assertThrows(RepositoryException.class, () -> repo.proxy("HTTP", "proxy.host", 65536, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("HTTP", "proxy.host", 0, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("HTTP", "proxy.host", -1, null, null));
+    assertThrows(RepositoryException.class, () -> builder.proxy("HTTP", "proxy.host", 65536, null, null));
   }
 
   @Test
   void testValidProxy() {
-    Repository repo = new Repository("test");
+    Repository.Builder builder = new Repository.Builder("test");
     
     // Test valid proxy configurations
-    assertDoesNotThrow(() -> repo.proxy("HTTP", "proxy.host", 8080, null, null));
-    assertDoesNotThrow(() -> repo.proxy("HTTPS", "proxy.host", 443, "user", "pass"));
-    assertDoesNotThrow(() -> repo.proxy("http", "proxy.host", 3128, null, null)); // case insensitive
+    assertDoesNotThrow(() -> builder.proxy("HTTP", "proxy.host", 8080, null, null).build());
+    assertDoesNotThrow(() -> new Repository.Builder("test2").proxy("HTTPS", "proxy.host", 443, "user", "pass").build());
+    assertDoesNotThrow(() -> new Repository.Builder("test3").proxy("http", "proxy.host", 3128, null, null).build()); // case insensitive
   }
 
   @Test
@@ -265,12 +273,14 @@ class RepositoryTest {
   @Test
   void testToRemoteRepositoryValidation() {
     // Test with missing URL
-    Repository repo = new Repository("test");
+    Repository repo = new Repository.Builder("test").build();
     assertThrows(RepositoryException.class, () -> repo.toRemoteRepository());
     
     // Test with valid repository
-    repo.url("https://repo.maven.apache.org/maven2/");
-    assertDoesNotThrow(() -> repo.toRemoteRepository());
+    Repository validRepo = new Repository.Builder("test")
+        .url("https://repo.maven.apache.org/maven2/")
+        .build();
+    assertDoesNotThrow(() -> validRepo.toRemoteRepository());
   }
 
   @Test
