@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -272,22 +275,57 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     builder.environment().putAll(env);
     File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
     builder.redirectError(processOutputFile);
+    
     Process process = builder.start();
-    process.waitFor();
-    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile), StandardCharsets.UTF_8);
-    Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
-    Matcher matcher = pattern.matcher(processOutput);
-    if (matcher.find()) {
-      String scalaVersion = matcher.group(1);
-      if (scalaVersion.startsWith("2.12")) {
-        return "2.12";
-      } else if (scalaVersion.startsWith("2.13")) {
-        return "2.13";
-      } else {
-        throw new Exception("Unsupported scala version: " + scalaVersion);
+    try {
+      // Consume stdout to prevent buffer overflow
+      try (InputStream stdout = process.getInputStream()) {
+        IOUtils.copy(stdout, NullOutputStream.NULL_OUTPUT_STREAM);
       }
-    } else {
-      return detectSparkScalaVersionByReplClass(sparkHome);
+      
+      // Wait with timeout (30 seconds)
+      boolean finished = process.waitFor(30, TimeUnit.SECONDS);
+      if (!finished) {
+        process.destroyForcibly();
+        throw new IOException("spark-submit --version command timed out after 30 seconds");
+      }
+      
+      // Check exit value
+      int exitValue = process.exitValue();
+      if (exitValue != 0) {
+        LOGGER.warn("spark-submit --version exited with non-zero code: {}", exitValue);
+      }
+      
+      // Read the output from the file
+      String processOutput;
+      try (FileInputStream in = new FileInputStream(processOutputFile)) {
+        processOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
+      }
+      
+      Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
+      Matcher matcher = pattern.matcher(processOutput);
+      if (matcher.find()) {
+        String scalaVersion = matcher.group(1);
+        if (scalaVersion.startsWith("2.12")) {
+          return "2.12";
+        } else if (scalaVersion.startsWith("2.13")) {
+          return "2.13";
+        } else {
+          throw new Exception("Unsupported scala version: " + scalaVersion);
+        }
+      } else {
+        LOGGER.debug("Could not detect Scala version from spark-submit output, falling back to jar inspection");
+        return detectSparkScalaVersionByReplClass(sparkHome);
+      }
+    } finally {
+      // Ensure process is cleaned up
+      if (process.isAlive()) {
+        process.destroyForcibly();
+      }
+      // Clean up temporary file
+      if (!processOutputFile.delete() && processOutputFile.exists()) {
+        LOGGER.warn("Failed to delete temporary file: {}", processOutputFile.getAbsolutePath());
+      }
     }
   }
 
