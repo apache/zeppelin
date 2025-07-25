@@ -503,6 +503,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   private void removeConnection(NotebookSocket notebookSocket) {
     connectionManager.removeConnection(notebookSocket);
+    connectionManager.removeWatcherConnection(notebookSocket);
     connectionManager.removeConnectionFromAllNote(notebookSocket);
     connectionManager.removeUserConnection(notebookSocket.getUser(), notebookSocket);
   }
