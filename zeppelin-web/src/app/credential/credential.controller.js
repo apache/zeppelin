@@ -199,10 +199,13 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   }
 
   $scope.getCredentialDocsLink = function() {
-    const currentVersion = $rootScope.zeppelinVersion;
-    const isVersionOver0Point7 = currentVersion && currentVersion.split('.')[1] > 7;
+    let currentVersion = $rootScope.zeppelinVersion || '0.12.0';
+    currentVersion = currentVersion.replace('-SNAPSHOT', '');
+
+    const isVersionOver0Point7 = currentVersion.split('.')[1] > 7;
+
     /*
-     * Add '/setup' to doc link on the version over 0.7.0
+     * Add '/setup' to doc link on the version over 0.7.0, add '/setup' to the doc URL
      */
     return `https://zeppelin.apache.org/docs/${currentVersion}${
       isVersionOver0Point7 ? '/setup' : ''
