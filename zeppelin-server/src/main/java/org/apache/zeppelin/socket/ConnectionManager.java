@@ -175,6 +175,14 @@ public class ConnectionManager {
     }
   }
 
+  public void removeWatcherConnection(NotebookSocket conn) {
+    synchronized (watcherSockets) {
+      if (watcherSockets.remove(conn)) {
+        LOGGER.debug("Removed watcher connection: {}", conn);
+      }
+    }
+  }
+
   public String getAssociatedNoteId(NotebookSocket socket) {
     String associatedNoteId = null;
     synchronized (noteSocketMap) {
