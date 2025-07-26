@@ -105,7 +105,7 @@ export class ShortcutService {
     // tslint:disable-next-line:ban-types
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {
-      const handler = event => {
+      const handler = (event: KeyboardEvent) => {
         observer.next({
           event,
           keybindings: option.keybindings

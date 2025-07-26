@@ -52,14 +52,14 @@ function typeCoercion(value: string, type: ColType): string | number | Date {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableVisualizationComponent implements OnInit {
-  tableData: TableData;
+  tableData?: TableData;
   // tslint:disable-next-line:no-any
   rows: any[] = [];
   columns: string[] = [];
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
   aggregations: AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
-  @ViewChild(NzTableComponent, { static: false }) nzTable: NzTableComponent;
+  @ViewChild(NzTableComponent, { static: false }) nzTable!: NzTableComponent;
 
   exportFile(type: 'csv' | 'xlsx', all = true) {
     const wb = utils.book_new();
@@ -75,6 +75,9 @@ export class TableVisualizationComponent implements OnInit {
 
   onChangeType(type: ColType, col: string) {
     const opt = this.colOptions.get(col);
+    if (!opt) {
+      throw new Error('opt is not found');
+    }
     opt.type = type;
     this.filterRows();
     this.aggregate();
@@ -82,6 +85,9 @@ export class TableVisualizationComponent implements OnInit {
 
   onChangeAggregation(aggregation: AggregationType, col: string) {
     const opt = this.colOptions.get(col);
+    if (!opt) {
+      throw new Error('opt is not found');
+    }
     opt.aggregation = opt.aggregation === aggregation ? null : aggregation;
     this.aggregate();
   }
@@ -91,7 +97,10 @@ export class TableVisualizationComponent implements OnInit {
   }
 
   onSortChange(type: 'descend' | 'ascend' | string, key: string): void {
-    const opt: FilterOption = this.colOptions.get(key);
+    const opt = this.colOptions.get(key);
+    if (!opt) {
+      throw new Error('opt is not found');
+    }
     this.colOptions.delete(key);
     if (type) {
       opt.sort = type === 'descend' ? 'desc' : 'asc';
@@ -103,8 +112,13 @@ export class TableVisualizationComponent implements OnInit {
   }
 
   aggregate() {
+    if (!this.tableData) {
+      throw new Error('tableData is not defined');
+    }
+    const tableData = this.tableData;
     this.colOptions.forEach((opt, key) => {
-      const numValue = row => {
+      // tslint:disable-next-line:no-any
+      const numValue = (row: any) => {
         const value = typeCoercion(row[key], opt.type);
         if (typeof value === 'number') {
           return value;
@@ -115,7 +129,7 @@ export class TableVisualizationComponent implements OnInit {
         return value;
       };
       const getSum = () =>
-        sumBy(this.tableData.rows, row => {
+        sumBy(tableData.rows, row => {
           const value = typeCoercion(row[key], 'number');
           return typeof value === 'number' ? value : 0;
         });
@@ -125,16 +139,16 @@ export class TableVisualizationComponent implements OnInit {
           opt.aggregationValue = getSum();
           break;
         case 'avg':
-          opt.aggregationValue = getSum() / this.tableData.rows.length;
+          opt.aggregationValue = getSum() / tableData.rows.length;
           break;
         case 'count':
-          opt.aggregationValue = this.tableData.rows.length;
+          opt.aggregationValue = tableData.rows.length;
           break;
         case 'max':
-          opt.aggregationValue = maxBy(this.tableData.rows, numValue)[key];
+          opt.aggregationValue = maxBy(tableData.rows, numValue)[key];
           break;
         case 'min':
-          opt.aggregationValue = minBy(this.tableData.rows, numValue)[key];
+          opt.aggregationValue = minBy(tableData.rows, numValue)[key];
           break;
         default:
           opt.aggregationValue = null;
@@ -143,15 +157,23 @@ export class TableVisualizationComponent implements OnInit {
   }
 
   filterRows() {
-    const sortKeys = [];
-    const sortTypes = [];
-    const terms = [];
+    if (!this.tableData) {
+      throw new Error('tableData is not defined');
+    }
+    // tslint:disable-next-line:no-any
+    const sortKeys: any[] = [];
+    // tslint:disable-next-line:no-any
+    const sortTypes: any[] = [];
+    // tslint:disable-next-line:no-any
+    const terms: any[] = [];
     this.colOptions.forEach((value, key) => {
       if (value.sort) {
-        sortKeys.push(row => typeCoercion(row[key], value.type));
+        // tslint:disable-next-line:no-any
+        sortKeys.push((row: any) => typeCoercion(row[key], value.type));
         sortTypes.push(value.sort);
       }
-      terms.push(row => String(row[key]).search(value.term) !== -1);
+      // tslint:disable-next-line:no-any
+      terms.push((row: any) => String(row[key]).search(value.term) !== -1);
     });
     this.rows = filter(this.tableData.rows, row => terms.every(term => term(row)));
     this.rows = orderBy(this.rows, sortKeys, sortTypes);
@@ -164,8 +186,8 @@ export class TableVisualizationComponent implements OnInit {
 
   render() {
     this.tableData = this.visualization.transformed;
-    this.columns = this.tableData.columns;
-    this.rows = [...this.tableData.rows];
+    this.columns = this.tableData!.columns;
+    this.rows = [...this.tableData!.rows];
     this.columns.forEach(col => {
       this.colOptions.set(col, new FilterOption());
     });

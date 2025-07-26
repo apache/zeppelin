@@ -43,8 +43,8 @@ export interface ParagraphEditorSetting {
   isOutputHidden?: boolean;
   completionKey?: EditorCompletionKey;
   completionSupport?: boolean;
-  params?: DynamicFormParams;
-  forms?: DynamicForms;
+  params: DynamicFormParams;
+  forms: DynamicForms;
 }
 
 // TODO(hsuanxyz)
@@ -205,8 +205,7 @@ export interface AngularObjectUpdate {
   interpreterGroupId: string;
   angularObject: {
     name: string;
-    // tslint:disable-next-line:no-any
-    object: any;
+    object: unknown;
     noteId: string;
     paragraphId: string;
   };
@@ -273,6 +272,25 @@ export interface ParagraphRemoved {
   id: string;
 }
 
+export interface ParagraphExecutedBySpell {
+  id: string;
+  title: string;
+  paragraph: string;
+  results: {
+    code: string;
+    msg: Array<{
+      type: string;
+      serializedData: string;
+    }>;
+  };
+  status: string;
+  errorMessage: string;
+  config: ParagraphConfig;
+  params: DynamicFormParams;
+  dateStarted: string;
+  dateFinished: string;
+}
+
 export type VisualizationMode =
   | 'table'
   | 'lineChart'
@@ -290,7 +308,7 @@ export class GraphConfig {
   keys: GraphConfigKeysItem[] = [];
   groups: GraphConfigGroupsItem[] = [];
   values: GraphConfigValuesItem[] = [];
-  commonSetting: GraphConfigCommonSetting;
+  commonSetting: GraphConfigCommonSetting = {};
 }
 
 export interface Progress {
@@ -398,7 +416,7 @@ interface TableOptionValue {
 export type XLabelStatus = 'default' | 'rotate' | 'hide';
 
 export class XAxisSetting {
-  rotate = { degree: '-45' };
+  rotate: { degree?: string } = { degree: '-45' };
   xLabelStatus: XLabelStatus = 'default';
 }
 

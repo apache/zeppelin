@@ -10,6 +10,7 @@
  * limitations under the License.
  */
 
+// @ts-ignore: TODO - Should write type declaration file.
 import { DataSet as AntvDataSet } from '@antv/data-set';
 
 import { DatasetType, ParagraphIResultsMsgItem } from '@zeppelin/sdk';

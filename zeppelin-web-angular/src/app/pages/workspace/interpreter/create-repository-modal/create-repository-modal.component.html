@@ -16,12 +16,7 @@
       ID
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        autofocus
-        formControlName="id"
-        placeholder="Repository id"
-      />
+      <input nz-input autofocus formControlName="id" placeholder="Repository id" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
@@ -30,15 +25,10 @@
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <nz-input-group [nzAddOnBefore]="addOnBeforeTemplate">
-        <input type="text"
-          nz-input
-          formControlName="url"
-          placeholder="Repository url">
+        <input type="text" nz-input formControlName="url" placeholder="Repository url" />
       </nz-input-group>
       <ng-template #addOnBeforeTemplate>
-        <nz-select name="urlProtocol"
-          [(ngModel)]="urlProtocol"
-          [ngModelOptions]="{standalone: true}">
+        <nz-select name="urlProtocol" [(ngModel)]="urlProtocol" [ngModelOptions]="{ standalone: true }">
           <nz-option [nzLabel]="'http://'" [nzValue]="'http://'"></nz-option>
           <nz-option [nzLabel]="'https://'" [nzValue]="'https://'"></nz-option>
           <nz-option [nzLabel]="'file://'" [nzValue]="'file://'"></nz-option>
@@ -59,11 +49,7 @@
       Username
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        formControlName="username"
-        placeholder="username"
-      />
+      <input nz-input formControlName="username" placeholder="username" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
@@ -71,12 +57,7 @@
       Password
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        type="password"
-        formControlName="password"
-        placeholder="password"
-      />
+      <input nz-input type="password" formControlName="password" placeholder="password" />
     </nz-form-control>
   </nz-form-item>
   <nz-divider nzType="horizontal"></nz-divider>
@@ -96,11 +77,7 @@
       Host
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        formControlName="proxyHost"
-        placeholder="proxy host"
-      />
+      <input nz-input formControlName="proxyHost" placeholder="proxy host" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
@@ -108,11 +85,7 @@
       Port
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        formControlName="proxyPort"
-        placeholder="proxy port"
-      />
+      <input nz-input formControlName="proxyPort" placeholder="proxy port" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
@@ -120,11 +93,7 @@
       Login
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        formControlName="proxyLogin"
-        placeholder="proxy login"
-      />
+      <input nz-input formControlName="proxyLogin" placeholder="proxy login" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
@@ -132,24 +101,13 @@
       Password
     </nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
-      <input
-        nz-input
-        type="password"
-        formControlName="proxyLogin"
-        placeholder="proxy password"
-      />
+      <input nz-input type="password" formControlName="proxyLogin" placeholder="proxy password" />
     </nz-form-control>
   </nz-form-item>
 </form>
 
 <div class="modal-footer ant-modal-footer">
-  <button
-    nz-button
-    nzType="primary"
-    [disabled]="!validateForm.valid"
-    (click)="handleSubmit()"
-    [nzLoading]="submitting"
-  >
+  <button nz-button nzType="primary" [disabled]="!validateForm.valid" (click)="handleSubmit()" [nzLoading]="submitting">
     Add
   </button>
   <button nz-button (click)="handleCancel()">

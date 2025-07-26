@@ -32,7 +32,7 @@ import { JobsItem, JobStatus } from '@zeppelin/sdk';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JobManagerJobComponent implements OnInit, OnChanges {
-  @Input() note: JobsItem;
+  @Input() note!: JobsItem;
   @Input() highlight: string | null = null;
   @Output() readonly start = new EventEmitter<string>();
   @Output() readonly stop = new EventEmitter<string>();

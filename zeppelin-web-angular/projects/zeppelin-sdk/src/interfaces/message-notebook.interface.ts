@@ -33,7 +33,7 @@ export type FolderRename = ID & Name;
 export type PersonalizedMode = 'true' | 'false';
 
 export interface NoteRename extends Name, ID {
-  relative: boolean;
+  relative?: boolean;
 }
 
 export interface SendNote {
@@ -190,7 +190,7 @@ export interface NoteUpdate extends Name, ID {
 }
 
 export interface NewNote extends Name {
-  defaultInterpreterGroup: string;
+  defaultInterpreterGroup?: string;
 }
 
 export interface NotesInfo {

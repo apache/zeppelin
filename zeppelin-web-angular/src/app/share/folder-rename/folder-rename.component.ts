@@ -24,8 +24,8 @@ import { NoteListService } from '@zeppelin/services/note-list.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FolderRenameComponent implements OnInit {
-  @Input() newFolderPath: string;
-  @Input() folderId: string;
+  @Input() newFolderPath!: string;
+  @Input() folderId!: string;
   willMerged = false;
 
   checkMerged() {
@@ -39,7 +39,7 @@ export class FolderRenameComponent implements OnInit {
     this.nzModalRef.destroy();
   }
 
-  normalizeFolderId(folderId) {
+  normalizeFolderId(folderId: string) {
     let normalizeFolderId = folderId.trim();
 
     while (normalizeFolderId.indexOf('\\') > -1) {
