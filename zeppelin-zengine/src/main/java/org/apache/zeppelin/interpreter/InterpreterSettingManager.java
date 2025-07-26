@@ -314,14 +314,27 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     if (infoSaving.interpreterRepositories != null) {
       for (Repository repo : infoSaving.interpreterRepositories) {
-        // Check if repository already exists to avoid duplicates
-        boolean exists = this.interpreterRepositories.stream()
-            .anyMatch(r -> r.getId().equals(repo.getId()));
-        if (!exists) {
-          this.interpreterRepositories.add(repo);
-          dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
-                  repo.getAuthentication(), repo.getProxy());
+        // Find if repository with same ID already exists
+        int existingIndex = -1;
+        for (int i = 0; i < this.interpreterRepositories.size(); i++) {
+          if (this.interpreterRepositories.get(i).getId().equals(repo.getId())) {
+            existingIndex = i;
+            break;
+          }
         }
+        
+        if (existingIndex >= 0) {
+          // Replace existing repository at the same position to maintain order
+          this.interpreterRepositories.set(existingIndex, repo);
+        } else {
+          // Add new repository at the end
+          this.interpreterRepositories.add(repo);
+        }
+        
+        // Update dependency resolver
+        dependencyResolver.delRepo(repo.getId());
+        dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
+                repo.getAuthentication(), repo.getProxy());
       }
 
       // force interpreter dependencies loading once the
@@ -915,9 +928,27 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public void addRepository(Repository repository) throws IOException {
+    // Find if repository with same ID already exists
+    int existingIndex = -1;
+    for (int i = 0; i < interpreterRepositories.size(); i++) {
+      if (interpreterRepositories.get(i).getId().equals(repository.getId())) {
+        existingIndex = i;
+        break;
+      }
+    }
+    
+    if (existingIndex >= 0) {
+      // Replace existing repository at the same position to maintain order
+      interpreterRepositories.set(existingIndex, repository);
+    } else {
+      // Add new repository at the end
+      interpreterRepositories.add(repository);
+    }
+    
+    // Update dependency resolver
+    dependencyResolver.delRepo(repository.getId());
     dependencyResolver.addRepo(repository.getId(), repository.getUrl(), repository.isSnapshot(),
             repository.getAuthentication(), repository.getProxy());
-    interpreterRepositories.add(repository);
     saveToFile();
   }
 
