@@ -314,22 +314,11 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     if (infoSaving.interpreterRepositories != null) {
       for (Repository repo : infoSaving.interpreterRepositories) {
-        // Find if repository with same ID already exists
-        int existingIndex = -1;
-        for (int i = 0; i < this.interpreterRepositories.size(); i++) {
-          if (this.interpreterRepositories.get(i).getId().equals(repo.getId())) {
-            existingIndex = i;
-            break;
-          }
-        }
+        // Remove existing repository with same ID (last one wins)
+        this.interpreterRepositories.removeIf(r -> r.getId().equals(repo.getId()));
         
-        if (existingIndex >= 0) {
-          // Replace existing repository at the same position to maintain order
-          this.interpreterRepositories.set(existingIndex, repo);
-        } else {
-          // Add new repository at the end
-          this.interpreterRepositories.add(repo);
-        }
+        // Add the repository
+        this.interpreterRepositories.add(repo);
         
         // Update dependency resolver
         dependencyResolver.delRepo(repo.getId());
@@ -928,22 +917,11 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public void addRepository(Repository repository) throws IOException {
-    // Find if repository with same ID already exists
-    int existingIndex = -1;
-    for (int i = 0; i < interpreterRepositories.size(); i++) {
-      if (interpreterRepositories.get(i).getId().equals(repository.getId())) {
-        existingIndex = i;
-        break;
-      }
-    }
+    // Remove existing repository with same ID (last one wins)
+    interpreterRepositories.removeIf(r -> r.getId().equals(repository.getId()));
     
-    if (existingIndex >= 0) {
-      // Replace existing repository at the same position to maintain order
-      interpreterRepositories.set(existingIndex, repository);
-    } else {
-      // Add new repository at the end
-      interpreterRepositories.add(repository);
-    }
+    // Add the repository
+    interpreterRepositories.add(repository);
     
     // Update dependency resolver
     dependencyResolver.delRepo(repository.getId());
