@@ -26,13 +26,6 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
-import { default as AnsiUp } from 'ansi_up';
-import * as hljs from 'highlight.js';
-import { NzResizeEvent } from 'ng-zorro-antd/resizable';
-import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
 
 import {
   DatasetType,
@@ -46,17 +39,21 @@ import {
   VisualizationStackedAreaChart
 } from '@zeppelin/sdk';
 
-import { ZeppelinHeliumService } from '@zeppelin/helium';
+import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { TableData, Visualization } from '@zeppelin/visualization';
-
-import { HeliumManagerService } from '@zeppelin/helium-manager';
-import { DynamicTemplate, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { AreaChartVisualization } from '@zeppelin/visualizations/area-chart/area-chart-visualization';
 import { BarChartVisualization } from '@zeppelin/visualizations/bar-chart/bar-chart-visualization';
 import { LineChartVisualization } from '@zeppelin/visualizations/line-chart/line-chart-visualization';
 import { PieChartVisualization } from '@zeppelin/visualizations/pie-chart/pie-chart-visualization';
 import { ScatterChartVisualization } from '@zeppelin/visualizations/scatter-chart/scatter-chart-visualization';
 import { TableVisualization } from '@zeppelin/visualizations/table/table-visualization';
+
+import { default as AnsiUp } from 'ansi_up';
+import * as hljs from 'highlight.js';
+import { NzResizeEvent } from 'ng-zorro-antd/resizable';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-result',
@@ -89,6 +86,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Table',
       icon: 'table',
       Class: TableVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -97,6 +95,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Bar Chart',
       icon: 'bar-chart',
       Class: BarChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -105,6 +104,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Pie Chart',
       icon: 'pie-chart',
       Class: PieChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -113,6 +113,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Line Chart',
       icon: 'line-chart',
       Class: LineChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -121,6 +122,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Area Chart',
       icon: 'area-chart',
       Class: AreaChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -129,6 +131,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Scatter Chart',
       icon: 'dot-chart',
       Class: ScatterChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     }
@@ -141,27 +144,8 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     private sanitizer: DomSanitizer,
     private injector: Injector,
     private ngZService: NgZService,
-    private zeppelinHeliumService: ZeppelinHeliumService,
-    private heliumManagerService: HeliumManagerService
-  ) {
-    this.heliumManagerService
-      .packagesLoadChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(packages => {
-        packages.forEach(pack => {
-          this.visualizations.push({
-            id: pack._raw.id,
-            name: pack.name,
-            icon: pack._raw.icon,
-            Class: pack._raw.visualization,
-            componentFactoryResolver: pack.moduleFactory.create(this.injector).componentFactoryResolver,
-            changeSubscription: null,
-            instance: undefined
-          });
-        });
-        this.cdr.markForCheck();
-      });
-  }
+    private heliumService: HeliumService
+  ) {}
 
   ngOnInit() {
     this.ngZService
@@ -171,6 +155,23 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         if (change.paragraphId === this.id) {
           this.cdr.markForCheck();
         }
+      });
+    this.heliumService
+      .visualizationBundles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(bundles => {
+        bundles.forEach(bundle => {
+          this.visualizations.push({
+            id: bundle.id,
+            name: bundle.name,
+            icon: bundle.icon,
+            Class: bundle.class,
+            changeSubscription: null,
+            isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
+            instance: undefined
+          });
+        });
+        this.cdr.markForCheck();
       });
   }
 
@@ -293,7 +294,11 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     if (!visualizationItem || !visualizationItem.instance) {
       return;
     }
-    visualizationItem.instance.setConfig(this.config.graph);
+    if (visualizationItem.isClassic) {
+      // TODO: handle classic helium vis bundles
+    } else {
+      visualizationItem.instance.setConfig(this.config.graph);
+    }
   }
 
   renderGraph() {
@@ -305,44 +310,62 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     }
     this.destroyVisualizations(this.config.graph.mode);
     if (!visualizationItem.instance) {
-      // tslint:disable-next-line:no-any
-      instance = new visualizationItem.Class(
-        this.config.graph,
-        this.portalOutlet,
-        this.viewContainerRef,
-        visualizationItem.componentFactoryResolver
-      );
-      visualizationItem.instance = instance;
-      visualizationItem.changeSubscription = instance.configChanged().subscribe(config => {
-        this.config.graph = config;
-        this.renderGraph();
-        this.configChange.emit({
-          graph: config
+      if (visualizationItem.isClassic) {
+        // TODO: handle classic helium vis bundles
+      } else {
+        // Modern visualization
+        instance = new visualizationItem.Class(
+          this.config.graph,
+          this.portalOutlet,
+          this.viewContainerRef,
+          visualizationItem.componentFactoryResolver
+        );
+        visualizationItem.instance = instance;
+        visualizationItem.changeSubscription = instance.configChanged().subscribe(config => {
+          this.config.graph = config;
+          this.renderGraph();
+          this.configChange.emit({
+            graph: config
+          });
         });
-      });
+      }
     } else {
       instance = visualizationItem.instance;
-      instance.setConfig(this.config.graph);
+      if (visualizationItem.isClassic) {
+        // TODO: handle classic helium vis bundles
+      } else {
+        instance.setConfig(this.config.graph);
+      }
     }
+
     this.tableData.loadParagraphResult(this.result);
     const transformation = instance.getTransformation();
     transformation.setConfig(this.config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
-    instance.render(transformed);
+
+    if (visualizationItem.isClassic) {
+      // TODO: handle classic helium vis bundles
+    } else {
+      instance.render(transformed);
+    }
   }
 
   destroyVisualizations(omit?: string) {
     this.visualizations.forEach(v => {
       if (v.id !== omit && v.instance) {
-        if (v.changeSubscription instanceof Subscription) {
-          v.changeSubscription.unsubscribe();
-          v.changeSubscription = null;
+        if (v.isClassic) {
+          // TODO: handle classic helium vis bundles
+        } else {
+          if (v.changeSubscription instanceof Subscription) {
+            v.changeSubscription.unsubscribe();
+            v.changeSubscription = null;
+          }
+          if (typeof v.instance.destroy === 'function') {
+            v.instance.destroy();
+          }
+          v.instance = undefined;
         }
-        if (typeof v.instance.destroy === 'function') {
-          v.instance.destroy();
-        }
-        v.instance = undefined;
       }
     });
   }
