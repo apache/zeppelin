@@ -17,3 +17,12 @@ export interface HeliumPackageSearchResult {
   pkg: HeliumPackage;
   enabled: boolean;
 }
+
+export interface HeliumBundle {
+  id: string;
+  name: string;
+  icon: string;
+  type: HeliumType;
+  // tslint:disable-next-line:no-any
+  class: any;
+}

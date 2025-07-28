@@ -45,6 +45,7 @@ import {
   VisualizationStackedAreaChart
 } from '@zeppelin/sdk';
 
+import { HeliumBundle } from '@zeppelin/interfaces';
 import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { ClassicVisualizationService } from '@zeppelin/services/classic-visualization.service';
 import { TableData, Visualization } from '@zeppelin/visualization';
@@ -163,19 +164,63 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       .visualizationBundles()
       .pipe(takeUntil(this.destroy$))
       .subscribe(bundles => {
-        bundles.forEach(bundle => {
-          this.visualizations.push({
-            id: bundle.id,
-            name: bundle.name,
-            icon: bundle.icon,
-            Class: bundle.class,
-            changeSubscription: null,
-            isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
-            instance: undefined
-          });
-        });
-        this.cdr.markForCheck();
+        this.handleVisualizationBundles(bundles);
       });
+  }
+
+  private handleVisualizationBundles(bundles: HeliumBundle[]): void {
+    const newlyAddedBundleIds = this.addNewVisualizationBundles(bundles);
+
+    this.checkAndTriggerReRender(newlyAddedBundleIds);
+    this.cdr.markForCheck();
+  }
+
+  private addNewVisualizationBundles(bundles: HeliumBundle[]): string[] {
+    const newlyAddedBundleIds: string[] = [];
+
+    bundles.forEach(bundle => {
+      // Check if this bundle is already in our visualizations array
+      const existingVisualization = this.visualizations.find(v => v.id === bundle.id);
+      if (!existingVisualization) {
+        // This is a new bundle
+        newlyAddedBundleIds.push(bundle.id);
+        this.visualizations.push({
+          id: bundle.id,
+          name: bundle.name,
+          icon: bundle.icon,
+          Class: bundle.class,
+          changeSubscription: null,
+          isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
+          instance: undefined
+        });
+      }
+    });
+
+    return newlyAddedBundleIds;
+  }
+
+  private checkAndTriggerReRender(newlyAddedBundleIds: string[]): void {
+    // Re-render only if the current mode is one of the newly loaded bundles
+    if (
+      this.result &&
+      this.result.type === DatasetType.TABLE &&
+      this.config &&
+      this.config.graph &&
+      newlyAddedBundleIds.length > 0
+    ) {
+      const currentMode = this.config.graph.mode;
+      const isCurrentModeNewlyAdded = newlyAddedBundleIds.includes(currentMode);
+
+      if (isCurrentModeNewlyAdded) {
+        const currentVisualization = this.visualizations.find(v => v.id === currentMode);
+        if (currentVisualization && currentVisualization.isClassic) {
+          // Trigger re-rendering for the specific classic visualization that just loaded
+          setTimeout(() => {
+            this.renderDefaultDisplay();
+          }, 0);
+        }
+      }
+    }
   }
 
   exportFile(type: 'csv' | 'tsv'): void {
@@ -319,9 +364,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   renderGraph() {
     this.setDefaultConfig();
 
-    // Load tableData first - this is needed for both classic and modern visualizations
-    this.tableData.loadParagraphResult(this.result);
-
     const config = this.config!;
     let instance: Visualization;
     const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
@@ -329,6 +371,10 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       return;
     }
     this.destroyVisualizations(config.graph.mode);
+
+    // Load tableData first - this is needed for both classic and modern visualizations
+    this.tableData.loadParagraphResult(this.result);
+
     if (!visualizationItem.instance) {
       if (visualizationItem.isClassic) {
         // Classic visualization - delegate to ClassicVisualizationService
