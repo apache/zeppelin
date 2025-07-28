@@ -40,6 +40,7 @@ import {
 } from '@zeppelin/sdk';
 
 import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
+import { ClassicVisualizationService } from '@zeppelin/services/classic-visualization.service';
 import { TableData, Visualization } from '@zeppelin/visualization';
 import { AreaChartVisualization } from '@zeppelin/visualizations/area-chart/area-chart-visualization';
 import { BarChartVisualization } from '@zeppelin/visualizations/bar-chart/bar-chart-visualization';
@@ -144,7 +145,8 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     private sanitizer: DomSanitizer,
     private injector: Injector,
     private ngZService: NgZService,
-    private heliumService: HeliumService
+    private heliumService: HeliumService,
+    private classicVisualizationService: ClassicVisualizationService
   ) {}
 
   ngOnInit() {
@@ -302,14 +304,23 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       return;
     }
     if (visualizationItem.isClassic) {
-      // TODO: handle classic helium vis bundles
+      const targetElementId = `p${this.id}_${config.graph.mode}`;
+      this.classicVisualizationService.setClassicVisualizationConfig(targetElementId, config.graph);
     } else {
       visualizationItem.instance.setConfig(config.graph);
     }
   }
 
+  getCurrentVisualization() {
+    return this.visualizations.find(v => v.id === this.config?.graph.mode) ?? null;
+  }
+
   renderGraph() {
     this.setDefaultConfig();
+
+    // Load tableData first - this is needed for both classic and modern visualizations
+    this.tableData.loadParagraphResult(this.result);
+
     const config = this.config!;
     let instance: Visualization;
     const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
@@ -319,7 +330,27 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.destroyVisualizations(config.graph.mode);
     if (!visualizationItem.instance) {
       if (visualizationItem.isClassic) {
-        // TODO: handle classic helium vis bundles
+        // Classic visualization - delegate to ClassicVisualizationService
+        const targetElementId = `p${this.id}_${config.graph.mode}`;
+        const emitter = (c: GraphConfig) => {
+          if (!this.config) {
+            throw new Error('config is not defined');
+          }
+          this.config.graph = c;
+          this.renderGraph();
+          this.configChange.emit({ graph: c });
+        };
+
+        this.classicVisualizationService
+          .createClassicVisualization(visualizationItem.Class, targetElementId, config.graph, this.tableData, emitter)
+          .then(classicInstance => {
+            visualizationItem.instance = classicInstance;
+            this.cdr.markForCheck();
+          })
+          .catch(error => {
+            console.error('Failed to create classic visualization:', error);
+          });
+        return; // Exit early for classic visualizations
       } else {
         // Modern visualization
         instance = new visualizationItem.Class(
@@ -343,30 +374,36 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     } else {
       instance = visualizationItem.instance;
       if (visualizationItem.isClassic) {
-        // TODO: handle classic helium vis bundles
+        // Update existing classic visualization
+        const targetElementId = `p${this.id}_${config.graph.mode}`;
+        this.classicVisualizationService.updateClassicVisualization(targetElementId, config.graph, this.tableData);
+        return; // Exit early for classic visualizations
       } else {
         instance.setConfig(config.graph);
       }
     }
 
-    this.tableData.loadParagraphResult(this.result);
+    // For classic visualizations, rendering is already handled in the service
+    if (visualizationItem.isClassic) {
+      return;
+    }
+
+    // For modern visualizations, continue with standard rendering
     const transformation = instance.getTransformation();
     transformation.setConfig(config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
-
-    if (visualizationItem.isClassic) {
-      // TODO: handle classic helium vis bundles
-    } else {
-      instance.render(transformed);
-    }
+    instance.render(transformed);
   }
 
   destroyVisualizations(omit?: string) {
     this.visualizations.forEach(v => {
       if (v.id !== omit && v.instance) {
         if (v.isClassic) {
-          // TODO: handle classic helium vis bundles
+          // Destroy classic visualization through service
+          const targetElementId = `p${this.id}_${v.id}`;
+          this.classicVisualizationService.destroyInstance(targetElementId);
+          v.instance = undefined;
         } else {
           if (v.changeSubscription instanceof Subscription) {
             v.changeSubscription.unsubscribe();
@@ -415,13 +452,21 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     if (!this.config) {
       throw new Error('config is not defined');
     }
+    const config = this.config;
     const { width, height, col } = $event;
     if (height === undefined) {
       throw new Error('height is not defined');
     }
     if (this.result.type === DatasetType.TABLE) {
-      this.config.graph.height = height;
+      config.graph.height = height;
       this.setGraphConfig();
+
+      // Handle classic visualization resize
+      const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
+      if (visualizationItem && visualizationItem.isClassic) {
+        const targetElementId = `p${this.id}_${this.config.graph.mode}`;
+        this.classicVisualizationService.resizeClassicVisualization(targetElementId);
+      }
     }
     this.sizeChange.emit({ width, height, col });
   }
@@ -432,6 +477,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
 
   ngOnDestroy(): void {
     this.destroyVisualizations();
+    this.classicVisualizationService.destroyAllInstances();
     this.destroy$.next();
     this.destroy$.complete();
   }
