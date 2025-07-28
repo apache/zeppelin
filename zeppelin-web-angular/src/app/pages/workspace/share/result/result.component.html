@@ -14,7 +14,8 @@
   <div class="visualization-selector">
     <nz-radio-group [(ngModel)]="config?.graph.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
       <label *ngFor="let item of visualizations" nz-radio-button [nz-tooltip]="item.name" [nzValue]="item.id">
-        <i nz-icon [nzType]="item.icon"></i>
+        <i *ngIf="!item.isClassic" nz-icon [nzType]="item.icon"></i>
+        <span *ngIf="item.isClassic" [innerHTML]="item.icon"></span>
       </label>
     </nz-radio-group>
   </div>
