@@ -51,6 +51,11 @@
     <zeppelin-resize-handle></zeppelin-resize-handle>
   </nz-resize-handle>
   <ng-template cdkPortalOutlet></ng-template>
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [id]="'p' + id + '_' + config?.graph.mode"
+    class="classic-visualization-container"
+  ></div>
   <ng-container [ngSwitch]="result?.type">
     <div
       *ngSwitchCase="datasetType.HTML"
