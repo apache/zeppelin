@@ -26,12 +26,11 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
 import { default as AnsiUp } from 'ansi_up';
 import * as hljs from 'highlight.js';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
 
 import {
@@ -46,11 +45,8 @@ import {
   VisualizationStackedAreaChart
 } from '@zeppelin/sdk';
 
-import { ZeppelinHeliumService } from '@zeppelin/helium';
+import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { TableData, Visualization } from '@zeppelin/visualization';
-
-import { HeliumManagerService } from '@zeppelin/helium-manager';
-import { DynamicTemplate, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import {
   AreaChartVisualization,
   BarChartVisualization,
@@ -91,6 +87,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Table',
       icon: 'table',
       Class: TableVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -99,6 +96,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Bar Chart',
       icon: 'bar-chart',
       Class: BarChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -107,6 +105,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Pie Chart',
       icon: 'pie-chart',
       Class: PieChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -115,6 +114,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Line Chart',
       icon: 'line-chart',
       Class: LineChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -123,6 +123,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Area Chart',
       icon: 'area-chart',
       Class: AreaChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -131,6 +132,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Scatter Chart',
       icon: 'dot-chart',
       Class: ScatterChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     }
@@ -143,27 +145,8 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     private sanitizer: DomSanitizer,
     private injector: Injector,
     private ngZService: NgZService,
-    private zeppelinHeliumService: ZeppelinHeliumService,
-    private heliumManagerService: HeliumManagerService
-  ) {
-    this.heliumManagerService
-      .packagesLoadChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(packages => {
-        packages.forEach(pack => {
-          this.visualizations.push({
-            id: pack._raw.id,
-            name: pack.name,
-            icon: pack._raw.icon,
-            Class: pack._raw.visualization,
-            componentFactoryResolver: pack.moduleFactory.create(this.injector).componentFactoryResolver,
-            changeSubscription: null,
-            instance: undefined
-          });
-        });
-        this.cdr.markForCheck();
-      });
-  }
+    private heliumService: HeliumService
+  ) {}
 
   ngOnInit() {
     this.ngZService
@@ -173,6 +156,23 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         if (change.paragraphId === this.id) {
           this.cdr.markForCheck();
         }
+      });
+    this.heliumService
+      .visualizationBundles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(bundles => {
+        bundles.forEach(bundle => {
+          this.visualizations.push({
+            id: bundle.id,
+            name: bundle.name,
+            icon: bundle.icon,
+            Class: bundle.class,
+            changeSubscription: null,
+            isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
+            instance: undefined
+          });
+        });
+        this.cdr.markForCheck();
       });
   }
 
@@ -302,7 +302,11 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     if (!visualizationItem || !visualizationItem.instance) {
       return;
     }
-    visualizationItem.instance.setConfig(config.graph);
+    if (visualizationItem.isClassic) {
+      // TODO: handle classic helium vis bundles
+    } else {
+      visualizationItem.instance.setConfig(config.graph);
+    }
   }
 
   renderGraph() {
@@ -315,47 +319,65 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     }
     this.destroyVisualizations(config.graph.mode);
     if (!visualizationItem.instance) {
-      // tslint:disable-next-line:no-any
-      instance = new visualizationItem.Class(
-        config.graph,
-        this.portalOutlet,
-        this.viewContainerRef,
-        visualizationItem.componentFactoryResolver
-      );
-      visualizationItem.instance = instance;
-      visualizationItem.changeSubscription = instance.configChanged().subscribe(c => {
-        if (!this.config) {
-          throw new Error('config is not defined');
-        }
-        this.config.graph = c;
-        this.renderGraph();
-        this.configChange.emit({
-          graph: c
+      if (visualizationItem.isClassic) {
+        // TODO: handle classic helium vis bundles
+      } else {
+        // Modern visualization
+        instance = new visualizationItem.Class(
+          config.graph,
+          this.portalOutlet,
+          this.viewContainerRef,
+          visualizationItem.componentFactoryResolver
+        );
+        visualizationItem.instance = instance;
+        visualizationItem.changeSubscription = instance.configChanged().subscribe(c => {
+          if (!this.config) {
+            throw new Error('config is not defined');
+          }
+          this.config.graph = c;
+          this.renderGraph();
+          this.configChange.emit({
+            graph: c
+          });
         });
-      });
+      }
     } else {
       instance = visualizationItem.instance;
-      instance.setConfig(config.graph);
+      if (visualizationItem.isClassic) {
+        // TODO: handle classic helium vis bundles
+      } else {
+        instance.setConfig(config.graph);
+      }
     }
+
     this.tableData.loadParagraphResult(this.result);
     const transformation = instance.getTransformation();
     transformation.setConfig(config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
-    instance.render(transformed);
+
+    if (visualizationItem.isClassic) {
+      // TODO: handle classic helium vis bundles
+    } else {
+      instance.render(transformed);
+    }
   }
 
   destroyVisualizations(omit?: string) {
     this.visualizations.forEach(v => {
       if (v.id !== omit && v.instance) {
-        if (v.changeSubscription instanceof Subscription) {
-          v.changeSubscription.unsubscribe();
-          v.changeSubscription = null;
+        if (v.isClassic) {
+          // TODO: handle classic helium vis bundles
+        } else {
+          if (v.changeSubscription instanceof Subscription) {
+            v.changeSubscription.unsubscribe();
+            v.changeSubscription = null;
+          }
+          if (typeof v.instance.destroy === 'function') {
+            v.instance.destroy();
+          }
+          v.instance = undefined;
         }
-        if (typeof v.instance.destroy === 'function') {
-          v.instance.destroy();
-        }
-        v.instance = undefined;
       }
     });
   }
