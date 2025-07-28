@@ -12,20 +12,11 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HeliumPackageSearchResult, HeliumType } from '@zeppelin/interfaces/helium';
+import { HeliumBundle, HeliumPackageSearchResult } from '@zeppelin/interfaces/helium';
 import { BaseRest } from '@zeppelin/services/base-rest';
 import { BaseUrlService } from '@zeppelin/services/base-url.service';
 import { forkJoin, of, BehaviorSubject, Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-
-interface HeliumBundle {
-  id: string;
-  name: string;
-  icon: string;
-  type: HeliumType;
-  // tslint:disable-next-line:no-any
-  class: any;
-}
 
 @Injectable({
   providedIn: 'root'
