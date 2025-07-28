@@ -43,16 +43,15 @@ public class ElasticsearchClientTypeBuilder {
 
     @Override
     public ElasticsearchClientType build() {
-      boolean isBlank = StringUtils.isBlank(propertyValue);
-      return isBlank ?
-        DEFAULT_ELASTICSEARCH_CLIENT_TYPE :
-        getElasticsearchClientType(propertyValue);
+      return StringUtils.isBlank(propertyValue) ?
+              DEFAULT_ELASTICSEARCH_CLIENT_TYPE :
+              getElasticsearchClientType(propertyValue);
     }
 
     private ElasticsearchClientType getElasticsearchClientType(String propertyValue){
       try {
         return ElasticsearchClientType.valueOf(propertyValue.toUpperCase());
-      } catch (IllegalArgumentException | NullPointerException e) {
+      } catch (IllegalArgumentException e) {
         return UNKNOWN;
       }
     }
