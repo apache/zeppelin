@@ -187,7 +187,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         this.visualizations.push({
           id: bundle.id,
           name: bundle.name,
-          icon: bundle.icon,
+          icon: this.sanitizer.bypassSecurityTrustHtml(bundle.icon),
           Class: bundle.class,
           changeSubscription: null,
           isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
