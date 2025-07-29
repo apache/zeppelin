@@ -10,6 +10,7 @@
  * limitations under the License.
  */
 
+import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
 import { GraphConfig } from '@zeppelin/sdk';
 import { TableData } from '@zeppelin/visualization';
@@ -34,7 +35,58 @@ export class ClassicVisualizationService {
   private appCounter = 0;
   private activeInstances = new Map<string, ClassicVisualizationInstance>();
 
-  constructor(private injector: Injector, private tableDataAdapter: TableDataAdapterService) {}
+  // Template cache for known HTML templates
+  private templateCache = new Map<string, string>();
+
+  constructor(
+    private injector: Injector,
+    private tableDataAdapter: TableDataAdapterService,
+    private http: HttpClient
+  ) {}
+
+  // Map of template URLs to asset file paths
+  private templateAssetMapping = new Map<string, string>([
+    [
+      'app/tabledata/advanced-transformation-setting.html',
+      'assets/classic-visualization-templates/advanced-transformation-setting.html'
+    ]
+  ]);
+
+  // Custom $templateRequest implementation that intercepts known template paths
+  // tslint:disable-next-line:no-any
+  private createCustomTemplateRequest(originalTemplateRequest: any): any {
+    return (templateUrl: string, ignorRequestError?: boolean) => {
+      // Check if we have a cached template for this URL
+      if (this.templateCache.has(templateUrl)) {
+        // Return a promise that resolves with the cached template
+        return Promise.resolve(this.templateCache.get(templateUrl));
+      }
+
+      // Check if this is a known template that should be loaded from assets
+      const assetPath = this.templateAssetMapping.get(templateUrl);
+      if (assetPath) {
+        console.log(`Loading template from asset: ${templateUrl} -> ${assetPath}`);
+        // Load from assets and cache the result
+        return this.http
+          .get(assetPath, { responseType: 'text' })
+          .toPromise()
+          .then((templateContent: string) => {
+            console.log(`Successfully loaded template: ${templateUrl}`, templateContent.length);
+            // Cache the loaded template
+            this.templateCache.set(templateUrl, templateContent);
+            return templateContent;
+          })
+          .catch(error => {
+            console.error(`Failed to load template from ${assetPath}:`, error);
+            // Fallback to original $templateRequest
+            return originalTemplateRequest(templateUrl, ignorRequestError);
+          });
+      }
+
+      // For unknown templates, delegate to the original $templateRequest
+      return originalTemplateRequest(templateUrl, ignorRequestError);
+    };
+  }
 
   private waitForElement(elementId: string, maxRetries = 50, interval = 100): Promise<HTMLElement> {
     return new Promise((resolve, reject) => {
@@ -58,6 +110,82 @@ export class ClassicVisualizationService {
 
       checkElement();
     });
+  }
+
+  private getTransformationSettingElement(targetElementId: string): HTMLElement | null {
+    // Extract the base ID from targetElementId (e.g., "p123_table" -> "123_table")
+    const baseId = targetElementId.replace(/^p/, '');
+    const trSettingId = `trsetting${baseId}`;
+    const element = document.getElementById(trSettingId);
+    console.log(`Looking for transformation setting element: ${trSettingId}`, element);
+    return element;
+  }
+
+  private getVisualizationSettingElement(targetElementId: string): HTMLElement | null {
+    // Extract the base ID from targetElementId (e.g., "p123_table" -> "123_table")
+    const baseId = targetElementId.replace(/^p/, '');
+    const vizSettingId = `vizsetting${baseId}`;
+    const element = document.getElementById(vizSettingId);
+    console.log(`Looking for visualization setting element: ${vizSettingId}`, element);
+    return element;
+  }
+
+  private getOrCreateTransformationSettingElement(targetElementId: string): HTMLElement {
+    const existingElement = this.getTransformationSettingElement(targetElementId);
+    if (existingElement) {
+      return existingElement;
+    }
+    console.log('getOrCreateTransformationSettingElement not found', targetElementId);
+
+    // Create the element if it doesn't exist
+    const baseId = targetElementId.replace(/^p/, '');
+    const trSettingId = `trsetting${baseId}`;
+    const targetElement = document.getElementById(targetElementId);
+
+    if (targetElement) {
+      const settingElement = document.createElement('div');
+      settingElement.id = trSettingId;
+      settingElement.className = 'transformation-setting';
+      targetElement.appendChild(settingElement);
+      console.log(`Created transformation setting element: ${trSettingId}`, settingElement);
+      return settingElement;
+    }
+
+    // Fallback: create a detached element
+    const fallbackElement = document.createElement('div');
+    fallbackElement.id = trSettingId;
+    fallbackElement.className = 'transformation-setting';
+    console.log(`Created detached transformation setting element: ${trSettingId}`, fallbackElement);
+    return fallbackElement;
+  }
+
+  private getOrCreateVisualizationSettingElement(targetElementId: string): HTMLElement {
+    const existingElement = this.getVisualizationSettingElement(targetElementId);
+    if (existingElement) {
+      return existingElement;
+    }
+    console.log('getOrCreateVisualizationSettingElement not found', targetElementId);
+
+    // Create the element if it doesn't exist
+    const baseId = targetElementId.replace(/^p/, '');
+    const vizSettingId = `vizsetting${baseId}`;
+    const targetElement = document.getElementById(targetElementId);
+
+    if (targetElement) {
+      const settingElement = document.createElement('div');
+      settingElement.id = vizSettingId;
+      settingElement.className = 'visualization-setting';
+      targetElement.appendChild(settingElement);
+      console.log(`Created visualization setting element: ${vizSettingId}`, settingElement);
+      return settingElement;
+    }
+
+    // Fallback: create a detached element
+    const fallbackElement = document.createElement('div');
+    fallbackElement.id = vizSettingId;
+    fallbackElement.className = 'visualization-setting';
+    console.log(`Created detached visualization setting element: ${vizSettingId}`, fallbackElement);
+    return fallbackElement;
   }
 
   createClassicVisualization(
@@ -88,7 +216,10 @@ export class ClassicVisualizationService {
             const injector = angular.bootstrap(targetElement, [appName]);
             const rootScope = injector.get('$rootScope');
             const compile = injector.get('$compile');
-            const templateRequest = injector.get('$templateRequest');
+            const originalTemplateRequest = injector.get('$templateRequest');
+
+            // Create custom templateRequest that intercepts known template paths
+            const templateRequest = this.createCustomTemplateRequest(originalTemplateRequest);
             const timeout = injector.get('$timeout');
 
             // Create scope for this visualization
@@ -109,6 +240,10 @@ export class ClassicVisualizationService {
             vizInstance._createNewScope = () => rootScope.$new(true);
             vizInstance._templateRequest = templateRequest;
 
+            // Get or create setting elements
+            const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
+            const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
+
             // Setup transformation if available
             const transformation = vizInstance.getTransformation();
             if (transformation) {
@@ -121,11 +256,21 @@ export class ClassicVisualizationService {
               transformation.setConfig(config);
               const transformed = transformation.transform(classicTableData);
 
+              // Render transformation setting
+              if (transformationSettingEl && typeof transformation.renderSetting === 'function') {
+                transformation.renderSetting(angular.element(transformationSettingEl));
+              }
+
               // Render the visualization
               vizInstance.render(transformed);
             } else {
               // If no transformation, render directly
               vizInstance.render(classicTableData);
+            }
+
+            // Render visualization setting
+            if (visualizationSettingEl && typeof vizInstance.renderSetting === 'function') {
+              vizInstance.renderSetting(angular.element(visualizationSettingEl));
             }
 
             // Activate the visualization
@@ -164,6 +309,10 @@ export class ClassicVisualizationService {
       // Convert modern TableData to classic format
       const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
 
+      // Get or create setting elements
+      const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
+      const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
+
       // Update config if available
       if (typeof instance.setConfig === 'function') {
         instance.setConfig(config);
@@ -174,9 +323,20 @@ export class ClassicVisualizationService {
       if (transformation) {
         transformation.setConfig(config);
         const transformed = transformation.transform(classicTableData);
+
+        // Re-render transformation setting
+        if (transformationSettingEl && typeof transformation.renderSetting === 'function') {
+          transformation.renderSetting(angular.element(transformationSettingEl));
+        }
+
         instance.render(transformed);
       } else {
         instance.render(classicTableData);
+      }
+
+      // Re-render visualization setting
+      if (visualizationSettingEl && typeof instance.renderSetting === 'function') {
+        instance.renderSetting(angular.element(visualizationSettingEl));
       }
 
       // Refresh if available
