@@ -145,7 +145,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     private cdr: ChangeDetectorRef,
     private runtimeCompilerService: RuntimeCompilerService,
     private sanitizer: DomSanitizer,
-    private injector: Injector,
+    protected injector: Injector,
     private ngZService: NgZService,
     private heliumService: HeliumService,
     private classicVisualizationService: ClassicVisualizationService
