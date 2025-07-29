@@ -1,0 +1,252 @@
+<div style="background-color: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.05); margin-top: 10px; margin-bottom: 11px;">
+
+  <!-- panel: axis (configured column) information -->
+  <div style="color: #333; background-color: #f5f5f5; border-color: #ddd; border-bottom: 1px solid transparent; border-top-left-radius: 3px; border-top-right-radius: 3px; padding: 6px 12px 6px 12px; font-size: 13px;">
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Charts</span>
+    <span style="float: right;">
+       <div style="position: relative; display: inline-block; vertical-align: middle;" role="group" aria-label="...">
+         <div type="button" ng-click="resetAxisConfig()"
+              ng-if="config.panel.columnPanelOpened"
+              style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+           🗑️
+         </div>
+         <div type="button" ng-if="config.panel.columnPanelOpened"
+              ng-click="toggleColumnPanel()"
+              style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+           ➖
+         </div>
+         <div type="button" ng-if="!config.panel.columnPanelOpened"
+              ng-click="toggleColumnPanel()"
+              style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+           ⛶
+         </div>
+       </div>
+    </span>
+    <div style="clear: both;"></div> <!-- to fix previous span which has float: right -->
+  </div>
+  <div ng-if="config.panel.columnPanelOpened"
+       style="padding: 8px; margin-top: 3px;">
+    <ul style="padding-left: 0; list-style: none; margin: 0;">
+      <li style="display: inline-block; margin-right: 15px; margin-bottom: 5px;" ng-repeat="chart in config.chart.available">
+        <label style="position: relative; display: inline-block; padding-left: 20px; margin-bottom: 0; font-weight: normal; vertical-align: middle; cursor: pointer;">
+          <input type="radio" style="position: absolute; margin-top: 4px; margin-left: -20px;"
+                 ng-checked="config.chart.current === chart"
+                 ng-click="chartChanged(chart)" value="{{chart}}" />
+          <span style="vertical-align: middle;">
+            {{chart}} {{useSharedAxis(chart) ? '(shared)' : ''}}
+          </span>
+        </label>
+      </li>
+    </ul>
+  </div>
+
+  <!-- panel: available columns -->
+  <div ng-if="config.panel.columnPanelOpened"
+       style="color: #333; background-color: #f5f5f5; border-color: #ddd; border-bottom: 1px solid transparent; padding: 6px 12px 6px 12px; font-size: 13px; border-top: 1px solid #ddd; border-top-left-radius: 0px; border-top-right-radius: 0px;">
+    <span>Available Columns</span>
+  </div>
+  <div ng-if="config.panel.columnPanelOpened"
+       style="padding: 8px; margin-top: 3px;">
+    <ul style="padding-left: 0; list-style: none; margin: 0;">
+      <li style="display: inline-block; margin-right: 5px; margin-bottom: 5px;" ng-repeat="column in columns">
+        <div style="display: inline-block; padding: 1px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;"
+             data-drag="true"
+             data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+             ng-model="columns"
+             jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
+          {{column.name | limitTo: 30}}{{column.name.length > 30 ? '...' : ''}}
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- panel: axis (configured columns) -->
+  <hr style="margin: 1px;" ng-if="config.panel.columnPanelOpened" />
+  <div ng-if="config.panel.columnPanelOpened"
+       style="margin-top: 7px; padding-top: 9px; padding-bottom: 4px; padding-left: 15px; padding-right: 15px;">
+    <div style="margin-left: -15px; margin-right: -15px;">
+      <div style="position: relative; min-height: 1px; padding-left: 15px; padding-right: 15px; float: left; width: 25%;"
+           ng-repeat="axisSpec in config.axisSpecs[config.chart.current]">
+        <div style="font-weight: 500;">
+          <!-- axis name -->
+          <span style="display: inline; padding: .2em .6em .3em; font-size: 75%; font-weight: bold; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .25em; background-color: #777; font-weight: 300; font-size: 13px; margin-left: 1px;"
+                ng-style="getAxisAnnotationColor(axisSpec)"
+                uib-tooltip="{{axisSpec.description ? axisSpec.description + ' ' + getAxisTypeAnnotation(axisSpec) : ''}}">
+            {{getAxisAnnotation(axisSpec)}}
+          </span>
+
+          <!-- axis box: in case of single dimension -->
+          <ul data-drop="true"
+              ng-if="isSingleDimensionAxis(axisSpec)"
+              ng-model="config.axis[config.chart.current][axisSpec.name]"
+              jqyoui-droppable="{onDrop:'axisChanged(axisSpec)'}"
+              style="padding-left: 0; list-style: none; height:36px; border-radius: 6px; margin-top: 7px; overflow: visible !important; border: 1px dashed #ccc; background-color: #f9f9f9;">
+            <li ng-if="config.axis[config.chart.current][axisSpec.name]" style="list-style: none;">
+
+              <!-- in case of axis is single dimension and not aggregator -->
+              <div ng-if="!isAggregatorAxis(axisSpec)"
+                   style="display: inline-block; padding: 1px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;">
+                {{ getSingleDimensionAxis(axisSpec).name }}
+                <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis(null, axisSpec)">✖</span>
+              </div>
+
+              <!-- in case of axis is single dimension and aggregator -->
+              <div style="position: relative; display: inline-block; vertical-align: middle;">
+                <div ng-if="isAggregatorAxis(axisSpec)"
+                     style="display: inline-block; padding: 1px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;"
+                     type="button" data-toggle="dropdown">
+                  {{getSingleDimensionAxis(axisSpec).name | limitTo: 30}}{{getSingleDimensionAxis(axisSpec).name > 30 ? '...' : ''}}
+                  <span style="color:#717171;">
+                    <span style="font-weight: 500; text-transform: uppercase;">{{getSingleDimensionAxis(axisSpec).aggr}}</span>
+                  </span>
+                  <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis(null, axisSpec)">✖</span>
+                </div>
+                <ul style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 6px 12px rgba(0,0,0,.175);" role="menu">
+                  <li ng-click="aggregatorChanged(null, axisSpec, 'sum')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">sum</a></li>
+                  <li ng-click="aggregatorChanged(null, axisSpec, 'count')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">count</a></li>
+                  <li ng-click="aggregatorChanged(null, axisSpec, 'avg')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">avg</a></li>
+                  <li ng-click="aggregatorChanged(null, axisSpec, 'min')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">min</a></li>
+                  <li ng-click="aggregatorChanged(null, axisSpec, 'max')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">max</a></li>
+                </ul>
+              </div>
+
+            </li>
+          </ul>
+
+          <!-- axis box: in case of multiple dimensions -->
+          <ul data-drop="true"
+              ng-if="!isSingleDimensionAxis(axisSpec)"
+              ng-model="config.axis[config.chart.current][axisSpec.name]"
+              jqyoui-droppable="{multiple: true, onDrop:'axisChanged(axisSpec)'}"
+              style="padding-left: 0; list-style: none; height: 108px; border-radius: 6px; margin-top: 7px; overflow: auto !important; border: 1px dashed #ccc; background-color: #f9f9f9;">
+
+            <span ng-repeat="col in config.axis[config.chart.current][axisSpec.name]">
+
+              <!-- in case of axis is multiple dimensions and not aggregator -->
+              <span ng-if="!isAggregatorAxis(axisSpec)"
+                    style="display: inline-block; padding: 1px 5px; margin: 2px 0px 0px 2px; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;">
+                {{col.name}}
+                <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis($index, axisSpec)">✖</span>
+              </span>
+
+              <!-- in case of axis is multiple dimension and aggregator -->
+              <span style="position: relative; display: inline-block; vertical-align: middle;">
+                <span ng-if="isAggregatorAxis(axisSpec)"
+                      style="display: inline-block; padding: 1px 5px; margin: 2px 0px 0px 2px; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;"
+                      type="button" data-toggle="dropdown">
+                  {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
+                  <span style="color:#717171; margin: 0px;">
+                    <span style="font-weight: 500; text-transform: uppercase; margin: 0px;">{{col.aggr}}</span>
+                  </span>
+                  <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis($index, axisSpec)">✖</span>
+                </span>
+                <ul style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 6px 12px rgba(0,0,0,.175);" role="menu">
+                  <li ng-click="aggregatorChanged($index, axisSpec, 'sum')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">sum</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec, 'count')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">count</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec, 'avg')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">avg</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec, 'min')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">min</a></li>
+                  <li ng-click="aggregatorChanged($index, axisSpec, 'max')" style="list-style: none;"><a style="display: block; padding: 3px 20px; clear: both; font-weight: normal; line-height: 1.42857143; color: #333; white-space: nowrap; text-decoration: none;">max</a></li>
+                </ul>
+              </span>
+
+            </span>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+    <!-- Clear floats after axis configuration -->
+    <div style="clear: both;"></div>
+  </div>
+
+</div>
+
+<!-- panel: parameter information -->
+<div style="background-color: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.05); margin-bottom: 20px;">
+
+  <div style="color: #333; background-color: #f5f5f5; border-color: #ddd; border-bottom: 1px solid transparent; border-top-left-radius: 3px; border-top-right-radius: 3px; padding: 6px 12px 6px 12px; font-size: 13px;">
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px;">Parameters</span>
+    <span style="float: right;">
+      <div style="position: relative; display: inline-block; vertical-align: middle;" role="group" aria-label="...">
+        <div type="button" ng-click="parameterChanged()"
+             ng-if="config.panel.parameterPanelOpened"
+             style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+          💾
+        </div>
+        <div type="button" ng-click="resetParameterConfig()"
+             ng-if="config.panel.parameterPanelOpened"
+             style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+          🗑️
+        </div>
+        <div type="button" ng-if="config.panel.parameterPanelOpened"
+             ng-click="toggleParameterPanel()"
+             style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+          ➖
+        </div>
+        <div type="button" ng-if="!config.panel.parameterPanelOpened"
+             ng-click="toggleParameterPanel()"
+             style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 14px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;">
+          ⛶
+        </div>
+      </div>
+    </span>
+    <div style="clear: both;"></div> <!-- to fix previous span which has float: right -->
+  </div>
+  <div ng-if="config.panel.parameterPanelOpened"
+       style="padding-top: 13px; padding-bottom: 13px; height: 400px; overflow: auto; padding-left: 15px; padding-right: 15px;">
+    <table style="width: 100%; max-width: 100%; margin-bottom: 20px; background-color: transparent;">
+      <thead>
+        <tr>
+          <th style="padding: 8px; line-height: 1.42857143; vertical-align: bottom; border-bottom: 2px solid #ddd; font-size: 12px; font-style: italic">Name</th>
+          <th style="padding: 8px; line-height: 1.42857143; vertical-align: bottom; border-bottom: 2px solid #ddd; font-size: 12px; font-style: italic">Type</th>
+          <th style="padding: 8px; line-height: 1.42857143; vertical-align: bottom; border-bottom: 2px solid #ddd; font-size: 12px; font-style: italic">Description</th>
+          <th style="padding: 8px; line-height: 1.42857143; vertical-align: bottom; border-bottom: 2px solid #ddd; font-size: 12px; font-style: italic">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-ng-repeat="paramSpec in config.paramSpecs[config.chart.current]" ng-class="{even: $even, odd: $odd}">
+          <td style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: 400; vertical-align: middle;">{{paramSpec.name}}</td>
+          <td style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: 400; vertical-align: middle;">{{paramSpec.valueType}}</td>
+          <td ng-bind-html="paramSpec.description"
+            style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: 400; vertical-align: middle;"></td>
+          <td style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd;">
+            <div ng-if="isInputWidget(paramSpec)"
+                 style="position: relative; display: table; border-collapse: separate;">
+              <input type="text"
+                     style="display: block; width: 100%; height: 30px; padding: 5px 10px; font-size: 12px; line-height: 1.5; color: #555; background-color: #fff; background-image: none; border: 1px solid #ccc; border-radius: 3px; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); font-weight: 400; font-size: 12px; vertical-align:middle; border-radius: 5px;"
+                     ng-keydown="parameterOnKeyDown($event, paramSpec)"
+                     data-ng-model="config.parameter[config.chart.current][paramSpec.name]" />
+            </div>
+            <div ng-if="isOptionWidget(paramSpec)"
+                 style="position: relative; display: inline-block; vertical-align: middle;">
+              <select style="display: block; width: 100%; height: 30px; padding: 5px 10px; font-size: 12px; line-height: 1.5; color: #555; background-color: #fff; background-image: none; border: 1px solid #ccc; border-radius: 3px; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); font-weight: 400; font-size: 12px;"
+                      ng-keydown="parameterOnKeyDown($event, paramSpec)"
+                      ng-change="parameterChanged(paramSpec)"
+                      data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
+                      data-ng-options="optionValue for optionValue in paramSpec.optionValues">
+              </select>
+            </div>
+
+            <div ng-if="isCheckboxWidget(paramSpec)">
+              <input type="checkbox"
+                     ng-keydown="parameterOnKeyDown($event, paramSpec)"
+                     ng-click="parameterChanged(paramSpec)"
+                     data-ng-model="config.parameter[config.chart.current][paramSpec.name]"
+                     data-ng-checked="config.parameter[config.chart.current][paramSpec.name]" />
+            </div>
+
+            <div ng-if="isTextareaWidget(paramSpec)">
+              <textarea rows="3"
+                        style="display: block; width: 100%; padding: 6px 12px; font-size: 14px; line-height: 1.42857143; color: #555; background-color: #fff; background-image: none; border: 1px solid #ccc; border-radius: 4px; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); height: auto; font-weight: 400; font-size: 12px;"
+                        ng-keydown="parameterOnKeyDown($event, paramSpec)"
+                        data-ng-model="config.parameter[config.chart.current][paramSpec.name]">
+              </textarea>
+            </div>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div> 
