@@ -54,12 +54,14 @@
   <!-- Transformation setting container for classic visualizations -->
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
     [id]="'trsetting' + id + '_' + config?.graph.mode"
     class="transformation-setting"
   ></div>
   <!-- Visualization setting container for classic visualizations -->
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
     [id]="'vizsetting' + id + '_' + config?.graph.mode"
     class="visualization-setting"
   ></div>
