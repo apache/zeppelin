@@ -51,6 +51,18 @@
     <zeppelin-resize-handle></zeppelin-resize-handle>
   </nz-resize-handle>
   <ng-template cdkPortalOutlet></ng-template>
+  <!-- Transformation setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [id]="'trsetting' + id + '_' + config?.graph.mode"
+    class="transformation-setting"
+  ></div>
+  <!-- Visualization setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [id]="'vizsetting' + id + '_' + config?.graph.mode"
+    class="visualization-setting"
+  ></div>
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
     [id]="'p' + id + '_' + config?.graph.mode"
