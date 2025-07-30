@@ -101,6 +101,7 @@
         [id]="paragraph.id"
         [currentCol]="paragraph.config.colWidth"
         [config]="configs[i]"
+        [isPending]="paragraph.status === 'PENDING'"
         (sizeChange)="onSizeChange($event)"
         (configChange)="onConfigChange($event, i)"
         [result]="result"
