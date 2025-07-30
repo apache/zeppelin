@@ -1086,6 +1086,10 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE("zeppelin.scheduler.threadpool.size", 100),
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
+    ZEPPELIN_OWNER_ROLES("zeppelin.notebook.default.owners", ""),
+    ZEPPELIN_WRITER_ROLES("zeppelin.notebook.default.writers", ""),
+    ZEPPELIN_READER_ROLES("zeppelin.notebook.default.readers", ""),
+    ZEPPELIN_RUNNER_ROLES("zeppelin.notebook.default.runners", ""),
 
     ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | Docker
 
