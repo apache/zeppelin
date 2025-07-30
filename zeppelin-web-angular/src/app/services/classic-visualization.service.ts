@@ -26,6 +26,8 @@ interface ClassicVisualizationInstance {
   targetEl: HTMLElement;
   scope: angular.IScope;
   appName: string;
+  // tslint:disable-next-line:no-any
+  injector: any;
 }
 
 @Injectable({
@@ -188,6 +190,18 @@ export class ClassicVisualizationService {
     return fallbackElement;
   }
 
+  // tslint:disable-next-line:no-any
+  private waitForTransformationScopeAndApply(transformation: any, timeout: any): void {
+    const waitForTransformationScope = () => {
+      if (transformation._scope) {
+        transformation._scope.$apply();
+      } else {
+        timeout(waitForTransformationScope, 10);
+      }
+    };
+    timeout(waitForTransformationScope, 0);
+  }
+
   createClassicVisualization(
     // tslint:disable-next-line:no-any
     visualizationClass: any,
@@ -257,9 +271,10 @@ export class ClassicVisualizationService {
               const transformed = transformation.transform(classicTableData);
 
               // Render transformation setting
-              if (transformationSettingEl && typeof transformation.renderSetting === 'function') {
-                transformation.renderSetting(angular.element(transformationSettingEl));
-              }
+              transformation.renderSetting(angular.element(transformationSettingEl));
+
+              // Wait for transformation rendering to complete (including async template loading)
+              this.waitForTransformationScopeAndApply(transformation, timeout);
 
               // Render the visualization
               vizInstance.render(transformed);
@@ -269,21 +284,18 @@ export class ClassicVisualizationService {
             }
 
             // Render visualization setting
-            if (visualizationSettingEl && typeof vizInstance.renderSetting === 'function') {
-              vizInstance.renderSetting(angular.element(visualizationSettingEl));
-            }
+            vizInstance.renderSetting(angular.element(visualizationSettingEl));
 
             // Activate the visualization
-            if (typeof vizInstance.activate === 'function') {
-              vizInstance.activate();
-            }
+            vizInstance.activate();
 
             // Store the instance for cleanup later
             this.activeInstances.set(targetElementId, {
               instance: vizInstance,
               targetEl: targetElement,
               scope,
-              appName
+              appName,
+              injector
             });
 
             resolve(vizInstance);
@@ -327,6 +339,11 @@ export class ClassicVisualizationService {
         // Re-render transformation setting
         if (transformationSettingEl && typeof transformation.renderSetting === 'function') {
           transformation.renderSetting(angular.element(transformationSettingEl));
+
+          // Wait for transformation rendering to complete (including async template loading)
+          const { injector } = instanceData;
+          const timeout = injector.get('$timeout');
+          this.waitForTransformationScopeAndApply(transformation, timeout);
         }
 
         instance.render(transformed);
