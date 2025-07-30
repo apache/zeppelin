@@ -79,6 +79,9 @@
               "includePaths": ["src/styles/theme", "src/styles/theme/dark", "src/styles/theme/light"]
             },
             "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/jquery-ui/dist/jquery-ui.js",
+              "node_modules/d3/d3.js",
               "node_modules/mathjax/MathJax.js",
               "node_modules/systemjs/dist/s.js",
               "node_modules/systemjs/dist/extras/amd.js",
