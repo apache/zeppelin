@@ -113,7 +113,10 @@
             jqyoui-droppable="{onDrop:'axisChanged(axisSpec)'}"
             style="padding-left: 0; list-style: none; height:36px; border-radius: 6px; margin-top: 7px; overflow: visible !important; border: 1px dashed #ccc; background-color: #f9f9f9;"
           >
-            <li ng-if="config.axis[config.chart.current][axisSpec.name]" style="list-style: none;">
+            <li
+              ng-if="config.axis[config.chart.current][axisSpec.name]"
+              style="list-style: none; display: flex; align-items: center; padding-left: 8px; height: 100%;"
+            >
               <!-- in case of axis is single dimension and not aggregator -->
               <div
                 ng-if="!isAggregatorAxis(axisSpec)"
