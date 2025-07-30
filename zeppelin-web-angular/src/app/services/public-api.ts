@@ -13,6 +13,7 @@
 export * from './angular-drag-drop.service';
 export * from './array-ordering.service';
 export * from './base-url.service';
+export * from './classic-visualization.service';
 export * from './completion.service';
 export * from './configuration.service';
 export * from './credential.service';
