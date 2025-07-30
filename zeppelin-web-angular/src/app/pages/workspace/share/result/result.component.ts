@@ -52,6 +52,7 @@ import { TableVisualization } from '@zeppelin/visualizations/table/table-visuali
 
 import { default as AnsiUp } from 'ansi_up';
 import * as hljs from 'highlight.js';
+import { cloneDeep, isEqual } from 'lodash';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -69,6 +70,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @Input() id: string;
   @Input() published = false;
   @Input() currentCol = 12;
+  @Input() isPending: boolean;
   @Output() readonly configChange = new EventEmitter<ParagraphConfigResult>();
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
   @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet: CdkPortalOutlet;
@@ -370,17 +372,16 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       if (visualizationItem.isClassic) {
         // Classic visualization - delegate to ClassicVisualizationService
         const targetElementId = `p${this.id}_${this.config.graph.mode}`;
-        const emitter = config => {
-          this.config.graph = config;
+        const emitter = configForMode => {
+          this.commitClassicVizConfigChange(configForMode, this.config.graph.mode);
           this.renderGraph();
-          this.configChange.emit({ graph: config });
         };
 
         this.classicVisualizationService
           .createClassicVisualization(
             visualizationItem.Class,
             targetElementId,
-            this.config.graph,
+            this.getClassicVizConfig(this.config.graph.mode),
             this.tableData,
             emitter
           )
@@ -508,5 +509,61 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.classicVisualizationService.destroyAllInstances();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private getClassicVizConfig(mode: string) {
+    const graph = this.config.graph;
+    const configForMode = graph?.setting?.[mode] ? cloneDeep(graph.setting[mode]) : {};
+
+    // copy common setting
+    configForMode.common = cloneDeep(graph.commonSetting) || {};
+
+    // copy pivot setting
+    if (graph.keys) {
+      configForMode.common.pivot = {
+        keys: cloneDeep(graph.keys),
+        groups: cloneDeep(graph.groups),
+        values: cloneDeep(graph.values)
+      };
+    }
+
+    return configForMode;
+  }
+
+  // tslint:disable-next-line:no-any
+  private commitClassicVizConfigChange(configForMode: any, mode: string) {
+    if (this.isPending) {
+      return;
+    }
+
+    // tslint:disable-next-line:no-any
+    const newConfigGraph: any = cloneDeep(this.config.graph) || {};
+
+    // copy setting for mode
+    if (!newConfigGraph.setting) {
+      newConfigGraph.setting = {};
+    }
+    newConfigGraph.setting[mode] = cloneDeep(configForMode);
+
+    // copy common setting
+    if (newConfigGraph.setting[mode]) {
+      newConfigGraph.commonSetting = newConfigGraph.setting[mode].common;
+      delete newConfigGraph.setting[mode].common;
+    }
+    // copy pivot setting
+    if (newConfigGraph.commonSetting?.pivot) {
+      newConfigGraph.keys = newConfigGraph.commonSetting.pivot.keys;
+      newConfigGraph.groups = newConfigGraph.commonSetting.pivot.groups;
+      newConfigGraph.values = newConfigGraph.commonSetting.pivot.values;
+      delete newConfigGraph.commonSetting.pivot;
+    }
+
+    // don't send commitParagraphResult when config is the same.
+    // see https://issues.apache.org/jira/browse/ZEPPELIN-4280.
+    if (isEqual(this.config.graph, newConfigGraph)) {
+      return;
+    }
+
+    this.configChange.emit({ graph: newConfigGraph });
   }
 }
