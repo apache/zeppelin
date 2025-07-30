@@ -14,7 +14,7 @@
           ng-if="config.panel.columnPanelOpened"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          🗑️
+          <i class="fa fa-trash-o" aria-hidden="true"></i>
         </div>
         <div
           type="button"
@@ -22,7 +22,7 @@
           ng-click="toggleColumnPanel()"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          ➖
+          <i class="fa fa-minus" aria-hidden="true"></i>
         </div>
         <div
           type="button"
@@ -30,7 +30,7 @@
           ng-click="toggleColumnPanel()"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          ⛶
+          <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
       </div>
     </span>
@@ -123,7 +123,11 @@
                 style="display: inline-block; padding: 1px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;"
               >
                 {{ getSingleDimensionAxis(axisSpec).name }}
-                <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis(null, axisSpec)">✖</span>
+                <span
+                  class="fa fa-close"
+                  style="cursor: pointer; margin-left: 5px;"
+                  ng-click="removeFromAxis(null, axisSpec)"
+                ></span>
               </div>
 
               <!-- in case of axis is single dimension and aggregator -->
@@ -141,7 +145,11 @@
                       {{getSingleDimensionAxis(axisSpec).aggr}}
                     </span>
                   </span>
-                  <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis(null, axisSpec)">✖</span>
+                  <span
+                    class="fa fa-close"
+                    style="cursor: pointer; margin-left: 5px;"
+                    ng-click="removeFromAxis(null, axisSpec)"
+                  ></span>
                 </div>
                 <ul
                   style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 6px 12px rgba(0,0,0,.175);"
@@ -202,7 +210,11 @@
                 style="display: inline-block; padding: 1px 5px; margin: 2px 0px 0px 2px; font-size: 12px; font-weight: normal; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; color: #333; background-color: #EFEFEF; text-decoration: none;"
               >
                 {{col.name}}
-                <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis($index, axisSpec)">✖</span>
+                <span
+                  class="fa fa-close"
+                  style="cursor: pointer; margin-left: 5px;"
+                  ng-click="removeFromAxis($index, axisSpec)"
+                ></span>
               </span>
 
               <!-- in case of axis is multiple dimension and aggregator -->
@@ -217,7 +229,11 @@
                   <span style="color:#717171; margin: 0px;">
                     <span style="font-weight: 500; text-transform: uppercase; margin: 0px;">{{col.aggr}}</span>
                   </span>
-                  <span style="cursor: pointer; margin-left: 5px;" ng-click="removeFromAxis($index, axisSpec)">✖</span>
+                  <span
+                    class="fa fa-close"
+                    style="cursor: pointer; margin-left: 5px;"
+                    ng-click="removeFromAxis($index, axisSpec)"
+                  ></span>
                 </span>
                 <ul
                   style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 6px 12px rgba(0,0,0,.175);"
@@ -286,7 +302,7 @@
           ng-if="config.panel.parameterPanelOpened"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          💾
+          <i class="fa fa-floppy-o" aria-hidden="true"></i>
         </div>
         <div
           type="button"
@@ -294,7 +310,7 @@
           ng-if="config.panel.parameterPanelOpened"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          🗑️
+          <i class="fa fa-trash-o" aria-hidden="true"></i>
         </div>
         <div
           type="button"
@@ -302,7 +318,7 @@
           ng-click="toggleParameterPanel()"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          ➖
+          <i class="fa fa-minus" aria-hidden="true"></i>
         </div>
         <div
           type="button"
@@ -310,7 +326,7 @@
           ng-click="toggleParameterPanel()"
           style="display: inline-block; padding: 2px 5px 2px 5px; margin-bottom: 0; font-size: 12px; font-weight: normal; line-height: 1.42857143; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; color: #333; background-color: #fff; text-decoration: none;"
         >
-          ⛶
+          <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
       </div>
     </span>
