@@ -132,64 +132,6 @@ export class ClassicVisualizationService {
     return element;
   }
 
-  private getOrCreateTransformationSettingElement(targetElementId: string): HTMLElement {
-    const existingElement = this.getTransformationSettingElement(targetElementId);
-    if (existingElement) {
-      return existingElement;
-    }
-    console.log('getOrCreateTransformationSettingElement not found', targetElementId);
-
-    // Create the element if it doesn't exist
-    const baseId = targetElementId.replace(/^p/, '');
-    const trSettingId = `trsetting${baseId}`;
-    const targetElement = document.getElementById(targetElementId);
-
-    if (targetElement) {
-      const settingElement = document.createElement('div');
-      settingElement.id = trSettingId;
-      settingElement.className = 'transformation-setting';
-      targetElement.appendChild(settingElement);
-      console.log(`Created transformation setting element: ${trSettingId}`, settingElement);
-      return settingElement;
-    }
-
-    // Fallback: create a detached element
-    const fallbackElement = document.createElement('div');
-    fallbackElement.id = trSettingId;
-    fallbackElement.className = 'transformation-setting';
-    console.log(`Created detached transformation setting element: ${trSettingId}`, fallbackElement);
-    return fallbackElement;
-  }
-
-  private getOrCreateVisualizationSettingElement(targetElementId: string): HTMLElement {
-    const existingElement = this.getVisualizationSettingElement(targetElementId);
-    if (existingElement) {
-      return existingElement;
-    }
-    console.log('getOrCreateVisualizationSettingElement not found', targetElementId);
-
-    // Create the element if it doesn't exist
-    const baseId = targetElementId.replace(/^p/, '');
-    const vizSettingId = `vizsetting${baseId}`;
-    const targetElement = document.getElementById(targetElementId);
-
-    if (targetElement) {
-      const settingElement = document.createElement('div');
-      settingElement.id = vizSettingId;
-      settingElement.className = 'visualization-setting';
-      targetElement.appendChild(settingElement);
-      console.log(`Created visualization setting element: ${vizSettingId}`, settingElement);
-      return settingElement;
-    }
-
-    // Fallback: create a detached element
-    const fallbackElement = document.createElement('div');
-    fallbackElement.id = vizSettingId;
-    fallbackElement.className = 'visualization-setting';
-    console.log(`Created detached visualization setting element: ${vizSettingId}`, fallbackElement);
-    return fallbackElement;
-  }
-
   // tslint:disable-next-line:no-any
   private waitForTransformationScopeAndApply(transformation: any, timeout: any): void {
     const waitForTransformationScope = () => {
@@ -253,8 +195,8 @@ export class ClassicVisualizationService {
     vizInstance._templateRequest = templateRequest;
 
     // Get or create setting elements
-    const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
-    const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
+    const transformationSettingEl = this.getTransformationSettingElement(targetElementId);
+    const visualizationSettingEl = this.getVisualizationSettingElement(targetElementId);
 
     // Setup transformation if available
     const transformation = vizInstance.getTransformation();
@@ -312,8 +254,8 @@ export class ClassicVisualizationService {
       const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
 
       // Get or create setting elements
-      const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
-      const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
+      const transformationSettingEl = this.getTransformationSettingElement(targetElementId);
+      const visualizationSettingEl = this.getVisualizationSettingElement(targetElementId);
 
       instance.setConfig(config);
 
