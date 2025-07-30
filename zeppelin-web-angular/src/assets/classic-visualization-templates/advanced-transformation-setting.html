@@ -359,9 +359,10 @@
             {{paramSpec.valueType}}
           </td>
           <td
-            ng-bind-html="paramSpec.description"
             style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: 400; vertical-align: middle;"
-          ></td>
+          >
+            {{paramSpec.description}}
+          </td>
           <td style="padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd;">
             <div
               ng-if="isInputWidget(paramSpec)"
