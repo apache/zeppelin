@@ -202,7 +202,7 @@ export class ClassicVisualizationService {
     timeout(waitForTransformationScope, 0);
   }
 
-  createClassicVisualization(
+  async createClassicVisualization(
     // tslint:disable-next-line:no-any
     visualizationClass: any,
     targetElementId: string,
@@ -212,101 +212,91 @@ export class ClassicVisualizationService {
     emitter: (config: any) => void
     // tslint:disable-next-line:no-any
   ): Promise<any> {
-    return new Promise((resolve, reject) => {
-      // Wait for DOM element to be available
-      this.waitForElement(targetElementId)
-        .then(targetElement => {
-          try {
-            // Clean up any existing instance for this element
-            this.destroyInstance(targetElementId);
+    // Wait for DOM element to be available
+    const targetElement = await this.waitForElement(targetElementId);
 
-            // Create unique app name
-            const appName = `classicVizApp_${this.appCounter++}`;
+    // Clean up any existing instance for this element
+    this.destroyInstance(targetElementId);
 
-            // Create AngularJS module
-            const module = angular.module(appName, []);
+    // Create unique app name
+    const appName = `classicVizApp_${this.appCounter++}`;
 
-            // Create AngularJS app and bootstrap
-            const injector = angular.bootstrap(targetElement, [appName]);
-            const rootScope = injector.get('$rootScope');
-            const compile = injector.get('$compile');
-            const originalTemplateRequest = injector.get('$templateRequest');
+    // Create AngularJS module
+    const module = angular.module(appName, []);
 
-            // Create custom templateRequest that intercepts known template paths
-            const templateRequest = this.createCustomTemplateRequest(originalTemplateRequest);
-            const timeout = injector.get('$timeout');
+    // Create AngularJS app and bootstrap
+    const injector = angular.bootstrap(targetElement, [appName]);
+    const rootScope = injector.get('$rootScope');
+    const compile = injector.get('$compile');
+    const originalTemplateRequest = injector.get('$templateRequest');
 
-            // Create scope for this visualization
-            const scope = rootScope.$new(true);
+    // Create custom templateRequest that intercepts known template paths
+    const templateRequest = this.createCustomTemplateRequest(originalTemplateRequest);
+    const timeout = injector.get('$timeout');
 
-            // Create angular element wrapper
-            const angularElement = angular.element(targetElement);
+    // Create scope for this visualization
+    const scope = rootScope.$new(true);
 
-            // Convert modern TableData to classic format
-            const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
+    // Create angular element wrapper
+    const angularElement = angular.element(targetElement);
 
-            // Instantiate the classic visualization
-            const vizInstance = new visualizationClass(angularElement, config);
+    // Convert modern TableData to classic format
+    const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
 
-            // Inject AngularJS dependencies that classic visualizations expect
-            vizInstance._emitter = emitter;
-            vizInstance._compile = compile;
-            vizInstance._createNewScope = () => rootScope.$new(true);
-            vizInstance._templateRequest = templateRequest;
+    // Instantiate the classic visualization
+    const vizInstance = new visualizationClass(angularElement, config);
 
-            // Get or create setting elements
-            const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
-            const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
+    // Inject AngularJS dependencies that classic visualizations expect
+    vizInstance._emitter = emitter;
+    vizInstance._compile = compile;
+    vizInstance._createNewScope = () => rootScope.$new(true);
+    vizInstance._templateRequest = templateRequest;
 
-            // Setup transformation if available
-            const transformation = vizInstance.getTransformation();
-            if (transformation) {
-              transformation._emitter = emitter;
-              transformation._templateRequest = templateRequest;
-              transformation._compile = compile;
-              transformation._createNewScope = () => rootScope.$new(true);
+    // Get or create setting elements
+    const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
+    const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
 
-              // Set config and transform data
-              transformation.setConfig(config);
-              const transformed = transformation.transform(classicTableData);
+    // Setup transformation if available
+    const transformation = vizInstance.getTransformation();
+    if (transformation) {
+      transformation._emitter = emitter;
+      transformation._templateRequest = templateRequest;
+      transformation._compile = compile;
+      transformation._createNewScope = () => rootScope.$new(true);
 
-              // Render transformation setting
-              transformation.renderSetting(angular.element(transformationSettingEl));
+      // Set config and transform data
+      transformation.setConfig(config);
+      const transformed = transformation.transform(classicTableData);
 
-              // Wait for transformation rendering to complete (including async template loading)
-              this.waitForTransformationScopeAndApply(transformation, timeout);
+      // Render transformation setting
+      transformation.renderSetting(angular.element(transformationSettingEl));
 
-              // Render the visualization
-              vizInstance.render(transformed);
-            } else {
-              // If no transformation, render directly
-              vizInstance.render(classicTableData);
-            }
+      // Wait for transformation rendering to complete (including async template loading)
+      this.waitForTransformationScopeAndApply(transformation, timeout);
 
-            // Render visualization setting
-            vizInstance.renderSetting(angular.element(visualizationSettingEl));
+      // Render the visualization
+      vizInstance.render(transformed);
+    } else {
+      // If no transformation, render directly
+      vizInstance.render(classicTableData);
+    }
 
-            // Activate the visualization
-            vizInstance.activate();
+    // Render visualization setting
+    vizInstance.renderSetting(angular.element(visualizationSettingEl));
 
-            // Store the instance for cleanup later
-            this.activeInstances.set(targetElementId, {
-              instance: vizInstance,
-              targetEl: targetElement,
-              scope,
-              appName,
-              injector
-            });
+    // Activate the visualization
+    vizInstance.activate();
 
-            resolve(vizInstance);
-          } catch (error) {
-            reject(error);
-          }
-        })
-        .catch(error => {
-          reject(error);
-        });
+    // Store the instance for cleanup later
+    this.activeInstances.set(targetElementId, {
+      instance: vizInstance,
+      targetEl: targetElement,
+      scope,
+      appName,
+      injector
     });
+
+    return vizInstance;
   }
 
   updateClassicVisualization(targetElementId: string, config: GraphConfig, tableData: TableData): void {
