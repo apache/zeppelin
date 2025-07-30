@@ -325,10 +325,7 @@ export class ClassicVisualizationService {
       const transformationSettingEl = this.getOrCreateTransformationSettingElement(targetElementId);
       const visualizationSettingEl = this.getOrCreateVisualizationSettingElement(targetElementId);
 
-      // Update config if available
-      if (typeof instance.setConfig === 'function') {
-        instance.setConfig(config);
-      }
+      instance.setConfig(config);
 
       // Update transformation and re-render
       const transformation = instance.getTransformation();
@@ -337,14 +334,12 @@ export class ClassicVisualizationService {
         const transformed = transformation.transform(classicTableData);
 
         // Re-render transformation setting
-        if (transformationSettingEl && typeof transformation.renderSetting === 'function') {
-          transformation.renderSetting(angular.element(transformationSettingEl));
+        transformation.renderSetting(angular.element(transformationSettingEl));
 
-          // Wait for transformation rendering to complete (including async template loading)
-          const { injector } = instanceData;
-          const timeout = injector.get('$timeout');
-          this.waitForTransformationScopeAndApply(transformation, timeout);
-        }
+        // Wait for transformation rendering to complete (including async template loading)
+        const { injector } = instanceData;
+        const timeout = injector.get('$timeout');
+        this.waitForTransformationScopeAndApply(transformation, timeout);
 
         instance.render(transformed);
       } else {
@@ -352,14 +347,10 @@ export class ClassicVisualizationService {
       }
 
       // Re-render visualization setting
-      if (visualizationSettingEl && typeof instance.renderSetting === 'function') {
-        instance.renderSetting(angular.element(visualizationSettingEl));
-      }
+      instance.renderSetting(angular.element(visualizationSettingEl));
 
       // Refresh if available
-      if (typeof instance.refresh === 'function') {
-        instance.refresh();
-      }
+      instance.refresh();
     } catch (error) {
       console.error('Error updating classic visualization:', error);
     }
@@ -374,13 +365,9 @@ export class ClassicVisualizationService {
     const { instance } = instanceData;
 
     try {
-      if (typeof instance.setConfig === 'function') {
-        instance.setConfig(config);
-      }
+      instance.setConfig(config);
 
-      if (typeof instance.refresh === 'function') {
-        instance.refresh();
-      }
+      instance.refresh();
     } catch (error) {
       console.error('Error setting classic visualization config:', error);
     }
@@ -395,9 +382,7 @@ export class ClassicVisualizationService {
     const { instance } = instanceData;
 
     try {
-      if (typeof instance.resize === 'function') {
-        instance.resize();
-      }
+      instance.resize();
     } catch (error) {
       console.error('Error resizing classic visualization:', error);
     }
@@ -413,19 +398,13 @@ export class ClassicVisualizationService {
 
     try {
       // Destroy the visualization instance
-      if (typeof instance.destroy === 'function') {
-        instance.destroy();
-      }
+      instance.destroy();
 
       // Destroy the scope
-      if (scope && typeof scope.$destroy === 'function') {
-        scope.$destroy();
-      }
+      scope.$destroy();
 
       // Clean up the DOM element
-      if (targetEl) {
-        angular.element(targetEl).empty();
-      }
+      angular.element(targetEl).empty();
 
       this.activeInstances.delete(targetElementId);
     } catch (error) {
