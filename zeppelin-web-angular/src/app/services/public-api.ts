@@ -31,3 +31,4 @@ export * from './configuration.service';
 export * from './credential.service';
 export * from './notebook-repos.service';
 export * from './angular-drag-drop.service';
+export * from './classic-visualization.service';
