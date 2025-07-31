@@ -17,6 +17,7 @@ import { TableData } from '@zeppelin/visualization';
 import * as angular from 'angular';
 
 import { AngularDragDropService } from './angular-drag-drop.service';
+import { BootstrapCompatibilityService } from './bootstrap-compatibility.service';
 import { TableDataAdapterService } from './table-data-adapter.service';
 
 interface ClassicVisualizationInstance {
@@ -43,7 +44,8 @@ export class ClassicVisualizationService {
     private injector: Injector,
     private tableDataAdapter: TableDataAdapterService,
     private http: HttpClient,
-    private angularDragDropService: AngularDragDropService
+    private angularDragDropService: AngularDragDropService,
+    private bootstrapCompatibilityService: BootstrapCompatibilityService
   ) {}
 
   // Map of template URLs to asset file paths
@@ -51,6 +53,10 @@ export class ClassicVisualizationService {
     [
       'app/tabledata/advanced-transformation-setting.html',
       'assets/classic-visualization-templates/advanced-transformation-setting.html'
+    ],
+    [
+      'app/tabledata/columnselector_settings.html',
+      'assets/classic-visualization-templates/columnselector_settings.html'
     ]
   ]);
 
@@ -154,23 +160,17 @@ export class ClassicVisualizationService {
     emitter: (config: any) => void
     // tslint:disable-next-line:no-any
   ): Promise<any> {
+    // Inject Bootstrap compatibility styles before creating visualization
+    this.bootstrapCompatibilityService.injectBootstrapStyles();
+
     // Wait for DOM element to be available
     const targetElement = await this.waitForElement(targetElementId);
 
     // Clean up any existing instance for this element
     this.destroyInstance(targetElementId);
 
-    // Create unique app name
-    const appName = `classicVizApp_${this.appCounter++}`;
+    const { injector, appName } = this.getOrCreateInjector(targetElement);
 
-    // Create AngularJS module
-    const module = angular.module(appName, []);
-
-    // Add custom drag and drop directives
-    this.angularDragDropService.addDragDropDirectives(module);
-
-    // Create AngularJS app and bootstrap
-    const injector = angular.bootstrap(targetElement, [appName]);
     const rootScope = injector.get('$rootScope');
     const compile = injector.get('$compile');
     const originalTemplateRequest = injector.get('$templateRequest');
@@ -242,6 +242,41 @@ export class ClassicVisualizationService {
     });
 
     return vizInstance;
+  }
+
+  // tslint:disable-next-line:no-any
+  private getOrCreateInjector(targetElement: HTMLElement): { injector: any; appName: string } {
+    // Check if element is already bootstrapped
+    const existingInjector = angular.element(targetElement).injector();
+
+    if (existingInjector) {
+      // Reuse existing bootstrap
+      console.log('Reusing existing AngularJS bootstrap for element:', targetElement.id);
+      return {
+        injector: existingInjector,
+        appName: 'existingApp' // We don't need the actual name for reuse
+      };
+    } else {
+      // Create new bootstrap
+      console.log('Creating new AngularJS bootstrap for element:', targetElement.id);
+
+      // Create unique app name
+      const appName = `classicVizApp_${this.appCounter++}`;
+
+      // Create AngularJS module
+      const module = angular.module(appName, []);
+
+      // Add custom drag and drop directives
+      this.angularDragDropService.addDragDropDirectives(module);
+
+      // Create AngularJS app and bootstrap
+      const injector = angular.bootstrap(targetElement, [appName]);
+
+      return {
+        injector,
+        appName
+      };
+    }
   }
 
   updateClassicVisualization(targetElementId: string, config: GraphConfig, tableData: TableData): void {
@@ -323,7 +358,7 @@ export class ClassicVisualizationService {
     }
   }
 
-  destroyInstance(targetElementId: string): void {
+  destroyInstance(targetElementId: string, forceCleanBootstrap = false): void {
     const instanceData = this.activeInstances.get(targetElementId);
     if (!instanceData) {
       return;
@@ -338,8 +373,17 @@ export class ClassicVisualizationService {
       // Destroy the scope
       scope.$destroy();
 
-      // Clean up the DOM element
+      // Clean up the DOM content but preserve the element
       angular.element(targetEl).empty();
+
+      // If forceCleanBootstrap is true, completely remove AngularJS data
+      if (forceCleanBootstrap) {
+        console.log('Force cleaning AngularJS bootstrap data for', targetElementId);
+        // Remove all AngularJS data from the element
+        angular.element(targetEl).removeData();
+        // Remove all classes added by AngularJS
+        angular.element(targetEl).removeClass('ng-scope');
+      }
 
       this.activeInstances.delete(targetElementId);
     } catch (error) {
@@ -347,10 +391,10 @@ export class ClassicVisualizationService {
     }
   }
 
-  destroyAllInstances(): void {
+  destroyAllInstances(forceCleanBootstrap = false): void {
     const elementIds = Array.from(this.activeInstances.keys());
     elementIds.forEach(elementId => {
-      this.destroyInstance(elementId);
+      this.destroyInstance(elementId, forceCleanBootstrap);
     });
   }
 }
