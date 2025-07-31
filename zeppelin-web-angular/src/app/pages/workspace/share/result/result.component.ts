@@ -531,7 +531,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
 
   ngOnDestroy(): void {
     this.destroyVisualizations();
-    this.classicVisualizationService.destroyAllInstances();
+    this.classicVisualizationService.destroyAllInstances(true);
     this.destroy$.next();
     this.destroy$.complete();
   }
