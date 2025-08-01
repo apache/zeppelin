@@ -14,6 +14,7 @@
  */
 package org.apache.zeppelin.influxdb;
 
+import com.influxdb.query.FluxRecord;
 import java.util.Properties;
 import java.util.StringJoiner;
 import java.util.concurrent.CountDownLatch;
@@ -85,65 +86,75 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
 
     QueryApi queryService = getQueryApi();
 
-    final int[] actualIndex = {-1};
+    final int[] currentTableIndex = {-1};
 
     AtomicReference<InterpreterResult> resultRef = new AtomicReference<>();
     CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    StringBuilder result = new StringBuilder();
+    StringBuilder resultBuilder = new StringBuilder();
     queryService.query(
         query,
 
         //process record
-        (cancellable, fluxRecord) -> {
-
-          Integer tableIndex = fluxRecord.getTable();
-          if (actualIndex[0] != tableIndex) {
-            result.append(NEWLINE);
-            result.append(TABLE_MAGIC_TAG);
-            actualIndex[0] = tableIndex;
-
-            //add column names to table header
-            StringJoiner joiner = new StringJoiner(TAB);
-            fluxRecord.getValues().keySet().forEach(c -> joiner.add(replaceReservedChars(c)));
-            result.append(joiner.toString());
-            result.append(NEWLINE);
-          }
-
-          StringJoiner rowsJoiner = new StringJoiner(TAB);
-          for (Object value : fluxRecord.getValues().values()) {
-            if (value == null) {
-              value = EMPTY_COLUMN_VALUE;
-            }
-            rowsJoiner.add(replaceReservedChars(value.toString()));
-          }
-          result.append(rowsJoiner.toString());
-          result.append(NEWLINE);
-        },
-
-        throwable -> {
-
-          LOGGER.error(throwable.getMessage(), throwable);
-          resultRef.set(new InterpreterResult(InterpreterResult.Code.ERROR,
-              throwable.getMessage()));
-
-          countDownLatch.countDown();
-
-        }, () -> {
-          //on complete
-          InterpreterResult intpResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
-          intpResult.add(result.toString());
-          resultRef.set(intpResult);
-          countDownLatch.countDown();
-        }
+        (cancellable, fluxRecord) -> handleRecord(fluxRecord, currentTableIndex, resultBuilder),
+        throwable -> handleError(throwable, resultRef, countDownLatch),
+        () -> handleComplete(resultBuilder, resultRef, countDownLatch)
     );
+
+    awaitLatch(countDownLatch);
+
+    return resultRef.get();
+  }
+
+  private void handleRecord(FluxRecord fluxRecord, int[] currentTableIndex, StringBuilder resultBuilder) {
+    Integer tableIndex = fluxRecord.getTable();
+    if (currentTableIndex[0] != tableIndex) {
+      resultBuilder.append(NEWLINE);
+      resultBuilder.append(TABLE_MAGIC_TAG);
+      currentTableIndex[0] = tableIndex;
+
+      //add column names to table header
+      StringJoiner joiner = new StringJoiner(TAB);
+      fluxRecord.getValues().keySet().forEach(c -> joiner.add(replaceReservedChars(c)));
+      resultBuilder.append(joiner);
+      resultBuilder.append(NEWLINE);
+    }
+
+    StringJoiner rowsJoiner = new StringJoiner(TAB);
+    for (Object value : fluxRecord.getValues().values()) {
+      if (value == null) {
+        value = EMPTY_COLUMN_VALUE;
+      }
+      rowsJoiner.add(replaceReservedChars(value.toString()));
+    }
+    resultBuilder.append(rowsJoiner);
+    resultBuilder.append(NEWLINE);
+  }
+
+  private static void handleError(Throwable throwable, AtomicReference<InterpreterResult> resultRef,
+      CountDownLatch countDownLatch) {
+    LOGGER.error(throwable.getMessage(), throwable);
+    resultRef.set(new InterpreterResult(InterpreterResult.Code.ERROR,
+        throwable.getMessage()));
+
+    countDownLatch.countDown();
+  }
+
+  private static void handleComplete(StringBuilder resultBuilder,
+      AtomicReference<InterpreterResult> resultRef,
+      CountDownLatch countDownLatch) {
+    InterpreterResult intpResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    intpResult.add(resultBuilder.toString());
+    resultRef.set(intpResult);
+    countDownLatch.countDown();
+  }
+
+  private static void awaitLatch(CountDownLatch countDownLatch) throws InterpreterException {
     try {
       countDownLatch.await();
     } catch (InterruptedException e) {
       throw new InterpreterException(e);
     }
-
-    return resultRef.get();
   }
 
 
