@@ -16,7 +16,6 @@ package org.apache.zeppelin.influxdb;
 
 import com.influxdb.query.FluxRecord;
 import java.util.Properties;
-import java.util.StringJoiner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,6 +24,7 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.QueryApi;
+import java.util.stream.Collectors;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.ZeppelinContext;
 import org.slf4j.Logger;
@@ -106,29 +106,31 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
     return resultRef.get();
   }
 
-  private void handleRecord(FluxRecord fluxRecord, int[] currentTableIndex, StringBuilder resultBuilder) {
+  private void handleRecord(FluxRecord fluxRecord, int[] currentTableIndex,
+      StringBuilder resultBuilder) {
     Integer tableIndex = fluxRecord.getTable();
     if (currentTableIndex[0] != tableIndex) {
-      resultBuilder.append(NEWLINE);
-      resultBuilder.append(TABLE_MAGIC_TAG);
+      appendTableHeader(fluxRecord, resultBuilder);
       currentTableIndex[0] = tableIndex;
-
-      //add column names to table header
-      StringJoiner joiner = new StringJoiner(TAB);
-      fluxRecord.getValues().keySet().forEach(c -> joiner.add(replaceReservedChars(c)));
-      resultBuilder.append(joiner);
-      resultBuilder.append(NEWLINE);
     }
 
-    StringJoiner rowsJoiner = new StringJoiner(TAB);
-    for (Object value : fluxRecord.getValues().values()) {
-      if (value == null) {
-        value = EMPTY_COLUMN_VALUE;
-      }
-      rowsJoiner.add(replaceReservedChars(value.toString()));
-    }
-    resultBuilder.append(rowsJoiner);
-    resultBuilder.append(NEWLINE);
+    appendTableRow(fluxRecord, resultBuilder);
+  }
+
+  private void appendTableHeader(FluxRecord fluxRecord, StringBuilder resultBuilder) {
+    resultBuilder.append(NEWLINE).append(TABLE_MAGIC_TAG);
+    String headerLine = fluxRecord.getValues().keySet().stream()
+        .map(this::replaceReservedChars)
+        .collect(Collectors.joining(TAB));
+    resultBuilder.append(headerLine).append(NEWLINE);
+  }
+
+  private void appendTableRow(FluxRecord fluxRecord, StringBuilder resultBuilder) {
+    String rowLine = fluxRecord.getValues().values().stream()
+        .map(v -> v == null ? EMPTY_COLUMN_VALUE : v.toString())
+        .map(this::replaceReservedChars)
+        .collect(Collectors.joining(TAB));
+    resultBuilder.append(rowLine).append(NEWLINE);
   }
 
   private static void handleError(Throwable throwable, AtomicReference<InterpreterResult> resultRef,
