@@ -272,22 +272,34 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     builder.environment().putAll(env);
     File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
     builder.redirectError(processOutputFile);
-    Process process = builder.start();
-    process.waitFor();
-    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile), StandardCharsets.UTF_8);
-    Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
-    Matcher matcher = pattern.matcher(processOutput);
-    if (matcher.find()) {
-      String scalaVersion = matcher.group(1);
-      if (scalaVersion.startsWith("2.12")) {
-        return "2.12";
-      } else if (scalaVersion.startsWith("2.13")) {
-        return "2.13";
-      } else {
-        throw new Exception("Unsupported scala version: " + scalaVersion);
+    
+    try {
+      Process process = builder.start();
+      process.waitFor();
+      
+      String processOutput;
+      try (FileInputStream in = new FileInputStream(processOutputFile)) {
+        processOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
       }
-    } else {
-      return detectSparkScalaVersionByReplClass(sparkHome);
+      
+      Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
+      Matcher matcher = pattern.matcher(processOutput);
+      if (matcher.find()) {
+        String scalaVersion = matcher.group(1);
+        if (scalaVersion.startsWith("2.12")) {
+          return "2.12";
+        } else if (scalaVersion.startsWith("2.13")) {
+          return "2.13";
+        } else {
+          throw new Exception("Unsupported scala version: " + scalaVersion);
+        }
+      } else {
+        return detectSparkScalaVersionByReplClass(sparkHome);
+      }
+    } finally {
+      if (!processOutputFile.delete() && processOutputFile.exists()) {
+        LOGGER.warn("Failed to delete temporary file: {}", processOutputFile.getAbsolutePath());
+      }
     }
   }
 
