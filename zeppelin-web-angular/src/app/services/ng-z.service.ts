@@ -11,13 +11,14 @@
  */
 
 import { Injectable, OnDestroy } from '@angular/core';
+import { isRecord } from '@zeppelin/utility/type-utility';
 import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NgZService implements OnDestroy {
-  private paragraphMap = new Map<string, {}>();
+  private paragraphMap: Map<string, unknown> = new Map<string, {}>();
   private contextChange$ = new Subject<{
     paragraphId: string;
     key: string;
@@ -50,9 +51,9 @@ export class NgZService implements OnDestroy {
     this.paragraphMap.set(paragraphId, context);
   }
 
-  setContextValue(key: string, value, paragraphId: string, emit = true) {
+  setContextValue(key: string, value: unknown, paragraphId: string, emit = true) {
     const context = this.paragraphMap.get(paragraphId);
-    if (context) {
+    if (isRecord(context)) {
       context[key] = value;
     }
     this.contextChange$.next({
@@ -66,7 +67,7 @@ export class NgZService implements OnDestroy {
 
   unsetContextValue(key: string, paragraphId: string, emit = true) {
     const context = this.paragraphMap.get(paragraphId);
-    if (context) {
+    if (isRecord(context)) {
       context[key] = undefined;
     }
     this.contextChange$.next({

@@ -74,10 +74,10 @@ export class ZeppelinHeliumService {
     if (this.depsDefined) {
       return;
     }
-    Object.keys(COMMON_DEPS).forEach(externalKey =>
+    Object.entries(COMMON_DEPS).forEach(([externalKey, externalValue]) =>
       // tslint:disable-next-line:no-any
-      (window as any).define(externalKey, [], () => COMMON_DEPS[ externalKey ])
-    );
+      (window as any).define(externalKey, [], () => externalValue)
+    )
     this.depsDefined = true;
   }
 
@@ -85,7 +85,8 @@ export class ZeppelinHeliumService {
     this.defineDeps();
     return SystemJs.import(`./assets/helium-packages/${name}.umd.js`)
       .then(() => SystemJs.import(name))
-      .then(plugin => {
+      // tslint:disable-next-line:no-any
+      .then((plugin: any) => {
         if (plugin instanceof ZeppelinHeliumPackage) {
           return Promise.resolve(plugin);
         } else {

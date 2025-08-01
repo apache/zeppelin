@@ -24,7 +24,6 @@ import {
 import { copyTextToClipboard } from '@zeppelin/core';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { ActivatedRoute } from '@angular/router';
 import { RuntimeInfos } from '@zeppelin/sdk';
@@ -38,24 +37,24 @@ import { MessageService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphControlComponent implements OnInit, OnChanges {
-  @Input() status: string;
+  @Input() status!: string;
   @Input() progress = 0;
   @Input() revisionView = false;
   @Input() enabled = true;
-  @Input() pid: string;
+  @Input() pid!: string;
   @Input() tableHide = false;
   @Input() editorHide = false;
-  @Input() colWidth: number;
-  @Input() fontSize: number;
+  @Input() colWidth?: number;
+  @Input() fontSize?: number;
   @Input() runOnSelectionChange = true;
   @Input() isEntireNoteRunning = true;
-  @Input() runtimeInfos: RuntimeInfos;
+  @Input() runtimeInfos?: RuntimeInfos;
   @Input() colWidthOption = [];
   @Input() first = false;
   @Input() last = false;
   @Input() title = false;
   @Input() lineNumbers = false;
-  @Input() paragraphLength: number;
+  @Input() paragraphLength!: number;
   @Output() readonly colWidthChange = new EventEmitter<number>();
   @Output() readonly titleChange = new EventEmitter<boolean>();
   @Output() readonly enabledChange = new EventEmitter<boolean>();

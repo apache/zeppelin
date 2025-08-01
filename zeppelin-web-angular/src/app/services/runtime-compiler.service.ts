@@ -10,18 +10,8 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Compiler,
-  Component,
-  Injectable,
-  NgModule,
-  NgModuleFactory,
-  NO_ERRORS_SCHEMA,
-  Type
-} from '@angular/core';
+import { Compiler, Component, Injectable, NgModule, NgModuleFactory, Type } from '@angular/core';
 
-import { CompileDirectiveMetadata, HtmlParser, TemplateParser } from '@angular/compiler';
 import { RuntimeDynamicModuleModule } from '@zeppelin/core';
 import { NgZService } from './ng-z.service';
 
@@ -48,7 +38,7 @@ export class RuntimeCompilerService {
     const dynamicComponent = Component({ template: template, selector: `dynamic-${paragraphId}` })(
       class DynamicTemplateComponent {
         z = {
-          set: (key: string, value, id: string) => ngZService.setContextValue(key, value, id),
+          set: (key: string, value: unknown, id: string) => ngZService.setContextValue(key, value, id),
           unset: (key: string, id: string) => ngZService.unsetContextValue(key, id),
           run: (id: string) => ngZService.runParagraph(id)
         };

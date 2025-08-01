@@ -15,9 +15,11 @@ import { Observable } from 'rxjs';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
+  DynamicFormParams,
   Message,
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
+  Note,
   NoteConfig,
   ParagraphConfig,
   ParagraphParams,
@@ -89,7 +91,7 @@ export class MessageService extends Message implements OnDestroy {
     super.getHomeNote();
   }
 
-  newNote(noteName: string, defaultInterpreterGroup: string): void {
+  newNote(noteName: string, defaultInterpreterGroup?: string): void {
     super.newNote(noteName, defaultInterpreterGroup);
   }
 
@@ -101,7 +103,7 @@ export class MessageService extends Message implements OnDestroy {
     super.restoreNote(noteId);
   }
 
-  deleteNote(noteId): void {
+  deleteNote(noteId: string): void {
     super.deleteNote(noteId);
   }
 
@@ -125,7 +127,7 @@ export class MessageService extends Message implements OnDestroy {
     super.emptyTrash();
   }
 
-  cloneNote(noteIdToClone, newNoteName): void {
+  cloneNote(noteIdToClone: string, newNoteName: string): void {
     super.cloneNote(noteIdToClone, newNoteName);
   }
 
@@ -171,7 +173,7 @@ export class MessageService extends Message implements OnDestroy {
 
   copyParagraph(
     newIndex: number,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -198,21 +200,21 @@ export class MessageService extends Message implements OnDestroy {
     super.angularObjectClientUnbind(noteId, name, paragraphId);
   }
 
-  cancelParagraph(paragraphId): void {
+  cancelParagraph(paragraphId: string): void {
     super.cancelParagraph(paragraphId);
   }
 
   paragraphExecutedBySpell(
-    paragraphId,
-    paragraphTitle,
-    paragraphText,
-    paragraphResultsMsg,
-    paragraphStatus,
-    paragraphErrorMessage,
-    paragraphConfig,
-    paragraphParams,
-    paragraphDateStarted,
-    paragraphDateFinished
+    paragraphId: string,
+    paragraphTitle: string,
+    paragraphText: string,
+    paragraphResultsMsg: Array<{ data: string; type: string }>,
+    paragraphStatus: string,
+    paragraphErrorMessage: string,
+    paragraphConfig: ParagraphConfig,
+    paragraphParams: DynamicFormParams,
+    paragraphDateStarted: string,
+    paragraphDateFinished: string
   ): void {
     super.paragraphExecutedBySpell(
       paragraphId,
@@ -230,7 +232,7 @@ export class MessageService extends Message implements OnDestroy {
 
   runParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -260,7 +262,7 @@ export class MessageService extends Message implements OnDestroy {
 
   commitParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
@@ -313,7 +315,7 @@ export class MessageService extends Message implements OnDestroy {
     super.getInterpreterBindings(noteId);
   }
 
-  saveInterpreterBindings(noteId, selectedSettingIds): void {
+  saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
     super.saveInterpreterBindings(noteId, selectedSettingIds);
   }
 
@@ -329,7 +331,7 @@ export class MessageService extends Message implements OnDestroy {
     super.saveNoteForms(note);
   }
 
-  removeNoteForms(note, formName): void {
+  removeNoteForms(note: Required<Note>['note'], formName: string): void {
     super.removeNoteForms(note, formName);
   }
 }
