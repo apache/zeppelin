@@ -83,7 +83,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
     LOGGER.debug("Run Flux command '{}'", query);
     query = query.trim();
 
-    QueryApi queryService = getInfluxDBClient(context);
+    QueryApi queryService = getQueryApi();
 
     final int[] actualIndex = {-1};
 
@@ -147,7 +147,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
   }
 
 
-  private QueryApi getInfluxDBClient(InterpreterContext context) {
+  private QueryApi getQueryApi() {
     if (queryApi == null) {
       queryApi = this.client.getQueryApi();
     }
@@ -156,7 +156,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
 
 
   @Override
-  public void open() throws InterpreterException {
+  public void open() {
 
     if (this.client == null) {
       InfluxDBClientOptions opt = InfluxDBClientOptions.builder()
@@ -172,7 +172,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
   }
 
   @Override
-  public void close() throws InterpreterException {
+  public void close() {
     if (this.client != null) {
       this.client.close();
       this.client = null;
@@ -180,17 +180,17 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {
+  public void cancel(InterpreterContext context) {
 
   }
 
   @Override
-  public FormType getFormType() throws InterpreterException {
+  public FormType getFormType() {
     return FormType.SIMPLE;
   }
 
   @Override
-  public int getProgress(InterpreterContext context) throws InterpreterException {
+  public int getProgress(InterpreterContext context) {
     return 0;
   }
 
