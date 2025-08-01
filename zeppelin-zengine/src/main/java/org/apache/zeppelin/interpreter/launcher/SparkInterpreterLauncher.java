@@ -293,7 +293,25 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private String detectSparkScalaVersionByReplClass(String sparkHome) throws Exception {
     File sparkJarsFolder = new File(sparkHome + "/jars");
+    
+    // Check if the directory exists
+    if (!sparkJarsFolder.exists()) {
+      throw new IOException("Spark jars directory does not exist: " + sparkJarsFolder.getAbsolutePath() + 
+          ". Please check your SPARK_HOME setting.");
+    }
+    
+    // Check if it's actually a directory
+    if (!sparkJarsFolder.isDirectory()) {
+      throw new IOException("Spark jars path is not a directory: " + sparkJarsFolder.getAbsolutePath());
+    }
+    
+    // List files with null check
     File[] sparkJarFiles = sparkJarsFolder.listFiles();
+    if (sparkJarFiles == null) {
+      throw new IOException("Cannot access Spark jars directory: " + sparkJarsFolder.getAbsolutePath() + 
+          ". Please check permissions.");
+    }
+    
     long sparkReplFileNum =
             Stream.of(sparkJarFiles).filter(file -> file.getName().contains("spark-repl_")).count();
     if (sparkReplFileNum == 0) {
