@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -62,6 +63,20 @@ class GUITest {
     // still "2"
     selected = gui.select("list_1", options, "1");
     assertEquals("2", selected);
+  }
+
+  @Test
+  void testSelectWithCollectionDefault() {
+    GUI gui = new GUI();
+    List<String> collectionDefault = Arrays.asList("2");
+    Object selected = gui.select("list_collection", options, collectionDefault);
+    
+    // Verify that "2" (first element of collection) is used as default
+    assertEquals("2", selected);
+    
+    // Verify the form's default value is correctly set
+    Select selectForm = (Select) gui.forms.get("list_collection");
+    assertEquals("2", selectForm.getDefaultValue());
   }
 
   @Test
