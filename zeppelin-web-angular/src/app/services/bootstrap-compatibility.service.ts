@@ -384,6 +384,7 @@ export class BootstrapCompatibilityService {
     }
     .columns {
       display: block;
+      height: 100%;
     }
     .lightBold {
       font-weight: 500;
@@ -393,6 +394,71 @@ export class BootstrapCompatibilityService {
     }
     .network-badge-settings {
       margin-bottom: 10px;
+    }
+
+    /* Table Display styles from paragraph.css */
+    .tableDisplay {
+      margin-top: 2px;
+    }
+    .tableDisplay img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    .tableDisplay .btn-group span {
+      margin: 10px 0 0 10px;
+      font-size: 12px;
+    }
+    .tableDisplay .btn-group span a {
+      cursor: pointer;
+    }
+    .tableDisplay .option {
+      padding: 5px 5px 5px 5px;
+      font-size: 12px;
+      height: auto;
+      overflow: auto;
+      border-top: 1px solid #ecf0f1;
+    }
+    .tableDisplay .option .columns {
+      height: 100%;
+    }
+    .tableDisplay .option .columns ul {
+      background: white;
+      overflow: auto;
+      width: auto;
+      padding: 3px 3px 3px 3px;
+      height: 150px;
+      border: 1px solid #CCC;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+      -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+      -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+      transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    }
+    .tableDisplay .option .columns ul li {
+      margin: 3px 3px 3px 3px;
+    }
+    .tableDisplay .option .columns ul li span {
+      cursor: pointer;
+      margin-left: 3px;
+      margin-top: 3px;
+    }
+    .tableDisplay .option .columns ul li div ul {
+      width: auto;
+      height: auto;
+    }
+    .tableDisplay .option .columns ul li div ul li a {
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+    .tableDisplay .option .columns a:focus,
+    .tableDisplay .option .columns a:hover {
+      text-decoration: none;
+      outline: 0;
+      outline-offset: 0;
+    }
+    .paragraph .tableDisplay .hljs {
+      background: none;
     }
   `;
 
@@ -411,8 +477,6 @@ export class BootstrapCompatibilityService {
       return;
     }
 
-    console.log('Injecting Bootstrap compatibility styles for classic visualizations');
-
     const styleElement = document.createElement('style');
     styleElement.id = this.styleId;
     styleElement.type = 'text/css';
@@ -423,25 +487,5 @@ export class BootstrapCompatibilityService {
     head.insertBefore(styleElement, head.firstChild);
 
     this.bootstrapStylesInjected = true;
-  }
-
-  /**
-   * Remove Bootstrap compatibility styles from the document
-   * Useful for cleanup or testing purposes
-   */
-  removeBootstrapStyles(): void {
-    const existingStyles = document.getElementById(this.styleId);
-    if (existingStyles) {
-      existingStyles.remove();
-      this.bootstrapStylesInjected = false;
-      console.log('Removed Bootstrap compatibility styles');
-    }
-  }
-
-  /**
-   * Check if Bootstrap styles are currently injected
-   */
-  areBootstrapStylesInjected(): boolean {
-    return this.bootstrapStylesInjected && !!document.getElementById(this.styleId);
   }
 }

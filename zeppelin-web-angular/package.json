@@ -46,6 +46,7 @@
     "lodash": "^4.17.21",
     "mathjax": "2.7.5",
     "monaco-editor": "0.30.1",
+    "nvd3": "1.8.6",
     "ng-zorro-antd": "^9.3.0",
     "parse5": "^5.1.1",
     "rxjs": "~6.5.3",

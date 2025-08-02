@@ -12,9 +12,10 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
-import { GraphConfig } from '@zeppelin/sdk';
+import { GraphConfig, ParagraphConfigResult } from '@zeppelin/sdk';
 import { TableData } from '@zeppelin/visualization';
 import * as angular from 'angular';
+import { cloneDeep } from 'lodash';
 
 import { AngularDragDropService } from './angular-drag-drop.service';
 import { BootstrapCompatibilityService } from './bootstrap-compatibility.service';
@@ -57,7 +58,9 @@ export class ClassicVisualizationService {
     [
       'app/tabledata/columnselector_settings.html',
       'assets/classic-visualization-templates/columnselector_settings.html'
-    ]
+    ],
+    ['app/tabledata/network_settings.html', 'assets/classic-visualization-templates/network_settings.html'],
+    ['app/tabledata/pivot_settings.html', 'assets/classic-visualization-templates/pivot_settings.html']
   ]);
 
   // Custom $templateRequest implementation that intercepts known template paths
@@ -73,13 +76,11 @@ export class ClassicVisualizationService {
       // Check if this is a known template that should be loaded from assets
       const assetPath = this.templateAssetMapping.get(templateUrl);
       if (assetPath) {
-        console.log(`Loading template from asset: ${templateUrl} -> ${assetPath}`);
         // Load from assets and cache the result
         return this.http
           .get(assetPath, { responseType: 'text' })
           .toPromise()
           .then((templateContent: string) => {
-            console.log(`Successfully loaded template: ${templateUrl}`, templateContent.length);
             // Cache the loaded template
             this.templateCache.set(templateUrl, templateContent);
             return templateContent;
@@ -125,7 +126,6 @@ export class ClassicVisualizationService {
     const baseId = targetElementId.replace(/^p/, '');
     const trSettingId = `trsetting${baseId}`;
     const element = document.getElementById(trSettingId);
-    console.log(`Looking for transformation setting element: ${trSettingId}`, element);
     return element;
   }
 
@@ -134,7 +134,6 @@ export class ClassicVisualizationService {
     const baseId = targetElementId.replace(/^p/, '');
     const vizSettingId = `vizsetting${baseId}`;
     const element = document.getElementById(vizSettingId);
-    console.log(`Looking for visualization setting element: ${vizSettingId}`, element);
     return element;
   }
 
@@ -189,7 +188,8 @@ export class ClassicVisualizationService {
     const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
 
     // Instantiate the classic visualization
-    const vizInstance = new visualizationClass(angularElement, config);
+    const configForMode = this.getClassicVizConfig(config);
+    const vizInstance = new visualizationClass(angularElement, configForMode);
 
     // Inject AngularJS dependencies that classic visualizations expect
     vizInstance._emitter = emitter;
@@ -200,6 +200,9 @@ export class ClassicVisualizationService {
     // Get or create setting elements
     const transformationSettingEl = this.getTransformationSettingElement(targetElementId);
     const visualizationSettingEl = this.getVisualizationSettingElement(targetElementId);
+    if (!transformationSettingEl || !visualizationSettingEl) {
+      throw new Error('Failed to find setting elements for classic visualization');
+    }
 
     // Setup transformation if available
     const transformation = vizInstance.getTransformation();
@@ -210,7 +213,7 @@ export class ClassicVisualizationService {
       transformation._createNewScope = () => rootScope.$new(true);
 
       // Set config and transform data
-      transformation.setConfig(config);
+      transformation.setConfig(configForMode);
       const transformed = transformation.transform(classicTableData);
 
       // Render transformation setting
@@ -251,15 +254,11 @@ export class ClassicVisualizationService {
 
     if (existingInjector) {
       // Reuse existing bootstrap
-      console.log('Reusing existing AngularJS bootstrap for element:', targetElement.id);
       return {
         injector: existingInjector,
         appName: 'existingApp' // We don't need the actual name for reuse
       };
     } else {
-      // Create new bootstrap
-      console.log('Creating new AngularJS bootstrap for element:', targetElement.id);
-
       // Create unique app name
       const appName = `classicVizApp_${this.appCounter++}`;
 
@@ -287,6 +286,8 @@ export class ClassicVisualizationService {
 
     const { instance } = instanceData;
 
+    const configForMode = this.getClassicVizConfig(config);
+
     try {
       // Convert modern TableData to classic format
       const classicTableData = this.tableDataAdapter.createClassicTableDataProxy(tableData);
@@ -294,13 +295,16 @@ export class ClassicVisualizationService {
       // Get or create setting elements
       const transformationSettingEl = this.getTransformationSettingElement(targetElementId);
       const visualizationSettingEl = this.getVisualizationSettingElement(targetElementId);
+      if (!transformationSettingEl || !visualizationSettingEl) {
+        throw new Error('Failed to find setting elements for classic visualization');
+      }
 
-      instance.setConfig(config);
+      instance.setConfig(configForMode);
 
       // Update transformation and re-render
       const transformation = instance.getTransformation();
       if (transformation) {
-        transformation.setConfig(config);
+        transformation.setConfig(configForMode);
         const transformed = transformation.transform(classicTableData);
 
         // Re-render transformation setting
@@ -378,7 +382,6 @@ export class ClassicVisualizationService {
 
       // If forceCleanBootstrap is true, completely remove AngularJS data
       if (forceCleanBootstrap) {
-        console.log('Force cleaning AngularJS bootstrap data for', targetElementId);
         // Remove all AngularJS data from the element
         angular.element(targetEl).removeData();
         // Remove all classes added by AngularJS
@@ -396,5 +399,27 @@ export class ClassicVisualizationService {
     elementIds.forEach(elementId => {
       this.destroyInstance(elementId, forceCleanBootstrap);
     });
+  }
+
+  private getClassicVizConfig(graph: GraphConfig) {
+    const mode = graph.mode;
+    // tslint:disable-next-line:no-any
+    const configForMode: any = graph?.setting?.[mode as keyof ParagraphConfigResult['graph']['setting']]
+      ? cloneDeep(graph.setting[mode as keyof ParagraphConfigResult['graph']['setting']])
+      : {};
+
+    // copy common setting
+    configForMode.common = cloneDeep(graph.commonSetting) || {};
+
+    // copy pivot setting
+    if (graph.keys) {
+      configForMode.common.pivot = {
+        keys: cloneDeep(graph.keys),
+        groups: cloneDeep(graph.groups),
+        values: cloneDeep(graph.values)
+      };
+    }
+
+    return configForMode;
   }
 }
