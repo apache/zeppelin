@@ -192,7 +192,11 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     boolean valid = false;
     try {
       Date expires = jwtToken.getJWTClaimsSet().getExpirationTime();
-      if (expires == null || new Date().before(expires)) {
+      if (expires == null) {
+        LOGGER.warn("JWT token has no expiration time - rejecting token for security");
+        return false;
+      }
+      if (new Date().before(expires)) {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("SSO token expiration date has been " + "successfully validated");
         }
