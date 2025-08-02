@@ -16,6 +16,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ComponentFactoryResolver,
   EventEmitter,
   Injector,
   Input,
@@ -83,8 +84,18 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   imgData: string | SafeUrl = '';
   tableData = new TableData();
   frontEndError: string;
-  // tslint:disable-next-line:no-any
-  visualizations: any[] = [
+  visualizations: Array<{
+    id: string;
+    name: string;
+    icon: string | SafeHtml;
+    // tslint:disable-next-line:no-any
+    Class: any;
+    isClassic: boolean;
+    changeSubscription: Subscription | null;
+    // tslint:disable-next-line:no-any
+    instance: any | undefined;
+    componentFactoryResolver?: ComponentFactoryResolver;
+  }> = [
     {
       id: 'table',
       name: 'Table',
@@ -381,7 +392,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
           .createClassicVisualization(
             visualizationItem.Class,
             targetElementId,
-            this.getClassicVizConfig(this.config.graph.mode),
+            this.config.graph,
             this.tableData,
             emitter
           )
@@ -511,25 +522,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.destroy$.complete();
   }
 
-  private getClassicVizConfig(mode: string) {
-    const graph = this.config.graph;
-    const configForMode = graph?.setting?.[mode] ? cloneDeep(graph.setting[mode]) : {};
-
-    // copy common setting
-    configForMode.common = cloneDeep(graph.commonSetting) || {};
-
-    // copy pivot setting
-    if (graph.keys) {
-      configForMode.common.pivot = {
-        keys: cloneDeep(graph.keys),
-        groups: cloneDeep(graph.groups),
-        values: cloneDeep(graph.values)
-      };
-    }
-
-    return configForMode;
-  }
-
   // tslint:disable-next-line:no-any
   private commitClassicVizConfigChange(configForMode: any, mode: string) {
     if (this.isPending) {
@@ -565,5 +557,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     }
 
     this.configChange.emit({ graph: newConfigGraph });
+    // Update local graph config
+    this.config.graph = newConfigGraph;
   }
 }
