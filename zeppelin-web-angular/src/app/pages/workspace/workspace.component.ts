@@ -15,8 +15,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { publishedSymbol } from '@zeppelin/core/paragraph-base/published';
-import { HeliumManagerService } from '@zeppelin/helium-manager';
-import { MessageService } from '@zeppelin/services';
+import { HeliumService, MessageService } from '@zeppelin/services';
 import { setTheme } from '@zeppelin/visualizations/g2.config';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
@@ -35,7 +34,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     public messageService: MessageService,
     private cdr: ChangeDetectorRef,
     private nzMessageService: NzMessageService,
-    private heliumManagerService: HeliumManagerService
+    private heliumService: HeliumService
   ) {}
 
   onActivate(component) {
@@ -70,7 +69,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   ngOnInit() {
     setTheme();
     this.setUpWebsocketReconnectMessage();
-    this.heliumManagerService.initPackages();
+    this.heliumService.initPackages();
   }
 
   ngOnDestroy(): void {
