@@ -292,41 +292,41 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   }
 
   private String detectSparkScalaVersionByReplClass(String sparkHome) throws Exception {
-    File sparkJarsFolder = new File(sparkHome + "/jars");
+    Path sparkJarsPath = Paths.get(sparkHome, "jars");
     
     // Check if the directory exists
-    if (!sparkJarsFolder.exists()) {
-      throw new IOException("Spark jars directory does not exist: " + sparkJarsFolder.getAbsolutePath() + 
+    if (!Files.exists(sparkJarsPath)) {
+      throw new IOException("Spark jars directory does not exist: " + sparkJarsPath.toAbsolutePath() + 
           ". Please check your SPARK_HOME setting.");
     }
     
     // Check if it's actually a directory
-    if (!sparkJarsFolder.isDirectory()) {
-      throw new IOException("Spark jars path is not a directory: " + sparkJarsFolder.getAbsolutePath());
+    if (!Files.isDirectory(sparkJarsPath)) {
+      throw new IOException("Spark jars path is not a directory: " + sparkJarsPath.toAbsolutePath());
     }
     
-    // List files with null check
-    File[] sparkJarFiles = sparkJarsFolder.listFiles();
-    if (sparkJarFiles == null) {
-      throw new IOException("Cannot access Spark jars directory: " + sparkJarsFolder.getAbsolutePath() + 
-          ". Please check permissions.");
+    // List files using DirectoryStream
+    List<Path> sparkReplJars = new ArrayList<>();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(sparkJarsPath, "spark-repl_*.jar")) {
+      for (Path entry : stream) {
+        sparkReplJars.add(entry);
+      }
+    } catch (IOException e) {
+      throw new IOException("Cannot access Spark jars directory: " + sparkJarsPath.toAbsolutePath() + 
+          ". Please check permissions.", e);
     }
     
-    long sparkReplFileNum =
-            Stream.of(sparkJarFiles).filter(file -> file.getName().contains("spark-repl_")).count();
-    if (sparkReplFileNum == 0) {
+    if (sparkReplJars.isEmpty()) {
       throw new Exception("No spark-repl jar found in SPARK_HOME: " + sparkHome);
     }
-    if (sparkReplFileNum > 1) {
+    if (sparkReplJars.size() > 1) {
       throw new Exception("Multiple spark-repl jar found in SPARK_HOME: " + sparkHome);
     }
-    boolean sparkRepl212Exists =
-            Stream.of(sparkJarFiles).anyMatch(file -> file.getName().contains("spark-repl_2.12"));
-    boolean sparkRepl213Exists =
-            Stream.of(sparkJarFiles).anyMatch(file -> file.getName().contains("spark-repl_2.13"));
-    if (sparkRepl212Exists) {
+    
+    String fileName = sparkReplJars.get(0).getFileName().toString();
+    if (fileName.contains("spark-repl_2.12")) {
       return "2.12";
-    } else if (sparkRepl213Exists) {
+    } else if (fileName.contains("spark-repl_2.13")) {
       return "2.13";
     } else {
       throw new Exception("Can not detect the scala version by spark-repl");

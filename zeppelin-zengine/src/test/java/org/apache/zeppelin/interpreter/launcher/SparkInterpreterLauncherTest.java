@@ -446,4 +446,102 @@ class SparkInterpreterLauncherTest {
       Files.deleteIfExists(tempSparkHome);
     }
   }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithMultipleJars() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure with multiple spark-repl jars
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create multiple spark-repl jars
+    Path sparkReplJar1 = jarsDir.resolve("spark-repl_2.12-3.0.0.jar");
+    Path sparkReplJar2 = jarsDir.resolve("spark-repl_2.13-3.1.0.jar");
+    Files.createFile(sparkReplJar1);
+    Files.createFile(sparkReplJar2);
+    
+    try {
+      detectMethod.invoke(launcher, tempSparkHome.toString());
+      fail("Expected Exception for multiple spark-repl jars");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause.getMessage().contains("Multiple spark-repl jar found"), 
+          "Error message should mention multiple spark-repl jars found: " + cause.getMessage());
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar1);
+      Files.deleteIfExists(sparkReplJar2);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithScala213() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create a fake spark-repl jar for Scala 2.13
+    Path sparkReplJar = jarsDir.resolve("spark-repl_2.13-3.2.0.jar");
+    Files.createFile(sparkReplJar);
+    
+    try {
+      String scalaVersion = (String) detectMethod.invoke(launcher, tempSparkHome.toString());
+      assertEquals("2.13", scalaVersion, "Should detect Scala 2.13");
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithUnsupportedScalaVersion() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create a fake spark-repl jar with unsupported Scala version
+    Path sparkReplJar = jarsDir.resolve("spark-repl_2.11-2.4.0.jar");
+    Files.createFile(sparkReplJar);
+    
+    try {
+      detectMethod.invoke(launcher, tempSparkHome.toString());
+      fail("Expected Exception for unsupported Scala version");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause.getMessage().contains("Can not detect the scala version by spark-repl"), 
+          "Error message should mention cannot detect scala version: " + cause.getMessage());
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
 }
