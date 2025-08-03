@@ -251,9 +251,34 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       });
   }
 
+  private checkAndReplaceCarriageReturn(data: string): string {
+    const str = data.replace(/\r\n/g, '\n');
+    if (/\r/.test(str)) {
+      const generatedLines = str.split('\n').map(line => {
+        if (!/\r/.test(line)) {
+          return line;
+        }
+        const parts = line.split('\r');
+        let currentLine = parts[0];
+        for (let i = 1; i < parts.length; i++) {
+          const part = parts[i];
+          const partLength = part.length;
+          // apply terminal-like output. carriage return has the effect of moving output cursor to the front.
+          const overwritten = part + currentLine.substring(partLength);
+          currentLine = overwritten;
+        }
+        return currentLine;
+      });
+      return generatedLines.join('\n');
+    } else {
+      return str;
+    }
+  }
+
   renderText(): void {
     const ansiUp = new AnsiUp();
-    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(this.result.data));
+    const processedData = this.checkAndReplaceCarriageReturn(this.result.data);
+    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(processedData));
   }
 
   renderImg(): void {
