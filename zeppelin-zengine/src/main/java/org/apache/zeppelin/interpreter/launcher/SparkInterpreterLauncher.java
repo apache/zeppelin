@@ -270,36 +270,26 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     LOGGER.info("Detect scala version from SPARK_HOME: {}", sparkHome);
     ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
     builder.environment().putAll(env);
-    File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
-    builder.redirectError(processOutputFile);
     
-    try {
-      Process process = builder.start();
-      process.waitFor();
-      
-      String processOutput;
-      try (FileInputStream in = new FileInputStream(processOutputFile)) {
-        processOutput = IOUtils.toString(in, StandardCharsets.UTF_8);
-      }
-      
-      Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
-      Matcher matcher = pattern.matcher(processOutput);
-      if (matcher.find()) {
-        String scalaVersion = matcher.group(1);
-        if (scalaVersion.startsWith("2.12")) {
-          return "2.12";
-        } else if (scalaVersion.startsWith("2.13")) {
-          return "2.13";
-        } else {
-          throw new Exception("Unsupported scala version: " + scalaVersion);
-        }
+    Process process = builder.start();
+    process.waitFor();
+    
+    // Capture the error stream directly without using a temp file
+    String processOutput = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+    
+    Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
+    Matcher matcher = pattern.matcher(processOutput);
+    if (matcher.find()) {
+      String scalaVersion = matcher.group(1);
+      if (scalaVersion.startsWith("2.12")) {
+        return "2.12";
+      } else if (scalaVersion.startsWith("2.13")) {
+        return "2.13";
       } else {
-        return detectSparkScalaVersionByReplClass(sparkHome);
+        throw new Exception("Unsupported scala version: " + scalaVersion);
       }
-    } finally {
-      if (!processOutputFile.delete() && processOutputFile.exists()) {
-        LOGGER.warn("Failed to delete temporary file: {}", processOutputFile.getAbsolutePath());
-      }
+    } else {
+      return detectSparkScalaVersionByReplClass(sparkHome);
     }
   }
 
