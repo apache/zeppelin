@@ -29,6 +29,9 @@ if /I "%~1"=="-d" (
 if /I "%~1"=="-p" set PORT=%~2
 if /I "%~1"=="-c" set CALLBACK_HOST=%~2
 if /I "%~1"=="-l" set LOCAL_INTERPRETER_REPO=%~2
+if /I "%~1"=="-i" set INTP_GROUP_ID=%~2
+if /I "%~1"=="-r" set INTP_PORT=%~2
+if /I "%~1"=="-g" set INTERPRETER_SETTING_NAME=%~2
 shift
 goto loop
 :cont
@@ -132,7 +135,7 @@ if defined SPARK_SUBMIT (
 ) else (
     set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file="%ZEPPELIN_LOGFILE%"
 
-    "%ZEPPELIN_RUNNER%" !JAVA_INTP_OPTS! %ZEPPELIN_INTP_MEM% -cp '%ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH%' %ZEPPELIN_SERVER% "%CALLBACK_HOST%" %PORT%
+    "%ZEPPELIN_RUNNER%" !JAVA_INTP_OPTS! %ZEPPELIN_INTP_MEM% -cp '%ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH%' %ZEPPELIN_SERVER% "%CALLBACK_HOST%" %PORT% %INTP_GROUP_ID% %INTP_PORT%
 )
 
 exit /b
