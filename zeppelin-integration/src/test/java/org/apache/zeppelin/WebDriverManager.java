@@ -80,10 +80,52 @@ public class WebDriverManager implements Closeable {
   }
 
   private WebDriver constructWebDriver(int port) {
-    WebDriver driver = getFirefoxDriver();
+    Supplier<WebDriver> chromeDriverSupplier = () -> {
+      try {
+        ChromeOptions options = new ChromeOptions();
+        return new ChromeDriver(options);
+      } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while ChromeDriver ", e);
+        return null;
+      }
+    };
+    Supplier<WebDriver> firefoxDriverSupplier = () -> {
+      try {
+        return getFirefoxDriver();
+      } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
+        return null;
+      }
+    };
+    Supplier<WebDriver> safariDriverSupplier = () -> {
+      try {
+        return new SafariDriver();
+      } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while SafariDriver ", e);
+        return null;
+      }
+    };
 
+    WebDriver driver;
+    switch (SystemUtils.getEnvironmentVariable("ZEPPELIN_SELENIUM_BROWSER", "").toLowerCase(Locale.ROOT)) {
+      case "chrome":
+        driver = chromeDriverSupplier.get();
+        break;
+      case "firefox":
+        driver = firefoxDriverSupplier.get();
+        break;
+      case "safari":
+        driver = safariDriverSupplier.get();
+        break;
+      default:
+        driver = Stream.of(chromeDriverSupplier, firefoxDriverSupplier, safariDriverSupplier)
+                .map(Supplier::get)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
     if (driver == null) {
-      throw new RuntimeException("Failed to initialize Firefox WebDriver");
+      throw new RuntimeException("No available WebDriver");
     }
 
     String url = "http://localhost:" + port + "/classic";
@@ -95,17 +137,19 @@ public class WebDriverManager implements Closeable {
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
+      // wait for page load
       try {
         (new WebDriverWait(driver, Duration.ofSeconds(30))).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
-            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']")).isDisplayed();
+            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
+                    .isDisplayed();
           }
         });
         loaded = true;
         break;
       } catch (TimeoutException e) {
-        LOG.info("Retry loading the page due to timeout.", e);
+        LOG.info("Exception in WebDriverManager while WebDriverWait ", e);
         driver.navigate().to(url);
       }
     }
@@ -115,7 +159,7 @@ public class WebDriverManager implements Closeable {
     try {
       driver.manage().window().maximize();
     } catch (Exception e) {
-      LOG.warn("Failed to maximize Firefox window. Consider using setSize instead.", e);
+      LOG.warn("Failed to maximize browser window. Consider using setSize() instead.", e);
     }
 
     return driver;

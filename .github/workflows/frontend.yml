@@ -24,6 +24,7 @@ env:
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
   INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb'
+  ZEPPELIN_SELENIUM_BROWSER: firefox
 
 permissions:
   contents: read # to fetch code (actions/checkout)
