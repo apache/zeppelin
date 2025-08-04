@@ -97,6 +97,9 @@ public class ZeppelinR {
     try {
       out = new FileOutputStream(scriptFile);
       in = getClass().getClassLoader().getResourceAsStream("R/zeppelin_sparkr.R");
+      if (in == null) {
+        throw new InterpreterException("Cannot find resource: R/zeppelin_sparkr.R");
+      }
       IOUtils.copy(in, out);
     } catch (IOException e) {
       throw new InterpreterException(e);

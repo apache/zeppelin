@@ -129,6 +129,9 @@ public class IRInterpreter extends JupyterKernelInterpreter {
     String timeout = getProperty("spark.r.backendConnectionTimeout", "6000");
     InputStream input =
             getClass().getClassLoader().getResourceAsStream("R/zeppelin_isparkr.R");
+    if (input == null) {
+      throw new IOException("Cannot find resource: R/zeppelin_isparkr.R");
+    }
     String code = IOUtils.toString(input, StandardCharsets.UTF_8)
             .replace("${Port}", sparkRBackend.port() + "")
             .replace("${version}", sparkVersion() + "")
