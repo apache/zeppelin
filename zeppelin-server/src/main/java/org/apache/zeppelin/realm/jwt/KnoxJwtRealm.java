@@ -197,9 +197,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         return false;
       }
       if (new Date().before(expires)) {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("SSO token expiration date has been " + "successfully validated");
-        }
+        LOGGER.debug("SSO token expiration date has been successfully validated");
         valid = true;
       } else {
         LOGGER.warn("SSO expiration date validation failed.");
