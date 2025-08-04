@@ -29,7 +29,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
-import org.apache.zeppelin.flink.Flink117Shims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
