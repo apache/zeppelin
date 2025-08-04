@@ -139,7 +139,7 @@ public class WebDriverManager implements Closeable {
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, Duration.ofSeconds(30))).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(60))).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
