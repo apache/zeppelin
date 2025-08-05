@@ -156,13 +156,21 @@ public class JDBCInterpreter extends KerberosInterpreter {
           "KerberosConfigPath", "KerberosKeytabPath", "KerberosCredentialCachePath",
           "extraCredentials", "roles", "sessionProperties"));
 
+  private static final String ALLOW_LOAD_LOCAL = "allowLoadLocal";
+
   private static final String ALLOW_LOAD_LOCAL_IN_FILE_NAME = "allowLoadLocalInfile";
 
-  private static final String AUTO_DESERIALIZE = "autoDeserialize";
+  private static final String ALLOW_LOAD_LOCAL_IN_FILE_IN_PATH = "allowLoadLocalInfileInPath";
 
   private static final String ALLOW_LOCAL_IN_FILE_NAME = "allowLocalInfile";
 
   private static final String ALLOW_URL_IN_LOCAL_IN_FILE_NAME = "allowUrlInLocalInfile";
+
+  private static final String AUTO_DESERIALIZE = "autoDeserialize";
+
+  private static final String SOCKET_FACTORY = "socketFactory";
+
+  private static final String INIT = "INIT";
 
   // database --> Properties
   private final HashMap<String, Properties> basePropertiesMap;
@@ -588,15 +596,124 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return connection;
   }
 
-  private void validateConnectionUrl(String url) {
-    String decodedUrl;
-    decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8);
+  // package private for testing purposes
+  static void validateConnectionUrl(String url) {
+    final String decodedUrl = urlDecode(url, url, 0);
+    final Map<String, String> params = parseUrlParameters(decodedUrl);
 
-    if (containsIgnoreCase(decodedUrl, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
-            containsIgnoreCase(decodedUrl, AUTO_DESERIALIZE) ||
-            containsIgnoreCase(decodedUrl, ALLOW_LOCAL_IN_FILE_NAME) ||
-            containsIgnoreCase(decodedUrl, ALLOW_URL_IN_LOCAL_IN_FILE_NAME)) {
+    if (containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL) ||
+            containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, ALLOW_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, ALLOW_URL_IN_LOCAL_IN_FILE_NAME) ||
+            containsKeyIgnoreCase(params, ALLOW_LOAD_LOCAL_IN_FILE_IN_PATH) ||
+            containsKeyIgnoreCase(params, AUTO_DESERIALIZE) ||
+            containsKeyIgnoreCase(params, SOCKET_FACTORY)) {
       throw new IllegalArgumentException("Connection URL contains sensitive configuration");
+    }
+
+    // the INIT parameter name is a bit generic so we check it only for H2
+    if (containsIgnoreCase(decodedUrl, "jdbc:h2") && containsKeyIgnoreCase(params, INIT)) {
+      throw new IllegalArgumentException("Connection URL contains sensitive configuration");
+    }
+  }
+
+  /**
+   * Decode the URL encoded string recursively until no more decoding is needed.
+   * This is to handle cases where the URL might be double-encoded.
+   *
+   * @param url the original URL (for logging purposes)
+   * @param encoded the URL encoded string
+   * @param recurseCount the current recursion depth
+   * @return the decoded string
+   * @throws IllegalArgumentException if the recursion depth exceeds 10
+   */
+  private static String urlDecode(final String url,
+                                  final String encoded,
+                                  final int recurseCount) {
+    if (recurseCount > 10) {
+      throw new IllegalArgumentException("illegal URL encoding detected: " + url);
+    }
+    final String decoded = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+    if (decoded.equals(encoded)) {
+      return decoded; // No more decoding needed or max recursion reached
+    }
+    return urlDecode(url, decoded, recurseCount + 1);
+  }
+
+  private static Map<String, String> parseUrlParameters(final String url) {
+    final Map<String, String> parameters = new HashMap<>();
+
+    // MySQL supports parentheses in the URL
+    // https://dev.mysql.com/doc/connectors/en/connector-j-reference-jdbc-url-format.html
+    // eg jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db
+    int parensIndex = extractFromParens(url, 0, parameters);
+    while (parensIndex > 0) {
+      parensIndex = extractFromParens(url, parensIndex, parameters);
+    }
+
+    // Split the URL into the base part and the parameters part
+    String[] parts = url.split("[?&;]");
+    if (parts.length > 1) {
+      // The first part is the base URL, so we start from the second part
+      for (int i = 1; i < parts.length; i++) {
+        splitNameValue(parts[i], parameters, true);
+      }
+    }
+    return parameters;
+  }
+
+  private static boolean containsKeyIgnoreCase(Map<String, String> map, String key) {
+    for (String k : map.keySet()) {
+      if (k.equalsIgnoreCase(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Extracts key-value pairs from parentheses in the input string.
+   * The expected format is "(key1=value1, key2=value2, ...)".
+   *
+   * @param input the input string containing parameters in parentheses
+   * @param initIndex the index to start searching for parentheses
+   * @param parameters the map to store extracted key-value pairs
+   * @return the index of the closing parenthesis or -1 if not found
+   */
+  private static int extractFromParens(final String input,
+                                       final int initIndex,
+                                       final Map<String, String> parameters) {
+    final int startIndex = input.indexOf('(', initIndex);
+    if (startIndex == -1) {
+      return -1;
+    }
+    final int endIndex = input.indexOf(')', startIndex);
+    if (startIndex != -1 && endIndex != -1) {
+      String params = input.substring(startIndex + 1, endIndex);
+      String[] keyValuePairs = params.split(",");
+      for (String pair : keyValuePairs) {
+        splitNameValue(pair, parameters, false);
+      }
+    }
+    return endIndex;
+  }
+
+  /**
+   * Splits a name-value pair and adds it to the parameters map.
+   * Handles cases where the value might be missing.
+   *
+   * @param nameValue the name-value pair as a string
+   * @param parameters the map to store the extracted key-value pair
+   * @param allowEmptyValue whether to allow empty values
+   */
+  private static void splitNameValue(String nameValue, Map<String, String> parameters,
+                                     boolean allowEmptyValue) {
+    String[] keyValue = nameValue.split("=");
+    if (keyValue.length >= 2) {
+      parameters.put(keyValue[0].trim(), keyValue[1].trim());
+    } else if (allowEmptyValue) {
+      // Handle cases where there might not be a value
+      parameters.put(keyValue[0].trim(), "");
     }
   }
 
