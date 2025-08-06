@@ -143,7 +143,7 @@ public class WebDriverManager implements Closeable {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
-                    .isDisplayed();
+                .isDisplayed();
           }
         });
         loaded = true;
