@@ -45,4 +45,3 @@ Thumbs.db
 #
 .env
 yarn.lock
-.env.local
