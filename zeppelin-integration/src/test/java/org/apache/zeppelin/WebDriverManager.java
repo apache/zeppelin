@@ -119,10 +119,10 @@ public class WebDriverManager implements Closeable {
         break;
       default:
         driver = Stream.of(chromeDriverSupplier, firefoxDriverSupplier, safariDriverSupplier)
-                .map(Supplier::get)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+            .map(Supplier::get)
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     }
     if (driver == null) {
       throw new RuntimeException("No available WebDriver");
@@ -133,7 +133,7 @@ public class WebDriverManager implements Closeable {
     long start = System.currentTimeMillis();
     boolean loaded = false;
     driver.manage().timeouts()
-            .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
+      .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
