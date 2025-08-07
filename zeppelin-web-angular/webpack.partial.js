@@ -16,12 +16,55 @@ module.exports = {
   plugins: [
     new MonacoWebpackPlugin({
       languages: [
-        'bat', 'cpp', 'csharp', 'csp', 'css', 'dockerfile', 'go', 'handlebars', 'html',  'java', 'javascript', 'json',
-        'less', 'lua', 'markdown', 'mysql', 'objective', 'perl', 'pgsql', 'php', 'powershell', 'python', 'r', 'ruby',
-        'rust', 'scheme', 'scss', 'shell', 'sql', 'swift', 'typescript', 'vb', 'xml', 'yaml'
+        'bat', 'cpp', 'csharp', 'csp', 'css', 'dockerfile', 'go',
+        'handlebars', 'html', 'java', 'javascript', 'json',
+        'less', 'lua', 'markdown', 'mysql', 'objective', 'perl',
+        'pgsql', 'php', 'powershell', 'python', 'r', 'ruby',
+        'rust', 'scheme', 'scss', 'shell', 'sql', 'swift',
+        'typescript', 'vb', 'xml', 'yaml'
       ],
       features: ['!accessibilityHelp']
     })
-  ]
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        include: [/node_modules\/monaco-editor/],
+        use: [
+          {
+            loader: 'style-loader',
+            options: {
+              injectType: 'singletonStyleTag'
+            }
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              esModule: false
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        include: [/node_modules\/monaco-editor/],
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/'
+            }
+          }
+        ]
+      }
+    ]
+  },
+  resolve: {
+    alias: {
+      'theme-mixin': require('path').resolve(__dirname, 'src/styles/theme-mixin.less')
+    }
+  }
 };
 

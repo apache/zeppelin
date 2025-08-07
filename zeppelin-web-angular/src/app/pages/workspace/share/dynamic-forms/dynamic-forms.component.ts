@@ -107,12 +107,7 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
 
   ngOnInit() {
     this.setForms();
-    this.formChange$
-      .pipe(
-        debounceTime(800),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.formChange.emit());
+    this.formChange$.pipe(debounceTime(800), takeUntil(this.destroy$)).subscribe(() => this.formChange.emit());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -120,7 +115,7 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
+    this.destroy$.next(undefined);
     this.destroy$.complete();
   }
 }

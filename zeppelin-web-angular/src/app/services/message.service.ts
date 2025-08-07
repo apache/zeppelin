@@ -70,6 +70,7 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
+    // @ts-ignore
     super.send(...args);
   }
 

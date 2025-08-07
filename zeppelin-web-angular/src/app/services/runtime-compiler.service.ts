@@ -21,9 +21,9 @@ import {
   Type
 } from '@angular/core';
 
-import { CompileDirectiveMetadata, HtmlParser, TemplateParser } from '@angular/compiler';
+import { HtmlParser } from '@angular/compiler';
 import { RuntimeDynamicModuleModule } from '@zeppelin/core';
-import { NgZService } from './ng-z.service';
+import { NgZService } from '@zeppelin/services';
 
 export class DynamicTemplate {
   constructor(

@@ -10,14 +10,18 @@
  * limitations under the License.
  */
 
-import { OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 
+@Component({
+  selector: 'app-destroy-hook',
+  template: ''
+})
 export class DestroyHookComponent implements OnDestroy {
   readonly destroy$ = new Subject();
 
   ngOnDestroy() {
-    this.destroy$.next();
+    this.destroy$.next(undefined);
     this.destroy$.complete();
   }
 }

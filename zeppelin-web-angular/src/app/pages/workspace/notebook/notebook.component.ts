@@ -376,14 +376,9 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         this.onParagraphSelect(id);
         this.onParagraphScrolled(id);
       });
-    this.activatedRoute.params
-      .pipe(
-        takeUntil(this.destroy$),
-        distinctUntilKeyChanged('noteId')
-      )
-      .subscribe(() => {
-        this.noteVarShareService.clear();
-      });
+    this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(() => {
+      this.noteVarShareService.clear();
+    });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(param => {
       const { noteId, revisionId } = param;
       if (revisionId) {
@@ -411,7 +406,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     super.ngOnDestroy();
     this.killSaveTimer();
     this.saveNote();
-    this.destroy$.next();
+    this.destroy$.next(undefined);
     this.destroy$.complete();
   }
 }

@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 
 import { get } from 'lodash';
 import { NzModalRef } from 'ng-zorro-antd/modal';
-import { UploadFile } from 'ng-zorro-antd/upload';
+import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { OP } from '@zeppelin/sdk';
@@ -58,7 +58,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     );
   }
 
-  beforeUpload = (file: UploadFile): boolean => {
+  beforeUpload = (file: NzUploadFile): boolean => {
     this.errorText = '';
     if (file.size > this.maxLimit) {
       this.errorText = 'File size limit Exceeded!';
