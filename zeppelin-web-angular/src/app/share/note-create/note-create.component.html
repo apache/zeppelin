@@ -14,7 +14,7 @@
   <nz-form-item>
     <nz-form-label>
       <ng-container *ngIf="cloneNote;else importTpl">Clone Note</ng-container>
-      <ng-template #importTpl>Import As</ng-template>
+      <ng-template #importTpl>Note Name</ng-template>
     </nz-form-label>
     <nz-form-control>
       <input nz-input [(ngModel)]="noteName" autofocus placeholder="Insert Note Name" name="noteName"/>
