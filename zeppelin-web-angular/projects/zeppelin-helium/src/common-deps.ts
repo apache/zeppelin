@@ -16,6 +16,7 @@ import * as forms from '@angular/forms';
 import * as router from '@angular/router';
 import * as rxjs from 'rxjs';
 
+// @ts-ignore: TODO - Should write type declaration file.
 import * as dataSet from '@antv/data-set';
 import * as g2 from '@antv/g2';
 import * as sdk from '@zeppelin/sdk';

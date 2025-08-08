@@ -19,7 +19,7 @@ export interface KeywordPosition {
 }
 
 export function getKeywordPositions(keywords: string[], str: string): KeywordPosition[] {
-  const highlightPositions = [];
+  const highlightPositions: KeywordPosition[] = [];
   const lineMap = computeLineStartsMap(str);
 
   keywords.forEach((keyword: string) => {

@@ -40,7 +40,7 @@ export class TableVisualization extends Visualization<TableVisualizationComponen
       this.componentRef.destroy();
       this.componentRef = null;
     }
-    this.configChange$.complete();
+    this.configChange$?.complete();
     this.configChange$ = null;
   }
 
@@ -50,7 +50,7 @@ export class TableVisualization extends Visualization<TableVisualizationComponen
 
   refresh(): void {}
 
-  render(data): void {
+  render(data: unknown): void {
     this.transformed = data;
     if (!this.componentRef) {
       this.componentRef = this.componentPortal.attachComponentPortal();

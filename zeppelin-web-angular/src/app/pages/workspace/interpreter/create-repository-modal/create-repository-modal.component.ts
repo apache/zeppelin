@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntil } from 'rxjs/operators';
 
@@ -26,7 +26,7 @@ import { InterpreterService } from '@zeppelin/services';
   styleUrls: ['./create-repository-modal.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InterpreterCreateRepositoryModalComponent extends DestroyHookComponent implements OnInit {
+export class InterpreterCreateRepositoryModalComponent extends DestroyHookComponent {
   validateForm: FormGroup;
   submitting = false;
   urlProtocol = 'http://';
@@ -40,8 +40,10 @@ export class InterpreterCreateRepositoryModalComponent extends DestroyHookCompon
     // set url protocol
     data.url = `${this.urlProtocol}${data.url}`;
     // reset proxy port
-    const proxyPort = Number.parseInt(data.proxyPort, 10);
-    data.proxyPort = Number.isNaN(proxyPort) ? null : `${proxyPort}`;
+    if (data.proxyPort !== null) {
+      const parsedPort = parseInt(data.proxyPort, 10);
+      data.proxyPort = isNaN(parsedPort) ? null : `${parsedPort}`;
+    }
     this.interpreterService
       .addRepository(data)
       .pipe(takeUntil(this.destroy$))
@@ -56,9 +58,6 @@ export class InterpreterCreateRepositoryModalComponent extends DestroyHookCompon
     private interpreterService: InterpreterService
   ) {
     super();
-  }
-
-  ngOnInit() {
     this.validateForm = this.formBuilder.group({
       id: ['', [Validators.required]],
       url: ['', [Validators.required]],
@@ -73,6 +72,7 @@ export class InterpreterCreateRepositoryModalComponent extends DestroyHookCompon
       ],
       proxyLogin: '',
       proxyPassword: ''
-    });
+      // TODO: Change 'as' to 'satisfies' when typescript version is over 4.9 to detect unsupported editor options at compile time.
+    } as Record<keyof CreateInterpreterRepositoryForm, unknown>);
   }
 }

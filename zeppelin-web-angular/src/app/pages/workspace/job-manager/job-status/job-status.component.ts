@@ -21,7 +21,7 @@ import { JobStatus } from '@zeppelin/sdk';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JobManagerJobStatusComponent {
-  @Input() status: JobStatus;
+  @Input() status!: JobStatus;
   @Input() showText = false;
   jobStatus = JobStatus;
   statusMap = {
