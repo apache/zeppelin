@@ -18,3 +18,4 @@ export * from './security';
 export * from './credential';
 export * from './notebook-repo';
 export * from './notebook-search';
+export * from './helium';
