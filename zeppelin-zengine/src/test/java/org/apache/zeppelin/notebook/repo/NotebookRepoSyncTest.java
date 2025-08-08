@@ -24,7 +24,9 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
@@ -48,8 +50,10 @@ import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -433,5 +437,43 @@ class NotebookRepoSyncTest {
     assertEquals(0, authorizationService.getReaders(noteId).size());
     assertEquals(0, authorizationService.getRunners(noteId).size());
     assertEquals(0, authorizationService.getWriters(noteId).size());
+  }
+
+  @Test
+  void testSyncOnDeleteWithPartialFailure() throws Exception {
+
+    assertTrue(notebookRepoSync.getRepoCount() > 1);
+    String noteId = notebook.createNote("test_partial_failure", "", anonymous);
+    String notePath = notebookRepoSync.list(0, anonymous).get(0).getPath();
+
+    assertEquals(1, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
+
+    // given (setup)
+    NotebookRepo mockPrimaryRepo = Mockito.mock(NotebookRepo.class);
+    NotebookRepo mockSecondaryRepo = Mockito.mock(NotebookRepo.class);
+    List<NotebookRepo> mockRepos = Arrays.asList(mockPrimaryRepo, mockSecondaryRepo);
+
+    java.lang.reflect.Field reposField = notebookRepoSync.getClass().getDeclaredField("repos");
+    reposField.setAccessible(true);
+
+    reposField.set(notebookRepoSync, mockRepos);
+
+    // define Mock behavior
+    Mockito.doNothing().when(mockPrimaryRepo).remove(Mockito.any(), Mockito.any(), Mockito.any());
+    Mockito.doThrow(IOException.class)
+           .when(mockSecondaryRepo).remove(Mockito.any(), Mockito.any(), Mockito.any());
+
+    // when & then
+    IOException thrownException = Assertions.assertThrows(IOException.class, () -> {
+      notebookRepoSync.remove(noteId, notePath, anonymous);
+    });
+
+    Mockito.verify(mockPrimaryRepo, Mockito.times(1)).remove(noteId, notePath, anonymous);
+    Mockito.verify(mockSecondaryRepo, Mockito.times(1)).remove(noteId, notePath, anonymous);
+    Assertions.assertTrue(
+            thrownException.getMessage().contains("Failed to remove note from one or more repositories"));
+
+    notebook.close();
   }
 }
