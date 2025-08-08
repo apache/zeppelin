@@ -25,13 +25,13 @@ const proxyConfig = [
     context: '/ws',
     target: 'ws://localhost:8080',
     secure: false,
-    ws:true,
+    ws: true,
     changeOrigin: true
   }
 ];
 
 function httpUrlToWSUrl(url) {
-  return url.replace(/(http)(s)?\:\/\//, "ws$2://");
+  return url.replace(/(http)(s)?\:\/\//, 'ws$2://');
 }
 
 function setupForCorporateProxy(proxyConfig) {
@@ -44,7 +44,7 @@ function setupForCorporateProxy(proxyConfig) {
     }
     proxyConfig.forEach(function(entry) {
       if (entry.context === '/ws') {
-        entry.target = httpUrlToWSUrl(proxyServer)
+        entry.target = httpUrlToWSUrl(proxyServer);
       } else {
         entry.target = proxyServer;
       }
