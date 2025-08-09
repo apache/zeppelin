@@ -36,6 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -325,4 +328,24 @@ class SparkInterpreterLauncherTest {
     }
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
+
+  @Test
+  void testDetectSparkScalaVersionDirectStreamCapture() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersion", String.class, Map.class);
+    detectSparkScalaVersionMethod.setAccessible(true);
+    
+    Map<String, String> env = new HashMap<>();
+    
+    // Call the method
+    String scalaVersion = (String) detectSparkScalaVersionMethod.invoke(launcher, sparkHome, env);
+    
+    // Verify we got a valid result
+    assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"), 
+        "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
+  }
+  
 }
