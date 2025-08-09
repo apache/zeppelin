@@ -32,16 +32,16 @@ jobs:
   run-e2e-tests-in-zeppelin-web:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
+      - name: Checkout source code
         uses: actions/checkout@v4
-      - name: Tune Runner VM
+      - name: Optimize runner VM performance
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 11
+      - name: Set up Java 11 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache local Maven repository
+      - name: Cache Maven and build artifacts
         uses: actions/cache@v4
         with:
           path: |
@@ -52,13 +52,20 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
-      - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
-      - name: Print zeppelin logs
+      - name: Build and install Zeppelin (server + web)
+        run: |
+          ./mvnw -B clean install -DskipTests \
+            -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
+      - name: Run headless E2E tests for zeppelin-web
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
+            ./mvnw -B verify \
+            -pl zeppelin-web \
+            -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
+      - name: Print Zeppelin logs on failure
         if: always()
-        run: if [ -d "logs" ]; then cat logs/*; fi
+        run: |
+          if [ -d "logs" ]; then ls -al logs; cat logs/*; fi
 
   run-tests-in-zeppelin-web-angular:
     runs-on: ubuntu-24.04
