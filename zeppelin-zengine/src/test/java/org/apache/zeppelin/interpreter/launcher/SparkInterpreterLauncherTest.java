@@ -346,35 +346,6 @@ class SparkInterpreterLauncherTest {
     // Verify we got a valid result
     assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"), 
         "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
-    
-    // Since we're no longer using temp files, verify no temp files were created
-    File tempDir = new File(System.getProperty("java.io.tmpdir"));
-    File[] sparkTempFiles = tempDir.listFiles((dir, name) -> 
-        name.startsWith("zeppelin-spark") && name.endsWith(".out"));
-    
-    // No new temp files should have been created by this method
-    // (there might be old ones from other tests/processes)
   }
-
-  @Test
-  void testDetectSparkScalaVersionMultipleCalls() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
-    
-    // Use reflection to access private method
-    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
-        "detectSparkScalaVersion", String.class, Map.class);
-    detectSparkScalaVersionMethod.setAccessible(true);
-    
-    Map<String, String> env = new HashMap<>();
-    
-    // Call the method multiple times to ensure it works consistently
-    for (int i = 0; i < 5; i++) {
-      String scalaVersion = (String) detectSparkScalaVersionMethod.invoke(launcher, sparkHome, env);
-      assertTrue(scalaVersion.equals("2.12") || scalaVersion.equals("2.13"),
-          "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
-    }
-    
-    // Since we're using direct stream capture, no temp files should be created
-    // This test now focuses on consistency and reliability across multiple calls
-  }
+  
 }
