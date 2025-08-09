@@ -15,17 +15,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+usage() {
+  echo "Usage: $0 <ZEPPELIN_SRC_ROOT_DIR> [additional args...]" >&2
+  exit 2
+}
+
+[[ $# -ge 1 ]] || usage
+
 ZEPPELIN_SRC_ROOT_DIR=$1
-shift
-TRAVIS_SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd ${ZEPPELIN_SRC_ROOT_DIR}
+shift || true
 
-python ${TRAVIS_SCRIPT_DIR}/save-logs.py "install.txt" "$@"
-BUILD_RET_VAL=$?
+TRAVIS_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 
-if [[ "$BUILD_RET_VAL" != "0" ]];
-then
-  cat "install.txt"
+if [[ -d "$ZEPPELIN_SRC_ROOT_DIR" ]]; then
+  ZEPPELIN_SRC_ROOT_DIR="$(cd -- "$ZEPPELIN_SRC_ROOT_DIR" && pwd -P)"
+else
+  echo "ERROR: ZEPPELIN_SRC_ROOT_DIR not found: $ZEPPELIN_SRC_ROOT_DIR" >&2
+  exit 2
 fi
 
-exit ${BUILD_RET_VAL}
+PYTHON_BIN="${PYTHON:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+  elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+  else
+    echo "ERROR: python3/python not found in PATH" >&2
+    exit 2
+  fi
+fi
+
+SAVE_LOGS_PY="${TRAVIS_SCRIPT_DIR}/save-logs.py"
+LOG_FILE="install.txt"
+
+if [[ ! -f "$SAVE_LOGS_PY" ]]; then
+  echo "ERROR: save-logs.py not found: $SAVE_LOGS_PY" >&2
+  exit 2
+fi
+
+cd -- "$ZEPPELIN_SRC_ROOT_DIR"
+
+set +e
+"$PYTHON_BIN" "$SAVE_LOGS_PY" "$LOG_FILE" "$@"
+BUILD_RET_VAL=$?
+set -e
+
+if [[ "$BUILD_RET_VAL" != "0" ]]; then
+  if [[ -f "$LOG_FILE" ]]; then
+    cat -- "$LOG_FILE"
+  else
+    echo "WARN: Log file not found: $LOG_FILE" >&2
+  fi
+fi
+
+exit "$BUILD_RET_VAL"
