@@ -116,28 +116,38 @@ limitations under the License.
       Loading...
     </div>
   </div>
-  <div ng-if="filteredJobs.length > 0"
-       ng-repeat="note in getJobsInCurrentPage(filteredJobs)"
-       class="paragraph-col">
-    <div class="job-space box job-margin">
-      <job note="note"></job>
+
+  <div ng-if="isFilterLoaded">
+    <div ng-if="!jobManagerEnabled" class="paragraph-col">
+      <div class="job-space box job-margin">
+        <i class="fa fa-warning"></i> Job Manager is disabled in the current configuration.
+      </div>
     </div>
   </div>
-  <div ng-if="isFilterLoaded === false && filteredJobs.length <= 0"
-       class="paragraph-col">
-    <div class="job-space box job-margin text-center">No Job found</div>
-  </div>
 
-  <!-- pagination -->
-  <div class="job-pagination-container">
-    <ul uib-pagination class="pagination-sm"
-        total-items="filteredJobs.length"
-        ng-model="pagination.currentPage"
-        items-per-page="pagination.itemsPerPage"
-        boundary-links="true" rotate="false"
-        max-size="pagination.maxPageCount"
-        previous-text="&lsaquo;" next-text="&rsaquo;"
-        first-text="&laquo;" last-text="&raquo;"></ul>
-  </div>
+  <div ng-if="jobManagerEnabled">
+    <div ng-if="filteredJobs.length > 0"
+         ng-repeat="note in getJobsInCurrentPage(filteredJobs)"
+         class="paragraph-col">
+      <div class="job-space box job-margin">
+        <job note="note"></job>
+      </div>
+    </div>
+    <div ng-if="isFilterLoaded === false && filteredJobs.length <= 0"
+         class="paragraph-col">
+      <div class="job-space box job-margin text-center">No Job found</div>
+    </div>
 
+    <!-- pagination -->
+    <div class="job-pagination-container">
+      <ul uib-pagination class="pagination-sm"
+          total-items="filteredJobs.length"
+          ng-model="pagination.currentPage"
+          items-per-page="pagination.itemsPerPage"
+          boundary-links="true" rotate="false"
+          max-size="pagination.maxPageCount"
+          previous-text="&lsaquo;" next-text="&rsaquo;"
+          first-text="&laquo;" last-text="&raquo;"></ul>
+    </div>
+  </div>
 </div>
