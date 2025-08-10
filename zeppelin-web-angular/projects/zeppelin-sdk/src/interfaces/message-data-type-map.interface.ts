@@ -76,7 +76,7 @@ import {
   RunParagraph
 } from './message-paragraph.interface';
 
-import { ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
+import { JobManagerDisabled, ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
 
 import { InterpreterBindings, InterpreterSetting } from './message-interpreter.interface';
 import { OP } from './message-operator.interface';
@@ -92,6 +92,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.ERROR_INFO]: ErrorInfo;
   [OP.LIST_NOTE_JOBS]: ListNoteJobs;
   [OP.LIST_UPDATE_NOTE_JOBS]: ListUpdateNoteJobs;
+  [OP.JOB_MANAGER_DISABLED]: JobManagerDisabled;
   [OP.INTERPRETER_SETTINGS]: InterpreterSetting;
   [OP.LIST_REVISION_HISTORY]: ListRevision;
   [OP.INTERPRETER_BINDINGS]: InterpreterBindings;
