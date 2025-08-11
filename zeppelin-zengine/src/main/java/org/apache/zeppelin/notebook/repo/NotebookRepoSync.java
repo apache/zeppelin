@@ -206,19 +206,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    List<NotebookRepo> failedRepos = new ArrayList<>();
-
     for (NotebookRepo repo : repos) {
       try {
         repo.remove(noteId, notePath, subject);
       } catch (IOException e) {
-        failedRepos.add(repo);
         LOGGER.error("Failed to remove note {} from repo {}", noteId, repo.getClass().getName(), e);
+        throw new IOException("Failed to remove note from repository: " + repo.getClass().getName(), e);
       }
-    }
-
-    if (!failedRepos.isEmpty()) {
-      throw new IOException("Failed to remove note from one or more repositories: " + failedRepos);
     }
   }
 

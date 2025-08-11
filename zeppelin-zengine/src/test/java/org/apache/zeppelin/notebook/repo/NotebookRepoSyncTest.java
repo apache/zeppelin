@@ -471,8 +471,9 @@ class NotebookRepoSyncTest {
 
     Mockito.verify(mockPrimaryRepo, Mockito.times(1)).remove(noteId, notePath, anonymous);
     Mockito.verify(mockSecondaryRepo, Mockito.times(1)).remove(noteId, notePath, anonymous);
+
     Assertions.assertTrue(
-            thrownException.getMessage().contains("Failed to remove note from one or more repositories"));
+            thrownException.getMessage().contains("Failed to remove note from repository: "));
 
     notebook.close();
   }
