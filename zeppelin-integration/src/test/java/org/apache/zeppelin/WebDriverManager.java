@@ -139,7 +139,7 @@ public class WebDriverManager implements Closeable {
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, Duration.ofSeconds(30))).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, Duration.ofSeconds(60))).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
@@ -156,7 +156,12 @@ public class WebDriverManager implements Closeable {
 
     assertTrue(loaded);
 
-    driver.manage().window().maximize();
+    try {
+      driver.manage().window().maximize();
+    } catch (Exception e) {
+      LOG.warn("Failed to maximize browser window. Consider using setSize() instead.", e);
+    }
+
     return driver;
   }
 

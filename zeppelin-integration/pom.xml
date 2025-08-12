@@ -23,7 +23,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.12.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -38,7 +38,7 @@
 
   <properties>
     <!--test library versions-->
-    <selenium.java.version>4.11.0</selenium.java.version>
+    <selenium.java.version>4.20.0</selenium.java.version>
   </properties>
 
   <dependencies>

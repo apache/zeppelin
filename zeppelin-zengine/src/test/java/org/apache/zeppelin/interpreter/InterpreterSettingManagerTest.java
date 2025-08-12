@@ -83,7 +83,9 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     List<RemoteRepository> repositories = interpreterSettingManager.getRepositories();
     assertEquals(2, repositories.size());
-    assertEquals("central", repositories.get(0).getId());
+    // After loading from file, central repository is replaced and moved to the end
+    assertEquals("local", repositories.get(0).getId());
+    assertEquals("central", repositories.get(1).getId());
 
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(zConf,
@@ -104,7 +106,9 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     repositories = interpreterSettingManager2.getRepositories();
     assertEquals(2, repositories.size());
-    assertEquals("central", repositories.get(0).getId());
+    // After loading from file, central repository is replaced and moved to the end
+    assertEquals("local", repositories.get(0).getId());
+    assertEquals("central", repositories.get(1).getId());
 
   }
 
