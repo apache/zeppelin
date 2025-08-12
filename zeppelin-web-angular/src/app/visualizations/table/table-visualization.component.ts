@@ -59,7 +59,7 @@ export class TableVisualizationComponent implements OnInit {
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
   aggregations: AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
-  @ViewChild(NzTableComponent, { static: false }) nzTable: NzTableComponent;
+  @ViewChild(NzTableComponent, { static: false }) nzTable: NzTableComponent<any>;
 
   exportFile(type: 'csv' | 'xlsx', all = true) {
     const wb = utils.book_new();
@@ -67,7 +67,7 @@ export class TableVisualizationComponent implements OnInit {
     if (all) {
       ws = utils.json_to_sheet(this.rows);
     } else {
-      ws = utils.json_to_sheet(this.nzTable.data);
+      ws = utils.json_to_sheet([...this.nzTable.data]);
     }
     utils.book_append_sheet(wb, ws, 'Sheet1');
     writeFile(wb, `export.${type}`);

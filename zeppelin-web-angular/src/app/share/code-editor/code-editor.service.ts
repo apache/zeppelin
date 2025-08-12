@@ -42,7 +42,7 @@ export class CodeEditorService {
   private firstEditorInitialized = false;
   private loaded$ = new Subject<boolean>();
   private loadingStatus = NzCodeEditorLoadingStatus.UNLOAD;
-  private option: JoinedEditorOptions;
+  private option: JoinedEditorOptions = {};
 
   option$ = new BehaviorSubject<JoinedEditorOptions>(this.option);
 

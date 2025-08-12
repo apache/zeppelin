@@ -45,3 +45,6 @@ Thumbs.db
 #
 .env
 yarn.lock
+
+# Angular cache
+.angular/cache

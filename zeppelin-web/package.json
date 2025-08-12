@@ -3,8 +3,8 @@
   "license": "Apache-2.0",
   "version": "0.0.0",
   "engines": {
-    "node": "~16.20.2",
-    "npm": "~8.19.4"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "scripts": {
     "clean": "rimraf dist && rimraf .tmp",

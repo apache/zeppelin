@@ -119,7 +119,7 @@ export class Message {
   }
 
   close() {
-    this.close$.next();
+    this.close$.next(undefined);
   }
 
   opened(): Observable<Event> {

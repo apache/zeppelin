@@ -96,7 +96,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
+    this.destroy$.next(undefined);
     this.destroy$.complete();
     super.ngOnDestroy();
   }

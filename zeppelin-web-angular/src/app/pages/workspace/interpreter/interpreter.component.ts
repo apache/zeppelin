@@ -181,10 +181,11 @@ export class InterpreterComponent implements OnInit, OnDestroy {
     this.getRepositories();
 
     this.search$.pipe(debounceTime(150)).subscribe(value => this.filterInterpreters(value));
+    this.search$.next(undefined);
   }
 
   ngOnDestroy(): void {
-    this.search$.next();
+    this.search$.next(undefined);
     this.search$.complete();
     this.search$ = null;
   }

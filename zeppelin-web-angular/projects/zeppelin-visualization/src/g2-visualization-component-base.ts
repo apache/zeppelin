@@ -10,13 +10,16 @@
  * limitations under the License.
  */
 
-import { ElementRef, OnDestroy } from '@angular/core';
+import { Component, ElementRef, OnDestroy } from '@angular/core';
 
 import * as G2 from '@antv/g2';
 
 import { GraphConfig } from '@zeppelin/sdk';
 import { Visualization } from './visualization';
 
+@Component({
+  template: ''
+})
 export abstract class G2VisualizationComponentBase implements OnDestroy {
   abstract container: ElementRef<HTMLDivElement>;
   chart: G2.Chart;

@@ -460,10 +460,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       });
     });
 
-    merge<{
-      action: ParagraphActions;
-      event: KeyboardEvent;
-    }>(...observables)
+    merge(...observables)
       .pipe(takeUntil(this.destroy$))
       .subscribe(({ action, event }) => {
         const target = event.target as HTMLElement;
