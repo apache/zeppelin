@@ -78,24 +78,34 @@ export class TicketService {
       this.logout$.next(false);
       this.router.navigate(['/login']).then();
     };
-    return this.httpClient
-      .post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {})
-      .pipe(tap(() => nextAction(), () => nextAction()));
+    return this.httpClient.post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {}).pipe(
+      tap(
+        () => nextAction(),
+        () => nextAction()
+      )
+    );
   }
 
   login(userName: string, password: string) {
-    const payload = new HttpParams().set('userName', userName).set('password', password);
-    return this.httpClient.post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, payload).pipe(
-      tap(
-        data => {
-          this.nzMessageService.success('Login Success');
-          this.setTicket(data);
-        },
-        () => {
-          this.nzMessageService.warning("The username and password that you entered don't match.");
+    const payload = `userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`;
+
+    return this.httpClient
+      .post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, payload, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
-      )
-    );
+      })
+      .pipe(
+        tap(
+          data => {
+            this.nzMessageService.success('Login Success');
+            this.setTicket(data);
+          },
+          () => {
+            this.nzMessageService.warning("The username and password that you entered don't match.");
+          }
+        )
+      );
   }
 
   getZeppelinVersion() {
