@@ -22,14 +22,14 @@ import { TicketService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent implements OnInit {
-  userName: string;
-  password: string;
+  userName?: string;
+  password?: string;
   loading = false;
   private returnUrl: string | undefined;
 
   login() {
     this.loading = true;
-    this.ticketService.login(this.userName, this.password).subscribe(
+    this.ticketService.login(this.userName ?? '', this.password ?? '').subscribe(
       () => {
         this.loading = false;
         this.cdr.markForCheck();

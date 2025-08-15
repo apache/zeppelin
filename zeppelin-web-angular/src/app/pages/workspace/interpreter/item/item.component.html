@@ -71,7 +71,7 @@
         <nz-form-control [nzErrorTip]="nameErrorTpl">
           <input nz-input formControlName="name" placeholder="interpreter name" />
           <ng-template #nameErrorTpl let-control>
-            <ng-container *ngIf="control.hasError('exist')">{{  control.errors.message }}</ng-container>
+            <ng-container *ngIf="control.hasError('exist')">{{ control.errors.message }}</ng-container>
           </ng-template>
         </nz-form-control>
       </nz-form-item>
@@ -135,17 +135,6 @@
       <i nz-icon nzType="down"></i>
     </a>
     <nz-dropdown-menu #perUserMenu="nzDropdownMenu">
-      <a nz-dropdown>
-        <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
-          {{ optionFormGroup.get('perUser').value }}
-        </span>
-        <ng-template #perNote>
-          <span>
-            {{ optionFormGroup.get('perNote').value }}
-          </span>
-        </ng-template>
-        <i nz-icon nzType="down"></i>
-      </a>
       <ul nz-menu [ngSwitch]="interpreterRunningOption">
         <li nz-menu-item *ngSwitchCase="runningOptionMap.globallyModeName">
           <a (click)="setPerNoteOrUserOption('perNote', 'shared')">shared per note</a>
@@ -173,7 +162,7 @@
       *ngIf="
         interpreterRunningOption === runningOptionMap.perUserModeName &&
         ticketService.ticket.principal !== 'anonymous' &&
-        optionFormGroup.get('perNote').value !== sessionOptionMap.shared
+        optionFormGroup.get('perNote')?.value !== sessionOptionMap.shared
       "
     >
       and
@@ -225,7 +214,7 @@
     <nz-form-item
       *ngIf="
         interpreterRunningOption === runningOptionMap.perUserModeName &&
-        optionFormGroup.get('perUser').value === sessionOptionMap.isolated
+        optionFormGroup.get('perUser')?.value === sessionOptionMap.isolated
       "
     >
       <nz-form-control>

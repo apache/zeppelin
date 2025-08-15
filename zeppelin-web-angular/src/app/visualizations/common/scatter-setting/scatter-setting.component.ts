@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } 
 
 import { get } from 'lodash';
 
-import { GraphConfig } from '@zeppelin/sdk';
+import { GraphConfig, VisualizationScatterChart } from '@zeppelin/sdk';
 import { TableData, Visualization } from '@zeppelin/visualization';
 
 @Component({
@@ -25,13 +25,17 @@ import { TableData, Visualization } from '@zeppelin/visualization';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VisualizationScatterSettingComponent implements OnInit {
-  @Input() visualization: Visualization;
+  @Input() visualization!: Visualization;
 
-  tableData: TableData;
-  config: GraphConfig;
-  columns = [];
+  config!: GraphConfig;
+  columns: Array<Exclude<VisualizationScatterChart[keyof VisualizationScatterChart], undefined>> = [];
 
-  field = {
+  field: {
+    xAxis: Array<VisualizationScatterChart['xAxis']>;
+    yAxis: Array<VisualizationScatterChart['yAxis']>;
+    group: Array<VisualizationScatterChart['group']>;
+    size: Array<VisualizationScatterChart['size']>;
+  } = {
     xAxis: [],
     yAxis: [],
     group: [],
@@ -62,6 +66,9 @@ export class VisualizationScatterSettingComponent implements OnInit {
   }
 
   updateConfig() {
+    if (!this.visualization.configChange$) {
+      throw new Error('configChange$ is not defined');
+    }
     if (!this.config.setting.scatterChart) {
       this.config.setting.scatterChart = {};
     }
@@ -76,9 +83,9 @@ export class VisualizationScatterSettingComponent implements OnInit {
   constructor(private cdr: ChangeDetectorRef) {}
 
   init() {
-    this.tableData = this.visualization.getTransformation().getTableData() as TableData;
+    const tableData = this.visualization.getTransformation().getTableData() as TableData;
     this.config = this.visualization.getConfig();
-    this.columns = this.tableData.columns.map((name, index) => ({
+    this.columns = tableData.columns.map((name, index) => ({
       name,
       index,
       aggr: 'sum'
@@ -88,7 +95,8 @@ export class VisualizationScatterSettingComponent implements OnInit {
     const yAxis = get(this.config.setting, 'scatterChart.yAxis', this.columns[1]);
     const group = get(this.config.setting, 'scatterChart.group');
     const size = get(this.config.setting, 'scatterChart.size');
-    const arrayWrapper = value => (value ? [value] : []);
+    const arrayWrapper = <T extends VisualizationScatterChart[keyof VisualizationScatterChart]>(value: T) =>
+      value ? [value] : [];
     this.field.xAxis = arrayWrapper(xAxis);
     this.field.yAxis = arrayWrapper(yAxis);
     this.field.group = arrayWrapper(group);

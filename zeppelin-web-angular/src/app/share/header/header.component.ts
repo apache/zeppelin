@@ -50,6 +50,9 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   }
 
   onSearch() {
+    if (this.queryStr === null) {
+      return;
+    }
     this.queryStr = this.queryStr.trim();
     if (this.queryStr) {
       this.router.navigate(['/search', this.queryStr]);

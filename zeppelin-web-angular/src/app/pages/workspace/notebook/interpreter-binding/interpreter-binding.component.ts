@@ -26,7 +26,7 @@ import { InterpreterService, MessageService } from '@zeppelin/services';
 })
 export class NotebookInterpreterBindingComponent {
   private restarting = false;
-  @Input() noteId: string;
+  @Input() noteId!: string;
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
   @Input() activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
   @Output() readonly activatedExtensionChange = new EventEmitter<

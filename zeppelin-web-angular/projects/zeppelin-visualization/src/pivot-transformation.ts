@@ -9,7 +9,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { GraphConfig } from '@zeppelin/sdk';
 
+// @ts-ignore: TODO - Should write type declaration file.
 import { DataSet } from '@antv/data-set';
 import { get } from 'lodash';
 
@@ -17,7 +19,7 @@ import { TableData } from './table-data';
 import { Transformation } from './transformation';
 
 export class PivotTransformation extends Transformation {
-  constructor(config) {
+  constructor(config: GraphConfig) {
     super(config);
   }
 
@@ -82,10 +84,10 @@ export class PivotTransformation extends Transformation {
     if (config.keys && config.keys[0]) {
       firstKey = config.keys[0].name;
     }
-    let keys = [];
-    let groups = [];
-    let values = [];
-    let aggregates = [];
+    let keys: string[];
+    let groups: string[];
+    let values: string[];
+    let aggregates: string[];
 
     // set values from config
     if (config.mode !== 'scatterChart') {
@@ -100,11 +102,13 @@ export class PivotTransformation extends Transformation {
       keys = xAxis ? [xAxis] : [];
       values = yAxis ? [yAxis] : [];
       groups = group ? [group] : [];
+      aggregates = [];
     }
 
     // try coercion to number type
     dv.transform({
       type: 'map',
+      // @ts-ignore: TODO - Should write type declaration file.
       callback: row => {
         Object.keys(row).forEach(k => {
           if (config.keys.map(e => e.name).indexOf(k) === -1) {
@@ -118,7 +122,6 @@ export class PivotTransformation extends Transformation {
 
     // not applicable with type scatter chart
     if (config.mode !== 'scatterChart') {
-
       // aggregate values
       dv.transform({
         type: 'aggregate',
@@ -183,13 +186,15 @@ export class PivotTransformation extends Transformation {
       groupBy: groups
     });
 
+    // @ts-ignore: TODO - Should write type declaration file.
     const groupsData = [];
     Object.keys(dv.rows).forEach(groupKey => {
       const groupName = groupKey.replace(/^_/, '');
+      // @ts-ignore: TODO - Should write type declaration file.
       dv.rows[groupKey].forEach(row => {
         const getKey = () => {
           if (config.mode !== 'pieChart') {
-            return groupName ? `${row.__key__}.${groupName}` : row.__key__
+            return groupName ? `${row.__key__}.${groupName}` : row.__key__;
           } else {
             const keyName = keys.map(k => row[k]).join('.');
             return groupName ? `${keyName}.${groupName}` : keyName;
@@ -202,11 +207,14 @@ export class PivotTransformation extends Transformation {
       });
     });
 
+    // @ts-ignore: TODO - Should write type declaration file.
     groupsData.sort(
       (a, b) =>
+        // @ts-ignore: TODO - Should write type declaration file.
         dv.origin.findIndex(o => o[firstKey] === a[firstKey]) - dv.origin.findIndex(o => o[firstKey] === b[firstKey])
     );
 
+    // @ts-ignore: TODO - Should write type declaration file.
     console.log(groupsData);
     dv = ds
       .createView({
@@ -214,6 +222,7 @@ export class PivotTransformation extends Transformation {
           filterData: null
         }
       })
+      // @ts-ignore: TODO - Should write type declaration file.
       .source(groupsData);
 
     if (config.mode === 'stackedAreaChart' || config.mode === 'pieChart') {

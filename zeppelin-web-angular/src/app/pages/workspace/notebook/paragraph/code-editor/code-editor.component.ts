@@ -45,36 +45,36 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   //  1. cursor position
   @Input() readOnly = false;
   @Input() language = 'text';
-  @Input() paragraphControl: NotebookParagraphControlComponent;
+  @Input() paragraphControl!: NotebookParagraphControlComponent;
   @Input() lineNumbers = false;
   @Input() focus = false;
   @Input() collaborativeMode = false;
-  @Input() text: string;
-  @Input() fontSize: number;
+  @Input() text!: string;
+  @Input() fontSize: number | undefined;
   @Input() dirty = false;
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
-  @Input() pid: string;
+  @Input() pid!: string;
   @Output() readonly textChanged = new EventEmitter<string>();
   @Output() readonly editorBlur = new EventEmitter<void>();
   @Output() readonly editorFocus = new EventEmitter<void>();
-  private editor: IStandaloneCodeEditor;
+  private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   height = 18;
-  interpreterName: string;
+  interpreterName?: string;
 
   autoAdjustEditorHeight() {
-    if (this.editor) {
+    const editor = this.editor;
+    const model = editor?.getModel();
+    if (editor && model) {
       this.ngZone.run(() => {
-        this.height =
-          this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
-        this.editor.layout();
+        this.height = editor.getOption(monaco.editor.EditorOption.lineHeight) * (model.getLineCount() + 2);
+        editor.layout();
         this.cdr.markForCheck();
       });
     }
   }
 
-  initEditorListener() {
-    const editor = this.editor;
+  initEditorListener(editor: IStandaloneCodeEditor) {
     this.monacoDisposables.push(
       editor.onDidFocusEditorText(() => {
         this.editorFocus.emit();
@@ -85,7 +85,11 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
       editor.onDidChangeModelContent(() => {
         this.ngZone.run(() => {
-          this.text = editor.getModel().getValue();
+          const model = editor.getModel();
+          if (!model) {
+            throw new Error('Model content changed but model not found.');
+          }
+          this.text = model.getValue();
           this.textChanged.emit(this.text);
           this.setParagraphMode(true);
           this.autoAdjustEditorHeight();
@@ -97,9 +101,10 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     );
   }
 
-  setEditorValue() {
-    if (this.editor && this.editor.getModel() && this.editor.getModel().getValue() !== this.text) {
-      this.editor.getModel().setValue(this.text || '');
+  setEditorValue(editor: IStandaloneCodeEditor) {
+    const model = editor.getModel();
+    if (model && model.getValue() !== this.text) {
+      model.setValue(this.text || '');
     }
   }
 
@@ -115,19 +120,23 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       '!suggestWidgetVisible'
     );
 
-    this.updateEditorOptions();
+    this.updateEditorOptions(this.editor);
     this.setParagraphMode();
-    this.initEditorListener();
+    this.initEditorListener(this.editor);
     this.initEditorFocus();
-    this.initCompletionService();
-    this.setEditorValue();
+    this.initCompletionService(this.editor);
+    this.setEditorValue(this.editor);
     setTimeout(() => {
       this.autoAdjustEditorHeight();
     });
   }
 
-  initCompletionService(): void {
-    this.completionService.registerAsCompletionReceiver(this.editor.getModel(), this.paragraphControl.pid);
+  initCompletionService(editor: IStandaloneCodeEditor): void {
+    const model = editor.getModel();
+    if (!model) {
+      return;
+    }
+    this.completionService.registerAsCompletionReceiver(model, this.paragraphControl.pid);
   }
 
   initEditorFocus() {
@@ -136,21 +145,23 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     }
   }
 
-  updateEditorOptions() {
-    if (this.editor) {
-      this.editor.updateOptions({
-        readOnly: this.readOnly,
-        fontSize: pt2px(this.fontSize),
-        renderLineHighlight: this.focus ? 'all' : 'none',
-        minimap: { enabled: false },
-        lineNumbers: this.lineNumbers ? 'on' : 'off',
-        glyphMargin: false,
-        folding: false,
-        scrollBeyondLastLine: false,
-        contextmenu: false,
-        matchBrackets: 'always'
-      });
-    }
+  updateEditorOptions(editor: IStandaloneCodeEditor) {
+    editor.updateOptions({
+      readOnly: this.readOnly,
+      fontSize: this.fontSize && pt2px(this.fontSize),
+      renderLineHighlight: this.focus ? 'all' : 'none',
+      minimap: { enabled: false },
+      lineNumbers: this.lineNumbers ? 'on' : 'off',
+      glyphMargin: false,
+      folding: false,
+      scrollBeyondLastLine: false,
+      contextmenu: false,
+      matchBrackets: 'always',
+      scrollbar: {
+        handleMouseWheel: false,
+        alwaysConsumeMouseWheel: false
+      }
+    });
   }
 
   getInterpreterName(paragraphText: string) {
@@ -168,9 +179,12 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   setParagraphMode(changed = false) {
     if (this.editor && !changed) {
       const model = this.editor.getModel();
+      if (!model) {
+        return;
+      }
       if (this.language) {
         // TODO(hsuanxyz): config convertMap
-        const convertMap = {
+        const convertMap: Record<string, string> = {
           sh: 'shell'
         };
         MonacoEditor.setModelLanguage(model, convertMap[this.language] || this.language);
@@ -191,7 +205,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   layout() {
     if (this.editor) {
       setTimeout(() => {
-        this.editor.layout();
+        this.editor!.layout();
       });
     }
   }
@@ -206,13 +220,17 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   ngOnChanges(changes: SimpleChanges): void {
     const { text, interpreterBindings, language, readOnly, focus, lineNumbers, fontSize } = changes;
     if (readOnly || focus || lineNumbers || fontSize) {
-      this.updateEditorOptions();
+      if (this.editor) {
+        this.updateEditorOptions(this.editor);
+      }
     }
     if (focus) {
       this.initEditorFocus();
     }
     if (text) {
-      this.setEditorValue();
+      if (this.editor) {
+        this.setEditorValue(this.editor);
+      }
     }
 
     if (interpreterBindings || language) {
@@ -224,7 +242,10 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   }
 
   ngOnDestroy(): void {
-    this.completionService.unregister(this.editor.getModel());
+    const model = this.editor?.getModel();
+    if (model) {
+      this.completionService.unregister(model);
+    }
     this.monacoDisposables.forEach(d => d.dispose());
   }
 

@@ -17,8 +17,8 @@ import { MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
 import { MessageService } from '@zeppelin/services';
 
 export class MessageListenersManager implements OnDestroy {
-  __zeppelinMessageListeners__: Array<() => void>;
-  __zeppelinMessageListeners$__ = new Subscriber();
+  __zeppelinMessageListeners__?: Array<() => void>;
+  __zeppelinMessageListeners$__: Subscriber<unknown> | null = new Subscriber();
   constructor(public messageService: MessageService) {
     if (this.__zeppelinMessageListeners__) {
       this.__zeppelinMessageListeners__.forEach(fn => fn.apply(this));
@@ -26,7 +26,7 @@ export class MessageListenersManager implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.__zeppelinMessageListeners$__.unsubscribe();
+    this.__zeppelinMessageListeners$__?.unsubscribe();
     this.__zeppelinMessageListeners$__ = null;
   }
 }
@@ -39,10 +39,13 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
   ) {
     const oldValue = descriptor.value as ReceiveArgumentsType<K>;
 
-    const fn = function() {
-      // tslint:disable:no-invalid-this
+    const fn = function(this: MessageListenersManager) {
+      if (!this.__zeppelinMessageListeners$__) {
+        throw new Error('__zeppelinMessageListeners$__ is not defined');
+      }
       this.__zeppelinMessageListeners$__.add(
         this.messageService.receive(op).subscribe(data => {
+          // @ts-ignore
           oldValue.apply(this, [data]);
         })
       );

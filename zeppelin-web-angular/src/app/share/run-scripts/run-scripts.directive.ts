@@ -20,7 +20,7 @@ const loadedExternalScripts = new Set<string>();
   selector: '[zeppelinRunScripts]'
 })
 export class RunScriptsDirective implements OnChanges {
-  @Input() scriptsContent: string | SafeHtml;
+  @Input() scriptsContent!: string | SafeHtml;
 
   constructor(private elementRef: ElementRef<HTMLElement>, private ngZone: NgZone, private renderer: Renderer2) {}
 
@@ -32,7 +32,7 @@ export class RunScriptsDirective implements OnChanges {
       this.ngZone.runOutsideAngular(() => {
         const scripts = this.elementRef.nativeElement.getElementsByTagName('script');
         const externalScripts = [];
-        const localScripts = [];
+        const localScripts: HTMLScriptElement[] = [];
         for (let i = 0; i < scripts.length; i++) {
           const script = scripts[i];
           if (script.text) {

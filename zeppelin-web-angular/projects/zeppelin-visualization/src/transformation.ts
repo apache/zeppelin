@@ -22,13 +22,13 @@ export interface Setting {
 }
 
 export abstract class Transformation {
-  dataset: DataSet;
+  dataset: DataSet | null = null;
   constructor(private config: GraphConfig) {}
 
   // tslint:disable-next-line:no-any
-  abstract transform(tableData): any;
+  abstract transform(tableData: any): any;
 
-  setConfig(config) {
+  setConfig(config: GraphConfig) {
     this.config = config;
   }
 
@@ -37,6 +37,9 @@ export abstract class Transformation {
   }
 
   getTableData(): DataSet {
+    if (!this.dataset) {
+      throw new Error('dataset is not initialized');
+    }
     return this.dataset;
   }
 

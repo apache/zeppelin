@@ -12,29 +12,30 @@
 
 import { Inject, Injectable } from '@angular/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
+import { NodeItem } from '@zeppelin/interfaces/node-list';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ArrayOrderingService {
-  noteListOrdering(note) {
+  noteListOrdering(note: NodeItem) {
     if (note.id === this.TRASH_FOLDER_ID) {
       return '\uFFFF';
     }
     return this.getNoteName(note);
   }
 
-  getNoteName(note) {
-    if (note.name === undefined || note.name.trim() === '') {
+  getNoteName(note: NodeItem) {
+    if (note.title.trim() === '') {
       return 'Note ' + note.id;
     } else {
-      return note.name;
+      return note.title;
     }
   }
 
-  noteComparator = (v1, v2) => {
-    const note1 = v1.value || v1;
-    const note2 = v2.value || v2;
+  noteComparator = (v1: NodeItem, v2: NodeItem) => {
+    const note1 = v1;
+    const note2 = v2;
 
     if (note1.id === this.TRASH_FOLDER_ID) {
       return 1;
