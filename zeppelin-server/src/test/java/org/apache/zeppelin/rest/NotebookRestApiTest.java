@@ -19,6 +19,8 @@ package org.apache.zeppelin.rest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import jakarta.ws.rs.core.Response;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
@@ -1186,5 +1188,73 @@ class NotebookRestApiTest extends AbstractTestRestApi {
         notebook.removeNote(note1Id, anonymous);
       }
     }
+  }
+
+  @Test
+  void testGetJobList_whenJobManagerDisabled() throws IOException {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    String expectedErrorMessage = "Job Manager is disabled in the current configuration.";
+    CloseableHttpResponse response = null;
+
+    try {
+      response = httpGet("/notebook/jobmanager/");
+      assertEquals(Response.Status.FORBIDDEN.getStatusCode(),
+          response.getStatusLine().getStatusCode(),
+          "Response status should be 403 Forbidden");
+
+      String jsonResponse = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+      Map<String, Object> parsedResponse = gson.fromJson(jsonResponse,
+          new TypeToken<Map<String, Object>>() {}.getType());
+
+      assertEquals("FORBIDDEN", parsedResponse.get("status"));
+      assertEquals(expectedErrorMessage, parsedResponse.get("message"));
+
+    } finally {
+      if (response != null) {
+        response.close();
+      }
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testGetUpdatedJobList_whenJobManagerDisabled() throws IOException {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    String expectedErrorMessage = "Job Manager is disabled in the current configuration.";
+    CloseableHttpResponse response = null;
+
+    try {
+      response = httpGet("/notebook/jobmanager/12345/");
+
+      assertEquals(Response.Status.FORBIDDEN.getStatusCode(),
+          response.getStatusLine().getStatusCode(),
+          "Response status should be 403 Forbidden");
+
+      String jsonResponse = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+      Map<String, Object> parsedResponse = gson.fromJson(jsonResponse,
+          new TypeToken<Map<String, Object>>() {}.getType());
+
+      assertEquals("FORBIDDEN", parsedResponse.get("status"));
+      assertEquals(expectedErrorMessage, parsedResponse.get("message"));
+
+    } finally {
+      if (response != null) {
+        response.close();
+      }
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  private boolean disableJobManagerAndBackupFlag() {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    boolean originalFlag = zConf.isJobManagerEnabled();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(), "false");
+    return originalFlag;
+  }
+
+  private void restoreJobManagerFlag(boolean originalFlag) {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(),
+        String.valueOf(originalFlag));
   }
 }

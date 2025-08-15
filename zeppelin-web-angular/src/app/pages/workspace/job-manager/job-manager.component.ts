@@ -16,7 +16,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { JobsItem, JobStatus, ListNoteJobs, ListUpdateNoteJobs, OP } from '@zeppelin/sdk';
+import { JobsItem, JobManagerDisabled, JobStatus, ListNoteJobs, ListUpdateNoteJobs, OP } from '@zeppelin/sdk';
 import { JobManagerService, MessageService } from '@zeppelin/services';
 
 enum JobDateSortKeys {
@@ -45,6 +45,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
   filterString: string = '';
   jobs: JobsItem[] = [];
   loading = true;
+  isJobManagerEnabled = true;
 
   @MessageListener(OP.LIST_NOTE_JOBS)
   setJobs(data: ListNoteJobs) {
@@ -70,6 +71,13 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
       }
     });
     this.filterJobs();
+  }
+
+  @MessageListener(OP.JOB_MANAGER_DISABLED)
+  onJobManagerDisabled(data: JobManagerDisabled) {
+    this.loading = false;
+    this.isJobManagerEnabled = false;
+    this.cdr.markForCheck();
   }
 
   filterJobs() {

@@ -18,6 +18,10 @@ export interface ListUpdateNoteJobs {
   noteRunningJobs: NoteJobs;
 }
 
+export interface JobManagerDisabled {
+  errorMessage: string;
+}
+
 export interface NoteJobs {
   lastResponseUnixTime: number;
   jobs: JobsItem[];

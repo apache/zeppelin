@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -127,6 +128,113 @@ class NotebookServerTest extends AbstractTestRestApi {
   @Test
   void checkInvalidOrigin() {
     assertFalse(notebookServer.checkOrigin("http://evillocalhost:8080"));
+  }
+
+  @Test
+  void testUnicastNoteJobInfo_whenJobManagerDisabled() throws IOException {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    NotebookSocket conn = createWebSocket();
+    ServiceContext context = new ServiceContext(anonymous, new HashSet<>());
+    Message fromMessage = new Message(OP.LIST_NOTE_JOBS);
+
+    try {
+      notebookServer.unicastNoteJobInfo(conn, context, fromMessage);
+      String expectedErrorMessage = "Job Manager is disabled in the current configuration.";
+      Message expectedMessage = new Message(OP.JOB_MANAGER_DISABLED).put("errorMessage", expectedErrorMessage);
+      verify(conn, times(1)).send(eq(notebookServer.serializeMessage(expectedMessage)));
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testBroadcastUpdateNoteJobInfo_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.broadcastUpdateNoteJobInfo(mockNote, System.currentTimeMillis());
+      }, "broadcastUpdateNoteJobInfo should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphRemove_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphRemove(mockParagraph);
+      }, "onParagraphRemove should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnNoteRemove_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onNoteRemove(mockNote, anonymous);
+      }, "onNoteRemove should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphCreate_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphCreate(mockParagraph);
+      }, "onParagraphCreate should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnNoteCreate_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onNoteCreate(mockNote, anonymous);
+      }, "onNoteCreate should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphStatusChange_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphStatusChange(mockParagraph, Status.RUNNING);
+      }, "onParagraphStatusChange should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
   }
 
   @Test
@@ -859,5 +967,18 @@ class NotebookServerTest extends AbstractTestRestApi {
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
     return sock;
+  }
+
+  private boolean disableJobManagerAndBackupFlag() {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    boolean originalFlag = zConf.isJobManagerEnabled();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(), "false");
+    return originalFlag;
+  }
+
+  private void restoreJobManagerFlag(boolean originalFlag) {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(),
+        String.valueOf(originalFlag));
   }
 }

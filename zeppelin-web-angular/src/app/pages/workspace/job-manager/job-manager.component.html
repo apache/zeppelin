@@ -60,19 +60,25 @@
   </form>
 </zeppelin-page-header>
 <div class="content">
-  <nz-card *ngIf="loading; else jobs">
-    <nz-skeleton [nzTitle]="false" [nzLoading]="true" [nzActive]="true">
-    </nz-skeleton>
-  </nz-card>
+  <ng-container *ngIf="isJobManagerEnabled; else disabledMessage">
+    <nz-card *ngIf="loading; else jobs">
+      <nz-skeleton [nzTitle]="false" [nzLoading]="true" [nzActive]="true">
+      </nz-skeleton>
+    </nz-card>
 
-  <ng-template #jobs>
-    <zeppelin-job-manager-job
-      *ngFor="let item of filteredJobs"
-      [note]="item"
-      [highlight]="filterString"
-      (start)="onStart($event)"
-      (stop)="onStop($event)">
-    </zeppelin-job-manager-job>
-    <nz-empty *ngIf="filteredJobs.length === 0" nzNotFoundContent="No Job found"></nz-empty>
+    <ng-template #jobs>
+      <zeppelin-job-manager-job
+        *ngFor="let item of filteredJobs"
+        [note]="item"
+        [highlight]="filterString"
+        (start)="onStart($event)"
+        (stop)="onStop($event)">
+      </zeppelin-job-manager-job>
+      <nz-empty *ngIf="filteredJobs.length === 0" nzNotFoundContent="No Job found"></nz-empty>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #disabledMessage>
+    <nz-alert nzType="info" nzMessage="Job Manager is disabled in the current configuration." [nzShowIcon]="true"></nz-alert>
   </ng-template>
 </div>

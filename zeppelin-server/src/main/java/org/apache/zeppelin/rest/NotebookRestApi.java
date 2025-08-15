@@ -59,6 +59,7 @@ import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
@@ -218,6 +219,14 @@ public class NotebookRestApi extends AbstractRestApi {
   private void checkIfParagraphIsNotNull(Paragraph paragraph, String paragraphId) {
     if (paragraph == null) {
       throw new ParagraphNotFoundException(paragraphId);
+    }
+  }
+
+  private void checkIfJobManagerIsEnabled() {
+    try {
+      jobManagerService.checkIfJobManagerIsEnabled();
+    } catch (JobManagerForbiddenException e) {
+      throw new ForbiddenException(e.getMessage());
     }
   }
 
@@ -1147,6 +1156,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getJobListforNote() throws IOException, IllegalArgumentException {
     LOGGER.info("Get note jobs for job manager");
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
             .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
     Map<String, Object> response = new HashMap<>();
@@ -1170,6 +1180,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
       throws IOException, IllegalArgumentException {
     LOGGER.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs =
             jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
                     new RestServiceCallback<>());
