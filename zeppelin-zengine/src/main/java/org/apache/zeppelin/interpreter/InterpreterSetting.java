@@ -491,6 +491,9 @@ public class InterpreterSetting {
   }
 
   ManagedInterpreterGroup getInterpreterGroup(String groupId) {
+    if (groupId == null) {
+      return null;
+    }
     return interpreterGroups.get(groupId);
   }
 
