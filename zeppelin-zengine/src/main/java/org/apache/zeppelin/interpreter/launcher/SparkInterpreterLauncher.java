@@ -270,11 +270,13 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     LOGGER.info("Detect scala version from SPARK_HOME: {}", sparkHome);
     ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
     builder.environment().putAll(env);
-    File processOutputFile = File.createTempFile("zeppelin-spark", ".out");
-    builder.redirectError(processOutputFile);
+    
     Process process = builder.start();
     process.waitFor();
-    String processOutput = IOUtils.toString(new FileInputStream(processOutputFile), StandardCharsets.UTF_8);
+    
+    // Capture the error stream directly without using a temp file
+    String processOutput = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+    
     Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
     Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
