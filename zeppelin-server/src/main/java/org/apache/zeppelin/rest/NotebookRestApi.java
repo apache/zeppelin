@@ -222,6 +222,18 @@ public class NotebookRestApi extends AbstractRestApi {
   }
 
   /**
+   * Get notebook capabilities.
+   */
+  @GET
+  @Path("capabilities")
+  @ZeppelinApi
+  public Response getNotebookCapabilities() {
+      Map<String, Object> capabilities = Map.of("isRevisionSupported", notebook.isRevisionSupported());
+
+      return new JsonResponse<>(Status.OK, "", capabilities).build();
+  }
+
+  /**
    * Set note authorization information.
    */
   @PUT
