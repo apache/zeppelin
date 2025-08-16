@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin, BehaviorSubject, Subject } from 'rxjs';
@@ -86,6 +86,12 @@ export class TicketService {
     );
   }
 
+  // Note: We intentionally avoid using HttpParams here due to Angular issue #11058.
+  // See: https://github.com/angular/angular/issues/11058
+  // HttpParameterCodec incorrectly encodes special characters like '+' and '=',
+  // which can cause issues in application/x-www-form-urlencoded requests
+  // (e.g., '+' becomes space in PHP/Tomcat). Therefore, we manually build
+  // the payload using encodeURIComponent for each field.
   login(userName: string, password: string) {
     const payload = `userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`;
 
