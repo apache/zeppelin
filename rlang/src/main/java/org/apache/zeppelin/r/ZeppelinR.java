@@ -49,14 +49,14 @@ public class ZeppelinR {
    * Request to R repl
    */
   private Request rRequestObject = null;
-  private Integer rRequestNotifier = new Integer(0);
+  private Integer rRequestNotifier = Integer.valueOf(0);
 
   /**
    * Response from R repl
    */
   private Object rResponseValue = null;
   private boolean rResponseError = false;
-  private Integer rResponseNotifier = new Integer(0);
+  private Integer rResponseNotifier = Integer.valueOf(0);
 
   public ZeppelinR(RInterpreter rInterpreter) {
     this.rInterpreter = rInterpreter;
