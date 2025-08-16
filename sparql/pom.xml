@@ -33,7 +33,7 @@
 
     <properties>
         <interpreter.name>sparql</interpreter.name>
-        <jena.version>3.12.0</jena.version>
+        <jena.version>3.17.0</jena.version>
     </properties>
 
     <dependencies>
