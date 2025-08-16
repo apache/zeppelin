@@ -58,6 +58,23 @@ limitations under the License.
                 </span>
               </small>
             </div>
+            <small ng-switch="item.status">
+              <small ng-switch-when="READY">
+                <i style="color: green; margin-right: 3px;" class="fa fa-circle"
+                   uib-tooltip="Interpreter restart successfully">
+                </i>
+              </small>
+              <small ng-switch-when="ERROR">
+                <i style="color: red; cursor: pointer" class="fa fa-circle"
+                   uib-tooltip="{{item.errorReason}}">
+                </i>
+              </small>
+              <small ng-switch-when="YELLOW">
+                <i style="color: yellow; cursor: pointer" class="fa fa-circle"
+                   uib-tooltip="{{item.errorReason}}">
+                </i>
+              </small>
+            </small>
           </div>
         </div>
       </div>
