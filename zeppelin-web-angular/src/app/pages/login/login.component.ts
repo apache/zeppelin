@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
 
   login() {
     this.loading = true;
-    this.ticketService.login(this.userName, this.password).subscribe(
+    this.ticketService.login(encodeURIComponent(this.userName), encodeURIComponent(this.password)).subscribe(
       () => {
         this.loading = false;
         this.cdr.markForCheck();
