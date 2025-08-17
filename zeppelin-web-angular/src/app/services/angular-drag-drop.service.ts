@@ -19,8 +19,7 @@ import * as angular from 'angular';
 export class AngularDragDropService {
   constructor() {}
 
-  // tslint:disable-next-line:no-any
-  addDragDropDirectives(module: any): void {
+  addDragDropDirectives(module: angular.IModule): void {
     // Drag and drop service to maintain state across directives
     // tslint:disable-next-line:no-any
     module.service('customDragDropService', [
