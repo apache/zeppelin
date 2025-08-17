@@ -12,6 +12,11 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
+import {
+  HeliumClassicTransformation,
+  HeliumClassicVisualization,
+  HeliumClassicVisualizationConstructor
+} from '@zeppelin/interfaces';
 import { GraphConfig, ParagraphConfigResult } from '@zeppelin/sdk';
 import { TableData } from '@zeppelin/visualization';
 import * as angular from 'angular';
@@ -21,14 +26,12 @@ import { AngularDragDropService } from './angular-drag-drop.service';
 import { BootstrapCompatibilityService } from './bootstrap-compatibility.service';
 import { TableDataAdapterService } from './table-data-adapter.service';
 
-interface ClassicVisualizationInstance {
-  // tslint:disable-next-line:no-any
-  instance: any;
+interface ClassicVisualizationInstanceInfo {
+  instance: HeliumClassicVisualization;
   targetEl: HTMLElement;
   scope: angular.IScope;
   appName: string;
-  // tslint:disable-next-line:no-any
-  injector: any;
+  injector: angular.auto.IInjectorService;
 }
 
 @Injectable({
@@ -36,7 +39,7 @@ interface ClassicVisualizationInstance {
 })
 export class ClassicVisualizationService {
   private appCounter = 0;
-  private activeInstances = new Map<string, ClassicVisualizationInstance>();
+  private activeInstanceInfos = new Map<string, ClassicVisualizationInstanceInfo>();
 
   // Template cache for known HTML templates
   private templateCache = new Map<string, string>();
@@ -64,13 +67,14 @@ export class ClassicVisualizationService {
   ]);
 
   // Custom $templateRequest implementation that intercepts known template paths
-  // tslint:disable-next-line:no-any
-  private createCustomTemplateRequest(originalTemplateRequest: any): any {
+  private createCustomTemplateRequest(
+    originalTemplateRequest: angular.ITemplateRequestService
+  ): (tpl: string, ignorRequestError?: boolean) => Promise<string> | angular.IPromise<string> {
     return (templateUrl: string, ignorRequestError?: boolean) => {
       // Check if we have a cached template for this URL
       if (this.templateCache.has(templateUrl)) {
         // Return a promise that resolves with the cached template
-        return Promise.resolve(this.templateCache.get(templateUrl));
+        return Promise.resolve(this.templateCache.get(templateUrl) ?? '');
       }
 
       // Check if this is a known template that should be loaded from assets
@@ -137,8 +141,10 @@ export class ClassicVisualizationService {
     return element;
   }
 
-  // tslint:disable-next-line:no-any
-  private waitForTransformationScopeAndApply(transformation: any, timeout: any): void {
+  private waitForTransformationScopeAndApply(
+    transformation: HeliumClassicTransformation,
+    timeout: angular.ITimeoutService
+  ): void {
     const waitForTransformationScope = () => {
       if (transformation._scope) {
         transformation._scope.$apply();
@@ -150,15 +156,13 @@ export class ClassicVisualizationService {
   }
 
   async createClassicVisualization(
-    // tslint:disable-next-line:no-any
-    visualizationClass: any,
+    visConstructor: HeliumClassicVisualizationConstructor,
     targetElementId: string,
     config: GraphConfig,
     tableData: TableData,
     // tslint:disable-next-line:no-any
     emitter: (config: any) => void
-    // tslint:disable-next-line:no-any
-  ): Promise<any> {
+  ): Promise<HeliumClassicVisualization> {
     // Inject Bootstrap compatibility styles before creating visualization
     this.bootstrapCompatibilityService.injectBootstrapStyles();
 
@@ -189,7 +193,7 @@ export class ClassicVisualizationService {
 
     // Instantiate the classic visualization
     const configForMode = this.getClassicVizConfig(config);
-    const vizInstance = new visualizationClass(angularElement, configForMode);
+    const vizInstance = new visConstructor(angularElement, configForMode);
 
     // Inject AngularJS dependencies that classic visualizations expect
     vizInstance._emitter = emitter;
@@ -236,7 +240,7 @@ export class ClassicVisualizationService {
     vizInstance.activate();
 
     // Store the instance for cleanup later
-    this.activeInstances.set(targetElementId, {
+    this.activeInstanceInfos.set(targetElementId, {
       instance: vizInstance,
       targetEl: targetElement,
       scope,
@@ -247,8 +251,9 @@ export class ClassicVisualizationService {
     return vizInstance;
   }
 
-  // tslint:disable-next-line:no-any
-  private getOrCreateInjector(targetElement: HTMLElement): { injector: any; appName: string } {
+  private getOrCreateInjector(
+    targetElement: HTMLElement
+  ): { injector: angular.auto.IInjectorService; appName: string } {
     // Check if element is already bootstrapped
     const existingInjector = angular.element(targetElement).injector();
 
@@ -279,12 +284,12 @@ export class ClassicVisualizationService {
   }
 
   updateClassicVisualization(targetElementId: string, config: GraphConfig, tableData: TableData): void {
-    const instanceData = this.activeInstances.get(targetElementId);
-    if (!instanceData) {
+    const instanceInfo = this.activeInstanceInfos.get(targetElementId);
+    if (!instanceInfo) {
       return;
     }
 
-    const { instance } = instanceData;
+    const { instance } = instanceInfo;
 
     const configForMode = this.getClassicVizConfig(config);
 
@@ -311,7 +316,7 @@ export class ClassicVisualizationService {
         transformation.renderSetting(angular.element(transformationSettingEl));
 
         // Wait for transformation rendering to complete (including async template loading)
-        const { injector } = instanceData;
+        const { injector } = instanceInfo;
         const timeout = injector.get('$timeout');
         this.waitForTransformationScopeAndApply(transformation, timeout);
 
@@ -331,12 +336,12 @@ export class ClassicVisualizationService {
   }
 
   setClassicVisualizationConfig(targetElementId: string, config: GraphConfig): void {
-    const instanceData = this.activeInstances.get(targetElementId);
-    if (!instanceData) {
+    const instanceInfo = this.activeInstanceInfos.get(targetElementId);
+    if (!instanceInfo) {
       return;
     }
 
-    const { instance } = instanceData;
+    const { instance } = instanceInfo;
 
     try {
       instance.setConfig(config);
@@ -348,12 +353,12 @@ export class ClassicVisualizationService {
   }
 
   resizeClassicVisualization(targetElementId: string): void {
-    const instanceData = this.activeInstances.get(targetElementId);
-    if (!instanceData) {
+    const instanceInfo = this.activeInstanceInfos.get(targetElementId);
+    if (!instanceInfo) {
       return;
     }
 
-    const { instance } = instanceData;
+    const { instance } = instanceInfo;
 
     try {
       instance.resize();
@@ -363,12 +368,12 @@ export class ClassicVisualizationService {
   }
 
   destroyInstance(targetElementId: string, forceCleanBootstrap = false): void {
-    const instanceData = this.activeInstances.get(targetElementId);
-    if (!instanceData) {
+    const instanceInfo = this.activeInstanceInfos.get(targetElementId);
+    if (!instanceInfo) {
       return;
     }
 
-    const { instance, targetEl, scope } = instanceData;
+    const { instance, targetEl, scope } = instanceInfo;
 
     try {
       // Destroy the visualization instance
@@ -388,14 +393,14 @@ export class ClassicVisualizationService {
         angular.element(targetEl).removeClass('ng-scope');
       }
 
-      this.activeInstances.delete(targetElementId);
+      this.activeInstanceInfos.delete(targetElementId);
     } catch (error) {
       console.error('Error destroying classic visualization:', error);
     }
   }
 
   destroyAllInstances(forceCleanBootstrap = false): void {
-    const elementIds = Array.from(this.activeInstances.keys());
+    const elementIds = Array.from(this.activeInstanceInfos.keys());
     elementIds.forEach(elementId => {
       this.destroyInstance(elementId, forceCleanBootstrap);
     });
