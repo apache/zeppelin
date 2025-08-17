@@ -96,7 +96,7 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
     if (System.getenv("KINIT_FAIL_THRESHOLD") != null) {
       try {
         kinitFailThreshold = Integer.valueOf(System.getenv("KINIT_FAIL_THRESHOLD"));
-      } catch (Exception e) {
+      } catch (NumberFormatException e) {
         LOGGER.error("Cannot get integer value from the given string, " + System
             .getenv("KINIT_FAIL_THRESHOLD") + " defaulting to " + kinitFailThreshold, e);
       }
