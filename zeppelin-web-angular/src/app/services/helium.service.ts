@@ -12,7 +12,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HeliumBundle, HeliumPackageSearchResult } from '@zeppelin/interfaces/helium';
+import { HeliumBundle, HeliumPackageSearchResult, HeliumVisualizationBundle } from '@zeppelin/interfaces/helium';
 import { BaseRest } from '@zeppelin/services/base-rest';
 import { BaseUrlService } from '@zeppelin/services/base-url.service';
 import { forkJoin, of, BehaviorSubject, Observable } from 'rxjs';
@@ -22,7 +22,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class HeliumService extends BaseRest {
-  private visualizationBundles$ = new BehaviorSubject<HeliumBundle[]>([]);
+  private visualizationBundles$ = new BehaviorSubject<HeliumVisualizationBundle[]>([]);
 
   constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
@@ -92,12 +92,12 @@ export class HeliumService extends BaseRest {
         eval(bundle);
       });
 
-      const visualizationBundles = [] as HeliumBundle[];
+      const visualizationBundles = [] as HeliumVisualizationBundle[];
       // tslint:disable-next-line:no-any
       ((window as any)._heliumBundles as HeliumBundle[]).forEach(bundle => {
         switch (bundle.type) {
           case 'VISUALIZATION':
-            visualizationBundles.push(bundle);
+            visualizationBundles.push(bundle as HeliumVisualizationBundle);
         }
       });
       this.visualizationBundles$.next(visualizationBundles);

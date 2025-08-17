@@ -47,7 +47,11 @@ import {
   VisualizationStackedAreaChart
 } from '@zeppelin/sdk';
 
-import { HeliumBundle } from '@zeppelin/interfaces';
+import {
+  HeliumClassicVisualization,
+  HeliumClassicVisualizationConstructor,
+  HeliumVisualizationBundle
+} from '@zeppelin/interfaces';
 import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { ClassicVisualizationService } from '@zeppelin/services/classic-visualization.service';
 import { TableData, Visualization } from '@zeppelin/visualization';
@@ -59,6 +63,29 @@ import {
   ScatterChartVisualization,
   TableVisualization
 } from '@zeppelin/visualizations';
+
+interface VisualizationItem {
+  id: string;
+  name: string;
+  icon: string | SafeHtml;
+  changeSubscription: Subscription | null;
+  componentFactoryResolver?: ComponentFactoryResolver;
+}
+
+interface ClassicVisualizationItem extends VisualizationItem {
+  isClassic: true;
+  Class: HeliumClassicVisualizationConstructor;
+  instance: HeliumClassicVisualization | undefined;
+}
+
+interface ModernVisualizationItem extends VisualizationItem {
+  isClassic: false;
+  // tslint:disable-next-line:no-any
+  Class: any;
+  instance: Visualization | undefined;
+}
+
+type VisualizationItemType = ClassicVisualizationItem | ModernVisualizationItem;
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-result',
@@ -85,18 +112,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   imgData: string | SafeUrl = '';
   tableData = new TableData();
   frontEndError?: string;
-  visualizations: Array<{
-    id: string;
-    name: string;
-    icon: string | SafeHtml;
-    // tslint:disable-next-line:no-any
-    Class: any;
-    isClassic: boolean;
-    changeSubscription: Subscription | null;
-    // tslint:disable-next-line:no-any
-    instance: any | undefined;
-    componentFactoryResolver?: ComponentFactoryResolver;
-  }> = [
+  visualizations: VisualizationItemType[] = [
     {
       id: 'table',
       name: 'Table',
@@ -181,14 +197,14 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       });
   }
 
-  private handleVisualizationBundles(bundles: HeliumBundle[]): void {
+  private handleVisualizationBundles(bundles: HeliumVisualizationBundle[]): void {
     const newlyAddedBundleIds = this.addNewVisualizationBundles(bundles);
 
     this.checkAndTriggerReRender(newlyAddedBundleIds);
     this.cdr.markForCheck();
   }
 
-  private addNewVisualizationBundles(bundles: HeliumBundle[]): string[] {
+  private addNewVisualizationBundles(bundles: HeliumVisualizationBundle[]): string[] {
     const newlyAddedBundleIds: string[] = [];
 
     bundles.forEach(bundle => {
@@ -197,15 +213,18 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       if (!existingVisualization) {
         // This is a new bundle
         newlyAddedBundleIds.push(bundle.id);
-        this.visualizations.push({
-          id: bundle.id,
-          name: bundle.name,
-          icon: this.sanitizer.bypassSecurityTrustHtml(bundle.icon),
-          Class: bundle.class,
-          changeSubscription: null,
-          isClassic: !Visualization.prototype.isPrototypeOf(bundle.class.prototype),
-          instance: undefined
-        });
+        const isClassic = !Visualization.prototype.isPrototypeOf(bundle.class.prototype);
+        if (isClassic) {
+          this.visualizations.push({
+            id: bundle.id,
+            name: bundle.name,
+            icon: this.sanitizer.bypassSecurityTrustHtml(bundle.icon),
+            Class: bundle.class,
+            changeSubscription: null,
+            isClassic,
+            instance: undefined
+          });
+        }
       }
     });
 
@@ -378,7 +397,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.setDefaultConfig();
 
     const config = this.config!;
-    let instance: Visualization;
     const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
     if (!visualizationItem) {
       return;
@@ -398,7 +416,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
           }
           this.commitClassicVizConfigChange(c, this.config.graph.mode);
           this.renderGraph();
-          this.configChange.emit({ graph: c });
         };
 
         this.classicVisualizationService
@@ -413,14 +430,14 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         return; // Exit early for classic visualizations
       } else {
         // Modern visualization
-        instance = new visualizationItem.Class(
+        const classicVisInstance = new visualizationItem.Class(
           config.graph,
           this.portalOutlet,
           this.viewContainerRef,
           visualizationItem.componentFactoryResolver
-        );
-        visualizationItem.instance = instance;
-        visualizationItem.changeSubscription = instance.configChanged().subscribe(c => {
+        ) as Visualization;
+        visualizationItem.instance = classicVisInstance;
+        visualizationItem.changeSubscription = classicVisInstance.configChanged().subscribe(c => {
           if (!this.config) {
             throw new Error('config is not defined');
           }
@@ -432,14 +449,13 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         });
       }
     } else {
-      instance = visualizationItem.instance;
       if (visualizationItem.isClassic) {
         // Update existing classic visualization
         const targetElementId = `p${this.id}_${config.graph.mode}`;
         this.classicVisualizationService.updateClassicVisualization(targetElementId, config.graph, this.tableData);
         return; // Exit early for classic visualizations
       } else {
-        instance.setConfig(config.graph);
+        visualizationItem.instance.setConfig(config.graph);
       }
     }
 
@@ -448,12 +464,17 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       return;
     }
 
+    // TypeScript's control flow analysis doesn't properly narrow the discriminated union type
+    // after the early return above. This may be due to the TypeScript version (3.8) or the
+    // complexity of the union type. Using explicit type assertion to ensure type safety.
+    const modernVisualizationItem = visualizationItem as ModernVisualizationItem;
+
     // For modern visualizations, continue with standard rendering
-    const transformation = instance.getTransformation();
+    const transformation = modernVisualizationItem.instance!.getTransformation();
     transformation.setConfig(config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
-    instance.render(transformed);
+    modernVisualizationItem.instance!.render(transformed);
   }
 
   destroyVisualizations(omit?: string) {
