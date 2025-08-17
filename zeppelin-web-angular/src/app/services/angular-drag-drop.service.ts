@@ -114,8 +114,7 @@ export class AngularDragDropService {
       function(dragDropService: any) {
         return {
           restrict: 'A',
-          // tslint:disable-next-line:no-any
-          link: function(scope: any, element: any, attrs: any) {
+          link: function(scope, element, attrs) {
             const el = element[0];
 
             // Check if dragging is enabled
