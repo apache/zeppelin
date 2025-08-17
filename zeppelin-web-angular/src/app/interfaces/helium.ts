@@ -42,6 +42,7 @@ export interface HeliumBundle {
 }
 
 export interface HeliumVisualizationBundle extends HeliumBundle {
+  type: 'VISUALIZATION';
   class: HeliumClassicVisualizationConstructor;
 }
 
