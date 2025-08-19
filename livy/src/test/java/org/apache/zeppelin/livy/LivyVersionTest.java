@@ -72,6 +72,9 @@ class LivyVersionTest {
     @Test
     void isGetProgressSupported() {
         assertTrue(new LivyVersion("0.4.0").isGetProgressSupported());
-        assertFalse((new LivyVersion("0.3.0")).isGetProgressSupported());
+        assertFalse(new LivyVersion("0.3.0").isGetProgressSupported());
     }
 }
+
+
+
