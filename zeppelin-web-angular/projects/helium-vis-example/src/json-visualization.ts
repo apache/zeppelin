@@ -44,8 +44,10 @@ export class JsonVisualization extends Visualization<JsonVisComponent> {
       this.componentRef.destroy();
       this.componentRef = null;
     }
-    this.configChange$.complete();
-    this.configChange$ = null;
+    if (this.configChange$) {
+      this.configChange$.complete();
+      this.configChange$ = null;
+    }
   }
 
   getTransformation(): Transformation {
@@ -54,7 +56,7 @@ export class JsonVisualization extends Visualization<JsonVisComponent> {
 
   refresh(): void {}
 
-  render(data): void {
+  render(data: unknown): void {
     this.transformed = data;
     if (!this.componentRef) {
       this.componentRef = this.componentPortal.attachComponentPortal();

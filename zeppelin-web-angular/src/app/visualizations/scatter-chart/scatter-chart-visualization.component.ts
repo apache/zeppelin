@@ -20,6 +20,8 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
+import * as G2 from '@antv/g2';
+import { GraphConfig } from '@zeppelin/sdk';
 
 import { get } from 'lodash';
 
@@ -35,40 +37,40 @@ import { calcTickCount } from '../common/util/calc-tick-count';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScatterChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
-  @ViewChild('container', { static: false }) container: ElementRef<HTMLDivElement>;
+  @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;
   @ViewChild(VisualizationScatterSettingComponent, { static: false })
-  scatterSettingComponent: VisualizationScatterSettingComponent;
+  scatterSettingComponent!: VisualizationScatterSettingComponent;
 
   constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {
     super(visualization);
   }
 
-  refreshSetting() {
+  refreshSetting(config: GraphConfig) {
     this.scatterSettingComponent.init();
     this.cdr.markForCheck();
   }
 
-  setScale() {
+  setScale(chart: G2.Chart) {
     const key = this.getKey();
     const tickCount = calcTickCount(this.container.nativeElement);
-    this.chart.scale(key, {
+    chart.scale(key, {
       tickCount,
       type: 'cat'
     });
   }
 
-  renderBefore() {
+  renderBefore(config: GraphConfig, chart: G2.Chart) {
     const key = this.getKey();
-    const size = get(this.config.setting, 'scatterChart.size.name');
-    this.setScale();
-    this.chart.tooltip({
+    const size = get(config.setting, 'scatterChart.size.name');
+    this.setScale(chart);
+    chart.tooltip({
       crosshairs: {
         type: 'cross'
       }
     });
-    this.chart.legend('__value__', false);
+    chart.legend('__value__', false);
     // point
-    const geom = this.chart
+    const geom = chart
       .point()
       .position(`${key}*__value__`)
       .color('__key__')

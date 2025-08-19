@@ -23,8 +23,8 @@ import { MessageService } from '@zeppelin/services/message.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NoteRenameComponent implements OnInit {
-  @Input() newName: string;
-  @Input() id: string;
+  @Input() newName!: string;
+  @Input() id!: string;
 
   rename() {
     this.messageService.noteRename(this.id, this.newName);

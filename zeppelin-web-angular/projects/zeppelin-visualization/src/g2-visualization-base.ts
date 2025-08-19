@@ -31,8 +31,10 @@ export abstract class G2VisualizationBase extends Visualization<G2VisualizationC
       this.componentRef.destroy();
       this.componentRef = null;
     }
-    this.configChange$.complete();
-    this.configChange$ = null;
+    if (this.configChange$) {
+      this.configChange$.complete();
+      this.configChange$ = null;
+    }
   }
 
   getTransformation(): Transformation {
@@ -45,10 +47,9 @@ export abstract class G2VisualizationBase extends Visualization<G2VisualizationC
     }
   }
 
-  render(data): void {
+  render(data: unknown): void {
     this.transformed = data;
     if (this.componentRef) {
-      this.componentRef.instance.refreshSetting();
       this.componentRef.instance.render();
     } else {
       this.componentRef = this.componentPortal.attachComponentPortal();

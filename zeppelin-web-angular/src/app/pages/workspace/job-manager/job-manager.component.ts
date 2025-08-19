@@ -36,10 +36,10 @@ interface FilterForm {
   styleUrls: ['./job-manager.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class JobManagerComponent extends MessageListenersManager implements OnInit, OnDestroy {
+export class JobManagerComponent extends MessageListenersManager implements OnDestroy {
   form: FormGroup;
-  jobStatusKeys = Object.keys(JobStatus).map(k => JobStatus[k]);
-  sortKeys = Object.keys(JobDateSortKeys).map(k => JobDateSortKeys[k]);
+  jobStatusKeys: JobStatus[] = Object.values(JobStatus);
+  sortKeys: JobDateSortKeys[] = Object.values(JobDateSortKeys);
   interpreters: string[] = [];
   filteredJobs: JobsItem[] = [];
   filterString: string = '';
@@ -117,9 +117,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
     private nzModalService: NzModalService
   ) {
     super(messageService);
-  }
 
-  ngOnInit() {
     this.form = this.fb.group({
       noteName: [''],
       interpreter: ['*'],

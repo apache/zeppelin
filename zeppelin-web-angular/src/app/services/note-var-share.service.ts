@@ -16,21 +16,21 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class NoteVarShareService {
-  private store = new Map();
+  private store = new Map<string, unknown>();
 
   clear() {
     this.store.clear();
   }
 
-  set(key, value) {
+  set(key: string, value: unknown) {
     this.store.set(key, value);
   }
 
-  get(key) {
+  get(key: string) {
     return this.store.get(key);
   }
 
-  del(key) {
+  del(key: string) {
     return this.store.delete(key);
   }
 
