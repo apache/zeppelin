@@ -10,12 +10,13 @@
  * limitations under the License.
  */
 
+import { GraphConfig } from '@zeppelin/sdk';
 import { TableData } from './table-data';
 import { Transformation } from './transformation';
 
 // tslint:disable-next-line:no-any
 export class TableTransformation extends Transformation {
-  constructor(config) {
+  constructor(config: GraphConfig) {
     super(config);
   }
 

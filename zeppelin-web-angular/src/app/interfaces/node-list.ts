@@ -22,6 +22,7 @@ export interface RootNode {
 
 export interface NodeItem {
   id: string;
+  key: string;
   title: string;
   isLeaf?: boolean;
   expanded?: boolean;

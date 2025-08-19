@@ -10,18 +10,6 @@
  * limitations under the License.
  */
 
-export class SpellResult {
-  static extractMagic(allParagraphText: string): string | null {
-    const pattern = /^\s*%(\S+)\s*/g;
-    try {
-      const match = pattern.exec(allParagraphText);
-      if (match) {
-        return `%${match[1].trim()}`;
-      }
-    } catch (error) {
-      // failed to parse, ignore
-    }
-
-    return null;
-  }
+export function isRecord(v: unknown): v is Record<string | number | symbol, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }

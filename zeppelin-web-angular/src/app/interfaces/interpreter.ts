@@ -36,7 +36,7 @@ export interface CreateInterpreterRepositoryForm {
   password: string;
   proxyProtocol: string;
   proxyHost: string;
-  proxyPort: string;
+  proxyPort: string | null;
   proxyLogin: string;
   proxyPassword: string;
 }

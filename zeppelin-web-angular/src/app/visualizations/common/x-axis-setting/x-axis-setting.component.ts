@@ -24,14 +24,14 @@ import { Visualization } from '@zeppelin/visualization';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VisualizationXAxisSettingComponent implements OnInit {
-  @Input() visualization: Visualization;
-  @Input() mode: 'lineChart' | 'multiBarChart' | 'stackedAreaChart';
+  @Input() visualization!: Visualization;
+  @Input() mode!: 'lineChart' | 'multiBarChart' | 'stackedAreaChart';
 
-  setting: XAxisSetting;
-  config: GraphConfig;
+  setting!: XAxisSetting;
+  config!: GraphConfig;
   xLabelStatus: XLabelStatus = 'default';
   degree = '-45';
-  previousDegree: string;
+  previousDegree!: string;
   constructor(private cdr: ChangeDetectorRef) {}
 
   onStatusChange() {
@@ -43,7 +43,7 @@ export class VisualizationXAxisSettingComponent implements OnInit {
     if (this.degree === this.previousDegree) {
       return;
     }
-    const degree = Number.parseInt(this.degree, 10);
+    const degree = Number.parseInt(this.degree ?? '', 10);
     if (Number.isNaN(degree)) {
       this.degree = this.previousDegree;
       return;
@@ -55,6 +55,9 @@ export class VisualizationXAxisSettingComponent implements OnInit {
   }
 
   updateConfig() {
+    if (!this.visualization.configChange$) {
+      throw new Error('configChange$ is not defined');
+    }
     this.setting.rotate.degree = this.degree;
     this.setting.xLabelStatus = this.xLabelStatus;
     this.visualization.configChange$.next(this.config);
@@ -62,7 +65,10 @@ export class VisualizationXAxisSettingComponent implements OnInit {
 
   init() {
     this.config = this.visualization.getConfig();
-    this.setting = this.config.setting[this.mode];
+    this.setting = this.config.setting[this.mode]!;
+    if (!this.setting) {
+      throw new Error(`setting.${this.mode} is not defined`);
+    }
     if (!this.setting.rotate) {
       this.setting.rotate = { degree: '-45' };
     }

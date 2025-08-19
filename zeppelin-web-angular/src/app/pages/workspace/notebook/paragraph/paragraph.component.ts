@@ -64,21 +64,21 @@ type Mode = 'edit' | 'command';
 })
 export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent: NotebookParagraphCodeEditorComponent;
-  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents: QueryList<
+  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
-  @Input() paragraph: ParagraphItem;
-  @Input() note: Note['note'];
-  @Input() looknfeel: string;
-  @Input() revisionView: boolean;
+  @Input() paragraph!: ParagraphItem;
+  @Input() note!: Exclude<Note['note'], undefined>;
+  @Input() looknfeel!: string;
+  @Input() revisionView!: boolean;
   @Input() select: boolean = false;
   @Input() scrolled: boolean = false;
   @Input() index: number = -1;
-  @Input() viewOnly: boolean;
-  @Input() last: boolean;
+  @Input() viewOnly!: boolean;
+  @Input() last!: boolean;
   @Input() collaborativeMode = false;
-  @Input() first: boolean;
+  @Input() first!: boolean;
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
   @Output() readonly saveNoteTimer = new EventEmitter();
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
@@ -114,6 +114,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   sendPatch() {
+    if (!this.dirtyText) {
+      throw new Error('dirtyText is required');
+    }
     this.originalText = this.originalText ? this.originalText : '';
     const patch = this.diffMatchPatch.patch_make(this.originalText, this.dirtyText).toString();
     this.originalText = this.dirtyText;
@@ -208,6 +211,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   doubleClickParagraph() {
+    if (!this.paragraph.config.editorSetting) {
+      throw new Error('editorSetting is required');
+    }
     if (this.paragraph.config.editorSetting.editOnDblClick && this.revisionView !== true) {
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
@@ -274,6 +280,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   runParagraphAfter(text: string) {
+    if (!this.paragraph.config.editorSetting) {
+      throw new Error('editorSetting is required');
+    }
     this.originalText = text;
     this.dirtyText = undefined;
 
@@ -296,7 +305,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     if (text && !this.isParagraphRunning) {
       const magic = SpellResult.extractMagic(text);
 
-      if (this.heliumService.getSpellByMagic(magic)) {
+      if (magic && this.heliumService.getSpellByMagic(magic)) {
         this.runParagraphUsingSpell(text, magic, propagated);
         this.runParagraphAfter(text);
       } else {
@@ -395,6 +404,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   onConfigChange(configResult: ParagraphConfigResult, index: number) {
+    if (!this.paragraph.config.results) {
+      throw new Error('paragraph.config.results is required');
+    }
     this.paragraph.config.results[index] = configResult;
     this.commitParagraph();
   }
@@ -510,11 +522,17 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
               this.commitParagraph();
               break;
             case ParagraphActions.ReduceWidth:
+              if (!this.paragraph.config.colWidth) {
+                throw new Error('colWidth is required');
+              }
               this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
               this.cdr.markForCheck();
               this.changeColWidth(true);
               break;
             case ParagraphActions.IncreaseWidth:
+              if (!this.paragraph.config.colWidth) {
+                throw new Error('colWidth is required');
+              }
               this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
               this.cdr.markForCheck();
               this.changeColWidth(true);
@@ -562,12 +580,12 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
             break;
         }
       });
-    this.setResults();
+    this.setResults(this.paragraph);
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
     this.noteVarShareService.set(this.paragraph.id + '_paragraphScope', this);
-    this.initializeDefault(this.paragraph.config);
+    this.initializeDefault(this.paragraph.config, this.paragraph.settings);
     this.ngZService
       .runParagraphAction()
       .pipe(takeUntil(this.destroy$))
