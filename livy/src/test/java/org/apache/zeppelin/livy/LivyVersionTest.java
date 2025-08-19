@@ -75,3 +75,4 @@ class LivyVersionTest {
         assertFalse(new LivyVersion("0.3.0").isGetProgressSupported());
     }
 }
+
