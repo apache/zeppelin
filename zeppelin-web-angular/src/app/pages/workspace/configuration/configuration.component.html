@@ -13,25 +13,22 @@
 <zeppelin-page-header [description]="configDesc" title="Configurations"></zeppelin-page-header>
 <ng-template #configDesc>
   Shows current configurations for Zeppelin Server.
-  <br>
+  <br />
   Note: For security reasons, some key/value pairs including passwords would not be shown.
 </ng-template>
 <div class="content">
-  <nz-table nzSize="small"
-            [nzData]="configEntries"
-            [nzFrontPagination]="false"
-            [nzShowPagination]="false">
+  <nz-table nzSize="small" [nzData]="configEntries" [nzFrontPagination]="false" [nzShowPagination]="false">
     <thead>
-    <tr>
-      <th>Name</th>
-      <th>Value</th>
-    </tr>
+      <tr>
+        <th>Name</th>
+        <th>Value</th>
+      </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let data of configEntries">
-      <td>{{data[0]}}</td>
-      <td>{{data[1]}}</td>
-    </tr>
+      <tr *ngFor="let data of configEntries">
+        <td>{{ data[0] }}</td>
+        <td>{{ data[1] }}</td>
+      </tr>
     </tbody>
   </nz-table>
 </div>

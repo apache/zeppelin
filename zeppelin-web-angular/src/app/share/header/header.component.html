@@ -20,13 +20,22 @@
   <div class="nav">
     <ul nz-menu [nzMode]="'horizontal'">
       <li nz-menu-item [class.ant-menu-item-selected]="noteListVisible">
-        <a nz-dropdown class="node-list-trigger" [nzDropdownMenu]="list" [nzTrigger]="'click'" [(nzVisible)]="noteListVisible">Notebook
+        <a
+          nz-dropdown
+          class="node-list-trigger"
+          [nzDropdownMenu]="list"
+          [nzTrigger]="'click'"
+          [(nzVisible)]="noteListVisible"
+        >
+          Notebook
           <i class="small-icon" nz-icon nzType="caret-down"></i>
         </a>
         <nz-dropdown-menu #list="nzDropdownMenu">
-          <zeppelin-node-list [headerMode]="true"
-                              class="ant-dropdown-menu padding-sm"
-                              *ngIf="noteListVisible"></zeppelin-node-list>
+          <zeppelin-node-list
+            [headerMode]="true"
+            class="ant-dropdown-menu padding-sm"
+            *ngIf="noteListVisible"
+          ></zeppelin-node-list>
         </nz-dropdown-menu>
       </li>
       <li nz-menu-item routerLinkActive="ant-menu-item-selected">
@@ -47,18 +56,14 @@
           <a [routerLink]="['/interpreter']">Interpreter</a>
         </li>
         <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
-          <a [routerLink]="['/notebook-repos']">Notebook
-                                               Repos
-          </a>
+          <a [routerLink]="['/notebook-repos']">Notebook Repos</a>
         </li>
         <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
-          <a
-            [routerLink]="['/credential']">Credential
-          </a>
+          <a [routerLink]="['/credential']">Credential</a>
         </li>
-<!--        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">-->
-<!--          <a [routerLink]="['/helium']">Helium</a>-->
-<!--        </li>-->
+        <!--        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">-->
+        <!--          <a [routerLink]="['/helium']">Helium</a>-->
+        <!--        </li>-->
         <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
           <a [routerLink]="['/configuration']">Configuration</a>
         </li>
@@ -73,11 +78,7 @@
   </div>
   <div class="search">
     <nz-input-group [nzPrefixIcon]="'search'">
-      <input type="text"
-             nz-input
-             placeholder="Search"
-             (keyup.enter)="onSearch()"
-             [(ngModel)]="queryStr"/>
+      <input type="text" nz-input placeholder="Search" (keyup.enter)="onSearch()" [(ngModel)]="queryStr" />
     </nz-input-group>
   </div>
 </div>
