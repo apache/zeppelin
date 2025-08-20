@@ -11,20 +11,8 @@
  */
 
 import { Injectable } from '@angular/core';
+import { HeliumClassicTableData } from '@zeppelin/interfaces';
 import { TableData } from '@zeppelin/visualization';
-
-interface ClassicColumn {
-  name: string;
-  index: number;
-  aggr: string;
-}
-
-interface ClassicTableData {
-  columns: ClassicColumn[];
-  // tslint:disable-next-line:no-any
-  rows: any[][];
-  comment: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -35,16 +23,15 @@ export class TableDataAdapterService {
   /**
    * Convert modern TableData to classic format expected by AngularJS visualizations
    */
-  convertToClassicFormat(modernTableData: TableData): ClassicTableData {
-    const classicColumns: ClassicColumn[] = modernTableData.columns.map((columnName, index) => ({
+  convertToClassicFormat(modernTableData: TableData): Omit<HeliumClassicTableData, 'loadParagraphResult' | 'refresh'> {
+    const classicColumns: HeliumClassicTableData['columns'] = modernTableData.columns.map((columnName, index) => ({
       name: columnName,
       index,
       aggr: 'sum' // Default aggregation
     }));
 
     // Convert rows from modern format (objects) to classic format (arrays)
-    // tslint:disable-next-line:no-any
-    const classicRows: any[][] = [];
+    const classicRows: string[][] = [];
 
     if (modernTableData.rows && modernTableData.rows.length > 0) {
       // Check if rows are objects (modern format) or arrays (already classic format)
@@ -58,8 +45,7 @@ export class TableDataAdapterService {
       } else if (typeof firstRow === 'object' && firstRow !== null) {
         // Modern format (array of objects) - convert to classic format
         modernTableData.rows.forEach(rowObj => {
-          // tslint:disable-next-line:no-any
-          const rowArray: any[] = [];
+          const rowArray: string[] = [];
           modernTableData.columns.forEach(columnName => {
             rowArray.push(rowObj[columnName]);
           });
@@ -78,36 +64,34 @@ export class TableDataAdapterService {
   /**
    * Create a classic TableData-like object with the required methods
    */
-  // tslint:disable-next-line:no-any
-  createClassicTableDataProxy(modernTableData: TableData): any {
+  createClassicTableDataProxy(modernTableData: TableData): HeliumClassicTableData {
     const classicData = this.convertToClassicFormat(modernTableData);
 
     // Create a proxy object that mimics the classic TableData interface
-    const proxy = {
+    const proxy: HeliumClassicTableData = {
       columns: classicData.columns,
       rows: classicData.rows,
       comment: classicData.comment,
 
       // Add any methods that classic visualizations might expect
-      // tslint:disable-next-line:no-any
-      loadParagraphResult: function(paragraphResult: any) {
+      loadParagraphResult: paragraphResult => {
         // Delegate to modern TableData's method
         modernTableData.loadParagraphResult(paragraphResult);
 
         // Update proxy data after loading
         const updatedClassicData = this.convertToClassicFormat(modernTableData);
-        this.columns = updatedClassicData.columns;
-        this.rows = updatedClassicData.rows;
-        this.comment = updatedClassicData.comment;
-      }.bind(this),
+        proxy.columns = updatedClassicData.columns;
+        proxy.rows = updatedClassicData.rows;
+        proxy.comment = updatedClassicData.comment;
+      },
 
       // Refresh data from modern TableData
-      refresh: function() {
+      refresh: () => {
         const updatedClassicData = this.convertToClassicFormat(modernTableData);
-        this.columns = updatedClassicData.columns;
-        this.rows = updatedClassicData.rows;
-        this.comment = updatedClassicData.comment;
-      }.bind(this)
+        proxy.columns = updatedClassicData.columns;
+        proxy.rows = updatedClassicData.rows;
+        proxy.comment = updatedClassicData.comment;
+      }
     };
 
     return proxy;
