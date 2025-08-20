@@ -1561,7 +1561,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
           @Override
           public void onSuccess(Map<String, String> properties, ServiceContext context) throws IOException {
             super.onSuccess(properties, context);
-            properties.put("isRevisionSupported", String.valueOf(getNotebook().isRevisionSupported()));
             conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO).put("configurations", properties)));
           }
         });

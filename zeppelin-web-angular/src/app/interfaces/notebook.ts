@@ -17,3 +17,7 @@ export interface NotebookSearchResultItem {
   text: string;
   header: string;
 }
+
+export interface NotebookCapabilities {
+  isRevisionSupported: boolean;
+}
