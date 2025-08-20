@@ -13,7 +13,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { NotebookSearchResultItem } from '@zeppelin/interfaces';
+import { NotebookCapabilities, NotebookSearchResultItem } from '@zeppelin/interfaces';
 import { BaseRest } from '@zeppelin/services/base-rest';
 import { BaseUrlService } from '@zeppelin/services/base-url.service';
 import { BehaviorSubject } from 'rxjs';
@@ -21,7 +21,7 @@ import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class NotebookSearchService extends BaseRest {
+export class NotebookService extends BaseRest {
   private queryStr$ = new BehaviorSubject<string | null>(null);
 
   constructor(baseUrlService: BaseUrlService, private http: HttpClient) {
@@ -32,7 +32,7 @@ export class NotebookSearchService extends BaseRest {
     return this.queryStr$.asObservable();
   }
 
-  clear() {
+  clearQuery() {
     this.queryStr$.next(null);
   }
 
@@ -43,5 +43,9 @@ export class NotebookSearchService extends BaseRest {
         q: query
       }
     });
+  }
+
+  capabilities() {
+    return this.http.get<NotebookCapabilities>(this.restUrl`/notebook/capabilities`);
   }
 }

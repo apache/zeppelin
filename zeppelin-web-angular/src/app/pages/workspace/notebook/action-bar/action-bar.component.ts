@@ -17,6 +17,7 @@ import {
   EventEmitter,
   Inject,
   Input,
+  OnInit,
   Output
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,8 +27,9 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NoteActionService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import { MessageService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
 
+import { NotebookService } from '@zeppelin/services/notebook.service';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
 
 @Component({
@@ -36,7 +38,7 @@ import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.com
   styleUrls: ['./action-bar.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookActionBarComponent extends MessageListenersManager {
+export class NotebookActionBarComponent extends MessageListenersManager implements OnInit {
   @Input() note!: Exclude<Note['note'], undefined>;
   @Input() isOwner = true;
   @Input() looknfeel: 'report' | 'default' | 'simple' = 'default';
@@ -52,12 +54,12 @@ export class NotebookActionBarComponent extends MessageListenersManager {
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
+  isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
   principal = this.ticketService.ticket.principal;
   editorHide = false;
   commitVisible = false;
   tableHide = false;
-  isRevisionSupported: boolean;
   cronOption = [
     { name: 'None', value: undefined },
     { name: '1m', value: '0 0/1 * * * ?' },
@@ -68,6 +70,7 @@ export class NotebookActionBarComponent extends MessageListenersManager {
     { name: '12h', value: '0 0 0/12 * * ?' },
     { name: '1d', value: '0 0 0 * * ?' }
   ];
+
   updateNoteName(name: string) {
     const trimmedNewName = name.trim();
     if (trimmedNewName.length > 0 && this.note.name !== trimmedNewName) {
@@ -288,8 +291,8 @@ export class NotebookActionBarComponent extends MessageListenersManager {
     private nzMessageService: NzMessageService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private noteActionService: NoteActionService,
     private noteStatusService: NoteStatusService,
+    private notebookService: NotebookService,
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private activatedRoute: ActivatedRoute,
     private saveAsService: SaveAsService
@@ -299,6 +302,12 @@ export class NotebookActionBarComponent extends MessageListenersManager {
     if (!this.ticketService.configuration) {
       throw new Error('Configuration is not loaded');
     }
-    this.isRevisionSupported = JSON.parse(this.ticketService.configuration.isRevisionSupported);
+  }
+
+  ngOnInit(): void {
+    this.notebookService.capabilities().subscribe(c => {
+      this.isRevisionSupported = c.isRevisionSupported;
+      this.cdr.markForCheck();
+    });
   }
 }

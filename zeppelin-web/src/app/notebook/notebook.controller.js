@@ -39,6 +39,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.collaborativeModeUsers = [];
   $scope.looknfeelOption = ['default', 'simple', 'report'];
   $scope.noteFormTitle = null;
+  $scope.isRevisionSupported = false;
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -169,9 +170,25 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
+  const initializeRevisionSupported = function() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/capabilities')
+      .then(function(response) {
+        $scope.isRevisionSupported = response.data.body.isRevisionSupported;
+      })
+      .catch(function(error) {
+        console.error('Error fetching notebook capabilities:', error);
+        ngToast.danger({
+          content: 'Failed to fetch notebook capabilities',
+          verticalPosition: 'bottom',
+          timeout: 3000,
+        });
+      });
+  };
+
   /** Init the new controller */
   const initNotebook = function() {
     noteVarShareService.clear();
+    initializeRevisionSupported();
     if ($routeParams.revisionId) {
       websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
     } else {

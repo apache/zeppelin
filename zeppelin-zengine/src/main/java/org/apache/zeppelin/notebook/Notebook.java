@@ -848,7 +848,7 @@ public class Notebook {
     }
   }
 
-  public Boolean isRevisionSupported() {
+  public boolean isRevisionSupported() {
     if(!zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
       return false;
     }
