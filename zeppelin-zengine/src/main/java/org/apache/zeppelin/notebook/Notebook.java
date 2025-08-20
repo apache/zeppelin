@@ -758,14 +758,13 @@ public class Notebook {
         zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
-      List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
+
+      return noteManager.getNotesInfo().entrySet().stream().filter(entry ->
               func.test(entry.getKey()) &&
-                  ((!hideHomeScreenNotebookFromList) || !entry.getKey().equals(homescreenNoteId)))
+                  (!hideHomeScreenNotebookFromList || !entry.getKey().equals(homescreenNoteId)))
           .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
           .sorted(Comparator.comparing(note -> note.getPath() != null ? note.getPath() : note.getId()))
           .collect(Collectors.toUnmodifiableList());
-
-      return notesInfo;
     }
   }
 
