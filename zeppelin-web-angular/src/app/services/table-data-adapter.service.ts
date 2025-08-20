@@ -73,7 +73,6 @@ export class TableDataAdapterService {
       rows: classicData.rows,
       comment: classicData.comment,
 
-      // Add any methods that classic visualizations might expect
       loadParagraphResult: paragraphResult => {
         // Delegate to modern TableData's method
         modernTableData.loadParagraphResult(paragraphResult);
@@ -85,7 +84,6 @@ export class TableDataAdapterService {
         proxy.comment = updatedClassicData.comment;
       },
 
-      // Refresh data from modern TableData
       refresh: () => {
         const updatedClassicData = this.convertToClassicFormat(modernTableData);
         proxy.columns = updatedClassicData.columns;
