@@ -12,6 +12,27 @@
 
 import { Injectable } from '@angular/core';
 import * as angular from 'angular';
+import * as JQuery from 'jquery';
+
+interface CustomDragDropService {
+  draggableScope: angular.IScope | null;
+  dragData: unknown | null;
+  dragIndex: number | null;
+  dragModelPath: null | string;
+  dragSettings: { placeholder?: string } | null;
+  draggableElement: HTMLElement | null;
+
+  callEventCallback(scope: angular.IScope, callbackName: string, event: DragEvent, ui?: UI): void;
+  updateModel(scope: angular.IScope, modelPath: string, newValue: unknown, index?: number): void;
+  removeFromModel(scope: angular.IScope, modelPath: string, index?: number): void;
+}
+
+interface UI {
+  draggable: JQuery<HTMLElement> | null;
+  helper: null;
+  position: { top: number; left: number };
+  offset: { top: number; left: number };
+}
 
 @Injectable({
   providedIn: 'root'
@@ -21,97 +42,97 @@ export class AngularDragDropService {
 
   addDragDropDirectives(module: angular.IModule): void {
     // Drag and drop service to maintain state across directives
-    // tslint:disable-next-line:no-any
-    module.service('customDragDropService', [
+    module.factory('customDragDropService', [
       '$parse',
-      // tslint:disable-next-line:no-any
-      function($parse: any) {
-        this.draggableScope = null;
-        this.dragData = null;
-        this.dragIndex = null;
-        this.dragModelPath = null;
-        this.dragSettings = null;
-        this.draggableElement = null;
+      function($parse: angular.IParseService): CustomDragDropService {
+        return {
+          draggableScope: null,
+          dragData: null,
+          dragIndex: null,
+          dragModelPath: null,
+          dragSettings: null,
+          draggableElement: null,
 
-        // tslint:disable-next-line:no-any
-        this.callEventCallback = function(scope: any, callbackName: string, event: any, ui?: any) {
-          if (!callbackName) {
-            return;
-          }
+          callEventCallback: function(scope, callbackStr, event, ui) {
+            if (!callbackStr) {
+              return;
+            }
 
-          const objExtract = extract(callbackName);
-          const callback = objExtract.callback;
-          const constructor = objExtract.constructor;
-          const args = [event, ui].concat(objExtract.args);
+            const { targetCallback, targetScope, args: extractedArgs } = extract(callbackStr);
+            const fullArgs = [event, ui].concat(extractedArgs);
 
-          // call either $scope method or constructor's method
-          const targetScope = scope[callback] ? scope : scope[constructor];
-          const targetCallback = scope[callback] || scope[constructor][callback];
+            if (typeof targetCallback === 'function') {
+              return targetCallback.apply(targetScope, fullArgs);
+            }
 
-          if (typeof targetCallback === 'function') {
-            return targetCallback.apply(targetScope, args);
-          }
+            function extract(_callbackStr: string) {
+              const atStartBracket = _callbackStr.indexOf('(') !== -1 ? _callbackStr.indexOf('(') : _callbackStr.length;
+              const atEndBracket =
+                _callbackStr.lastIndexOf(')') !== -1 ? _callbackStr.lastIndexOf(')') : _callbackStr.length;
 
-          function extract(_callbackName: string) {
-            const atStartBracket =
-              _callbackName.indexOf('(') !== -1 ? _callbackName.indexOf('(') : _callbackName.length;
-            const atEndBracket =
-              _callbackName.lastIndexOf(')') !== -1 ? _callbackName.lastIndexOf(')') : _callbackName.length;
-            const argsString = _callbackName.substring(atStartBracket + 1, atEndBracket);
-            let _constructor =
-              _callbackName.indexOf('.') !== -1 ? _callbackName.substr(0, _callbackName.indexOf('.')) : null;
-            _constructor =
-              scope[_constructor] && typeof scope[_constructor].constructor === 'function' ? _constructor : null;
+              const argsString = _callbackStr.substring(atStartBracket + 1, atEndBracket);
+              const identifierTokens = argsString ? argsString.split(',') : [];
+              const args = identifierTokens.map(item => $parse(item.trim())(scope));
 
-            return {
-              callback: _callbackName.substring((_constructor && _constructor.length + 1) || 0, atStartBracket),
-              // tslint:disable-next-line:no-any
-              args: argsString ? argsString.split(',').map((item: string) => $parse(item.trim())(scope)) : [],
-              constructor: _constructor
-            };
-          }
-        };
+              const constructorName =
+                _callbackStr.indexOf('.') !== -1 ? _callbackStr.substr(0, _callbackStr.indexOf('.')) : null;
+              // @ts-ignore
+              const constructorCandid = constructorName && scope[constructorName];
+              const constructor =
+                constructorCandid && typeof constructorCandid.constructor === 'function' ? constructorCandid : null;
 
-        // tslint:disable-next-line:no-any
-        this.updateModel = function(scope: any, modelPath: string, newValue: any, index?: number) {
-          const getter = $parse(modelPath);
-          const setter = getter.assign;
-          const modelValue = getter(scope);
+              const callbackName = _callbackStr.substring((constructor && constructor.length + 1) || 0, atStartBracket);
+              // @ts-ignore
+              const callbackCandid = scope[callbackName];
+              // If the expression is a method call, then the parsed constructor becomes its bound scope.
+              const _scope = callbackCandid ? scope : constructor;
+              const callback = callbackCandid || constructor[callbackName];
 
-          if (angular.isArray(modelValue)) {
-            if (typeof index === 'number') {
-              modelValue[index] = newValue;
+              return {
+                args,
+                targetScope: _scope,
+                targetCallback: callback
+              };
+            }
+          },
+
+          updateModel: function(scope, modelPath, newValue, index) {
+            const getter = $parse(modelPath);
+            const setter = getter.assign;
+            const modelValue = getter(scope);
+
+            if (angular.isArray(modelValue)) {
+              if (typeof index === 'number') {
+                modelValue[index] = newValue;
+              } else {
+                modelValue.push(newValue);
+              }
             } else {
-              modelValue.push(newValue);
+              if (setter) {
+                setter(scope, newValue);
+              }
             }
-          } else {
-            if (setter) {
-              setter(scope, newValue);
-            }
-          }
 
-          scope.$apply();
-        };
-
-        // tslint:disable-next-line:no-any
-        this.removeFromModel = function(scope: any, modelPath: string, index: number) {
-          const getter = $parse(modelPath);
-          const modelValue = getter(scope);
-
-          if (angular.isArray(modelValue) && typeof index === 'number') {
-            modelValue.splice(index, 1);
             scope.$apply();
+          },
+
+          removeFromModel: function(scope, modelPath, index) {
+            const getter = $parse(modelPath);
+            const modelValue = getter(scope);
+
+            if (angular.isArray(modelValue) && typeof index === 'number') {
+              modelValue.splice(index, 1);
+              scope.$apply();
+            }
           }
         };
       }
     ]);
 
     // jqyoui-draggable directive
-    // tslint:disable-next-line:no-any
     module.directive('jqyouiDraggable', [
       'customDragDropService',
-      // tslint:disable-next-line:no-any
-      function(dragDropService: any) {
+      function(dragDropService: CustomDragDropService) {
         return {
           restrict: 'A',
           link: function(scope, element, attrs) {
@@ -134,7 +155,7 @@ export class AngularDragDropService {
               return scope.$eval(attrs.drag);
             }, updateDraggable);
 
-            el.addEventListener('dragstart', function(event: DragEvent) {
+            el.addEventListener('dragstart', function(event) {
               if (!isDragEnabled()) {
                 event.preventDefault();
                 return;
@@ -176,7 +197,7 @@ export class AngularDragDropService {
 
               // Call onStart callback if provided
               if (dragSettings.onStart) {
-                const ui = {
+                const ui: UI = {
                   draggable: angular.element(el),
                   helper: null,
                   position: { top: event.clientY, left: event.clientX },
@@ -186,7 +207,7 @@ export class AngularDragDropService {
               }
             });
 
-            el.addEventListener('dragend', function(event: DragEvent) {
+            el.addEventListener('dragend', function(event) {
               // Remove visual feedback
               el.style.opacity = '';
 
@@ -209,15 +230,12 @@ export class AngularDragDropService {
     ]);
 
     // jqyoui-droppable directive
-    // tslint:disable-next-line:no-any
     module.directive('jqyouiDroppable', [
       'customDragDropService',
-      // tslint:disable-next-line:no-any
-      function(dragDropService: any) {
+      function(dragDropService: CustomDragDropService) {
         return {
           restrict: 'A',
-          // tslint:disable-next-line:no-any
-          link: function(scope: any, element: any, attrs: any) {
+          link: function(scope, element, attrs) {
             const el = element[0];
 
             // Check if dropping is enabled
@@ -225,7 +243,7 @@ export class AngularDragDropService {
               return attrs.drop === 'true' || scope.$eval(attrs.drop) === true;
             };
 
-            el.addEventListener('dragover', function(event: DragEvent) {
+            el.addEventListener('dragover', function(event) {
               if (!isDropEnabled()) {
                 return;
               }
@@ -239,12 +257,12 @@ export class AngularDragDropService {
               el.style.backgroundColor = '#f0f0f0';
             });
 
-            el.addEventListener('dragleave', function(event: DragEvent) {
+            el.addEventListener('dragleave', function() {
               // Remove visual feedback
               el.style.backgroundColor = '';
             });
 
-            el.addEventListener('drop', function(event: DragEvent) {
+            el.addEventListener('drop', function(event) {
               if (!isDropEnabled()) {
                 return;
               }
@@ -283,7 +301,7 @@ export class AngularDragDropService {
 
               // Remove from source if it's a move operation (not copy)
               // Check placeholder setting to determine if we should remove from source
-              const dragSettings = dragDropService.dragSettings || {};
+              const dragSettings: CustomDragDropService['dragSettings'] = dragDropService.dragSettings || {};
               const shouldRemoveFromSource =
                 draggableScope &&
                 typeof dragIndex === 'number' &&
@@ -291,8 +309,8 @@ export class AngularDragDropService {
                 dragSettings.placeholder !== 'keep' &&
                 !dropSettings.deepCopy;
 
-              if (shouldRemoveFromSource) {
-                dragDropService.removeFromModel(draggableScope, dragModelPath, dragIndex);
+              if (shouldRemoveFromSource && draggableScope) {
+                dragDropService.removeFromModel(draggableScope, dragModelPath ?? '', dragIndex ?? undefined);
               }
 
               // Call onDrop callback if provided
