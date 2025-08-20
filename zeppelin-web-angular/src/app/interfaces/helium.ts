@@ -11,7 +11,7 @@
  */
 
 import { HeliumPackageType } from '@zeppelin/helium';
-import { GraphConfig } from '@zeppelin/sdk';
+import { GraphConfig, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
 import * as angular from 'angular';
 import * as JQuery from 'jquery';
 
@@ -98,6 +98,14 @@ export interface HeliumClassicTransformation {
   _emitter(config: unknown): void;
   _templateRequest(tpl: string, ignoreRequestError?: boolean): Promise<string> | angular.IPromise<string>;
   setConfig(config: unknown): void;
-  transform(tableData: unknown): unknown;
+  transform(tableData: HeliumClassicTableData): unknown;
   renderSetting(elem: JQuery<HTMLElement>): void;
+}
+
+export interface HeliumClassicTableData {
+  columns: Array<{ name: string; index: number; aggr: 'sum' }>;
+  rows: string[][];
+  comment: string;
+  loadParagraphResult(paragraphResult: ParagraphIResultsMsgItem): void;
+  refresh(): void;
 }
