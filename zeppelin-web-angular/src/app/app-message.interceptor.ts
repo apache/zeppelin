@@ -27,13 +27,15 @@ export class AppMessageInterceptor implements MessageInterceptor {
     private nzNotificationService: NzNotificationService,
     private ticketService: TicketService,
     private nzModalService: NzModalService,
-    private prevErrorInfo: string
+    private prevErrorInfo: string | null = null
   ) {}
 
   received<T extends keyof MessageReceiveDataTypeMap>(data: WebSocketMessage<T>): WebSocketMessage<T> {
     if (data.op === OP.NEW_NOTE) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.NEW_NOTE];
-      this.router.navigate(['/notebook', rData.note.id]).then();
+      if (rData.note?.id) {
+        this.router.navigate(['/notebook', rData.note.id]).then();
+      }
     } else if (data.op === OP.AUTH_INFO) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.AUTH_INFO];
       if (this.ticketService.ticket.roles === '[]') {

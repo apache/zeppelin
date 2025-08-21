@@ -20,16 +20,19 @@ import { Transformation } from './transformation';
 export abstract class Visualization<T = any> {
   // tslint:disable-next-line
   transformed: any;
-  componentRef: ComponentRef<T>;
-  configChange$ = new Subject<GraphConfig>();
+  componentRef: ComponentRef<T> | null = null;
+  configChange$: Subject<GraphConfig> | null = new Subject<GraphConfig>();
   constructor(private config: GraphConfig) {}
 
   abstract getTransformation(): Transformation;
-  abstract render(tableData): void;
+  abstract render(tableData: unknown): void;
   abstract refresh(): void;
   abstract destroy(): void;
 
   configChanged() {
+    if (!this.configChange$) {
+      throw new Error('configChange$ is not initialized');
+    }
     return this.configChange$.asObservable();
   }
 

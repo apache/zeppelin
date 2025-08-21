@@ -26,7 +26,7 @@ enum SidebarState {
   styleUrls: ['./sidebar.component.less']
 })
 export class NotebookSidebarComponent {
-  @Input() note: Note['note'];
+  @Input() note!: Exclude<Note['note'], undefined>;
   @Output() readonly isSidebarOpenChange = new EventEmitter<boolean>();
   @Output() readonly scrollToParagraph = new EventEmitter<string>();
   sidebarState = SidebarState.CLOSED;

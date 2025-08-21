@@ -10,18 +10,14 @@
  * limitations under the License.
  */
 
-export class SpellResult {
-  static extractMagic(allParagraphText: string): string | null {
-    const pattern = /^\s*%(\S+)\s*/g;
-    try {
-      const match = pattern.exec(allParagraphText);
-      if (match) {
-        return `%${match[1].trim()}`;
-      }
-    } catch (error) {
-      // failed to parse, ignore
-    }
+export interface NotebookSearchResultItem {
+  id: string;
+  name: string;
+  snippet: string;
+  text: string;
+  header: string;
+}
 
-    return null;
-  }
+export interface NotebookCapabilities {
+  isRevisionSupported: boolean;
 }

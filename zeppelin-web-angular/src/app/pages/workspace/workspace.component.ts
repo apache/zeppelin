@@ -11,6 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { isRecord } from '@zeppelin/utility/type-utility';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -28,7 +29,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
-  private messageId = null;
+  private messageId: string | null = null;
   publishMode = false;
 
   constructor(
@@ -38,8 +39,9 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     private heliumManagerService: HeliumManagerService
   ) {}
 
-  onActivate(component) {
-    this.publishMode = component && component[publishedSymbol];
+  onActivate(component: unknown) {
+    // tslint:disable-next-line:no-any
+    this.publishMode = !!(isRecord(component) && publishedSymbol in component && component[publishedSymbol as any]);
     this.cdr.markForCheck();
   }
 
@@ -59,7 +61,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
         if (this.messageId === null) {
           this.messageId = this.nzMessageService.loading('Connecting WebSocket ...', { nzDuration: 0 }).messageId;
         }
-      } else {
+      } else if (this.messageId !== null) {
         this.nzMessageService.remove(this.messageId);
         this.messageId = null;
       }

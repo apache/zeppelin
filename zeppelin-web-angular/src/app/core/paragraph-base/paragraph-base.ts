@@ -28,27 +28,32 @@ import { MessageService } from '@zeppelin/services/message.service';
 import { NgZService } from '@zeppelin/services/ng-z.service';
 import { NoteStatusService, ParagraphStatus } from '@zeppelin/services/note-status.service';
 
-import DiffMatchPatch from 'diff-match-patch';
+import * as DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
 import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
+import { ParagraphConfigResults, ParagraphResults } from '../../../../projects/zeppelin-sdk/src';
 import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
 
 export abstract class ParagraphBase extends MessageListenersManager {
-  paragraph: ParagraphItem;
-  dirtyText: string;
-  originalText: string;
+  paragraph?: ParagraphItem;
+  dirtyText?: string;
+  originalText?: string;
   isEntireNoteRunning = false;
   revisionView = false;
   diffMatchPatch = new DiffMatchPatch();
   isParagraphRunning = false;
-  results = [];
-  configs = {};
+  results: ParagraphResults | undefined = [];
+  configs: ParagraphConfigResults | undefined = {};
   progress = 0;
   colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  editorSetting: ParagraphEditorSetting = {};
+  editorSetting: ParagraphEditorSetting = {
+    params: {},
+    forms: {}
+  };
 
-  notebookParagraphResultComponents: QueryList<NotebookParagraphResultComponent>;
+  // Initialized by `ViewChildren` in the class which extends ParagraphBase
+  notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
   constructor(
     public messageService: MessageService,
@@ -63,7 +68,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.PROGRESS)
   onProgress(data: MessageReceiveDataTypeMap[OP.PROGRESS]) {
-    if (data.id === this.paragraph.id) {
+    if (data.id === this.paragraph?.id) {
       this.progress = data.progress;
       this.cdr.markForCheck();
     }
@@ -71,7 +76,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.PARAGRAPH_STATUS)
   onParagraphStatus(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_STATUS]) {
-    if (data.id === this.paragraph.id) {
+    if (data.id === this.paragraph?.id) {
       this.paragraph.status = data.status;
       this.cdr.markForCheck();
     }
@@ -85,7 +90,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.PARAS_INFO)
   updateParaInfos(data: MessageReceiveDataTypeMap[OP.PARAS_INFO]) {
-    if (this.paragraph.id === data.id) {
+    if (this.paragraph?.id === data.id) {
       this.paragraph.runtimeInfos = data.infos;
       this.cdr.markForCheck();
     }
@@ -93,8 +98,14 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.EDITOR_SETTING)
   getEditorSetting(data: MessageReceiveDataTypeMap[OP.EDITOR_SETTING]) {
-    if (this.paragraph.id === data.paragraphId) {
-      this.paragraph.config.editorSetting = { ...this.paragraph.config.editorSetting, ...data.editor };
+    if (this.paragraph?.id === data.paragraphId) {
+      this.paragraph.config.editorSetting = {
+        ...(this.paragraph.config.editorSetting ?? {
+          params: {},
+          forms: {}
+        }),
+        ...data.editor
+      };
       this.cdr.markForCheck();
     }
   }
@@ -102,6 +113,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   @MessageListener(OP.PARAGRAPH)
   paragraphData(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     const oldPara = this.paragraph;
+    if (!oldPara) {
+      throw new Error('paragraph is not defined');
+    }
     const newPara = data.paragraph;
     if (!newPara.results) {
       newPara.results = {};
@@ -134,9 +148,11 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.PATCH_PARAGRAPH)
   patchParagraph(data: MessageReceiveDataTypeMap[OP.PATCH_PARAGRAPH]) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     if (data.paragraphId === this.paragraph.id) {
-      let patch = data.patch;
-      patch = this.diffMatchPatch.patch_fromText(patch);
+      const patch = this.diffMatchPatch.patch_fromText(data.patch);
       if (!this.paragraph.text) {
         this.paragraph.text = '';
       }
@@ -148,6 +164,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.ANGULAR_OBJECT_UPDATE)
   angularObjectUpdate(data: AngularObjectUpdate) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     if (data.paragraphId === this.paragraph.id) {
       const { name, object } = data.angularObject;
       this.ngZService.setContextValue(name, object, data.paragraphId, false);
@@ -156,6 +175,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   @MessageListener(OP.ANGULAR_OBJECT_REMOVE)
   angularObjectRemove(data: AngularObjectRemove) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     if (data.paragraphId === this.paragraph.id) {
       this.ngZService.unsetContextValue(data.name, data.paragraphId, false);
     }
@@ -210,6 +232,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
 
   updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     if (oldPara.text !== newPara.text) {
       if (this.dirtyText) {
         // check if editor has local update
@@ -231,6 +256,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
 
   updateParagraphObjectWhenUpdated(newPara: ParagraphItem) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     if (this.paragraph.config.colWidth !== newPara.config.colWidth) {
       this.changeColWidth(false);
     }
@@ -253,23 +281,23 @@ export abstract class ParagraphBase extends MessageListenersManager {
     this.paragraph.runtimeInfos = newPara.runtimeInfos;
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(newPara);
     this.paragraph.config = newPara.config;
-    this.initializeDefault(this.paragraph.config);
-    this.setResults();
+    this.initializeDefault(this.paragraph.config, this.paragraph.settings);
+    this.setResults(this.paragraph);
     this.cdr.markForCheck();
   }
 
-  setResults() {
-    if (this.paragraph.results) {
-      this.results = this.paragraph.results.msg;
-      this.configs = this.paragraph.config.results;
+  setResults(paragraph: ParagraphItem) {
+    if (paragraph.results) {
+      this.results = paragraph.results.msg;
+      this.configs = paragraph.config.results;
     }
-    if (!this.paragraph.config) {
-      this.paragraph.config = {};
+    if (!paragraph.config) {
+      paragraph.config = {};
     }
   }
 
-  initializeDefault(config: ParagraphConfig) {
-    const forms = this.paragraph.settings.forms;
+  initializeDefault(config: ParagraphConfig, settings: ParagraphEditorSetting) {
+    const forms = settings.forms;
 
     if (!config.colWidth) {
       config.colWidth = 12;
@@ -298,7 +326,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
 
     if (!config.editorSetting) {
-      config.editorSetting = {};
+      config.editorSetting = {
+        params: {},
+        forms: {}
+      };
     } else if (config.editorSetting.editOnDblClick) {
       this.editorSetting.isOutputHidden = config.editorSetting.editOnDblClick;
     }
@@ -309,6 +340,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
 
   runParagraphUsingBackendInterpreter(paragraphText: string) {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     this.messageService.runParagraph(
       this.paragraph.id,
       this.paragraph.title,
@@ -319,6 +353,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
 
   cancelParagraph() {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     this.messageService.cancelParagraph(this.paragraph.id);
   }
 }

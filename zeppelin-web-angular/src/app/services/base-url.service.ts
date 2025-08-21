@@ -40,7 +40,7 @@ export class BaseUrlService {
     return this.skipTrailingSlash(this.getBase()) + '/api';
   }
 
-  skipTrailingSlash(path) {
+  skipTrailingSlash(path: string) {
     return path.replace(/\/$/, '');
   }
 }
