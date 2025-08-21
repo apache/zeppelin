@@ -358,12 +358,12 @@ public class HeliumBundleFactory {
         .append(className)
         .append(" from \"../" + mainFileName + "\"\n");
 
-    loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
-    loadJsRegister.append("  id: \"" + moduleNameVersion[0] + "\",\n");
-    loadJsRegister.append("  name: \"" + pkg.getName() + "\",\n");
-    loadJsRegister.append("  icon: " + gson.toJson(pkg.getIcon()) + ",\n");
-    loadJsRegister.append("  type: \"" + pkg.getType() + "\",\n");
-    loadJsRegister.append("  class: " + className + "\n");
+    loadJsRegister.append(HELIUM_BUNDLES_VAR).append(".push({\n");
+    loadJsRegister.append("id: \"").append(moduleNameVersion[0]).append("\",\n");
+    loadJsRegister.append("name: \"").append(pkg.getName()).append("\",\n");
+    loadJsRegister.append("icon: ").append(gson.toJson(pkg.getIcon())).append(",\n");
+    loadJsRegister.append("type: \"").append(pkg.getType()).append("\",\n");
+    loadJsRegister.append("class: ").append(className).append("\n");
     loadJsRegister.append("})\n");
 
     File srcDir = getHeliumPackageSourceDirectory(pkg.getName());
