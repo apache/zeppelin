@@ -12,15 +12,17 @@
 
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 
-import 'zone.js/dist/zone';
-import 'zone.js/dist/zone-testing';
 import { getTestBed } from '@angular/core/testing';
 import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
+  platformBrowserDynamicTesting,
+  BrowserDynamicTestingModule
 } from '@angular/platform-browser-dynamic/testing';
+// tslint:disable-next-line:no-import-side-effect
+import 'zone.js/dist/zone';
+// tslint:disable-next-line:no-import-side-effect
+import 'zone.js/dist/zone-testing';
 
-declare const require: any;
+declare const require: NodeJS.Require;
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(

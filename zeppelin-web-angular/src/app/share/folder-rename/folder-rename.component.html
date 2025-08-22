@@ -14,7 +14,14 @@
   <nz-form-item>
     <nz-form-label>Please enter a new name</nz-form-label>
     <nz-form-control>
-      <input nz-input [(ngModel)]="newFolderPath" (ngModelChange)="checkMerged()" placeholder="Insert New Name" name="newFolderPath" required/>
+      <input
+        nz-input
+        [(ngModel)]="newFolderPath"
+        (ngModelChange)="checkMerged()"
+        placeholder="Insert New Name"
+        name="newFolderPath"
+        required
+      />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item *ngIf="willMerged">
@@ -28,5 +35,7 @@
 </form>
 
 <ng-template #desTpl>
-  The folder will be merged into <strong>{{newFolderPath}}</strong>. Are you sure?
+  The folder will be merged into
+  <strong>{{ newFolderPath }}</strong>
+  . Are you sure?
 </ng-template>

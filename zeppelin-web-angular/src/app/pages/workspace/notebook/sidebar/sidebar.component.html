@@ -12,14 +12,18 @@
 
 <div class="sidebar" [class.simple]="note.config.looknfeel !== 'default'">
   <div class="sidebar-nav">
-    <button [class.sidebar-button-active]="sidebarState === SidebarState.TOC"
-            class="sidebar-button"
-            (click)="setOrToggleSidebarState(SidebarState.TOC)">
+    <button
+      [class.sidebar-button-active]="sidebarState === SidebarState.TOC"
+      class="sidebar-button"
+      (click)="setOrToggleSidebarState(SidebarState.TOC)"
+    >
       <i nz-icon nzType="unordered-list" nzTheme="outline"></i>
     </button>
-    <button [class.sidebar-button-active]="sidebarState === SidebarState.FILE_TREE"
-            class="sidebar-button"
-            (click)="setOrToggleSidebarState(SidebarState.FILE_TREE)">
+    <button
+      [class.sidebar-button-active]="sidebarState === SidebarState.FILE_TREE"
+      class="sidebar-button"
+      (click)="setOrToggleSidebarState(SidebarState.FILE_TREE)"
+    >
       <i nz-icon nzType="folder" nzTheme="outline"></i>
     </button>
   </div>
@@ -28,8 +32,11 @@
   </button>
   <div class="sidebar-main" *ngIf="sidebarState !== SidebarState.CLOSED">
     <zeppelin-node-list *ngIf="sidebarState === SidebarState.FILE_TREE"></zeppelin-node-list>
-    <zeppelin-note-toc *ngIf="sidebarState === SidebarState.TOC"
-                      [note]="note"
-                      (scrollToParagraph)="onScrollToParagraph($event)"></zeppelin-note-toc>
+    <zeppelin-note-toc
+      *ngIf="sidebarState === SidebarState.TOC"
+      [note]="note"
+      (scrollToParagraph)="onScrollToParagraph($event)"
+    ></zeppelin-note-toc>
   </div>
-<div>
+  <div></div>
+</div>
