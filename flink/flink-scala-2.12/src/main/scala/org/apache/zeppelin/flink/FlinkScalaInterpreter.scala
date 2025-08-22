@@ -426,39 +426,65 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   }
 
   private def createTableEnvs(): Unit = {
-    val originalClassLoader = Thread.currentThread().getContextClassLoader
+    val originalCl = Thread.currentThread().getContextClassLoader
     try {
-      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
-      val tableConfig = new TableConfig
-      tableConfig.getConfiguration.addAll(configuration)
+      val shellCl = getFlinkScalaShellLoader
+      Thread.currentThread().setContextClassLoader(shellCl)
 
-      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
-        this.benv, this.senv, tableConfig, this.userJars.map(new URL(_)).asJava)
-
-      // blink planner
-      val btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
-        .asInstanceOf[EnvironmentSettings.Builder]
+      // Create settings (no Blink planner in 1.20; this is the unified planner)
+      val btSettings = EnvironmentSettings.newInstance()
         .inBatchMode()
         .build()
-      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
-      flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
-      this.java_btenv = this.btenv
 
-      val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
-        .asInstanceOf[EnvironmentSettings.Builder]
+      val stSettings = EnvironmentSettings.newInstance()
         .inStreamingMode()
         .build()
-      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
-      flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
-      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
 
-      if (!flinkVersion.isAfterFlink114()) {
-        // flink planner is not supported after flink 1.14
-        this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
-        this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
-      }
+      // --- Batch TableEnvironment (unified, not Blink/Java/Scala-specific) ---
+      // NOTE: TableConfig ctor is deprecated/removed; configure AFTER creation.
+      val btEnv = org.apache.flink.table.api.TableEnvironment.create(btSettings)
+      btEnv.getConfig.getConfiguration.addAll(configuration)
+      this.btenv = btEnv
+      this.java_btenv = btEnv  // single impl for both Java/Scala APIs
+      flinkILoop.bind("btenv",
+        classOf[org.apache.flink.table.api.TableEnvironment].getCanonicalName,
+        btEnv,
+        List("@transient"))
+
+      // --- Streaming TableEnvironment (Scala & Java bridges) ---
+      // Scala bridge
+      val stEnv =
+        org.apache.flink.table.api.bridge.scala.StreamTableEnvironment.create(this.senv, stSettings)
+      stEnv.getConfig.getConfiguration.addAll(configuration)
+      this.stenv = stEnv
+      flinkILoop.bind("stenv",
+        classOf[org.apache.flink.table.api.bridge.scala.StreamTableEnvironment].getCanonicalName,
+        stEnv,
+        List("@transient"))
+
+
+      // Java StreamExecutionEnvironment from the Scala one
+      val jStreamEnv: org.apache.flink.streaming.api.environment.StreamExecutionEnvironment =
+        this.senv.getJavaEnv   // in Scala this accessor is available as `javaEnv`
+
+      // Java bridge
+      this.java_stenv =
+        org.apache.flink.table.api.bridge.java.StreamTableEnvironment.create(jStreamEnv, stSettings)
+
+
+
+      // --- (Optional) If you previously injected user jars via a custom loader,
+      // consider also setting PipelineOptions.JARS so jobs carry them when submitted:
+      // import org.apache.flink.configuration.PipelineOptions
+      // configuration.set(PipelineOptions.JARS, this.userJars.asJava)
+      // If you do this, set it BEFORE creating the envs so it takes effect.
+
+      // No Flink planner (pre-1.14) fallback in 1.20+
+      this.btenv_2 = null
+      this.java_btenv_2 = null
+
     } finally {
-      Thread.currentThread().setContextClassLoader(originalClassLoader)
+      Thread.currentThread().setContextClassLoader(originalCl)
     }
   }
 
