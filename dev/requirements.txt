@@ -1,0 +1,13 @@
+certifi==2025.8.3
+charset-normalizer==3.4.3
+defusedxml==0.7.1
+idna==3.10
+jira==3.10.5
+oauthlib==3.3.1
+packaging==25.0
+python-dotenv==1.1.1
+requests==2.32.5
+requests-oauthlib==2.0.0
+requests-toolbelt==1.0.0
+typing-extensions==4.14.1
+urllib3==2.5.0
