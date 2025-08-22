@@ -7,7 +7,6 @@ dependencies:
   - scipy
   - numpy=1.19.5
   - grpcio
-  - protobuf
   - pandasql
   - ipython
   - ipython_genutils
@@ -27,4 +26,5 @@ dependencies:
   - pip
   - pip:
       - apache-flink==1.20.2
+      - protobuf==3.20.*
 
