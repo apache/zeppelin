@@ -82,6 +82,8 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   handleSave() {
+    this.addProperties();
+    this.addDependence();
     const formData = this.formGroup.getRawValue();
     // tslint:disable-next-line:no-any
     const properties: Record<any, any> = {};
@@ -98,9 +100,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
           name: key
         };
       });
-    this.addProperties();
     formData.properties = properties;
-    this.addDependence();
     // tslint:disable-next-line:no-any
     formData.dependencies.forEach((e: any) => {
       e.exclusions = e.exclusions.split(',').filter((s: string) => s !== '');
