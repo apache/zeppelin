@@ -10,8 +10,9 @@
   ~ limitations under the License.
   -->
 
-<zeppelin-code-editor [style.height.px]="height"
-                      [class.focused]="focus"
-                      [class.dirty]="dirty"
-                      (nzEditorInitialized)="initializedEditor($event)">
-</zeppelin-code-editor>
+<zeppelin-code-editor
+  [style.height.px]="height"
+  [class.focused]="focus"
+  [class.dirty]="dirty"
+  (nzEditorInitialized)="initializedEditor($event)"
+></zeppelin-code-editor>

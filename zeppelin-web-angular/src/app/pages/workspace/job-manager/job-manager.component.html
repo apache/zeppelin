@@ -10,10 +10,7 @@
   ~ limitations under the License.
   -->
 
-<zeppelin-page-header
-  title="Job"
-  [description]="jobManagerDescription"
-  [divider]="true">
+<zeppelin-page-header title="Job" [description]="jobManagerDescription" [divider]="true">
   <ng-template #jobManagerDescription>
     You can monitor the status of notebook and navigate to note or paragraph.
   </ng-template>
@@ -21,7 +18,7 @@
     <nz-form-item>
       <nz-form-control>
         <nz-input-group [nzPrefix]="prefixSearch">
-          <input formControlName="noteName" nz-input placeholder="Search jobs..."/>
+          <input formControlName="noteName" nz-input placeholder="Search jobs..." />
         </nz-input-group>
         <ng-template #prefixSearch>
           <i nz-icon nzType="search" nzTheme="outline"></i>
@@ -53,16 +50,18 @@
     </nz-form-item>
     <nz-form-item class="status-legend">
       <nz-form-control>
-        <zeppelin-job-manager-job-status *ngFor="let item of jobStatusKeys" [status]="item" [showText]="true">
-        </zeppelin-job-manager-job-status>
+        <zeppelin-job-manager-job-status
+          *ngFor="let item of jobStatusKeys"
+          [status]="item"
+          [showText]="true"
+        ></zeppelin-job-manager-job-status>
       </nz-form-control>
     </nz-form-item>
   </form>
 </zeppelin-page-header>
 <div class="content">
   <nz-card *ngIf="loading; else jobs">
-    <nz-skeleton [nzTitle]="false" [nzLoading]="true" [nzActive]="true">
-    </nz-skeleton>
+    <nz-skeleton [nzTitle]="false" [nzLoading]="true" [nzActive]="true"></nz-skeleton>
   </nz-card>
 
   <ng-template #jobs>
@@ -71,8 +70,8 @@
       [note]="item"
       [highlight]="filterString"
       (start)="onStart($event)"
-      (stop)="onStop($event)">
-    </zeppelin-job-manager-job>
+      (stop)="onStop($event)"
+    ></zeppelin-job-manager-job>
     <nz-empty *ngIf="filteredJobs.length === 0" nzNotFoundContent="No Job found"></nz-empty>
   </ng-template>
 </div>
