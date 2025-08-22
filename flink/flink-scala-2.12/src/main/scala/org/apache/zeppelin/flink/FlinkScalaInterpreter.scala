@@ -424,9 +424,10 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   }
 
   private def createTableEnvs(): Unit = {
-    if (flinkVersion.getMajorVersion <= 117) {
+    if (flinkVersion.getMajorVersion == 1 && flinkVersion.getMinorVersion <= 17) {
       val originalClassLoader = Thread.currentThread().getContextClassLoader
       try {
+        LOGGER.warn("Executing Table envs for 117")
         Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
         val tableConfig = new TableConfig
         tableConfig.getConfiguration.addAll(configuration)
@@ -465,7 +466,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       try {
         val shellCl = getFlinkScalaShellLoader
         Thread.currentThread().setContextClassLoader(shellCl)
-
         // Create settings (no Blink planner in 1.20; this is the unified planner)
         val btSettings = EnvironmentSettings.newInstance()
           .inBatchMode()
@@ -654,7 +654,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
    * This is just a workaround to make table api work in multiple threads.
    */
   def createPlannerAgain(): Unit = {
-    if (flinkVersion.getMajorVersion <= 117) {
+    if (flinkVersion.getMajorVersion == 1 && flinkVersion.getMinorVersion <= 17) {
       val originalClassLoader = Thread.currentThread().getContextClassLoader
       try {
         Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
