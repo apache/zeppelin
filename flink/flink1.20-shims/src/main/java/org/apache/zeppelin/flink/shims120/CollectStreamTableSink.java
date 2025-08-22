@@ -51,7 +51,7 @@ public class CollectStreamTableSink implements RetractStreamTableSink<Row> {
   public CollectStreamTableSink(InetAddress targetAddress,
                                 int targetPort,
                                 TypeSerializer<Tuple2<Boolean, Row>> serializer) {
-    LOGGER.info("Use address: " + targetAddress.getHostAddress() + ":" + targetPort);
+    LOGGER.info("Use address: {}:{}", targetAddress.getHostAddress(), targetPort);
     this.targetAddress = targetAddress;
     this.targetPort = targetPort;
     this.serializer = serializer;

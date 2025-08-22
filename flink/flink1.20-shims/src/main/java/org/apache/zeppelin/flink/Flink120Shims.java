@@ -23,9 +23,15 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringJoiner;
+import java.util.stream.Stream;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -215,33 +221,42 @@ public class Flink120Shims extends FlinkShims {
   @Override
   public String getPyFlinkPythonPath(Properties properties) throws IOException {
     String mode = properties.getProperty("flink.execution.mode");
-    if ("yarn-application".equalsIgnoreCase(mode)) {
-      // for yarn application mode, FLINK_HOME is container working directory
-      String flinkHome = new File(".").getAbsolutePath();
-      return getPyFlinkPythonPath(new File(flinkHome + "/lib/python"));
-    }
 
-    String flinkHome = System.getenv("FLINK_HOME");
-    if (StringUtils.isNotBlank(flinkHome)) {
-      return getPyFlinkPythonPath(new File(flinkHome + "/opt/python"));
+    final Path pyDir;
+    if ("yarn-application".equalsIgnoreCase(mode)) {
+      // for yarn-application mode, FLINK_HOME is the container working directory
+      Path flinkHome = Paths.get(".").toAbsolutePath().normalize();
+      pyDir = flinkHome.resolve("lib").resolve("python");
     } else {
-      throw new IOException("No FLINK_HOME is specified");
+      String flinkHome = System.getenv("FLINK_HOME");
+      if (flinkHome != null && !flinkHome.isBlank()) {
+        pyDir = Paths.get(flinkHome).resolve("opt").resolve("python");
+      } else {
+        throw new IOException("No FLINK_HOME is specified");
+      }
     }
+    return getPyFlinkPythonPath(pyDir);
   }
 
-  private String getPyFlinkPythonPath(File pyFlinkFolder) throws IOException {
-    LOGGER.info("Getting pyflink lib from {}", pyFlinkFolder);
-    if (!pyFlinkFolder.exists() || !pyFlinkFolder.isDirectory()) {
-      throw new IOException(String.format("PyFlink folder %s does not exist or is not a folder",
-              pyFlinkFolder.getAbsolutePath()));
+  private String getPyFlinkPythonPath(Path pyFlinkFolder) throws IOException {
+    LOGGER.info("Getting pyflink lib from {}", pyFlinkFolder.toAbsolutePath());
+
+    if (!Files.exists(pyFlinkFolder) || !Files.isDirectory(pyFlinkFolder)) {
+      throw new IOException(String.format(
+              "PyFlink folder %s does not exist or is not a folder",
+              pyFlinkFolder.toAbsolutePath()
+      ));
     }
-    File[] depFiles = pyFlinkFolder.listFiles();
-    StringBuilder builder = new StringBuilder();
-    for (File file : depFiles) {
-      LOGGER.info("Adding extracted file {} to PYTHONPATH", file.getAbsolutePath());
-      builder.append(file.getAbsolutePath() + ":");
+
+    StringJoiner joiner = new StringJoiner(java.io.File.pathSeparator);
+    try (Stream<Path> entries = Files.list(pyFlinkFolder)) {
+      entries.forEach(p -> {
+        LOGGER.info("Adding extracted file {} to PYTHONPATH", p.toAbsolutePath());
+        joiner.add(p.toAbsolutePath().toString());
+      });
     }
-    return builder.toString();
+
+    return joiner.toString();
   }
 
   @Override
