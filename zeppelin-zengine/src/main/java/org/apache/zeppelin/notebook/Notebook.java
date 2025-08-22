@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -757,25 +758,13 @@ public class Notebook {
         zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
-      List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
-              func.test(entry.getKey()) &&
-              ((!hideHomeScreenNotebookFromList) ||
-                  ((hideHomeScreenNotebookFromList) && !entry.getKey().equals(homescreenNoteId))))
-          .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
 
-      notesInfo.sort((note1, note2) -> {
-            String name1 = note1.getId();
-            if (note1.getPath() != null) {
-              name1 = note1.getPath();
-            }
-            String name2 = note2.getId();
-            if (note2.getPath() != null) {
-              name2 = note2.getPath();
-            }
-            return name1.compareTo(name2);
-          });
-      return notesInfo;
+      return noteManager.getNotesInfo().entrySet().stream().filter(entry ->
+              func.test(entry.getKey()) &&
+                  (!hideHomeScreenNotebookFromList || !entry.getKey().equals(homescreenNoteId)))
+          .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
+          .sorted(Comparator.comparing(note -> note.getPath() != null ? note.getPath() : note.getId()))
+          .collect(Collectors.toUnmodifiableList());
     }
   }
 
