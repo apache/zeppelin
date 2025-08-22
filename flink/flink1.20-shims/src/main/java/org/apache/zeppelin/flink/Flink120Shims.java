@@ -226,11 +226,11 @@ public class Flink120Shims extends FlinkShims {
     if ("yarn-application".equalsIgnoreCase(mode)) {
       // for yarn-application mode, FLINK_HOME is the container working directory
       Path flinkHome = Paths.get(".").toAbsolutePath().normalize();
-      pyDir = flinkHome.resolve("lib").resolve("python");
+      pyDir = Paths.get(flinkHome.toString(), "lib", "python");
     } else {
       String flinkHome = System.getenv("FLINK_HOME");
       if (flinkHome != null && !flinkHome.isBlank()) {
-        pyDir = Paths.get(flinkHome).resolve("opt").resolve("python");
+        pyDir = Paths.get(flinkHome,"opt","python");
       } else {
         throw new IOException("No FLINK_HOME is specified");
       }
