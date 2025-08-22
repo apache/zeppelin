@@ -65,7 +65,7 @@ public class DownloadUtils {
   private static final int PROGRESS_BAR_UPDATE_INTERVAL;
 
   private static String downloadFolder = System.getProperty("user.home") + "/.cache";
-  public static final String DEFAULT_SPARK_VERSION = "3.4.2";
+  public static final String DEFAULT_SPARK_VERSION = "3.5.6";
   public static final String DEFAULT_SPARK_HADOOP_VERSION = "3";
 
 

@@ -57,7 +57,6 @@ export interface ConfigurationsInfo {
     'zeppelin.websocket.max.text.message.size': string;
     'zeppelin.notebook.git.remote.origin': string;
     'zeppelin.server.authorization.header.clear': string;
-    isRevisionSupported: string;
     'zeppelin.interpreter.dep.mvnRepo': string;
     'zeppelin.ssl': string;
     'zeppelin.notebook.autoInterpreterBinding': string;

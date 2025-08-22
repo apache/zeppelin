@@ -95,8 +95,8 @@ public abstract class KerberosInterpreter extends AbstractInterpreter {
     //defined in zeppelin-env.sh, if not initialized then the default value is 5.
     if (System.getenv("KINIT_FAIL_THRESHOLD") != null) {
       try {
-        kinitFailThreshold = new Integer(System.getenv("KINIT_FAIL_THRESHOLD"));
-      } catch (Exception e) {
+        kinitFailThreshold = Integer.valueOf(System.getenv("KINIT_FAIL_THRESHOLD"));
+      } catch (NumberFormatException e) {
         LOGGER.error("Cannot get integer value from the given string, " + System
             .getenv("KINIT_FAIL_THRESHOLD") + " defaulting to " + kinitFailThreshold, e);
       }

@@ -34,7 +34,7 @@ export class CompletionService extends MessageListenersManager {
   }
 
   @MessageListener(OP.COMPLETION_LIST)
-  onCompletion(data?: CompletionReceived): void {
+  onCompletion(data: CompletionReceived): void {
     console.log('on receive!', data.id);
     this.completionItem$.next(data);
   }
@@ -67,7 +67,7 @@ export class CompletionService extends MessageListenersManager {
           const word = model.getWordUntilPosition(position);
 
           if (!id) {
-            return { suggestions: null };
+            return { suggestions: [] };
           }
 
           that.messageService.completion(id, model.getValue(), model.getOffsetAt(position));
@@ -101,6 +101,9 @@ export class CompletionService extends MessageListenersManager {
   }
 
   private getIdForModel(model?: editor.ITextModel): string | null {
-    return this.receivers.get(model);
+    if (!model) {
+      return null;
+    }
+    return this.receivers.get(model) ?? null;
   }
 }

@@ -32,7 +32,7 @@ import { InterpreterCreateRepositoryModalComponent } from './create-repository-m
 })
 export class InterpreterComponent implements OnInit, OnDestroy {
   searchInterpreter = '';
-  search$ = new Subject<string>();
+  search$: Subject<string> | null = new Subject<string>();
   showRepository = false;
   showCreateSetting = false;
   propertyTypes: InterpreterPropertyTypes[] = [];
@@ -42,6 +42,11 @@ export class InterpreterComponent implements OnInit, OnDestroy {
   filteredInterpreterSettings: Interpreter[] = [];
 
   onSearchChange(value: string) {
+    if (!this.search$) {
+      throw new Error(
+        'search$ is null. Please check if the component is destroyed. If it is not, please report this issue.'
+      );
+    }
     this.search$.next(value);
   }
 
@@ -180,12 +185,12 @@ export class InterpreterComponent implements OnInit, OnDestroy {
     this.getAvailableInterpreters();
     this.getRepositories();
 
-    this.search$.pipe(debounceTime(150)).subscribe(value => this.filterInterpreters(value));
+    this.search$!.pipe(debounceTime(150)).subscribe(value => this.filterInterpreters(value));
   }
 
   ngOnDestroy(): void {
-    this.search$.next();
-    this.search$.complete();
+    this.search$?.next();
+    this.search$?.complete();
     this.search$ = null;
   }
 }

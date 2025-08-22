@@ -40,12 +40,12 @@ export class NoteStatusService {
     return status === ParagraphStatus.PENDING || status === ParagraphStatus.RUNNING;
   }
 
-  isTrash(note: Note['note']) {
+  isTrash(note: Exclude<Note['note'], undefined>) {
     // TODO(hsuanxyz) https://github.com/apache/zeppelin/pull/3365/files
     return note.name.split('/')[1] === this.TRASH_FOLDER_ID;
   }
 
-  viewOnly(note: Note['note']): boolean {
+  viewOnly(note: Exclude<Note['note'], undefined>): boolean {
     return note.config.looknfeel === 'report';
   }
 
@@ -57,7 +57,7 @@ export class NoteStatusService {
     }
   }
 
-  isEntireNoteRunning(note: Note['note']): boolean {
+  isEntireNoteRunning(note: Exclude<Note['note'], undefined>): boolean {
     return !!(note.info && note.info.isRunning && note.info.isRunning === true);
   }
 

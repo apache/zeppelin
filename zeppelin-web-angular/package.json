@@ -12,7 +12,7 @@
     "build-project:vis": " ng build --project zeppelin-visualization",
     "build-project:helium": "ng build --project zeppelin-helium",
     "test": "ng test",
-    "lint": "ng lint",
+    "lint": "ng lint && prettier --check \"src/**/*.{ts,js,css,html}\"",
     "e2e": "ng e2e"
   },
   "engines": {
@@ -54,6 +54,7 @@
     "@angular/cli": "~9.1.15",
     "@angular/compiler-cli": "~9.1.13",
     "@angular/language-service": "~9.1.13",
+    "@types/diff-match-patch": "^1.0.36",
     "@types/highlight.js": "^9.12.3",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
@@ -61,6 +62,7 @@
     "@types/mathjax": "^0.0.35",
     "@types/node": "~12.19.16",
     "@types/parse5": "^5.0.2",
+    "@types/webpack-env": "^1.18.8",
     "codelyzer": "^5.0.0",
     "dotenv": "^8.0.0",
     "https-proxy-agent": "^2.2.1",

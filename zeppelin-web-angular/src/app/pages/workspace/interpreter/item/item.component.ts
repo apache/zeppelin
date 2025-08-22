@@ -11,7 +11,15 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+  ValidatorFn
+} from '@angular/forms';
 import { DestroyHookComponent } from '@zeppelin/core';
 import { Interpreter } from '@zeppelin/interfaces';
 import { InterpreterService, SecurityService, TicketService } from '@zeppelin/services';
@@ -27,16 +35,16 @@ import { InterpreterComponent } from '../interpreter.component';
 })
 export class InterpreterItemComponent extends DestroyHookComponent implements OnInit, OnDestroy {
   @Input() mode: 'create' | 'view' | 'edit' = 'view';
-  @Input() interpreter: Interpreter;
+  @Input() interpreter?: Interpreter;
 
-  formGroup: FormGroup;
-  optionFormGroup: FormGroup;
-  editingPropertiesFormGroup: FormGroup;
-  editingDependenceFormGroup: FormGroup;
-  propertiesFormArray: FormArray;
-  dependenciesFormArray: FormArray;
-  userList$: Observable<string[]>;
-  userSearchChange$ = new BehaviorSubject('');
+  formGroup!: FormGroup;
+  optionFormGroup!: FormGroup;
+  editingPropertiesFormGroup?: FormGroup;
+  editingDependenceFormGroup?: FormGroup;
+  propertiesFormArray!: FormArray;
+  dependenciesFormArray!: FormArray;
+  userList$?: Observable<string[]>;
+  userSearchChange$: BehaviorSubject<string> | null = new BehaviorSubject('');
   runningOptionMap = {
     sharedModeName: 'shared',
     globallyModeName: 'Globally',
@@ -60,20 +68,31 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   handleRestart() {
+    if (!this.interpreter) {
+      throw new Error("'interpreter' is not defined. Please check if it is initialized properly.");
+    }
     this.parent.restartInterpreterSetting(this.interpreter.name);
   }
 
   handleRemove() {
+    if (!this.interpreter) {
+      throw new Error("'interpreter' is not defined. Please check if it is initialized properly.");
+    }
     this.parent.removeInterpreterSetting(this.interpreter.name);
   }
 
   handleSave() {
+    this.addProperties();
+    this.addDependence();
     const formData = this.formGroup.getRawValue();
-    const properties = {};
+    // tslint:disable-next-line:no-any
+    const properties: Record<any, any> = {};
 
     formData.properties
-      .sort(e => e.key)
-      .forEach(e => {
+      // tslint:disable-next-line:no-any
+      .sort((e: any) => e.key)
+      // tslint:disable-next-line:no-any
+      .forEach((e: any) => {
         const { key, value, type } = e;
         properties[key] = {
           value,
@@ -81,11 +100,10 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
           name: key
         };
       });
-    this.addProperties()
     formData.properties = properties;
-    this.addDependence()
-    formData.dependencies.forEach(e => {
-      e.exclusions = e.exclusions.split(',').filter(s => s !== '');
+    // tslint:disable-next-line:no-any
+    formData.dependencies.forEach((e: any) => {
+      e.exclusions = e.exclusions.split(',').filter((s: string) => s !== '');
     });
 
     if (this.mode === 'create') {
@@ -111,6 +129,9 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   onUserSearch(value: string): void {
+    if (!this.userSearchChange$) {
+      throw new Error("'userSearchChange$' is not defined. Calling it after component is destroyed is not allowed.");
+    }
     this.userSearchChange$.next(value);
   }
 
@@ -125,6 +146,9 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   onTypeChange(type: string) {
+    if (!this.editingPropertiesFormGroup) {
+      throw new Error("'editingPropertiesFormGroup' is not defined. Please check if it is initialized properly.");
+    }
     let valueSet: string | boolean | number;
     switch (type) {
       case 'number':
@@ -136,18 +160,21 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       default:
         valueSet = '';
     }
-    this.editingPropertiesFormGroup.get('value').setValue(valueSet);
+    this.editingPropertiesFormGroup.get('value')!.setValue(valueSet);
   }
 
   addDependence(): void {
+    if (!this.editingDependenceFormGroup) {
+      throw new Error("'editingDependenceFormGroup' is not defined. Please check if it is initialized properly.");
+    }
     this.editingDependenceFormGroup.updateValueAndValidity();
     if (this.editingDependenceFormGroup.valid) {
       const data = this.editingDependenceFormGroup.getRawValue();
       const current = this.dependenciesFormArray.controls.find(
-        control => control.get('groupArtifactVersion').value === data.groupArtifactVersion
+        control => control.get('groupArtifactVersion')!.value === data.groupArtifactVersion
       );
       if (current) {
-        current.get('exclusions').setValue(data.exclusions);
+        current.get('exclusions')!.setValue(data.exclusions);
       } else {
         this.dependenciesFormArray.push(
           this.formBuilder.group({
@@ -164,14 +191,17 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   addProperties(): void {
+    if (!this.editingPropertiesFormGroup) {
+      throw new Error("'editingPropertiesFormGroup' is not defined. Please check if it is initialized properly.");
+    }
     this.editingPropertiesFormGroup.updateValueAndValidity();
     if (this.editingPropertiesFormGroup.valid) {
       const data = this.editingPropertiesFormGroup.getRawValue();
 
-      const current = this.propertiesFormArray.controls.find(control => control.get('key').value === data.key);
+      const current = this.propertiesFormArray.controls.find(control => control.get('key')!.value === data.key);
       if (current) {
-        current.get('value').setValue(data.value);
-        current.get('type').setValue(data.type);
+        current.get('value')!.setValue(data.value);
+        current.get('type')!.setValue(data.type);
       } else {
         this.propertiesFormArray.push(
           this.formBuilder.group({
@@ -194,8 +224,8 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   setInterpreterRunningOption(perNote: string, perUser: string) {
     const { sharedModeName, globallyModeName, perNoteModeName, perUserModeName } = this.runningOptionMap;
 
-    this.optionFormGroup.get('perNote').setValue(perNote);
-    this.optionFormGroup.get('perUser').setValue(perUser);
+    this.optionFormGroup.get('perNote')!.setValue(perNote);
+    this.optionFormGroup.get('perUser')!.setValue(perUser);
 
     // Globally == shared_perNote + shared_perUser
     if (perNote === sharedModeName && perUser === sharedModeName) {
@@ -221,25 +251,25 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       }
     }
 
-    this.optionFormGroup.get('perNote').setValue(sharedModeName);
-    this.optionFormGroup.get('perUser').setValue(sharedModeName);
+    this.optionFormGroup.get('perNote')!.setValue(sharedModeName);
+    this.optionFormGroup.get('perUser')!.setValue(sharedModeName);
     this.interpreterRunningOption = globallyModeName;
   }
 
   setPerNoteOrUserOption(type: 'perNote' | 'perUser', value: string) {
-    this.optionFormGroup.get(type).setValue(value);
+    this.optionFormGroup.get(type)!.setValue(value);
     switch (value) {
       case this.sessionOptionMap.isolated:
-        this.optionFormGroup.get('session').setValue(false);
-        this.optionFormGroup.get('process').setValue(true);
+        this.optionFormGroup.get('session')!.setValue(false);
+        this.optionFormGroup.get('process')!.setValue(true);
         break;
       case this.sessionOptionMap.scoped:
-        this.optionFormGroup.get('session').setValue(true);
-        this.optionFormGroup.get('process').setValue(false);
+        this.optionFormGroup.get('session')!.setValue(true);
+        this.optionFormGroup.get('process')!.setValue(false);
         break;
       case this.sessionOptionMap.shared:
-        this.optionFormGroup.get('session').setValue(false);
-        this.optionFormGroup.get('process').setValue(false);
+        this.optionFormGroup.get('session')!.setValue(false);
+        this.optionFormGroup.get('process')!.setValue(false);
         break;
     }
   }
@@ -293,7 +323,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       // set dependencies fields
       this.interpreter.dependencies.forEach(e => {
         const exclusions = Array.isArray(e.exclusions) ? e.exclusions : [];
-        this.dependenciesFormArray.push(
+        this.dependenciesFormArray!.push(
           this.formBuilder.group({
             exclusions: [exclusions.join(',')],
             groupArtifactVersion: [e.groupArtifactVersion, [Validators.required]]
@@ -302,9 +332,8 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       });
 
       // set properties fields
-      Object.keys(this.interpreter.properties).forEach(key => {
-        const item = this.interpreter.properties[key];
-        this.propertiesFormArray.push(
+      Object.entries(this.interpreter.properties).forEach(([key, item]) => {
+        this.propertiesFormArray!.push(
           this.formBuilder.group({
             key: key,
             value: item.value,
@@ -316,7 +345,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     }
 
     this.formGroup = this.formBuilder.group({
-      name: [name, [Validators.required, c => this.nameValidator(c)]],
+      name: [name, [Validators.required, (c: Parameters<ValidatorFn>[0]) => this.nameValidator(c)]],
       group: [group, [Validators.required]],
       option: this.optionFormGroup,
       properties: this.propertiesFormArray,
@@ -325,6 +354,9 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   setupEditableForm(): void {
+    if (!this.userSearchChange$) {
+      throw new Error("'userSearchChange$' is not defined. Calling it after component is destroyed is not allowed.");
+    }
     this.userList$ = this.userSearchChange$.pipe(
       debounceTime(500),
       filter(value => !!value),
@@ -349,23 +381,23 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
 
     if (this.mode === 'create') {
       this.formGroup
-        .get('group')
+        .get('group')!
         .valueChanges.pipe(takeUntil(this.destroy$))
         .subscribe(value => {
           // remove all controls
-          while (this.propertiesFormArray.length) {
-            this.propertiesFormArray.removeAt(0);
+          while (this.propertiesFormArray!.length) {
+            this.propertiesFormArray!.removeAt(0);
           }
 
           const interpreters = this.parent.availableInterpreters.filter(e => e.group === value);
           interpreters.forEach(interpreter => {
-            Object.keys(interpreter.properties).forEach(key => {
-              this.propertiesFormArray.push(
+            Object.entries(interpreter.properties).forEach(([key, item]) => {
+              this.propertiesFormArray!.push(
                 this.formBuilder.group({
                   key: [key, [Validators.required]],
-                  value: interpreter.properties[key].defaultValue,
-                  description: interpreter.properties[key].description,
-                  type: interpreter.properties[key].type
+                  value: item.defaultValue,
+                  description: item.description,
+                  type: item.type
                 })
               );
             });
@@ -388,7 +420,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
 
   ngOnInit() {
     this.buildForm();
-    const option = this.optionFormGroup.getRawValue();
+    const option = this.optionFormGroup!.getRawValue();
     this.setInterpreterRunningOption(option.perNote, option.perUser);
 
     if (this.mode !== 'view') {
@@ -400,7 +432,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   }
 
   ngOnDestroy(): void {
-    this.userSearchChange$.complete();
+    this.userSearchChange$?.complete();
     this.userSearchChange$ = null;
     super.ngOnDestroy();
   }

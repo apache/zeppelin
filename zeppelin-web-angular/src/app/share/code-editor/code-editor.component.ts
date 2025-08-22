@@ -62,7 +62,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   @Input() nzOriginalText = '';
   @Input() @InputBoolean() nzLoading = false;
   @Input() @InputBoolean() nzFullControl = false;
-  @Input() nzToolkit: TemplateRef<void>;
+  @Input() nzToolkit?: TemplateRef<void>;
 
   @Input() set nzEditorOption(value: JoinedEditorOptions) {
     this.editorOption$.next(value);
@@ -76,7 +76,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private resize$ = new Subject<void>();
   private editorOption$ = new BehaviorSubject<JoinedEditorOptions>({});
-  private editorInstance: IEditor | IDiffEditor;
+  private editorInstance?: IEditor | IDiffEditor;
   private value = '';
   private modelSet = false;
 
@@ -180,7 +180,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
           debounceTime(50)
         )
         .subscribe(() => {
-          this.editorInstance.layout();
+          this.editorInstance?.layout();
         });
     });
   }

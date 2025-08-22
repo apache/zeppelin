@@ -29,10 +29,10 @@ import { NotebookRepo } from '@zeppelin/interfaces';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookRepoItemComponent implements OnChanges {
-  @Input() repo: NotebookRepo;
+  @Input() repo!: NotebookRepo;
   @Output() readonly repoChange = new EventEmitter<NotebookRepo>();
 
-  settingFormArray: FormArray;
+  settingFormArray?: FormArray;
   editMode = false;
 
   constructor(private cdr: ChangeDetectorRef, private fb: FormBuilder) {}
@@ -43,6 +43,9 @@ export class NotebookRepoItemComponent implements OnChanges {
   }
 
   save() {
+    if (!this.settingFormArray) {
+      throw new Error('settingFormArray is not defined');
+    }
     this.settingFormArray.controls.forEach(control => {
       control.markAsDirty();
       control.updateValueAndValidity();

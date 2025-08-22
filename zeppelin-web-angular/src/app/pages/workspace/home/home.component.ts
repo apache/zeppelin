@@ -13,7 +13,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { OP } from '@zeppelin/sdk';
+import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
 import { MessageService, TicketService } from '@zeppelin/services';
 
 @Component({
@@ -31,7 +31,7 @@ export class HomeComponent extends MessageListenersManager implements OnInit {
   }
 
   @MessageListener(OP.NOTES_INFO)
-  getNotes() {
+  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
     this.loading = false;
     this.cdr.markForCheck();
   }

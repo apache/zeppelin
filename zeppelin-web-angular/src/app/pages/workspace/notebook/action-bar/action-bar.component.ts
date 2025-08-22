@@ -26,9 +26,10 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
-import { Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NoteActionService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
+import { MessageService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
 
+import { NotebookService } from '@zeppelin/services/notebook.service';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
 
 @Component({
@@ -38,11 +39,11 @@ import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.com
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookActionBarComponent extends MessageListenersManager implements OnInit {
-  @Input() note: Note['note'];
+  @Input() note!: Exclude<Note['note'], undefined>;
   @Input() isOwner = true;
-  @Input() looknfeel: string;
+  @Input() looknfeel: 'report' | 'default' | 'simple' = 'default';
   @Input() noteRevisions: RevisionListItem[] = [];
-  @Input() currentRevision: string;
+  @Input() currentRevision?: string;
   @Input() collaborativeMode = false;
   @Input() collaborativeModeUsers = [];
   @Input() revisionView = false;
@@ -53,12 +54,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
+  isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
   principal = this.ticketService.ticket.principal;
   editorHide = false;
   commitVisible = false;
   tableHide = false;
-  isRevisionSupported = JSON.parse(this.ticketService.configuration.isRevisionSupported);
   cronOption = [
     { name: 'None', value: undefined },
     { name: '1m', value: '0 0/1 * * * ?' },
@@ -69,6 +70,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     { name: '12h', value: '0 0 0/12 * * ?' },
     { name: '1d', value: '0 0 0 * * ?' }
   ];
+
   updateNoteName(name: string) {
     const trimmedNewName = name.trim();
     if (trimmedNewName.length > 0 && this.note.name !== trimmedNewName) {
@@ -118,7 +120,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   @MessageListener(OP.PARAGRAPH)
-  paragraphUpdate() {
+  paragraphUpdate(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     this.updateIsNoteParagraphRunning();
     this.cdr.markForCheck();
   }
@@ -163,7 +165,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.setConfig();
   }
 
-  setConfig(config?: Note['note']['config']) {
+  setConfig(config?: Exclude<Note['note'], undefined>['config']) {
     if (config) {
       this.note.config = config;
     }
@@ -183,6 +185,9 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   exportNote() {
+    if (!this.ticketService.configuration) {
+      throw new Error('Configuration is not loaded');
+    }
     const sizeLimit = +this.ticketService.configuration['zeppelin.websocket.max.text.message.size'];
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
@@ -273,7 +278,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     if (!this.note.config.cron) {
       return '';
     } else if (this.cronOption.find(cron => cron.value === this.note.config.cron)) {
-      return this.cronOption.find(cron => cron.value === this.note.config.cron).name;
+      return this.cronOption.find(cron => cron.value === this.note.config.cron)!.name;
     } else {
       return this.note.config.cron;
     }
@@ -286,16 +291,23 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     private nzMessageService: NzMessageService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private noteActionService: NoteActionService,
     private noteStatusService: NoteStatusService,
+    private notebookService: NotebookService,
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private activatedRoute: ActivatedRoute,
     private saveAsService: SaveAsService
   ) {
     super(messageService);
+    this.updateIsNoteParagraphRunning();
+    if (!this.ticketService.configuration) {
+      throw new Error('Configuration is not loaded');
+    }
   }
 
   ngOnInit(): void {
-    this.updateIsNoteParagraphRunning();
+    this.notebookService.capabilities().subscribe(c => {
+      this.isRevisionSupported = c.isRevisionSupported;
+      this.cdr.markForCheck();
+    });
   }
 }

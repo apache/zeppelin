@@ -34,14 +34,14 @@ import { SecurityService, TicketService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookPermissionsComponent implements OnInit, OnChanges {
-  @Input() permissions: Permissions;
-  @Input() noteId: string;
+  @Input() permissions!: Permissions;
+  @Input() noteId!: string;
   @Input() activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
   @Output() readonly activatedExtensionChange = new EventEmitter<
     'interpreter' | 'permissions' | 'revisions' | 'hide'
   >();
-  permissionsBack: Permissions;
-  listOfUserAndRole = [];
+  permissionsBack!: Permissions;
+  listOfUserAndRole: Array<{ text: string; children: string[] }> = [];
 
   savePermissions() {
     const principal = this.ticketService.ticket.principal;
@@ -100,7 +100,7 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
 
   searchUser(search: string) {
     this.securityService.searchUsers(search).subscribe(data => {
-      const results = [];
+      const results: Array<{ text: string; children: string[] }> = [];
       if (data.users.length) {
         results.push({
           text: 'Users :',

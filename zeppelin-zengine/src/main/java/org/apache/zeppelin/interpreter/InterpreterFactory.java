@@ -52,7 +52,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       String group = replNameSplits[0];
       String name = replNameSplits[1];
       InterpreterSetting setting = interpreterSettingManager.getByName(group);
-      if (null != setting) {
+      if (setting != null) {
         Interpreter interpreter = setting.getInterpreter(executionContext, name);
         if (null != interpreter) {
           return interpreter;
@@ -74,7 +74,7 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
 
       // then assume interpreter name is omitted
       setting = interpreterSettingManager.getByName(replName);
-      if (null != setting) {
+      if (setting != null) {
         return setting.getDefaultInterpreter(executionContext);
       }
     }

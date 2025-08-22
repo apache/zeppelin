@@ -10,10 +10,6 @@
  * limitations under the License.
  */
 
-export interface NotebookSearchResultItem {
-  id: string;
-  name: string;
-  snippet: string;
-  text: string;
-  header: string;
+export function isRecord(v: unknown): v is Record<string | number | symbol, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }

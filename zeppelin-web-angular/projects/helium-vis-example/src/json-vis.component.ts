@@ -18,26 +18,26 @@ import { TableData, Visualization, VISUALIZATION } from '@zeppelin/visualization
   template: `
     <pre><code>{{tableData | json}}</code></pre>
   `,
-  styles: [`
-    pre {
-      background: #fff7e7;
-      padding: 10px;
-      border: 1px solid #ffd278;
-      color: #fa7e14;
-      border-radius: 3px;
-    }
-  `],
+  styles: [
+    `
+      pre {
+        background: #fff7e7;
+        padding: 10px;
+        border: 1px solid #ffd278;
+        color: #fa7e14;
+        border-radius: 3px;
+      }
+    `
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JsonVisComponent implements OnInit {
-  tableData: TableData;
+  tableData?: TableData;
   constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   render(): void {
     this.tableData = this.visualization.transformed;
   }
-
 }

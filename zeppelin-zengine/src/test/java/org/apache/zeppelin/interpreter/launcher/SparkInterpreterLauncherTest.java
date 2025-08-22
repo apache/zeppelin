@@ -31,10 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
@@ -43,6 +46,7 @@ import java.lang.reflect.Method;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class SparkInterpreterLauncherTest {
 
@@ -348,4 +352,218 @@ class SparkInterpreterLauncherTest {
         "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
   }
   
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithNonExistentDirectory() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Test with non-existent directory
+    String nonExistentSparkHome = "/tmp/non-existent-spark-home-" + System.currentTimeMillis();
+    
+    try {
+      detectMethod.invoke(launcher, nonExistentSparkHome);
+      fail("Expected IOException for non-existent directory");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause instanceof IOException, "Expected IOException but got: " + cause.getClass());
+      assertTrue(cause.getMessage().contains("does not exist"), 
+          "Error message should mention directory does not exist: " + cause.getMessage());
+      assertTrue(cause.getMessage().contains("SPARK_HOME"), 
+          "Error message should mention SPARK_HOME: " + cause.getMessage());
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithFileInsteadOfDirectory() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary file (not directory)
+    File tempFile = File.createTempFile("spark-test", ".tmp");
+    tempFile.deleteOnExit();
+    
+    // Create a fake SPARK_HOME that points to a parent directory
+    String fakeSparkHome = tempFile.getParent() + "/" + tempFile.getName().replace(".tmp", "");
+    
+    // Rename temp file to simulate jars path as a file
+    File jarsFile = new File(fakeSparkHome + "/jars");
+    jarsFile.getParentFile().mkdirs();
+    tempFile.renameTo(jarsFile);
+    jarsFile.deleteOnExit();
+    
+    try {
+      detectMethod.invoke(launcher, fakeSparkHome);
+      fail("Expected IOException for file instead of directory");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause instanceof IOException, "Expected IOException but got: " + cause.getClass());
+      assertTrue(cause.getMessage().contains("not a directory"), 
+          "Error message should mention not a directory: " + cause.getMessage());
+    } finally {
+      jarsFile.delete();
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithValidDirectory() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create a fake spark-repl jar
+    Path sparkReplJar = jarsDir.resolve("spark-repl_2.12-3.0.0.jar");
+    Files.createFile(sparkReplJar);
+    
+    try {
+      String scalaVersion = (String) detectMethod.invoke(launcher, tempSparkHome.toString());
+      assertEquals("2.12", scalaVersion, "Should detect Scala 2.12");
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithEmptyDirectory() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure with empty jars directory
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    try {
+      detectMethod.invoke(launcher, tempSparkHome.toString());
+      fail("Expected Exception for no spark-repl jar");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause.getMessage().contains("No spark-repl jar found"), 
+          "Error message should mention no spark-repl jar found: " + cause.getMessage());
+    } finally {
+      // Clean up
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithMultipleJars() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure with multiple spark-repl jars
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create multiple spark-repl jars
+    Path sparkReplJar1 = jarsDir.resolve("spark-repl_2.12-3.0.0.jar");
+    Path sparkReplJar2 = jarsDir.resolve("spark-repl_2.13-3.1.0.jar");
+    Files.createFile(sparkReplJar1);
+    Files.createFile(sparkReplJar2);
+    
+    try {
+      detectMethod.invoke(launcher, tempSparkHome.toString());
+      fail("Expected Exception for multiple spark-repl jars");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause.getMessage().contains("Multiple spark-repl jar found"), 
+          "Error message should mention multiple spark-repl jars found: " + cause.getMessage());
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar1);
+      Files.deleteIfExists(sparkReplJar2);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithScala213() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create a fake spark-repl jar for Scala 2.13
+    Path sparkReplJar = jarsDir.resolve("spark-repl_2.13-3.2.0.jar");
+    Files.createFile(sparkReplJar);
+    
+    try {
+      String scalaVersion = (String) detectMethod.invoke(launcher, tempSparkHome.toString());
+      assertEquals("2.13", scalaVersion, "Should detect Scala 2.13");
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
+
+  @Test
+  void testDetectSparkScalaVersionByReplClassWithUnsupportedScalaVersion() throws Exception {
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    
+    // Use reflection to access private method
+    Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersionByReplClass", String.class);
+    detectMethod.setAccessible(true);
+    
+    // Create a temporary directory structure
+    Path tempSparkHome = Files.createTempDirectory("spark-test");
+    Path jarsDir = tempSparkHome.resolve("jars");
+    Files.createDirectories(jarsDir);
+    
+    // Create a fake spark-repl jar with unsupported Scala version
+    Path sparkReplJar = jarsDir.resolve("spark-repl_2.11-2.4.0.jar");
+    Files.createFile(sparkReplJar);
+    
+    try {
+      detectMethod.invoke(launcher, tempSparkHome.toString());
+      fail("Expected Exception for unsupported Scala version");
+    } catch (Exception e) {
+      Throwable cause = e.getCause();
+      assertTrue(cause.getMessage().contains("Can not detect the scala version by spark-repl"), 
+          "Error message should mention cannot detect scala version: " + cause.getMessage());
+    } finally {
+      // Clean up
+      Files.deleteIfExists(sparkReplJar);
+      Files.deleteIfExists(jarsDir);
+      Files.deleteIfExists(tempSparkHome);
+    }
+  }
 }

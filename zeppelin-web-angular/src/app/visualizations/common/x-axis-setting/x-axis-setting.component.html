@@ -24,15 +24,14 @@
   <nz-form-item *ngIf="xLabelStatus === 'rotate'">
     <nz-form-label>degree</nz-form-label>
     <nz-form-control>
-      <input nz-input
-             style="width: 50px"
-             placeholder="degree"
-             [(ngModel)]="degree"
-             (keydown.enter)="onDegreeChange()"
-             (blur)="onDegreeChange()" />
+      <input
+        nz-input
+        style="width: 50px"
+        placeholder="degree"
+        [(ngModel)]="degree"
+        (keydown.enter)="onDegreeChange()"
+        (blur)="onDegreeChange()"
+      />
     </nz-form-control>
   </nz-form-item>
-
-
-
 </div>
