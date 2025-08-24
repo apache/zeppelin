@@ -21,6 +21,13 @@
 # Zeppelin.
 #   usage: ./merge_zeppelin_pr.py    (see config env vars below)
 #
+# To install Python packages from ./dev/requirements.txt using uv (run from repo root):
+#   uv pip install -r ./dev/requirements.txt
+#
+# If you plan to configure environment variables via a .env file, create the
+# .env file in the same directory as this script so it is automatically loaded.
+# Example path: ${ZEPPELIN_HOME}/dev/.env
+#
 # This utility assumes you already have a local Zeppelin git folder and that you
 # have added remotes corresponding to the git@github.com:apache/zeppelin.git
 
@@ -33,6 +40,10 @@ import traceback
 from urllib.request import urlopen
 from urllib.request import Request
 from urllib.error import HTTPError
+from dotenv import load_dotenv
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(script_dir, ".env"))
 
 try:
     import jira.client
@@ -502,7 +513,7 @@ def initialize_jira():
     jira_server = {"server": JIRA_API_BASE}
 
     if not JIRA_IMPORTED:
-        print_error("ERROR finding jira library. Run 'pip3 install jira' to install.")
+        print_error("ERROR finding jira library. Install dependencies with: 'uv pip install -r ./dev/requirements.txt'")
         continue_maybe("Continue without jira?")
     elif JIRA_ACCESS_TOKEN:
         client = jira.client.JIRA(jira_server, token_auth=JIRA_ACCESS_TOKEN)
