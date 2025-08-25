@@ -17,16 +17,26 @@
 
 package org.apache.zeppelin.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.service.JobManagerService.NoteJobInfo;
 import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class JobManagerServiceTest {
@@ -46,21 +56,59 @@ public class JobManagerServiceTest {
     serviceContext = new ServiceContext(new AuthenticationInfo("test-user"), null);
   }
 
-  @Test
-  void shouldThrowForbiddenException_whenJobManagerIsDisabled() {
-    when(zConf.isJobManagerEnabled()).thenReturn(false);
+  @Nested
+  class WhenJobManagerIsDisabled {
 
-    assertThrows(JobManagerForbiddenException.class, () -> {
-      jobManagerService.getNoteJobInfo("some_note_id", serviceContext, new SimpleServiceCallback<>());
-    });
+    @BeforeEach
+    void disableJobManager() {
+      when(zConf.isJobManagerEnabled()).thenReturn(false);
+    }
 
-    assertThrows(JobManagerForbiddenException.class, () -> {
-      jobManagerService.getNoteJobInfoByUnixTime(0, serviceContext, new SimpleServiceCallback<>());
-    });
+    @Test
+    void checkIfJobManagerIsEnabled_throwsException() {
+      assertThrows(JobManagerForbiddenException.class, () -> jobManagerService.checkIfJobManagerIsEnabled());
+    }
 
-    assertThrows(JobManagerForbiddenException.class, () -> {
-      jobManagerService.removeNoteJobInfo("some_note_id", serviceContext, new SimpleServiceCallback<>());
-    });
+    @Test
+    void getNoteJobInfo_returnsEmptyList_andCallsCallback() throws IOException {
+      @SuppressWarnings("unchecked")
+      ServiceCallback<List<NoteJobInfo>> callback = mock(ServiceCallback.class);
+      List<NoteJobInfo> result = jobManagerService.getNoteJobInfo(
+          "some_note_id",
+          serviceContext,
+          callback
+      );
+
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
+
+      verify(callback).onFailure(any(JobManagerForbiddenException.class), eq(serviceContext));
+    }
+
+    @Test
+    void getNoteJobInfoByUnixTime_returnsEmptyList() throws IOException {
+      ServiceCallback<List<NoteJobInfo>> callback = new SimpleServiceCallback<>();
+      List<NoteJobInfo> result = jobManagerService.getNoteJobInfoByUnixTime(
+          0,
+          serviceContext,
+          callback
+      );
+
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void removeNoteJobInfo_doesNothing() {
+      ServiceCallback<List<NoteJobInfo>> callback = new SimpleServiceCallback<>();
+      assertDoesNotThrow(() ->
+          jobManagerService.removeNoteJobInfo(
+              "some_note_id",
+              serviceContext,
+              callback
+          )
+      );
+    }
   }
 
 }
