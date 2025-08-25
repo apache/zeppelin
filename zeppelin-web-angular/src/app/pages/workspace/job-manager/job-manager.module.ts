@@ -16,6 +16,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IconDefinition } from '@ant-design/icons-angular';
 import { ClockCircleOutline, FileOutline, FileUnknownOutline, SearchOutline } from '@ant-design/icons-angular/icons';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzHighlightModule } from 'ng-zorro-antd/core/highlight';
@@ -63,7 +64,8 @@ const icons: IconDefinition[] = [SearchOutline, FileOutline, FileUnknownOutline,
     NzToolTipModule,
     NzProgressModule,
     NzSkeletonModule,
-    NzEmptyModule
+    NzEmptyModule,
+    NzAlertModule
   ],
   providers: [{ provide: NZ_ICONS, useValue: icons }]
 })

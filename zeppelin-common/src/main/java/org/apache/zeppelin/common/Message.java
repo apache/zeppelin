@@ -176,6 +176,7 @@ public class Message implements JsonSerializable {
     LIST_NOTE_JOBS,               // [c-s] get note job management information
     LIST_UPDATE_NOTE_JOBS,        // [c-s] get job management information for until unixtime
     UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
+    JOB_MANAGER_DISABLED,         // [s-c] send when job manager is disabled
     // @param unixTime
     GET_INTERPRETER_BINDINGS,    // [c-s] get interpreter bindings
     SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings

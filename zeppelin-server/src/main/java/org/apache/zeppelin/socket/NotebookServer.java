@@ -90,6 +90,7 @@ import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
+import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -562,7 +563,13 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
           @Override
           public void onFailure(Exception ex, ServiceContext context) throws IOException {
-            LOGGER.warn(ex.getMessage());
+            if (ex instanceof JobManagerForbiddenException) {
+              LOGGER.info("Job Manager is disabled. Rejecting request from user: {}",
+                  context.getAutheInfo().getUser());
+              conn.send(serializeMessage(new Message(OP.JOB_MANAGER_DISABLED).put("errorMessage", ex.getMessage())));
+            } else {
+              LOGGER.warn(ex.getMessage());
+            }
           }
         });
   }
@@ -584,7 +591,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
           @Override
           public void onFailure(Exception ex, ServiceContext context) throws IOException {
-            LOGGER.warn(ex.getMessage());
+            if (ex instanceof JobManagerForbiddenException) {
+              LOGGER.debug(ex.getMessage());
+            } else {
+              LOGGER.warn(ex.getMessage());
+            }
           }
         });
   }
@@ -1930,6 +1941,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
       response.put("jobs", notesJobInfo);
       connectionManager.broadcast(JobManagerServiceType.JOB_MANAGER_PAGE.getKey(),
           new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+    }
+
+    @Override
+    public void onFailure(Exception ex, ServiceContext context) throws IOException {
+      if (ex instanceof JobManagerForbiddenException) {
+        LOGGER.debug(ex.getMessage());
+      } else {
+        super.onFailure(ex, context);
+      }
     }
   }
 
