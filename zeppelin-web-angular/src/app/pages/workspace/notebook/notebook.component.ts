@@ -19,6 +19,7 @@ import {
   QueryList,
   ViewChildren
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
 import { Subject } from 'rxjs';
@@ -103,6 +104,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
           }
         });
       }
+      this.titleService.setTitle(this.note?.name + ' - Zeppelin');
       this.cdr.markForCheck();
     }
   }
@@ -401,7 +403,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     private ticketService: TicketService,
     private securityService: SecurityService,
     private router: Router,
-    protected ngZService: NgZService
+    protected ngZService: NgZService,
+    private titleService: Title
   ) {
     super(messageService);
   }
@@ -449,5 +452,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.saveNote();
     this.destroy$.next();
     this.destroy$.complete();
+    this.titleService.setTitle('Zeppelin');
   }
 }
