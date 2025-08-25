@@ -1438,6 +1438,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
         new WebSocketServiceCallback<Paragraph>(conn) {
           @Override
           public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
+            if (fromMessage.op == OP.COPY_PARAGRAPH) {
+              p.setText(fromMessage.get("paragraph").toString());
+            }
             super.onSuccess(p, context);
             broadcastNewParagraph(p.getNote(), p);
           }
