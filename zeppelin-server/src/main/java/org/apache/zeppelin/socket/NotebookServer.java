@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -812,8 +813,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
       List<AngularObject> angularObjects = note.getAngularObjects(interpreterGroup.getId());
       for (AngularObject ao : angularObjects) {
-        if (StringUtils.equals(ao.getNoteId(), note.getId())
-            && StringUtils.equals(ao.getParagraphId(), paragraph.getId())) {
+        if (Objects.equals(ao.getNoteId(), note.getId())
+            && Objects.equals(ao.getParagraphId(), paragraph.getId())) {
           pushAngularObjectToRemoteRegistry(ao.getNoteId(), ao.getParagraphId(),
               ao.getName(), ao.get(), registry, interpreterGroup.getId(), conn);
         }
