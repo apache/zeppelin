@@ -99,7 +99,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
           this.autoAdjustEditorHeight();
           setTimeout(() => {
             this.autoAdjustEditorHeight();
-          }, 50);
+          });
         });
       })
     );
