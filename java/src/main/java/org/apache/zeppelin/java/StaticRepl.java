@@ -19,6 +19,7 @@ package org.apache.zeppelin.java;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,18 +59,17 @@ public class StaticRepl {
     String mainClassName = null;
 
     // Searching for class containing Main method
-    for (int i = 0; i < classes.size(); i++) {
+    for (JavaClass javaClass : classes) {
       boolean hasMain = false;
 
-      for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
-        if (classes.get(i).getMethods().get(j).getName().equals("main") && classes.get(i)
-            .getMethods().get(j).isStatic()) {
-          mainClassName = classes.get(i).getName();
+      for (JavaMethod method : javaClass.getMethods()) {
+        if (method.getName().equals("main") && method.isStatic()) {
+          mainClassName = javaClass.getName();
           hasMain = true;
           break;
         }
       }
-      if (hasMain == true) {
+      if (hasMain) {
         break;
       }
 
