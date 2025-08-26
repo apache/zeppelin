@@ -92,8 +92,8 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
           this.text = model.getValue();
           this.textChanged.emit(this.text);
           this.autoAdjustEditorHeight();
+          this.setParagraphMode(true);
           setTimeout(() => {
-            this.setParagraphMode(true);
             this.autoAdjustEditorHeight();
           }, 50);
         });
@@ -193,7 +193,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       const interpreterName = this.getInterpreterName(this.text);
       if (this.interpreterName !== interpreterName) {
         this.interpreterName = interpreterName;
-        this.getEditorSetting();
+        setTimeout(() => {
+          this.getEditorSetting();
+        }, 200);
       }
     }
   }
