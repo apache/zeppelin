@@ -51,6 +51,7 @@ import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.common.Message;
@@ -812,8 +813,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
       List<AngularObject> angularObjects = note.getAngularObjects(interpreterGroup.getId());
       for (AngularObject ao : angularObjects) {
-        if (StringUtils.equals(ao.getNoteId(), note.getId())
-            && StringUtils.equals(ao.getParagraphId(), paragraph.getId())) {
+        if (Strings.CS.equals(ao.getNoteId(), note.getId())
+            && Strings.CS.equals(ao.getParagraphId(), paragraph.getId())) {
           pushAngularObjectToRemoteRegistry(ao.getNoteId(), ao.getParagraphId(),
               ao.getName(), ao.get(), registry, interpreterGroup.getId(), conn);
         }
