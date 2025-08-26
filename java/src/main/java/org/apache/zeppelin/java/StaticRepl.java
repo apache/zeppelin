@@ -42,17 +42,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * StaticRepl for compling the java code in memory
+ * StaticRepl for compiling the java code in memory
  */
 public class StaticRepl {
   private static final Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
 
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-
-    // Java parasing
+    // Java parsing
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
 
@@ -78,7 +75,7 @@ public class StaticRepl {
 
     }
 
-    // if there isn't Main method, will retuen error
+    // if there isn't Main method, will return error
     if (mainClassName == null) {
       LOGGER.error("Exception for Main method", "There isn't any class "
           + "containing static main method.");
