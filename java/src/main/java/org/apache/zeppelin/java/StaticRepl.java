@@ -39,7 +39,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -85,8 +84,8 @@ public class StaticRepl {
     // replace name of class containing Main method with generated name
     code = code.replace(mainClassName, generatedClassName);
 
-    JavaFileObject file = new JavaSourceFromString(generatedClassName, code.toString());
-    Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+    JavaFileObject file = new JavaSourceFromString(generatedClassName, code);
+    Iterable<? extends JavaFileObject> compilationUnits = List.of(file);
 
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
@@ -101,6 +100,8 @@ public class StaticRepl {
     System.setOut(newOut);
     System.setErr(newErr);
 
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
     // executing the compilation process
@@ -108,7 +109,7 @@ public class StaticRepl {
 
     // if success is false will get error
     if (!success) {
-      for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+      for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
         if (diagnostic.getLineNumber() == -1) {
           continue;
         }
