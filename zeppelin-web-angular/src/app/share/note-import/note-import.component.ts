@@ -101,8 +101,8 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   }
 
   constructor(
-    private ticketService: TicketService,
     public messageService: MessageService,
+    private ticketService: TicketService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,
     private httpClient: HttpClient

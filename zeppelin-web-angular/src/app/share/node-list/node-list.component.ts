@@ -135,9 +135,9 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
   }
 
   constructor(
-    private noteListService: NoteListService,
     public messageService: MessageService,
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
+    private noteListService: NoteListService,
     private nzModalService: NzModalService,
     private noteActionService: NoteActionService,
     private cdr: ChangeDetectorRef
