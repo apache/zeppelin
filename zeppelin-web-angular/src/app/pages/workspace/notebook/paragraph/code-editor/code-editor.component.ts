@@ -61,6 +61,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   private monacoDisposables: IDisposable[] = [];
   height = 18;
   interpreterName?: string;
+  editorSettingTriggerAllowed: boolean = false;
 
   autoAdjustEditorHeight() {
     const editor = this.editor;
@@ -308,14 +309,15 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       const interpreterName = this.getInterpreterName(this.text);
       if (this.interpreterName !== interpreterName) {
         this.interpreterName = interpreterName;
-        setTimeout(() => {
-          this.getEditorSetting();
-        }, 200);
+        this.getEditorSetting();
       }
     }
   }
 
   getEditorSetting() {
+    if (!this.editorSettingTriggerAllowed) {
+      return;
+    }
     this.messageService.editorSetting(this.pid, this.text);
   }
 
