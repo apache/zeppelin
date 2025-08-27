@@ -42,7 +42,7 @@ If you want to build from source, you must first install the following dependenc
   </tr>
   <tr>
     <td>OpenJDK or Oracle JDK</td>
-    <td>1.8 (151+)<br>(set JAVA_HOME)</td>
+    <td>11<br>(set JAVA_HOME)</td>
   </tr>
 </table>
 
@@ -193,7 +193,7 @@ If you don't have requirements prepared, install it.
 ```bash
 sudo apt-get update
 sudo apt-get install git
-sudo apt-get install openjdk-8-jdk
+sudo apt-get install openjdk-11-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
 sudo apt-get install r-base-dev
