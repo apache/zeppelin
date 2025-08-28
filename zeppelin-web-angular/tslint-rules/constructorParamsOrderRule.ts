@@ -95,8 +95,13 @@ function walk(ctx: Lint.WalkContext<void>) {
 }
 
 function getModifier(param: ts.ParameterDeclaration): string {
-  const optional = !!param.questionToken;
-  if (optional) {
+  const hasOptional = param.decorators?.some(d => {
+    let expr = d.expression;
+    if (ts.isCallExpression(expr)) expr = expr.expression;
+    return ts.isIdentifier(expr) && expr.text === "Optional";
+  }) || !!param.questionToken;
+
+  if (hasOptional) {
     return 'optional';
   }
   if (param.modifiers) {
