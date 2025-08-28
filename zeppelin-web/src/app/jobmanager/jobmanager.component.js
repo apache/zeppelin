@@ -28,7 +28,7 @@ const JobDateSorter = {
   OLDEST_UPDATED: 'Oldest Updated',
 };
 
-function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerService) {
+function JobManagerController($rootScope, $scope, ngToast, JobManagerFilter, JobManagerService) {
   'ngInject';
 
   $scope.isFilterLoaded = false;
@@ -52,6 +52,8 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     itemsPerPage: 10,
     maxPageCount: 5,
   };
+
+  $scope.jobManagerEnabled = true;
 
   ngToast.dismiss();
   init();
@@ -135,8 +137,14 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     JobManagerService.subscribeSetJobs($scope, setJobsCallback);
     JobManagerService.subscribeUpdateJobs($scope, updateJobsCallback);
 
+    const deregisterJobManagerDisabledListener = $rootScope.$on('jobManagerDisabled', function(event, data) {
+      $scope.isFilterLoaded = true;
+      $scope.jobManagerEnabled = false;
+    });
+
     $scope.$on('$destroy', function() {
       JobManagerService.disconnect();
+      deregisterJobManagerDisabledListener();
     });
   }
 
