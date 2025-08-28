@@ -48,9 +48,9 @@ function walk(ctx: Lint.WalkContext<void>) {
 
         // For keeping comment
         const paramSlices = params.map((p, idx) => {
-          const start = p.getStart();
+          let start = p.getFullStart();
 
-          const end = idx < params.length - 1 ? params[idx + 1].getStart() : p.getEnd();
+          const end = idx < params.length - 1 ? params[idx + 1].getFullStart() : p.getEnd();
 
           const text = sourceText.slice(start, end);
           return { node: p, text };
