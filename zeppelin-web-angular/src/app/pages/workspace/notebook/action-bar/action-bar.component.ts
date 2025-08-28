@@ -227,6 +227,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
 
   moveNoteToTrash() {
     this.messageService.moveNoteToTrash(this.note.id);
+    this.router.navigate(['/']);
   }
 
   get isTrash() {
