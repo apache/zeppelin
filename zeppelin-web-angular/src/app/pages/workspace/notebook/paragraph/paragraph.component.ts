@@ -186,7 +186,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           nzOnOk: () => {
             this.messageService.paragraphRemove(this.paragraph.id);
             this.cdr.markForCheck();
-            // TODO(hsuanxyz) moveFocusToNextParagraph
           }
         });
       }
