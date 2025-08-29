@@ -76,11 +76,7 @@
               "./node_modules/github-markdown-css/github-markdown.css"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles/theme",
-                "src/styles/theme/dark",
-                "src/styles/theme/light"
-              ]
+              "includePaths": ["src/styles/theme", "src/styles/theme/dark", "src/styles/theme/light"]
             },
             "scripts": [
               "node_modules/mathjax/MathJax.js",
@@ -134,26 +130,16 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
-            "styles": [
-              "src/styles.less"
-            ],
+            "styles": ["src/styles.less"],
             "scripts": [],
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ]
+            "assets": ["src/favicon.ico", "src/assets"]
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "tsConfig": ["src/tsconfig.app.json", "src/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -179,9 +165,7 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": "e2e/tsconfig.json",
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -210,13 +194,8 @@
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "projects/zeppelin-helium/tsconfig.lib.json",
-              "projects/zeppelin-helium/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "tsConfig": ["projects/zeppelin-helium/tsconfig.lib.json", "projects/zeppelin-helium/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -249,9 +228,7 @@
               "projects/helium-vis-example/tsconfig.lib.json",
               "projects/helium-vis-example/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -284,9 +261,7 @@
               "projects/zeppelin-visualization/tsconfig.lib.json",
               "projects/zeppelin-visualization/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -315,13 +290,8 @@
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": [
-              "projects/zeppelin-sdk/tsconfig.lib.json",
-              "projects/zeppelin-sdk/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "tsConfig": ["projects/zeppelin-sdk/tsconfig.lib.json", "projects/zeppelin-sdk/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
