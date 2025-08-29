@@ -508,7 +508,7 @@ public class NotebookRestApi extends AbstractRestApi {
       defaultInterpreterGroup = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
     String noteId = notebookService.createNote(
-            request.getName(),
+            request.getNotePath(),
             defaultInterpreterGroup,
             request.getAddingEmptyParagraph(),
             getServiceContext(),
@@ -571,7 +571,7 @@ public class NotebookRestApi extends AbstractRestApi {
     String newNoteName = null;
     String revisionId = null;
     if (request != null) {
-      newNoteName = request.getName();
+      newNoteName = request.getNotePath();
       revisionId = request.getRevisionId();
     }
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
