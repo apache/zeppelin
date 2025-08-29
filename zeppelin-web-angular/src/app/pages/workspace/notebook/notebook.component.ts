@@ -128,8 +128,15 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       return;
     }
     const definedNote = this.note;
-    definedNote.paragraphs = definedNote.paragraphs.filter(p => p.id !== data.id);
-    this.cdr.markForCheck();
+    const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.id);
+    definedNote.paragraphs.splice(paragraphIndex, 1);
+
+    setTimeout(() => {
+      const adjustedCursorIndex =
+        paragraphIndex === definedNote.paragraphs.length ? paragraphIndex - 1 : paragraphIndex + 1;
+      this.listOfNotebookParagraphComponent.find((_, index) => index === adjustedCursorIndex)?.focusEditor();
+      this.cdr.markForCheck();
+    }, 250);
   }
 
   @MessageListener(OP.PARAGRAPH_ADDED)
