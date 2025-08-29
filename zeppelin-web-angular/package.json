@@ -13,8 +13,8 @@
     "build-project:vis": " ng build --project zeppelin-visualization",
     "build-project:helium": "ng build --project zeppelin-helium",
     "test": "ng test",
-    "lint": "ng lint && prettier --check \"{src,projects}/**/*.{ts,js,css,html}\"",
-    "lint:fix": "tslint --project src/tslint.json --fix src/**/*.ts && tslint --project tslint.json --fix projects/**/*.ts && prettier --write \"{src,projects}/**/*.{ts,js,css,html}\"",
+    "lint": "ng lint && prettier --check \"**/*.{ts,js,css,html}\"",
+    "lint:fix": "tslint --project src/tslint.json --fix src/**/*.ts && tslint --project tslint.json --fix **/*.ts && prettier --write \"**/*.{ts,js,css,html}\"",
     "e2e": "ng e2e"
   },
   "engines": {
@@ -89,7 +89,7 @@
     "typescript": "3.8.3"
   },
   "lint-staged": {
-    "{src,projects}/**/*.{ts,js,json}": [
+    "**/*.{ts,js,json}": [
       "./node_modules/.bin/prettier --write",
       "git add"
     ],
@@ -97,7 +97,7 @@
       "tslint --project src/tslint.json --fix",
       "git add"
     ],
-    "projects/**/*.ts": [
+    "**/*.ts": [
       "tslint --project tslint.json --fix",
       "git add"
     ]

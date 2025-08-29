@@ -1,5 +1,8 @@
 {
   "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules", "tslint-rules"],
+  "linterOptions": {
+    "exclude": ["src/**/*.ts", "dist/**", "node/**", "node_modules/**"]
+  },
   "rules": {
     "nz-secondary-entry-imports": true,
     "banana-in-box": true,
