@@ -64,7 +64,7 @@ type Mode = 'edit' | 'command';
 })
 export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -205,14 +205,19 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         params: p.settings.params
       };
     });
-    this.nzModalService.confirm({
-      nzTitle: 'Run all above?',
-      nzContent: 'Are you sure to run all above paragraphs?',
-      nzOnOk: () => {
-        this.messageService.runAllParagraphs(this.note.id, paragraphs);
-      }
-    });
-    // TODO(hsuanxyz): save cursor
+    this.nzModalService
+      .confirm({
+        nzTitle: 'Run all above?',
+        nzContent: 'Are you sure to run all above paragraphs?',
+        nzOnOk: () => {
+          this.messageService.runAllParagraphs(this.note.id, paragraphs);
+        }
+      })
+      .afterClose.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.waitConfirmFromEdit = false;
+        this.notebookParagraphCodeEditorComponent?.setRestorePosition();
+      });
   }
 
   doubleClickParagraph() {
@@ -222,7 +227,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     if (this.paragraph.config.editorSetting.editOnDblClick && this.revisionView !== true) {
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
-      // TODO(hsuanxyz): focus editor
+      this.focusEditor();
+      setTimeout(() => this.notebookParagraphCodeEditorComponent?.setCursorPositionToEnd());
     }
   }
 
@@ -250,8 +256,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       .afterClose.pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.waitConfirmFromEdit = false;
+        this.notebookParagraphCodeEditorComponent?.setRestorePosition();
       });
-    // TODO(hsuanxyz): save cursor
   }
 
   cloneParagraph(position: string = 'below', newText?: string) {

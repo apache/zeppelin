@@ -23,7 +23,7 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-import { editor as MonacoEditor, IDisposable, KeyCode } from 'monaco-editor';
+import { editor as MonacoEditor, IDisposable, IPosition, KeyCode, Position } from 'monaco-editor';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
@@ -41,8 +41,7 @@ type IEditor = MonacoEditor.IEditor;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestroy, AfterViewInit {
-  // TODO(hsuanxyz):
-  //  1. cursor position
+  @Input() position: IPosition | null = null;
   @Input() readOnly = false;
   @Input() language = 'text';
   @Input() paragraphControl!: NotebookParagraphControlComponent;
@@ -172,6 +171,35 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       const findInput = document.querySelector('.find-widget .input') as HTMLInputElement;
       findInput.focus();
       findInput.select();
+    }
+  }
+  
+  setCursorPosition({ lineNumber, column }: IPosition) {
+    if (this.editor) {
+      this.editor.setPosition({ lineNumber, column });
+    }
+  }
+
+  setRestorePosition() {
+    if (this.editor) {
+      const previousPosition = this.position ?? { lineNumber: 0, column: 0 };
+      this.setCursorPosition(previousPosition);
+      this.editor.focus();
+    }
+  }
+
+  setCursorPositionToBeginning() {
+    if (this.editor) {
+      this.setCursorPosition({ lineNumber: 0, column: 0 });
+      this.editor.focus();
+    }
+  }
+
+  setCursorPositionToEnd() {
+    if (this.editor) {
+      const lineNumber = this.editor.getModel()?.getLineCount() ?? 0;
+      const column = this.editor.getModel()?.getLineMaxColumn(lineNumber) ?? 0;
+      this.setCursorPosition({ lineNumber, column });
     }
   }
 
@@ -308,6 +336,10 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       }
     }
     if (focus) {
+      if (!focus.currentValue && this.editor) {
+        this.position = this.editor.getPosition();
+        return;
+      }
       this.initEditorFocus();
     }
     if (text) {
