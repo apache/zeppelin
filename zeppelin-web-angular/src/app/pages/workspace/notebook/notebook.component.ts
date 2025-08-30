@@ -149,15 +149,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       return;
     }
     const definedNote = this.note;
-    definedNote.paragraphs.splice(data.index, 0, data.paragraph).map(p => {
-      return {
-        ...p,
-        focus: p.id === data.paragraph.id
-      };
-    });
-    definedNote.paragraphs = [...definedNote.paragraphs];
+    definedNote.paragraphs.splice(data.index, 0, data.paragraph);
+    const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
+
     this.cdr.markForCheck();
-    // TODO(hsuanxyz) focus on paragraph
+    definedNote.paragraphs[paragraphIndex].focus = true;
   }
 
   @MessageListener(OP.SAVE_NOTE_FORMS)
