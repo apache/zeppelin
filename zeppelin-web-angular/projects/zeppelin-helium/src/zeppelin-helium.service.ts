@@ -27,9 +27,9 @@ export class ZeppelinHeliumPackage {
     public module: Type<any>,
     // tslint:disable-next-line:no-any
     public component: Type<any>,
+    public icon = 'build',
     // tslint:disable-next-line:no-any
-    public visualization?: any,
-    public icon = 'build'
+    public visualization?: any
   ) {
   }
 }

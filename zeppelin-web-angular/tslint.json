@@ -1,5 +1,5 @@
 {
-  "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules"],
+  "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules", "tslint-rules"],
   "rules": {
     "nz-secondary-entry-imports": true,
     "banana-in-box": true,
@@ -137,6 +137,7 @@
     "use-isnan": true,
     "variable-name": [true, "ban-keywords", "allow-leading-underscore"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"],
-    "no-input-rename": true
+    "no-input-rename": true,
+    "constructor-params-order": true
   }
 }

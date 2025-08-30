@@ -37,11 +37,11 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
 
   constructor(
     public messageService: MessageService,
+    private activatedRoute: ActivatedRoute,
+    private heliumService: HeliumService,
     noteStatusService: NoteStatusService,
     ngZService: NgZService,
-    cdr: ChangeDetectorRef,
-    private activatedRoute: ActivatedRoute,
-    private heliumService: HeliumService
+    cdr: ChangeDetectorRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
     this.activatedRoute.params.subscribe(params => {
