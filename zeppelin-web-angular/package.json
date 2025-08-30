@@ -2,10 +2,11 @@
   "name": "zeppelin",
   "version": "0.0.0",
   "scripts": {
-    "postinstall": "npm run build:projects",
+    "postinstall": "npm run build:projects && npm run build:tslint-rules",
     "ng": "./node_modules/.bin/ng",
     "start": "ng serve --proxy-config proxy.conf.js --extra-webpack-config webpack.partial.js",
     "build": "ng build --prod --extra-webpack-config webpack.partial.js",
+    "build:tslint-rules": "tsc tslint-rules/*.ts --types node",
     "build:projects": "npm run build-project:sdk && npm run build-project:vis && npm run build-project:helium",
     "build-helium-vis-example": " ng build --project helium-vis-example",
     "build-project:sdk": " ng build --project zeppelin-sdk",

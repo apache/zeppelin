@@ -432,15 +432,15 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   constructor(
-    noteStatusService: NoteStatusService,
-    cdr: ChangeDetectorRef,
-    ngZService: NgZService,
-    private heliumService: HeliumService,
     public messageService: MessageService,
+    private heliumService: HeliumService,
     private nzModalService: NzModalService,
     private noteVarShareService: NoteVarShareService,
     private shortcutService: ShortcutService,
-    private host: ElementRef
+    private host: ElementRef,
+    noteStatusService: NoteStatusService,
+    cdr: ChangeDetectorRef,
+    ngZService: NgZService
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
   }

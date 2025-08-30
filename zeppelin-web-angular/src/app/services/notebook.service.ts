@@ -24,7 +24,7 @@ import { BehaviorSubject } from 'rxjs';
 export class NotebookService extends BaseRest {
   private queryStr$ = new BehaviorSubject<string | null>(null);
 
-  constructor(baseUrlService: BaseUrlService, private http: HttpClient) {
+  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
   }
 

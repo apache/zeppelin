@@ -66,8 +66,8 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
 
   constructor(
     public ticketService: TicketService,
-    private nzModalService: NzModalService,
     public messageService: MessageService,
+    private nzModalService: NzModalService,
     private router: Router,
     private notebookService: NotebookService,
     private cdr: ChangeDetectorRef

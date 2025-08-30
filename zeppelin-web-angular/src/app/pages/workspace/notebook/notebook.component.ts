@@ -395,15 +395,15 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   constructor(
-    private activatedRoute: ActivatedRoute,
     public messageService: MessageService,
+    protected ngZService: NgZService,
+    private activatedRoute: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private noteStatusService: NoteStatusService,
     private noteVarShareService: NoteVarShareService,
     private ticketService: TicketService,
     private securityService: SecurityService,
     private router: Router,
-    protected ngZService: NgZService,
     private titleService: Title
   ) {
     super(messageService);
