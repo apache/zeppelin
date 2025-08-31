@@ -27,6 +27,7 @@ import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Interface for storing zeppelin configuration.
@@ -78,9 +79,10 @@ public abstract class ConfigStorage {
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
       interpreterSetting.getOption();
-      interpreterSetting.convertPermissionsFromUsersToOwners(
-          jsonObject.getAsJsonObject("interpreterSettings")
-              .getAsJsonObject(interpreterSetting.getId()));
+      JsonObject interpreterSettingJson = jsonObject.getAsJsonObject("interpreterSettings")
+          .getAsJsonObject(interpreterSetting.getId());
+      List<String> users = InterpreterSetting.extractUsersFromJsonObject(interpreterSettingJson);
+      interpreterSetting.convertPermissionsFromUsersToOwners(users);
     }
     return infoSaving;
   }
