@@ -319,10 +319,6 @@ export class MessageService extends Message implements OnDestroy {
     super.saveInterpreterBindings(noteId, selectedSettingIds);
   }
 
-  listConfigurations(): void {
-    super.listConfigurations();
-  }
-
   getInterpreterSettings(): void {
     super.getInterpreterSettings();
   }

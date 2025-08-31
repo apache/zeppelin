@@ -17,8 +17,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
-import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
+import { MessageListenersManager } from '@zeppelin/core';
 import { MessageService, TicketService } from '@zeppelin/services';
 import { NotebookService } from '@zeppelin/services/notebook.service';
 import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
@@ -59,11 +58,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     }
   }
 
-  @MessageListener(OP.CONFIGURATIONS_INFO)
-  getConfiguration(data: MessageReceiveDataTypeMap[OP.CONFIGURATIONS_INFO]) {
-    this.ticketService.setConfiguration(data);
-  }
-
   constructor(
     public ticketService: TicketService,
     public messageService: MessageService,
@@ -77,7 +71,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   }
 
   ngOnInit() {
-    this.messageService.listConfigurations();
     this.messageService.connectedStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
       this.connectStatus = status ? 'success' : 'error';
       this.cdr.markForCheck();

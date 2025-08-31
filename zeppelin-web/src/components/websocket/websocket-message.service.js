@@ -387,10 +387,6 @@ function WebsocketMessageService($rootScope, websocketEvents) {
         data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
     },
 
-    listConfigurations: function() {
-      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
-    },
-
     getInterpreterSettings: function() {
       websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
     },

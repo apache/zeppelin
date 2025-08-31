@@ -185,8 +185,6 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       });
     } else if (op === 'SESSION_LOGOUT') {
       $rootScope.$broadcast('session_logout', data);
-    } else if (op === 'CONFIGURATIONS_INFO') {
-      $rootScope.$broadcast('configurationsInfo', data);
     } else if (op === 'INTERPRETER_SETTINGS') {
       $rootScope.$broadcast('interpreterSettings', data);
     } else if (op === 'PARAGRAPH_ADDED') {

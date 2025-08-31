@@ -546,10 +546,6 @@ export class Message {
       {noteId: noteId, selectedSettingIds: selectedSettingIds});
   }
 
-  listConfigurations(): void {
-    this.send<OP.LIST_CONFIGURATIONS>(OP.LIST_CONFIGURATIONS);
-  }
-
   getInterpreterSettings(): void {
     this.send<OP.GET_INTERPRETER_SETTINGS>(OP.GET_INTERPRETER_SETTINGS);
   }

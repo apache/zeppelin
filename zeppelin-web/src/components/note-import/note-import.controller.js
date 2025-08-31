@@ -16,7 +16,7 @@ import './note-import.css';
 
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 
-function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
+function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
   'ngInject';
 
   let vm = this;
@@ -26,11 +26,15 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
   $scope.maxLimit = '';
   let limit = 0;
 
-  websocketMsgSrv.listConfigurations();
-  $scope.$on('configurationsInfo', function(scope, event) {
-    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
+
+  $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all').then(function(response) {
+    let configurations = response.data.body;
+    limit = configurations['zeppelin.websocket.max.text.message.size'];
     $scope.maxLimit = Math.round(limit / 1048576);
+  }).catch(function(err) {
+    console.debug('Error while fetching configurations', err);
   });
+
 
   vm.resetFlags = function() {
     $scope.note = {};

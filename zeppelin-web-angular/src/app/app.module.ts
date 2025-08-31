@@ -13,7 +13,7 @@
 import { registerLocaleData } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import en from '@angular/common/locales/en';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -26,7 +26,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { loadMonacoBefore } from '@zeppelin/languages';
-import { TicketService } from '@zeppelin/services';
+import { ConfigurationService, TicketService } from '@zeppelin/services';
 import { ShareModule } from '@zeppelin/share';
 
 import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG } from '@zeppelin/share/code-editor';
@@ -65,6 +65,12 @@ registerLocaleData(en);
       useClass: AppHttpInterceptor,
       multi: true,
       deps: [TicketService]
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (configService: ConfigurationService) => () => configService.initialize(),
+      deps: [ConfigurationService],
+      multi: true
     },
     {
       provide: NZ_CODE_EDITOR_CONFIG,
