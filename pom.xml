@@ -97,10 +97,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- language versions -->
-    <java.version>11</java.version>
+    <java.version>17</java.version>
+    <java.version.release>11</java.version.release>
     <!-- These two lines could be changed like `maven.compiler.release` after updating JDK11 -->
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven.compiler.source>${java.version.release}</maven.compiler.source>
+    <maven.compiler.target>${java.version.release}</maven.compiler.target>
     <scala.version>${scala.2.12.version}</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
     <scala.2.12.version>2.12.20</scala.2.12.version>
