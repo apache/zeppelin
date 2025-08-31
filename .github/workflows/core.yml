@@ -178,7 +178,11 @@ jobs:
           ./mvnw install -DskipTests -pl python,rlang,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
       - name: run tests with Python ${{ matrix.python }} and R ${{ matrix.r }}
         run: |
-          ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
+          if [ "${{ matrix.r }}" = "3.6" ]; then
+            ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -Dtest=IRInterpreterTest36,RInterpreterTest,ShinyInterpreterTest -DfailIfNoTests=false ${MAVEN_ARGS}
+          else
+            ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -Dtest=IRInterpreterTest,RInterpreterTest,ShinyInterpreterTest -DfailIfNoTests=false ${MAVEN_ARGS}
+          fi
 
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:

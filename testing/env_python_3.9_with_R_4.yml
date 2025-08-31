@@ -34,4 +34,4 @@ dependencies:
   - r-ggplot2
   - r-irkernel
   - r-shiny
-  - r-googlevis 
+  - r-googlevis
