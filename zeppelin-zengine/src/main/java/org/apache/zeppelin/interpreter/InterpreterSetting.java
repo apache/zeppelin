@@ -1016,22 +1016,29 @@ public class InterpreterSetting {
     t.start();
   }
 
-  //TODO(zjffdu) ugly code, should not use JsonObject as parameter. not readable
-  public void convertPermissionsFromUsersToOwners(JsonObject jsonObject) {
+  public void convertPermissionsFromUsersToOwners(List<String> users) {
+    if (users != null && !users.isEmpty()) {
+      if (this.option.getOwners() == null) {
+        this.option.owners = new LinkedList<>();
+      }
+      this.option.getOwners().addAll(users);
+    }
+  }
+
+  public static List<String> extractUsersFromJsonObject(JsonObject jsonObject) {
+    List<String> users = new ArrayList<>();
     if (jsonObject != null) {
       JsonObject option = jsonObject.getAsJsonObject("option");
       if (option != null) {
-        JsonArray users = option.getAsJsonArray("users");
-        if (users != null) {
-          if (this.option.getOwners() == null) {
-            this.option.owners = new LinkedList<>();
-          }
-          for (JsonElement user : users) {
-            this.option.getOwners().add(user.getAsString());
+        JsonArray usersArray = option.getAsJsonArray("users");
+        if (usersArray != null) {
+          for (JsonElement userElement : usersArray) {
+            users.add(userElement.getAsString());
           }
         }
       }
     }
+    return users;
   }
 
   // For backward compatibility of interpreter.json format after ZEPPELIN-2403
