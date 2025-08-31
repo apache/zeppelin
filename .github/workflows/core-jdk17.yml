@@ -1,0 +1,226 @@
+name: JDK 17 Migration Testing
+
+on:
+  push:
+    branches:
+      - 'jdk17-**'
+      - '*-jdk17-*'
+      -  '*-jdk-17-*'
+      - 'TEST-jdk17-*'
+  pull_request:
+    branches:
+      - master
+      - 'branch-*'
+
+env:
+  MAVEN_OPTS: >-
+      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit
+      -Dhttp.keepAlive=false
+      -Dmaven.wagon.http.pool=false
+      -Dmaven.wagon.http.retryHandler.count=3
+  MAVEN_ARGS: >-
+      -B --no-transfer-progress
+  ZEPPELIN_HELIUM_REGISTRY: helium
+  SPARK_PRINT_LAUNCH_COMMAND: "true"
+  SPARK_LOCAL_IP: 127.0.0.1
+  ZEPPELIN_LOCAL_IP: 127.0.0.1
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+permissions:
+  contents: read
+
+jobs:
+  # Core modules test with JDK 17
+  core-modules-jdk17:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+            ~/conda_pkgs_dir
+          key: ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-
+      - name: install application with some interpreter
+        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
+      - name: install and test plugins
+        run: ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
+      - name: Setup conda environment with python 3.9 and R
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_3_with_R
+          environment-file: testing/env_python_3.9_with_R.yml
+          python-version: 3.9
+          channels: conda-forge,defaults
+          channel-priority: strict
+          auto-activate-base: false
+          use-mamba: true
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
+          conda list
+          conda info
+      - name: run tests
+        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-common,zeppelin-interpreter,zeppelin-zengine,zeppelin-test,zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+
+  # Non-core interpreter modules test with JDK 17
+  interpreter-test-non-core-jdk17:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 17 ]
+    env:
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell,zeppelin-client,zeppelin-client-examples'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-
+      - name: install environment
+        run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
+      - name: Setup conda environment with python 3.9 and R
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_3_with_R_and_tensorflow
+          environment-file: testing/env_python_3_with_R_and_tensorflow.yml
+          python-version: 3.9
+          channels: conda-forge,defaults
+          channel-priority: strict
+          auto-activate-base: false
+          use-mamba: true
+      - name: verify interpreter
+        run: ./mvnw verify -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
+
+  # Python/R/Jupyter interpreters test with JDK 17
+  interpreter-test-python-rlang-jdk17:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [ 3.9 ]
+        java: [ 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-
+      - name: Setup conda environment with python ${{ matrix.python }} and R
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_3_with_R
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
+          channels: conda-forge,defaults
+          channel-priority: strict
+          auto-activate-base: false
+          use-mamba: true
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
+      - name: install environment
+        run: |
+          ./mvnw install -DskipTests -pl python,rlang,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
+      - name: run tests with ${{ matrix.python }}
+        run: |
+          ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
+
+  # Default build test with JDK 17
+  default-build-jdk17:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk${{ matrix.java }}-zeppelin-
+      - name: build without any profiles
+        run: ./mvnw clean verify -DskipTests ${MAVEN_ARGS}
+
+  # License and Maven validation with JDK 17
+  quick-checks-jdk17:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: Check Rat
+        run: ./mvnw apache-rat:check -Prat ${MAVEN_ARGS}
+      - name: Run Maven Validate
+        run: ./mvnw validate -Pinclude-hadoop ${MAVEN_ARGS}
