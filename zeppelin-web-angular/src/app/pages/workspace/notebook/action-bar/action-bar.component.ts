@@ -115,6 +115,9 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
       this.activatedExtension = 'hide';
     } else {
       this.activatedExtension = extension;
+      if (extension === 'interpreter') {
+        this.messageService.getInterpreterBindings(this.note.id);
+      }
     }
     this.activatedExtensionChange.emit(this.activatedExtension);
   }
