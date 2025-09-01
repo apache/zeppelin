@@ -10,6 +10,7 @@
  * limitations under the License.
  */
 
+export * from './code-editor';
 export * from './note-create';
 export * from './pipes';
 export * from './resize-handle';
