@@ -160,6 +160,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       scrollbar: {
         handleMouseWheel: false,
         alwaysConsumeMouseWheel: false
+      },
+      find: {
+        addExtraSpaceOnTop: false
       }
     });
   }
