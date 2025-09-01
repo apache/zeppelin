@@ -16,56 +16,59 @@ import { EventManager } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
 
 export enum ParagraphActions {
-  EditMode = 'Paragraph:EditMode',
-  CommandMode = 'Paragraph:CommandMode',
   Run = 'Paragraph:Run',
+  RunAbove = 'Paragraph:RunAbove',
   RunBelow = 'Paragraph:RunBelow',
   Cancel = 'Paragraph:Cancel',
-  Clear = 'Paragraph:Clear',
-  ReduceWidth = 'Paragraph:ReduceWidth',
-  IncreaseWidth = 'Paragraph:IncreaseWidth',
+  MoveCursorUp = 'Paragraph:MoveCursorUp',
+  MoveCursorDown = 'Paragraph:MoveCursorDown',
   Delete = 'Paragraph:Delete',
-  MoveToUp = 'Paragraph:MoveToUp',
-  MoveToDown = 'Paragraph:MoveToDown',
-  SelectAbove = 'Paragraph:SelectAbove',
-  SelectBelow = 'Paragraph:SelectBelow',
   InsertAbove = 'Paragraph:InsertAbove',
   InsertBelow = 'Paragraph:InsertBelow',
+  InsertCopyOfParagraphBelow = 'Paragraph:InsertCopyOfParagraphBelow',
+  MoveParagraphUp = 'Paragraph:MoveParagraphUp',
+  MoveParagraphDown = 'Paragraph:MoveParagraphDown',
+  SwitchEnable = 'Paragraph:SwitchEnable',
+  SwitchOutputShow = 'Paragraph:SwitchOutputShow',
   SwitchLineNumber = 'Paragraph:SwitchLineNumber',
   SwitchTitleShow = 'Paragraph:SwitchTitleShow',
-  SwitchOutputShow = 'Paragraph:SwitchOutputShow',
-  SwitchEditorShow = 'Paragraph:SwitchEditorShow',
-  SwitchEnable = 'Paragraph:SwitchEnable',
-  Link = 'Paragraph:Link'
+  Clear = 'Paragraph:Clear',
+  Link = 'Paragraph:Link',
+  ReduceWidth = 'Paragraph:ReduceWidth',
+  IncreaseWidth = 'Paragraph:IncreaseWidth',
+  FindInCode = 'Paragraph:FindInCode'
 }
 
 export const ShortcutsMap = {
-  [ParagraphActions.EditMode]: 'enter',
-  [ParagraphActions.CommandMode]: 'esc',
-  [ParagraphActions.Run]: 'shift.enter',
-  [ParagraphActions.RunBelow]: 'shift.ctrlCmd.enter',
-  [ParagraphActions.Cancel]: 'shift.ctrlCmd.c',
-  // Need register special character `¬` in MacOS
-  [ParagraphActions.Clear]: ['alt.ctrlCmd.l', 'alt.ctrlCmd.¬'],
-  // Need register special character `†` in MacOS
-  [ParagraphActions.Link]: ['alt.ctrlCmd.t', 'alt.ctrlCmd.†'],
-  // Need register special character `®` in MacOS
-  [ParagraphActions.SwitchEnable]: ['alt.ctrlCmd.r', 'alt.ctrlCmd.®'],
-  // Need register special character `–` in MacOS
-  [ParagraphActions.ReduceWidth]: ['alt.ctrlCmd.-', 'alt.ctrlCmd.–'],
-  // Need register special character `≠` in MacOS
-  [ParagraphActions.IncreaseWidth]: ['alt.ctrlCmd.+', 'alt.ctrlCmd.≠'],
-  [ParagraphActions.Delete]: 'shift.delete',
-  [ParagraphActions.MoveToUp]: ['ctrlCmd.k', 'ctrlCmd.arrowup', 'ctrlCmd.arrowleft'],
-  [ParagraphActions.MoveToDown]: ['ctrlCmd.j', 'ctrlCmd.arrowdown', 'ctrlCmd.arrowright'],
-  [ParagraphActions.SelectAbove]: ['k', 'arrowup', 'arrowleft'],
-  [ParagraphActions.SelectBelow]: ['j', 'arrowdown', 'arrowright'],
-  [ParagraphActions.SwitchLineNumber]: 'l',
-  [ParagraphActions.SwitchTitleShow]: 't',
-  [ParagraphActions.SwitchOutputShow]: 'o',
-  [ParagraphActions.SwitchEditorShow]: 'e',
-  [ParagraphActions.InsertAbove]: 'a',
-  [ParagraphActions.InsertBelow]: 'b'
+  [ParagraphActions.Run]: 'shift.enter', // Run paragraph
+  [ParagraphActions.RunAbove]: 'control.shift.arrowup', // Run all above paragraphs (exclusive)
+  [ParagraphActions.RunBelow]: 'control.shift.arrowdown', // Run all below paragraphs (inclusive)
+  [ParagraphActions.Cancel]: ['control.alt.c', 'control.alt.ç'], // Cancel
+  [ParagraphActions.MoveCursorUp]: 'control.p', // Move cursor Up
+  [ParagraphActions.MoveCursorDown]: 'control.n', // Move cursor Down
+  [ParagraphActions.Delete]: ['control.alt.d', 'control.alt.∂'], // Remove paragraph
+  [ParagraphActions.InsertAbove]: ['control.alt.a', 'control.alt.å'], // Insert new paragraph above
+  [ParagraphActions.InsertBelow]: ['control.alt.b', 'control.alt.∫'], // Insert new paragraph below
+  [ParagraphActions.InsertCopyOfParagraphBelow]: 'control.shift.c', // Insert copy of paragraph below
+  [ParagraphActions.MoveParagraphUp]: ['control.alt.k', 'control.alt.˚'], // Move paragraph Up
+  [ParagraphActions.MoveParagraphDown]: ['control.alt.j', 'control.alt.∆'], // Move paragraph Down
+  [ParagraphActions.SwitchEnable]: ['control.alt.r', 'control.alt.®'], // Enable/Disable run paragraph
+  [ParagraphActions.SwitchOutputShow]: ['control.alt.o', 'control.alt.ø'], // Toggle output
+  // Toggle editor - Shortcut logic is implemented in the editor component
+  [ParagraphActions.SwitchLineNumber]: ['control.alt.m', 'control.alt.µ'], // Toggle line number
+  [ParagraphActions.SwitchTitleShow]: ['control.alt.t', 'control.alt.†'], // Toggle title
+  [ParagraphActions.Clear]: ['control.alt.l', 'control.alt.¬'], // Clear output
+  [ParagraphActions.Link]: ['control.alt.w', 'control.alt.∑'], // Link this paragraph
+  [ParagraphActions.ReduceWidth]: 'control.shift._', // Reduce paragraph width
+  [ParagraphActions.IncreaseWidth]: 'control.shift.=', // Increase paragraph width
+  // Auto-completion - No longer needed; always applied now
+  // Cut the line - Shortcut logic is implemented in the editor component
+  // Paste the line - Shortcut logic is implemented in the editor component
+  // Search inside the code - Shortcut logic is implemented in the editor component
+  // Move cursor to the beginning - System shortcut
+  // Move cursor at the end - System shortcut
+  // TODO: Check after the search code is implemented in action-bar.component.ts
+  [ParagraphActions.FindInCode]: ['control.alt.f', 'control.alt.ƒ'] // Find in code
 };
 
 export interface ShortcutEvent {
@@ -76,10 +79,6 @@ export interface ShortcutEvent {
 export interface ShortcutOption {
   scope?: HTMLElement;
   keybindings: string;
-}
-
-function isMacOS() {
-  return navigator.platform.indexOf('Mac') > -1;
 }
 
 @Injectable({
@@ -99,9 +98,7 @@ export class ShortcutService {
 
   bindShortcut(option: ShortcutOption): Observable<ShortcutEvent> {
     const host = option.scope || this.element;
-    // `ctrlCmd` is special symbol, will be replaced `meta` in MacOS, 'control' in Windows/Linux
-    const keybindings = option.keybindings.replace(/ctrlCmd/g, isMacOS() ? 'meta' : 'control');
-    const eventName = `keydown.${keybindings}`;
+    const eventName = `keydown.${option.keybindings}`;
     // tslint:disable-next-line:ban-types
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {

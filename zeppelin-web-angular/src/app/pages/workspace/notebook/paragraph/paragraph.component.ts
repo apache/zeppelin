@@ -362,7 +362,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.cdr.markForCheck();
   }
 
-  moveUpParagraph() {
+  moveCursorUp() {
     const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) - 1;
     if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
       return;
@@ -375,7 +375,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.messageService.moveParagraph(this.paragraph.id, newIndex);
   }
 
-  moveDownParagraph() {
+  moveCursorDown() {
     const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) + 1;
     if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
       return;
@@ -386,6 +386,41 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.saveParagraph();
     this.triggerSaveParagraph.emit(nextParagraph.id);
     this.messageService.moveParagraph(this.paragraph.id, newIndex);
+  }
+
+  moveParagraphUp() {
+    let newIndex = -1;
+    for (let i = 0; i < this.note.paragraphs.length; i++) {
+      if (this.note.paragraphs[i].id === this.paragraph.id) {
+        newIndex = i - 1;
+        break;
+      }
+    }
+    if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
+      return;
+    }
+    this.messageService.moveParagraph(this.paragraph.id, newIndex);
+  }
+
+  moveParagraphDown() {
+    let newIndex = -1;
+    for (let i = 0; i < this.note.paragraphs.length; i++) {
+      if (this.note.paragraphs[i].id === this.paragraph.id) {
+        newIndex = i + 1;
+        break;
+      }
+    }
+
+    if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
+      return;
+    }
+    this.messageService.moveParagraph(this.paragraph.id, newIndex);
+  }
+
+  clearParagraphOutput() {
+    if (!this.isEntireNoteRunning) {
+      this.messageService.paragraphClearOutput(this.paragraph.id);
+    }
   }
 
   changeColWidth(needCommit: boolean, updateResult = true) {
@@ -491,88 +526,14 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           return; // ignore shortcut to make input work
         }
 
-        if (this.mode === 'command') {
-          switch (action) {
-            case ParagraphActions.InsertAbove:
-              this.insertParagraph('above');
-              break;
-            case ParagraphActions.InsertBelow:
-              this.insertParagraph('below');
-              break;
-            case ParagraphActions.SwitchEditorShow:
-              this.setEditorHide(!this.paragraph.config.editorHide);
-              this.commitParagraph();
-              break;
-            case ParagraphActions.SwitchOutputShow:
-              this.setTableHide(!this.paragraph.config.tableHide);
-              this.commitParagraph();
-              break;
-            case ParagraphActions.SwitchTitleShow:
-              this.paragraph.config.title = !this.paragraph.config.title;
-              this.commitParagraph();
-              break;
-            case ParagraphActions.SwitchLineNumber:
-              this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
-              this.commitParagraph();
-              break;
-            case ParagraphActions.MoveToUp:
-              event.preventDefault();
-              this.moveUpParagraph();
-              break;
-            case ParagraphActions.MoveToDown:
-              event.preventDefault();
-              this.moveDownParagraph();
-              break;
-            case ParagraphActions.SwitchEnable:
-              this.paragraph.config.enabled = !this.paragraph.config.enabled;
-              this.commitParagraph();
-              break;
-            case ParagraphActions.ReduceWidth:
-              if (!this.paragraph.config.colWidth) {
-                throw new Error('colWidth is required');
-              }
-              this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
-              this.cdr.markForCheck();
-              this.changeColWidth(true);
-              break;
-            case ParagraphActions.IncreaseWidth:
-              if (!this.paragraph.config.colWidth) {
-                throw new Error('colWidth is required');
-              }
-              this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
-              this.cdr.markForCheck();
-              this.changeColWidth(true);
-              break;
-            case ParagraphActions.Delete:
-              this.removeParagraph();
-              break;
-            case ParagraphActions.SelectAbove:
-              event.preventDefault();
-              this.selectAtIndex.emit(this.index - 1);
-              break;
-            case ParagraphActions.SelectBelow:
-              event.preventDefault();
-              this.selectAtIndex.emit(this.index + 1);
-              break;
-            default:
-              break;
-          }
-        }
         switch (action) {
-          case ParagraphActions.Link:
-            this.openSingleParagraph(this.paragraph.id);
-            break;
-          case ParagraphActions.EditMode:
-            if (this.mode === 'command') {
-              event.preventDefault();
-            }
-            if (!this.paragraph.config.editorHide) {
-              this.switchMode('edit');
-            }
-            break;
           case ParagraphActions.Run:
             event.preventDefault();
             this.runParagraph();
+            break;
+          case ParagraphActions.RunAbove:
+            this.waitConfirmFromEdit = true;
+            this.runAllAbove();
             break;
           case ParagraphActions.RunBelow:
             this.waitConfirmFromEdit = true;
@@ -581,6 +542,75 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           case ParagraphActions.Cancel:
             event.preventDefault();
             this.cancelParagraph();
+            break;
+          case ParagraphActions.MoveCursorUp:
+            event.preventDefault();
+            this.moveCursorUp();
+            break;
+          case ParagraphActions.MoveCursorDown:
+            event.preventDefault();
+            this.moveCursorDown();
+            break;
+          case ParagraphActions.Delete:
+            this.removeParagraph();
+            break;
+          case ParagraphActions.InsertAbove:
+            this.insertParagraph('above');
+            break;
+          case ParagraphActions.InsertBelow:
+            this.insertParagraph('below');
+            break;
+          case ParagraphActions.InsertCopyOfParagraphBelow:
+            this.cloneParagraph('below');
+            break;
+          case ParagraphActions.MoveParagraphUp:
+            event.preventDefault();
+            this.moveParagraphUp();
+            break;
+          case ParagraphActions.MoveParagraphDown:
+            event.preventDefault();
+            this.moveParagraphDown();
+            break;
+          case ParagraphActions.SwitchEnable:
+            this.paragraph.config.enabled = !this.paragraph.config.enabled;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchOutputShow:
+            this.setTableHide(!this.paragraph.config.tableHide);
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchLineNumber:
+            this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchTitleShow:
+            this.paragraph.config.title = !this.paragraph.config.title;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.Clear:
+            this.clearParagraphOutput();
+            break;
+          case ParagraphActions.Link:
+            this.openSingleParagraph(this.paragraph.id);
+            break;
+          case ParagraphActions.ReduceWidth:
+            if (!this.paragraph.config.colWidth) {
+              throw new Error('colWidth is required');
+            }
+            this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
+            this.cdr.markForCheck();
+            this.changeColWidth(true);
+            break;
+          case ParagraphActions.IncreaseWidth:
+            if (!this.paragraph.config.colWidth) {
+              throw new Error('colWidth is required');
+            }
+            this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
+            this.cdr.markForCheck();
+            this.changeColWidth(true);
+            break;
+          case ParagraphActions.FindInCode:
+            this.searchCode.emit();
             break;
           default:
             break;
