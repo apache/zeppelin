@@ -46,6 +46,8 @@ BIN=$(cd "${BIN}">/dev/null; pwd)
 . "${BIN}/common.sh"
 . "${BIN}/functions.sh"
 
+check_java_version
+
 HOSTNAME=$(hostname)
 ZEPPELIN_NAME="Zeppelin"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
