@@ -623,7 +623,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
     this.noteVarShareService.set(this.paragraph.id + '_paragraphScope', this);
     this.initializeDefault(this.paragraph.config, this.paragraph.settings);
-    this.ngZService
+    this.angularContextManager
       .runParagraphAction()
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => {
@@ -631,7 +631,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           this.runParagraph();
         }
       });
-    this.ngZService
+    this.angularContextManager
       .contextChanged()
       .pipe(takeUntil(this.destroy$))
       .subscribe(change => {

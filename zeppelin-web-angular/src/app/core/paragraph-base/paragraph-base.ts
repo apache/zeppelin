@@ -11,29 +11,38 @@
  */
 
 import { ChangeDetectorRef, QueryList } from '@angular/core';
+import { AngularContextManager } from '@zeppelin/core/paragraph-base/angular-context-manager';
+import { NoteStatus } from '@zeppelin/core/paragraph-base/note-status';
 
 import {
   AngularObjectRemove,
   AngularObjectUpdate,
   GraphConfig,
+  Message,
   MessageReceiveDataTypeMap,
   OP,
   ParagraphConfig,
+  ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  ParagraphResults
 } from '@zeppelin/sdk';
-
-import { MessageService } from '@zeppelin/services/message.service';
-import { NgZService } from '@zeppelin/services/ng-z.service';
-import { NoteStatusService, ParagraphStatus } from '@zeppelin/services/note-status.service';
 
 import * as DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
 import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
-import { ParagraphConfigResults, ParagraphResults } from '../../../../projects/zeppelin-sdk/src';
 import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
+
+export const ParagraphStatus = {
+  READY: 'READY',
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  FINISHED: 'FINISHED',
+  ABORT: 'ABORT',
+  ERROR: 'ERROR'
+};
 
 export abstract class ParagraphBase extends MessageListenersManager {
   paragraph?: ParagraphItem;
@@ -56,9 +65,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
   constructor(
-    public messageService: MessageService,
-    protected noteStatusService: NoteStatusService,
-    protected ngZService: NgZService,
+    public messageService: Message,
+    protected noteStatusService: NoteStatus,
+    protected angularContextManager: AngularContextManager,
     protected cdr: ChangeDetectorRef
   ) {
     super(messageService);
@@ -169,7 +178,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
     if (data.paragraphId === this.paragraph.id) {
       const { name, object } = data.angularObject;
-      this.ngZService.setContextValue(name, object, data.paragraphId, false);
+      this.angularContextManager.setContextValue(name, object, data.paragraphId, false);
     }
   }
 
@@ -179,7 +188,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
       throw new Error('paragraph is not defined');
     }
     if (data.paragraphId === this.paragraph.id) {
-      this.ngZService.unsetContextValue(data.name, data.paragraphId, false);
+      this.angularContextManager.unsetContextValue(data.name, data.paragraphId, false);
     }
   }
 
