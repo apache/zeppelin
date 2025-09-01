@@ -84,6 +84,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
   @Output() readonly selected = new EventEmitter<string>();
   @Output() readonly selectAtIndex = new EventEmitter<number>();
+  @Output() readonly searchCode = new EventEmitter();
 
   private destroy$ = new Subject();
   private mode: Mode = 'command';
