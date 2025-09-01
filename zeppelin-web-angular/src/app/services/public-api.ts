@@ -29,4 +29,5 @@ export * from './runtime-compiler.service';
 export * from './shortcut.service';
 export * from './configuration.service';
 export * from './credential.service';
+export * from './notebook.service';
 export * from './notebook-repos.service';

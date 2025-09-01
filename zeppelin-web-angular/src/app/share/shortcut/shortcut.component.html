@@ -12,7 +12,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div class="modal fade" id="shortcutModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="shortcutModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="myModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="table-scroll">
@@ -24,10 +31,12 @@ limitations under the License.
           <tr>
             <td>
               <div class="col-md-8">Run paragraph</div>
-           </td>
-           <td>
+            </td>
+            <td>
               <div class="keys">
-                <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">Enter</kbd>
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">Enter</kbd>
               </div>
             </td>
           </tr>
@@ -37,7 +46,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">UP</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">UP</kbd>
               </div>
             </td>
           </tr>
@@ -48,7 +61,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">DOWN</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">DOWN</kbd>
               </div>
             </td>
           </tr>
@@ -59,7 +76,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">C</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">C</kbd>
               </div>
             </td>
           </tr>
@@ -70,7 +91,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">P</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">P</kbd>
               </div>
             </td>
           </tr>
@@ -81,95 +104,129 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">N</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">N</kbd>
               </div>
             </td>
           </tr>
 
-        <tr>
-          <td>
-            <div class="col-md-8">Remove paragraph</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">D</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Insert new paragraph above</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">A</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Insert new paragraph below</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">B</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Insert copy of paragraph below</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">C</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Move paragraph Up</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">K</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Move paragraph Down</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">J</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Enable/Disable run paragraph</div>
-          </td>
-          <td>
-            <div class="keys">
-              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd> + <kbd class="kbd-default">R</kbd>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <div class="col-md-8">Toggle output</div>
+          <tr>
+            <td>
+              <div class="col-md-8">Remove paragraph</div>
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">O</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">D</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Insert new paragraph above</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">A</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Insert new paragraph below</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">B</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Insert copy of paragraph below</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">C</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move paragraph Up</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">K</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move paragraph Down</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">J</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Enable/Disable run paragraph</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">R</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Toggle output</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">O</kbd>
               </div>
             </td>
           </tr>
@@ -180,7 +237,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">E</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">E</kbd>
               </div>
             </td>
           </tr>
@@ -191,7 +252,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">M</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">M</kbd>
               </div>
             </td>
           </tr>
@@ -202,7 +267,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">T</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">T</kbd>
               </div>
             </td>
           </tr>
@@ -213,7 +282,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">L</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">L</kbd>
               </div>
             </td>
           </tr>
@@ -224,7 +297,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">W</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">W</kbd>
               </div>
             </td>
           </tr>
@@ -235,7 +312,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">-</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">-</kbd>
               </div>
             </td>
           </tr>
@@ -246,11 +327,15 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">+</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Shift</kbd>
+                +
+                <kbd class="kbd-default">+</kbd>
               </div>
             </td>
           </tr>
-          <br/>
+          <br />
           <tr class="sub-title">
             <th style="width:70%">Editor Keyboard Shortcuts</th>
             <th></th>
@@ -262,7 +347,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">K</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">K</kbd>
               </div>
             </td>
           </tr>
@@ -273,7 +360,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Y</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">Y</kbd>
               </div>
             </td>
           </tr>
@@ -284,7 +373,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">S</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">S</kbd>
               </div>
             </td>
           </tr>
@@ -295,7 +386,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">A</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">A</kbd>
               </div>
             </td>
           </tr>
@@ -306,7 +399,9 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">E</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">E</kbd>
               </div>
             </td>
           </tr>
@@ -317,7 +412,11 @@ limitations under the License.
             </td>
             <td>
               <div class="keys">
-                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">F</kbd>
+                <kbd class="kbd-default">Ctrl</kbd>
+                +
+                <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd>
+                +
+                <kbd class="kbd-default">F</kbd>
               </div>
             </td>
           </tr>

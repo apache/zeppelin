@@ -10,8 +10,4 @@
  * limitations under the License.
  */
 
-export * from './note-create';
-export * from './pipes';
-export * from './resize-handle';
-export * from './share.module';
-export * from './shortcut';
+export * from './shortcut.component';
