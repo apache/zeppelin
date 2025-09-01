@@ -14,9 +14,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { NotebookCapabilities, NotebookSearchResultItem } from '@zeppelin/interfaces';
-import { BaseRest } from '@zeppelin/services/base-rest';
-import { BaseUrlService } from '@zeppelin/services/base-url.service';
 import { BehaviorSubject } from 'rxjs';
+import { BaseRest } from './base-rest';
+import { BaseUrlService } from './base-url.service';
 
 @Injectable({
   providedIn: 'root'
