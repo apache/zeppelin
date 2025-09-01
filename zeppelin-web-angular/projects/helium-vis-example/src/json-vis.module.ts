@@ -20,4 +20,4 @@ import { JsonVisComponent } from './json-vis.component';
   entryComponents: [JsonVisComponent],
   exports: [JsonVisComponent]
 })
-export class JsonVisModule { }
+export class JsonVisModule {}

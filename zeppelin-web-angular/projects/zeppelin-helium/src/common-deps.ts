@@ -37,7 +37,7 @@ export const COMMON_DEPS = {
   '@zeppelin/sdk': sdk,
   '@zeppelin/visualization': visualization,
   '@zeppelin/helium': zeppelinHelium,
-  'lodash': lodash,
+  lodash: lodash,
   'ng-zorro-antd': ngZorro,
   rxjs,
   tslib
