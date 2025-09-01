@@ -86,6 +86,7 @@
     "ts-node": "~7.0.0",
     "tsickle": "0.38.1",
     "tslint": "~5.15.0",
+    "tslint-no-circular-imports": "^0.7.0",
     "typescript": "3.8.3"
   },
   "lint-staged": {
