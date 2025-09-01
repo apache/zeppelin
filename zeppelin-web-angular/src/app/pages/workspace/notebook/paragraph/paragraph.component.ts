@@ -33,7 +33,13 @@ import { map, takeUntil } from 'rxjs/operators';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { ParagraphBase } from '@zeppelin/core';
-import { InterpreterBindingItem, Note, ParagraphConfigResult, ParagraphItem } from '@zeppelin/sdk';
+import {
+  InterpreterBindingItem,
+  Note,
+  ParagraphConfigResult,
+  ParagraphItem,
+  ParagraphIResultsMsgItem
+} from '@zeppelin/sdk';
 import {
   HeliumService,
   MessageService,
@@ -87,8 +93,16 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Output() readonly searchCode = new EventEmitter();
 
   private destroy$ = new Subject();
+
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+
+  updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
+    const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
+    if (resultComponent) {
+      resultComponent.updateResult(config, result);
+    }
+  }
 
   switchMode(mode: Mode): void {
     if (mode === this.mode) {

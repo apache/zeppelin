@@ -10,10 +10,7 @@
  * limitations under the License.
  */
 
-import { ChangeDetectorRef, QueryList } from '@angular/core';
-import { AngularContextManager } from '@zeppelin/core/paragraph-base/angular-context-manager';
-import { NoteStatus } from '@zeppelin/core/paragraph-base/note-status';
-
+import { ChangeDetectorRef } from '@angular/core';
 import {
   AngularObjectRemove,
   AngularObjectUpdate,
@@ -22,6 +19,7 @@ import {
   MessageReceiveDataTypeMap,
   OP,
   ParagraphConfig,
+  ParagraphConfigResult,
   ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
@@ -32,8 +30,9 @@ import {
 import * as DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
-import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
 import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
+import { AngularContextManager } from './angular-context-manager';
+import { NoteStatus } from './note-status';
 
 export const ParagraphStatus = {
   READY: 'READY',
@@ -60,9 +59,6 @@ export abstract class ParagraphBase extends MessageListenersManager {
     params: {},
     forms: {}
   };
-
-  // Initialized by `ViewChildren` in the class which extends ParagraphBase
-  notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
   constructor(
     public messageService: Message,
@@ -132,28 +128,27 @@ export abstract class ParagraphBase extends MessageListenersManager {
     if (this.isUpdateRequired(oldPara, newPara)) {
       this.updateParagraph(oldPara, newPara, () => {
         if (newPara.results && newPara.results.msg) {
-          // tslint:disable-next-line:no-for-in-array
-          for (const i in newPara.results.msg) {
-            if (newPara.results.msg[i]) {
-              const newResult = newPara.results.msg ? newPara.results.msg[i] : new ParagraphIResultsMsgItem();
-              const oldResult =
-                oldPara.results && oldPara.results.msg ? oldPara.results.msg[i] : new ParagraphIResultsMsgItem();
-              const newConfig = newPara.config.results ? newPara.config.results[i] : { graph: new GraphConfig() };
-              const oldConfig = oldPara.config.results ? oldPara.config.results[i] : { graph: new GraphConfig() };
-              if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
-                const resultComponent = this.notebookParagraphResultComponents.toArray()[i];
-                if (resultComponent) {
-                  resultComponent.updateResult(newConfig, newResult);
-                }
-              }
+          newPara.results.msg.forEach((newResult, idx) => {
+            const oldResult =
+              oldPara.results && oldPara.results.msg ? oldPara.results.msg[idx] : new ParagraphIResultsMsgItem();
+            const newConfig = newPara.config.results ? newPara.config.results[idx] : { graph: new GraphConfig() };
+            const oldConfig = oldPara.config.results ? oldPara.config.results[idx] : { graph: new GraphConfig() };
+            if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
+              this.updateParagraphResult(idx, newConfig, newResult);
             }
-          }
+          });
         }
         this.cdr.markForCheck();
       });
       this.cdr.markForCheck();
     }
   }
+
+  abstract updateParagraphResult(
+    resultIndex: number,
+    config: ParagraphConfigResult,
+    result: ParagraphIResultsMsgItem
+  ): void;
 
   @MessageListener(OP.PATCH_PARAGRAPH)
   patchParagraph(data: MessageReceiveDataTypeMap[OP.PATCH_PARAGRAPH]) {

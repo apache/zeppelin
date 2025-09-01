@@ -14,7 +14,13 @@ import { ActivatedRoute } from '@angular/router';
 import { MessageListener, ParagraphBase } from '@zeppelin/core';
 import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
 import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
-import { MessageReceiveDataTypeMap, OP, ParagraphItem } from '@zeppelin/sdk';
+import {
+  MessageReceiveDataTypeMap,
+  OP,
+  ParagraphConfigResult,
+  ParagraphItem,
+  ParagraphIResultsMsgItem
+} from '@zeppelin/sdk';
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 import { isNil } from 'lodash';
@@ -100,6 +106,13 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
       } else {
         this.runParagraphUsingBackendInterpreter(text);
       }
+    }
+  }
+
+  updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
+    const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
+    if (resultComponent) {
+      resultComponent.updateResult(config, result);
     }
   }
 }
