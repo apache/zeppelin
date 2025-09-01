@@ -11,13 +11,9 @@
  */
 
 import { Injectable } from '@angular/core';
+import { FolderRenameComponent, NoteCreateComponent, NoteImportComponent, NoteRenameComponent } from '@zeppelin/share';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
-
-import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
-import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
-import { NoteRenameComponent } from '@zeppelin/share/note-rename/note-rename.component';
 
 @Injectable({
   providedIn: 'root'

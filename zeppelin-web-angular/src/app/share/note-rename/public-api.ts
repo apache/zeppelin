@@ -10,11 +10,4 @@
  * limitations under the License.
  */
 
-export * from './code-editor';
-export * from './folder-rename';
-export * from './note-create';
-export * from './note-import';
-export * from './note-rename';
-export * from './pipes';
-export * from './resize-handle';
-export * from './share.module';
+export * from './note-rename.component';
