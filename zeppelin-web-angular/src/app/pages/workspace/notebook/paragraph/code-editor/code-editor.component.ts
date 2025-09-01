@@ -57,6 +57,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Output() readonly textChanged = new EventEmitter<string>();
   @Output() readonly editorBlur = new EventEmitter<void>();
   @Output() readonly editorFocus = new EventEmitter<void>();
+  @Output() readonly toggleEditorShow = new EventEmitter<void>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   height = 18;
@@ -119,6 +120,71 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       },
       '!suggestWidgetVisible'
     );
+
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KeyE, () => {
+      this.toggleEditorShow.emit();
+    });
+
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyK, async () => {
+      if (this.editor) {
+        const position = this.editor.getPosition();
+        const model = this.editor.getModel();
+        if (!position || !model) {
+          return;
+        }
+
+        const lineNumber = position.lineNumber;
+        const lineContent = model.getLineContent(lineNumber);
+
+        if (!lineContent) {
+          return;
+        }
+
+        await navigator.clipboard.writeText(lineContent);
+
+        this.editor.executeEdits('cut-line', [
+          {
+            range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1),
+            text: '',
+            forceMoveMarkers: true
+          }
+        ]);
+      }
+    });
+
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyY, async () => {
+      if (this.editor) {
+        const text = await navigator.clipboard.readText();
+        const position = this.editor.getPosition();
+        if (position) {
+          this.editor.executeEdits('my-source', [
+            {
+              range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+              text: text,
+              forceMoveMarkers: true
+            }
+          ]);
+        }
+      }
+    });
+
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyS, async () => {
+      if (this.editor) {
+        const controller = this.editor.getContribution(
+          'editor.contrib.findController'
+        ) as MonacoEditor.IEditorContribution & {
+          start(options: { forceRevealReplace: boolean; seedSearchStringFromSelection: boolean }): void;
+          getFindInputFocusElement(): HTMLElement | null;
+        };
+        if (controller) {
+          controller.start({
+            forceRevealReplace: false,
+            seedSearchStringFromSelection: true
+          });
+          controller.getFindInputFocusElement()?.focus();
+        }
+      }
+    });
 
     this.updateEditorOptions(this.editor);
     this.setParagraphMode();

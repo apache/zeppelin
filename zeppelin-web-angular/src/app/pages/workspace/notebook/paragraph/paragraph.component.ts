@@ -155,6 +155,11 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     }
   }
 
+  toggleEditorShow() {
+    this.setEditorHide(!this.paragraph.config.editorHide);
+    this.commitParagraph();
+  }
+
   saveParagraph() {
     const dirtyText = this.paragraph.text;
     if (dirtyText === undefined || dirtyText === this.originalText) {
