@@ -10,5 +10,7 @@
  * limitations under the License.
  */
 
+export * from './angular-context-manager';
+export * from './note-status';
 export * from './paragraph-base';
 export * from './published';
