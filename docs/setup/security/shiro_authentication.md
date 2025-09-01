@@ -186,6 +186,13 @@ securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
 ```
 
+For certain LDAP where the mapping of ldap groups to users does not exist, we can choose RoleMappingLdapRealm, which allows for the mapping of usernames directly to roles.
+```
+ldapRealm = org.apache.zeppelin.realm.RoleMappingLdapRealm
+ldapRealm.rolesByUsername = user1:admin,user2:user,user3:user,user4:user
+ldapRealm.defaultRole = guest
+```
+
 Also instead of specifying systemPassword in clear text in `shiro.ini` administrator can choose to specify the same in "hadoop credential". 
 Create a keystore file using the hadoop credential command line:
 ``` 
