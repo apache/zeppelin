@@ -11,9 +11,7 @@
  */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { MessageListener, ParagraphBase } from '@zeppelin/core';
-import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
-import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
+import { publishedSymbol, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
 import {
   MessageReceiveDataTypeMap,
   OP,
@@ -24,6 +22,7 @@ import {
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 import { isNil } from 'lodash';
+import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 
 @Component({
   selector: 'zeppelin-publish-paragraph',

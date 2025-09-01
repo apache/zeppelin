@@ -13,7 +13,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
-import { NotebookService } from '@zeppelin/services/notebook.service';
+import { NotebookService } from '@zeppelin/services';
 import { Subject } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 
