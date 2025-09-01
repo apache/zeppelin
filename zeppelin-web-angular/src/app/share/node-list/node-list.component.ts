@@ -14,12 +14,12 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, O
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { NodeItem } from '@zeppelin/interfaces/node-list';
 
-import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzTreeNode, NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
-import { MessageService, NoteActionService, NoteListService } from '@zeppelin/services';
+import { MessageService, NoteListService } from '@zeppelin/services';
+import { NoteActionService } from './note-action.service';
 
 @Component({
   selector: 'zeppelin-node-list',
@@ -138,7 +138,6 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
     public messageService: MessageService,
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private noteListService: NoteListService,
-    private nzModalService: NzModalService,
     private noteActionService: NoteActionService,
     private cdr: ChangeDetectorRef
   ) {
