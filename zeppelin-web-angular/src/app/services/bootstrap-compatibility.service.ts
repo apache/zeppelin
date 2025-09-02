@@ -479,7 +479,6 @@ export class BootstrapCompatibilityService {
 
     const styleElement = document.createElement('style');
     styleElement.id = this.styleId;
-    styleElement.type = 'text/css';
     styleElement.appendChild(document.createTextNode(this.bootstrapCompatStyles));
 
     // Insert at the beginning of head to allow overrides

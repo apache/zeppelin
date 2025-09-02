@@ -24,7 +24,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 export class HeliumService extends BaseRest {
   private visualizationBundles$ = new BehaviorSubject<HeliumVisualizationBundle[]>([]);
 
-  constructor(baseUrlService: BaseUrlService, private http: HttpClient) {
+  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
   }
 
