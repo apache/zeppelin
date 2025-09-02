@@ -170,11 +170,11 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   ];
 
   constructor(
+    protected injector: Injector,
     private viewContainerRef: ViewContainerRef,
     private cdr: ChangeDetectorRef,
     private runtimeCompilerService: RuntimeCompilerService,
     private sanitizer: DomSanitizer,
-    protected injector: Injector,
     private ngZService: NgZService,
     private heliumService: HeliumService,
     private classicVisualizationService: ClassicVisualizationService
