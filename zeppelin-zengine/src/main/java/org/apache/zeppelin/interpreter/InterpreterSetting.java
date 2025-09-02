@@ -1026,7 +1026,7 @@ public class InterpreterSetting {
   }
 
   public static List<String> extractUsersFromJsonObject(JsonObject jsonObject) {
-    List<String> users = new ArrayList<>();
+    List<String> users = new LinkedList<>();
     if (jsonObject != null) {
       JsonObject option = jsonObject.getAsJsonObject("option");
       if (option != null) {
