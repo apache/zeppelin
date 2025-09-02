@@ -27,8 +27,8 @@ import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
 
 import java.io.IOException;
-import java.util.List;
 
+import java.util.List;
 /**
  * Interface for storing zeppelin configuration.
  *
