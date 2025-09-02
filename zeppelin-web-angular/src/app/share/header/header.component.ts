@@ -19,8 +19,7 @@ import { filter, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
-import { MessageService, TicketService } from '@zeppelin/services';
-import { NotebookService } from '@zeppelin/services/notebook.service';
+import { MessageService, NotebookService, TicketService } from '@zeppelin/services';
 import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.component';
 
 @Component({
