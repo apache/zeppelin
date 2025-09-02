@@ -13,7 +13,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { AngularContext } from '@zeppelin/core';
-import { isRecord } from '@zeppelin/utility/type-utility';
+import { isRecord } from '@zeppelin/utility';
 import { Subject } from 'rxjs';
 
 @Injectable({

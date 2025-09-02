@@ -50,7 +50,7 @@ import {
   ShortcutsMap,
   ShortcutService
 } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell/spell-result';
+import { SpellResult } from '@zeppelin/spell';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';

@@ -11,8 +11,7 @@
  */
 
 import { Inject, Injectable } from '@angular/core';
-import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
-import { NodeItem } from '@zeppelin/interfaces/node-list';
+import { NodeItem, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 
 @Injectable({
   providedIn: 'root'

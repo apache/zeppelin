@@ -20,7 +20,7 @@ import {
   ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell/spell-result';
+import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 

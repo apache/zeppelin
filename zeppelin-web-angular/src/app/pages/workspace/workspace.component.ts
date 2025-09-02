@@ -12,7 +12,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { publishedSymbol } from '@zeppelin/core';
-import { isRecord } from '@zeppelin/utility/type-utility';
+import { isRecord } from '@zeppelin/utility';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
