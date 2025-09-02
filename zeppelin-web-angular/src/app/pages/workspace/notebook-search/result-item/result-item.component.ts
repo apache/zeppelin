@@ -23,7 +23,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
 import { JoinedEditorOptions } from '@zeppelin/share';
-import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility/get-keyword-positions';
+import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility';
 import { editor, Range } from 'monaco-editor';
 import IEditor = editor.IEditor;
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
