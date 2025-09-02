@@ -157,6 +157,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       scrollBeyondLastLine: false,
       contextmenu: false,
       matchBrackets: 'always',
+      wordWrap: 'on',
       scrollbar: {
         handleMouseWheel: false,
         alwaysConsumeMouseWheel: false
