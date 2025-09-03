@@ -81,7 +81,11 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       editor.onDidBlurEditorText(() => {
         this.editorBlur.emit();
       }),
-
+      editor.onDidChangeCursorPosition(e => {
+        this.ngZone.run(() => {
+          this.position = e.position;
+        });
+      }),
       editor.onDidChangeModelContent(() => {
         this.ngZone.run(() => {
           const model = editor.getModel();
@@ -253,10 +257,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       }
     }
     if (focus) {
-      if (!focus.currentValue && this.editor) {
-        this.position = this.editor.getPosition();
-        return;
-      }
       this.initEditorFocus();
     }
     if (text) {
