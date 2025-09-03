@@ -152,8 +152,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     definedNote.paragraphs.splice(data.index, 0, data.paragraph);
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
 
-    this.cdr.markForCheck();
     definedNote.paragraphs[paragraphIndex].focus = true;
+    this.cdr.markForCheck();
   }
 
   @MessageListener(OP.SAVE_NOTE_FORMS)
