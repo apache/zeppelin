@@ -228,7 +228,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
       this.focusEditor();
-      setTimeout(() => this.notebookParagraphCodeEditorComponent?.setCursorPositionToEnd());
+      this.cdr.detectChanges();
+      this.notebookParagraphCodeEditorComponent?.setCursorPositionToEnd();
     }
   }
 
