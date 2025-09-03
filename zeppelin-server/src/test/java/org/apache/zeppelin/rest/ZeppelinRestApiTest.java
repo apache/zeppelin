@@ -426,7 +426,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
 
       String noteName = "clone Note Name";
       // Call Clone Note REST API
-      String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+      String jsonRequest = "{\"notePath\":\"" + noteName + "\"}";
       CloseableHttpResponse post = httpPost("/notebook/" + noteId, jsonRequest);
       String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
       LOGGER.info("testNoteClone \n" + postResponse);
