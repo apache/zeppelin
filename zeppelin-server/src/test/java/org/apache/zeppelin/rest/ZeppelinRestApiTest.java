@@ -221,7 +221,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   private void testNoteCreate(String noteName) throws IOException {
     // Call Create Note REST API
-    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    String jsonRequest = "{\"notePath\":\"" + noteName + "\"}";
     CloseableHttpResponse post = httpPost("/notebook/", jsonRequest);
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
     LOGGER.info("testNoteCreate \n" + postResponse);
