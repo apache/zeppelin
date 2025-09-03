@@ -168,7 +168,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
   void testNoteCreateWithParagraphs() throws IOException {
     // Call Create Note REST API
     String noteName = "test";
-    String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
+    String jsonRequest = "{\"notePath\":\"" + noteName + "\", \"paragraphs\": [" +
         "{\"title\": \"title1\", \"text\": \"text1\"}," +
         "{\"title\": \"title2\", \"text\": \"text2\"}," +
         "{\"title\": \"titleConfig\", \"text\": \"text3\", " +
