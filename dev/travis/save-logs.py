@@ -12,42 +12,70 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import sys
 import subprocess
+import sys
 from datetime import datetime, timedelta
 
-def main(file, cmd):
-    print cmd, "writing to", file
-    out = open(file, "w")
+
+def main(file_path, cmd):
+    """
+    Execute a given command, capture its combined stdout and stderr output in real time,
+    write all output lines to a specified log file, and periodically print progress
+    (elapsed seconds and line count) to the console.
+
+    Args:
+        file_path (str): Path to the log file where all command output will be written.
+        cmd (list[str]): The command to execute, provided as a list of arguments.
+
+    Returns:
+        int: The exit code returned by the executed command.
+    """
+
+    print(f"{cmd} writing to {file_path}")
     count = 0
-    process = subprocess.Popen(cmd,
-                           stderr=subprocess.STDOUT,
-                           stdout=subprocess.PIPE)
+
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+    )
 
     start = datetime.now()
-    nextPrint = datetime.now() + timedelta(seconds=1)
-    # wait for the process to terminate
-    pout = process.stdout
-    line = pout.readline()
-    while line:
-        count = count + 1
-        if datetime.now() > nextPrint:
-            diff = datetime.now() - start
-            sys.stdout.write("\r%d seconds %d log lines"%(diff.seconds, count))
-            sys.stdout.flush()
-            nextPrint = datetime.now() + timedelta(seconds=10)
-        out.write(line)
-        line = pout.readline()
-    out.close()
+    next_print = start + timedelta(seconds=1)
+
+    try:
+        with open(file_path, "w", encoding="utf-8", buffering=1) as out:
+            for line in process.stdout:
+                count += 1
+                now = datetime.now()
+                if now > next_print:
+                    diff = now - start
+                    sys.stdout.write(f"\r{diff.seconds} seconds {count} log lines")
+                    sys.stdout.flush()
+                    next_print = now + timedelta(seconds=10)
+                out.write(line)
+    except KeyboardInterrupt:
+        process.terminate()
+        process.wait()
+        raise
+
     errcode = process.wait()
     diff = datetime.now() - start
-    sys.stdout.write("\r%d seconds %d log lines"%(diff.seconds, count))
-    sys.stdout.write("\n" + str(cmd) + " done " + str(errcode) + "\n")
+    sys.stdout.write(f"\r{diff.seconds} seconds {count} log lines")
+    sys.stdout.write(f"\n{cmd} done {errcode}\n")
+    sys.stdout.flush()
     return errcode
 
+
 if __name__ == "__main__":
-    if sys.argv < 1:
-        print "Usage: %s [file info]" % sys.argv[0]
+    if len(sys.argv) < 3:
+        print(f"Usage: {sys.argv[0]} <log_file> <cmd> [args ...]")
         sys.exit(1)
 
-    sys.exit(main(sys.argv[1], sys.argv[2:]))
+    log_file = sys.argv[1]
+    command = sys.argv[2:]
+    sys.exit(main(log_file, command))
