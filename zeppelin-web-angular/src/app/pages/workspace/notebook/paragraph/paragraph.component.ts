@@ -89,6 +89,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   private destroy$ = new Subject();
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+  // Added a variable to prevent the automatically triggered blur action after executing focusEditor when receiving PARAGRAPH_REMOVED
+  ignoreBlur = false;
 
   switchMode(mode: Mode): void {
     if (mode === this.mode) {
@@ -139,6 +141,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   blurEditor() {
+    if (this.ignoreBlur) {
+      this.ignoreBlur = false;
+      return;
+    }
     this.paragraph.focus = false;
     (this.host.nativeElement as HTMLElement).focus();
     this.saveParagraph();
@@ -150,6 +156,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   onEditorBlur() {
+    if (this.ignoreBlur) {
+      this.notebookParagraphCodeEditorComponent?.setRestorePosition();
+      return;
+    }
     // Ignore events triggered by open the confirm box in edit mode
     if (!this.waitConfirmFromEdit) {
       this.switchMode('command');
