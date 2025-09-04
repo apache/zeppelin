@@ -55,7 +55,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   // Initialized by `ViewChildren` in the class which extends ParagraphBase
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
-  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
 
   constructor(
     public messageService: MessageService,
@@ -144,8 +144,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
         }
         this.cdr.markForCheck();
       });
-      this.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
-      this.notebookParagraphCodeEditorComponent.getEditorSetting();
+      if (this.notebookParagraphCodeEditorComponent) {
+        this.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
+        this.notebookParagraphCodeEditorComponent.getEditorSetting();
+      }
       this.cdr.markForCheck();
     }
   }

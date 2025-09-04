@@ -111,9 +111,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.INTERPRETER_BINDINGS)
   loadInterpreterBindings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS]) {
-    this.listOfNotebookParagraphComponent.forEach(item => {
-      item.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
-      item.notebookParagraphCodeEditorComponent.getEditorSetting();
+    this.listOfNotebookParagraphComponent.forEach(p => {
+      if (p.notebookParagraphCodeEditorComponent) {
+        p.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
+        p.notebookParagraphCodeEditorComponent.getEditorSetting();
+      }
     });
     this.interpreterBindings = data.interpreterBindings;
     if (!this.interpreterBindings.some(item => item.selected)) {
