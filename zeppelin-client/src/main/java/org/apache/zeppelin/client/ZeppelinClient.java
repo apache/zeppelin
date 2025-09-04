@@ -303,7 +303,7 @@ public class ZeppelinClient {
    */
   public String createNote(String notePath, String defaultInterpreterGroup) throws Exception {
     JSONObject bodyObject = new JSONObject();
-    bodyObject.put("name", notePath);
+    bodyObject.put("notePath", notePath);
     bodyObject.put("defaultInterpreterGroup", defaultInterpreterGroup);
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook")
