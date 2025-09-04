@@ -129,14 +129,15 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     }
     const definedNote = this.note;
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.id);
-    definedNote.paragraphs.splice(paragraphIndex, 1);
-
-    setTimeout(() => {
-      const adjustedCursorIndex =
-        paragraphIndex === definedNote.paragraphs.length ? paragraphIndex - 1 : paragraphIndex + 1;
-      this.listOfNotebookParagraphComponent.find((_, index) => index === adjustedCursorIndex)?.focusEditor();
-      this.cdr.markForCheck();
-    }, 250);
+    definedNote.paragraphs = definedNote.paragraphs.filter((p, index) => index !== paragraphIndex);
+    const adjustedCursorIndex =
+      paragraphIndex === definedNote.paragraphs.length ? paragraphIndex - 1 : paragraphIndex + 1;
+    const targetParagraph = this.listOfNotebookParagraphComponent.find((_, index) => index === adjustedCursorIndex);
+    if (targetParagraph) {
+      targetParagraph.ignoreBlur = true;
+      targetParagraph.focusEditor();
+    }
+    this.cdr.markForCheck();
   }
 
   @MessageListener(OP.PARAGRAPH_ADDED)
