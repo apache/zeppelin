@@ -85,6 +85,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Output() readonly selected = new EventEmitter<string>();
   @Output() readonly selectAtIndex = new EventEmitter<number>();
   @Output() readonly searchCode = new EventEmitter();
+  @Output() readonly enableTriggeredByInsertParagraph = new EventEmitter<number>();
 
   private destroy$ = new Subject();
   private mode: Mode = 'command';
@@ -356,6 +357,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       return;
     }
     this.messageService.insertParagraph(newIndex);
+    this.enableTriggeredByInsertParagraph.emit();
     this.cdr.markForCheck();
   }
 
