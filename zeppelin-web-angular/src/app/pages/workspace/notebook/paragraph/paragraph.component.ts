@@ -64,7 +64,7 @@ type Mode = 'edit' | 'command';
 })
 export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
