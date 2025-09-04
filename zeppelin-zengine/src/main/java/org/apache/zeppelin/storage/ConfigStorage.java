@@ -70,7 +70,6 @@ public abstract class ConfigStorage {
   public abstract void saveCredentials(String credentials) throws IOException;
 
   protected InterpreterInfoSaving buildInterpreterInfoSaving(String json) {
-    //TODO(zjffdu) This kind of post processing is ugly.
     JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
     InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
     for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
@@ -81,7 +80,7 @@ public abstract class ConfigStorage {
       interpreterSetting.getOption();
       JsonObject interpreterSettingJson = jsonObject.getAsJsonObject("interpreterSettings")
           .getAsJsonObject(interpreterSetting.getId());
-      List<String> users = InterpreterSetting.extractUsersFromJsonObject(interpreterSettingJson);
+      List<String> users = InterpreterSetting.extractUsersFromJsonString(interpreterSettingJson.toString());
       interpreterSetting.convertPermissionsFromUsersToOwners(users);
     }
     return infoSaving;

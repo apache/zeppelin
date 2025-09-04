@@ -1025,20 +1025,27 @@ public class InterpreterSetting {
     }
   }
 
-  public static List<String> extractUsersFromJsonObject(JsonObject jsonObject) {
-    List<String> users = new LinkedList<>();
-    if (jsonObject != null) {
-      JsonObject option = jsonObject.getAsJsonObject("option");
-      if (option != null) {
-        JsonArray usersArray = option.getAsJsonArray("users");
-        if (usersArray != null) {
-          for (JsonElement userElement : usersArray) {
-            users.add(userElement.getAsString());
-          }
-        }
-      }
+  private static class InterpreterSettingData {
+    private OptionData option;
+    
+    private static class OptionData {
+      private List<String> users;
     }
-    return users;
+  }
+
+  public static List<String> extractUsersFromJsonString(String jsonString) {
+    if (jsonString == null || jsonString.trim().isEmpty()) {
+      return new LinkedList<>();
+    }
+    
+    Gson gson = new Gson();
+    InterpreterSettingData data = gson.fromJson(jsonString, InterpreterSettingData.class);
+    
+    if (data != null && data.option != null && data.option.users != null) {
+      return new LinkedList<>(data.option.users);
+    }
+    
+    return new LinkedList<>();
   }
 
   // For backward compatibility of interpreter.json format after ZEPPELIN-2403
