@@ -389,13 +389,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   moveParagraphUp() {
-    let newIndex = -1;
-    for (let i = 0; i < this.note.paragraphs.length; i++) {
-      if (this.note.paragraphs[i].id === this.paragraph.id) {
-        newIndex = i - 1;
-        break;
-      }
-    }
+    const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) - 1;
     if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
       return;
     }
@@ -403,14 +397,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   moveParagraphDown() {
-    let newIndex = -1;
-    for (let i = 0; i < this.note.paragraphs.length; i++) {
-      if (this.note.paragraphs[i].id === this.paragraph.id) {
-        newIndex = i + 1;
-        break;
-      }
-    }
-
+    const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) + 1;
     if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
       return;
     }
