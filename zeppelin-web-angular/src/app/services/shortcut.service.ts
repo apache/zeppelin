@@ -39,6 +39,8 @@ export enum ParagraphActions {
   FindInCode = 'Paragraph:FindInCode'
 }
 
+// On macOS, pressing Option(Alt) + a letter produces a non-ASCII character
+// Shortcuts must use this resulting character instead of the plain letter for macOS
 export const ShortcutsMap = {
   [ParagraphActions.Run]: 'shift.enter', // Run paragraph
   [ParagraphActions.RunAbove]: 'control.shift.arrowup', // Run all above paragraphs (exclusive)
