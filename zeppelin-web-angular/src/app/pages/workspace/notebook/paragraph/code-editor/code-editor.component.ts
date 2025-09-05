@@ -170,19 +170,12 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
     this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyS, async () => {
       if (this.editor) {
-        const controller = this.editor.getContribution(
-          'editor.contrib.findController'
-        ) as MonacoEditor.IEditorContribution & {
-          start(options: { forceRevealReplace: boolean; seedSearchStringFromSelection: boolean }): void;
-          getFindInputFocusElement(): HTMLElement | null;
-        };
-        if (controller) {
-          controller.start({
-            forceRevealReplace: false,
-            seedSearchStringFromSelection: true
-          });
-          controller.getFindInputFocusElement()?.focus();
-        }
+        this.editor.getAction('actions.find').run();
+
+        // Focus on the find widget input field
+        const findInput = document.querySelector('.find-widget .input') as HTMLInputElement;
+        findInput.focus();
+        findInput.select();
       }
     });
 
