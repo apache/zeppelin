@@ -31,6 +31,7 @@ import { MessageService, NoteStatusService, SaveAsService, TicketService } from 
 
 import { NotebookService } from '@zeppelin/services/notebook.service';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
+import { ShortcutComponent } from '@zeppelin/share/shortcut/shortcut.component';
 
 @Component({
   selector: 'zeppelin-notebook-action-bar',
@@ -246,7 +247,11 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   showShortCut() {
-    // TODO(hsuanxyz)
+    this.nzModalService.info({
+      nzTitle: `Shortcut Info`,
+      nzWidth: '600px',
+      nzContent: ShortcutComponent
+    });
   }
 
   togglePermissions() {
