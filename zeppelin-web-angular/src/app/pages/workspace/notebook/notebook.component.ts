@@ -134,7 +134,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       paragraphIndex === definedNote.paragraphs.length ? paragraphIndex - 1 : paragraphIndex + 1;
     const targetParagraph = this.listOfNotebookParagraphComponent.find((_, index) => index === adjustedCursorIndex);
     if (targetParagraph) {
-      targetParagraph.ignoreBlur = true;
       targetParagraph.focusEditor();
     }
     this.cdr.markForCheck();
