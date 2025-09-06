@@ -128,7 +128,14 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       return;
     }
     const definedNote = this.note;
-    definedNote.paragraphs = definedNote.paragraphs.filter(p => p.id !== data.id);
+    const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.id);
+    definedNote.paragraphs = definedNote.paragraphs.filter((p, index) => index !== paragraphIndex);
+    const adjustedCursorIndex =
+      paragraphIndex === definedNote.paragraphs.length ? paragraphIndex - 1 : paragraphIndex + 1;
+    const targetParagraph = this.listOfNotebookParagraphComponent.find((_, index) => index === adjustedCursorIndex);
+    if (targetParagraph) {
+      targetParagraph.focusEditor();
+    }
     this.cdr.markForCheck();
   }
 
@@ -142,15 +149,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       return;
     }
     const definedNote = this.note;
-    definedNote.paragraphs.splice(data.index, 0, data.paragraph).map(p => {
-      return {
-        ...p,
-        focus: p.id === data.paragraph.id
-      };
-    });
-    definedNote.paragraphs = [...definedNote.paragraphs];
+    definedNote.paragraphs.splice(data.index, 0, data.paragraph);
+    const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
+
+    definedNote.paragraphs[paragraphIndex].focus = true;
     this.cdr.markForCheck();
-    // TODO(hsuanxyz) focus on paragraph
   }
 
   @MessageListener(OP.SAVE_NOTE_FORMS)

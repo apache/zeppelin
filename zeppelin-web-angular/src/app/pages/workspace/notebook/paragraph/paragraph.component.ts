@@ -64,7 +64,7 @@ type Mode = 'edit' | 'command';
 })
 export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -138,6 +138,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   blurEditor() {
+    if (this.nzModalService.openModals.length > 0) {
+      return;
+    }
     this.paragraph.focus = false;
     (this.host.nativeElement as HTMLElement).focus();
     this.saveParagraph();
@@ -149,6 +152,11 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   onEditorBlur() {
+    if (this.nzModalService.openModals.length > 0) {
+      // When removing a paragraph, detect when the modal is closed and restore focus
+      this.notebookParagraphCodeEditorComponent?.setRestorePosition();
+      return;
+    }
     // Ignore events triggered by open the confirm box in edit mode
     if (!this.waitConfirmFromEdit) {
       this.switchMode('command');
@@ -177,10 +185,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         this.nzModalService.confirm({
           nzTitle: 'Delete Paragraph',
           nzContent: 'Do you want to delete this paragraph?',
+          nzAutofocus: null,
           nzOnOk: () => {
             this.messageService.paragraphRemove(this.paragraph.id);
             this.cdr.markForCheck();
-            // TODO(hsuanxyz) moveFocusToNextParagraph
           }
         });
       }
@@ -200,14 +208,19 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         params: p.settings.params
       };
     });
-    this.nzModalService.confirm({
-      nzTitle: 'Run all above?',
-      nzContent: 'Are you sure to run all above paragraphs?',
-      nzOnOk: () => {
-        this.messageService.runAllParagraphs(this.note.id, paragraphs);
-      }
-    });
-    // TODO(hsuanxyz): save cursor
+    this.nzModalService
+      .confirm({
+        nzTitle: 'Run all above?',
+        nzContent: 'Are you sure to run all above paragraphs?',
+        nzOnOk: () => {
+          this.messageService.runAllParagraphs(this.note.id, paragraphs);
+        }
+      })
+      .afterClose.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.waitConfirmFromEdit = false;
+        this.notebookParagraphCodeEditorComponent?.setRestorePosition();
+      });
   }
 
   doubleClickParagraph() {
@@ -217,7 +230,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     if (this.paragraph.config.editorSetting.editOnDblClick && this.revisionView !== true) {
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
-      // TODO(hsuanxyz): focus editor
+      this.focusEditor();
+      this.cdr.detectChanges();
+      this.notebookParagraphCodeEditorComponent?.setCursorPositionToEnd();
     }
   }
 
@@ -245,8 +260,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       .afterClose.pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.waitConfirmFromEdit = false;
+        this.notebookParagraphCodeEditorComponent?.setRestorePosition();
       });
-    // TODO(hsuanxyz): save cursor
   }
 
   cloneParagraph(position: string = 'below', newText?: string) {
