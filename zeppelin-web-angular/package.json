@@ -89,12 +89,13 @@
     "typescript": "3.8.3"
   },
   "lint-staged": {
-    "**/*.{ts,js,json,css,html}": [
+    "**/*.ts": [
+      "tslint --fix",
       "./node_modules/.bin/prettier --write",
       "git add"
     ],
-    "**/*.ts": [
-      "tslint --fix",
+    "**/*.{js,json,css,html}": [
+      "./node_modules/.bin/prettier --write",
       "git add"
     ]
   },
