@@ -44,11 +44,14 @@
     margin-left: -1px;
   }
   .bar {
-    height: 60px;
+    min-height: 60px;
+    height: auto;
     background: @component-background;
     box-shadow: -2px 4px 2px 0 rgba(0, 0, 0, 0.06);
     padding: 5px 15px 5px 40px;
-    position: absolute;
+    position: sticky;
+    display: flex;
+    flex-wrap: wrap;
     width: 100%;
     top: 0;
     line-height: 50px;
@@ -80,6 +83,10 @@
       float: left;
       width: auto;
       max-width: 40%;
+
+      @media (max-width: 767px) {
+        max-width: 100%;
+      }
     }
 
     .control {
@@ -95,7 +102,9 @@
     }
 
     .setting {
-      float: right;
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
 
       button {
         box-shadow: none;
