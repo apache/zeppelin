@@ -49,8 +49,14 @@ public class SessionConfInterpreter extends ConfInterpreter {
       finalProperties.putAll(updatedProperties);
       LOGGER.debug("Properties for Session: {}:{}", sessionId, finalProperties);
 
-      List<Interpreter> interpreters =
-          interpreterSetting.getInterpreterGroup(interpreterGroupId).get(sessionId);
+      InterpreterGroup interpreterGroup =
+            interpreterSetting.getInterpreterGroup(interpreterGroupId);
+      if (interpreterGroup == null) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR,
+            "Can not find interpreter group " + interpreterGroupId);
+      }
+
+      List<Interpreter> interpreters = interpreterGroup.get(sessionId);
       for (Interpreter intp : interpreters) {
         // only check the RemoteInterpreter, ConfInterpreter itself will be ignored here.
         if (intp instanceof RemoteInterpreter) {
