@@ -198,6 +198,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
           // Call when next tick
           setTimeout(() => {
             scrollIntoViewIfNeeded(paragraphComponent.getElement());
+            paragraphComponent.focusEditor();
           });
         }
       }

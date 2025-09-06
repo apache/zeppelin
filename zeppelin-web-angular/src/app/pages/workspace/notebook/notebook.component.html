@@ -23,6 +23,7 @@
     [currentRevision]="currentRevision"
     (tableHideChange)="setAllParagraphTableHide($event)"
     (editorHideChange)="setAllParagraphEditorHide($event)"
+    #actionBar
   ></zeppelin-notebook-action-bar>
   <div class="flex-container">
     <div
@@ -87,6 +88,7 @@
             (selected)="onParagraphSelect($event)"
             (triggerSaveParagraph)="saveParagraph($event)"
             (saveNoteTimer)="startSaveTimer()"
+            (searchCode)="actionBar.searchCode()"
           ></zeppelin-notebook-paragraph>
         </div>
       </div>

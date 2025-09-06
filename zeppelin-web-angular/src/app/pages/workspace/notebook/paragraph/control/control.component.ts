@@ -85,6 +85,14 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     trigger(): void;
   }> = [];
 
+  formatShortcut(shortcut: string, isMac: boolean) {
+    if (isMac) {
+      return shortcut.replace('Alt', 'Option');
+    }
+
+    return shortcut;
+  }
+
   updateListOfMenu() {
     this.listOfMenu = [
       {
@@ -93,7 +101,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'play-circle',
         trigger: () => this.trigger(this.runParagraph),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Enter', this.isMac)
       },
       {
         label: 'Run all above',
@@ -101,7 +109,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'up-square',
         trigger: () => this.trigger(this.runAllAbove),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Ctrl+Up', this.isMac)
       },
       {
         label: 'Run all below',
@@ -109,7 +117,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'down-square',
         trigger: () => this.trigger(this.runAllBelowAndCurrent),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Ctrl+Down', this.isMac)
       },
       {
         label: 'Link this paragraph',
@@ -119,7 +127,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         trigger: () => {
           this.openSingleParagraph.emit(this.pid);
         },
-        shortCut: this.isMac ? '⌥+⌘+T' : 'Alt+Ctrl+T'
+        shortCut: this.formatShortcut('Ctrl+Alt+W', this.isMac)
       },
       {
         label: 'Clear output',
@@ -127,7 +135,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'fire',
         trigger: () => this.clearParagraphOutput(),
-        shortCut: this.isMac ? '⌥+⌘+L' : 'Alt+Ctrl+L'
+        shortCut: this.formatShortcut('Ctrl+Alt+L', this.isMac)
       },
       {
         label: 'Remove',
@@ -135,23 +143,23 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'delete',
         trigger: () => this.onRemoveParagraph(),
-        shortCut: this.isMac ? '⇧+Del (Command)' : 'Shift+Del (Command)'
+        shortCut: this.formatShortcut('Ctrl+Alt+D', this.isMac)
       },
       {
-        label: 'Move up',
+        label: 'Move paragraph up',
         show: !this.first,
         disabled: this.isEntireNoteRunning,
         icon: 'up',
         trigger: () => this.trigger(this.moveUp),
-        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+K (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+K', this.isMac)
       },
       {
-        label: 'Move down',
+        label: 'Move paragraph down',
         show: !this.last,
         disabled: this.isEntireNoteRunning,
         icon: 'down',
         trigger: () => this.trigger(this.moveDown),
-        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+J (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+J', this.isMac)
       },
       {
         label: 'Insert new',
@@ -159,7 +167,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'plus',
         trigger: () => this.trigger(this.insertNew),
-        shortCut: `B (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+B', this.isMac)
       },
       {
         label: 'Clone paragraph',
@@ -167,7 +175,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'copy',
         trigger: () => this.trigger(this.cloneParagraph),
-        shortCut: `C (Command)`
+        shortCut: this.formatShortcut('Shift+Ctrl+C', this.isMac)
       },
       {
         label: this.title ? 'Hide Title' : 'Show Title',
@@ -175,7 +183,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: false,
         icon: 'font-colors',
         trigger: () => this.toggleTitle(),
-        shortCut: `T (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+T', this.isMac)
       },
       {
         label: this.lineNumbers ? 'Hide line numbers' : 'Show line numbers',
@@ -183,7 +191,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: false,
         icon: 'ordered-list',
         trigger: () => this.toggleLineNumbers(),
-        shortCut: `L (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+M', this.isMac)
       },
       {
         label: this.enabled ? 'Disable run' : 'Enable run',
@@ -191,7 +199,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'api',
         trigger: () => this.toggleEnabled(),
-        shortCut: `R (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+R', this.isMac)
       }
     ];
   }
