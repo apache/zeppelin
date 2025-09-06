@@ -62,9 +62,10 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
-          interpreterSetting.convertPermissionsFromUsersToOwners(
-                  jsonObject.getAsJsonObject("interpreterSettings")
-                          .getAsJsonObject(interpreterSetting.getId()));
+          JsonObject interpreterSettingJson = jsonObject.getAsJsonObject("interpreterSettings")
+              .getAsJsonObject(interpreterSetting.getId());
+          List<String> users = InterpreterSetting.extractUsersFromJsonString(interpreterSettingJson.toString());
+          interpreterSetting.convertPermissionsFromUsersToOwners(users);
         }
       }
     }
