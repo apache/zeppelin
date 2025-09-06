@@ -9,7 +9,6 @@ describe('Controller: NotebookCtrl', function() {
     getInterpreterBindings: function() {},
     updateNote: function() {},
     renameNote: function() {},
-    listConfigurations: function() {},
   };
 
   let baseUrlSrvMock = {

@@ -17,7 +17,7 @@
   Note: For security reasons, some key/value pairs including passwords would not be shown.
 </ng-template>
 <div class="content">
-  <nz-table nzSize="small" [nzData]="configEntries" [nzFrontPagination]="false" [nzShowPagination]="false">
+  <nz-table nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
     <thead>
       <tr>
         <th>Name</th>
@@ -25,9 +25,9 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let data of configEntries">
-        <td>{{ data[0] }}</td>
-        <td>{{ data[1] }}</td>
+      <tr *ngFor="let entry of configuration | keyvalue">
+        <td>{{ entry.key }}</td>
+        <td>{{ entry.value }}</td>
       </tr>
     </tbody>
   </nz-table>
