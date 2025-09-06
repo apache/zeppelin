@@ -89,8 +89,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   private destroy$ = new Subject();
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
-  // Added a variable to prevent the automatically triggered blur action after executing focusEditor when receiving PARAGRAPH_REMOVED
-  ignoreBlur = false;
 
   switchMode(mode: Mode): void {
     if (mode === this.mode) {
@@ -141,8 +139,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   blurEditor() {
-    if (this.ignoreBlur) {
-      this.ignoreBlur = false;
+    if (this.nzModalService.openModals.length > 0) {
       return;
     }
     this.paragraph.focus = false;
@@ -156,7 +153,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   onEditorBlur() {
-    if (this.ignoreBlur) {
+    if (this.nzModalService.openModals.length > 0) {
+      // When removing a paragraph, detect when the modal is closed and restore focus
       this.notebookParagraphCodeEditorComponent?.setRestorePosition();
       return;
     }
@@ -193,6 +191,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         this.nzModalService.confirm({
           nzTitle: 'Delete Paragraph',
           nzContent: 'Do you want to delete this paragraph?',
+          nzAutofocus: null,
           nzOnOk: () => {
             this.messageService.paragraphRemove(this.paragraph.id);
             this.cdr.markForCheck();
