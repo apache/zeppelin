@@ -37,22 +37,22 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzTreeModule } from 'ng-zorro-antd/tree';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
 
-import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
-import { CodeEditorModule } from '@zeppelin/share/code-editor';
-import { ExternalLinkDirective } from '@zeppelin/share/external-links/external-link.directive';
-import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
-import { HeaderComponent } from '@zeppelin/share/header/header.component';
-import { MathJaxDirective } from '@zeppelin/share/math-jax/math-jax.directive';
-import { NodeListComponent } from '@zeppelin/share/node-list/node-list.component';
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
-import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
-import { NoteRenameComponent } from '@zeppelin/share/note-rename/note-rename.component';
-import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
-import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
-import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
-import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
-import { SpinComponent } from '@zeppelin/share/spin/spin.component';
+import { AboutZeppelinComponent } from './about-zeppelin/about-zeppelin.component';
+import { CodeEditorModule } from './code-editor/code-editor.module';
+import { ExternalLinkDirective } from './external-links/external-link.directive';
+import { FolderRenameComponent } from './folder-rename/folder-rename.component';
+import { HeaderComponent } from './header/header.component';
+import { MathJaxDirective } from './math-jax/math-jax.directive';
+import { NodeListComponent } from './node-list/node-list.component';
+import { NoteCreateComponent } from './note-create/note-create.component';
+import { NoteImportComponent } from './note-import/note-import.component';
+import { NoteRenameComponent } from './note-rename/note-rename.component';
+import { NoteTocComponent } from './note-toc/note-toc.component';
+import { PageHeaderComponent } from './page-header/page-header.component';
+import { HumanizeBytesPipe } from './pipes';
 import { ResizeHandleComponent } from './resize-handle';
+import { RunScriptsDirective } from './run-scripts/run-scripts.directive';
+import { SpinComponent } from './spin/spin.component';
 
 const MODAL_LIST = [
   AboutZeppelinComponent,

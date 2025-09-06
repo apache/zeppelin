@@ -33,7 +33,13 @@ import { map, takeUntil } from 'rxjs/operators';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { ParagraphBase } from '@zeppelin/core';
-import { InterpreterBindingItem, Note, ParagraphConfigResult, ParagraphItem } from '@zeppelin/sdk';
+import {
+  InterpreterBindingItem,
+  Note,
+  ParagraphConfigResult,
+  ParagraphItem,
+  ParagraphIResultsMsgItem
+} from '@zeppelin/sdk';
 import {
   HeliumService,
   MessageService,
@@ -44,7 +50,7 @@ import {
   ShortcutsMap,
   ShortcutService
 } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell/spell-result';
+import { SpellResult } from '@zeppelin/spell';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
@@ -84,10 +90,17 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
   @Output() readonly selected = new EventEmitter<string>();
   @Output() readonly selectAtIndex = new EventEmitter<number>();
-
   private destroy$ = new Subject();
+
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+
+  updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
+    const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
+    if (resultComponent) {
+      resultComponent.updateResult(config, result);
+    }
+  }
 
   switchMode(mode: Mode): void {
     if (mode === this.mode) {
@@ -586,7 +599,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
     this.noteVarShareService.set(this.paragraph.id + '_paragraphScope', this);
     this.initializeDefault(this.paragraph.config, this.paragraph.settings);
-    this.ngZService
+    this.angularContextManager
       .runParagraphAction()
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => {
@@ -594,7 +607,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           this.runParagraph();
         }
       });
-    this.ngZService
+    this.angularContextManager
       .contextChanged()
       .pipe(takeUntil(this.destroy$))
       .subscribe(change => {

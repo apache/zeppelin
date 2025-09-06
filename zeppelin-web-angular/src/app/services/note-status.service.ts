@@ -12,17 +12,9 @@
 
 import { Inject, Injectable } from '@angular/core';
 
+import { ParagraphStatus } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { Note, ParagraphItem } from '@zeppelin/sdk';
-
-export const ParagraphStatus = {
-  READY: 'READY',
-  PENDING: 'PENDING',
-  RUNNING: 'RUNNING',
-  FINISHED: 'FINISHED',
-  ABORT: 'ABORT',
-  ERROR: 'ERROR'
-};
 
 @Injectable({
   providedIn: 'root'

@@ -12,10 +12,9 @@
 
 import { Inject, Injectable } from '@angular/core';
 
-import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
+import { NodeItem, NodeList, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { NotesInfoItem } from '@zeppelin/sdk';
 
-import { NodeItem, NodeList } from '../interfaces/node-list';
 import { ArrayOrderingService } from './array-ordering.service';
 
 @Injectable({

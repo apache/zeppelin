@@ -13,13 +13,12 @@
 import { OnDestroy } from '@angular/core';
 import { Subscriber } from 'rxjs';
 
-import { MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
-import { MessageService } from '@zeppelin/services';
+import { Message, MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
 
 export class MessageListenersManager implements OnDestroy {
   __zeppelinMessageListeners__?: Array<() => void>;
   __zeppelinMessageListeners$__: Subscriber<unknown> | null = new Subscriber();
-  constructor(public messageService: MessageService) {
+  constructor(public messageService: Message) {
     if (this.__zeppelinMessageListeners__) {
       this.__zeppelinMessageListeners__.forEach(fn => fn.apply(this));
     }

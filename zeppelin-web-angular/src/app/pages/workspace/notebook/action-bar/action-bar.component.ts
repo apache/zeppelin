@@ -27,10 +27,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
-
-import { NotebookService } from '@zeppelin/services/notebook.service';
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
+import { MessageService, NotebookService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import { NoteCreateComponent } from '@zeppelin/share';
 
 @Component({
   selector: 'zeppelin-notebook-action-bar',

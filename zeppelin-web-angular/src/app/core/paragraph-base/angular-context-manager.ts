@@ -10,11 +10,20 @@
  * limitations under the License.
  */
 
-export * from './code-editor';
-export * from './folder-rename';
-export * from './note-create';
-export * from './note-import';
-export * from './note-rename';
-export * from './pipes';
-export * from './resize-handle';
-export * from './share.module';
+import { Observable } from 'rxjs';
+
+export interface AngularContext {
+  paragraphId: string;
+  key: string;
+  // tslint:disable-next-line:no-any
+  value: any;
+  emit: boolean;
+  set: boolean;
+}
+
+export interface AngularContextManager {
+  setContextValue(key: string, value: unknown, paragraphId: string, emit?: boolean): void;
+  unsetContextValue(key: string, paragraphId: string, emit?: boolean): unknown;
+  contextChanged(): Observable<AngularContext>;
+  runParagraphAction(): Observable<string>;
+}
