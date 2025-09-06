@@ -6,4 +6,4 @@ dist/*
 node/*
 node_modules/*
 target/*
-tslint-rules/*
+tslint-rules/**/*.js
