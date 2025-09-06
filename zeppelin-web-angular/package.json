@@ -93,12 +93,8 @@
       "./node_modules/.bin/prettier --write",
       "git add"
     ],
-    "tslint-rules/*.ts": [
-      "tslint --fix tslint-rules/*.ts",
-      "git add"
-    ],
-    "{e2e,projects,src}/**/*.ts": [
-      "ng lint --fix",
+    "**/*.ts": [
+      "tslint --fix",
       "git add"
     ]
   },
