@@ -36,7 +36,8 @@ export class JsonVisualization extends Visualization<JsonVisComponent> {
     private portalOutlet: CdkPortalOutlet,
     private viewContainerRef: ViewContainerRef,
     config: GraphConfig,
-    private componentFactoryResolver?: ComponentFactoryResolver) {
+    private componentFactoryResolver?: ComponentFactoryResolver
+  ) {
     super(config);
   }
 

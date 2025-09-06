@@ -10,30 +10,25 @@
  * limitations under the License.
  */
 
-import {interval, Observable, Subject, Subscription} from 'rxjs';
-import {delay, filter, map, mergeMap, retryWhen, take} from 'rxjs/operators';
-import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
+import { interval, Observable, Subject, Subscription } from 'rxjs';
+import { delay, filter, map, mergeMap, retryWhen, take } from 'rxjs/operators';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
-import {Ticket} from './interfaces/message-common.interface';
+import { Ticket } from './interfaces/message-common.interface';
 import {
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
   MixMessageDataTypeMap
 } from './interfaces/message-data-type-map.interface';
-import {
-  Note,
-  NoteConfig,
-  PersonalizedMode,
-  SendNote
-} from './interfaces/message-notebook.interface';
-import {OP} from './interfaces/message-operator.interface';
+import { Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
+import { OP } from './interfaces/message-operator.interface';
 import {
   DynamicFormParams,
   ParagraphConfig,
   ParagraphParams,
   SendParagraph
 } from './interfaces/message-paragraph.interface';
-import {WebSocketMessage} from './interfaces/websocket-message.interface';
+import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
@@ -56,7 +51,9 @@ export class Message {
   private pingIntervalSubscription = new Subscription();
   private wsUrl?: string;
   private ticket?: Ticket;
-  private uniqueClientId = Math.random().toString(36).substring(2, 7);
+  private uniqueClientId = Math.random()
+    .toString(36)
+    .substring(2, 7);
   private lastMsgIdSeqSent = 0;
 
   constructor() {
@@ -99,9 +96,7 @@ export class Message {
 
   connect() {
     if (!this.wsUrl) {
-      throw new Error(
-        'WebSocket URL is not set. Please call setWsUrl() before connect()'
-      )
+      throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
     }
     this.ws = webSocket<WebSocketMessage<keyof MixMessageDataTypeMap>>({
       url: this.wsUrl,
@@ -112,18 +107,9 @@ export class Message {
     this.ws
       .pipe(
         // reconnect
-        retryWhen(errors =>
-          errors.pipe(
-            mergeMap(() =>
-              this.close$.pipe(
-                take(1),
-                delay(4000)
-              )
-            )
-          )
-        )
+        retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
       )
-      .subscribe((e) => {
+      .subscribe(e => {
         console.log('Receive:', e);
         this.received$.next(this.interceptReceived(e as WebSocketMessage<keyof MessageReceiveDataTypeMap>));
       });
@@ -184,9 +170,7 @@ export class Message {
         const isResponseForRequestFromThisClient = uniqueClientId === this.uniqueClientId;
 
         if (message.op === OP.PARAGRAPH) {
-          if (isResponseForRequestFromThisClient &&
-               this.lastMsgIdSeqSent > msgIdSeqReceived
-          ) {
+          if (isResponseForRequestFromThisClient && this.lastMsgIdSeqSent > msgIdSeqReceived) {
             console.log('PARAPGRAPH is already updated by shortcircuit');
             return false;
           } else {
@@ -282,7 +266,7 @@ export class Message {
   }
 
   reloadNote(noteId: string): void {
-    this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId })
+    this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId });
   }
 
   getNote(noteId: string): void {
@@ -411,9 +395,9 @@ export class Message {
       op: OP.PARAGRAPH_STATUS,
       data: {
         id: paragraphId,
-        status: "PENDING"
+        status: 'PENDING'
       }
-    })
+    });
 
     // send message to server
     this.send<OP.RUN_PARAGRAPH>(OP.RUN_PARAGRAPH, {
@@ -542,8 +526,10 @@ export class Message {
   }
 
   saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
-    this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS,
-      {noteId: noteId, selectedSettingIds: selectedSettingIds});
+    this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS, {
+      noteId: noteId,
+      selectedSettingIds: selectedSettingIds
+    });
   }
 
   listConfigurations(): void {

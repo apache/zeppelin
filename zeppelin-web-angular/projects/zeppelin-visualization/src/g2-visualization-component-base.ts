@@ -60,7 +60,7 @@ export abstract class G2VisualizationComponentBase implements OnDestroy {
     this.chart.changeHeight(this.config.height || 400);
     setTimeout(() => {
       if (!this.chart) {
-        throw new Error('Can not refresh the chart, Please make sure on correct assignment.')
+        throw new Error('Can not refresh the chart, Please make sure on correct assignment.');
       }
       this.setScale(this.chart);
       this.chart.forceFit();
@@ -91,7 +91,7 @@ export abstract class G2VisualizationComponentBase implements OnDestroy {
         throw new Error(`Can't find the container, Please make sure on correct assignment.`);
       }
     }
-    return this.chart
+    return this.chart;
   }
 
   ngOnDestroy(): void {
