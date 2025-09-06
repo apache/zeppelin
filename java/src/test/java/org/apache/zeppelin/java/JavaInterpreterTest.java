@@ -51,6 +51,12 @@ class JavaInterpreterTest {
   }
 
   @Test
+  void testJDKCompilerAvailability() {
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    assertNotNull(compiler, "Compiler should not be null");
+  }
+
+  @Test
   void testStaticRepl() {
 
     StringWriter writer = new StringWriter();

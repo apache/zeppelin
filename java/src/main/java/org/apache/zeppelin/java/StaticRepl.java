@@ -49,6 +49,12 @@ public class StaticRepl {
 
   public static String execute(String generatedClassName, String code) throws Exception {
 
+    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    if (compiler == null) {
+      throw new Exception(
+          "Java compiler not available. Make sure Zeppelin is running on JDK (not JRE).");
+    }
+
     // Java parsing
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
@@ -100,7 +106,6 @@ public class StaticRepl {
     System.setOut(newOut);
     System.setErr(newErr);
 
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
@@ -144,7 +149,7 @@ public class StaticRepl {
         return baosOut.toString();
 
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-          | InvocationTargetException e) {
+               | InvocationTargetException e) {
         LOGGER.error("Exception in Interpreter while execution", e);
         System.err.println(e);
         e.printStackTrace(newErr);
@@ -165,6 +170,7 @@ public class StaticRepl {
 }
 
 class JavaSourceFromString extends SimpleJavaFileObject {
+
   final String code;
 
   JavaSourceFromString(String name, String code) {
