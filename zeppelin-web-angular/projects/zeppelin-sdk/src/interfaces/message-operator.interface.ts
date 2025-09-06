@@ -373,9 +373,9 @@ export enum OP {
   GET_INTERPRETER_BINDINGS = 'GET_INTERPRETER_BINDINGS',
 
   /**
-  * [c-s]
-  * @param selectedSettingIds
-  */
+   * [c-s]
+   * @param selectedSettingIds
+   */
   SAVE_INTERPRETER_BINDINGS = 'SAVE_INTERPRETER_BINDINGS',
 
   /**

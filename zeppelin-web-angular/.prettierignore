@@ -1,3 +1,9 @@
 **/*.md
 **/*.less
 **/*.svg
+
+dist/*
+node/*
+node_modules/*
+target/*
+tslint-rules/**/*.js
