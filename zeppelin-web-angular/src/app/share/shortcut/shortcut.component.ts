@@ -17,5 +17,6 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './shortcut.component.html'
 })
 export class ShortcutComponent implements OnInit {
+  isMac = navigator.appVersion.indexOf('Mac') !== -1;
   ngOnInit() {}
 }
