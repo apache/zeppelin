@@ -31,6 +31,7 @@ import { NoteStatusService, ParagraphStatus } from '@zeppelin/services/note-stat
 import * as DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
+import { NotebookParagraphCodeEditorComponent } from '@zeppelin/pages/workspace/notebook/paragraph/code-editor/code-editor.component';
 import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
 import { ParagraphConfigResults, ParagraphResults } from '../../../../projects/zeppelin-sdk/src';
 import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
@@ -54,6 +55,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   // Initialized by `ViewChildren` in the class which extends ParagraphBase
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
 
   constructor(
     public messageService: MessageService,
@@ -142,6 +144,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
         }
         this.cdr.markForCheck();
       });
+      if (this.notebookParagraphCodeEditorComponent) {
+        this.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
+        this.notebookParagraphCodeEditorComponent.getEditorSetting();
+      }
       this.cdr.markForCheck();
     }
   }

@@ -64,7 +64,7 @@ type Mode = 'edit' | 'command';
 })
 export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent!: NotebookParagraphCodeEditorComponent;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -84,6 +84,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
   @Output() readonly selected = new EventEmitter<string>();
   @Output() readonly selectAtIndex = new EventEmitter<number>();
+  @Output() readonly enableTriggeredByInsertParagraph = new EventEmitter<number>();
 
   private destroy$ = new Subject();
   private mode: Mode = 'command';
@@ -336,6 +337,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       return;
     }
     this.messageService.insertParagraph(newIndex);
+    this.enableTriggeredByInsertParagraph.emit();
     this.cdr.markForCheck();
   }
 
