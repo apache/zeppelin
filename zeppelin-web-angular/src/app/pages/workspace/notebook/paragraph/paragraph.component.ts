@@ -290,7 +290,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
 
     const config = this.paragraph.config;
     config.editorHide = false;
-
+    this.blurEditor();
     this.messageService.copyParagraph(
       newIndex,
       this.paragraph.title,
@@ -356,6 +356,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     if (newIndex < 0 || newIndex > this.note.paragraphs.length) {
       return;
     }
+    this.blurEditor();
     this.messageService.insertParagraph(newIndex);
     this.enableTriggeredByInsertParagraph.emit();
     this.cdr.markForCheck();
