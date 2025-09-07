@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.java;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.jupiter.api.AfterAll;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
