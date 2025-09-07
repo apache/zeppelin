@@ -139,9 +139,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   blurEditor() {
-    if (this.nzModalService.openModals.length > 0) {
-      return;
-    }
     this.paragraph.focus = false;
     (this.host.nativeElement as HTMLElement).focus();
     this.saveParagraph();
@@ -153,11 +150,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   onEditorBlur() {
-    if (this.nzModalService.openModals.length > 0) {
-      // When removing a paragraph, detect when the modal is closed and restore focus
-      this.notebookParagraphCodeEditorComponent?.setRestorePosition();
-      return;
-    }
     // Ignore events triggered by open the confirm box in edit mode
     if (!this.waitConfirmFromEdit) {
       this.switchMode('command');
@@ -188,15 +180,22 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
           nzContent: `All the paragraphs can't be deleted`
         });
       } else {
-        this.nzModalService.confirm({
-          nzTitle: 'Delete Paragraph',
-          nzContent: 'Do you want to delete this paragraph?',
-          nzAutofocus: null,
-          nzOnOk: () => {
-            this.messageService.paragraphRemove(this.paragraph.id);
-            this.cdr.markForCheck();
-          }
-        });
+        this.nzModalService
+          .confirm({
+            nzTitle: 'Delete Paragraph',
+            nzContent: 'Do you want to delete this paragraph?',
+            nzAutofocus: null,
+            nzOnOk: () => true
+          })
+          .afterClose.pipe(takeUntil(this.destroy$))
+          .subscribe(result => {
+            // In the modal, clicking "Cancel" makes result undefined.
+            // Clicking "OK" makes result defined and passes the condition below.
+            if (result) {
+              this.messageService.paragraphRemove(this.paragraph.id);
+              this.cdr.markForCheck();
+            }
+          });
       }
     }
   }
