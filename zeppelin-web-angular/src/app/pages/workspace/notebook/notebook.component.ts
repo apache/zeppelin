@@ -163,10 +163,10 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     }
     const definedNote = this.note;
     definedNote.paragraphs.splice(data.index, 0, data.paragraph);
-    this.cdr.detectChanges();
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
 
     definedNote.paragraphs[paragraphIndex].focus = true;
+    this.cdr.detectChanges();
     const addedParagraph = this.listOfNotebookParagraphComponent.find((_, index) => index === paragraphIndex)
       ?.notebookParagraphCodeEditorComponent;
 
