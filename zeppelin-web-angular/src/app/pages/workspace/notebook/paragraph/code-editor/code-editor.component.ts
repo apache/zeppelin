@@ -177,7 +177,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       findInput.select();
     }
   }
-  
+
   setCursorPosition({ lineNumber, column }: IPosition) {
     if (this.editor) {
       this.editor.setPosition({ lineNumber, column });
