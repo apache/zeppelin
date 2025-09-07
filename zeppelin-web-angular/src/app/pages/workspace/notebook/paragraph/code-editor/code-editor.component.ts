@@ -57,6 +57,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Output() readonly textChanged = new EventEmitter<string>();
   @Output() readonly editorBlur = new EventEmitter<void>();
   @Output() readonly editorFocus = new EventEmitter<void>();
+  @Output() readonly toggleEditorShow = new EventEmitter<void>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   height = 18;
@@ -108,6 +109,72 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     }
   }
 
+  // Handle Ctrl+Alt+E: Toggle editor show/hide
+  handleToggleEditorShow() {
+    this.toggleEditorShow.emit();
+  }
+
+  // Handle Ctrl+K: Cut current line to clipboard
+  async handleCutLine() {
+    if (!this.editor) {
+      return;
+    }
+
+    const position = this.editor.getPosition();
+    const model = this.editor.getModel();
+    if (!position || !model) {
+      return;
+    }
+
+    const lineNumber = position.lineNumber;
+    const lineContent = model.getLineContent(lineNumber);
+
+    if (!lineContent) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(lineContent);
+
+    this.editor.executeEdits('cut-line', [
+      {
+        range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1),
+        text: '',
+        forceMoveMarkers: true
+      }
+    ]);
+  }
+
+  // Handle Ctrl+Y: Paste from clipboard at current position
+  async handlePasteFromClipboard() {
+    if (!this.editor) {
+      return;
+    }
+
+    const text = await navigator.clipboard.readText();
+    const position = this.editor.getPosition();
+    if (position) {
+      this.editor.executeEdits('my-source', [
+        {
+          range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+          text: text,
+          forceMoveMarkers: true
+        }
+      ]);
+    }
+  }
+
+  // Handle Ctrl+S: Show find widget
+  handleShowFind() {
+    if (this.editor) {
+      this.editor.getAction('actions.find').run();
+
+      // Focus on the find widget input field
+      const findInput = document.querySelector('.find-widget .input') as HTMLInputElement;
+      findInput.focus();
+      findInput.select();
+    }
+  }
+
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
     this.editor.addCommand(
@@ -119,6 +186,18 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       },
       '!suggestWidgetVisible'
     );
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KeyE, () => {
+      this.handleToggleEditorShow();
+    });
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyK, () => {
+      this.handleCutLine();
+    });
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyY, () => {
+      this.handlePasteFromClipboard();
+    });
+    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyS, () => {
+      this.handleShowFind();
+    });
 
     this.updateEditorOptions(this.editor);
     this.setParagraphMode();
@@ -161,6 +240,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       scrollbar: {
         handleMouseWheel: false,
         alwaysConsumeMouseWheel: false
+      },
+      find: {
+        addExtraSpaceOnTop: false
       }
     });
   }
