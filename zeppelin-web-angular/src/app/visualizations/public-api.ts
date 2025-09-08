@@ -10,11 +10,11 @@
  * limitations under the License.
  */
 
-export * from './g2.config';
-export * from './visualization.module';
-export * from './table/table-visualization';
 export * from './area-chart/area-chart-visualization';
 export * from './bar-chart/bar-chart-visualization';
+export * from './g2.config';
 export * from './line-chart/line-chart-visualization';
 export * from './pie-chart/pie-chart-visualization';
 export * from './scatter-chart/scatter-chart-visualization';
+export * from './table/table-visualization';
+export * from './visualization.module';
