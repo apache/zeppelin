@@ -18,7 +18,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
-import { setTheme } from '@zeppelin/visualizations/g2.config';
+import { setTheme } from '@zeppelin/visualizations';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({

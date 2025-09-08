@@ -28,14 +28,20 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 
+import { AreaChartVisualization } from './area-chart/area-chart-visualization';
 import { AreaChartVisualizationComponent } from './area-chart/area-chart-visualization.component';
+import { BarChartVisualization } from './bar-chart/bar-chart-visualization';
 import { BarChartVisualizationComponent } from './bar-chart/bar-chart-visualization.component';
 import { VisualizationPivotSettingComponent } from './common/pivot-setting/pivot-setting.component';
 import { VisualizationScatterSettingComponent } from './common/scatter-setting/scatter-setting.component';
 import { VisualizationXAxisSettingComponent } from './common/x-axis-setting/x-axis-setting.component';
+import { LineChartVisualization } from './line-chart/line-chart-visualization';
 import { LineChartVisualizationComponent } from './line-chart/line-chart-visualization.component';
+import { PieChartVisualization } from './pie-chart/pie-chart-visualization';
 import { PieChartVisualizationComponent } from './pie-chart/pie-chart-visualization.component';
+import { ScatterChartVisualization } from './scatter-chart/scatter-chart-visualization';
 import { ScatterChartVisualizationComponent } from './scatter-chart/scatter-chart-visualization.component';
+import { TableVisualization } from './table/table-visualization';
 import { TableVisualizationComponent } from './table/table-visualization.component';
 
 const VisualizationComponents = [
@@ -47,9 +53,18 @@ const VisualizationComponents = [
   ScatterChartVisualizationComponent
 ];
 
+const Visualizations = [
+  TableVisualization,
+  AreaChartVisualization,
+  BarChartVisualization,
+  LineChartVisualization,
+  PieChartVisualization,
+  ScatterChartVisualization
+];
 @NgModule({
   declarations: [
     ...VisualizationComponents,
+    ...Visualizations,
     VisualizationPivotSettingComponent,
     VisualizationScatterSettingComponent,
     VisualizationXAxisSettingComponent

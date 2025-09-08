@@ -28,7 +28,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
-import { VisualizationModule } from '@zeppelin/visualizations/visualization.module';
+import { VisualizationModule } from '@zeppelin/visualizations';
 
 import { NotebookParagraphDynamicFormsComponent } from './dynamic-forms/dynamic-forms.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
