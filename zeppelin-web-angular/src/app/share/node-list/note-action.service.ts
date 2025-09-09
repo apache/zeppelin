@@ -14,10 +14,10 @@ import { Injectable } from '@angular/core';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
 
-import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
-import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
-import { NoteRenameComponent } from '@zeppelin/share/note-rename/note-rename.component';
+import { FolderRenameComponent } from '../folder-rename/folder-rename.component';
+import { NoteCreateComponent } from '../note-create/note-create.component';
+import { NoteImportComponent } from '../note-import/note-import.component';
+import { NoteRenameComponent } from '../note-rename/note-rename.component';
 
 @Injectable({
   providedIn: 'root'

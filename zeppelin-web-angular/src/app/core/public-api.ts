@@ -10,8 +10,8 @@
  * limitations under the License.
  */
 
-export * from './message-listener';
-export * from './destroy-hook';
 export * from './copy-text';
+export * from './destroy-hook';
+export * from './message-listener';
 export * from './paragraph-base';
 export * from './runtime-dynamic-module';

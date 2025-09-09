@@ -46,7 +46,7 @@ import {
   TicketService
 } from '@zeppelin/services';
 
-import { scrollIntoViewIfNeeded } from '@zeppelin/utility/element';
+import { scrollIntoViewIfNeeded } from '@zeppelin/utility';
 import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 
 @Component({

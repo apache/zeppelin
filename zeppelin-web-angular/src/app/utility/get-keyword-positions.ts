@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { computeLineStartsMap, getLineAndCharacterFromPosition } from '@zeppelin/utility/line-map';
+import { computeLineStartsMap, getLineAndCharacterFromPosition } from './line-map';
 
 export interface KeywordPosition {
   line: number;

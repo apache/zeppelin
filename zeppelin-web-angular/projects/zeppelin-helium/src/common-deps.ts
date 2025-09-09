@@ -25,6 +25,7 @@ import * as lodash from 'lodash';
 
 import * as ngZorro from 'ng-zorro-antd';
 import * as tslib from 'tslib';
+// tslint:disable-next-line: no-circular-imports
 import * as zeppelinHelium from './public-api';
 
 export const COMMON_DEPS = {

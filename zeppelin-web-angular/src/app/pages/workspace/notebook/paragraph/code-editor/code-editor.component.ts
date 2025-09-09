@@ -28,7 +28,7 @@ import { editor as MonacoEditor, IDisposable, IPosition, KeyCode, Position } fro
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
 
-import { pt2px } from '@zeppelin/utility/css-unit-conversion';
+import { pt2px } from '@zeppelin/utility';
 import { NotebookParagraphControlComponent } from '../control/control.component';
 
 type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;

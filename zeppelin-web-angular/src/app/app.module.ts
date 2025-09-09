@@ -27,9 +27,8 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { loadMonacoBefore } from '@zeppelin/languages';
 import { TicketService } from '@zeppelin/services';
-import { ShareModule } from '@zeppelin/share';
+import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG, ShareModule } from '@zeppelin/share';
 
-import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG } from '@zeppelin/share/code-editor';
 import { AppHttpInterceptor } from './app-http.interceptor';
 import { AppMessageInterceptor } from './app-message.interceptor';
 import { AppRoutingModule } from './app-routing.module';
