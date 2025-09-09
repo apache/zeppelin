@@ -6,15 +6,15 @@
     "ng": "./node_modules/.bin/ng",
     "start": "ng serve --proxy-config proxy.conf.js --extra-webpack-config webpack.partial.js",
     "build": "ng build --prod --extra-webpack-config webpack.partial.js",
-    "build:tslint-rules": "tsc tslint-rules/*.ts --types node",
+    "build:tslint-rules": "tsc -p tslint-rules/tsconfig.json",
     "build:projects": "npm run build-project:sdk && npm run build-project:vis && npm run build-project:helium",
     "build-helium-vis-example": " ng build --project helium-vis-example",
     "build-project:sdk": " ng build --project zeppelin-sdk",
     "build-project:vis": " ng build --project zeppelin-visualization",
     "build-project:helium": "ng build --project zeppelin-helium",
     "test": "ng test",
-    "lint": "ng lint && tslint tslint-rules/*.ts && prettier --check \"**/*.{ts,js,json,css,html}\"",
-    "lint:fix": "ng lint --fix && tslint --fix tslint-rules/*.ts && prettier --write \"**/*.{ts,js,json,css,html}\"",
+    "lint": "ng lint && tslint -p tslint-rules/tsconfig.json && prettier --check \"**/*.{ts,js,json,css,html}\"",
+    "lint:fix": "ng lint --fix && tslint --fix -p tslint-rules/tsconfig.json && prettier --write \"**/*.{ts,js,json,css,html}\"",
     "e2e": "ng e2e"
   },
   "engines": {
