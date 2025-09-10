@@ -10,5 +10,5 @@
  * limitations under the License.
  */
 
-export * from './scala';
 export * from './load';
+export * from './scala';
