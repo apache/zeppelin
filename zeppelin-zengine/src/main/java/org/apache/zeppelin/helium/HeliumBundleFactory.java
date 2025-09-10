@@ -83,7 +83,7 @@ public class HeliumBundleFactory {
   private static final String PACKAGE_JSON = "package.json";
   private static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   private static final String HELIUM_BUNDLE = "helium.bundle.js";
-  private static final String HELIUM_BUNDLES_VAR = "heliumBundles";
+  private static final String HELIUM_BUNDLES_VAR = "window._heliumBundles";
   private static final int FETCH_RETRY_COUNT = 2;
   private static final int FETCH_RETRY_FACTOR_COUNT = 1;
   private static final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
@@ -358,12 +358,12 @@ public class HeliumBundleFactory {
         .append(className)
         .append(" from \"../" + mainFileName + "\"\n");
 
-    loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
-    loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
-    loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
-    loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
-    loadJsRegister.append("type: \"" + pkg.getType() + "\",\n");
-    loadJsRegister.append("class: " + className + "\n");
+    loadJsRegister.append(HELIUM_BUNDLES_VAR).append(".push({\n");
+    loadJsRegister.append("id: \"").append(moduleNameVersion[0]).append("\",\n");
+    loadJsRegister.append("name: \"").append(pkg.getName()).append("\",\n");
+    loadJsRegister.append("icon: ").append(gson.toJson(pkg.getIcon())).append(",\n");
+    loadJsRegister.append("type: \"").append(pkg.getType()).append("\",\n");
+    loadJsRegister.append("class: ").append(className).append("\n");
     loadJsRegister.append("})\n");
 
     File srcDir = getHeliumPackageSourceDirectory(pkg.getName());

@@ -1,6 +1,8 @@
 **/*.md
 **/*.less
 **/*.svg
+**/*.min.js
+**/*.min.css
 
 dist/*
 node/*
