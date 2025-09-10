@@ -17,7 +17,7 @@ source 'https://rubygems.org'
 gem 'github-pages'
 gem 'redcarpet'
 gem 'jekyll-twitter-plugin'
-gem 'nokogiri', '1.15.4'
+gem 'nokogiri', '1.18.9'
 gem 'mini_portile2', '2.8.4'
 
 gem "webrick", "~> 1.8" # By upgrading ruby to 3.x
