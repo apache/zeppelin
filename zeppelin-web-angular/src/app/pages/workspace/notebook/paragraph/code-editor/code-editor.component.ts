@@ -61,6 +61,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   private monacoDisposables: IDisposable[] = [];
   height = 18;
   interpreterName?: string;
+  // Prevents EDITOR_SETTING from triggering before the appropriate event:
+  // For CLONE_PARAGRAPH, waits for PARAGRAPH; for INSERT_PARAGRAPH, waits only for PARAGRAPH_ADDED.
+  editorSettingTriggerAllowed: boolean = false;
 
   autoAdjustEditorHeight() {
     const editor = this.editor;
@@ -314,6 +317,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   }
 
   getEditorSetting() {
+    if (!this.editorSettingTriggerAllowed) {
+      return;
+    }
     this.messageService.editorSetting(this.pid, this.text);
   }
 

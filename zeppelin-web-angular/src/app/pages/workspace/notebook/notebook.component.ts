@@ -76,6 +76,9 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   sidebarWidth = 370;
   sidebarAnimationFrame = -1;
   isSidebarOpen = false;
+  // send > CLONE_PARAGRAPH: receive > PARAGRAPH_ADDED → PARAGRAPH → trigger EDITOR_SETTING
+  // send > INSERT_PARAGRAPH: receive > trigger EDITOR_SETTING after PARAGRAPH_ADDED
+  isTriggeredByInsertParagraph = false;
 
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
@@ -111,6 +114,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.INTERPRETER_BINDINGS)
   loadInterpreterBindings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS]) {
+    this.listOfNotebookParagraphComponent.forEach(p => {
+      if (p.notebookParagraphCodeEditorComponent) {
+        p.notebookParagraphCodeEditorComponent.editorSettingTriggerAllowed = true;
+        p.notebookParagraphCodeEditorComponent.getEditorSetting();
+      }
+    });
     this.interpreterBindings = data.interpreterBindings;
     if (!this.interpreterBindings.some(item => item.selected)) {
       this.activatedExtension = 'interpreter';
@@ -139,6 +148,10 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
+  enableTriggeredByInsertParagraph() {
+    this.isTriggeredByInsertParagraph = true;
+  }
+
   @MessageListener(OP.PARAGRAPH_ADDED)
   addParagraph(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]) {
     const { paragraphId } = this.activatedRoute.snapshot.params;
@@ -153,6 +166,15 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
 
     definedNote.paragraphs[paragraphIndex].focus = true;
+    this.cdr.detectChanges();
+    const addedParagraph = this.listOfNotebookParagraphComponent.find((_, index) => index === paragraphIndex)
+      ?.notebookParagraphCodeEditorComponent;
+
+    if (this.isTriggeredByInsertParagraph && addedParagraph) {
+      addedParagraph.editorSettingTriggerAllowed = true;
+      addedParagraph.getEditorSetting();
+      this.isTriggeredByInsertParagraph = false;
+    }
     this.cdr.markForCheck();
   }
 
