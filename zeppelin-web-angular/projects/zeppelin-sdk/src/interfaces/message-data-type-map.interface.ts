@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { AuthInfo, ConfigurationsInfo, ErrorInfo } from './message-common.interface';
+import { AuthInfo, ErrorInfo } from './message-common.interface';
 import {
   CheckpointNote,
   CloneNote,
@@ -86,7 +86,6 @@ export type MixMessageDataTypeMap = MessageSendDataTypeMap & MessageReceiveDataT
 export interface MessageReceiveDataTypeMap {
   [OP.COMPLETION_LIST]: CompletionReceived;
   [OP.NOTES_INFO]: NotesInfo;
-  [OP.CONFIGURATIONS_INFO]: ConfigurationsInfo;
   [OP.NOTE]: Note;
   [OP.NOTE_REVISION]: NoteRevision;
   [OP.ERROR_INFO]: ErrorInfo;
@@ -118,7 +117,6 @@ export interface MessageReceiveDataTypeMap {
 
 export interface MessageSendDataTypeMap {
   [OP.PING]: undefined;
-  [OP.LIST_CONFIGURATIONS]: undefined;
   [OP.LIST_NOTES]: undefined;
   [OP.GET_HOME_NOTE]: undefined;
   [OP.RESTORE_ALL]: undefined;

@@ -9,7 +9,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Configuration } from '@zeppelin/sdk';
 import { ConfigurationService } from '@zeppelin/services';
 
 @Component({
@@ -18,19 +19,10 @@ import { ConfigurationService } from '@zeppelin/services';
   styleUrls: ['./configuration.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ConfigurationComponent implements OnInit {
-  configEntries: Array<[string, string]> = [];
+export class ConfigurationComponent {
+  constructor(private configurationService: ConfigurationService) {}
 
-  constructor(private configurationService: ConfigurationService, private cdr: ChangeDetectorRef) {}
-
-  ngOnInit() {
-    this.getAllConfig();
-  }
-
-  getAllConfig(): void {
-    this.configurationService.getAll().subscribe(data => {
-      this.configEntries = [...Object.entries<string>(data)].sort((a, b) => a[0].localeCompare(b[0]));
-      this.cdr.markForCheck();
-    });
+  get configuration(): Configuration | null {
+    return this.configurationService.configuration ?? null;
   }
 }

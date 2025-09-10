@@ -19,8 +19,8 @@ import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP, SendNote } from '@zeppelin/sdk';
+import { ConfigurationService } from '@zeppelin/services/configuration.service';
 import { MessageService } from '@zeppelin/services/message.service';
-import { TicketService } from '@zeppelin/services/ticket.service';
 
 @Component({
   selector: 'zeppelin-note-import',
@@ -33,7 +33,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   importUrl?: string;
   errorText?: string;
   importLoading = false;
-  maxLimit = get(this.ticketService.configuration, ['zeppelin.websocket.max.text.message.size'], null);
+  maxLimit = get(this.configurationService.configuration, ['zeppelin.websocket.max.text.message.size'], null);
 
   @MessageListener(OP.NOTES_INFO)
   getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
@@ -102,7 +102,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
 
   constructor(
     public messageService: MessageService,
-    private ticketService: TicketService,
+    private configurationService: ConfigurationService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,
     private httpClient: HttpClient
