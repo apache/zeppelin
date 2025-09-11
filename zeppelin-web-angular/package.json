@@ -12,10 +12,16 @@
     "build-project:sdk": " ng build --project zeppelin-sdk",
     "build-project:vis": " ng build --project zeppelin-visualization",
     "build-project:helium": "ng build --project zeppelin-helium",
-    "test": "ng test",
     "lint": "ng lint && tslint -p tslint-rules/tsconfig.json && prettier --check \"**/*.{ts,js,json,css,html}\"",
     "lint:fix": "ng lint --fix && tslint --fix -p tslint-rules/tsconfig.json && prettier --write \"**/*.{ts,js,json,css,html}\"",
-    "e2e": "ng e2e"
+    "e2e": "playwright test",
+    "e2e:fast": "playwright test --project=chromium",
+    "e2e:ui": "playwright test --ui",
+    "e2e:headed": "playwright test --headed",
+    "e2e:debug": "playwright test --debug",
+    "e2e:report": "playwright show-report",
+    "e2e:ci": "export CI=true && playwright test",
+    "e2e:codegen": "npm run start || playwright codegen http://localhost:4200"
   },
   "engines": {
     "node": "<17.0.0"
@@ -62,6 +68,7 @@
     "@angular/compiler-cli": "~9.1.13",
     "@angular/language-service": "~9.1.13",
     "@types/angular": "^1.8.0",
+    "@playwright/test": "1.53.2",
     "@types/diff-match-patch": "^1.0.36",
     "@types/highlight.js": "^9.12.3",
     "@types/jquery": "^3.5.0",
@@ -81,6 +88,7 @@
     "nz-tslint-rules": "^0.800.2",
     "prettier": "^1.17.0",
     "protractor": "~5.4.0",
+    "scandirectory": "8.1.1",
     "ts-node": "~7.0.0",
     "tsickle": "0.38.1",
     "tslint": "~5.15.0",
