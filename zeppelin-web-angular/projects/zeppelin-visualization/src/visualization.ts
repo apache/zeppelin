@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { ComponentRef } from '@angular/core';
+import { CdkPortalOutlet } from '@angular/cdk/portal';
+import { ComponentRef, ViewContainerRef } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { GraphConfig } from '@zeppelin/sdk';
@@ -44,4 +45,8 @@ export abstract class Visualization<T = any> {
   getConfig() {
     return this.config;
   }
+}
+
+export interface VisualizationConstructor<T = any> {
+  new (portalOutlet: CdkPortalOutlet, viewContainerRef: ViewContainerRef, config: GraphConfig): Visualization<T>;
 }
