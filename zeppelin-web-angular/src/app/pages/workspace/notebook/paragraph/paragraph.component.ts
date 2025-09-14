@@ -438,6 +438,16 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.commitParagraph();
   }
 
+  colWidthChange(colWidth: number, needCommit: boolean, updateResult = true) {
+    this.paragraph.config.colWidth = colWidth;
+    this.changeColWidth(needCommit, updateResult);
+  }
+
+  fontSizeChange(fontSize: number) {
+    this.paragraph.config.fontSize = fontSize;
+    this.commitParagraph();
+  }
+
   commitParagraph() {
     const {
       id,

@@ -230,15 +230,13 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     }
   }
 
-  changeColWidth(colWidth: number) {
-    this.colWidth = +colWidth;
-    this.colWidthChange.emit(this.colWidth);
+  changeColWidth(colWidth: string) {
+    this.colWidthChange.emit(+colWidth);
     this.dropdownVisible = false;
   }
 
-  changeFontSize(fontSize: number) {
-    this.fontSize = +fontSize;
-    this.fontSizeChange.emit(this.fontSize);
+  changeFontSize(fontSize: string) {
+    this.fontSizeChange.emit(+fontSize);
   }
 
   copyClipboard(id: string) {
