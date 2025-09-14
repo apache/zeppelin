@@ -40,28 +40,28 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Input() status!: string;
   @Input() progress = 0;
   @Input() revisionView = false;
-  @Input() enabled = true;
+  @Input() enabled?: boolean = true;
   @Input() pid!: string;
-  @Input() tableHide = false;
-  @Input() editorHide = false;
+  @Input() tableHide?: boolean = false;
+  @Input() editorHide?: boolean = false;
   @Input() colWidth?: number;
   @Input() fontSize?: number;
-  @Input() runOnSelectionChange = true;
+  @Input() runOnSelectionChange?: boolean = true;
   @Input() isEntireNoteRunning = true;
   @Input() runtimeInfos?: RuntimeInfos;
-  @Input() colWidthOption = [];
+  @Input() colWidthOption: number[] = [];
   @Input() first = false;
   @Input() last = false;
-  @Input() title = false;
-  @Input() lineNumbers = false;
+  @Input() titleShow?: boolean = false;
+  @Input() showLineNumbers?: boolean = false;
   @Input() paragraphLength!: number;
   @Output() readonly colWidthChange = new EventEmitter<number>();
-  @Output() readonly titleChange = new EventEmitter<boolean>();
+  @Output() readonly titleShowChange = new EventEmitter<boolean>();
   @Output() readonly enabledChange = new EventEmitter<boolean>();
   @Output() readonly fontSizeChange = new EventEmitter<number>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
   @Output() readonly runParagraph = new EventEmitter();
-  @Output() readonly lineNumbersChange = new EventEmitter<boolean>();
+  @Output() readonly showLineNumbersChange = new EventEmitter<boolean>();
   @Output() readonly cancelParagraph = new EventEmitter();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly runOnSelectionChangeChange = new EventEmitter<boolean>();
@@ -178,15 +178,15 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         shortCut: this.formatShortcut('Shift+Ctrl+C', this.isMac)
       },
       {
-        label: this.title ? 'Hide Title' : 'Show Title',
+        label: this.titleShow ? 'Hide Title' : 'Show Title',
         show: true,
         disabled: false,
         icon: 'font-colors',
-        trigger: () => this.toggleTitle(),
+        trigger: () => this.toggleShowTitle(),
         shortCut: this.formatShortcut('Ctrl+Alt+T', this.isMac)
       },
       {
-        label: this.lineNumbers ? 'Hide line numbers' : 'Show line numbers',
+        label: this.showLineNumbers ? 'Hide line numbers' : 'Show line numbers',
         show: true,
         disabled: false,
         icon: 'ordered-list',
@@ -205,34 +205,28 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   }
 
   toggleEditor() {
-    this.editorHide = !this.editorHide;
-    this.editorHideChange.emit(this.editorHide);
+    this.editorHideChange.emit(!this.editorHide);
   }
 
   toggleOutput() {
-    this.tableHide = !this.tableHide;
-    this.tableHideChange.emit(this.tableHide);
+    this.tableHideChange.emit(!this.tableHide);
   }
 
   toggleRunOnSelectionChange() {
-    this.runOnSelectionChange = !this.runOnSelectionChange;
-    this.runOnSelectionChangeChange.emit(this.runOnSelectionChange);
+    this.runOnSelectionChangeChange.emit(!this.runOnSelectionChange);
   }
 
-  toggleTitle() {
-    this.title = !this.title;
-    this.titleChange.emit(this.title);
+  toggleShowTitle() {
+    this.titleShowChange.emit(!this.titleShow);
   }
 
   toggleLineNumbers() {
-    this.lineNumbers = !this.lineNumbers;
-    this.lineNumbersChange.emit(this.lineNumbers);
+    this.showLineNumbersChange.emit(!this.showLineNumbers);
   }
 
   toggleEnabled() {
     if (!this.isEntireNoteRunning) {
-      this.enabled = !this.enabled;
-      this.enabledChange.emit(this.enabled);
+      this.enabledChange.emit(!this.enabled);
     }
   }
 

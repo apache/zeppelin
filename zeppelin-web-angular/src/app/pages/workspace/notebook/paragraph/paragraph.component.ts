@@ -378,6 +378,66 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     this.commitParagraph();
   }
 
+  setEditorHide(editorHide: boolean) {
+    this.paragraph.config.editorHide = editorHide;
+    this.cdr.markForCheck();
+  }
+
+  editorHideChange(event: boolean) {
+    this.setEditorHide(event);
+    this.commitParagraph();
+  }
+
+  setTitleShow(titleShow: boolean) {
+    this.paragraph.config.title = titleShow;
+    this.cdr.markForCheck();
+  }
+
+  titleShowChange(event: boolean) {
+    this.setTitleShow(event);
+    this.commitParagraph();
+  }
+
+  setEnabled(enabled: boolean) {
+    this.paragraph.config.enabled = enabled;
+    this.cdr.markForCheck();
+  }
+
+  enabledChange(event: boolean) {
+    this.setEnabled(event);
+    this.commitParagraph();
+  }
+
+  setTableHide(tableHide: boolean) {
+    this.paragraph.config.tableHide = tableHide;
+    this.cdr.markForCheck();
+  }
+
+  tableHideChange(event: boolean) {
+    this.setTableHide(event);
+    this.commitParagraph();
+  }
+
+  setRunOnSelection(runOnSelection: boolean) {
+    this.paragraph.config.runOnSelectionChange = runOnSelection;
+    this.cdr.markForCheck();
+  }
+
+  runOnSelectionChange(event: boolean) {
+    this.setRunOnSelection(event);
+    this.commitParagraph();
+  }
+
+  setShowLineNumbers(showLineNumbers: boolean) {
+    this.paragraph.config.lineNumbers = showLineNumbers;
+    this.cdr.markForCheck();
+  }
+
+  showLineNumbersChange(event: boolean) {
+    this.setShowLineNumbers(event);
+    this.commitParagraph();
+  }
+
   commitParagraph() {
     const {
       id,
@@ -465,16 +525,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     }
     this.paragraph.config.results[index] = configResult;
     this.commitParagraph();
-  }
-
-  setEditorHide(editorHide: boolean) {
-    this.paragraph.config.editorHide = editorHide;
-    this.cdr.markForCheck();
-  }
-
-  setTableHide(tableHide: boolean) {
-    this.paragraph.config.tableHide = tableHide;
-    this.cdr.markForCheck();
   }
 
   openSingleParagraph(paragraphId: string): void {

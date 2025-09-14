@@ -19,9 +19,9 @@
 ></zeppelin-notebook-paragraph-dynamic-forms>
 <zeppelin-notebook-paragraph-result
   *ngFor="let result of results; index as i; trackBy: trackByIndexFn"
-  [id]="paragraph.id"
+  [id]="paragraph?.id || ''"
   [published]="true"
-  [currentCol]="paragraph.config.colWidth"
+  [currentCol]="paragraph?.config?.colWidth || 12"
   [config]="configs[i]"
   [result]="result"
 ></zeppelin-notebook-paragraph-result>
