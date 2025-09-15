@@ -27,7 +27,13 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import {
+  ConfigurationService,
+  MessageService,
+  NoteStatusService,
+  SaveAsService,
+  TicketService
+} from '@zeppelin/services';
 
 import { NotebookService } from '@zeppelin/services/notebook.service';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
@@ -189,10 +195,10 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   exportNote() {
-    if (!this.ticketService.configuration) {
+    if (!this.configurationService.configuration) {
       throw new Error('Configuration is not loaded');
     }
-    const sizeLimit = +this.ticketService.configuration['zeppelin.websocket.max.text.message.size'];
+    const sizeLimit = +this.configurationService.configuration['zeppelin.websocket.max.text.message.size'];
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
       this.nzModalService.confirm({
@@ -304,11 +310,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     private noteStatusService: NoteStatusService,
     private notebookService: NotebookService,
     private activatedRoute: ActivatedRoute,
-    private saveAsService: SaveAsService
+    private saveAsService: SaveAsService,
+    private configurationService: ConfigurationService
   ) {
     super(messageService);
     this.updateIsNoteParagraphRunning();
-    if (!this.ticketService.configuration) {
+    if (!this.configurationService.configuration) {
       throw new Error('Configuration is not loaded');
     }
   }

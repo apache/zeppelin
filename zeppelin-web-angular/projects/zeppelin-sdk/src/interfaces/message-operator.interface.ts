@@ -266,19 +266,6 @@ export enum OP {
 
   /**
    * [c-s]
-   * ask all key/value pairs of configurations
-   */
-  LIST_CONFIGURATIONS = 'LIST_CONFIGURATIONS',
-
-  /**
-   * [s-c]
-   * all key/value pairs of configurations
-   * @param settings serialized Map<String = 'String', String> object
-   */
-  CONFIGURATIONS_INFO = 'CONFIGURATIONS_INFO',
-
-  /**
-   * [c-s]
    * checkpoint note to storage repository
    * @param noteId
    * @param checkpointName

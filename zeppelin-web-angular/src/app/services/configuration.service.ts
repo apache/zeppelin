@@ -13,6 +13,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { Configuration } from '@zeppelin/sdk';
+import { retry } from 'rxjs/operators';
 import { BaseRest } from './base-rest';
 import { BaseUrlService } from './base-url.service';
 
@@ -20,11 +22,20 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class ConfigurationService extends BaseRest {
+  private _configuration?: Configuration;
+
   constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
   }
 
-  getAll() {
-    return this.http.get<{ [key: string]: string }>(this.restUrl`/configurations/all`);
+  get configuration() {
+    return this._configuration;
+  }
+
+  async initialize(): Promise<void> {
+    this._configuration = await this.http
+      .get<Configuration>(this.restUrl`/configurations/all`)
+      .pipe(retry(3))
+      .toPromise();
   }
 }
