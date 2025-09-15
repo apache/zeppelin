@@ -14,14 +14,16 @@ import * as Lint from 'tslint';
 import * as ts from 'typescript';
 
 interface OptionsType {
-  targetFiles?: string[];
+  targetFiles: string[];
 }
 
 export class Rule extends Lint.Rules.AbstractRule {
   public static FAILURE_STRING = 'Export statements should be alphabetically ordered by module specifier';
 
   public apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
-    return this.applyWithFunction(sourceFile, walk, this.getOptions() as OptionsType);
+    const targetFiles =
+      this.ruleArguments.length > 0 && Array.isArray(this.ruleArguments[0]) ? this.ruleArguments[0] : [];
+    return this.applyWithFunction(sourceFile, walk, { targetFiles });
   }
 }
 
