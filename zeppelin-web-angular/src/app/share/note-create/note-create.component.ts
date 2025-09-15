@@ -11,13 +11,12 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { MessageService, NoteListService } from '@zeppelin/services';
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { InterpreterItem, MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/sdk';
-import { MessageService } from '@zeppelin/services/message.service';
-import { NoteListService } from '@zeppelin/services/note-list.service';
 
 @Component({
   selector: 'zeppelin-note-create',

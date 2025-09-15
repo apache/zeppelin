@@ -51,12 +51,14 @@ import { TableData, Visualization } from '@zeppelin/visualization';
 
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { DynamicTemplate, NgZService, RuntimeCompilerService } from '@zeppelin/services';
-import { AreaChartVisualization } from '@zeppelin/visualizations/area-chart/area-chart-visualization';
-import { BarChartVisualization } from '@zeppelin/visualizations/bar-chart/bar-chart-visualization';
-import { LineChartVisualization } from '@zeppelin/visualizations/line-chart/line-chart-visualization';
-import { PieChartVisualization } from '@zeppelin/visualizations/pie-chart/pie-chart-visualization';
-import { ScatterChartVisualization } from '@zeppelin/visualizations/scatter-chart/scatter-chart-visualization';
-import { TableVisualization } from '@zeppelin/visualizations/table/table-visualization';
+import {
+  AreaChartVisualization,
+  BarChartVisualization,
+  LineChartVisualization,
+  PieChartVisualization,
+  ScatterChartVisualization,
+  TableVisualization
+} from '@zeppelin/visualizations';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-result',

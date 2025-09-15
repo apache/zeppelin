@@ -10,14 +10,20 @@
  * limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { WorkspaceShareModule } from '../share/share.module';
-import { PublishedParagraphComponent } from './paragraph/paragraph.component';
-import { PublishedRoutingModule } from './published-ruoting.module';
+import { Observable } from 'rxjs';
 
-@NgModule({
-  declarations: [PublishedParagraphComponent],
-  imports: [CommonModule, WorkspaceShareModule, PublishedRoutingModule]
-})
-export class PublishedModule {}
+export interface AngularContext {
+  paragraphId: string;
+  key: string;
+  // tslint:disable-next-line:no-any
+  value: any;
+  emit: boolean;
+  set: boolean;
+}
+
+export interface AngularContextManager {
+  setContextValue(key: string, value: unknown, paragraphId: string, emit?: boolean): void;
+  unsetContextValue(key: string, paragraphId: string, emit?: boolean): unknown;
+  contextChanged(): Observable<AngularContext>;
+  runParagraphAction(): Observable<string>;
+}

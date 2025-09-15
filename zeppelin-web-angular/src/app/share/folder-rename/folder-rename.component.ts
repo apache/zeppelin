@@ -14,8 +14,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } 
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 
-import { MessageService } from '@zeppelin/services/message.service';
-import { NoteListService } from '@zeppelin/services/note-list.service';
+import { MessageService, NoteListService } from '@zeppelin/services';
 
 @Component({
   selector: 'zeppelin-folder-rename',

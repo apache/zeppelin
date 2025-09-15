@@ -12,6 +12,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { MessageService, TicketService } from '@zeppelin/services';
 
 import { get } from 'lodash';
 import { NzModalRef } from 'ng-zorro-antd/modal';
@@ -19,8 +20,6 @@ import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP, SendNote } from '@zeppelin/sdk';
-import { MessageService } from '@zeppelin/services/message.service';
-import { TicketService } from '@zeppelin/services/ticket.service';
 
 @Component({
   selector: 'zeppelin-note-import',

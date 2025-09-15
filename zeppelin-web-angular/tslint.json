@@ -1,4 +1,5 @@
 {
+  "extends": ["tslint-no-circular-imports"],
   "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules", "tslint-rules"],
   "linterOptions": {
     "exclude": ["dist/**", "node/**", "node_modules/**"]

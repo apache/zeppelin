@@ -11,7 +11,9 @@
  */
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { isRecord } from '@zeppelin/utility/type-utility';
+
+import { AngularContext } from '@zeppelin/core';
+import { isRecord } from '@zeppelin/utility';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -19,14 +21,7 @@ import { Subject } from 'rxjs';
 })
 export class NgZService implements OnDestroy {
   private paragraphMap: Map<string, unknown> = new Map<string, {}>();
-  private contextChange$ = new Subject<{
-    paragraphId: string;
-    key: string;
-    // tslint:disable-next-line:no-any
-    value: any;
-    emit: boolean;
-    set: boolean;
-  }>();
+  private contextChange$ = new Subject<AngularContext>();
   private runParagraph$ = new Subject<string>();
 
   constructor() {}

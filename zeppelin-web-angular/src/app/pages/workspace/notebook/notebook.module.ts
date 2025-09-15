@@ -47,7 +47,7 @@ import { NotebookPermissionsComponent } from './permissions/permissions.componen
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { WorkspaceShareModule } from '../../workspace/share/share.module';
+import { WorkspaceShareModule } from '../share/share.module';
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
 import { NoteFormBlockComponent } from './note-form-block/note-form-block.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
