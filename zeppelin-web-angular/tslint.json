@@ -143,6 +143,6 @@
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"],
     "no-input-rename": true,
     "constructor-params-order": true,
-    "orderedExports": [true, ["public-api.ts"]]
+    "ordered-exports": [true, ["public-api.ts"]]
   }
 }
