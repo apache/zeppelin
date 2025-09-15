@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-export * from './nz-code-editor.definitions';
 export * from './code-editor.component';
 export * from './code-editor.module';
 export * from './code-editor.service';
+export * from './nz-code-editor.definitions';

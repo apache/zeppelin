@@ -11,14 +11,14 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { isRecord } from '@zeppelin/utility/type-utility';
+import { publishedSymbol } from '@zeppelin/core';
+import { isRecord } from '@zeppelin/utility';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { publishedSymbol } from '@zeppelin/core/paragraph-base/published';
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
-import { setTheme } from '@zeppelin/visualizations/g2.config';
+import { setTheme } from '@zeppelin/visualizations';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
