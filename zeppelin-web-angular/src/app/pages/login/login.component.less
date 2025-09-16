@@ -25,7 +25,6 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url("../../../assets/images/bg.jpg");
       background-size: cover;
       filter: blur(4px);
       background-repeat: no-repeat;
@@ -67,3 +66,19 @@
     }
   }
 });
+
+:host-context(.light) {
+  .content {
+    &:after {
+      background-image: url("../../../assets/images/bg.jpg");
+    }
+  }
+}
+
+:host-context(.dark) {
+  .content {
+    &:after {
+      background-image: url("../../../assets/images/bg-dark.png");
+    }
+  }
+}

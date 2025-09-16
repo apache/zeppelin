@@ -1,0 +1,346 @@
+/* Reset built-in transition */
+.ant-btn,
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-group,
+.ant-input-group-addon,
+.ant-input-prefix,
+.ant-input-suffix,
+.ant-select,
+.ant-dropdown,
+.ant-menu,
+.ant-card,
+.ant-table,
+.ant-modal,
+.ant-drawer,
+.ant-tooltip,
+.ant-popover,
+.ant-notification,
+.ant-message,
+.ant-switch,
+.ant-radio,
+.ant-checkbox,
+.ant-tabs,
+.ant-collapse,
+.ant-slider,
+.ant-progress,
+.ant-badge,
+.ant-avatar,
+.ant-tag,
+.ant-alert,
+.ant-spin,
+.ant-pagination,
+.ant-breadcrumb,
+.ant-steps,
+.ant-form,
+.ant-upload,
+.ant-tree,
+.ant-list,
+.ant-calendar,
+.ant-date-picker,
+.ant-time-picker,
+.ant-cascader,
+.ant-transfer,
+.ant-rate,
+.ant-affix,
+.ant-anchor,
+.ant-back-top,
+.ant-divider,
+.ant-layout,
+.ant-grid,
+.ant-space,
+.search {
+  transition: none !important;
+  animation: none !important;
+}
+
+.ant-btn *,
+.ant-input *,
+.ant-input-affix-wrapper *,
+.ant-input-group *,
+.ant-input-group-addon *,
+.ant-input-prefix *,
+.ant-input-suffix *,
+.ant-select *,
+.ant-dropdown *,
+.ant-menu *,
+.ant-card *,
+.ant-table *,
+.ant-modal *,
+.ant-drawer *,
+.ant-tooltip *,
+.ant-popover *,
+.ant-notification *,
+.ant-message *,
+.ant-switch *,
+.ant-radio *,
+.ant-checkbox *,
+.ant-tabs *,
+.ant-collapse *,
+.ant-slider *,
+.ant-progress *,
+.ant-badge *,
+.ant-avatar *,
+.ant-tag *,
+.ant-alert *,
+.ant-spin *,
+.ant-pagination *,
+.ant-breadcrumb *,
+.ant-steps *,
+.ant-form *,
+.ant-upload *,
+.ant-tree *,
+.ant-list *,
+.ant-calendar *,
+.ant-date-picker *,
+.ant-time-picker *,
+.ant-cascader *,
+.ant-transfer *,
+.ant-rate *,
+.ant-affix *,
+.ant-anchor *,
+.ant-back-top *,
+.ant-divider *,
+.ant-layout *,
+.ant-grid *,
+.ant-space *,
+.search * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Special handling for search area */
+.search,
+.search .ant-input-affix-wrapper,
+.search .ant-input,
+.search input {
+  transition: none !important;
+  animation: none !important;
+}
+
+.search:hover,
+.search:focus,
+.search:active,
+.search .ant-input-affix-wrapper:hover,
+.search .ant-input-affix-wrapper:focus,
+.search .ant-input-affix-wrapper:active,
+.search .ant-input:hover,
+.search .ant-input:focus,
+.search .ant-input:active,
+.search input:hover,
+.search input:focus,
+.search input:active {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Prevent dark mode dropdown menu flickering */
+html.dark .ant-dropdown-menu,
+html.dark .ant-dropdown-menu-item,
+html.dark .ant-dropdown-menu-submenu-title,
+html.dark .ant-menu-item,
+html.dark .ant-menu-submenu-title {
+  background-color: #1f1f1f !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+html.dark .ant-dropdown-menu-item:hover,
+html.dark .ant-dropdown-menu-submenu-title:hover,
+html.dark .ant-menu-item:hover,
+html.dark .ant-menu-submenu-title:hover {
+  background-color: #262626 !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark .ant-dropdown-menu-item-selected,
+html.dark .ant-dropdown-menu-submenu-title-selected,
+html.dark .ant-dropdown-menu-item-selected > a,
+html.dark .ant-dropdown-menu-submenu-title-selected > a,
+html.dark .ant-menu-item-selected {
+  background-color: #262626 !important;
+  color: #1890ff !important;
+}
+
+html.dark .ant-menu-item-divider,
+html.dark .ant-dropdown-menu-item-divider {
+  background-color: #434343 !important;
+}
+
+/* Dark mode alert background color adjustments */
+html.dark .ant-alert-info {
+  background-color: #111b26 !important;
+  border-color: #153450 !important;
+}
+
+html.dark .ant-alert-success {
+  background-color: #162312 !important;
+  border-color: #274916 !important;
+}
+
+html.dark .ant-alert-warning {
+  background-color: #2b1d11 !important;
+  border-color: #594214 !important;
+}
+
+html.dark .ant-alert-error {
+  background-color: #2a1215 !important;
+  border-color: #58181c !important;
+}
+
+/* Dark mode upload drag area background color adjustments */
+html.dark .ant-upload.ant-upload-drag {
+  background-color: #1f1f1f !important;
+  border-color: #434343 !important;
+}
+
+html.dark .ant-upload.ant-upload-drag:hover {
+  border-color: #1890ff !important;
+}
+
+html.dark .ant-upload.ant-upload-drag.ant-upload-drag-hover {
+  border-color: #1890ff !important;
+}
+
+html.dark .ant-upload.ant-upload-drag p.ant-upload-text,
+html.dark .ant-upload.ant-upload-drag p.ant-upload-hint {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Tree node hover color adjustments */
+html.dark .ant-tree .ant-tree-node-content-wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Tree selected node background color adjustments */
+html.dark .ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected {
+  background-color: rgba(24, 144, 255, 0.15) !important;
+}
+
+/* Monaco editor background color matching */
+html.dark .ant-code-editor {
+  background-color: #1e1e1e !important;
+}
+
+/* Markdown code tag background color adjustments */
+html.dark .markdown-body code {
+  background-color: #2d2d2d !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark .markdown-body pre {
+  background-color: #1e1e1e !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid #434343 !important;
+}
+
+html.dark .markdown-body pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* Table placeholder row hover color fix */
+html.dark .ant-table-tbody > tr.ant-table-placeholder:hover > td {
+  background-color: transparent !important;
+}
+
+/* Input field dark mode styling */
+html.dark .ant-input,
+html.dark .ant-input-affix-wrapper,
+html.dark .ant-input-affix-wrapper > input.ant-input {
+  background-color: #262626 !important;
+  border-color: #434343 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark .ant-input::placeholder,
+html.dark .ant-input-affix-wrapper > input.ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+html.dark .ant-input:hover,
+html.dark .ant-input-affix-wrapper:hover,
+html.dark .ant-input-affix-wrapper:hover > input.ant-input {
+  border-color: #177ddc !important;
+  background-color: #262626 !important;
+}
+
+html.dark .ant-input:focus,
+html.dark .ant-input-affix-wrapper-focused,
+html.dark .ant-input-affix-wrapper:focus,
+html.dark .ant-input-affix-wrapper-focused > input.ant-input,
+html.dark .ant-input-affix-wrapper:focus > input.ant-input {
+  border-color: #177ddc !important;
+  background-color: #262626 !important;
+  box-shadow: 0 0 0 2px rgba(23, 125, 220, 0.2) !important;
+}
+
+html.dark .ant-input-prefix,
+html.dark .ant-input-suffix {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* Highlight.js (hljs) dark mode styling */
+html.dark .hljs,
+html.dark pre code.hljs {
+  background-color: #1e1e1e !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark .hljs-comment,
+html.dark .hljs-quote {
+  color: #6a9955 !important;
+}
+
+html.dark .hljs-keyword,
+html.dark .hljs-selector-tag,
+html.dark .hljs-subst {
+  color: #569cd6 !important;
+}
+
+html.dark .hljs-string,
+html.dark .hljs-attr {
+  color: #ce9178 !important;
+}
+
+html.dark .hljs-number,
+html.dark .hljs-literal,
+html.dark .hljs-variable,
+html.dark .hljs-template-variable,
+html.dark .hljs-tag .hljs-attr {
+  color: #b5cea8 !important;
+}
+
+html.dark .hljs-built_in,
+html.dark .hljs-builtin-name {
+  color: #dcdcaa !important;
+}
+
+html.dark .hljs-type,
+html.dark .hljs-class .hljs-title {
+  color: #4ec9b0 !important;
+}
+
+html.dark .hljs-function .hljs-title,
+html.dark .hljs-title.function_ {
+  color: #dcdcaa !important;
+}
+
+html.dark .hljs-meta {
+  color: #9cdcfe !important;
+}
+
+/* Scala specific hljs styling */
+html.dark .hljs-scala .hljs-keyword {
+  color: #569cd6 !important;
+}
+
+html.dark .hljs-scala .hljs-class,
+html.dark .hljs-scala .hljs-type {
+  color: #4ec9b0 !important;
+}
+
+html.dark .hljs-scala .hljs-function {
+  color: #dcdcaa !important;
+}
