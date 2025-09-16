@@ -43,6 +43,7 @@ import {
   NoteStatusService,
   NoteVarShareService,
   SecurityService,
+  ThemeService,
   TicketService
 } from '@zeppelin/services';
 
@@ -105,6 +106,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         });
       }
       this.titleService.setTitle(this.note?.name + ' - Zeppelin');
+      this.themeService.applyMonacoThemeManually();
       this.cdr.markForCheck();
     }
   }
@@ -408,7 +410,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     private ticketService: TicketService,
     private securityService: SecurityService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private themeService: ThemeService
   ) {
     super(messageService);
   }
