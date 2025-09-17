@@ -89,15 +89,15 @@ export class TableVisualizationComponent implements OnInit {
     this.filterRows();
   }
 
-  onSortChange(type: NzTableSortOrder, key: string): void {
-    const opt = this.getColOptionOrThrow(key);
-    this.colOptions.delete(key);
+  onSortChange(col: string, type: NzTableSortOrder): void {
+    const opt = this.getColOptionOrThrow(col);
+    this.colOptions.delete(col);
     if (type) {
       opt.sort = type === 'descend' ? 'desc' : 'asc';
     } else {
       opt.sort = '';
     }
-    this.colOptions.set(key, opt);
+    this.colOptions.set(col, opt);
     this.filterRows();
   }
 

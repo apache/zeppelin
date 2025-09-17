@@ -46,7 +46,7 @@
         nzShowSort
         nzCustomFilter
         [nzSortKey]="col"
-        (nzSortChange)="onSortChange($event, col)"
+        (nzSortChange)="onSortChange(col, $event)"
       >
         {{ col }}
         <i
