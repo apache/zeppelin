@@ -13,7 +13,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 
 import { filter, maxBy, minBy, orderBy, sumBy } from 'lodash';
-import { NzTableComponent } from 'ng-zorro-antd/table';
+import { NzTableComponent, NzTableSortOrder } from 'ng-zorro-antd/table';
 import { utils, writeFile, WorkSheet } from 'xlsx';
 
 import { TableData, Visualization, VISUALIZATION } from '@zeppelin/visualization';
@@ -89,7 +89,7 @@ export class TableVisualizationComponent implements OnInit {
     this.filterRows();
   }
 
-  onSortChange(type: 'descend' | 'ascend' | string | null, key: string): void {
+  onSortChange(type: NzTableSortOrder, key: string): void {
     const opt = this.getColOptionOrThrow(key);
     this.colOptions.delete(key);
     if (type) {
