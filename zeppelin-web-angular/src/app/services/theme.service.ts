@@ -28,8 +28,10 @@ export class ThemeService implements OnDestroy {
     const initialTheme = this.detectInitialTheme();
     this.currentTheme = new BehaviorSubject<ThemeMode>(initialTheme);
     this.theme$ = this.currentTheme.asObservable();
-    this.applyTheme(initialTheme, false);
+
     this.initSystemThemeDetection();
+
+    this.applyTheme(initialTheme, false);
   }
 
   detectInitialTheme(): ThemeMode {
