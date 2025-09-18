@@ -22,7 +22,7 @@ export * from './interpreter.service';
 export * from './job-manager.service';
 export * from './message.service';
 export * from './ng-z.service';
-export * from './note-action.service';
+export * from './notebook.service';
 export * from './note-list.service';
 export * from './note-status.service';
 export * from './note-var-share.service';
