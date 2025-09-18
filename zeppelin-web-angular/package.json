@@ -21,7 +21,7 @@
     "e2e:debug": "playwright test --debug",
     "e2e:report": "playwright show-report",
     "e2e:ci": "export CI=true && playwright test",
-    "e2e:codegen": "npm run start || playwright codegen http://localhost:4200"
+    "e2e:codegen": "playwright codegen http://localhost:4200"
   },
   "engines": {
     "node": "<17.0.0"
