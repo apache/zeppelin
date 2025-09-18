@@ -59,6 +59,9 @@ export class ThemeToggleComponent implements OnInit, OnDestroy {
   }
 
   getThemeIcon(): string {
+    if (this.currentTheme === 'system') {
+      return '🤖';
+    }
     return this.currentTheme === 'dark' ? '🌙' : '☀️';
   }
 }

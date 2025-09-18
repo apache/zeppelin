@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 const THEME_STORAGE_KEY = 'zeppelin-theme';
 const MONACO_THEMES = {
@@ -16,12 +16,15 @@ export class ThemeService implements OnDestroy {
   private readonly THEME_KEY = THEME_STORAGE_KEY;
   private currentTheme: BehaviorSubject<ThemeMode>;
   public theme$: Observable<ThemeMode>;
+  private currentEffectiveTheme: BehaviorSubject<'light' | 'dark'>;
+  public effectiveTheme$: Observable<'light' | 'dark'>;
   private mediaQuery?: MediaQueryList;
   private systemThemeListener?: (e: MediaQueryListEvent) => void;
 
   ngOnDestroy(): void {
     this.removeSystemThemeListener();
     this.currentTheme.complete();
+    this.currentEffectiveTheme.complete();
   }
 
   constructor() {
@@ -29,9 +32,13 @@ export class ThemeService implements OnDestroy {
     this.currentTheme = new BehaviorSubject<ThemeMode>(initialTheme);
     this.theme$ = this.currentTheme.asObservable();
 
+    const initialEffectiveTheme = this.resolveEffectiveTheme(initialTheme);
+    this.currentEffectiveTheme = new BehaviorSubject<'light' | 'dark'>(initialEffectiveTheme);
+    this.effectiveTheme$ = this.currentEffectiveTheme.asObservable();
+
     this.initSystemThemeDetection();
 
-    this.applyTheme(initialTheme, false);
+    this.applyTheme(initialEffectiveTheme, false);
   }
 
   detectInitialTheme(): ThemeMode {
@@ -40,22 +47,33 @@ export class ThemeService implements OnDestroy {
       if (savedTheme && this.isValidTheme(savedTheme)) {
         return savedTheme;
       }
-      return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+      return 'system';
     } catch {
-      return 'light';
+      return 'system';
     }
   }
 
   isValidTheme(theme: string): theme is ThemeMode {
-    return theme === 'light' || theme === 'dark';
+    return theme === 'light' || theme === 'dark' || theme === 'system';
+  }
+
+  resolveEffectiveTheme(theme: ThemeMode): 'light' | 'dark' {
+    if (theme === 'system') {
+      return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+    }
+    return theme;
   }
 
   getCurrentTheme(): ThemeMode {
     return this.currentTheme.value;
   }
 
+  getEffectiveTheme(): 'light' | 'dark' {
+    return this.currentEffectiveTheme.value;
+  }
+
   isDarkMode(): boolean {
-    return this.currentTheme.value === 'dark';
+    return this.currentEffectiveTheme.value === 'dark';
   }
 
   setTheme(theme: ThemeMode, save: boolean = true): void {
@@ -64,38 +82,52 @@ export class ThemeService implements OnDestroy {
     }
 
     this.currentTheme.next(theme);
-    this.applyTheme(theme);
+    const effectiveTheme = this.resolveEffectiveTheme(theme);
+    this.currentEffectiveTheme.next(effectiveTheme);
+    this.applyTheme(effectiveTheme);
 
     if (save) {
       localStorage.setItem(this.THEME_KEY, theme);
-      // When user manually sets theme, stop following system theme
+    }
+
+    // Update system theme listener based on new theme
+    if (theme === 'system') {
+      this.initSystemThemeDetection();
+    } else {
       this.removeSystemThemeListener();
     }
   }
 
   toggleTheme(): void {
-    this.setTheme(this.isDarkMode() ? 'light' : 'dark');
+    const currentTheme = this.getCurrentTheme();
+    if (currentTheme === 'system') {
+      this.setTheme('light');
+    } else if (currentTheme === 'light') {
+      this.setTheme('dark');
+    } else {
+      this.setTheme('system');
+    }
   }
 
-  applyTheme(theme: ThemeMode, updateExternal: boolean = true): void {
+  applyTheme(effectiveTheme: 'light' | 'dark', updateExternal: boolean = true): void {
     const html = document.documentElement;
     const body = document.body;
 
     [html, body].forEach(el => {
-      el.classList.toggle('dark', theme === 'dark');
-      el.classList.toggle('light', theme === 'light');
-      el.setAttribute('data-theme', theme);
+      el.classList.toggle('dark', effectiveTheme === 'dark');
+      el.classList.toggle('light', effectiveTheme === 'light');
+      el.setAttribute('data-theme', effectiveTheme);
     });
 
-    html.style.colorScheme = theme;
+    html.style.setProperty('color-scheme', effectiveTheme);
 
     if (updateExternal) {
-      this.updateMonacoTheme(theme);
+      this.updateMonacoTheme(effectiveTheme);
     }
   }
 
-  updateMonacoTheme(theme: ThemeMode): void {
-    this.applyMonacoTheme(MONACO_THEMES[theme]);
+  updateMonacoTheme(effectiveTheme: 'light' | 'dark'): void {
+    this.applyMonacoTheme(MONACO_THEMES[effectiveTheme]);
   }
 
   applyMonacoTheme(targetTheme: string): boolean {
@@ -116,16 +148,19 @@ export class ThemeService implements OnDestroy {
   }
 
   initSystemThemeDetection(): void {
-    // Only follow system theme if no saved preference exists
-    if (localStorage.getItem(this.THEME_KEY)) {
+    // Only set up listener if current theme is 'system'
+    if (this.getCurrentTheme() !== 'system') {
       return;
     }
 
+    this.removeSystemThemeListener();
+
     this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     this.systemThemeListener = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem(this.THEME_KEY)) {
-        const newTheme: ThemeMode = e.matches ? 'dark' : 'light';
-        this.setTheme(newTheme, false);
+      if (this.getCurrentTheme() === 'system') {
+        const newEffectiveTheme: 'light' | 'dark' = e.matches ? 'dark' : 'light';
+        this.currentEffectiveTheme.next(newEffectiveTheme);
+        this.applyTheme(newEffectiveTheme);
       }
     };
 
@@ -140,6 +175,6 @@ export class ThemeService implements OnDestroy {
   }
 
   applyMonacoThemeManually(): void {
-    this.updateMonacoTheme(this.getCurrentTheme());
+    this.updateMonacoTheme(this.getEffectiveTheme());
   }
 }
