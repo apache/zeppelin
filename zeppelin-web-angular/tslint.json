@@ -142,6 +142,7 @@
     "variable-name": [true, "ban-keywords", "allow-leading-underscore"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"],
     "no-input-rename": true,
-    "constructor-params-order": true
+    "constructor-params-order": true,
+    "ordered-exports": [true, ["public-api.ts"]]
   }
 }
