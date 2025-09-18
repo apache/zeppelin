@@ -116,13 +116,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install Zeppelin backend
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-server,zeppelin-web,zeppelin-web-angular -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
-      - name: Install Angular dependencies
-        working-directory: zeppelin-web-angular
-        run: npm ci
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-server,zeppelin-web-angular ${MAVEN_ARGS}
       - name: Install Playwright browsers
         working-directory: zeppelin-web-angular
-        run: npx playwright install --with-deps
+        run: npx playwright@1.53.2 install --with-deps
       - name: Start Zeppelin server
         run: |
           ./mvnw exec:java -pl zeppelin-server -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args="--config zeppelin-site.xml" &
