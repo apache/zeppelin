@@ -107,28 +107,16 @@
           </execution>
 
           <execution>
-            <id>npm test</id>
+            <id>npm e2e</id>
             <goals>
               <goal>npm</goal>
             </goals>
-            <phase>test</phase>
+            <phase>integration-test</phase>
             <configuration>
               <skip>${web.e2e.disabled}</skip>
-              <arguments>run test</arguments>
+              <arguments>run e2e</arguments>
             </configuration>
           </execution>
-
-            <execution>
-              <id>npm e2e</id>
-              <goals>
-                <goal>npm</goal>
-              </goals>
-              <phase>integration-test</phase>
-              <configuration>
-                <skip>${web.e2e.disabled}</skip>
-                <arguments>run e2e</arguments>
-              </configuration>
-            </execution>
 
         </executions>
       </plugin>
