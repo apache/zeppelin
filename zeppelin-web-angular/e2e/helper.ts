@@ -31,7 +31,7 @@ export class ZeppelinHelper {
         { timeout: 60 * 1000 }
       );
     } catch (error) {
-      console.log('Zeppelin ready check failed, but continuing with test...');
+      throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
     }
   }
 }
