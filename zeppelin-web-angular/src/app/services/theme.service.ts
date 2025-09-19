@@ -101,9 +101,9 @@ export class ThemeService implements OnDestroy {
   toggleTheme(): void {
     const currentTheme = this.getCurrentTheme();
     if (currentTheme === 'system') {
-      this.setTheme('light');
-    } else if (currentTheme === 'light') {
       this.setTheme('dark');
+    } else if (currentTheme === 'dark') {
+      this.setTheme('light');
     } else {
       this.setTheme('system');
     }
