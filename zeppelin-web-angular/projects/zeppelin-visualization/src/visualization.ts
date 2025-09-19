@@ -17,7 +17,7 @@ import { Subject } from 'rxjs';
 import { GraphConfig } from '@zeppelin/sdk';
 import { Transformation } from './transformation';
 
-// tslint:disable-next-line
+// tslint:disable-next-line:no-any
 export abstract class Visualization<T = any> {
   // tslint:disable-next-line
   transformed: any;
@@ -47,6 +47,9 @@ export abstract class Visualization<T = any> {
   }
 }
 
-export interface VisualizationConstructor<T = any> {
-  new (portalOutlet: CdkPortalOutlet, viewContainerRef: ViewContainerRef, config: GraphConfig): Visualization<T>;
-}
+// tslint:disable-next-line:no-any
+export type VisualizationConstructor<T = any> = new (
+  portalOutlet: CdkPortalOutlet,
+  viewContainerRef: ViewContainerRef,
+  config: GraphConfig
+) => Visualization<T>;
