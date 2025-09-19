@@ -42,6 +42,12 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Playwright
+/playwright-report/
+/playwright-coverage/
+/test-results/
+/playwright/.cache/
+
 #
 .env
 yarn.lock
