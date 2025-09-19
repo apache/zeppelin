@@ -200,7 +200,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   private handleVisualizationBundles(bundles: HeliumVisualizationBundle[]): void {
-    console.log('bundles', bundles);
     const newlyAddedBundleIds = this.addNewVisualizationBundles(bundles);
 
     this.checkAndTriggerReRender(newlyAddedBundleIds);
