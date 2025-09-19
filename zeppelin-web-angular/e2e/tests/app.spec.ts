@@ -13,10 +13,10 @@
 import { expect, test } from '@playwright/test';
 import { ZeppelinHelper } from '../helper';
 import { BasePage } from '../models/base-page';
-import { testPageBeforeEach, PAGES } from '../utils';
+import { addPageAnnotationBeforeEach, PAGES } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
-  testPageBeforeEach(PAGES.APP);
+  addPageAnnotationBeforeEach(PAGES.APP);
   let zeppelinHelper: ZeppelinHelper;
   let basePage: BasePage;
 

@@ -100,16 +100,16 @@ export const PAGES = {
   }
 } as const;
 
-export function testPage(pageName: string, testInfo: TestInfo) {
+export function addPageAnnotation(pageName: string, testInfo: TestInfo) {
   testInfo.annotations.push({
     type: 'page',
     description: pageName
   });
 }
 
-export function testPageBeforeEach(pageName: string) {
+export function addPageAnnotationBeforeEach(pageName: string) {
   test.beforeEach(async ({}, testInfo) => {
-    testPage(pageName, testInfo);
+    addPageAnnotation(pageName, testInfo);
   });
 }
 
@@ -121,11 +121,11 @@ export function flattenPageComponents(pages: PageStructureType): string[] {
   const result: string[] = [];
 
   function flatten(obj: PageStructureType) {
-    for (const key in obj) {
-      if (typeof obj[key] === 'string') {
-        result.push(obj[key]);
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        flatten(obj[key]);
+    for (const value of Object.values(obj)) {
+      if (typeof value === 'string') {
+        result.push(value);
+      } else if (typeof value === 'object' && value !== null) {
+        flatten(value);
       }
     }
   }
