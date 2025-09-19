@@ -1040,6 +1040,7 @@
               <exclude>**/.prettierrc</exclude>
               <exclude>**/.prettierignore</exclude>
               <exclude>**/.editorconfig</exclude>
+              <exclude>**/src/styles/fonts/fontawesome*</exclude>
               <exclude>**/src/**/*.svg</exclude>
               <exclude>**/.gitkeep</exclude>
 

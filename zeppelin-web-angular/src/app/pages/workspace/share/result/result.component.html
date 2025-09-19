@@ -13,8 +13,15 @@
 <div class="setting-bar" *ngIf="result.type === datasetType.TABLE && !published">
   <div class="visualization-selector">
     <nz-radio-group [(ngModel)]="config?.graph.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
-      <label *ngFor="let item of visualizations" nz-radio-button [nz-tooltip]="item.name" [nzValue]="item.id">
-        <i nz-icon [nzType]="item.icon"></i>
+      <label
+        class="viz-icon"
+        *ngFor="let item of visualizations"
+        nz-radio-button
+        [nz-tooltip]="item.name"
+        [nzValue]="item.id"
+      >
+        <i *ngIf="!item.isClassic" nz-icon [nzType]="item.icon"></i>
+        <span *ngIf="item.isClassic" [innerHTML]="item.icon"></span>
       </label>
     </nz-radio-group>
   </div>
@@ -50,6 +57,25 @@
     <zeppelin-resize-handle></zeppelin-resize-handle>
   </nz-resize-handle>
   <ng-template cdkPortalOutlet></ng-template>
+  <!-- Transformation setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
+    [id]="'trsetting' + id + '_' + config?.graph.mode"
+    class="transformation-setting"
+  ></div>
+  <!-- Visualization setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
+    [id]="'vizsetting' + id + '_' + config?.graph.mode"
+    class="visualization-setting"
+  ></div>
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [id]="'p' + id + '_' + config?.graph.mode"
+    class="classic-visualization-container"
+  ></div>
   <ng-container [ngSwitch]="result?.type">
     <div
       *ngSwitchCase="datasetType.HTML"

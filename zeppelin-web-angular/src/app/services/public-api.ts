@@ -10,8 +10,10 @@
  * limitations under the License.
  */
 
+export * from './angular-drag-drop.service';
 export * from './array-ordering.service';
 export * from './base-url.service';
+export * from './classic-visualization.service';
 export * from './completion.service';
 export * from './configuration.service';
 export * from './credential.service';
@@ -20,11 +22,11 @@ export * from './interpreter.service';
 export * from './job-manager.service';
 export * from './message.service';
 export * from './ng-z.service';
+export * from './notebook.service';
 export * from './note-list.service';
 export * from './note-status.service';
 export * from './note-var-share.service';
 export * from './notebook-repos.service';
-export * from './notebook.service';
 export * from './runtime-compiler.service';
 export * from './save-as.service';
 export * from './security.service';

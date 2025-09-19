@@ -29,8 +29,6 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
 
   let visualizationBundles = [];
   let visualizationPackageOrder = [];
-  // name `heliumBundles` should be same as `HeliumBundleFactory.HELIUM_BUNDLES_VAR`
-  let heliumBundles = [];
   // map for `{ magic: interpreter }`
   let spellPerMagic = {};
   // map for `{ magic: package-name }`
@@ -281,6 +279,8 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
 
   // load should be promise
   this.load = p.then((availableBundles) => {
+    // Property name `_heliumBundles` should be same as `HeliumBundleFactory.HELIUM_BUNDLES_VAR`
+    window._heliumBundles = [];
     // evaluate bundles
     availableBundles.map((b) => {
       // eslint-disable-next-line no-eval
@@ -288,7 +288,7 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
     });
 
     // extract bundles by type
-    heliumBundles.map((b) => {
+    window._heliumBundles.forEach((b) => {
       if (b.type === HeliumType.SPELL) {
         const spell = new b.class(); // eslint-disable-line new-cap
         const pkgName = b.id;
@@ -298,6 +298,7 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
         visualizationBundles.push(b);
       }
     });
+    delete window._heliumBundles;
   });
 
   this.init = function() {

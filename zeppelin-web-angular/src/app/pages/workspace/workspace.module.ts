@@ -16,7 +16,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { HeliumManagerModule } from '@zeppelin/helium-manager';
 import { ShareModule } from '@zeppelin/share';
 
 import { NzMessageModule } from 'ng-zorro-antd/message';
@@ -33,7 +32,6 @@ import { WorkspaceRoutingModule } from './workspace-routing.module';
     HttpClientModule,
     ShareModule,
     RouterModule,
-    HeliumManagerModule,
     NzMessageModule
   ]
 })
