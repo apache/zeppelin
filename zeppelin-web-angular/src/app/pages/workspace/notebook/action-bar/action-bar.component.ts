@@ -43,7 +43,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   @Input() noteRevisions: RevisionListItem[] = [];
   @Input() currentRevision?: string;
   @Input() collaborativeMode = false;
-  @Input() collaborativeModeUsers = [];
+  @Input() collaborativeModeUsers: string[] = [];
   @Input() revisionView = false;
   @Input() activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
   @Output() readonly activatedExtensionChange = new EventEmitter<
@@ -145,7 +145,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.messageService.paragraphClearAllOutput(this.note.id);
   }
 
-  setCronScheduler(cronExpr: string) {
+  setCronScheduler(cronExpr: string | undefined) {
     if (cronExpr) {
       if (!this.note.config.cronExecutingUser) {
         this.note.config.cronExecutingUser = this.ticketService.ticket.principal;

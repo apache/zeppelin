@@ -46,14 +46,9 @@
           </ng-container>
           <ng-container *ngIf="editMode">
             <td>
-              <input
-                *ngIf="setting.type === 'INPUT'"
-                nzSize="small"
-                nz-input
-                [formControl]="settingFormArray.controls[i]"
-              />
+              <input *ngIf="setting.type === 'INPUT'" nzSize="small" nz-input [formControl]="getSettingControl(i)" />
 
-              <nz-select *ngIf="setting.type === 'DROPDOWN'" [formControl]="settingFormArray.controls[i]">
+              <nz-select *ngIf="setting.type === 'DROPDOWN'" [formControl]="getSettingControl(i)">
                 <nz-option *ngFor="let option of setting.value" [nzLabel]="option" [nzValue]="option"></nz-option>
               </nz-select>
             </td>

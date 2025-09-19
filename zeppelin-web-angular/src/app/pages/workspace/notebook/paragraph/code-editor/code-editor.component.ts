@@ -23,7 +23,7 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-import { editor as MonacoEditor, IDisposable, IPosition, KeyCode, Position } from 'monaco-editor';
+import { editor as MonacoEditor, IDisposable, IPosition, KeyCode } from 'monaco-editor';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
@@ -43,10 +43,10 @@ type IEditor = MonacoEditor.IEditor;
 export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestroy, AfterViewInit {
   @Input() position: IPosition | null = null;
   @Input() readOnly = false;
-  @Input() language = 'text';
+  @Input() language?: string = 'text';
   @Input() paragraphControl!: NotebookParagraphControlComponent;
-  @Input() lineNumbers = false;
-  @Input() focus = false;
+  @Input() lineNumbers?: boolean = false;
+  @Input() focus?: boolean = false;
   @Input() collaborativeMode = false;
   @Input() text!: string;
   @Input() fontSize: number | undefined;

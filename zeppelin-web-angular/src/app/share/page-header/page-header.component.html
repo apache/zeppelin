@@ -13,7 +13,7 @@
 <nz-card class="header">
   <h2>
     {{ title }}
-    <span class="header-extra"><ng-container [ngTemplateOutlet]="extra"></ng-container></span>
+    <span class="header-extra"><ng-container [ngTemplateOutlet]="extra || null"></ng-container></span>
   </h2>
   <p>
     <ng-container [ngTemplateOutlet]="description"></ng-container>

@@ -51,8 +51,8 @@ export abstract class ParagraphBase extends MessageListenersManager {
   revisionView = false;
   diffMatchPatch = new DiffMatchPatch();
   isParagraphRunning = false;
-  results: ParagraphResults | undefined = [];
-  configs: ParagraphConfigResults | undefined = {};
+  results: ParagraphIResultsMsgItem[] = [];
+  configs: ParagraphConfigResults = {};
   progress = 0;
   colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   editorSetting: ParagraphEditorSetting = {
@@ -292,8 +292,8 @@ export abstract class ParagraphBase extends MessageListenersManager {
 
   setResults(paragraph: ParagraphItem) {
     if (paragraph.results) {
-      this.results = paragraph.results.msg;
-      this.configs = paragraph.config.results;
+      this.results = paragraph.results.msg || [];
+      this.configs = paragraph.config.results || {};
     }
     if (!paragraph.config) {
       paragraph.config = {};

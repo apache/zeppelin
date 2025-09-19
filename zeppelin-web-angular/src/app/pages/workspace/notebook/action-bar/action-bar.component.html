@@ -171,7 +171,9 @@
           <li nz-menu-item *ngFor="let r of noteRevisions" (click)="visitRevision(r)">
             <strong>{{ r.message }}</strong>
             <nz-divider nzType="vertical"></nz-divider>
-            <em class="font-sm opacity-05">{{ (r.time * 1000 | date: 'MMMM dd yyyy, h:mm:ss a') || 'Current' }}</em>
+            <em class="font-sm opacity-05">
+              {{ r.time === undefined ? 'Current' : (r.time * 1000 | date: 'MMMM dd yyyy, h:mm:ss a') }}
+            </em>
           </li>
         </ul>
       </nz-dropdown-menu>

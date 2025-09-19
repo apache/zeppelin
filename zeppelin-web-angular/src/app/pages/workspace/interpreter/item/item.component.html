@@ -13,8 +13,8 @@
 <nz-card
   [class.edit]="mode === 'edit'"
   class="interpreter-item"
-  [nzTitle]="mode !== 'create' ? viewModeTitleTemplate : null"
-  [nzExtra]="mode === 'view' ? extraTemplate : null"
+  [nzTitle]="mode !== 'create' ? viewModeTitleTemplate : undefined"
+  [nzExtra]="mode === 'view' ? extraTemplate : undefined"
 >
   <ng-template #viewModeTitleTemplate>
     <div class="card-title" *ngIf="interpreter">
@@ -125,11 +125,11 @@
       [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'"
     >
       <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
-        {{ optionFormGroup.get('perUser').value }}
+        {{ optionFormGroup.get('perUser')?.value || '' }}
       </span>
       <ng-template #perNote>
         <span>
-          {{ optionFormGroup.get('perNote').value }}
+          {{ optionFormGroup.get('perNote')?.value || '' }}
         </span>
       </ng-template>
       <i nz-icon nzType="down"></i>
@@ -173,7 +173,7 @@
         [nzDropdownMenu]="perNoteMenu"
         [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'"
       >
-        {{ optionFormGroup.get('perNote').value }}
+        {{ optionFormGroup.get('perNote')?.value || '' }}
         <i nz-icon nzType="down"></i>
       </a>
       <nz-dropdown-menu #perNoteMenu="nzDropdownMenu">
@@ -197,7 +197,7 @@
       "
     >
       <button
-        *ngIf="optionFormGroup.get('perNote').value === sessionOptionMap.shared; else minusButton"
+        *ngIf="optionFormGroup.get('perNote')?.value === sessionOptionMap.shared; else minusButton"
         nz-button
         (click)="setPerNoteOrUserOption('perNote', 'scoped')"
       >
@@ -232,7 +232,7 @@
       </nz-form-control>
     </nz-form-item>
 
-    <ng-container *ngIf="optionForm.control.get('isExistingProcess').value">
+    <ng-container *ngIf="optionForm.control.get('isExistingProcess')?.value">
       <nz-form-item>
         <nz-form-label>Host</nz-form-label>
         <nz-form-control>
@@ -260,7 +260,7 @@
       </nz-form-control>
     </nz-form-item>
 
-    <ng-container *ngIf="optionForm.control.get('setPermission').value">
+    <ng-container *ngIf="optionForm.control.get('setPermission')?.value">
       <nz-form-item>
         <nz-form-label>Owners</nz-form-label>
         <nz-form-control
@@ -299,11 +299,11 @@
         </thead>
         <tbody formArrayName="properties">
           <tr *ngFor="let control of propertiesFormArray.controls; index as i" [formGroupName]="i">
-            <td>{{ control.get('key').value }}</td>
+            <td>{{ control.get('key')?.value || '' }}</td>
             <td>
               <ng-container
                 *ngIf="mode !== 'view'; else viewModePropertiesValue"
-                [ngSwitch]="control.get('type').value"
+                [ngSwitch]="control.get('type')?.value"
               >
                 <textarea
                   *ngSwitchCase="'textarea'"
@@ -317,33 +317,39 @@
                 <input *ngSwitchCase="'url'" nz-input type="url" formControlName="value" placeholder="" />
                 <input *ngSwitchCase="'password'" nz-input type="password" formControlName="value" placeholder="" />
                 <label *ngSwitchCase="'checkbox'" nz-checkbox formControlName="value">
-                  {{ control.get('value').value }}
+                  {{ control.get('value')?.value || '' }}
                 </label>
               </ng-container>
               <ng-template #viewModePropertiesValue>
-                <ng-container [ngSwitch]="control.get('type').value">
+                <ng-container [ngSwitch]="control.get('type')?.value">
                   <ng-container *ngSwitchCase="'password'">******</ng-container>
                   <ng-container *ngSwitchCase="'url'">
-                    <a [href]="control.get('value').value" target="_blank">{{ control.get('value').value }}</a>
+                    <a [href]="control.get('value')?.value || ''" target="_blank">
+                      {{ control.get('value')?.value || '' }}
+                    </a>
                   </ng-container>
-                  <ng-container *ngSwitchDefault>{{ control.get('value').value }}</ng-container>
+                  <ng-container *ngSwitchDefault>{{ control.get('value')?.value || '' }}</ng-container>
                 </ng-container>
               </ng-template>
             </td>
-            <td *ngIf="mode === 'create'">{{ control.get('description').value }}</td>
+            <td *ngIf="mode === 'create'">{{ control.get('description')?.value || '' }}</td>
             <td *ngIf="mode !== 'view'">
               <button class="transparent-button" (click)="removeProperty(i)" nz-button nzShape="circle" nzSize="small">
                 <i nz-icon nzType="close" nzTheme="outline"></i>
               </button>
             </td>
           </tr>
-          <tr *ngIf="mode !== 'view'" [formGroup]="editingPropertiesFormGroup" #editingForm="ngForm">
+          <tr
+            *ngIf="mode !== 'view' && editingPropertiesFormGroup"
+            [formGroup]="editingPropertiesFormGroup"
+            #editingForm="ngForm"
+          >
             <td>
               <input nz-input formControlName="key" placeholder="" />
             </td>
             <td>
               <div class="edit-properties-value">
-                <ng-container [ngSwitch]="editingForm.control.get('type').value">
+                <ng-container [ngSwitch]="editingForm.control.get('type')?.value">
                   <textarea
                     *ngSwitchCase="'textarea'"
                     nz-input
@@ -356,7 +362,7 @@
                   <input *ngSwitchCase="'url'" nz-input type="url" formControlName="value" placeholder="" />
                   <input *ngSwitchCase="'password'" nz-input type="password" formControlName="value" placeholder="" />
                   <label *ngSwitchCase="'checkbox'" nz-checkbox formControlName="value">
-                    {{ editingForm.control.get('value').value }}
+                    {{ editingForm.control.get('value')?.value || '' }}
                   </label>
                 </ng-container>
                 <nz-select class="type-selector" formControlName="type" (ngModelChange)="onTypeChange($event)">
@@ -410,11 +416,11 @@
               </td>
             </ng-container>
             <ng-template #viewModeDependencies>
-              <td>{{ control.get('groupArtifactVersion').value }}</td>
-              <td>{{ control.get('exclusions').value }}</td>
+              <td>{{ control.get('groupArtifactVersion')?.value || '' }}</td>
+              <td>{{ control.get('exclusions')?.value || '' }}</td>
             </ng-template>
           </tr>
-          <tr *ngIf="mode !== 'view'" [formGroup]="editingDependenceFormGroup">
+          <tr *ngIf="mode !== 'view' && editingDependenceFormGroup" [formGroup]="editingDependenceFormGroup">
             <td>
               <input
                 nz-input
