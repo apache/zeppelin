@@ -14,6 +14,7 @@
 import { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { promises as fs } from 'fs';
 import { flatMap, sortBy } from 'lodash';
+import { join } from 'path';
 import { scanDirectory, Results } from 'scandirectory';
 import cfg from './reporter.coverage.config';
 
@@ -23,7 +24,15 @@ const TEST_STATUS = {
   FAILED: 'failed'
 } as const;
 
-type ResultsType = Array<[string, number, number, number, number, number]>;
+interface ResultType {
+  path: string;
+  total: number;
+  success: number;
+  failed: number;
+  skipped: number;
+  rate: number;
+}
+type ResultsType = ResultType[];
 type TestStatusType = typeof TEST_STATUS[keyof typeof TEST_STATUS];
 interface TestedPathType {
   success: number;
@@ -32,12 +41,6 @@ interface TestedPathType {
 }
 
 const OUTPUT_FILE_NAME = 'coverage.log';
-const TABLE_COLUMNS = {
-  TOTAL: 1,
-  SUCCESS: 2,
-  FAILED: 3,
-  SKIPPED: 4
-} as const;
 
 class CoverageReporter implements Reporter {
   testedPaths = new Map<string, TestedPathType>();
@@ -54,6 +57,32 @@ class CoverageReporter implements Reporter {
 
     this.targetPaths = this.processScannedFiles(results);
     console.log('Target paths:', this.targetPaths.length);
+  }
+
+  onTestEnd(test: TestCase, result: TestResult) {
+    const status =
+      result.status === TEST_STATUS.PASSED || result.status === TEST_STATUS.SKIPPED
+        ? result.status
+        : TEST_STATUS.FAILED;
+    const pages = this.extractPageAnnotations(test);
+    const prevTestStatus = this.testedIds.get(test.id);
+
+    pages.forEach(page => {
+      this.updateTestedPath(page, status, prevTestStatus);
+    });
+
+    this.testedIds.set(test.id, status);
+  }
+
+  async onEnd(result: FullResult) {
+    const results = this.getResults();
+
+    console.log(this.formatTable(results));
+    console.log(this.getTestedPagesResult(results));
+    console.log(this.getTestCasesResult(results));
+    console.log(`Finished the run: ${result.status}`);
+
+    await this.saveResultsToFile(results, result.status);
   }
 
   processScannedFiles(results: Results): string[] {
@@ -87,21 +116,6 @@ class CoverageReporter implements Reporter {
     }
 
     return true;
-  }
-
-  onTestEnd(test: TestCase, result: TestResult) {
-    const status =
-      result.status === TEST_STATUS.PASSED || result.status === TEST_STATUS.SKIPPED
-        ? (result.status as TestStatusType)
-        : TEST_STATUS.FAILED;
-    const pages = this.extractPageAnnotations(test);
-    const prevTestStatus = this.testedIds.get(test.id);
-
-    pages.forEach(page => {
-      this.updateTestedPath(page, status, prevTestStatus);
-    });
-
-    this.testedIds.set(test.id, status);
   }
 
   extractPageAnnotations(test: TestCase): string[] {
@@ -157,7 +171,7 @@ class CoverageReporter implements Reporter {
     const testedPaths = Array.from(this.testedPaths.keys());
     const results = flatMap(this.targetPaths, path => this.processTargetPath(path, testedPaths));
 
-    return sortBy(results, [5, 1, 0]).reverse();
+    return sortBy(results, ['rate', 'total', 'path']).reverse();
   }
 
   processTargetPath(targetPath: string, testedPaths: string[]): ResultsType {
@@ -167,7 +181,7 @@ class CoverageReporter implements Reporter {
       return matchingPaths.map(path => this.createResultEntry(path));
     }
 
-    return [[targetPath, 0, 0, 0, 0, 0]];
+    return [{ path: targetPath, total: 0, success: 0, failed: 0, skipped: 0, rate: 0 }];
   }
 
   findMatchingPaths(targetPath: string, testedPaths: string[]): string[] {
@@ -181,23 +195,23 @@ class CoverageReporter implements Reporter {
     });
   }
 
-  createResultEntry(path: string): [string, number, number, number, number, number] {
+  createResultEntry(path: string): ResultType {
     const testData = this.testedPaths.get(path);
     if (!testData) {
-      return [path, 0, 0, 0, 0, 0];
+      return { path, total: 0, success: 0, failed: 0, skipped: 0, rate: 0 };
     }
 
     const { success, skipped, failed } = testData;
     const total = success + failed + skipped;
     const rate = this.toRate(success, total - skipped);
 
-    return [path, total, success, failed, skipped, rate];
+    return { path, total, success, failed, skipped, rate };
   }
 
   getTestedPagesResult(results: ResultsType) {
-    const testedList = results.filter(item => !!item[TABLE_COLUMNS.TOTAL]);
-    const failedList = testedList.filter(item => !!item[TABLE_COLUMNS.FAILED]);
-    const skippedList = testedList.filter(item => item[TABLE_COLUMNS.SKIPPED] === item[TABLE_COLUMNS.TOTAL]);
+    const testedList = results.filter(item => !!item.total);
+    const failedList = testedList.filter(item => !!item.failed);
+    const skippedList = testedList.filter(item => item.skipped === item.total);
 
     const failed = failedList.length;
     const tested = testedList.length;
@@ -213,10 +227,10 @@ class CoverageReporter implements Reporter {
   getTestCasesResult(results: ResultsType) {
     const stats = results.reduce(
       (acc, item) => ({
-        total: acc.total + item[TABLE_COLUMNS.TOTAL],
-        failed: acc.failed + item[TABLE_COLUMNS.FAILED],
-        skipped: acc.skipped + item[TABLE_COLUMNS.SKIPPED],
-        success: acc.success + item[TABLE_COLUMNS.SUCCESS]
+        total: acc.total + item.total,
+        failed: acc.failed + item.failed,
+        skipped: acc.skipped + item.skipped,
+        success: acc.success + item.success
       }),
       { total: 0, failed: 0, skipped: 0, success: 0 }
     );
@@ -228,22 +242,11 @@ class CoverageReporter implements Reporter {
   getTableData(results: ResultsType): Array<Array<string | number>> {
     const header = ['No.', 'Path', 'Test cases', 'Successes', 'Failures', 'Skipped', 'Success rate'];
     const rows = results.map((item, index) => {
-      const [path, total, success, failed, skipped, rate] = item;
+      const { path, total, success, failed, skipped, rate } = item;
       return [index + 1, path, total, success, failed, skipped, `${rate.toFixed(2)}%`];
     });
 
     return [header, ...rows];
-  }
-
-  async onEnd(result: FullResult) {
-    const results = this.getResults();
-
-    console.log(this.formatTable(results));
-    console.log(this.getTestedPagesResult(results));
-    console.log(this.getTestCasesResult(results));
-    console.log(`Finished the run: ${result.status}`);
-
-    await this.saveResultsToFile(results, result.status);
   }
 
   formatTable(results: ResultsType): string {
@@ -289,7 +292,7 @@ class CoverageReporter implements Reporter {
 
     try {
       await fs.mkdir(cfg.outputPath, { recursive: true });
-      await fs.writeFile(`${cfg.outputPath}/${OUTPUT_FILE_NAME}`, contents, 'utf8');
+      await fs.writeFile(join(cfg.outputPath, OUTPUT_FILE_NAME), contents, 'utf8');
       console.log('The file has been saved!');
     } catch (e) {
       console.error('Error saving coverage report:', e);
