@@ -22,7 +22,8 @@
       (function() {
         const savedTheme = localStorage.getItem('zeppelin-theme');
         const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+        const isDark =
+          savedTheme === 'dark' || (savedTheme === 'system' && systemPrefersDark) || (!savedTheme && systemPrefersDark);
 
         if (isDark) {
           document.documentElement.classList.add('dark');

@@ -38,6 +38,6 @@ export class AppComponent implements OnInit {
   constructor(private router: Router, private ticketService: TicketService, private themeService: ThemeService) {}
 
   ngOnInit(): void {
-    this.themeService.applyMonacoThemeManually();
+    this.themeService.updateMonacoTheme();
   }
 }
