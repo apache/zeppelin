@@ -29,7 +29,7 @@ export class ThemeToggleComponent implements OnInit, OnDestroy {
 
   constructor(private themeService: ThemeService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.currentTheme = this.themeService.getCurrentTheme();
     this.isDarkMode = this.currentTheme === 'dark';
 
@@ -42,16 +42,16 @@ export class ThemeToggleComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  toggleTheme(): void {
+  toggleTheme() {
     this.themeService.toggleTheme();
   }
 
-  setTheme(theme: ThemeMode): void {
+  setTheme(theme: ThemeMode) {
     this.themeService.setTheme(theme);
   }
 
