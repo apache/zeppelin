@@ -13,15 +13,15 @@ const MONACO_THEMES = {
   providedIn: 'root'
 })
 export class ThemeService implements OnDestroy {
-  private readonly THEME_KEY = THEME_STORAGE_KEY;
   private currentTheme: BehaviorSubject<ThemeMode>;
   public theme$: Observable<ThemeMode>;
   private currentEffectiveTheme: BehaviorSubject<'light' | 'dark'>;
   public effectiveTheme$: Observable<'light' | 'dark'>;
   private mediaQuery?: MediaQueryList;
   private systemThemeListener?: (e: MediaQueryListEvent) => void;
+  private systemStartedWith: 'light' | 'dark' | null = null;
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.removeSystemThemeListener();
     this.currentTheme.complete();
     this.currentEffectiveTheme.complete();
@@ -38,12 +38,12 @@ export class ThemeService implements OnDestroy {
 
     this.initSystemThemeDetection();
 
-    this.applyTheme(initialEffectiveTheme, false);
+    this.applyTheme(initialEffectiveTheme);
   }
 
   detectInitialTheme(): ThemeMode {
     try {
-      const savedTheme = localStorage.getItem(this.THEME_KEY) as ThemeMode | null;
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
       if (savedTheme && this.isValidTheme(savedTheme)) {
         return savedTheme;
       }
@@ -76,7 +76,7 @@ export class ThemeService implements OnDestroy {
     return this.currentEffectiveTheme.value === 'dark';
   }
 
-  setTheme(theme: ThemeMode, save: boolean = true): void {
+  setTheme(theme: ThemeMode, save: boolean = true) {
     if (this.currentTheme.value === theme) {
       return;
     }
@@ -87,7 +87,7 @@ export class ThemeService implements OnDestroy {
     this.applyTheme(effectiveTheme);
 
     if (save) {
-      localStorage.setItem(this.THEME_KEY, theme);
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
     }
 
     // Update system theme listener based on new theme
@@ -98,18 +98,33 @@ export class ThemeService implements OnDestroy {
     }
   }
 
-  toggleTheme(): void {
+  toggleTheme() {
     const currentTheme = this.getCurrentTheme();
+
     if (currentTheme === 'system') {
-      this.setTheme('dark');
+      const currentEffectiveTheme = this.getEffectiveTheme();
+      this.systemStartedWith = currentEffectiveTheme;
+      this.setTheme(currentEffectiveTheme === 'dark' ? 'light' : 'dark');
     } else if (currentTheme === 'dark') {
-      this.setTheme('light');
+      if (this.systemStartedWith === 'dark') {
+        this.setTheme('system');
+        this.systemStartedWith = null;
+      } else {
+        this.setTheme('light');
+      }
     } else {
-      this.setTheme('system');
+      if (this.systemStartedWith === 'light') {
+        this.setTheme('system');
+        this.systemStartedWith = null;
+      } else if (this.systemStartedWith === 'dark') {
+        this.setTheme('dark');
+      } else {
+        this.setTheme('system');
+      }
     }
   }
 
-  applyTheme(effectiveTheme: 'light' | 'dark', updateExternal: boolean = true): void {
+  applyTheme(effectiveTheme: 'light' | 'dark') {
     const html = document.documentElement;
     const body = document.body;
 
@@ -121,33 +136,27 @@ export class ThemeService implements OnDestroy {
 
     html.style.setProperty('color-scheme', effectiveTheme);
 
-    if (updateExternal) {
-      this.updateMonacoTheme(effectiveTheme);
-    }
+    this.updateMonacoTheme();
   }
 
-  updateMonacoTheme(effectiveTheme: 'light' | 'dark'): void {
-    this.applyMonacoTheme(MONACO_THEMES[effectiveTheme]);
-  }
-
-  applyMonacoTheme(targetTheme: string): boolean {
+  updateMonacoTheme() {
     if (!monaco?.editor) {
-      return false;
+      return;
     }
+
+    const effectiveTheme = this.getEffectiveTheme();
 
     try {
-      monaco.editor.setTheme(targetTheme);
-      return true;
-    } catch {
-      return false;
+      // Fix editor not applying dark mode on first load when theme is set to "system"
+      requestAnimationFrame(() => {
+        monaco.editor.setTheme(MONACO_THEMES[effectiveTheme]);
+      });
+    } catch (error) {
+      console.error('Monaco theme setting failed:', error);
     }
   }
 
-  onThemeChange(): Observable<ThemeMode> {
-    return this.theme$;
-  }
-
-  initSystemThemeDetection(): void {
+  initSystemThemeDetection() {
     // Only set up listener if current theme is 'system'
     if (this.getCurrentTheme() !== 'system') {
       return;
@@ -167,14 +176,10 @@ export class ThemeService implements OnDestroy {
     this.mediaQuery.addEventListener('change', this.systemThemeListener);
   }
 
-  removeSystemThemeListener(): void {
+  removeSystemThemeListener() {
     if (this.mediaQuery && this.systemThemeListener) {
       this.mediaQuery.removeEventListener('change', this.systemThemeListener);
       this.systemThemeListener = undefined;
     }
-  }
-
-  applyMonacoThemeManually(): void {
-    this.updateMonacoTheme(this.getEffectiveTheme());
   }
 }
