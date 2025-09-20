@@ -240,6 +240,11 @@ html.dark .markdown-body pre code {
   color: inherit !important;
 }
 
+/* Table row hover color fixes */
+html.dark .ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: #262626 !important;
+}
+
 /* Table placeholder row hover color fix */
 html.dark .ant-table-tbody > tr.ant-table-placeholder:hover > td {
   background-color: transparent !important;
