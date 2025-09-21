@@ -43,7 +43,7 @@ interface NotebookParagraphKeyboardEventHandler {
 }
 
 // If any ParagraphActions is missing here, TS compiler will complain.
-export const ParagraphActionToHandlerName: Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler> = {
+export const ParagraphActionToHandlerName = {
   [ParagraphActions.Run]: 'handleRun',
   [ParagraphActions.RunAbove]: 'handleRunAbove',
   [ParagraphActions.RunBelow]: 'handleRunBelow',
@@ -69,7 +69,10 @@ export const ParagraphActionToHandlerName: Record<ParagraphActions, keyof Notebo
   [ParagraphActions.PasteLine]: 'handlePasteLine',
   [ParagraphActions.SearchInsideCode]: 'handleSearchInsideCode',
   [ParagraphActions.FindInCode]: 'handleFindInCode'
-};
+} as const;
+// TODO: Replace `as const` with `satisfies Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler>` when typescript version is over 4.9.
+//       This allows checking both keys and values at the type level,
+//       while preserving the binding between them.
 
 const MonacoHandledParagraphActions = [
   ParagraphActions.SwitchEditor,
@@ -77,6 +80,9 @@ const MonacoHandledParagraphActions = [
   ParagraphActions.PasteLine,
   ParagraphActions.SearchInsideCode
 ] as const;
+// TODO: Replace `as const` with `satisfies ParagraphActions[]` when typescript version is over 4.9.
+//       This ensures that the array contains only valid ParagraphActions,
+//       while preserving the literal value of the each element.
 
 type MonacoHandledParagraphAction = typeof MonacoHandledParagraphActions[number];
 
