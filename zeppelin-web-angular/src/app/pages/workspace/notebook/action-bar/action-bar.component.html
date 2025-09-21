@@ -179,7 +179,7 @@
       </nz-dropdown-menu>
     </nz-button-group>
     <nz-button-group nzSize="small">
-      <button 
+      <button
         nz-button
         nz-dropdown
         [nzDropdownMenu]="searchMenu"
@@ -188,7 +188,7 @@
         nzTooltipTitle="Search code"
         nzTooltipTrigger="hover"
         (nzVisibleChange)="onSearchMenuOpenChange($event)"
-        >
+      >
         <i nz-icon nzType="search" nzTheme="outline"></i>
       </button>
       <!-- Search Code Dropdown UI -->
@@ -199,8 +199,8 @@
               <input type="text" nz-input [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
             </nz-input-group>
             <nz-button-group style="display: flex; align-items: center; flex-wrap: nowrap;">
-              <button nz-button (click)="onFindPrevClick(searchText)"> <i nz-icon nzType="left"></i></button>
-              <button nz-button (click)="onFindNextClick(searchText)"> <i nz-icon nzType="right"></i></button>
+              <button nz-button (click)="onFindPrevClick(searchText)"><i nz-icon nzType="left"></i></button>
+              <button nz-button (click)="onFindNextClick(searchText)"><i nz-icon nzType="right"></i></button>
             </nz-button-group>
           </div>
           <div style="display: flex;">
