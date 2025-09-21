@@ -23,6 +23,7 @@ export enum ParagraphActions {
   InsertCopyOfParagraphBelow = 'Paragraph:InsertCopyOfParagraphBelow',
   MoveParagraphUp = 'Paragraph:MoveParagraphUp',
   MoveParagraphDown = 'Paragraph:MoveParagraphDown',
+  SwitchEditor = 'Paragraph:SwitchEditor',
   SwitchEnable = 'Paragraph:SwitchEnable',
   SwitchOutputShow = 'Paragraph:SwitchOutputShow',
   SwitchLineNumber = 'Paragraph:SwitchLineNumber',
@@ -31,5 +32,8 @@ export enum ParagraphActions {
   Link = 'Paragraph:Link',
   ReduceWidth = 'Paragraph:ReduceWidth',
   IncreaseWidth = 'Paragraph:IncreaseWidth',
+  CutLine = 'Paragraph:CutLine',
+  PasteLine = 'Paragraph:PasteLine',
+  SearchInsideCode = 'Paragraph:SearchInsideCode',
   FindInCode = 'Paragraph:FindInCode'
 }

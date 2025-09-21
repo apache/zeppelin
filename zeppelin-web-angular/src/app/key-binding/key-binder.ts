@@ -11,17 +11,20 @@
  */
 
 import { ElementRef } from '@angular/core';
+import { editor as MonacoEditor } from 'monaco-editor';
 import { from, Subject } from 'rxjs';
 import { map, mergeMap, takeUntil } from 'rxjs/operators';
 
 import { ShortcutService } from '@zeppelin/services';
+import * as _ from 'lodash';
+import { KeyCodeConverter } from './key-code-converter';
 import { ParagraphActions } from './paragraph-actions';
 import { ShortcutsMap } from './shortcuts-map';
 
 export class KeyBinder {
   private events$ = new Subject<{
     action: ParagraphActions;
-    event: KeyboardEvent;
+    event: KeyboardEvent | null;
   }>();
 
   constructor(
@@ -50,5 +53,22 @@ export class KeyBinder {
         takeUntil(this.destroySubject)
       )
       .subscribe(({ action, event }) => this.events$.next({ action, event }));
+  }
+
+  initKeyBindingsOnMonaco(editor: MonacoEditor.IStandaloneCodeEditor) {
+    _.chain(ShortcutsMap)
+      .toPairs()
+      .flatMap(([action, keys]) => _.map(_.castArray(keys), key => ({ action, key })))
+
+      .forEach(({ action, key }) => {
+        const keyBinding = KeyCodeConverter.angularToMonacoKeyBinding(key);
+        if (_.isNil(keyBinding)) {
+          return;
+        }
+        editor.addCommand(keyBinding, () => {
+          this.events$.next({ action: action as ParagraphActions, event: null });
+        });
+      })
+      .value();
   }
 }
