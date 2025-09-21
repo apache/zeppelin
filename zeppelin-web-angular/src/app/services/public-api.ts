@@ -20,7 +20,6 @@ export * from './credential.service';
 export * from './helium.service';
 export * from './interpreter.service';
 export * from './job-manager.service';
-export * from './key-binding.service';
 export * from './message.service';
 export * from './ng-z.service';
 export * from './note-list.service';

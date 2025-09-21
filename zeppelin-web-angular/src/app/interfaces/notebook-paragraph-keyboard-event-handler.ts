@@ -10,6 +10,8 @@
  * limitations under the License.
  */
 
+import { ParagraphActions } from '@zeppelin/key-binding';
+
 export interface NotebookParagraphKeyboardEventHandler {
   handleRun(event: KeyboardEvent): void;
   handleRunAbove(event: KeyboardEvent): void;
@@ -33,3 +35,28 @@ export interface NotebookParagraphKeyboardEventHandler {
   handleIncreaseWidth(event: KeyboardEvent): void;
   handleFindInCode(event: KeyboardEvent): void;
 }
+
+// If any ParagraphActions is missing here, TS compiler will complain.
+export const ParagraphActionToHandlerName: Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler> = {
+  [ParagraphActions.Run]: 'handleRun',
+  [ParagraphActions.RunAbove]: 'handleRunAbove',
+  [ParagraphActions.RunBelow]: 'handleRunBelow',
+  [ParagraphActions.Cancel]: 'handleCancel',
+  [ParagraphActions.MoveCursorUp]: 'handleMoveCursorUp',
+  [ParagraphActions.MoveCursorDown]: 'handleMoveCursorDown',
+  [ParagraphActions.Delete]: 'handleDelete',
+  [ParagraphActions.InsertAbove]: 'handleInsertAbove',
+  [ParagraphActions.InsertBelow]: 'handleInsertBelow',
+  [ParagraphActions.InsertCopyOfParagraphBelow]: 'handleInsertCopyOfParagraphBelow',
+  [ParagraphActions.MoveParagraphUp]: 'handleMoveParagraphUp',
+  [ParagraphActions.MoveParagraphDown]: 'handleMoveParagraphDown',
+  [ParagraphActions.SwitchEnable]: 'handleSwitchEnable',
+  [ParagraphActions.SwitchOutputShow]: 'handleSwitchOutputShow',
+  [ParagraphActions.SwitchLineNumber]: 'handleSwitchLineNumber',
+  [ParagraphActions.SwitchTitleShow]: 'handleSwitchTitleShow',
+  [ParagraphActions.Clear]: 'handleClear',
+  [ParagraphActions.Link]: 'handleLink',
+  [ParagraphActions.ReduceWidth]: 'handleReduceWidth',
+  [ParagraphActions.IncreaseWidth]: 'handleIncreaseWidth',
+  [ParagraphActions.FindInCode]: 'handleFindInCode'
+};

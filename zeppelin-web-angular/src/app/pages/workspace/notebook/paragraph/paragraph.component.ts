@@ -42,15 +42,16 @@ import {
 } from '@zeppelin/sdk';
 import {
   HeliumService,
-  KeyBindingService,
   MessageService,
   NgZService,
   NoteStatusService,
-  NoteVarShareService
+  NoteVarShareService,
+  ShortcutService
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 
-import { NotebookParagraphKeyboardEventHandler } from '@zeppelin/interfaces';
+import { NotebookParagraphKeyboardEventHandler, ParagraphActionToHandlerName } from '@zeppelin/interfaces';
+import { KeyBinder, ParagraphActions } from '@zeppelin/key-binding';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
@@ -96,6 +97,8 @@ export class NotebookParagraphComponent extends ParagraphBase
 
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+
+  private keyBinderService: KeyBinder;
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
@@ -550,19 +553,41 @@ export class NotebookParagraphComponent extends ParagraphBase
   constructor(
     public messageService: MessageService,
     private heliumService: HeliumService,
-    private keyBindingService: KeyBindingService,
-    private nzModalService: NzModalService,
-    private noteVarShareService: NoteVarShareService,
     private host: ElementRef,
+    private noteVarShareService: NoteVarShareService,
+    private nzModalService: NzModalService,
+    private shortcutService: ShortcutService,
     noteStatusService: NoteStatusService,
     cdr: ChangeDetectorRef,
     ngZService: NgZService
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
+    this.keyBinderService = new KeyBinder(this.destroy$, this.host, this.shortcutService);
+  }
+
+  private handleKeyEvent(action: ParagraphActions, event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+
+    // Skip handling shortcut if focused element is an input (by Dynamic form)
+    if (target.tagName === 'INPUT') {
+      return; // ignore shortcut to make input work
+    }
+
+    const handlerFn = this[ParagraphActionToHandlerName[action]];
+    if (!handlerFn) {
+      throw new Error(`No handler for keyboard action '${action}'`);
+    }
+    handlerFn.call(this, event);
   }
 
   ngOnInit() {
-    this.keyBindingService.initKeyBindingsOnAngular(this.host, this, this.destroy$);
+    this.keyBinderService.initKeyBindingsOnAngular();
+    this.keyBinderService
+      .keyEvent()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.handleKeyEvent(event.action, event.event);
+      });
     this.setResults(this.paragraph);
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
