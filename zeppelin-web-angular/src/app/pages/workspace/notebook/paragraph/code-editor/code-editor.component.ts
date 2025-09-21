@@ -120,7 +120,18 @@ export class NotebookParagraphCodeEditorComponent
     }
   }
 
-  // Handle Ctrl+Alt+E: Toggle editor show/hide
+  handleMoveCursorUp() {
+    if (this.editor) {
+      this.editor.trigger('keyboard', 'cursorUp', {});
+    }
+  }
+
+  handleMoveCursorDown() {
+    if (this.editor) {
+      this.editor.trigger('keyboard', 'cursorDown', {});
+    }
+  }
+
   handleToggleEditorShow() {
     this.toggleEditorShow.emit();
   }
@@ -213,10 +224,10 @@ export class NotebookParagraphCodeEditorComponent
     if (!handlerFn) {
       return;
     }
-    handlerFn.call(this, event);
+    handlerFn.call(this);
   }
 
-  handleSwitchEditor(event: NullableKeyboardEvent) {
+  handleSwitchEditor() {
     this.handleToggleEditorShow();
   }
 
@@ -249,11 +260,11 @@ export class NotebookParagraphCodeEditorComponent
     ]);
   }
 
-  handlePasteLine(event: NullableKeyboardEvent) {
+  handlePasteLine() {
     this.handlePasteFromClipboard();
   }
 
-  handleSearchInsideCode(event: NullableKeyboardEvent) {
+  handleSearchInsideCode() {
     this.handleShowFind();
   }
 
