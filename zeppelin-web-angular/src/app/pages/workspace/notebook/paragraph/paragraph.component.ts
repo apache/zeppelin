@@ -468,32 +468,6 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.cdr.markForCheck();
   }
 
-  moveCursorUp() {
-    const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) - 1;
-    if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
-      return;
-    }
-    // save dirtyText of moving paragraphs.
-    const prevParagraph = this.note.paragraphs[newIndex];
-    // TODO(hsuanxyz): save pre paragraph?
-    this.saveParagraph();
-    this.triggerSaveParagraph.emit(prevParagraph.id);
-    this.messageService.moveParagraph(this.paragraph.id, newIndex);
-  }
-
-  moveCursorDown() {
-    const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) + 1;
-    if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
-      return;
-    }
-    // save dirtyText of moving paragraphs.
-    const nextParagraph = this.note.paragraphs[newIndex];
-    // TODO(hsuanxyz): save pre paragraph?
-    this.saveParagraph();
-    this.triggerSaveParagraph.emit(nextParagraph.id);
-    this.messageService.moveParagraph(this.paragraph.id, newIndex);
-  }
-
   moveParagraphUp() {
     const newIndex = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id) - 1;
     if (newIndex < 0 || newIndex >= this.note.paragraphs.length) {
@@ -648,16 +622,6 @@ export class NotebookParagraphComponent extends ParagraphBase
   handleCancel(event: NullableKeyboardEvent) {
     event?.preventDefault();
     this.cancelParagraph();
-  }
-
-  handleMoveCursorUp(event: NullableKeyboardEvent) {
-    event?.preventDefault();
-    this.moveCursorUp();
-  }
-
-  handleMoveCursorDown(event: NullableKeyboardEvent) {
-    event?.preventDefault();
-    this.moveCursorDown();
   }
 
   handleDelete(event: NullableKeyboardEvent) {

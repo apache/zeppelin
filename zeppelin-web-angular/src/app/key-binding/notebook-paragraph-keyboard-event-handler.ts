@@ -75,6 +75,8 @@ export const ParagraphActionToHandlerName = {
 //       while preserving the binding between them.
 
 const MonacoHandledParagraphActions = [
+  ParagraphActions.MoveCursorUp,
+  ParagraphActions.MoveCursorDown,
   ParagraphActions.SwitchEditor,
   ParagraphActions.CutLine,
   ParagraphActions.PasteLine,
