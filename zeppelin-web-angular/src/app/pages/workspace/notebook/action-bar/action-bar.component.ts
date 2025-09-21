@@ -51,6 +51,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   >();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
+  @Output() readonly search = new EventEmitter<string>();
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
   isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
@@ -58,6 +59,8 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   editorHide = false;
   commitVisible = false;
   tableHide = false;
+  searchText = '';
+  replaceText = '';
   cronOption = [
     { name: 'None', value: undefined },
     { name: '1m', value: '0 0/1 * * * ?' },
@@ -219,7 +222,21 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   searchCode() {
-    // TODO(hsuanxyz)
+    this.search.emit(this.searchText);
+  }
+
+  onSearchMenuOpenChange(open: boolean) {
+    if (!open) {
+      this.searchText = '';
+      this.searchCode();
+    }
+  }
+
+  onFindPrevClick(searchText: string) {}
+  onFindNextClick(searchText: string) {}
+  onReplaceClick(searchText: string, replaceText: string) {}
+  onReplaceAllClick(searchText: string, replaceText: string) {
+    this.search.emit(searchText); // notebook.component.ts에서 일괄 처리하도록 위임
   }
 
   deleteNote() {

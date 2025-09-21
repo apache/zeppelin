@@ -52,11 +52,13 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 
+import { editor as MonacoEditor } from 'monaco-editor';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 
 type Mode = 'edit' | 'command';
+type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
 
 @Component({
   selector: 'zeppelin-notebook-paragraph',
@@ -96,6 +98,8 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
 
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+  editor?: IStandaloneCodeEditor;
+  highlightDecorations?: string[];
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
@@ -113,6 +117,12 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       this.focusEditor();
     } else {
       this.blurEditor();
+    }
+  }
+
+  highlightMatches(searchText: string) {
+    if (this.notebookParagraphCodeEditorComponent) {
+      this.notebookParagraphCodeEditorComponent.highlightMatches(searchText);
     }
   }
 
