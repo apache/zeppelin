@@ -11,5 +11,6 @@
  */
 
 export * from './key-binder';
+export * from './notebook-paragraph-keyboard-event-handler';
 export * from './paragraph-actions';
 export * from './shortcuts-map';

@@ -27,21 +27,21 @@ export const ShortcutsMap: Record<ParagraphActions, string | string[]> = {
   [ParagraphActions.InsertCopyOfParagraphBelow]: 'control.shift.c', // Insert copy of paragraph below
   [ParagraphActions.MoveParagraphUp]: ['control.alt.k', 'control.alt.˚'], // Move paragraph Up
   [ParagraphActions.MoveParagraphDown]: ['control.alt.j', 'control.alt.∆'], // Move paragraph Down
+  [ParagraphActions.SwitchEditor]: ['control.alt.e'], // Toggle editor
   [ParagraphActions.SwitchEnable]: ['control.alt.r', 'control.alt.®'], // Enable/Disable run paragraph
   [ParagraphActions.SwitchOutputShow]: ['control.alt.o', 'control.alt.ø'], // Toggle output
-  // Toggle editor - Shortcut logic is implemented in the editor component
   [ParagraphActions.SwitchLineNumber]: ['control.alt.m', 'control.alt.µ'], // Toggle line number
   [ParagraphActions.SwitchTitleShow]: ['control.alt.t', 'control.alt.†'], // Toggle title
   [ParagraphActions.Clear]: ['control.alt.l', 'control.alt.¬'], // Clear output
   [ParagraphActions.Link]: ['control.alt.w', 'control.alt.∑'], // Link this paragraph
-  [ParagraphActions.ReduceWidth]: 'control.shift._', // Reduce paragraph width
-  [ParagraphActions.IncreaseWidth]: 'control.shift.=', // Increase paragraph width
+  [ParagraphActions.ReduceWidth]: ['control.shift.-', 'control.shift._'], // Reduce paragraph width
+  [ParagraphActions.IncreaseWidth]: ['control.shift.=', 'control.shift.+'], // Increase paragraph width
   // Auto-completion - No longer needed; always applied now
-  // Cut the line - Shortcut logic is implemented in the editor component
-  // Paste the line - Shortcut logic is implemented in the editor component
-  // Search inside the code - Shortcut logic is implemented in the editor component
+  [ParagraphActions.CutLine]: ['control.k'], // Cut the line
+  [ParagraphActions.PasteLine]: ['control.y'], // Paste the line
   // Move cursor to the beginning - System shortcut
   // Move cursor at the end - System shortcut
+  [ParagraphActions.SearchInsideCode]: ['control.s'],
   // TODO: Check after the search code is implemented in action-bar.component.ts
   [ParagraphActions.FindInCode]: ['control.alt.f', 'control.alt.ƒ'] // Find in code
 };

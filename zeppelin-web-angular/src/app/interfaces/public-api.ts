@@ -16,7 +16,6 @@ export * from './interpreter';
 export * from './message-interceptor';
 export * from './node-list';
 export * from './notebook';
-export * from './notebook-paragraph-keyboard-event-handler';
 export * from './notebook-repo';
 export * from './security';
 export * from './ticket';

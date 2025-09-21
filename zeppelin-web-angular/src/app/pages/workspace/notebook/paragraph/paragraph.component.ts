@@ -50,8 +50,13 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 
-import { NotebookParagraphKeyboardEventHandler, ParagraphActionToHandlerName } from '@zeppelin/interfaces';
-import { KeyBinder, ParagraphActions } from '@zeppelin/key-binding';
+import {
+  AngularKeyboardEventHandler,
+  KeyBinder,
+  NullableKeyboardEvent,
+  ParagraphActions,
+  ParagraphActionToHandlerName
+} from '@zeppelin/key-binding';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
@@ -69,7 +74,7 @@ type Mode = 'edit' | 'command';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphComponent extends ParagraphBase
-  implements OnInit, OnChanges, OnDestroy, AfterViewInit, NotebookParagraphKeyboardEventHandler {
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit, AngularKeyboardEventHandler {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
   notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
@@ -98,7 +103,7 @@ export class NotebookParagraphComponent extends ParagraphBase
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
 
-  private keyBinderService: KeyBinder;
+  protected keyBinderService: KeyBinder;
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
@@ -565,17 +570,17 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.keyBinderService = new KeyBinder(this.destroy$, this.host, this.shortcutService);
   }
 
-  private handleKeyEvent(action: ParagraphActions, event: KeyboardEvent) {
-    const target = event.target as HTMLElement;
+  private handleKeyEvent(action: ParagraphActions, event: NullableKeyboardEvent) {
+    const target = (event?.target || null) as HTMLElement | null;
 
     // Skip handling shortcut if focused element is an input (by Dynamic form)
-    if (target.tagName === 'INPUT') {
+    if (target?.tagName === 'INPUT') {
       return; // ignore shortcut to make input work
     }
 
-    const handlerFn = this[ParagraphActionToHandlerName[action]];
+    const handlerFn = this[ParagraphActionToHandlerName[action] as keyof AngularKeyboardEventHandler];
     if (!handlerFn) {
-      throw new Error(`No handler for keyboard action '${action}'`);
+      return;
     }
     handlerFn.call(this, event);
   }
@@ -587,6 +592,7 @@ export class NotebookParagraphComponent extends ParagraphBase
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
         this.handleKeyEvent(event.action, event.event);
+        this.notebookParagraphCodeEditorComponent?.handleKeyEvent(event.action, event.event);
       });
     this.setResults(this.paragraph);
     this.originalText = this.paragraph.text;
@@ -624,91 +630,91 @@ export class NotebookParagraphComponent extends ParagraphBase
     }
   }
 
-  handleRun(event: KeyboardEvent) {
-    event.preventDefault();
+  handleRun(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.runParagraph();
   }
 
-  handleRunAbove(event: KeyboardEvent) {
+  handleRunAbove(event: NullableKeyboardEvent) {
     this.waitConfirmFromEdit = true;
     this.runAllAbove();
   }
 
-  handleRunBelow(event: KeyboardEvent) {
+  handleRunBelow(event: NullableKeyboardEvent) {
     this.waitConfirmFromEdit = true;
     this.runAllBelowAndCurrent();
   }
 
-  handleCancel(event: KeyboardEvent) {
-    event.preventDefault();
+  handleCancel(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.cancelParagraph();
   }
 
-  handleMoveCursorUp(event: KeyboardEvent) {
-    event.preventDefault();
+  handleMoveCursorUp(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.moveCursorUp();
   }
 
-  handleMoveCursorDown(event: KeyboardEvent) {
-    event.preventDefault();
+  handleMoveCursorDown(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.moveCursorDown();
   }
 
-  handleDelete(event: KeyboardEvent) {
+  handleDelete(event: NullableKeyboardEvent) {
     this.removeParagraph();
   }
 
-  handleInsertAbove(event: KeyboardEvent) {
+  handleInsertAbove(event: NullableKeyboardEvent) {
     this.insertParagraph('above');
   }
 
-  handleInsertBelow(event: KeyboardEvent) {
+  handleInsertBelow(event: NullableKeyboardEvent) {
     this.insertParagraph('below');
   }
 
-  handleInsertCopyOfParagraphBelow(event: KeyboardEvent) {
+  handleInsertCopyOfParagraphBelow(event: NullableKeyboardEvent) {
     this.cloneParagraph('below');
   }
 
-  handleMoveParagraphUp(event: KeyboardEvent) {
-    event.preventDefault();
+  handleMoveParagraphUp(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.moveParagraphUp();
   }
 
-  handleMoveParagraphDown(event: KeyboardEvent) {
-    event.preventDefault();
+  handleMoveParagraphDown(event: NullableKeyboardEvent) {
+    event?.preventDefault();
     this.moveParagraphDown();
   }
 
-  handleSwitchEnable(event: KeyboardEvent) {
+  handleSwitchEnable(event: NullableKeyboardEvent) {
     this.paragraph.config.enabled = !this.paragraph.config.enabled;
     this.commitParagraph();
   }
 
-  handleSwitchOutputShow(event: KeyboardEvent) {
+  handleSwitchOutputShow(event: NullableKeyboardEvent) {
     this.setTableHide(!this.paragraph.config.tableHide);
     this.commitParagraph();
   }
 
-  handleSwitchLineNumber(event: KeyboardEvent) {
+  handleSwitchLineNumber(event: NullableKeyboardEvent) {
     this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
     this.commitParagraph();
   }
 
-  handleSwitchTitleShow(event: KeyboardEvent) {
+  handleSwitchTitleShow(event: NullableKeyboardEvent) {
     this.paragraph.config.title = !this.paragraph.config.title;
     this.commitParagraph();
   }
 
-  handleClear(event: KeyboardEvent) {
+  handleClear(event: NullableKeyboardEvent) {
     this.clearParagraphOutput();
   }
 
-  handleLink(event: KeyboardEvent) {
+  handleLink(event: NullableKeyboardEvent) {
     this.openSingleParagraph(this.paragraph.id);
   }
 
-  handleReduceWidth(event: KeyboardEvent) {
+  handleReduceWidth(event: NullableKeyboardEvent) {
     if (!this.paragraph.config.colWidth) {
       throw new Error('colWidth is required');
     }
@@ -717,7 +723,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.changeColWidth(true);
   }
 
-  handleIncreaseWidth(event: KeyboardEvent) {
+  handleIncreaseWidth(event: NullableKeyboardEvent) {
     if (!this.paragraph.config.colWidth) {
       throw new Error('colWidth is required');
     }
@@ -726,7 +732,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.changeColWidth(true);
   }
 
-  handleFindInCode(event: KeyboardEvent) {
+  handleFindInCode(event: NullableKeyboardEvent) {
     this.searchCode.emit();
   }
 
