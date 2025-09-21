@@ -556,7 +556,8 @@ export class NotebookParagraphComponent extends ParagraphBase
     if (!handlerFn) {
       return;
     }
-    handlerFn.call(this, event);
+    event?.preventDefault();
+    handlerFn.call(this);
   }
 
   ngOnInit() {
@@ -604,81 +605,77 @@ export class NotebookParagraphComponent extends ParagraphBase
     }
   }
 
-  handleRun(event: NullableKeyboardEvent) {
-    event?.preventDefault();
+  handleRun() {
     this.runParagraph();
   }
 
-  handleRunAbove(event: NullableKeyboardEvent) {
+  handleRunAbove() {
     this.waitConfirmFromEdit = true;
     this.runAllAbove();
   }
 
-  handleRunBelow(event: NullableKeyboardEvent) {
+  handleRunBelow() {
     this.waitConfirmFromEdit = true;
     this.runAllBelowAndCurrent();
   }
 
-  handleCancel(event: NullableKeyboardEvent) {
-    event?.preventDefault();
+  handleCancel() {
     this.cancelParagraph();
   }
 
-  handleDelete(event: NullableKeyboardEvent) {
+  handleDelete() {
     this.removeParagraph();
   }
 
-  handleInsertAbove(event: NullableKeyboardEvent) {
+  handleInsertAbove() {
     this.insertParagraph('above');
   }
 
-  handleInsertBelow(event: NullableKeyboardEvent) {
+  handleInsertBelow() {
     this.insertParagraph('below');
   }
 
-  handleInsertCopyOfParagraphBelow(event: NullableKeyboardEvent) {
+  handleInsertCopyOfParagraphBelow() {
     this.cloneParagraph('below');
   }
 
-  handleMoveParagraphUp(event: NullableKeyboardEvent) {
-    event?.preventDefault();
+  handleMoveParagraphUp() {
     this.moveParagraphUp();
   }
 
-  handleMoveParagraphDown(event: NullableKeyboardEvent) {
-    event?.preventDefault();
+  handleMoveParagraphDown() {
     this.moveParagraphDown();
   }
 
-  handleSwitchEnable(event: NullableKeyboardEvent) {
+  handleSwitchEnable() {
     this.paragraph.config.enabled = !this.paragraph.config.enabled;
     this.commitParagraph();
   }
 
-  handleSwitchOutputShow(event: NullableKeyboardEvent) {
+  handleSwitchOutputShow() {
     this.setTableHide(!this.paragraph.config.tableHide);
     this.commitParagraph();
   }
 
-  handleSwitchLineNumber(event: NullableKeyboardEvent) {
+  handleSwitchLineNumber() {
     this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
     this.commitParagraph();
   }
 
-  handleSwitchTitleShow(event: NullableKeyboardEvent) {
+  handleSwitchTitleShow() {
     this.paragraph.config.title = !this.paragraph.config.title;
     this.commitParagraph();
   }
 
-  handleClear(event: NullableKeyboardEvent) {
+  handleClear() {
     this.clearParagraphOutput();
   }
 
-  handleLink(event: NullableKeyboardEvent) {
+  handleLink() {
     this.openSingleParagraph(this.paragraph.id);
   }
 
-  handleReduceWidth(event: NullableKeyboardEvent) {
+  handleReduceWidth() {
     if (!this.paragraph.config.colWidth) {
       throw new Error('colWidth is required');
     }
@@ -687,7 +684,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.changeColWidth(true);
   }
 
-  handleIncreaseWidth(event: NullableKeyboardEvent) {
+  handleIncreaseWidth() {
     if (!this.paragraph.config.colWidth) {
       throw new Error('colWidth is required');
     }
@@ -696,7 +693,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.changeColWidth(true);
   }
 
-  handleFindInCode(event: NullableKeyboardEvent) {
+  handleFindInCode() {
     this.searchCode.emit();
   }
 
