@@ -14,7 +14,7 @@ import { ParagraphActions } from './paragraph-actions';
 
 export type NullableKeyboardEvent = KeyboardEvent | null;
 
-export interface NotebookParagraphKeyboardEventHandler {
+interface NotebookParagraphKeyboardEventHandler {
   handleRun(event: NullableKeyboardEvent): void;
   handleRunAbove(event: NullableKeyboardEvent): void;
   handleRunBelow(event: NullableKeyboardEvent): void;
