@@ -43,7 +43,7 @@ interface NotebookParagraphKeyboardEventHandler {
 }
 
 // If any ParagraphActions is missing here, TS compiler will complain.
-export const ParagraphActionToHandlerName = {
+export const ParagraphActionToHandlerName: Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler> = {
   [ParagraphActions.Run]: 'handleRun',
   [ParagraphActions.RunAbove]: 'handleRunAbove',
   [ParagraphActions.RunBelow]: 'handleRunBelow',
@@ -69,7 +69,7 @@ export const ParagraphActionToHandlerName = {
   [ParagraphActions.PasteLine]: 'handlePasteLine',
   [ParagraphActions.SearchInsideCode]: 'handleSearchInsideCode',
   [ParagraphActions.FindInCode]: 'handleFindInCode'
-} as const;
+};
 
 const MonacoHandledParagraphActions = [
   ParagraphActions.SwitchEditor,
