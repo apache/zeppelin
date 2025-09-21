@@ -10,14 +10,23 @@
  * limitations under the License.
  */
 
-import { browser, by, element } from 'protractor';
+import { Locator, Page } from '@playwright/test';
 
-export class AppPage {
-  navigateTo() {
-    return browser.get(browser.baseUrl);
+export class BasePage {
+  readonly page: Page;
+  readonly loadingScreen: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.loadingScreen = page.locator('.spin-text');
   }
 
-  getTitleText() {
-    return element(by.css('app-root .content span')).getText() as Promise<string>;
+  async waitForPageLoad(): Promise<void> {
+    await this.page.waitForLoadState('domcontentloaded');
+    try {
+      await this.loadingScreen.waitFor({ state: 'hidden', timeout: 5000 });
+    } catch {
+      console.log('Loading screen not found');
+    }
   }
 }

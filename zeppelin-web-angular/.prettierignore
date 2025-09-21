@@ -9,3 +9,8 @@ node/*
 node_modules/*
 target/*
 tslint-rules/**/*.js
+
+coverage/*
+playwright-report/*
+playwright-coverage/*
+test-results/*

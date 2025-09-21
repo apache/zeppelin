@@ -60,7 +60,7 @@ jobs:
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
 
-  run-tests-in-zeppelin-web-angular:
+  run-playwright-e2e-tests:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -83,8 +83,20 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -pl zeppelin-web-angular ${MAVEN_ARGS}
+      - name: Install application
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web-angular ${MAVEN_ARGS}
+      - name: Run headless E2E test with Maven
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: zeppelin-web-angular/playwright-report/
+          retention-days: 30
+      - name: Print Zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
 
   test-selenium-with-spark-module-for-spark-3-5:
     runs-on: ubuntu-24.04
