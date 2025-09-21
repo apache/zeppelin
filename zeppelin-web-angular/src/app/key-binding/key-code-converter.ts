@@ -89,6 +89,7 @@ export class KeyCodeConverter {
     insert: KeyCode.Insert
   };
 
+  // Characters that are typed with `Shift` key could be handled with non-shifted version in keybinding.
   private static exclusions = ['_', '+', '"', '{', '}', '|'];
 
   static angularToMonacoKeyBinding(keybinding: string) {
