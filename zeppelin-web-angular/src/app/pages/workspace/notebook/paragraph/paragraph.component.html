@@ -58,8 +58,8 @@
       (openSingleParagraph)="openSingleParagraph($event)"
       (runOnSelectionChangeChange)="commitParagraph()"
       (runParagraph)="runParagraph()"
-      (moveUp)="moveUpParagraph()"
-      (moveDown)="moveDownParagraph()"
+      (moveUp)="moveParagraphUp()"
+      (moveDown)="moveParagraphDown()"
       (insertNew)="insertParagraph('below')"
       (runAllAbove)="runAllAbove()"
       (runAllBelowAndCurrent)="runAllBelowAndCurrent()"
@@ -83,7 +83,7 @@
       (editorFocus)="onEditorFocus()"
       (textChanged)="textChanged($event)"
       (toggleEditorShow)="toggleEditorShow()"
-      (initKeyBindings)="keyBinderService.initKeyBindingsOnMonaco($event)"
+      (initKeyBindings)="initKeyBindingsOnMonaco($event)"
     ></zeppelin-notebook-paragraph-code-editor>
     <zeppelin-notebook-paragraph-progress
       *ngIf="paragraph.status === 'RUNNING'"
