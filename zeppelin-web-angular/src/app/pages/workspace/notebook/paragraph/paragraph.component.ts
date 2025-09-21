@@ -27,8 +27,8 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import { merge, Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
 
@@ -42,16 +42,15 @@ import {
 } from '@zeppelin/sdk';
 import {
   HeliumService,
+  KeyBindingService,
   MessageService,
   NgZService,
   NoteStatusService,
-  NoteVarShareService,
-  ParagraphActions,
-  ShortcutsMap,
-  ShortcutService
+  NoteVarShareService
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 
+import { NotebookParagraphKeyboardEventHandler } from '@zeppelin/interfaces';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
@@ -68,7 +67,8 @@ type Mode = 'edit' | 'command';
   },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
+export class NotebookParagraphComponent extends ParagraphBase
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit, NotebookParagraphKeyboardEventHandler {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
   notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
@@ -550,9 +550,9 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   constructor(
     public messageService: MessageService,
     private heliumService: HeliumService,
+    private keyBindingService: KeyBindingService,
     private nzModalService: NzModalService,
     private noteVarShareService: NoteVarShareService,
-    private shortcutService: ShortcutService,
     private host: ElementRef,
     noteStatusService: NoteStatusService,
     cdr: ChangeDetectorRef,
@@ -562,135 +562,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   ngOnInit() {
-    const shortcutService = this.shortcutService.forkByElement(this.host.nativeElement);
-    const observables: Array<Observable<{
-      action: ParagraphActions;
-      event: KeyboardEvent;
-    }>> = [];
-    Object.entries(ShortcutsMap).forEach(([action, keys]) => {
-      const keysArr: string[] = Array.isArray(keys) ? keys : [keys];
-      keysArr.forEach(key => {
-        observables.push(
-          shortcutService
-            .bindShortcut({
-              keybindings: key
-            })
-            .pipe(
-              takeUntil(this.destroy$),
-              map(({ event }) => {
-                return {
-                  event,
-                  action: action as ParagraphActions
-                };
-              })
-            )
-        );
-      });
-    });
-
-    merge<{
-      action: ParagraphActions;
-      event: KeyboardEvent;
-    }>(...observables)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(({ action, event }) => {
-        const target = event.target as HTMLElement;
-
-        // Skip handling shortcut if focused element is an input (by Dynamic form)
-        if (target.tagName === 'INPUT') {
-          return; // ignore shortcut to make input work
-        }
-
-        switch (action) {
-          case ParagraphActions.Run:
-            event.preventDefault();
-            this.runParagraph();
-            break;
-          case ParagraphActions.RunAbove:
-            this.waitConfirmFromEdit = true;
-            this.runAllAbove();
-            break;
-          case ParagraphActions.RunBelow:
-            this.waitConfirmFromEdit = true;
-            this.runAllBelowAndCurrent();
-            break;
-          case ParagraphActions.Cancel:
-            event.preventDefault();
-            this.cancelParagraph();
-            break;
-          case ParagraphActions.MoveCursorUp:
-            event.preventDefault();
-            this.moveCursorUp();
-            break;
-          case ParagraphActions.MoveCursorDown:
-            event.preventDefault();
-            this.moveCursorDown();
-            break;
-          case ParagraphActions.Delete:
-            this.removeParagraph();
-            break;
-          case ParagraphActions.InsertAbove:
-            this.insertParagraph('above');
-            break;
-          case ParagraphActions.InsertBelow:
-            this.insertParagraph('below');
-            break;
-          case ParagraphActions.InsertCopyOfParagraphBelow:
-            this.cloneParagraph('below');
-            break;
-          case ParagraphActions.MoveParagraphUp:
-            event.preventDefault();
-            this.moveParagraphUp();
-            break;
-          case ParagraphActions.MoveParagraphDown:
-            event.preventDefault();
-            this.moveParagraphDown();
-            break;
-          case ParagraphActions.SwitchEnable:
-            this.paragraph.config.enabled = !this.paragraph.config.enabled;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchOutputShow:
-            this.setTableHide(!this.paragraph.config.tableHide);
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchLineNumber:
-            this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchTitleShow:
-            this.paragraph.config.title = !this.paragraph.config.title;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.Clear:
-            this.clearParagraphOutput();
-            break;
-          case ParagraphActions.Link:
-            this.openSingleParagraph(this.paragraph.id);
-            break;
-          case ParagraphActions.ReduceWidth:
-            if (!this.paragraph.config.colWidth) {
-              throw new Error('colWidth is required');
-            }
-            this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
-            this.cdr.markForCheck();
-            this.changeColWidth(true);
-            break;
-          case ParagraphActions.IncreaseWidth:
-            if (!this.paragraph.config.colWidth) {
-              throw new Error('colWidth is required');
-            }
-            this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
-            this.cdr.markForCheck();
-            this.changeColWidth(true);
-            break;
-          case ParagraphActions.FindInCode:
-            this.searchCode.emit();
-            break;
-          default:
-            break;
-        }
-      });
+    this.keyBindingService.initKeyBindingsOnAngular(this.host, this, this.destroy$);
     this.setResults(this.paragraph);
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
@@ -725,6 +597,112 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         this.host.nativeElement.scrollIntoView();
       });
     }
+  }
+
+  handleRun(event: KeyboardEvent) {
+    event.preventDefault();
+    this.runParagraph();
+  }
+
+  handleRunAbove(event: KeyboardEvent) {
+    this.waitConfirmFromEdit = true;
+    this.runAllAbove();
+  }
+
+  handleRunBelow(event: KeyboardEvent) {
+    this.waitConfirmFromEdit = true;
+    this.runAllBelowAndCurrent();
+  }
+
+  handleCancel(event: KeyboardEvent) {
+    event.preventDefault();
+    this.cancelParagraph();
+  }
+
+  handleMoveCursorUp(event: KeyboardEvent) {
+    event.preventDefault();
+    this.moveCursorUp();
+  }
+
+  handleMoveCursorDown(event: KeyboardEvent) {
+    event.preventDefault();
+    this.moveCursorDown();
+  }
+
+  handleDelete(event: KeyboardEvent) {
+    this.removeParagraph();
+  }
+
+  handleInsertAbove(event: KeyboardEvent) {
+    this.insertParagraph('above');
+  }
+
+  handleInsertBelow(event: KeyboardEvent) {
+    this.insertParagraph('below');
+  }
+
+  handleInsertCopyOfParagraphBelow(event: KeyboardEvent) {
+    this.cloneParagraph('below');
+  }
+
+  handleMoveParagraphUp(event: KeyboardEvent) {
+    event.preventDefault();
+    this.moveParagraphUp();
+  }
+
+  handleMoveParagraphDown(event: KeyboardEvent) {
+    event.preventDefault();
+    this.moveParagraphDown();
+  }
+
+  handleSwitchEnable(event: KeyboardEvent) {
+    this.paragraph.config.enabled = !this.paragraph.config.enabled;
+    this.commitParagraph();
+  }
+
+  handleSwitchOutputShow(event: KeyboardEvent) {
+    this.setTableHide(!this.paragraph.config.tableHide);
+    this.commitParagraph();
+  }
+
+  handleSwitchLineNumber(event: KeyboardEvent) {
+    this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
+    this.commitParagraph();
+  }
+
+  handleSwitchTitleShow(event: KeyboardEvent) {
+    this.paragraph.config.title = !this.paragraph.config.title;
+    this.commitParagraph();
+  }
+
+  handleClear(event: KeyboardEvent) {
+    this.clearParagraphOutput();
+  }
+
+  handleLink(event: KeyboardEvent) {
+    this.openSingleParagraph(this.paragraph.id);
+  }
+
+  handleReduceWidth(event: KeyboardEvent) {
+    if (!this.paragraph.config.colWidth) {
+      throw new Error('colWidth is required');
+    }
+    this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
+    this.cdr.markForCheck();
+    this.changeColWidth(true);
+  }
+
+  handleIncreaseWidth(event: KeyboardEvent) {
+    if (!this.paragraph.config.colWidth) {
+      throw new Error('colWidth is required');
+    }
+    this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
+    this.cdr.markForCheck();
+    this.changeColWidth(true);
+  }
+
+  handleFindInCode(event: KeyboardEvent) {
+    this.searchCode.emit();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
