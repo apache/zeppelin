@@ -15,31 +15,31 @@ import { ParagraphActions } from './paragraph-actions';
 export type NullableKeyboardEvent = KeyboardEvent | null;
 
 interface NotebookParagraphKeyboardEventHandler {
-  handleRun(event: NullableKeyboardEvent): void;
-  handleRunAbove(event: NullableKeyboardEvent): void;
-  handleRunBelow(event: NullableKeyboardEvent): void;
-  handleCancel(event: NullableKeyboardEvent): void;
-  handleMoveCursorUp(event: NullableKeyboardEvent): void;
-  handleMoveCursorDown(event: NullableKeyboardEvent): void;
-  handleDelete(event: NullableKeyboardEvent): void;
-  handleInsertAbove(event: NullableKeyboardEvent): void;
-  handleInsertBelow(event: NullableKeyboardEvent): void;
-  handleInsertCopyOfParagraphBelow(event: NullableKeyboardEvent): void;
-  handleMoveParagraphUp(event: NullableKeyboardEvent): void;
-  handleMoveParagraphDown(event: NullableKeyboardEvent): void;
-  handleSwitchEditor(event: NullableKeyboardEvent): void;
-  handleSwitchEnable(event: NullableKeyboardEvent): void;
-  handleSwitchOutputShow(event: NullableKeyboardEvent): void;
-  handleSwitchLineNumber(event: NullableKeyboardEvent): void;
-  handleSwitchTitleShow(event: NullableKeyboardEvent): void;
-  handleClear(event: NullableKeyboardEvent): void;
-  handleLink(event: NullableKeyboardEvent): void;
-  handleReduceWidth(event: NullableKeyboardEvent): void;
-  handleIncreaseWidth(event: NullableKeyboardEvent): void;
-  handleCutLine(event: NullableKeyboardEvent): void;
-  handlePasteLine(event: NullableKeyboardEvent): void;
-  handleSearchInsideCode(event: NullableKeyboardEvent): void;
-  handleFindInCode(event: NullableKeyboardEvent): void;
+  handleRun(): void;
+  handleRunAbove(): void;
+  handleRunBelow(): void;
+  handleCancel(): void;
+  handleMoveCursorUp(): void;
+  handleMoveCursorDown(): void;
+  handleDelete(): void;
+  handleInsertAbove(): void;
+  handleInsertBelow(): void;
+  handleInsertCopyOfParagraphBelow(): void;
+  handleMoveParagraphUp(): void;
+  handleMoveParagraphDown(): void;
+  handleSwitchEditor(): void;
+  handleSwitchEnable(): void;
+  handleSwitchOutputShow(): void;
+  handleSwitchLineNumber(): void;
+  handleSwitchTitleShow(): void;
+  handleClear(): void;
+  handleLink(): void;
+  handleReduceWidth(): void;
+  handleIncreaseWidth(): void;
+  handleCutLine(): void;
+  handlePasteLine(): void;
+  handleSearchInsideCode(): void;
+  handleFindInCode(): void;
 }
 
 // If any ParagraphActions is missing here, TS compiler will complain.
