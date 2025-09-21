@@ -27,6 +27,7 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
+import { editor as MonacoEditor } from 'monaco-editor';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -103,7 +104,7 @@ export class NotebookParagraphComponent extends ParagraphBase
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
 
-  protected keyBinderService: KeyBinder;
+  private keyBinderService: KeyBinder;
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
@@ -558,6 +559,10 @@ export class NotebookParagraphComponent extends ParagraphBase
     }
     event?.preventDefault();
     handlerFn.call(this);
+  }
+
+  initKeyBindingsOnMonaco(editor: MonacoEditor.IStandaloneCodeEditor) {
+    this.keyBinderService.initKeyBindingsOnMonaco(editor);
   }
 
   ngOnInit() {
