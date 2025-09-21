@@ -258,6 +258,14 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
+  onParagraphSearch(term: string) {
+    if (!term) {
+      this.listOfNotebookParagraphComponent.forEach(comp => comp.highlightMatches(''));
+      return;
+    }
+    this.listOfNotebookParagraphComponent.forEach(comp => comp.highlightMatches(term));
+  }
+
   saveParagraph(id: string) {
     const paragraphFound = this.listOfNotebookParagraphComponent.toArray().find(p => p.paragraph.id === id);
     if (!paragraphFound) {

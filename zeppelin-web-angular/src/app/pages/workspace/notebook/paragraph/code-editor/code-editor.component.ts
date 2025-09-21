@@ -62,6 +62,7 @@ export class NotebookParagraphCodeEditorComponent
   @Output() readonly initKeyBindings = new EventEmitter<IStandaloneCodeEditor>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
+  private highlightDecorations: string[] = [];
   height = 18;
   interpreterName?: string;
 
@@ -344,6 +345,37 @@ export class NotebookParagraphCodeEditorComponent
         this.editor!.layout();
       });
     }
+  }
+
+  highlightMatches(term: string) {
+    if (!this.editor || !term) {
+      // Remove previous highlights if term is empty
+      this.highlightDecorations = this.editor?.deltaDecorations(this.highlightDecorations, []) || [];
+      return;
+    }
+    const model = this.editor.getModel();
+    if (!model) {
+      return;
+    }
+    const text = model.getValue();
+    const newDecorations = [];
+    let startIndex = 0;
+    while (term && text) {
+      const idx = text.indexOf(term, startIndex);
+      if (idx === -1) {
+        break;
+      }
+      const startPos = model.getPositionAt(idx);
+      const endPos = model.getPositionAt(idx + term.length);
+      newDecorations.push({
+        range: new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+        options: {
+          inlineClassName: 'editor-search-highlight'
+        }
+      });
+      startIndex = idx + term.length;
+    }
+    this.highlightDecorations = this.editor.deltaDecorations(this.highlightDecorations, newDecorations);
   }
 
   constructor(
