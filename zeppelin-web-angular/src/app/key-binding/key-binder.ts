@@ -59,7 +59,6 @@ export class KeyBinder {
     _.chain(ShortcutsMap)
       .toPairs()
       .flatMap(([action, keys]) => _.map(_.castArray(keys), key => ({ action, key })))
-
       .forEach(({ action, key }) => {
         const keyBinding = KeyCodeConverter.angularToMonacoKeyBinding(key);
         if (_.isNil(keyBinding)) {
