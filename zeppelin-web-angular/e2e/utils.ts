@@ -76,7 +76,8 @@ export const PAGES = {
     PAGE_HEADER: 'src/app/share/page-header/page-header.component',
     RESIZE_HANDLE: 'src/app/share/resize-handle/resize-handle.component',
     SHORTCUT: 'src/app/share/shortcut/shortcut.component',
-    SPIN: 'src/app/share/spin/spin.component'
+    SPIN: 'src/app/share/spin/spin.component',
+    THEME_TOGGLE: 'src/app/share/theme-toggle/theme-toggle.component'
   },
 
   // Visualizations
