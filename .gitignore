@@ -131,3 +131,5 @@ tramp
 
 # jEnv file
 .java-version
+.pre-commit-config.yaml
+trufflehog/
