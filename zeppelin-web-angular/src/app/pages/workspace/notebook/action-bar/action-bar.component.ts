@@ -11,15 +11,16 @@
  */
 
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Inject,
   Input,
   OnInit,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -52,7 +53,8 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   >();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
-  @Output() readonly search = new EventEmitter<string>();
+  @Output() readonly handleSearch = new EventEmitter<string>();
+  @ViewChild('searchInput', { static: false }) searchInputRef?: ElementRef<HTMLInputElement>;
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
   isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
@@ -223,11 +225,15 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   searchCode() {
-    this.search.emit(this.searchText);
+    this.handleSearch.emit(this.searchText);
   }
 
   onSearchMenuOpenChange(open: boolean) {
-    if (!open) {
+    if (open) {
+      setTimeout(() => {
+        this.searchInputRef?.nativeElement?.focus();
+      }, 0);
+    } else {
       this.searchText = '';
       this.searchCode();
     }
@@ -244,7 +250,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
 
   // TODO: Implement logic to replace all search matches with the replacement text
   onReplaceAllClick(searchText: string, replaceText: string) {
-    this.search.emit(searchText);
+    this.handleSearch.emit(searchText);
   }
 
   deleteNote() {
