@@ -58,7 +58,6 @@ import { NotebookParagraphResultComponent } from '../../share/result/result.comp
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 
 type Mode = 'edit' | 'command';
-type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
 
 @Component({
   selector: 'zeppelin-notebook-paragraph',
@@ -98,8 +97,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
 
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
-  editor?: IStandaloneCodeEditor;
-  highlightDecorations?: string[];
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];

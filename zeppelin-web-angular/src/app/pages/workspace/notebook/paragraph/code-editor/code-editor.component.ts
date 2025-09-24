@@ -33,6 +33,7 @@ import { NotebookParagraphControlComponent } from '../control/control.component'
 
 type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
 type IEditor = MonacoEditor.IEditor;
+type DecorationIdentifier = ReturnType<monaco.editor.ICodeEditor['deltaDecorations']>[number];
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-code-editor',
@@ -59,7 +60,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Output() readonly toggleEditorShow = new EventEmitter<void>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
-  private highlightDecorations: string[] = [];
+  private highlightDecorations: DecorationIdentifier[] = [];
   height = 18;
   interpreterName?: string;
 
