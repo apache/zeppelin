@@ -129,9 +129,7 @@ export class NotebookParagraphComponent extends ParagraphBase
   }
 
   highlightMatches(searchText: string) {
-    if (this.notebookParagraphCodeEditorComponent) {
-      this.notebookParagraphCodeEditorComponent.highlightMatches(searchText);
-    }
+    this.notebookParagraphCodeEditorComponent?.highlightMatches(searchText);
   }
 
   textChanged(text: string) {
