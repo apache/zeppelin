@@ -196,7 +196,7 @@
         <div class="dropdown-menu search-code">
           <div class="search-code-row">
             <nz-input-group nzAddOnBefore="Find">
-              <input type="text" nz-input [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
+              <input type="text" nz-input #searchInput [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
             </nz-input-group>
             <nz-button-group class="search-row-btn-group">
               <button nz-button (click)="onFindPrevClick(searchText)"><i nz-icon nzType="left"></i></button>
