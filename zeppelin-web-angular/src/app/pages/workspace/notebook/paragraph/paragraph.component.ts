@@ -121,9 +121,7 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   }
 
   highlightMatches(searchText: string) {
-    if (this.notebookParagraphCodeEditorComponent) {
-      this.notebookParagraphCodeEditorComponent.highlightMatches(searchText);
-    }
+    this.notebookParagraphCodeEditorComponent?.highlightMatches(searchText);
   }
 
   textChanged(text: string) {
