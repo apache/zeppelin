@@ -193,21 +193,21 @@
       </button>
       <!-- Search Code Dropdown UI -->
       <nz-dropdown-menu #searchMenu="nzDropdownMenu">
-        <div class="ant-dropdown-menu">
-          <div style="display: flex;">
+        <div class="dropdown-menu search-code">
+          <div class="search-code-row">
             <nz-input-group nzAddOnBefore="Find">
               <input type="text" nz-input [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
             </nz-input-group>
-            <nz-button-group style="display: flex; align-items: center; flex-wrap: nowrap;">
+            <nz-button-group class="search-row-btn-group">
               <button nz-button (click)="onFindPrevClick(searchText)"><i nz-icon nzType="left"></i></button>
               <button nz-button (click)="onFindNextClick(searchText)"><i nz-icon nzType="right"></i></button>
             </nz-button-group>
           </div>
-          <div style="display: flex;">
+          <div class="search-code-row">
             <nz-input-group nzAddOnBefore="Replace">
               <input type="text" nz-input [(ngModel)]="replaceText" />
             </nz-input-group>
-            <nz-button-group style="display: flex; align-items: center; flex-wrap: nowrap;">
+            <nz-button-group class="search-row-btn-group">
               <button nz-button (click)="onReplaceClick(searchText, replaceText)">Replace</button>
               <button nz-button (click)="onReplaceAllClick(searchText, replaceText)">All</button>
             </nz-button-group>

@@ -11,6 +11,7 @@
  */
 
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -232,11 +233,18 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     }
   }
 
+  // TODO: Implement logic to find the previous search match in the notebook editor
   onFindPrevClick(searchText: string) {}
+
+  // TODO: Implement logic to find the next search match in the notebook editor
   onFindNextClick(searchText: string) {}
+
+  // TODO: Implement logic to replace the current search match with the replacement text
   onReplaceClick(searchText: string, replaceText: string) {}
+
+  // TODO: Implement logic to replace all search matches with the replacement text
   onReplaceAllClick(searchText: string, replaceText: string) {
-    this.search.emit(searchText); // notebook.component.ts에서 일괄 처리하도록 위임
+    this.search.emit(searchText);
   }
 
   deleteNote() {
