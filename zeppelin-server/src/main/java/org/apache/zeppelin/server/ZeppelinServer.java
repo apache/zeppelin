@@ -64,6 +64,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.DEFAULT_UI;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.event.EventBus;
+import org.apache.zeppelin.event.NoOpEventBus;
+import org.apache.zeppelin.event.ZeppelinEventBus;
 import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.Helium;
@@ -178,6 +181,11 @@ public class ZeppelinServer implements AutoCloseable {
             bind(storage).to(ConfigStorage.class);
             bindAsContract(PluginManager.class).in(Singleton.class);
             bind(GsonNoteParser.class).to(NoteParser.class).in(Singleton.class);
+            if (zConf.isEventBusEnabled()) {
+              bind(ZeppelinEventBus.class).to(EventBus.class).in(Singleton.class);
+            } else {
+              bind(NoOpEventBus.class).to(EventBus.class).in(Singleton.class);
+            }
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);

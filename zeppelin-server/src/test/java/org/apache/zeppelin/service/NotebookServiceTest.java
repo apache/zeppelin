@@ -46,6 +46,8 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.event.EventBus;
+import org.apache.zeppelin.event.ZeppelinEventBus;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -102,6 +104,7 @@ class NotebookServiceTest {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_EVENTBUS_ENABLED.getVarName(), "true");
     // enable cron for testNoteUpdate method
     if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
@@ -138,6 +141,7 @@ class NotebookServiceTest {
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
     AuthorizationService authorizationService =
         new AuthorizationService(noteManager, zConf, storage);
+    EventBus eventBus = new ZeppelinEventBus();
     notebook =
         new Notebook(
             zConf,
@@ -147,7 +151,7 @@ class NotebookServiceTest {
             mockInterpreterFactory,
             mockInterpreterSettingManager,
             credentials,
-            null);
+            eventBus);
     searchService = new LuceneSearch(zConf, notebook);
     QuartzSchedulerService schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
