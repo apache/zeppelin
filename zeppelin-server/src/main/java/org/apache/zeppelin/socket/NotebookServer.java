@@ -40,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import io.reactivex.rxjava3.disposables.Disposable;
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.websocket.CloseReason;
@@ -62,6 +64,9 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.event.EventBus;
+import org.apache.zeppelin.event.NoteEvent;
+import org.apache.zeppelin.event.NoteRemoveEvent;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -73,15 +78,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.jupyter.JupyterUtil;
-import org.apache.zeppelin.notebook.AuthorizationService;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteEventListener;
-import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NoteParser;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookImportDeserializer;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
@@ -156,10 +153,48 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private AuthorizationService authorizationService;
   private Provider<ConfigurationService> configurationServiceProvider;
   private Provider<JobManagerService> jobManagerServiceProvider;
+  private Disposable disposable;
+
 
   public NotebookServer() {
     NotebookServer.self.set(this);
     LOGGER.info("NotebookServer instantiated: {}", this);
+  }
+
+  @Inject
+  public void setZeppelinEventBus(EventBus eventBus, ZeppelinConfiguration zConf) {
+    if (!zConf.isEventBusEnabled()) {
+      LOGGER.debug("ZeppelinEventBus is disabled");
+      return;
+    }
+
+    disposable = eventBus.observe(NoteEvent.class)
+        .subscribe(event -> {
+          if (event instanceof NoteRemoveEvent) {
+            Note note = event.getNote();
+            try {
+              broadcastUpdateNoteJobInfo(note, System.currentTimeMillis() - 5000);
+            } catch (IOException e) {
+              LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
+            }
+            try {
+              getJobManagerService().removeNoteJobInfo(note.getId(), null,
+                  new JobManagerServiceCallback());
+            } catch (IOException e) {
+              LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
+            }
+          } else {
+            LOGGER.warn("Unknown event type: {}", event.getClass().getName());
+          }
+        });
+  }
+
+  @PreDestroy
+  public void cleanup() {
+    if (disposable != null && !disposable.isDisposed()) {
+      disposable.dispose();
+    }
+    executorService.shutdown();
   }
 
   @Inject
@@ -1876,6 +1911,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) {
+    if (zConf.isEventBusEnabled()) {
+      LOGGER.debug("ZeppelinEventBus is enabed");
+      return;
+    }
+
     try {
       broadcastUpdateNoteJobInfo(note, System.currentTimeMillis() - 5000);
     } catch (IOException e) {
