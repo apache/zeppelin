@@ -14,15 +14,9 @@ import { editor, languages } from 'monaco-editor';
 import { conf as ScalaConf, language as ScalaLanguage } from './scala';
 
 export const loadMonacoBefore = () => {
-  editor.defineTheme('zeppelin-theme', {
-    base: 'vs',
-    inherit: true,
-    rules: [],
-    colors: {
-      'editor.lineHighlightBackground': '#0000FF10'
-    }
-  });
-  editor.setTheme('zeppelin-theme');
+  const savedTheme = localStorage.getItem('zeppelin-theme') || 'light';
+  const monacoTheme = savedTheme === 'dark' ? 'vs-dark' : 'vs';
+  editor.setTheme(monacoTheme);
   languages.register({ id: 'scala' });
   languages.setMonarchTokensProvider('scala', ScalaLanguage);
   languages.setLanguageConfiguration('scala', ScalaConf);

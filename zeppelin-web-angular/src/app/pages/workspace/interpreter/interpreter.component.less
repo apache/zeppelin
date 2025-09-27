@@ -29,11 +29,6 @@
     }
   }
 
-  .editable-tag {
-    background: @white;
-    border-style: dashed;
-  }
-
   .content {
     padding: @card-padding-base / 2;
 
@@ -43,3 +38,22 @@
     }
   }
 });
+
+:host-context(.light) {
+  background: #f0f0f0;
+  
+  .editable-tag {
+    background: #fff;
+    border-style: dashed;
+  }
+}
+
+:host-context(.dark) {
+  background: #141414;
+  
+  .editable-tag {
+    background: #1f1f1f;
+    border-style: dashed;
+    border-color: #434343;
+  }
+}
