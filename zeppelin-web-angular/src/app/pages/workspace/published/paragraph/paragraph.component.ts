@@ -81,8 +81,8 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
 
   setResults(paragraph: ParagraphItem) {
     if (paragraph.results) {
-      this.results = paragraph.results.msg;
-      this.configs = paragraph.config.results;
+      this.results = paragraph.results.msg || [];
+      this.configs = paragraph.config.results || {};
     }
     if (!paragraph.config) {
       paragraph.config = {};

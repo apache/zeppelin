@@ -21,7 +21,7 @@ export class DynamicTemplate {
     // tslint:disable-next-line:no-any
     public readonly component: Type<any>,
     // tslint:disable-next-line:no-any
-    public readonly moduleFactory?: NgModuleFactory<any>
+    public readonly moduleFactory: NgModuleFactory<any>
   ) {}
 }
 

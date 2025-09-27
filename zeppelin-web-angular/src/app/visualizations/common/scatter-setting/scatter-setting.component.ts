@@ -31,10 +31,10 @@ export class VisualizationScatterSettingComponent implements OnInit {
   columns: Array<Exclude<VisualizationScatterChart[keyof VisualizationScatterChart], undefined>> = [];
 
   field: {
-    xAxis: Array<VisualizationScatterChart['xAxis']>;
-    yAxis: Array<VisualizationScatterChart['yAxis']>;
-    group: Array<VisualizationScatterChart['group']>;
-    size: Array<VisualizationScatterChart['size']>;
+    xAxis: Array<Exclude<VisualizationScatterChart['xAxis'], undefined>>;
+    yAxis: Array<Exclude<VisualizationScatterChart['yAxis'], undefined>>;
+    group: Array<Exclude<VisualizationScatterChart['group'], undefined>>;
+    size: Array<Exclude<VisualizationScatterChart['size'], undefined>>;
   } = {
     xAxis: [],
     yAxis: [],

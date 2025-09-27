@@ -67,19 +67,20 @@ import {
 interface VisualizationItem {
   id: string;
   name: string;
-  icon: string | SafeHtml;
   changeSubscription: Subscription | null;
   componentFactoryResolver?: ComponentFactoryResolver;
 }
 
 interface ClassicVisualizationItem extends VisualizationItem {
   isClassic: true;
+  icon: SafeHtml;
   Class: HeliumClassicVisualizationConstructor;
   instance: HeliumClassicVisualization | undefined;
 }
 
 interface ModernVisualizationItem extends VisualizationItem {
   isClassic: false;
+  icon: string;
   // tslint:disable-next-line:no-any
   Class: any;
   instance: Visualization | undefined;
@@ -98,7 +99,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @Input() config?: ParagraphConfigResult;
   @Input() id!: string;
   @Input() published = false;
-  @Input() currentCol = 12;
+  @Input() currentCol?: number = 12;
   @Input() isPending!: boolean;
   @Output() readonly configChange = new EventEmitter<ParagraphConfigResult>();
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
@@ -170,7 +171,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   ];
 
   constructor(
-    protected injector: Injector,
+    public injector: Injector,
     private viewContainerRef: ViewContainerRef,
     private cdr: ChangeDetectorRef,
     private runtimeCompilerService: RuntimeCompilerService,
