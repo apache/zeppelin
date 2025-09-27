@@ -93,7 +93,20 @@ public class InterpreterInfoSaving implements JsonSerializable {
   }
 
   public static InterpreterInfoSaving fromJson(String json) {
-    return GSON.fromJson(json, InterpreterInfoSaving.class);
+    InterpreterInfoSaving interpreterInfoSaving = GSON.fromJson(json, InterpreterInfoSaving.class);
+    if (interpreterInfoSaving.interpreterSettings != null) {
+      for (Map.Entry<String, InterpreterSetting> entry : interpreterInfoSaving.interpreterSettings.entrySet()) {
+        String key = entry.getKey();
+        InterpreterSetting setting = entry.getValue();
+        String id = setting == null ? null : setting.getId();
+        if (!key.equals(id)) {
+          LOGGER.error("Invalid interpreterSettings: key '{}' does not match inner id '{}'.", key, id);
+          throw new IllegalArgumentException(
+              "interpreterSettings key '" + key + "' does not match inner id '" + id + "'");
+        }
+      }
+    }
+    return interpreterInfoSaving;
   }
 
   // kept for backward compatibility: no custom serializers are needed currently
