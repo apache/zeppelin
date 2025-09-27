@@ -107,9 +107,7 @@
     <scalatest.version>3.2.19</scalatest.version>
     <scalacheck.version>1.18.1</scalacheck.version>
 
-    <!-- frontend maven plugin related versions-->
-    <node.version>v16.20.2</node.version>
-    <npm.version>8.19.4</npm.version>
+    <!-- frontend maven plugin version-->
     <plugin.frontend.version>1.12.1</plugin.frontend.version>
 
     <!-- common library versions -->
