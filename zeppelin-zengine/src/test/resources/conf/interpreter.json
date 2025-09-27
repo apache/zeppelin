@@ -69,6 +69,7 @@
     },
 
     "2C4BJDRRZ" : {
+      "id": "2C4BJDRRZ",
       "group": "mock1",
       "name": "mock1",
       "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
@@ -87,6 +88,7 @@
     },
 
     "2C3PTPMUH" : {
+      "id": "2C3PTPMUH",
       "group": "mock2",
       "name": "mock2",
       "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter2",
@@ -105,6 +107,7 @@
     },
 
     "2C5DCRVGM" : {
+      "id": "2C5DCRVGM",
       "group": "mock_resource_pool",
       "name": "mock_resource_pool",
       "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterResourcePool",
@@ -123,6 +126,7 @@
     },
 
     "2C5EERVGA" : {
+      "id": "2C5EERVGA",
       "group": "config_test",
       "name": "config_test",
       "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
