@@ -16,9 +16,16 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'humanizeBytes'
 })
 export class HumanizeBytesPipe implements PipeTransform {
-  transform(value: number): string {
+  transform(value: number | string | null | undefined): string {
     if (value === null || value === undefined) {
       return '-';
+    }
+    let parsedValue = value;
+    if (typeof parsedValue === 'string') {
+      parsedValue = parseInt(parsedValue, 10);
+      if (isNaN(parsedValue)) {
+        return '-';
+      }
     }
     const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
     const converter = (v: number, p: number): string => {
@@ -31,10 +38,10 @@ export class HumanizeBytesPipe implements PipeTransform {
         return converter(v, p + 1);
       }
     };
-    if (value < 1000) {
+    if (parsedValue < 1000) {
       return value + ' B';
     } else {
-      return converter(value, 1);
+      return converter(parsedValue, 1);
     }
   }
 }

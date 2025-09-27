@@ -12,7 +12,7 @@
 
 <div class="setting-bar" *ngIf="result.type === datasetType.TABLE && !published">
   <div class="visualization-selector">
-    <nz-radio-group [(ngModel)]="config?.graph.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
+    <nz-radio-group [ngModel]="config?.graph?.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
       <label
         class="viz-icon"
         *ngFor="let item of visualizations"
@@ -49,7 +49,13 @@
 
   <a class="setting-trigger" tabindex="-1" (click)="switchSetting()">
     Setting
-    <i nz-icon nzType="caret-down" [nzRotate]="config?.graph.optionOpen ? 180 : 0" class="setting-icon" nz-dropdown></i>
+    <i
+      nz-icon
+      nzType="caret-down"
+      [nzRotate]="config?.graph?.optionOpen ? 180 : 0"
+      class="setting-icon"
+      nz-dropdown
+    ></i>
   </a>
 </div>
 <div nz-resizable nzPreview (nzResizeEnd)="onResize($event)" [nzGridColumnCount]="12" [nzMinColumn]="1">
@@ -60,20 +66,20 @@
   <!-- Transformation setting container for classic visualizations -->
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
-    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
-    [id]="'trsetting' + id + '_' + config?.graph.mode"
+    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+    [id]="'trsetting' + id + '_' + config?.graph?.mode"
     class="transformation-setting"
   ></div>
   <!-- Visualization setting container for classic visualizations -->
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
-    [style.display]="config?.graph.optionOpen ? 'block' : 'none'"
-    [id]="'vizsetting' + id + '_' + config?.graph.mode"
+    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+    [id]="'vizsetting' + id + '_' + config?.graph?.mode"
     class="visualization-setting"
   ></div>
   <div
     *ngIf="getCurrentVisualization()?.isClassic"
-    [id]="'p' + id + '_' + config?.graph.mode"
+    [id]="'p' + id + '_' + config?.graph?.mode"
     class="classic-visualization-container"
   ></div>
   <ng-container [ngSwitch]="result?.type">

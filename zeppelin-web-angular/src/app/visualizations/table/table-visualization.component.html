@@ -46,7 +46,7 @@
         nzShowSort
         nzCustomFilter
         [nzSortKey]="col"
-        (nzSortChange)="onSortChange($event, col)"
+        (nzSortChange)="onSortChange(col, $event)"
       >
         {{ col }}
         <i
@@ -73,7 +73,8 @@
                   placeholder="Search..."
                   (blur)="onSearch()"
                   (keydown.enter)="onSearch()"
-                  [(ngModel)]="colOptions.get(col).term"
+                  [ngModel]="getColOptionOrThrow(col).term"
+                  (ngModelChange)="onTermChange(col, $event)"
                 />
               </nz-input-group>
               <ng-template #suffixIconButton>
@@ -89,7 +90,7 @@
                 <li
                   *ngFor="let type of types"
                   nz-menu-item
-                  [nzSelected]="colOptions.get(col).type === type"
+                  [nzSelected]="getColOptionOrThrow(col).type === type"
                   (click)="onChangeType(type, col)"
                 >
                   {{ type | titlecase }}
@@ -103,7 +104,7 @@
                 <li
                   *ngFor="let aggregation of aggregations"
                   nz-menu-item
-                  [nzSelected]="colOptions.get(col).aggregation === aggregation"
+                  [nzSelected]="getColOptionOrThrow(col).aggregation === aggregation"
                   (click)="onChangeAggregation(aggregation, col)"
                 >
                   {{ aggregation | titlecase }}
@@ -124,11 +125,11 @@
 <ng-template #aggregatesFooter>
   <div class="aggregation-wrap">
     <span *ngFor="let col of columns">
-      <span class="aggregation-item" *ngIf="colOptions.get(col).aggregation as aggregation">
+      <span class="aggregation-item" *ngIf="getColOptionOrThrow(col).aggregation as aggregation">
         {{ aggregation }}(
         <strong>{{ col }}</strong>
         ):
-        <span>{{ colOptions.get(col).aggregationValue }}</span>
+        <span>{{ getColOptionOrThrow(col).aggregationValue }}</span>
       </span>
     </span>
   </div>

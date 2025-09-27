@@ -42,13 +42,7 @@
       </nz-form-item>
       <nz-form-item>
         <nz-form-control>
-          <button
-            nz-button
-            nzType="primary"
-            (click)="importNote()"
-            [disabled]="control.status === 'error'"
-            [nzLoading]="importLoading"
-          >
+          <button nz-button nzType="primary" (click)="importNote()" [disabled]="!importUrl" [nzLoading]="importLoading">
             Import Note
           </button>
         </nz-form-control>
