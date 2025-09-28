@@ -192,8 +192,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
     executorService.shutdown();
   }
-
-
+  
   @Inject
   public void setNoteParser(Provider<NoteParser> noteParser) {
     this.noteParser = noteParser;
