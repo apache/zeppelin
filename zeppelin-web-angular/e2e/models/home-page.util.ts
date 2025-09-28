@@ -30,7 +30,7 @@ export class HomePageUtil {
     currentPath: string;
   }> {
     await this.homePage.navigateToLogin();
-    
+
     const currentPath = this.homePage.getCurrentPath();
     const isLoginUrlMaintained = currentPath.includes('#/login');
     const isHomeContentDisplayed = await this.homePage.isHomeContentDisplayed();
@@ -61,7 +61,7 @@ export class HomePageUtil {
   async verifyNotebookFunctionalities(): Promise<void> {
     await expect(this.homePage.createNewNoteButton).toBeVisible();
     await expect(this.homePage.importNoteButton).toBeVisible();
-    
+
     const filterInputCount = await this.homePage.filterInput.count();
     if (filterInputCount > 0) {
       await expect(this.homePage.filterInput).toBeVisible();
@@ -81,7 +81,7 @@ export class HomePageUtil {
     const mailCount = await this.homePage.externalLinks.mailingList.count();
     const issuesCount = await this.homePage.externalLinks.issuesTracking.count();
     const githubCount = await this.homePage.externalLinks.github.count();
-    
+
     if (docCount > 0) await expect(this.homePage.externalLinks.documentation).toBeVisible();
     if (mailCount > 0) await expect(this.homePage.externalLinks.mailingList).toBeVisible();
     if (issuesCount > 0) await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
@@ -94,10 +94,10 @@ export class HomePageUtil {
     homeContentMaintained: boolean;
   }> {
     const pathBeforeClick = this.homePage.getCurrentPath();
-    
+
     await this.homePage.clickZeppelinLogo();
     await this.homePage.waitForPageLoad();
-    
+
     const pathAfterClick = this.homePage.getCurrentPath();
     const homeContentMaintained = await this.homePage.isHomeContentDisplayed();
 
@@ -115,7 +115,7 @@ export class HomePageUtil {
   }> {
     const basicMetadata = await getBasicPageMetadata(this.page);
     const isAnonymous = await this.homePage.isAnonymousUser();
-    
+
     return {
       ...basicMetadata,
       isAnonymous

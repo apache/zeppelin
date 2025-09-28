@@ -17,7 +17,7 @@ import { addPageAnnotationBeforeEach, PAGES, waitForUrlNotContaining, getCurrent
 
 test.describe('Anonymous User Login Redirect', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
-  
+
   let zeppelinHelper: ZeppelinHelper;
   let homePageUtil: HomePageUtil;
 
@@ -32,7 +32,9 @@ test.describe('Anonymous User Login Redirect', () => {
       await zeppelinHelper.waitForZeppelinReady();
     });
 
-    test('When accessing login page directly, Then should redirect to home with proper URL change', async ({ page }) => {
+    test('When accessing login page directly, Then should redirect to home with proper URL change', async ({
+      page
+    }) => {
       const redirectResult = await homePageUtil.verifyAnonymousUserRedirectFromLogin();
 
       expect(redirectResult.isLoginUrlMaintained).toBe(false);
@@ -42,7 +44,9 @@ test.describe('Anonymous User Login Redirect', () => {
       expect(redirectResult.currentPath).not.toContain('#/login');
     });
 
-    test('When accessing login page directly, Then should display all home page elements correctly', async ({ page }) => {
+    test('When accessing login page directly, Then should display all home page elements correctly', async ({
+      page
+    }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
       await zeppelinHelper.waitForZeppelinReady();
       await page.waitForURL(url => !url.toString().includes('#/login'));
@@ -94,9 +98,9 @@ test.describe('Anonymous User Login Redirect', () => {
 
       await expect(page.locator('text=Create new Note')).toBeVisible();
       await expect(page.locator('text=Import Note')).toBeVisible();
-      
+
       const filterInput = page.locator('input[placeholder*="Filter"]');
-      if (await filterInput.count() > 0) {
+      if ((await filterInput.count()) > 0) {
         await expect(filterInput).toBeVisible();
       }
     });
@@ -113,7 +117,9 @@ test.describe('Anonymous User Login Redirect', () => {
       await expect(page.locator('text=Miscellaneous Tutorial')).toBeVisible();
     });
 
-    test('When accessing login page, Then should display external links in help and community sections', async ({ page }) => {
+    test('When accessing login page, Then should display external links in help and community sections', async ({
+      page
+    }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
       await zeppelinHelper.waitForZeppelinReady();
       await page.waitForURL(url => !url.toString().includes('#/login'));
@@ -122,14 +128,16 @@ test.describe('Anonymous User Login Redirect', () => {
       const communityLinks = page.locator('a[href*="community.html"]');
       const issuesLinks = page.locator('a[href*="issues.apache.org"]');
       const githubLinks = page.locator('a[href*="github.com/apache/zeppelin"]');
-      
-      if (await docLinks.count() > 0) await expect(docLinks).toBeVisible();
-      if (await communityLinks.count() > 0) await expect(communityLinks).toBeVisible();
-      if (await issuesLinks.count() > 0) await expect(issuesLinks).toBeVisible();
-      if (await githubLinks.count() > 0) await expect(githubLinks).toBeVisible();
+
+      if ((await docLinks.count()) > 0) await expect(docLinks).toBeVisible();
+      if ((await communityLinks.count()) > 0) await expect(communityLinks).toBeVisible();
+      if ((await issuesLinks.count()) > 0) await expect(issuesLinks).toBeVisible();
+      if ((await githubLinks.count()) > 0) await expect(githubLinks).toBeVisible();
     });
 
-    test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({ page }) => {
+    test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({
+      page
+    }) => {
       await page.goto('/', { waitUntil: 'load' });
       await zeppelinHelper.waitForZeppelinReady();
 
@@ -158,7 +166,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
         await expect(page.locator('h1', { hasText: 'Welcome to Zeppelin!' })).toBeVisible();
         await expect(page.locator('text=anonymous')).toBeVisible();
-        
+
         const path = getCurrentPath(page);
         expect(path).toContain('#/');
         expect(path).not.toContain('#/login');
