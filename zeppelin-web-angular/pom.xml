@@ -39,8 +39,10 @@
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <node.version>v16.20.2</node.version>
+    <npm.version>8.19.4</npm.version>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -63,7 +65,7 @@
 
       <plugin>
         <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>        
+        <artifactId>frontend-maven-plugin</artifactId>
         <configuration>
           <nodeDownloadRoot>${plugin.frontend.nodeDownloadRoot}</nodeDownloadRoot>
           <npmDownloadRoot>${plugin.frontend.npmDownloadRoot}</npmDownloadRoot>
@@ -236,7 +238,7 @@
       </plugin>
     </plugins>
   </build>
-    
+
   <profiles>
     <profile>
       <id>web-e2e</id>
