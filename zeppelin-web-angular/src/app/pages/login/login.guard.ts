@@ -25,7 +25,10 @@ export class LoginGuard implements CanActivate {
 
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     return this.ticketService.getTicket().pipe(
-      map(() => this.router.createUrlTree(['/'])),
+      map(() => {
+        this.router.navigate(['/'], { replaceUrl: true });
+        return false;
+      }),
       catchError(() => of(true))
     );
   }

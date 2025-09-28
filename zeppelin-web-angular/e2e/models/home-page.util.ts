@@ -12,11 +12,14 @@
 
 import { Page, expect } from '@playwright/test';
 import { HomePage } from './home-page';
+import { getBasicPageMetadata, waitForUrlNotContaining } from '../utils';
 
 export class HomePageUtil {
   private homePage: HomePage;
+  private page: Page;
 
   constructor(page: Page) {
+    this.page = page;
     this.homePage = new HomePage(page);
   }
 
@@ -24,12 +27,12 @@ export class HomePageUtil {
     isLoginUrlMaintained: boolean;
     isHomeContentDisplayed: boolean;
     isAnonymousUser: boolean;
-    currentUrl: string;
+    currentPath: string;
   }> {
     await this.homePage.navigateToLogin();
     
-    const currentUrl = await this.homePage.getCurrentURL();
-    const isLoginUrlMaintained = currentUrl.includes('#/login');
+    const currentPath = this.homePage.getCurrentPath();
+    const isLoginUrlMaintained = currentPath.includes('#/login');
     const isHomeContentDisplayed = await this.homePage.isHomeContentDisplayed();
     const isAnonymousUser = await this.homePage.isAnonymousUser();
 
@@ -37,7 +40,7 @@ export class HomePageUtil {
       isLoginUrlMaintained,
       isHomeContentDisplayed,
       isAnonymousUser,
-      currentUrl
+      currentPath
     };
   }
 
@@ -86,34 +89,41 @@ export class HomePageUtil {
   }
 
   async testNavigationConsistency(): Promise<{
-    urlBeforeClick: string;
-    urlAfterClick: string;
+    pathBeforeClick: string;
+    pathAfterClick: string;
     homeContentMaintained: boolean;
   }> {
-    const urlBeforeClick = await this.homePage.getCurrentURL();
+    const pathBeforeClick = this.homePage.getCurrentPath();
     
     await this.homePage.clickZeppelinLogo();
     await this.homePage.waitForPageLoad();
     
-    const urlAfterClick = await this.homePage.getCurrentURL();
+    const pathAfterClick = this.homePage.getCurrentPath();
     const homeContentMaintained = await this.homePage.isHomeContentDisplayed();
 
     return {
-      urlBeforeClick,
-      urlAfterClick,
+      pathBeforeClick,
+      pathAfterClick,
       homeContentMaintained
     };
   }
 
   async getPageMetadata(): Promise<{
     title: string;
-    url: string;
+    path: string;
     isAnonymous: boolean;
   }> {
+    const basicMetadata = await getBasicPageMetadata(this.page);
+    const isAnonymous = await this.homePage.isAnonymousUser();
+    
     return {
-      title: await this.homePage.getPageTitle(),
-      url: await this.homePage.getCurrentURL(),
-      isAnonymous: await this.homePage.isAnonymousUser()
+      ...basicMetadata,
+      isAnonymous
     };
+  }
+
+  async navigateToLoginAndWaitForRedirect(): Promise<void> {
+    await this.page.goto('/#/login', { waitUntil: 'load' });
+    await waitForUrlNotContaining(this.page, '#/login');
   }
 }

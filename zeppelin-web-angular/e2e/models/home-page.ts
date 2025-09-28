@@ -12,6 +12,7 @@
 
 import { Locator, Page, expect } from '@playwright/test';
 import { BasePage } from './base-page';
+import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 
 export class HomePage extends BasePage {
   readonly welcomeHeading: Locator;
@@ -75,6 +76,8 @@ export class HomePage extends BasePage {
   async navigateToLogin(): Promise<void> {
     await this.page.goto('/#/login', { waitUntil: 'load' });
     await this.waitForPageLoad();
+    // Wait for potential redirect to complete by checking URL change
+    await waitForUrlNotContaining(this.page, '#/login');
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
@@ -95,13 +98,16 @@ export class HomePage extends BasePage {
     }
   }
 
-
   async clickZeppelinLogo(): Promise<void> {
     await this.zeppelinLogo.click();
   }
 
   async getCurrentURL(): Promise<string> {
     return this.page.url();
+  }
+
+  getCurrentPath(): string {
+    return getCurrentPath(this.page);
   }
 
   async getPageTitle(): Promise<string> {
