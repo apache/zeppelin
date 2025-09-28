@@ -20,10 +20,10 @@ import { InputBoolean } from 'ng-zorro-antd/core/util';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageHeaderComponent implements OnInit {
-  @Input() title: string;
-  @Input() description: string | TemplateRef<void>;
+  @Input() title!: string;
+  @Input() description!: TemplateRef<void>;
   @Input() @InputBoolean() divider = false;
-  @Input() extra: TemplateRef<void>;
+  @Input() extra?: TemplateRef<void>;
 
   constructor() {}
 

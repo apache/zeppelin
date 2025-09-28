@@ -50,6 +50,7 @@ zeppelin-web/npm-debug.log
 zeppelin-web/yarn-error.log
 zeppelin-web/bower_components
 zeppelin-web/yarn.lock
+zeppelin-web-angular/tslint-rules/*.js
 **nbproject/
 **node/
 
@@ -146,3 +147,5 @@ tramp
 # python venv
 .venv
 
+# dotenv files
+.env

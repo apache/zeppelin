@@ -19,7 +19,7 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-import { FormArray, FormBuilder, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { NotebookRepo } from '@zeppelin/interfaces';
 
 @Component({
@@ -29,13 +29,16 @@ import { NotebookRepo } from '@zeppelin/interfaces';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookRepoItemComponent implements OnChanges {
-  @Input() repo: NotebookRepo;
+  @Input() repo!: NotebookRepo;
   @Output() readonly repoChange = new EventEmitter<NotebookRepo>();
 
   settingFormArray: FormArray;
   editMode = false;
 
-  constructor(private cdr: ChangeDetectorRef, private fb: FormBuilder) {}
+  constructor(private cdr: ChangeDetectorRef, private fb: FormBuilder) {
+    // Initialize an empty form array to avoid undefined type error in the template
+    this.settingFormArray = this.fb.array([]);
+  }
 
   triggerEditMode() {
     this.editMode = !this.editMode;
@@ -68,6 +71,10 @@ export class NotebookRepoItemComponent implements OnChanges {
       return this.fb.control(setting.selected, [Validators.required]);
     });
     this.settingFormArray = this.fb.array(controls);
+  }
+
+  getSettingControl(index: number): FormControl {
+    return this.settingFormArray.at(index) as FormControl;
   }
 
   ngOnChanges(changes: SimpleChanges): void {

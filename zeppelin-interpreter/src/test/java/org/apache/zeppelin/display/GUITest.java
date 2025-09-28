@@ -30,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -62,6 +64,46 @@ class GUITest {
     // still "2"
     selected = gui.select("list_1", options, "1");
     assertEquals("2", selected);
+  }
+
+  @Test
+  void testSelectWithCollectionDefault() {
+    GUI gui = new GUI();
+    List<String> collectionDefault = Arrays.asList("2");
+    Object selected = gui.select("list_collection", options, collectionDefault);
+    
+    // Verify that "2" (first element of collection) is used as default
+    assertEquals("2", selected);
+    
+    // Verify the form's default value is correctly set
+    Select selectForm = (Select) gui.forms.get("list_collection");
+    assertEquals("2", selectForm.getDefaultValue());
+  }
+
+  @Test
+  void testSelectWithCollectionDefaultMultiElement() {
+    GUI gui = new GUI();
+    List<String> collectionDefault = Arrays.asList("2", "3");
+    Object selected = gui.select("list_collection_multi", options, collectionDefault);
+
+    // First element of collection should be used
+    assertEquals("2", selected);
+
+    Select selectForm = (Select) gui.forms.get("list_collection_multi");
+    assertEquals("2", selectForm.getDefaultValue());
+  }
+
+  @Test
+  void testSelectWithEmptyCollectionDefault() {
+    GUI gui = new GUI();
+    List<String> emptyDefault = Collections.emptyList();
+    Object selected = gui.select("list_collection_empty", options, emptyDefault);
+
+    // Empty collection -> null -> fallback to first option ("1")
+    assertEquals("1", selected);
+
+    Select selectForm = (Select) gui.forms.get("list_collection_empty");
+    assertEquals("1", selectForm.getDefaultValue());
   }
 
   @Test

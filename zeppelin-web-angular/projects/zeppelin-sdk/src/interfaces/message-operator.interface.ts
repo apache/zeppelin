@@ -361,16 +361,21 @@ export enum OP {
   UNSUBSCRIBE_UPDATE_NOTE_JOBS = 'UNSUBSCRIBE_UPDATE_NOTE_JOBS',
 
   /**
+   * [s-c]
+   * send when job manager is disabled
+   */
+  JOB_MANAGER_DISABLED = 'JOB_MANAGER_DISABLED',
+
+  /**
    * [c-s]
    * get interpreter bindings
    */
   GET_INTERPRETER_BINDINGS = 'GET_INTERPRETER_BINDINGS',
 
-
   /**
-  * [c-s]
-  * @param selectedSettingIds
-  */
+   * [c-s]
+   * @param selectedSettingIds
+   */
   SAVE_INTERPRETER_BINDINGS = 'SAVE_INTERPRETER_BINDINGS',
 
   /**

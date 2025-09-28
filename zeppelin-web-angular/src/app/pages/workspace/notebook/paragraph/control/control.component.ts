@@ -24,7 +24,6 @@ import {
 import { copyTextToClipboard } from '@zeppelin/core';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { ActivatedRoute } from '@angular/router';
 import { RuntimeInfos } from '@zeppelin/sdk';
@@ -38,31 +37,31 @@ import { MessageService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphControlComponent implements OnInit, OnChanges {
-  @Input() status: string;
+  @Input() status!: string;
   @Input() progress = 0;
   @Input() revisionView = false;
-  @Input() enabled = true;
-  @Input() pid: string;
-  @Input() tableHide = false;
-  @Input() editorHide = false;
-  @Input() colWidth: number;
-  @Input() fontSize: number;
-  @Input() runOnSelectionChange = true;
+  @Input() enabled?: boolean = true;
+  @Input() pid!: string;
+  @Input() tableHide?: boolean = false;
+  @Input() editorHide?: boolean = false;
+  @Input() colWidth?: number;
+  @Input() fontSize?: number;
+  @Input() runOnSelectionChange?: boolean = true;
   @Input() isEntireNoteRunning = true;
-  @Input() runtimeInfos: RuntimeInfos;
-  @Input() colWidthOption = [];
+  @Input() runtimeInfos?: RuntimeInfos;
+  @Input() colWidthOption: number[] = [];
   @Input() first = false;
   @Input() last = false;
-  @Input() title = false;
-  @Input() lineNumbers = false;
-  @Input() paragraphLength: number;
+  @Input() titleShow?: boolean = false;
+  @Input() showLineNumbers?: boolean = false;
+  @Input() paragraphLength!: number;
   @Output() readonly colWidthChange = new EventEmitter<number>();
-  @Output() readonly titleChange = new EventEmitter<boolean>();
+  @Output() readonly titleShowChange = new EventEmitter<boolean>();
   @Output() readonly enabledChange = new EventEmitter<boolean>();
   @Output() readonly fontSizeChange = new EventEmitter<number>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
   @Output() readonly runParagraph = new EventEmitter();
-  @Output() readonly lineNumbersChange = new EventEmitter<boolean>();
+  @Output() readonly showLineNumbersChange = new EventEmitter<boolean>();
   @Output() readonly cancelParagraph = new EventEmitter();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly runOnSelectionChangeChange = new EventEmitter<boolean>();
@@ -86,6 +85,14 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     trigger(): void;
   }> = [];
 
+  formatShortcut(shortcut: string, isMac: boolean) {
+    if (isMac) {
+      return shortcut.replace('Alt', 'Option');
+    }
+
+    return shortcut;
+  }
+
   updateListOfMenu() {
     this.listOfMenu = [
       {
@@ -94,7 +101,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'play-circle',
         trigger: () => this.trigger(this.runParagraph),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Enter', this.isMac)
       },
       {
         label: 'Run all above',
@@ -102,7 +109,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'up-square',
         trigger: () => this.trigger(this.runAllAbove),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Ctrl+Up', this.isMac)
       },
       {
         label: 'Run all below',
@@ -110,7 +117,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'down-square',
         trigger: () => this.trigger(this.runAllBelowAndCurrent),
-        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
+        shortCut: this.formatShortcut('Shift+Ctrl+Down', this.isMac)
       },
       {
         label: 'Link this paragraph',
@@ -120,7 +127,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         trigger: () => {
           this.openSingleParagraph.emit(this.pid);
         },
-        shortCut: this.isMac ? '⌥+⌘+T' : 'Alt+Ctrl+T'
+        shortCut: this.formatShortcut('Ctrl+Alt+W', this.isMac)
       },
       {
         label: 'Clear output',
@@ -128,7 +135,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'fire',
         trigger: () => this.clearParagraphOutput(),
-        shortCut: this.isMac ? '⌥+⌘+L' : 'Alt+Ctrl+L'
+        shortCut: this.formatShortcut('Ctrl+Alt+L', this.isMac)
       },
       {
         label: 'Remove',
@@ -136,23 +143,23 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'delete',
         trigger: () => this.onRemoveParagraph(),
-        shortCut: this.isMac ? '⇧+Del (Command)' : 'Shift+Del (Command)'
+        shortCut: this.formatShortcut('Ctrl+Alt+D', this.isMac)
       },
       {
-        label: 'Move up',
+        label: 'Move paragraph up',
         show: !this.first,
         disabled: this.isEntireNoteRunning,
         icon: 'up',
         trigger: () => this.trigger(this.moveUp),
-        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+K (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+K', this.isMac)
       },
       {
-        label: 'Move down',
+        label: 'Move paragraph down',
         show: !this.last,
         disabled: this.isEntireNoteRunning,
         icon: 'down',
         trigger: () => this.trigger(this.moveDown),
-        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+J (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+J', this.isMac)
       },
       {
         label: 'Insert new',
@@ -160,7 +167,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'plus',
         trigger: () => this.trigger(this.insertNew),
-        shortCut: `B (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+B', this.isMac)
       },
       {
         label: 'Clone paragraph',
@@ -168,23 +175,23 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'copy',
         trigger: () => this.trigger(this.cloneParagraph),
-        shortCut: `C (Command)`
+        shortCut: this.formatShortcut('Shift+Ctrl+C', this.isMac)
       },
       {
-        label: this.title ? 'Hide Title' : 'Show Title',
+        label: this.titleShow ? 'Hide Title' : 'Show Title',
         show: true,
         disabled: false,
         icon: 'font-colors',
-        trigger: () => this.toggleTitle(),
-        shortCut: `T (Command)`
+        trigger: () => this.toggleShowTitle(),
+        shortCut: this.formatShortcut('Ctrl+Alt+T', this.isMac)
       },
       {
-        label: this.lineNumbers ? 'Hide line numbers' : 'Show line numbers',
+        label: this.showLineNumbers ? 'Hide line numbers' : 'Show line numbers',
         show: true,
         disabled: false,
         icon: 'ordered-list',
         trigger: () => this.toggleLineNumbers(),
-        shortCut: `L (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+M', this.isMac)
       },
       {
         label: this.enabled ? 'Disable run' : 'Enable run',
@@ -192,52 +199,44 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'api',
         trigger: () => this.toggleEnabled(),
-        shortCut: `R (Command)`
+        shortCut: this.formatShortcut('Ctrl+Alt+R', this.isMac)
       }
     ];
   }
 
   toggleEditor() {
-    this.editorHide = !this.editorHide;
-    this.editorHideChange.emit(this.editorHide);
+    this.editorHideChange.emit(!this.editorHide);
   }
 
   toggleOutput() {
-    this.tableHide = !this.tableHide;
-    this.tableHideChange.emit(this.tableHide);
+    this.tableHideChange.emit(!this.tableHide);
   }
 
   toggleRunOnSelectionChange() {
-    this.runOnSelectionChange = !this.runOnSelectionChange;
-    this.runOnSelectionChangeChange.emit(this.runOnSelectionChange);
+    this.runOnSelectionChangeChange.emit(!this.runOnSelectionChange);
   }
 
-  toggleTitle() {
-    this.title = !this.title;
-    this.titleChange.emit(this.title);
+  toggleShowTitle() {
+    this.titleShowChange.emit(!this.titleShow);
   }
 
   toggleLineNumbers() {
-    this.lineNumbers = !this.lineNumbers;
-    this.lineNumbersChange.emit(this.lineNumbers);
+    this.showLineNumbersChange.emit(!this.showLineNumbers);
   }
 
   toggleEnabled() {
     if (!this.isEntireNoteRunning) {
-      this.enabled = !this.enabled;
-      this.enabledChange.emit(this.enabled);
+      this.enabledChange.emit(!this.enabled);
     }
   }
 
-  changeColWidth(colWidth: number) {
-    this.colWidth = +colWidth;
-    this.colWidthChange.emit(this.colWidth);
+  changeColWidth(colWidth: string) {
+    this.colWidthChange.emit(+colWidth);
     this.dropdownVisible = false;
   }
 
-  changeFontSize(fontSize: number) {
-    this.fontSize = +fontSize;
-    this.fontSizeChange.emit(this.fontSize);
+  changeFontSize(fontSize: string) {
+    this.fontSizeChange.emit(+fontSize);
   }
 
   copyClipboard(id: string) {

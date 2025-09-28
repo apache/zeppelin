@@ -27,11 +27,10 @@ export class ZeppelinHeliumPackage {
     public module: Type<any>,
     // tslint:disable-next-line:no-any
     public component: Type<any>,
+    public icon = 'build',
     // tslint:disable-next-line:no-any
-    public visualization?: any,
-    public icon = 'build'
-  ) {
-  }
+    public visualization?: any
+  ) {}
 }
 
 export enum HeliumPackageType {
@@ -49,7 +48,7 @@ export function createHeliumPackage(config: {
   // tslint:disable-next-line:no-any
   component: Type<any>;
   // tslint:disable-next-line:no-any
-  visualization?: any
+  visualization?: any;
 }) {
   return new ZeppelinHeliumPackage(
     config.name,
@@ -65,32 +64,34 @@ export function createHeliumPackage(config: {
   providedIn: ZeppelinHeliumModule
 })
 export class ZeppelinHeliumService {
-
   depsDefined = false;
 
-  constructor() { }
+  constructor() {}
 
   defineDeps() {
     if (this.depsDefined) {
       return;
     }
-    Object.keys(COMMON_DEPS).forEach(externalKey =>
+    Object.entries(COMMON_DEPS).forEach(([externalKey, externalValue]) =>
       // tslint:disable-next-line:no-any
-      (window as any).define(externalKey, [], () => COMMON_DEPS[ externalKey ])
+      (window as any).define(externalKey, [], () => externalValue)
     );
     this.depsDefined = true;
   }
 
   loadPackage(name: string): Promise<ZeppelinHeliumPackage> {
     this.defineDeps();
-    return SystemJs.import(`./assets/helium-packages/${name}.umd.js`)
-      .then(() => SystemJs.import(name))
-      .then(plugin => {
-        if (plugin instanceof ZeppelinHeliumPackage) {
-          return Promise.resolve(plugin);
-        } else {
-          throw new TypeError('This module is not a valid helium package');
-        }
-      });
+    return (
+      SystemJs.import(`./assets/helium-packages/${name}.umd.js`)
+        .then(() => SystemJs.import(name))
+        // tslint:disable-next-line:no-any
+        .then((plugin: any) => {
+          if (plugin instanceof ZeppelinHeliumPackage) {
+            return Promise.resolve(plugin);
+          } else {
+            throw new TypeError('This module is not a valid helium package');
+          }
+        })
+    );
   }
 }

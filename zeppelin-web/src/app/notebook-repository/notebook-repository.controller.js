@@ -65,7 +65,6 @@ function NotebookRepositoryCtrl($http, baseUrlSrv, ngToast) {
     $http.get(baseUrlSrv.getRestApiBase() + '/notebook-repositories')
       .success(function(data, status, headers, config) {
         vm.notebookRepos = data.body;
-        console.log('ya notebookRepos %o', vm.notebookRepos);
       }).error(function(data, status, headers, config) {
         if (status === 401) {
           ngToast.danger({

@@ -54,7 +54,6 @@ const VisualizationComponents = [
     VisualizationScatterSettingComponent,
     VisualizationXAxisSettingComponent
   ],
-  entryComponents: [...VisualizationComponents],
   exports: [...VisualizationComponents],
   imports: [
     CommonModule,

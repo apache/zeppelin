@@ -16,6 +16,7 @@ import * as forms from '@angular/forms';
 import * as router from '@angular/router';
 import * as rxjs from 'rxjs';
 
+// @ts-ignore: TODO - Should write type declaration file.
 import * as dataSet from '@antv/data-set';
 import * as g2 from '@antv/g2';
 import * as sdk from '@zeppelin/sdk';
@@ -24,6 +25,7 @@ import * as lodash from 'lodash';
 
 import * as ngZorro from 'ng-zorro-antd';
 import * as tslib from 'tslib';
+// tslint:disable-next-line: no-circular-imports
 import * as zeppelinHelium from './public-api';
 
 export const COMMON_DEPS = {
@@ -36,7 +38,7 @@ export const COMMON_DEPS = {
   '@zeppelin/sdk': sdk,
   '@zeppelin/visualization': visualization,
   '@zeppelin/helium': zeppelinHelium,
-  'lodash': lodash,
+  lodash: lodash,
   'ng-zorro-antd': ngZorro,
   rxjs,
   tslib

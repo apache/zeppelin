@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { JsonVisComponent } from './json-vis.component';
-import { CommonModule } from '@angular/common';
 
 @NgModule({
   imports: [CommonModule],
@@ -20,4 +20,4 @@ import { CommonModule } from '@angular/common';
   entryComponents: [JsonVisComponent],
   exports: [JsonVisComponent]
 })
-export class JsonVisModule { }
+export class JsonVisModule {}

@@ -10,20 +10,25 @@
  * limitations under the License.
  */
 
-import {interval, Observable, Subject, Subscription} from 'rxjs';
-import {delay, filter, map, mergeMap, retryWhen, take} from 'rxjs/operators';
-import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
+import { interval, Observable, Subject, Subscription } from 'rxjs';
+import { delay, filter, map, mergeMap, retryWhen, take } from 'rxjs/operators';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
-import {Ticket} from './interfaces/message-common.interface';
+import { Ticket } from './interfaces/message-common.interface';
 import {
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
   MixMessageDataTypeMap
 } from './interfaces/message-data-type-map.interface';
-import {NoteConfig, PersonalizedMode, SendNote} from './interfaces/message-notebook.interface';
-import {OP} from './interfaces/message-operator.interface';
-import {ParagraphConfig, ParagraphParams, SendParagraph} from './interfaces/message-paragraph.interface';
-import {WebSocketMessage} from './interfaces/websocket-message.interface';
+import { Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
+import { OP } from './interfaces/message-operator.interface';
+import {
+  DynamicFormParams,
+  ParagraphConfig,
+  ParagraphParams,
+  SendParagraph
+} from './interfaces/message-paragraph.interface';
+import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
@@ -33,20 +38,22 @@ export type SendArgumentsType<K extends keyof MessageSendDataTypeMap> = MessageS
 
 export type ReceiveArgumentsType<
   K extends keyof MessageReceiveDataTypeMap
-> = MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data?: MessageReceiveDataTypeMap[K]) => void;
+> = MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
 
 export class Message {
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
-  private ws: WebSocketSubject<WebSocketMessage<keyof MixMessageDataTypeMap>>;
+  private ws: WebSocketSubject<WebSocketMessage<keyof MixMessageDataTypeMap>> | null = null;
   private open$ = new Subject<Event>();
   private close$ = new Subject<CloseEvent>();
   private sent$ = new Subject<WebSocketMessage<keyof MessageSendDataTypeMap>>();
   private received$ = new Subject<WebSocketMessage<keyof MessageReceiveDataTypeMap>>();
   private pingIntervalSubscription = new Subscription();
-  private wsUrl: string;
-  private ticket: Ticket;
-  private uniqueClientId = Math.random().toString(36).substring(2, 7);
+  private wsUrl?: string;
+  private ticket?: Ticket;
+  private uniqueClientId = Math.random()
+    .toString(36)
+    .substring(2, 7);
   private lastMsgIdSeqSent = 0;
 
   constructor() {
@@ -69,7 +76,7 @@ export class Message {
     this.connect();
   }
 
-  getWsInstance(): WebSocketSubject<WebSocketMessage<keyof MixMessageDataTypeMap>> {
+  getWsInstance(): Message['ws'] {
     return this.ws;
   }
 
@@ -88,7 +95,10 @@ export class Message {
   }
 
   connect() {
-    this.ws = webSocket({
+    if (!this.wsUrl) {
+      throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
+    }
+    this.ws = webSocket<WebSocketMessage<keyof MixMessageDataTypeMap>>({
       url: this.wsUrl,
       openObserver: this.open$,
       closeObserver: this.close$
@@ -97,20 +107,11 @@ export class Message {
     this.ws
       .pipe(
         // reconnect
-        retryWhen(errors =>
-          errors.pipe(
-            mergeMap(() =>
-              this.close$.pipe(
-                take(1),
-                delay(4000)
-              )
-            )
-          )
-        )
+        retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
       )
-      .subscribe((e: WebSocketMessage<keyof MessageReceiveDataTypeMap>) => {
+      .subscribe(e => {
         console.log('Receive:', e);
-        this.received$.next(this.interceptReceived(e));
+        this.received$.next(this.interceptReceived(e as WebSocketMessage<keyof MessageReceiveDataTypeMap>));
       });
   }
 
@@ -139,6 +140,9 @@ export class Message {
   }
 
   send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
+    if (!this.ws) {
+      throw new Error('WebSocket is not connected. Bootstrap first.');
+    }
     const [op, data] = args;
     const message: WebSocketMessage<K> = {
       op,
@@ -166,9 +170,7 @@ export class Message {
         const isResponseForRequestFromThisClient = uniqueClientId === this.uniqueClientId;
 
         if (message.op === OP.PARAGRAPH) {
-          if (isResponseForRequestFromThisClient &&
-               this.lastMsgIdSeqSent > msgIdSeqReceived
-          ) {
+          if (isResponseForRequestFromThisClient && this.lastMsgIdSeqSent > msgIdSeqReceived) {
             console.log('PARAPGRAPH is already updated by shortcircuit');
             return false;
           } else {
@@ -187,15 +189,17 @@ export class Message {
   }
 
   destroy(): void {
-    this.ws.complete();
-    this.ws = null;
+    if (this.ws) {
+      this.ws.complete();
+      this.ws = null;
+    }
   }
 
   getHomeNote(): void {
     this.send<OP.GET_HOME_NOTE>(OP.GET_HOME_NOTE);
   }
 
-  newNote(noteName: string, defaultInterpreterGroup: string): void {
+  newNote(noteName: string, defaultInterpreterGroup?: string): void {
     this.send<OP.NEW_NOTE>(OP.NEW_NOTE, {
       name: noteName,
       defaultInterpreterGroup
@@ -214,7 +218,7 @@ export class Message {
     });
   }
 
-  deleteNote(noteId): void {
+  deleteNote(noteId: string): void {
     this.send<OP.DEL_NOTE>(OP.DEL_NOTE, {
       id: noteId
     });
@@ -246,7 +250,7 @@ export class Message {
     this.send<OP.EMPTY_TRASH>(OP.EMPTY_TRASH);
   }
 
-  cloneNote(noteIdToClone, newNoteName): void {
+  cloneNote(noteIdToClone: string, newNoteName: string): void {
     this.send<OP.CLONE_NOTE>(OP.CLONE_NOTE, { id: noteIdToClone, name: newNoteName });
   }
 
@@ -262,7 +266,7 @@ export class Message {
   }
 
   reloadNote(noteId: string): void {
-    this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId })
+    this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId });
   }
 
   getNote(noteId: string): void {
@@ -277,7 +281,7 @@ export class Message {
     this.send<OP.UPDATE_PERSONALIZED_MODE>(OP.UPDATE_PERSONALIZED_MODE, { id: noteId, personalized: modeValue });
   }
 
-  noteRename(noteId: string, noteName: string, relative: boolean): void {
+  noteRename(noteId: string, noteName: string, relative?: boolean): void {
     this.send<OP.NOTE_RENAME>(OP.NOTE_RENAME, { id: noteId, name: noteName, relative: relative });
   }
 
@@ -295,7 +299,7 @@ export class Message {
 
   copyParagraph(
     newIndex: number,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -343,21 +347,21 @@ export class Message {
     });
   }
 
-  cancelParagraph(paragraphId): void {
+  cancelParagraph(paragraphId: string): void {
     this.send<OP.CANCEL_PARAGRAPH>(OP.CANCEL_PARAGRAPH, { id: paragraphId });
   }
 
   paragraphExecutedBySpell(
-    paragraphId,
-    paragraphTitle,
-    paragraphText,
-    paragraphResultsMsg,
-    paragraphStatus,
-    paragraphErrorMessage,
-    paragraphConfig,
-    paragraphParams,
-    paragraphDateStarted,
-    paragraphDateFinished
+    paragraphId: string,
+    paragraphTitle: string,
+    paragraphText: string,
+    paragraphResultsMsg: Array<{ data: string; type: string }>,
+    paragraphStatus: string,
+    paragraphErrorMessage: string,
+    paragraphConfig: ParagraphConfig,
+    paragraphParams: DynamicFormParams,
+    paragraphDateStarted: string,
+    paragraphDateFinished: string
   ): void {
     this.send<OP.PARAGRAPH_EXECUTED_BY_SPELL>(OP.PARAGRAPH_EXECUTED_BY_SPELL, {
       id: paragraphId,
@@ -381,7 +385,7 @@ export class Message {
 
   runParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -391,9 +395,9 @@ export class Message {
       op: OP.PARAGRAPH_STATUS,
       data: {
         id: paragraphId,
-        status: "PENDING"
+        status: 'PENDING'
       }
-    })
+    });
 
     // send message to server
     this.send<OP.RUN_PARAGRAPH>(OP.RUN_PARAGRAPH, {
@@ -434,7 +438,7 @@ export class Message {
 
   commitParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
@@ -521,9 +525,11 @@ export class Message {
     this.send<OP.GET_INTERPRETER_BINDINGS>(OP.GET_INTERPRETER_BINDINGS, { noteId: noteId });
   }
 
-  saveInterpreterBindings(noteId, selectedSettingIds): void {
-    this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS,
-      {noteId: noteId, selectedSettingIds: selectedSettingIds});
+  saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
+    this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS, {
+      noteId: noteId,
+      selectedSettingIds: selectedSettingIds
+    });
   }
 
   listConfigurations(): void {
@@ -541,7 +547,7 @@ export class Message {
     });
   }
 
-  removeNoteForms(note, formName): void {
+  removeNoteForms(note: Required<Note>['note'], formName: string): void {
     this.send<OP.REMOVE_NOTE_FORMS>(OP.REMOVE_NOTE_FORMS, {
       noteId: note.id,
       formName: formName

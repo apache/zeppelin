@@ -18,9 +18,8 @@
   <div>
     <h3>Interpreter binding</h3>
     <p>
-      Bind interpreter for this note.
-      Click to Bind/Unbind interpreter.
-      Drag and drop to reorder interpreters. <br/>
+      Bind interpreter for this note. Click to Bind/Unbind interpreter. Drag and drop to reorder interpreters.
+      <br />
       The first interpreter on the list becomes default. To create/remove interpreters, go to
       <a href="#/interpreter">Interpreter</a>
       menu.
@@ -28,20 +27,22 @@
   </div>
   <div class="interpreter-settings">
     <div cdkDropList class="interpreter-list" (cdkDropListDropped)="drop($event)">
-      <div class="interpreter-box" *ngFor="let item of interpreterBindings;let pFirst = first" cdkDrag>
+      <div class="interpreter-box" *ngFor="let item of interpreterBindings; let pFirst = first" cdkDrag>
         <a class="refresh" (click)="restartInterpreter(item)">
           <i nz-icon nzType="sync" nzTheme="outline"></i>
         </a>
         <div class="interpreter-name">
-          <button nz-button [nzType]="item.selected ? 'primary' : 'default' " (click)="item.selected = !item.selected">
-            <span class="main-name">{{item.name}}</span>
+          <button nz-button [nzType]="item.selected ? 'primary' : 'default'" (click)="item.selected = !item.selected">
+            <span class="main-name">{{ item.name }}</span>
             <small>
-            <span class="child-name" *ngFor="let inter of item.interpreters;let first = first">
-              <span *ngIf="!first">, </span>
-              %<span *ngIf="!pFirst || first">{{item.name}}</span><span *ngIf="(!pFirst || first) && !first">.</span>
-              <span *ngIf="!first">{{inter.name}}</span>
-              <span *ngIf="pFirst && first">(default)</span>
-            </span>
+              <span class="child-name" *ngFor="let inter of item.interpreters; let first = first">
+                <span *ngIf="!first">,</span>
+                %
+                <span *ngIf="!pFirst || first">{{ item.name }}</span>
+                <span *ngIf="(!pFirst || first) && !first">.</span>
+                <span *ngIf="!first">{{ inter.name }}</span>
+                <span *ngIf="pFirst && first">(default)</span>
+              </span>
             </small>
           </button>
         </div>

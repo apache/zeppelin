@@ -29,6 +29,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is copied from flink project, the reason is that flink scala shell only supports
  * scala-2.11, we copied it here to support scala-2.12 as well.
@@ -38,6 +41,7 @@ public class JarHelper {
   // Constants
 
   private static final int BUFFER_SIZE = 2156;
+  private static final Logger LOGGER = LoggerFactory.getLogger(JarHelper.class);
 
   // ========================================================================
   // Variables
@@ -110,7 +114,7 @@ public class JarHelper {
       byte[] data = new byte[BUFFER_SIZE];
       File destFile = new File(destDir, entry.getName());
       if (mVerbose) {
-        System.out.println("unjarring " + destFile + " from " + entry.getName());
+        LOGGER.info("unjarring {} from {}", destFile, entry.getName());
       }
       FileOutputStream fos = new FileOutputStream(destFile);
       dest = new BufferedOutputStream(fos, BUFFER_SIZE);
@@ -143,7 +147,7 @@ public class JarHelper {
    */
   private void jarDir(File dirOrFile2jar, JarOutputStream jos, String path) throws IOException {
     if (mVerbose) {
-      System.out.println("checking " + dirOrFile2jar);
+      LOGGER.info("checking {}", dirOrFile2jar);
     }
     if (dirOrFile2jar.isDirectory()) {
       String[] dirList = dirOrFile2jar.list();
@@ -162,7 +166,7 @@ public class JarHelper {
     } else if (dirOrFile2jar.exists()) {
       if (dirOrFile2jar.getCanonicalPath().equals(mDestJarName)) {
         if (mVerbose) {
-          System.out.println("skipping " + dirOrFile2jar.getPath());
+          LOGGER.info("skipping {}", dirOrFile2jar.getPath());
         }
         return;
       }
@@ -178,7 +182,7 @@ public class JarHelper {
         while ((mByteCount = fis.read(mBuffer)) != -1) {
           jos.write(mBuffer, 0, mByteCount);
           if (mVerbose) {
-            System.out.println("wrote " + mByteCount + " bytes");
+            LOGGER.info("wrote {} bytes", mByteCount);
           }
         }
         jos.flush();

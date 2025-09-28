@@ -168,7 +168,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
   void testNoteCreateWithParagraphs() throws IOException {
     // Call Create Note REST API
     String noteName = "test";
-    String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
+    String jsonRequest = "{\"notePath\":\"" + noteName + "\", \"paragraphs\": [" +
         "{\"title\": \"title1\", \"text\": \"text1\"}," +
         "{\"title\": \"title2\", \"text\": \"text2\"}," +
         "{\"title\": \"titleConfig\", \"text\": \"text3\", " +
@@ -221,7 +221,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   private void testNoteCreate(String noteName) throws IOException {
     // Call Create Note REST API
-    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    String jsonRequest = "{\"notePath\":\"" + noteName + "\"}";
     CloseableHttpResponse post = httpPost("/notebook/", jsonRequest);
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
     LOGGER.info("testNoteCreate \n" + postResponse);
@@ -426,7 +426,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
 
       String noteName = "clone Note Name";
       // Call Clone Note REST API
-      String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+      String jsonRequest = "{\"notePath\":\"" + noteName + "\"}";
       CloseableHttpResponse post = httpPost("/notebook/" + noteId, jsonRequest);
       String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
       LOGGER.info("testNoteClone \n" + postResponse);

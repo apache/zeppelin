@@ -38,9 +38,9 @@ import { DynamicForms, DynamicFormsItem, DynamicFormsType, DynamicFormParams } f
 export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges, OnDestroy {
   private destroy$ = new Subject();
 
-  @Input() formDefs: DynamicForms;
-  @Input() paramDefs: DynamicFormParams;
-  @Input() runOnChange = false;
+  @Input() formDefs!: DynamicForms;
+  @Input() paramDefs!: DynamicFormParams;
+  @Input() runOnChange?: boolean = false;
   @Input() disable = false;
   @Input() removable = false;
   @Output() readonly formChange = new EventEmitter<void>();
@@ -60,7 +60,7 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
     }
   }
 
-  trackByNameFn(_index, form: DynamicFormsItem) {
+  trackByNameFn(_index: number, form: DynamicFormsItem) {
     return form.name;
   }
 
@@ -72,7 +72,8 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
         this.paramDefs[e.name] = e.defaultValue;
       }
       if (e.type === DynamicFormsType.CheckBox) {
-        this.checkboxGroups[e.name] = e.options.map(opt => {
+        // CheckBox type should have defined 'options'
+        this.checkboxGroups[e.name] = e.options!.map(opt => {
           let checked = false;
           if (this.paramDefs[e.name] && Array.isArray(this.paramDefs[e.name])) {
             const param = this.paramDefs[e.name] as string[];
@@ -88,7 +89,7 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
     });
   }
 
-  checkboxChange(value: NzCheckBoxOptionInterface[], name) {
+  checkboxChange(value: NzCheckBoxOptionInterface[], name: string) {
     this.paramDefs[name] = value.filter(e => e.checked).map(e => e.value);
     this.onFormChange();
   }
@@ -107,12 +108,7 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
 
   ngOnInit() {
     this.setForms();
-    this.formChange$
-      .pipe(
-        debounceTime(800),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.formChange.emit());
+    this.formChange$.pipe(debounceTime(800), takeUntil(this.destroy$)).subscribe(() => this.formChange.emit());
   }
 
   ngOnChanges(changes: SimpleChanges): void {

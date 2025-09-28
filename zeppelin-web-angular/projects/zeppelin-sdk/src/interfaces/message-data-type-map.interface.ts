@@ -20,7 +20,6 @@ import {
   EditorSettingSend,
   FolderRename,
   GetInterpreterBindings,
-  SaveInterpreterBindings,
   GetNode,
   ListRevision,
   ListRevisionHistory,
@@ -37,11 +36,12 @@ import {
   NoteUpdated,
   ParagraphAdded,
   ParagraphMoved,
+  ReloadNote,
   RemoveFolder,
   RemoveNoteForms,
-  ReloadNote,
   RestoreFolder,
   RestoreNote,
+  SaveInterpreterBindings,
   SaveNoteFormsReceived,
   SaveNoteFormsSend,
   SetNoteRevision,
@@ -64,6 +64,7 @@ import {
   MoveParagraph,
   ParagraphClearAllOutput,
   ParagraphClearOutput,
+  ParagraphExecutedBySpell,
   ParagraphRemove,
   ParagraphRemoved,
   ParagraphStatus,
@@ -75,7 +76,7 @@ import {
   RunParagraph
 } from './message-paragraph.interface';
 
-import { ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
+import { JobManagerDisabled, ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
 
 import { InterpreterBindings, InterpreterSetting } from './message-interpreter.interface';
 import { OP } from './message-operator.interface';
@@ -91,6 +92,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.ERROR_INFO]: ErrorInfo;
   [OP.LIST_NOTE_JOBS]: ListNoteJobs;
   [OP.LIST_UPDATE_NOTE_JOBS]: ListUpdateNoteJobs;
+  [OP.JOB_MANAGER_DISABLED]: JobManagerDisabled;
   [OP.INTERPRETER_SETTINGS]: InterpreterSetting;
   [OP.LIST_REVISION_HISTORY]: ListRevision;
   [OP.INTERPRETER_BINDINGS]: InterpreterBindings;
@@ -143,7 +145,7 @@ export interface MessageSendDataTypeMap {
   [OP.ANGULAR_OBJECT_CLIENT_BIND]: AngularObjectClientBind;
   [OP.ANGULAR_OBJECT_CLIENT_UNBIND]: AngularObjectClientUnbind;
   [OP.CANCEL_PARAGRAPH]: CancelParagraph;
-  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: {}; // TODO(hsuanxyz)
+  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: ParagraphExecutedBySpell;
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;

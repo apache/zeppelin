@@ -12,15 +12,14 @@
 
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { MessageService, TicketService } from '@zeppelin/services';
 
 import { get } from 'lodash';
 import { NzModalRef } from 'ng-zorro-antd/modal';
-import { UploadFile } from 'ng-zorro-antd/upload';
+import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { OP } from '@zeppelin/sdk';
-import { MessageService } from '@zeppelin/services/message.service';
-import { TicketService } from '@zeppelin/services/ticket.service';
+import { MessageReceiveDataTypeMap, OP, SendNote } from '@zeppelin/sdk';
 
 @Component({
   selector: 'zeppelin-note-import',
@@ -29,21 +28,21 @@ import { TicketService } from '@zeppelin/services/ticket.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NoteImportComponent extends MessageListenersManager implements OnInit {
-  noteImportName: string;
-  importUrl: string;
-  errorText: string;
+  noteImportName?: string;
+  importUrl?: string;
+  errorText?: string;
   importLoading = false;
   maxLimit = get(this.ticketService.configuration, ['zeppelin.websocket.max.text.message.size'], null);
 
   @MessageListener(OP.NOTES_INFO)
-  getNotes() {
+  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
     this.nzModalRef.destroy();
   }
 
   importNote() {
     this.errorText = '';
     this.importLoading = true;
-    this.httpClient.get(this.importUrl).subscribe(
+    this.httpClient.get(this.importUrl ?? '').subscribe(
       data => {
         this.importLoading = false;
         this.processImportJson(data);
@@ -58,9 +57,9 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     );
   }
 
-  beforeUpload = (file: UploadFile): boolean => {
+  beforeUpload = (file: NzUploadFile): boolean => {
     this.errorText = '';
-    if (file.size > this.maxLimit) {
+    if (file.size !== undefined && this.maxLimit && file.size > Number.parseInt(this.maxLimit, 10)) {
       this.errorText = 'File size limit Exceeded!';
     } else {
       const reader = new FileReader();
@@ -74,23 +73,26 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     return false;
   };
 
-  processImportJson(data) {
+  processImportJson(data: unknown) {
     let result = data;
     if (typeof result !== 'object') {
       try {
-        result = JSON.parse(result);
+        result = JSON.parse(result as string);
       } catch (e) {
         this.errorText = 'JSON parse exception';
         return;
       }
     }
+    // @ts-ignore
     if (result.paragraphs && result.paragraphs.length > 0) {
       if (!this.noteImportName) {
+        // @ts-ignore
         this.noteImportName = result.name;
       } else {
+        // @ts-ignore
         result.name = this.noteImportName;
       }
-      this.messageService.importNote(result);
+      this.messageService.importNote(result as SendNote);
     } else {
       this.errorText = 'Invalid JSON';
     }
@@ -98,8 +100,8 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   }
 
   constructor(
-    private ticketService: TicketService,
     public messageService: MessageService,
+    private ticketService: TicketService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,
     private httpClient: HttpClient

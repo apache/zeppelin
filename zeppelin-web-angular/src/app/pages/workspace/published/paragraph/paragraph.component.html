@@ -15,12 +15,15 @@
   [paramDefs]="paragraph.settings.params"
   [formDefs]="paragraph.settings.forms"
   [runOnChange]="paragraph.config.runOnSelectionChange"
-  (formChange)="runParagraph()">
-</zeppelin-notebook-paragraph-dynamic-forms>
-<zeppelin-notebook-paragraph-result *ngFor="let result of results; index as i; trackBy: trackByIndexFn"
-                                    [id]="paragraph.id"
-                                    [published]="true"
-                                    [currentCol]="paragraph.config.colWidth"
-                                    [config]="configs[i]"
-                                    [result]="result">
-</zeppelin-notebook-paragraph-result>
+  (formChange)="runParagraph()"
+></zeppelin-notebook-paragraph-dynamic-forms>
+<ng-container *ngIf="paragraph">
+  <zeppelin-notebook-paragraph-result
+    *ngFor="let result of results; index as i; trackBy: trackByIndexFn"
+    [id]="paragraph.id"
+    [published]="true"
+    [currentCol]="paragraph.config.colWidth"
+    [config]="configs[i]"
+    [result]="result"
+  ></zeppelin-notebook-paragraph-result>
+</ng-container>

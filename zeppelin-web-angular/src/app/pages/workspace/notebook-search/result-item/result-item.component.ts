@@ -22,7 +22,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
-import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility/get-keyword-positions';
+import { JoinedEditorOptions } from '@zeppelin/share';
+import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility';
 import { editor, Range } from 'monaco-editor';
 import IEditor = editor.IEditor;
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
@@ -34,14 +35,14 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
-  @Input() result: NotebookSearchResultItem;
+  @Input() result!: NotebookSearchResultItem;
   queryParams = {};
   displayName = '';
-  routerLink = [];
-  mergedStr: string;
+  routerLink: string[] = [];
+  mergedStr?: string;
   keywords: string[] = [];
   highlightPositions: KeywordPosition[] = [];
-  editor: IStandaloneCodeEditor;
+  editor?: IStandaloneCodeEditor;
   height = 0;
   decorations: string[] = [];
   editorOption = {
@@ -52,8 +53,12 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
     lineNumbers: 'off',
     glyphMargin: false,
     scrollBeyondLastLine: false,
-    contextmenu: false
-  } as const;
+    contextmenu: false,
+    scrollbar: {
+      handleMouseWheel: false,
+      alwaysConsumeMouseWheel: false
+    }
+  } as JoinedEditorOptions;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private router: ActivatedRoute) {}
 
@@ -115,6 +120,10 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
   }
 
   setLanguage() {
+    const model = this.editor?.getModel();
+    if (!model) {
+      throw new Error('Editor model is not defined.');
+    }
     const editorModes = {
       scala: /^%(\w*\.)?(spark|flink)/,
       python: /^%(\w*\.)?(pyspark|python)/,
@@ -126,11 +135,9 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
       shell: /^%sh/
     };
     let mode = 'text';
-    const model = this.editor.getModel();
-    const keys = Object.keys(editorModes);
-    for (let i = 0; i < keys.length; i++) {
-      if (editorModes[keys[i]].test(this.result.snippet)) {
-        mode = keys[i];
+    for (const [modeOption, regex] of Object.entries(editorModes)) {
+      if (regex.test(this.result.snippet)) {
+        mode = modeOption;
         break;
       }
     }
@@ -140,10 +147,10 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
   autoAdjustEditorHeight() {
     this.ngZone.run(() => {
       setTimeout(() => {
-        if (this.editor) {
-          this.height =
-            this.editor.getOption(monaco.editor.EditorOption.lineHeight) * (this.editor.getModel().getLineCount() + 2);
-          this.editor.layout();
+        const model = this.editor?.getModel();
+        if (model) {
+          this.height = this.editor!.getOption(monaco.editor.EditorOption.lineHeight) * (model.getLineCount() + 2);
+          this.editor!.layout();
           this.cdr.markForCheck();
         }
       });
@@ -152,7 +159,7 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
 
   initializedEditor(editorInstance: IEditor) {
     this.editor = editorInstance as IStandaloneCodeEditor;
-    this.editor.setValue(this.mergedStr);
+    this.editor.setValue(this.mergedStr ?? '');
     this.setLanguage();
     this.autoAdjustEditorHeight();
     this.applyHighlight();
@@ -168,6 +175,6 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.editor.dispose();
+    this.editor?.dispose();
   }
 }

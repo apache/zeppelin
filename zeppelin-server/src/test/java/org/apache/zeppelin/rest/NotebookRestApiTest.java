@@ -19,6 +19,8 @@ package org.apache.zeppelin.rest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import jakarta.ws.rs.core.Response;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
@@ -541,7 +543,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
   @Test
   void testCreateNote() throws Exception {
     LOGGER.info("Running testCreateNote");
-    String message1 = "{\n\t\"name\" : \"test1\",\n\t\"addingEmptyParagraph\" : true\n}";
+    String message1 = "{\n\t\"notePath\" : \"test1\",\n\t\"addingEmptyParagraph\" : true\n}";
     CloseableHttpResponse post1 = httpPost("/notebook/", message1);
     assertThat(post1, isAllowed());
 
@@ -553,6 +555,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
     notebook.processNote(note1Id,
       note1 -> {
         assertEquals("test1", note1.getName());
+        assertEquals("/test1", note1.getPath());
         assertEquals(1, note1.getParagraphCount());
         assertNull(note1.getParagraph(0).getText());
         assertNull(note1.getParagraph(0).getTitle());
@@ -560,7 +563,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
       });
 
 
-    String message2 = "{\n\t\"name\" : \"test2\"\n}";
+    String message2 = "{\n\t\"notePath\" : \"test2\"\n}";
     CloseableHttpResponse post2 = httpPost("/notebook/", message2);
     assertThat(post2, isAllowed());
 
@@ -574,6 +577,7 @@ class NotebookRestApiTest extends AbstractTestRestApi {
         return note;
       });
     assertEquals("test2", note2.getName());
+    assertEquals("/test2", note2.getPath());
     assertEquals(0, note2.getParagraphCount());
   }
 
@@ -1186,5 +1190,48 @@ class NotebookRestApiTest extends AbstractTestRestApi {
         notebook.removeNote(note1Id, anonymous);
       }
     }
+  }
+
+  @Test
+  void testGetJobList_whenJobManagerDisabled() throws IOException {
+    assertJobManagerDisabledResponse("/notebook/jobmanager/");
+  }
+
+  @Test
+  void testGetUpdatedJobList_whenJobManagerDisabled() throws IOException {
+    assertJobManagerDisabledResponse("/notebook/jobmanager/12345/");
+  }
+
+  private void assertJobManagerDisabledResponse(String url) throws IOException {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    String expectedErrorMessage = "Job Manager is disabled in the current configuration.";
+
+    try (CloseableHttpResponse response = httpGet(url)) {
+      assertEquals(Response.Status.FORBIDDEN.getStatusCode(),
+          response.getStatusLine().getStatusCode(),
+          "Response status should be 403 Forbidden");
+
+      String jsonResponse = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+      Map<String, Object> parsedResponse = gson.fromJson(jsonResponse,
+          new TypeToken<Map<String, Object>>() {}.getType());
+
+      assertEquals("FORBIDDEN", parsedResponse.get("status"));
+      assertEquals(expectedErrorMessage, parsedResponse.get("message"));
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  private boolean disableJobManagerAndBackupFlag() {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    boolean originalFlag = zConf.isJobManagerEnabled();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(), "false");
+    return originalFlag;
+  }
+
+  private void restoreJobManagerFlag(boolean originalFlag) {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(),
+        String.valueOf(originalFlag));
   }
 }

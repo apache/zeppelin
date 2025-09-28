@@ -1,23 +1,11 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 (function(global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined'
-    ? (module.exports = factory(
+    ? factory(
         require('@zeppelin/helium'),
         require('@angular/core'),
         require('@zeppelin/visualization'),
         require('@angular/common')
-      ))
+      )
     : typeof define === 'function' && define.amd
     ? define('helium-vis-example', [
         '@zeppelin/helium',
@@ -25,25 +13,24 @@
         '@zeppelin/visualization',
         '@angular/common'
       ], factory)
-    : ((global = global || self),
-      (global['helium-vis-example'] = factory(global.helium, global.ng.core, global.visualization, global.ng.common)));
+    : ((global = global || self), factory(global.helium, global.ng.core, global.visualization, global.ng.common));
 })(this, function(helium, core, visualization, common) {
   'use strict';
 
   /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
+  Copyright (c) Microsoft Corporation.
 
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
 
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
+  ***************************************************************************** */
   /* global Reflect, Promise */
 
   var extendStatics = function(d, b) {
@@ -114,6 +101,13 @@
   }
 
   function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) {
+      return value instanceof P
+        ? value
+        : new P(function(resolve) {
+            resolve(value);
+          });
+    }
     return new (P || (P = Promise))(function(resolve, reject) {
       function fulfilled(value) {
         try {
@@ -130,11 +124,7 @@
         }
       }
       function step(result) {
-        result.done
-          ? resolve(result.value)
-          : new P(function(resolve) {
-              resolve(result.value);
-            }).then(fulfilled, rejected);
+        result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
       }
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -231,20 +221,28 @@
     }
   }
 
+  function __createBinding(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+  }
+
   function __exportStar(m, exports) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    for (var p in m) if (p !== 'default' && !exports.hasOwnProperty(p)) exports[p] = m[p];
   }
 
   function __values(o) {
-    var m = typeof Symbol === 'function' && o[Symbol.iterator],
+    var s = typeof Symbol === 'function' && Symbol.iterator,
+      m = s && o[s],
       i = 0;
     if (m) return m.call(o);
-    return {
-      next: function() {
-        if (o && i >= o.length) o = void 0;
-        return { value: o && o[i++], done: !o };
-      }
-    };
+    if (o && typeof o.length === 'number')
+      return {
+        next: function() {
+          if (o && i >= o.length) o = void 0;
+          return { value: o && o[i++], done: !o };
+        }
+      };
+    throw new TypeError(s ? 'Object is not iterable.' : 'Symbol.iterator is not defined.');
   }
 
   function __read(o, n) {
@@ -403,90 +401,171 @@
     return mod && mod.__esModule ? mod : { default: mod };
   }
 
-  /**
-   * @fileoverview added by tsickle
-   * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
+  function __classPrivateFieldGet(receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+      throw new TypeError('attempted to get private field on non-instance');
+    }
+    return privateMap.get(receiver);
+  }
+
+  function __classPrivateFieldSet(receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+      throw new TypeError('attempted to set private field on non-instance');
+    }
+    privateMap.set(receiver, value);
+    return value;
+  }
+
+  /*
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
    */
   var JsonVisComponent = /** @class */ (function() {
     function JsonVisComponent(visualization, cdr) {
       this.visualization = visualization;
       this.cdr = cdr;
     }
-    /**
-     * @return {?}
-     */
-    JsonVisComponent.prototype.ngOnInit = /**
-     * @return {?}
-     */ function() {};
-    /**
-     * @return {?}
-     */
-    JsonVisComponent.prototype.render = /**
-     * @return {?}
-     */ function() {
+    JsonVisComponent.prototype.ngOnInit = function() {};
+    JsonVisComponent.prototype.render = function() {
       this.tableData = this.visualization.transformed;
     };
-    JsonVisComponent.decorators = [
-      {
-        type: core.Component,
-        args: [
-          {
-            selector: 'lib-helium-vis-example',
-            template: '\n    <pre><code>{{tableData | json}}</code></pre>\n  ',
-            changeDetection: core.ChangeDetectionStrategy.OnPush,
-            styles: [
-              '\n    pre {\n      background: #fff7e7;\n      padding: 10px;\n      border: 1px solid #ffd278;\n      color: #fa7e14;\n      border-radius: 3px;\n    }\n  '
-            ]
-          }
-        ]
-      }
-    ];
-    /** @nocollapse */
-    JsonVisComponent.ctorParameters = function() {
-      return [
-        { type: visualization.Visualization, decorators: [{ type: core.Inject, args: [visualization.VISUALIZATION] }] },
-        { type: core.ChangeDetectorRef }
-      ];
+    /** @nocollapse */ JsonVisComponent.ɵfac = function JsonVisComponent_Factory(t) {
+      return new (t || JsonVisComponent)(
+        core.ɵɵdirectiveInject(visualization.VISUALIZATION),
+        core.ɵɵdirectiveInject(core.ChangeDetectorRef)
+      );
     };
+    /** @nocollapse */ JsonVisComponent.ɵcmp = core.ɵɵdefineComponent({
+      type: JsonVisComponent,
+      selectors: [['lib-helium-vis-example']],
+      decls: 4,
+      vars: 3,
+      template: function JsonVisComponent_Template(rf, ctx) {
+        if (rf & 1) {
+          core.ɵɵelementStart(0, 'pre');
+          core.ɵɵelementStart(1, 'code');
+          core.ɵɵtext(2);
+          core.ɵɵpipe(3, 'json');
+          core.ɵɵelementEnd();
+          core.ɵɵelementEnd();
+        }
+        if (rf & 2) {
+          core.ɵɵadvance(2);
+          core.ɵɵtextInterpolate(core.ɵɵpipeBind1(3, 1, ctx.tableData));
+        }
+      },
+      pipes: [common.JsonPipe],
+      styles: [
+        'pre[_ngcontent-%COMP%] {\n        background: #fff7e7;\n        padding: 10px;\n        border: 1px solid #ffd278;\n        color: #fa7e14;\n        border-radius: 3px;\n      }'
+      ],
+      changeDetection: 0
+    });
     return JsonVisComponent;
   })();
-  if (false) {
-    /** @type {?} */
-    JsonVisComponent.prototype.tableData;
-    /** @type {?} */
-    JsonVisComponent.prototype.visualization;
-    /**
-     * @type {?}
-     * @private
-     */
-    JsonVisComponent.prototype.cdr;
-  }
+  /*@__PURE__*/ (function() {
+    core.ɵsetClassMetadata(
+      JsonVisComponent,
+      [
+        {
+          type: core.Component,
+          args: [
+            {
+              selector: 'lib-helium-vis-example',
+              template: '\n    <pre><code>{{tableData | json}}</code></pre>\n  ',
+              styles: [
+                '\n      pre {\n        background: #fff7e7;\n        padding: 10px;\n        border: 1px solid #ffd278;\n        color: #fa7e14;\n        border-radius: 3px;\n      }\n    '
+              ],
+              changeDetection: core.ChangeDetectionStrategy.OnPush
+            }
+          ]
+        }
+      ],
+      function() {
+        return [
+          {
+            type: visualization.Visualization,
+            decorators: [
+              {
+                type: core.Inject,
+                args: [visualization.VISUALIZATION]
+              }
+            ]
+          },
+          { type: core.ChangeDetectorRef }
+        ];
+      },
+      null
+    );
+  })();
 
-  /**
-   * @fileoverview added by tsickle
-   * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
+  /*
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
    */
   var JsonVisModule = /** @class */ (function() {
     function JsonVisModule() {}
-    JsonVisModule.decorators = [
-      {
-        type: core.NgModule,
-        args: [
-          {
-            imports: [common.CommonModule],
-            declarations: [JsonVisComponent],
-            entryComponents: [JsonVisComponent],
-            exports: [JsonVisComponent]
-          }
-        ]
-      }
-    ];
+    /** @nocollapse */ JsonVisModule.ɵmod = core.ɵɵdefineNgModule({ type: JsonVisModule });
+    /** @nocollapse */ JsonVisModule.ɵinj = core.ɵɵdefineInjector({
+      factory: function JsonVisModule_Factory(t) {
+        return new (t || JsonVisModule)();
+      },
+      imports: [[common.CommonModule]]
+    });
     return JsonVisModule;
   })();
+  (function() {
+    (typeof ngJitMode === 'undefined' || ngJitMode) &&
+      core.ɵɵsetNgModuleScope(JsonVisModule, {
+        declarations: [JsonVisComponent],
+        imports: [common.CommonModule],
+        exports: [JsonVisComponent]
+      });
+  })();
+  /*@__PURE__*/ (function() {
+    core.ɵsetClassMetadata(
+      JsonVisModule,
+      [
+        {
+          type: core.NgModule,
+          args: [
+            {
+              imports: [common.CommonModule],
+              declarations: [JsonVisComponent],
+              entryComponents: [JsonVisComponent],
+              exports: [JsonVisComponent]
+            }
+          ]
+        }
+      ],
+      null,
+      null
+    );
+  })();
 
-  /**
-   * @fileoverview added by tsickle
-   * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
+  /*
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
    */
   var JsonVisualization = /** @class */ (function(_super) {
     __extends(JsonVisualization, _super);
@@ -505,41 +584,21 @@
       );
       return _this;
     }
-    /**
-     * @return {?}
-     */
-    JsonVisualization.prototype.destroy = /**
-     * @return {?}
-     */ function() {
+    JsonVisualization.prototype.destroy = function() {
       if (this.componentRef) {
         this.componentRef.destroy();
         this.componentRef = null;
       }
-      this.configChange$.complete();
-      this.configChange$ = null;
+      if (this.configChange$) {
+        this.configChange$.complete();
+        this.configChange$ = null;
+      }
     };
-    /**
-     * @return {?}
-     */
-    JsonVisualization.prototype.getTransformation = /**
-     * @return {?}
-     */ function() {
+    JsonVisualization.prototype.getTransformation = function() {
       return this.tableTransformation;
     };
-    /**
-     * @return {?}
-     */
-    JsonVisualization.prototype.refresh = /**
-     * @return {?}
-     */ function() {};
-    /**
-     * @param {?} data
-     * @return {?}
-     */
-    JsonVisualization.prototype.render = /**
-     * @param {?} data
-     * @return {?}
-     */ function(data) {
+    JsonVisualization.prototype.refresh = function() {};
+    JsonVisualization.prototype.render = function(data) {
       this.transformed = data;
       if (!this.componentRef) {
         this.componentRef = this.componentPortal.attachComponentPortal();
@@ -548,31 +607,17 @@
     };
     return JsonVisualization;
   })(visualization.Visualization);
-  if (false) {
-    /** @type {?} */
-    JsonVisualization.prototype.tableTransformation;
-    /** @type {?} */
-    JsonVisualization.prototype.componentPortal;
-    /**
-     * @type {?}
-     * @private
-     */
-    JsonVisualization.prototype.portalOutlet;
-    /**
-     * @type {?}
-     * @private
-     */
-    JsonVisualization.prototype.viewContainerRef;
-    /**
-     * @type {?}
-     * @private
-     */
-    JsonVisualization.prototype.componentFactoryResolver;
-  }
 
-  /**
-   * @fileoverview added by tsickle
-   * @suppress {checkTypes,constantProperty,extraRequire,missingOverride,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
+  /*
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
    */
   var publicApi = helium.createHeliumPackage({
     name: 'helium-vis-example',
@@ -584,6 +629,8 @@
     visualization: JsonVisualization
   });
 
-  return publicApi;
+  /**
+   * Generated bundle index. Do not edit.
+   */
 });
 //# sourceMappingURL=helium-vis-example.umd.js.map

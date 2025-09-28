@@ -59,6 +59,7 @@ import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
@@ -219,6 +220,26 @@ public class NotebookRestApi extends AbstractRestApi {
     if (paragraph == null) {
       throw new ParagraphNotFoundException(paragraphId);
     }
+  }
+
+  private void checkIfJobManagerIsEnabled() {
+    try {
+      jobManagerService.checkIfJobManagerIsEnabled();
+    } catch (JobManagerForbiddenException e) {
+      throw new ForbiddenException(e.getMessage());
+    }
+  }
+
+  /**
+   * Get notebook capabilities.
+   */
+  @GET
+  @Path("capabilities")
+  @ZeppelinApi
+  public Response getNotebookCapabilities() {
+      Map<String, Object> capabilities = Map.of("isRevisionSupported", notebook.isRevisionSupported());
+
+      return new JsonResponse<>(Status.OK, "", capabilities).build();
   }
 
   /**
@@ -487,7 +508,7 @@ public class NotebookRestApi extends AbstractRestApi {
       defaultInterpreterGroup = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
     String noteId = notebookService.createNote(
-            request.getName(),
+            request.getNotePath(),
             defaultInterpreterGroup,
             request.getAddingEmptyParagraph(),
             getServiceContext(),
@@ -550,7 +571,7 @@ public class NotebookRestApi extends AbstractRestApi {
     String newNoteName = null;
     String revisionId = null;
     if (request != null) {
-      newNoteName = request.getName();
+      newNoteName = request.getNotePath();
       revisionId = request.getRevisionId();
     }
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
@@ -1147,6 +1168,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getJobListforNote() throws IOException, IllegalArgumentException {
     LOGGER.info("Get note jobs for job manager");
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
             .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
     Map<String, Object> response = new HashMap<>();
@@ -1170,6 +1192,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
       throws IOException, IllegalArgumentException {
     LOGGER.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs =
             jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
                     new RestServiceCallback<>());

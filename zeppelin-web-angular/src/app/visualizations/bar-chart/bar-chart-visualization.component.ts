@@ -20,10 +20,11 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
+import * as G2 from '@antv/g2';
 
 import { get } from 'lodash';
 
-import { VisualizationMultiBarChart } from '@zeppelin/sdk';
+import { GraphConfig, VisualizationMultiBarChart } from '@zeppelin/sdk';
 import { G2VisualizationComponentBase, Visualization, VISUALIZATION } from '@zeppelin/visualization';
 
 import { VisualizationPivotSettingComponent } from '../common/pivot-setting/pivot-setting.component';
@@ -38,18 +39,24 @@ import { VisualizationXAxisSettingComponent } from '../common/x-axis-setting/x-a
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BarChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
-  @ViewChild('container', { static: false }) container: ElementRef<HTMLDivElement>;
+  @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;
   @ViewChild(VisualizationXAxisSettingComponent, { static: false })
-  xAxisSettingComponent: VisualizationXAxisSettingComponent;
+  xAxisSettingComponent!: VisualizationXAxisSettingComponent;
   @ViewChild(VisualizationPivotSettingComponent, { static: false })
-  pivotSettingComponent: VisualizationPivotSettingComponent;
+  pivotSettingComponent!: VisualizationPivotSettingComponent;
   stacked = false;
 
   viewChange() {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     if (!this.config.setting.multiBarChart) {
       this.config.setting.multiBarChart = new VisualizationMultiBarChart();
     }
     this.config.setting.multiBarChart.stacked = this.stacked;
+    if (!this.visualization.configChange$) {
+      throw new Error('visualization.configChange$ is not defined');
+    }
     this.visualization.configChange$.next(this.config);
   }
 
@@ -63,37 +70,37 @@ export class BarChartVisualizationComponent extends G2VisualizationComponentBase
     this.render();
   }
 
-  refreshSetting() {
-    this.stacked = get(this.config.setting, 'multiBarChart.stacked', false);
+  refreshSetting(config: GraphConfig) {
+    this.stacked = get(config.setting, 'multiBarChart.stacked', false);
     this.pivotSettingComponent.init();
     this.xAxisSettingComponent.init();
     this.cdr.markForCheck();
   }
 
-  setScale() {
+  setScale(chart: G2.Chart) {
     const key = this.getKey();
     const tickCount = calcTickCount(this.container.nativeElement);
-    this.chart.scale(key, {
+    chart.scale(key, {
       tickCount,
       type: 'cat'
     });
   }
 
-  renderBefore(chart) {
+  renderBefore(config: GraphConfig, chart: G2.Chart) {
     const key = this.getKey();
-    this.setScale();
+    this.setScale(chart);
 
-    this.chart.tooltip({
+    chart.tooltip({
       shared: false
     });
-    if (get(this.config.setting, 'multiBarChart.stacked', false)) {
-      this.chart
+    if (get(config.setting, 'multiBarChart.stacked', false)) {
+      chart
         .intervalStack()
         .position(`${key}*__value__`)
         .color('__key__')
         .opacity(1);
     } else {
-      this.chart
+      chart
         .interval()
         .position(`${key}*__value__`)
         .color('__key__')
@@ -105,6 +112,6 @@ export class BarChartVisualizationComponent extends G2VisualizationComponentBase
           }
         ]);
     }
-    setChartXAxis(this.visualization, 'multiBarChart', this.chart, key);
+    setChartXAxis(this.visualization, 'multiBarChart', chart, key);
   }
 }

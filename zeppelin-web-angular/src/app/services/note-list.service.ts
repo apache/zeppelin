@@ -12,10 +12,9 @@
 
 import { Inject, Injectable } from '@angular/core';
 
-import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
+import { NodeItem, NodeList, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { NotesInfoItem } from '@zeppelin/sdk';
 
-import { NodeList } from '../interfaces/node-list';
 import { ArrayOrderingService } from './array-ordering.service';
 
 @Injectable({
@@ -40,7 +39,7 @@ export class NoteListService {
     this.notes.flatFolderMap = {};
     notesList.reduce((root, note) => {
       const notePath = note.path || note.id;
-      const nodes = notePath.match(/([^\/][^\/]*)/g);
+      const nodes = notePath.match(/([^\/][^\/]*)/g)!;
 
       // recursively add nodes
       this.addNode(root, nodes, note.id);
@@ -50,11 +49,12 @@ export class NoteListService {
     this.notes.root.children.sort(this.arrayOrderingService.noteComparator);
   }
 
-  addNode(curDir, nodes, noteId) {
-    if (nodes.length === 1) {
+  addNode(curDir: { id?: string; children: NodeItem[] }, nodes: RegExpMatchArray, noteId: string) {
+    if (nodes && nodes.length === 1) {
       // the leaf
       curDir.children.push({
         id: noteId,
+        key: noteId,
         title: nodes[0],
         isLeaf: true,
         nodeType: 'note',
@@ -63,10 +63,10 @@ export class NoteListService {
       });
     } else {
       // a folder node
-      const node = nodes.shift();
-      const dir = curDir.children.find(c => {
-        return c.title === node && c.children !== undefined;
-      });
+      const node = nodes.shift()!;
+      const dir = curDir.children.filter(
+        (c): c is NodeItem & { title: string; children: NodeItem[] } => c.title === node && c.children !== undefined
+      )[0];
       if (dir !== undefined) {
         // found an existing dir
         this.addNode(dir, nodes, noteId);
@@ -74,6 +74,7 @@ export class NoteListService {
         const id = curDir.id ? `${curDir.id}/${node}` : node;
         const newDir = {
           id,
+          key: id,
           title: node,
           expanded: false,
           nodeType: id === this.TRASH_FOLDER_ID ? 'trash' : 'folder',

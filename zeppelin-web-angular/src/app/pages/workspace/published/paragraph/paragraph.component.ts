@@ -11,13 +11,18 @@
  */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { MessageListener, ParagraphBase } from '@zeppelin/core';
-import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
-import { NotebookParagraphResultComponent } from '@zeppelin/pages/workspace/share/result/result.component';
-import { MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/sdk';
+import { publishedSymbol, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
+import {
+  MessageReceiveDataTypeMap,
+  OP,
+  ParagraphConfigResult,
+  ParagraphItem,
+  ParagraphIResultsMsgItem
+} from '@zeppelin/sdk';
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell/spell-result';
+import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
+import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 
 @Component({
   selector: 'zeppelin-publish-paragraph',
@@ -28,26 +33,29 @@ import { isNil } from 'lodash';
 export class PublishedParagraphComponent extends ParagraphBase implements Published, OnInit {
   readonly [publishedSymbol] = true;
 
-  noteId: string;
-  paragraphId: string;
+  noteId: string | null = null;
+  paragraphId: string | null = null;
 
-  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents: QueryList<
+  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
 
   constructor(
     public messageService: MessageService,
+    private activatedRoute: ActivatedRoute,
+    private heliumService: HeliumService,
     noteStatusService: NoteStatusService,
     ngZService: NgZService,
-    cdr: ChangeDetectorRef,
-    private activatedRoute: ActivatedRoute,
-    private heliumService: HeliumService
+    cdr: ChangeDetectorRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
     this.activatedRoute.params.subscribe(params => {
+      if (typeof params.noteId !== 'string') {
+        throw new Error(`noteId path parameter should be string, but got ${typeof params.noteId} instead.`);
+      }
       this.noteId = params.noteId;
-      this.paragraphId = params.paragraphId;
-      this.messageService.getNote(this.noteId);
+      this.paragraphId = params.paragraphId!;
+      this.messageService.getNote(params.noteId);
     });
   }
 
@@ -57,11 +65,11 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
     const note = data.note;
     if (!isNil(note)) {
-      this.paragraph = (note as Note['note']).paragraphs.find(p => p.id === this.paragraphId);
+      this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
       if (this.paragraph) {
-        this.setResults();
+        this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
-        this.initializeDefault(this.paragraph.config);
+        this.initializeDefault(this.paragraph.config, this.paragraph.settings);
       }
     }
     this.cdr.markForCheck();
@@ -71,13 +79,13 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     return index;
   }
 
-  setResults() {
-    if (this.paragraph.results) {
-      this.results = this.paragraph.results.msg;
-      this.configs = this.paragraph.config.results;
+  setResults(paragraph: ParagraphItem) {
+    if (paragraph.results) {
+      this.results = paragraph.results.msg || [];
+      this.configs = paragraph.config.results || {};
     }
-    if (!this.paragraph.config) {
-      this.paragraph.config = {};
+    if (!paragraph.config) {
+      paragraph.config = {};
     }
   }
 
@@ -86,14 +94,24 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   }
 
   runParagraph(): void {
+    if (!this.paragraph) {
+      throw new Error('paragraph is not defined');
+    }
     const text = this.paragraph.text;
     if (text && !this.isParagraphRunning) {
       const magic = SpellResult.extractMagic(this.paragraph.text);
-      if (this.heliumService.getSpellByMagic(magic)) {
+      if (magic && this.heliumService.getSpellByMagic(magic)) {
         this.runParagraphUsingSpell(text, magic, false);
       } else {
         this.runParagraphUsingBackendInterpreter(text);
       }
+    }
+  }
+
+  updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
+    const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
+    if (resultComponent) {
+      resultComponent.updateResult(config, result);
     }
   }
 }

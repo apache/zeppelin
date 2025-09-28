@@ -30,6 +30,9 @@ export function setChartXAxis(
       }
     }
   });
+  if (!setting) {
+    throw new Error(`No setting for ${mode}`);
+  }
   switch (setting.xLabelStatus) {
     case 'hide':
       chart.axis(key, false);

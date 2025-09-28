@@ -21,7 +21,7 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class CredentialService extends BaseRest {
-  constructor(baseUrlService: BaseUrlService, private http: HttpClient) {
+  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
   }
 

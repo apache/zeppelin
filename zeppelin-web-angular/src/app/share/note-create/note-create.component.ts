@@ -11,13 +11,12 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { MessageService, NoteListService } from '@zeppelin/services';
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { InterpreterItem, MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/sdk';
-import { MessageService } from '@zeppelin/services/message.service';
-import { NoteListService } from '@zeppelin/services/note-list.service';
 
 @Component({
   selector: 'zeppelin-note-create',
@@ -26,10 +25,10 @@ import { NoteListService } from '@zeppelin/services/note-list.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NoteCreateComponent extends MessageListenersManager implements OnInit {
-  @Input() path: string;
-  @Input() cloneNote: Note['note'];
-  noteName: string;
-  defaultInterpreter: string;
+  @Input() path?: string;
+  @Input() cloneNote?: Exclude<Note['note'], undefined>;
+  noteName = '';
+  defaultInterpreter?: string;
   listOfInterpreter: InterpreterItem[] = [];
 
   @MessageListener(OP.INTERPRETER_SETTINGS)
@@ -40,7 +39,7 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
   }
 
   @MessageListener(OP.NOTES_INFO)
-  getNotes() {
+  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
     this.nzModalRef.destroy();
   }
 
@@ -58,12 +57,12 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     return `${path ? path + '/' : ''}Untitled Note ${newCount}`;
   }
 
-  cloneNoteName() {
+  cloneNoteName(cloneNote: Exclude<Note['note'], undefined>) {
     let copyCount = 1;
     let newCloneName = '';
-    const lastIndex = this.cloneNote.name.lastIndexOf(' ');
-    const endsWithNumber: boolean = !!this.cloneNote.name.match('^.+?\\s\\d$');
-    const noteNamePrefix = endsWithNumber ? this.cloneNote.name.substr(0, lastIndex) : this.cloneNote.name;
+    const lastIndex = cloneNote.name.lastIndexOf(' ');
+    const endsWithNumber: boolean = !!cloneNote.name.match('^.+?\\s\\d$');
+    const noteNamePrefix = endsWithNumber ? cloneNote.name.substr(0, lastIndex) : cloneNote.name;
     const regexp = new RegExp(`^${noteNamePrefix}.+`);
 
     this.noteListService.notes.flatList.forEach(note => {
@@ -78,7 +77,7 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     });
 
     if (!newCloneName) {
-      newCloneName = this.cloneNote.name;
+      newCloneName = cloneNote.name;
     }
     return `${newCloneName} ${copyCount}`;
   }
@@ -100,6 +99,7 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
 
   ngOnInit() {
     this.messageService.getInterpreterSettings();
-    this.noteName = this.cloneNote ? this.cloneNoteName() : this.newNoteName(this.path);
+    // Component should have either defined 'cloneNote' or defined 'path' property.
+    this.noteName = this.cloneNote ? this.cloneNoteName(this.cloneNote) : this.newNoteName(this.path!);
   }
 }

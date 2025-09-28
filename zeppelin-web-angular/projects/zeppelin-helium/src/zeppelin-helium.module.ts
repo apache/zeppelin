@@ -13,4 +13,4 @@
 import { NgModule } from '@angular/core';
 
 @NgModule({})
-export class ZeppelinHeliumModule { }
+export class ZeppelinHeliumModule {}

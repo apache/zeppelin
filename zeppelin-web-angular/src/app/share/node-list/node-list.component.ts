@@ -11,14 +11,14 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnInit } from '@angular/core';
-import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
+import { NodeItem, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 
-import { NzModalService } from 'ng-zorro-antd/modal';
-import { NzTreeNode } from 'ng-zorro-antd/tree';
+import { NzTreeNode, NzTreeNodeOptions } from 'ng-zorro-antd/tree';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
-import { MessageService, NoteActionService, NoteListService } from '@zeppelin/services';
+import { MessageService, NoteListService } from '@zeppelin/services';
+import { NoteActionService } from './note-action.service';
 
 @Component({
   selector: 'zeppelin-node-list',
@@ -29,9 +29,9 @@ import { MessageService, NoteActionService, NoteListService } from '@zeppelin/se
 })
 export class NodeListComponent extends MessageListenersManager implements OnInit {
   @Input() headerMode = false;
-  searchValue: string;
-  nodes = [];
-  activatedId: string;
+  searchValue?: string;
+  nodes: NzTreeNodeOptions[] = [];
+  activatedId?: string;
 
   activeNote(id: string) {
     this.activatedId = id;
@@ -82,7 +82,7 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
     this.noteActionService.renameNote(id, path, name);
   }
 
-  renameFolder(path) {
+  renameFolder(path: string) {
     this.noteActionService.renameFolder(path);
   }
 
@@ -105,7 +105,7 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
-  getNoteName(note) {
+  getNoteName(note: NodeItem) {
     if (note.title === undefined || note.title.trim() === '') {
       return 'Note ' + note.id;
     } else {
@@ -113,7 +113,7 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
     }
   }
 
-  noteComparator(v1, v2) {
+  noteComparator(v1: NodeItem, v2: NodeItem) {
     const note1 = v1;
     const note2 = v2;
     if (note1.id === this.TRASH_FOLDER_ID) {
@@ -134,10 +134,9 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
   }
 
   constructor(
-    private noteListService: NoteListService,
     public messageService: MessageService,
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
-    private nzModalService: NzModalService,
+    private noteListService: NoteListService,
     private noteActionService: NoteActionService,
     private cdr: ChangeDetectorRef
   ) {

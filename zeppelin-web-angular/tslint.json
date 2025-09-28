@@ -1,5 +1,9 @@
 {
-  "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules"],
+  "extends": ["tslint-no-circular-imports"],
+  "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules", "tslint-rules"],
+  "linterOptions": {
+    "exclude": ["dist/**", "node/**", "node_modules/**"]
+  },
   "rules": {
     "nz-secondary-entry-imports": true,
     "banana-in-box": true,
@@ -137,6 +141,8 @@
     "use-isnan": true,
     "variable-name": [true, "ban-keywords", "allow-leading-underscore"],
     "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"],
-    "no-input-rename": true
+    "no-input-rename": true,
+    "constructor-params-order": true,
+    "ordered-exports": [true, ["public-api.ts"]]
   }
 }
