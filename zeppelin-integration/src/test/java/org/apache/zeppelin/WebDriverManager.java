@@ -34,6 +34,7 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -89,6 +90,14 @@ public class WebDriverManager implements Closeable {
         return null;
       }
     };
+    Supplier<WebDriver> edgeDriverSupplier = () -> {
+      try {
+        return new EdgeDriver();
+      } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while EdgeDriver ", e);
+        return null;
+        }
+    };
     Supplier<WebDriver> firefoxDriverSupplier = () -> {
       try {
         return getFirefoxDriver();
@@ -111,6 +120,9 @@ public class WebDriverManager implements Closeable {
       case "chrome":
         driver = chromeDriverSupplier.get();
         break;
+      case "edge":
+        driver = edgeDriverSupplier.get();
+        break;
       case "firefox":
         driver = firefoxDriverSupplier.get();
         break;
@@ -118,7 +130,7 @@ public class WebDriverManager implements Closeable {
         driver = safariDriverSupplier.get();
         break;
       default:
-        driver = Stream.of(chromeDriverSupplier, firefoxDriverSupplier, safariDriverSupplier)
+        driver = Stream.of(chromeDriverSupplier, edgeDriverSupplier, firefoxDriverSupplier, safariDriverSupplier)
             .map(Supplier::get)
             .filter(Objects::nonNull)
             .findFirst()
