@@ -96,20 +96,22 @@ export class KeyCodeConverter {
 
   static angularToMonacoKeyBinding(keybinding: string) {
     const parts = keybinding.split('.');
+    // Ignore non-ASCII characters. Non-ASCII characters are just for macOS compatibility.
+    // Monaco editor handles pressing `Option(Alt) + a letter` not to convert a letter to non-ASCII character.
     if (parts.some(p => p.length === 1 && (!isAscii(p) || this.exclusions.includes(p)))) {
-      // Ignore non-ASCII characters. Non-ASCII characters are just for macOS compatibility.
-      // Monaco editor handles pressing `Option(Alt) + a letter` not to convert a letter to non-ASCII character.
       return null;
     }
+
+    // All ASCII characters should be supported.
+    // If this error is thrown, it means that `angularToMonacoKeyConverter` should be updated.
     if (
       parts.some(
         p => p.length === 1 && !this.exclusions.includes(p) && isAscii(p) && !(p in this.angularToMonacoKeyConverter)
       )
     ) {
-      // All ASCII characters should be supported.
-      // If this error is thrown, it means that `angularToMonacoKeyConverter` should be updated.
       throw new Error(`Unsupported keybinding: '${keybinding}'.`);
     }
+
     const convertedParts = parts.map(p => {
       const converted = this.angularToMonacoKeyConverter[p];
       if (isNil(converted)) {
