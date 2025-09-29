@@ -255,7 +255,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     if (!this.paragraph.config.editorSetting) {
       throw new Error('editorSetting is required');
     }
-    if (this.paragraph.config.editorSetting.editOnDblClick && this.revisionView !== true) {
+    if (this.paragraph.config.editorSetting.editOnDblClick && !this.revisionView) {
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
       this.focusEditor();
@@ -359,7 +359,7 @@ export class NotebookParagraphComponent extends ParagraphBase
   }
 
   insertParagraph(position: string) {
-    if (this.revisionView === true) {
+    if (this.revisionView) {
       return;
     }
     let newIndex = -1;
