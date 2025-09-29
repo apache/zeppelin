@@ -220,8 +220,8 @@ export class NotebookParagraphCodeEditorComponent
 
   handleKeyEvent(action: ParagraphActions, event: NullableKeyboardEvent) {
     const handlerName = ParagraphActionToHandlerName[action];
-    const handlerFn = handlerName && handlerName in this && this[handlerName as keyof MonacoKeyboardEventHandler];
-    if (!handlerFn) {
+    const handlerFn = handlerName && handlerName in this && this[handlerName as keyof this];
+    if (!handlerFn || typeof handlerFn !== 'function') {
       return;
     }
     handlerFn.call(this);
