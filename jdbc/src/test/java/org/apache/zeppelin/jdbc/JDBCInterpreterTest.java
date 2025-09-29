@@ -58,11 +58,11 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -748,25 +748,77 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  void testValidateConnectionUrl() throws IOException, InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";allowLoadLocalInfile=true");
-    properties.setProperty("default.user", "");
-    properties.setProperty("default.password", "");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Connection URL contains improper configuration",
-            interpreterResult.message().get(0).getData());
+  void testValidateConnectionUrlAllowLoadLocalInFile() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("allowLoadLocalInfile=true");
+    testBannedMySQLQueryParamWithValidParam("allowLoadLocalInfile=true");
+  }
+
+  @Test
+  void testValidateConnectionUrlAllowLoadLocal() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("allowLoadLocal=true");
+  }
+
+  @Test
+  void testValidateConnectionUrlSocketFactory() throws IOException, InterpreterException {
+    // it easier to unit test with H2 but this is really a Postgres issue
+    testBannedH2QueryParam("socketFactory=com.example.MySocketFactory");
   }
 
   @Test
   void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("%61llowLoadLocalInfile=true");
+    // also test encoded param with %2561 (%25 is the encoded form of %)
+    testBannedMySQLQueryParam("%2561llowLoadLocalInfile=true");
+  }
+
+  @Test
+  void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
+    testBannedH2QueryParam("INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps2() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://[(host=myhost,port=1111,allowLoadLocalInfile=true),(host=myhost2)]/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps3() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://address=(host=172.18.0.1)(port=3309)" +
+            "(%2561llowLoadLocalInfile=true),localhost:3306/test");
+  }
+
+  @Test
+  void testValidateConnectionMySQLWeirdPassword() throws IOException, InterpreterException {
+    // we strongly discourage putting passwords in the URL
+    assertDoesNotThrow(() -> JDBCInterpreter.validateConnectionUrl
+        ("jdbc:mysql://localhost:3306/test?user=xyz&password=(allowLoadLocalInfile)"));
+  }
+
+  private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", getJdbcConnection() + ";" + param);
+  }
+
+  private void testBannedMySQLQueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?" + param);
+  }
+
+  private void testBannedMySQLQueryParamWithValidParam(String param)
+      throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?paranoid=true&" + param);
+  }
+
+  private void testBannedURL(String driver, String url) throws IOException, InterpreterException {
     Properties properties = new Properties();
-    properties.setProperty("default.driver", "org.h2.Driver");
-    properties.setProperty("default.url", getJdbcConnection() + ";%61llowLoadLocalInfile=true");
+    properties.setProperty("default.driver", driver);
+    properties.setProperty("default.url", url);
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
@@ -774,7 +826,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals("Connection URL contains improper configuration",
-            interpreterResult.message().get(0).getData());
+        interpreterResult.message().get(0).getData());
   }
 
   private InterpreterContext getInterpreterContext() {
