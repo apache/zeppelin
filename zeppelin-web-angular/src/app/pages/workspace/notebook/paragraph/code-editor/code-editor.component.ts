@@ -28,12 +28,7 @@ import { editor as MonacoEditor, IDisposable, IPosition, KeyCode } from 'monaco-
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
 
-import {
-  MonacoKeyboardEventHandler,
-  NullableKeyboardEvent,
-  ParagraphActions,
-  ParagraphActionToHandlerName
-} from '@zeppelin/key-binding';
+import { MonacoKeyboardEventHandler, ParagraphActions, ParagraphActionToHandlerName } from '@zeppelin/key-binding';
 import { pt2px } from '@zeppelin/utility';
 import { NotebookParagraphControlComponent } from '../control/control.component';
 
@@ -218,7 +213,7 @@ export class NotebookParagraphCodeEditorComponent
     });
   }
 
-  handleKeyEvent(action: ParagraphActions, event: NullableKeyboardEvent) {
+  handleKeyEvent(action: ParagraphActions) {
     const handlerName = ParagraphActionToHandlerName[action];
     const handlerFn = handlerName && handlerName in this && this[handlerName as keyof this];
     if (!handlerFn || typeof handlerFn !== 'function') {

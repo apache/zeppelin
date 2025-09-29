@@ -572,7 +572,7 @@ export class NotebookParagraphComponent extends ParagraphBase
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
         this.handleKeyEvent(event.action, event.event);
-        this.notebookParagraphCodeEditorComponent?.handleKeyEvent(event.action, event.event);
+        this.notebookParagraphCodeEditorComponent?.handleKeyEvent(event.action);
       });
     this.setResults(this.paragraph);
     this.originalText = this.paragraph.text;
