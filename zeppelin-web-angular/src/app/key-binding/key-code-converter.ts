@@ -13,11 +13,13 @@
 import { isNil } from 'lodash';
 import { KeyCode, KeyMod } from 'monaco-editor';
 
+const ASCII_MAX = 128;
+
 function isAscii(ch: string): boolean {
   if (ch.length !== 1) {
     throw new Error('Only single character is allowed');
   }
-  return ch.charCodeAt(0) < 128;
+  return ch.charCodeAt(0) < ASCII_MAX;
 }
 
 export class KeyCodeConverter {
