@@ -122,13 +122,13 @@ export class NotebookParagraphCodeEditorComponent
 
   handleMoveCursorUp() {
     if (this.editor) {
-      this.editor.trigger('keyboard', 'cursorUp', {});
+      this.editor.trigger('keyboard', 'cursorUp', null);
     }
   }
 
   handleMoveCursorDown() {
     if (this.editor) {
-      this.editor.trigger('keyboard', 'cursorDown', {});
+      this.editor.trigger('keyboard', 'cursorDown', null);
     }
   }
 
