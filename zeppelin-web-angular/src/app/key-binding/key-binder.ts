@@ -16,7 +16,7 @@ import { from, Subject } from 'rxjs';
 import { map, mergeMap, takeUntil } from 'rxjs/operators';
 
 import { ShortcutService } from '@zeppelin/services';
-import * as _ from 'lodash';
+import { castArray, chain, isNil } from 'lodash';
 import { KeyCodeConverter } from './key-code-converter';
 import { ParagraphActions } from './paragraph-actions';
 import { ShortcutsMap } from './shortcuts-map';
@@ -56,12 +56,12 @@ export class KeyBinder {
   }
 
   initKeyBindingsOnMonaco(editor: MonacoEditor.IStandaloneCodeEditor) {
-    _.chain(ShortcutsMap)
+    chain(ShortcutsMap)
       .toPairs()
-      .flatMap(([action, keys]) => _.map(_.castArray(keys), key => ({ action, key })))
+      .flatMap(([action, keys]) => castArray(keys).map(key => ({ action, key })))
       .forEach(({ action, key }) => {
         const keyBinding = KeyCodeConverter.angularToMonacoKeyBinding(key);
-        if (_.isNil(keyBinding)) {
+        if (isNil(keyBinding)) {
           return;
         }
         editor.addCommand(keyBinding, () => {
