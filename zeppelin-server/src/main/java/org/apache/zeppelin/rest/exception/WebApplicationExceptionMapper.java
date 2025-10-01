@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.rest.exception;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
@@ -32,13 +31,10 @@ import org.slf4j.LoggerFactory;
 public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable> {
   private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationExceptionMapper.class);
 
-  private final Gson gson;
-
   public WebApplicationExceptionMapper() {
     GsonBuilder gsonBuilder = new GsonBuilder().enableComplexMapKeySerialization();
     gsonBuilder.registerTypeHierarchyAdapter(
             Exception.class, new ExceptionSerializer());
-    this.gson = gsonBuilder.create();
   }
 
   @Override
