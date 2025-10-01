@@ -47,7 +47,9 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable>
       return ((WebApplicationException) exception).getResponse();
     } else {
       LOGGER.error("Error response", exception);
-      return Response.status(500).entity(gson.toJson(exception)).build();
+      // Return generic error message to prevent information disclosure
+      String errorMessage = "{\"status\":\"error\",\"message\":\"Internal server error\"}";
+      return Response.status(500).entity(errorMessage).build();
     }
   }
 }
