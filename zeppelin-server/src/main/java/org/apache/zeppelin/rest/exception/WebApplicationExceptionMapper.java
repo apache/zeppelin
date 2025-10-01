@@ -17,25 +17,18 @@
 
 package org.apache.zeppelin.rest.exception;
 
-import com.google.gson.GsonBuilder;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-import org.apache.zeppelin.rest.message.gson.ExceptionSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable> {
+    
   private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationExceptionMapper.class);
-
-  public WebApplicationExceptionMapper() {
-    GsonBuilder gsonBuilder = new GsonBuilder().enableComplexMapKeySerialization();
-    gsonBuilder.registerTypeHierarchyAdapter(
-            Exception.class, new ExceptionSerializer());
-  }
 
   @Override
   public Response toResponse(Throwable exception) {
