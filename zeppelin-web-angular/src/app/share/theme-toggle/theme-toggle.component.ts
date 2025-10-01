@@ -51,10 +51,6 @@ export class ThemeToggleComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
-  setTheme(theme: ThemeMode) {
-    this.themeService.setTheme(theme);
-  }
-
   getThemeIcon(): string {
     if (this.currentTheme === 'system') {
       return '🤖';
