@@ -148,7 +148,11 @@ jobs:
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}
       - name: run tests
         run: |
-          xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DfailIfNoTests=false -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist -Pusing-source-tree ${MAVEN_ARGS}
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" \
+            ./mvnw verify -DfailIfNoTests=false \
+            -pl zeppelin-integration \
+            -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist -Pusing-source-tree \
+            ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
