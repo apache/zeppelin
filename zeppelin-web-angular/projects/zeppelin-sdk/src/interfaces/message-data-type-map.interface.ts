@@ -26,6 +26,7 @@ import {
   MoveFolderToTrash,
   MoveNoteToTrash,
   NewNote,
+  NewNoteReceived,
   Note,
   NotesInfo,
   NoteRename,
@@ -100,7 +101,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.SET_NOTE_REVISION]: SetNoteRevisionStatus;
   [OP.PARAGRAPH_ADDED]: ParagraphAdded;
   [OP.NOTE_RUNNING_STATUS]: NoteRunningStatus;
-  [OP.NEW_NOTE]: NoteRevision;
+  [OP.NEW_NOTE]: NewNoteReceived;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsSend;
   [OP.PARAGRAPH]: UpdateParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphSend;

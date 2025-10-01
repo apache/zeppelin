@@ -146,6 +146,10 @@ export interface NoteRunningStatus {
   status: boolean;
 }
 
+export interface NewNoteReceived {
+  note: Required<Note>['note'];
+}
+
 export interface ParagraphAdded {
   index: number;
   paragraph: ParagraphItem;
