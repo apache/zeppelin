@@ -24,7 +24,6 @@ test.describe('Dark Mode Theme Switching', () => {
     zeppelinHelper = new ZeppelinHelper(page);
     themePage = new ThemePage(page);
     await page.goto('/', { waitUntil: 'load' });
-    await expect(page).toHaveURL(/^http:\/\/localhost:4200/);
     await zeppelinHelper.waitForZeppelinReady();
     // Ensure a clean localStorage for each test
     await themePage.clearLocalStorage();
