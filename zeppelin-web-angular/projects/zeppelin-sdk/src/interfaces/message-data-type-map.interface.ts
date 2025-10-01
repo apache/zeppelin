@@ -21,6 +21,8 @@ import {
   FolderRename,
   GetInterpreterBindings,
   GetNode,
+  ImportNote,
+  ImportNoteReceived,
   ListRevision,
   ListRevisionHistory,
   MoveFolderToTrash,
@@ -102,6 +104,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.PARAGRAPH_ADDED]: ParagraphAdded;
   [OP.NOTE_RUNNING_STATUS]: NoteRunningStatus;
   [OP.NEW_NOTE]: NewNoteReceived;
+  [OP.IMPORT_NOTE]: ImportNoteReceived;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsSend;
   [OP.PARAGRAPH]: UpdateParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphSend;
@@ -155,7 +158,7 @@ export interface MessageSendDataTypeMap {
   [OP.COMPLETION]: Completion;
   [OP.COMMIT_PARAGRAPH]: CommitParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphReceived;
-  [OP.IMPORT_NOTE]: {}; // TODO(hsuanxyz)
+  [OP.IMPORT_NOTE]: ImportNote;
   [OP.CHECKPOINT_NOTE]: CheckpointNote;
   [OP.SET_NOTE_REVISION]: SetNoteRevision;
   [OP.LIST_REVISION_HISTORY]: ListRevisionHistory;

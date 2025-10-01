@@ -144,7 +144,7 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
    ** $scope.$on functions below
    */
 
-  $scope.$on('setNoteMenu', function(event, notes) {
+  $scope.$on("noteImported", function(event, note) {
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });

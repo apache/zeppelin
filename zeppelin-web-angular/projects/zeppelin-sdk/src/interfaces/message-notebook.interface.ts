@@ -62,6 +62,10 @@ export interface Note {
   };
 }
 
+export interface ImportNote {
+  note: Exclude<Required<Note>['note'], 'path'>;
+}
+
 export interface NoteAngularObjects {
   // tslint:disable-next-line no-any
   [key: string]: any;
@@ -147,6 +151,10 @@ export interface NoteRunningStatus {
 }
 
 export interface NewNoteReceived {
+  note: Required<Note>['note'];
+}
+
+export interface ImportNoteReceived {
   note: Required<Note>['note'];
 }
 
