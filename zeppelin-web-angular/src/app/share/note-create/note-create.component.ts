@@ -38,8 +38,8 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     this.cdr.markForCheck();
   }
 
-  @MessageListener(OP.NOTES_INFO)
-  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
+  @MessageListener(OP.NEW_NOTE)
+  newNoteCreated(_: MessageReceiveDataTypeMap[OP.NEW_NOTE]) {
     this.nzModalRef.destroy();
   }
 
