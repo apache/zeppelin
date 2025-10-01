@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // This class auto discovery the available WebDriver in the following priority:
-//   Chrome, Firefox, Safari.
+//   Chrome, Edge, Firefox, Safari.
 //
 // You can also use the environment variable ZEPPELIN_SELENIUM_BROWSER to choose a specific one.
 // For example, unlike Chromium and Firefox drivers, Safari's WebDriver is pre-installed on macOS,
