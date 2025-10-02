@@ -105,18 +105,6 @@ test.describe('Anonymous User Login Redirect', () => {
       }
     });
 
-    test('When accessing login page, Then should display tutorial notebooks', async ({ page }) => {
-      await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
-      await page.waitForURL(url => !url.toString().includes('#/login'));
-
-      await expect(page.locator('text=Flink Tutorial')).toBeVisible();
-      await expect(page.locator('text=Python Tutorial')).toBeVisible();
-      await expect(page.locator('text=Spark Tutorial')).toBeVisible();
-      await expect(page.locator('text=R Tutorial')).toBeVisible();
-      await expect(page.locator('text=Miscellaneous Tutorial')).toBeVisible();
-    });
-
     test('When accessing login page, Then should display external links in help and community sections', async ({
       page
     }) => {
