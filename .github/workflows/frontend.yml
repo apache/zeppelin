@@ -104,28 +104,32 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      ZEPPELIN_SELENIUM_BROWSER: firefox
+      ZEPPELIN_SELENIUM_BROWSER: "edge"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Firefox (non-snap) and geckodriver
-        run: |
-          sudo snap remove firefox || true
-          sudo add-apt-repository -y ppa:mozillateam/ppa
-          sudo tee -a /etc/apt/preferences.d/mozilla-firefox <<EOF
-          Package: *
-          Pin: release o=LP-PPA-mozillateam
-          Pin-Priority: 1001
-          EOF
-          sudo apt-get update
-          sudo apt-get install -y firefox
-          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f 4)
-          wget -q https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-          tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-          chmod +x geckodriver
-          sudo mv geckodriver /usr/local/bin/
-          geckodriver --version
-          firefox --version
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up Edge browser
+        uses: browser-actions/setup-edge@v1
+      - name: Print Edge version
+        run: msedgedriver --version
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 11
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -136,19 +140,19 @@ jobs:
           channel-priority: strict
           auto-activate-base: false
           use-mamba: true
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}
-      - name: Print browser version
-        run: |
-          echo "Firefox version:"
-          firefox --version
-          echo "GeckoDriver version:"
-          geckodriver --version
-      - name: Run integration tests with Firefox
+      - name: run tests
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" \
             ./mvnw verify -DfailIfNoTests=false \
             -pl zeppelin-integration \
             -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist -Pusing-source-tree \
             ${MAVEN_ARGS}
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
