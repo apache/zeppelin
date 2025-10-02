@@ -114,28 +114,17 @@ export class ThemeService implements OnDestroy {
 
   toggleTheme() {
     const currentTheme = this.getCurrentTheme();
-    const effectiveTheme = this.getEffectiveTheme();
+    let nextTheme: ThemeMode;
 
-    if (currentTheme === 'system') {
-      this.systemStartedWith = effectiveTheme;
-      this.setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
+    if (currentTheme === 'light') {
+      nextTheme = 'dark';
     } else if (currentTheme === 'dark') {
-      if (this.systemStartedWith === 'dark') {
-        this.setTheme('system');
-        this.systemStartedWith = null;
-      } else {
-        this.setTheme('light');
-      }
+      nextTheme = 'system';
     } else {
-      if (this.systemStartedWith === 'light') {
-        this.setTheme('system');
-        this.systemStartedWith = null;
-      } else if (this.systemStartedWith === 'dark') {
-        this.setTheme('dark');
-      } else {
-        this.setTheme('system');
-      }
+      nextTheme = 'light';
     }
+
+    this.setTheme(nextTheme);
   }
 
   private applyTheme(effectiveTheme: 'light' | 'dark') {
