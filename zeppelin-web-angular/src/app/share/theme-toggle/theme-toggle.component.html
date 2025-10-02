@@ -12,6 +12,8 @@
 
 <div class="theme-toggle-container">
   <button nz-button nzType="link" nzSize="small" class="theme-toggle-button" (click)="toggleTheme()">
-    <span class="theme-text">{{ getThemeIcon() }}</span>
+    <span class="material-symbols-outlined theme-text">
+      {{ themeIconName }}
+    </span>
   </button>
 </div>

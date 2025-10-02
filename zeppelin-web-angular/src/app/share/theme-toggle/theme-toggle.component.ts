@@ -51,10 +51,13 @@ export class ThemeToggleComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
-  getThemeIcon(): string {
-    if (this.currentTheme === 'system') {
-      return '🤖';
+  get themeIconName(): 'light_mode' | 'dark_mode' | 'smart_toy' {
+    if (this.currentTheme === 'light') {
+      return 'light_mode';
     }
-    return this.currentTheme === 'dark' ? '🌙' : '☀️';
+    if (this.currentTheme === 'dark') {
+      return 'dark_mode';
+    }
+    return 'smart_toy';
   }
 }
