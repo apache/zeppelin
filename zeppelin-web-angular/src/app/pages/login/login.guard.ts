@@ -23,8 +23,8 @@ import { TicketService } from '@zeppelin/services';
 export class LoginGuard implements CanActivate {
   constructor(private ticketService: TicketService, private router: Router) {}
 
-  canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    return this.ticketService.getTicket().pipe(
+  canActivate(): Observable<boolean> {
+    return this.ticketService.isAuthenticated().pipe(
       map(() => {
         this.router.navigate(['/'], { replaceUrl: true });
         return false;
