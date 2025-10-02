@@ -482,3 +482,35 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: build without any profiles
         run: ./mvnw clean verify -DskipTests ${MAVEN_ARGS}
+
+  windows-build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\.m2\repository
+            !~\.m2\repository\org\apache\zeppelin\
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
+      - name: Build on Windows
+        run: |
+          .\mvnw.cmd clean package -DskipTests ^
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.shade.mojo.ShadeMojo=warn ^
+            -Dorg.slf4j.simpleLogger.log.com.googlecode.download.maven.plugin.internal.WGet=warn ^
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo=warn ^
+            --no-transfer-progress
+        shell: cmd
