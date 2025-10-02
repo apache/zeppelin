@@ -118,12 +118,12 @@ jobs:
           sudo apt-get install -y microsoft-edge-stable
       - name: Install msedgedriver
         run: |
-          EDGE_VERSION=$(microsoft-edge --version | grep -oP '\d+\.\d+\.\d+\.\d+')
-          DRIVER_VERSION=$(curl -s "https://msedgedriver.azureedge.net/LATEST_STABLE")
-          curl -L "https://msedgedriver.azureedge.net/${DRIVER_VERSION}/edgedriver_linux64.zip" -o edgedriver.zip
-          unzip edgedriver.zip
+          EDGE_VERSION=$(microsoft-edge --version | awk '{print $3}')
+          wget -q "https://msedgedriver.microsoft.com/${EDGE_VERSION}/edgedriver_linux64.zip" -O edgedriver.zip
+          unzip -q edgedriver.zip
           sudo mv msedgedriver /usr/local/bin/
           sudo chmod +x /usr/local/bin/msedgedriver
+          rm edgedriver.zip
       - name: Print Edge version
         run: msedgedriver --version
       - name: Set up JDK 11
