@@ -262,7 +262,6 @@
       <properties>
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
-        <zeppelin.shiro.config>conf/shiro.ini</zeppelin.shiro.config>
         <test.groups>authentication</test.groups>
       </properties>
     </profile>
