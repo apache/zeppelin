@@ -95,14 +95,7 @@ jobs:
             cp conf/shiro.ini.template conf/shiro.ini
           fi
       - name: Run headless E2E test with Maven
-        run: |
-          if [ "${{ matrix.mode }}" = "anonymous" ]; then
-            xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
-              ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
-          else
-            xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
-              ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
-          fi
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
         if: always()
