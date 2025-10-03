@@ -253,7 +253,6 @@
       <properties>
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
-        <test.groups>anonymous</test.groups>
       </properties>
     </profile>
     
@@ -262,7 +261,6 @@
       <properties>
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
-        <test.groups>authentication</test.groups>
       </properties>
     </profile>
   </profiles>
