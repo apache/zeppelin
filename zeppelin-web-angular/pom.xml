@@ -247,22 +247,6 @@
         <web.e2e.enabled>true</web.e2e.enabled>
       </properties>
     </profile>
-    
-    <profile>
-      <id>e2e-anonymous</id>
-      <properties>
-        <web.e2e.disabled>false</web.e2e.disabled>
-        <web.e2e.enabled>true</web.e2e.enabled>
-      </properties>
-    </profile>
-    
-    <profile>
-      <id>e2e-auth</id>
-      <properties>
-        <web.e2e.disabled>false</web.e2e.disabled>
-        <web.e2e.enabled>true</web.e2e.enabled>
-      </properties>
-    </profile>
   </profiles>
 
 </project>

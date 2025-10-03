@@ -98,10 +98,10 @@ jobs:
         run: |
           if [ "${{ matrix.mode }}" = "anonymous" ]; then
             xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
-              ./mvnw verify -pl zeppelin-web-angular -Pe2e-anonymous ${MAVEN_ARGS}
+              ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
           else
             xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
-              ./mvnw verify -pl zeppelin-web-angular -Pe2e-auth ${MAVEN_ARGS}
+              ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
           fi
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
