@@ -65,6 +65,10 @@ export class TicketService {
     this.ticket$.next(this.ticket);
   }
 
+  isAuthenticated() {
+    return this.getTicket();
+  }
+
   clearTicket() {
     this.ticket = new ITicketWrapped();
     this.originTicket = new ITicket();

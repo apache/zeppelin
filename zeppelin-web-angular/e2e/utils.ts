@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { test, TestInfo } from '@playwright/test';
+import { test, TestInfo, Page } from '@playwright/test';
 
 export const PAGES = {
   // Main App
@@ -136,4 +136,25 @@ export function flattenPageComponents(pages: PageStructureType): string[] {
 
 export function getCoverageTransformPaths(): string[] {
   return flattenPageComponents(PAGES);
+}
+
+export async function waitForUrlNotContaining(page: Page, fragment: string) {
+  await page.waitForURL(url => !url.toString().includes(fragment));
+}
+
+export function getCurrentPath(page: Page): string {
+  const url = new URL(page.url());
+  return url.hash || url.pathname;
+}
+
+export async function getBasicPageMetadata(
+  page: Page
+): Promise<{
+  title: string;
+  path: string;
+}> {
+  return {
+    title: await page.title(),
+    path: getCurrentPath(page)
+  };
 }
