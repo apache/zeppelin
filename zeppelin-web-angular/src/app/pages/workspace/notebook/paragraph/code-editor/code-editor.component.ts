@@ -28,6 +28,7 @@ import { editor as MonacoEditor, IDisposable, IPosition, KeyCode } from 'monaco-
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
 
+import { MonacoKeyboardEventHandler, ParagraphActions, ParagraphActionToHandlerName } from '@zeppelin/key-binding';
 import { pt2px } from '@zeppelin/utility';
 import { NotebookParagraphControlComponent } from '../control/control.component';
 
@@ -40,7 +41,8 @@ type IEditor = MonacoEditor.IEditor;
   styleUrls: ['./code-editor.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestroy, AfterViewInit {
+export class NotebookParagraphCodeEditorComponent
+  implements OnChanges, OnDestroy, AfterViewInit, MonacoKeyboardEventHandler {
   @Input() position: IPosition | null = null;
   @Input() readOnly = false;
   @Input() language?: string = 'text';
@@ -57,6 +59,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Output() readonly editorBlur = new EventEmitter<void>();
   @Output() readonly editorFocus = new EventEmitter<void>();
   @Output() readonly toggleEditorShow = new EventEmitter<void>();
+  @Output() readonly initKeyBindings = new EventEmitter<IStandaloneCodeEditor>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   height = 18;
@@ -112,42 +115,22 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     }
   }
 
-  // Handle Ctrl+Alt+E: Toggle editor show/hide
+  handleMoveCursorUp() {
+    if (this.editor) {
+      this.editor.trigger('keyboard', 'cursorUp', null);
+    }
+  }
+
+  handleMoveCursorDown() {
+    if (this.editor) {
+      this.editor.trigger('keyboard', 'cursorDown', null);
+    }
+  }
+
   handleToggleEditorShow() {
     this.toggleEditorShow.emit();
   }
 
-  // Handle Ctrl+K: Cut current line to clipboard
-  async handleCutLine() {
-    if (!this.editor) {
-      return;
-    }
-
-    const position = this.editor.getPosition();
-    const model = this.editor.getModel();
-    if (!position || !model) {
-      return;
-    }
-
-    const lineNumber = position.lineNumber;
-    const lineContent = model.getLineContent(lineNumber);
-
-    if (!lineContent) {
-      return;
-    }
-
-    await navigator.clipboard.writeText(lineContent);
-
-    this.editor.executeEdits('cut-line', [
-      {
-        range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1),
-        text: '',
-        forceMoveMarkers: true
-      }
-    ]);
-  }
-
-  // Handle Ctrl+Y: Paste from clipboard at current position
   async handlePasteFromClipboard() {
     if (!this.editor) {
       return;
@@ -166,7 +149,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     }
   }
 
-  // Handle Ctrl+S: Show find widget
   handleShowFind() {
     if (this.editor) {
       this.editor.getAction('actions.find').run();
@@ -209,6 +191,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
+    this.initKeyBindings.emit(this.editor);
     this.editor.addCommand(
       KeyCode.Escape,
       () => {
@@ -218,18 +201,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
       },
       '!suggestWidgetVisible'
     );
-    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KeyE, () => {
-      this.handleToggleEditorShow();
-    });
-    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyK, () => {
-      this.handleCutLine();
-    });
-    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyY, () => {
-      this.handlePasteFromClipboard();
-    });
-    this.editor.addCommand(monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyS, () => {
-      this.handleShowFind();
-    });
 
     this.updateEditorOptions(this.editor);
     this.setParagraphMode();
@@ -240,6 +211,56 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     setTimeout(() => {
       this.autoAdjustEditorHeight();
     });
+  }
+
+  handleKeyEvent(action: ParagraphActions) {
+    const handlerName = ParagraphActionToHandlerName[action];
+    const handlerFn = handlerName && handlerName in this && this[handlerName as keyof this];
+    if (!handlerFn || typeof handlerFn !== 'function') {
+      return;
+    }
+    handlerFn.call(this);
+  }
+
+  handleSwitchEditor() {
+    this.handleToggleEditorShow();
+  }
+
+  async handleCutLine() {
+    if (!this.editor) {
+      return;
+    }
+
+    const position = this.editor.getPosition();
+    const model = this.editor.getModel();
+    if (!position || !model) {
+      return;
+    }
+
+    const lineNumber = position.lineNumber;
+    const lineContent = model.getLineContent(lineNumber);
+
+    if (!lineContent) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(lineContent);
+
+    this.editor.executeEdits('cut-line', [
+      {
+        range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1),
+        text: '',
+        forceMoveMarkers: true
+      }
+    ]);
+  }
+
+  handlePasteLine() {
+    this.handlePasteFromClipboard();
+  }
+
+  handleSearchInsideCode() {
+    this.handleShowFind();
   }
 
   initCompletionService(editor: IStandaloneCodeEditor): void {
