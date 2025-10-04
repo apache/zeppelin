@@ -55,18 +55,6 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-zengine</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-server</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -81,14 +69,6 @@
           <artifactId>plexus-utils</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-zengine</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
