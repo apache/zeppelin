@@ -12,15 +12,15 @@
 
 .markdown-body {
   color: @text-color;
-  font-size: 14px;
+  font-size: 14px !important;
   line-height: 1.5;
 
   h1 {
     color: @heading-color;
-    font-weight: 500;
+    font-weight: 500 !important;
     margin: 0.6em 0 0.6em;
-    font-family: Avenir, @font-family;
-    font-size: 30px;
+    font-family: Avenir, @font-family !important;
+    font-size: 30px !important;
     font-variant: tabular-nums;
     line-height: 38px;
   }
@@ -36,7 +36,7 @@
   h5,
   h6 {
     color: @heading-color;
-    font-family: Avenir, @font-family;
+    font-family: Avenir, @font-family !important;
     font-variant: tabular-nums;
     margin: 0.6em 0 0.6em;
     font-weight: 500;
@@ -94,12 +94,10 @@
   }
 
   code {
-    margin: 0 1px;
     background: #f2f4f5;
     padding: .2em .4em;
     border-radius: 3px;
-    font-size: .9em;
-    border: 1px solid #eee;
+    font-size: .9em !important;
   }
 
   pre {
@@ -113,7 +111,7 @@
     background: #f2f4f5;
     margin: 0;
     padding: 0;
-    font-size: @font-size-base - 1px;
+    font-size: @font-size-base - 1px !important;
     color: @text-color;
     overflow: auto;
   }
