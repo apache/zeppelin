@@ -1028,6 +1028,7 @@
               <exclude>**/src/fonts/simple-line*</exclude>
               <exclude>**/src/fonts/Source-Code-Pro*</exclude>
               <exclude>**/src/fonts/source-code-pro*</exclude>
+              <exclude>**/src/assets/fonts/MaterialSymbolsOutlined.woff2</exclude>
               <exclude>**/src/**/**.test.js</exclude>
               <exclude>**/e2e/**/**.spec.js</exclude>
               <exclude>package-lock.json</exclude>

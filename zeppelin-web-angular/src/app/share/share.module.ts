@@ -54,6 +54,7 @@ import { ResizeHandleComponent } from './resize-handle';
 import { RunScriptsDirective } from './run-scripts/run-scripts.directive';
 import { ShortcutComponent } from './shortcut/shortcut.component';
 import { SpinComponent } from './spin/spin.component';
+import { ThemeToggleComponent } from './theme-toggle/theme-toggle.component';
 
 const MODAL_LIST = [
   AboutZeppelinComponent,
@@ -69,6 +70,7 @@ const EXPORT_LIST = [
   NoteTocComponent,
   PageHeaderComponent,
   SpinComponent,
+  ThemeToggleComponent,
   ResizeHandleComponent
 ];
 const PIPES = [HumanizeBytesPipe];
