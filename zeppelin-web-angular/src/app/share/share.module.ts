@@ -37,7 +37,6 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzTreeModule } from 'ng-zorro-antd/tree';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
 
-import { ThemeToggleComponent } from '@zeppelin/share/theme-toggle/theme-toggle.component';
 import { AboutZeppelinComponent } from './about-zeppelin/about-zeppelin.component';
 import { CodeEditorModule } from './code-editor/code-editor.module';
 import { ExternalLinkDirective } from './external-links/external-link.directive';
@@ -55,6 +54,7 @@ import { ResizeHandleComponent } from './resize-handle';
 import { RunScriptsDirective } from './run-scripts/run-scripts.directive';
 import { ShortcutComponent } from './shortcut/shortcut.component';
 import { SpinComponent } from './spin/spin.component';
+import { ThemeToggleComponent } from './theme-toggle/theme-toggle.component';
 
 const MODAL_LIST = [
   AboutZeppelinComponent,
