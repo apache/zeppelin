@@ -23,6 +23,7 @@
     [currentRevision]="currentRevision"
     (tableHideChange)="setAllParagraphTableHide($event)"
     (editorHideChange)="setAllParagraphEditorHide($event)"
+    (handleSearch)="onParagraphSearch($event)"
     #actionBar
   ></zeppelin-notebook-action-bar>
   <div class="flex-container">

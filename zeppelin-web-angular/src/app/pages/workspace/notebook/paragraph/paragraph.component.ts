@@ -52,6 +52,7 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 
+import { editor as MonacoEditor } from 'monaco-editor';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
@@ -114,6 +115,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
     } else {
       this.blurEditor();
     }
+  }
+
+  highlightMatches(searchText: string) {
+    this.notebookParagraphCodeEditorComponent?.highlightMatches(searchText);
   }
 
   textChanged(text: string) {
