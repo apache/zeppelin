@@ -16,6 +16,7 @@ import { Observable } from 'rxjs';
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
   DynamicFormParams,
+  ImportNote,
   Message,
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
@@ -275,7 +276,7 @@ export class MessageService extends Message implements OnDestroy {
     super.patchParagraph(paragraphId, noteId, patch);
   }
 
-  importNote(note: SendNote): void {
+  importNote(note: ImportNote['note']): void {
     super.importNote(note);
   }
 

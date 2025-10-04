@@ -19,7 +19,7 @@ import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { MessageReceiveDataTypeMap, OP, SendNote } from '@zeppelin/sdk';
+import { ImportNote, MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
 
 @Component({
   selector: 'zeppelin-note-import',
@@ -34,8 +34,8 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   importLoading = false;
   maxLimit = get(this.ticketService.configuration, ['zeppelin.websocket.max.text.message.size'], null);
 
-  @MessageListener(OP.NOTES_INFO)
-  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
+  @MessageListener(OP.IMPORT_NOTE)
+  noteImported(_: MessageReceiveDataTypeMap[OP.IMPORT_NOTE]) {
     this.nzModalRef.destroy();
   }
 
@@ -92,7 +92,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
         // @ts-ignore
         result.name = this.noteImportName;
       }
-      this.messageService.importNote(result as SendNote);
+      this.messageService.importNote(result as ImportNote['note']);
     } else {
       this.errorText = 'Invalid JSON';
     }
