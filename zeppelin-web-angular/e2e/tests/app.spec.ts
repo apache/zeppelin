@@ -13,6 +13,7 @@
 import { expect, test } from '@playwright/test';
 import { ZeppelinHelper } from '../helper';
 import { BasePage } from '../models/base-page';
+import { LoginTestUtil } from '../models/login-page.util';
 import { addPageAnnotationBeforeEach, PAGES } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
@@ -56,7 +57,12 @@ test.describe('Zeppelin App Component', () => {
 
   test('should display workspace after loading', async ({ page }) => {
     await zeppelinHelper.waitForZeppelinReady();
-    await expect(page.locator('zeppelin-workspace')).toBeVisible();
+    const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
+    if (isShiroEnabled) {
+      await expect(page.locator('zeppelin-login')).toBeVisible();
+    } else {
+      await expect(page.locator('zeppelin-workspace')).toBeVisible();
+    }
   });
 
   test('should handle navigation events correctly', async ({ page }) => {
