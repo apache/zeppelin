@@ -11,25 +11,36 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { ZeppelinHelper } from '../../helper';
 import { HomePageUtil } from '../../models/home-page.util';
-import { addPageAnnotationBeforeEach, PAGES, waitForUrlNotContaining, getCurrentPath } from '../../utils';
+import { LoginTestUtil } from '../../models/login-page.util';
+import {
+  addPageAnnotationBeforeEach,
+  getCurrentPath,
+  waitForUrlNotContaining,
+  waitForZeppelinReady,
+  PAGES
+} from '../../utils';
 
 test.describe('Anonymous User Login Redirect', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
-  let zeppelinHelper: ZeppelinHelper;
   let homePageUtil: HomePageUtil;
 
+  test.beforeAll(async () => {
+    const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
+    if (isShiroEnabled) {
+      test.skip(true, 'Skipping anonymous login redirect tests - authentication is enabled (shiro.ini found)');
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
-    zeppelinHelper = new ZeppelinHelper(page);
     homePageUtil = new HomePageUtil(page);
   });
 
   test.describe('Given an anonymous user is already logged in', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
     });
 
     test('When accessing login page directly, Then should redirect to home with proper URL change', async ({
@@ -48,7 +59,7 @@ test.describe('Anonymous User Login Redirect', () => {
       page
     }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       await homePageUtil.verifyHomePageIntegrity();
@@ -56,7 +67,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
     test('When clicking Zeppelin logo after redirect, Then should maintain home URL and content', async ({ page }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const navigationResult = await homePageUtil.testNavigationConsistency();
@@ -69,7 +80,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
     test('When accessing login page, Then should redirect and maintain anonymous user state', async ({ page }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const metadata = await homePageUtil.getPageMetadata();
@@ -82,7 +93,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
     test('When accessing login page, Then should display welcome heading and main sections', async ({ page }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       await expect(page.locator('h1', { hasText: 'Welcome to Zeppelin!' })).toBeVisible();
@@ -93,7 +104,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
     test('When accessing login page, Then should display notebook functionalities', async ({ page }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       await expect(page.locator('text=Create new Note')).toBeVisible();
@@ -109,7 +120,7 @@ test.describe('Anonymous User Login Redirect', () => {
       page
     }) => {
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const docLinks = page.locator('a[href*="zeppelin.apache.org/docs"]');
@@ -117,24 +128,32 @@ test.describe('Anonymous User Login Redirect', () => {
       const issuesLinks = page.locator('a[href*="issues.apache.org"]');
       const githubLinks = page.locator('a[href*="github.com/apache/zeppelin"]');
 
-      if ((await docLinks.count()) > 0) await expect(docLinks).toBeVisible();
-      if ((await communityLinks.count()) > 0) await expect(communityLinks).toBeVisible();
-      if ((await issuesLinks.count()) > 0) await expect(issuesLinks).toBeVisible();
-      if ((await githubLinks.count()) > 0) await expect(githubLinks).toBeVisible();
+      if ((await docLinks.count()) > 0) {
+        await expect(docLinks).toBeVisible();
+      }
+      if ((await communityLinks.count()) > 0) {
+        await expect(communityLinks).toBeVisible();
+      }
+      if ((await issuesLinks.count()) > 0) {
+        await expect(issuesLinks).toBeVisible();
+      }
+      if ((await githubLinks.count()) > 0) {
+        await expect(githubLinks).toBeVisible();
+      }
     });
 
     test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({
       page
     }) => {
       await page.goto('/', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
 
       const homeMetadata = await homePageUtil.getPageMetadata();
       expect(homeMetadata.path).toContain('#/');
       expect(homeMetadata.isAnonymous).toBe(true);
 
       await page.goto('/#/login', { waitUntil: 'load' });
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const loginMetadata = await homePageUtil.getPageMetadata();
@@ -149,7 +168,7 @@ test.describe('Anonymous User Login Redirect', () => {
     test('When multiple page loads occur on login URL, Then should consistently redirect to home', async ({ page }) => {
       for (let i = 0; i < 3; i++) {
         await page.goto('/#/login', { waitUntil: 'load' });
-        await zeppelinHelper.waitForZeppelinReady();
+        await waitForZeppelinReady(page);
         await waitForUrlNotContaining(page, '#/login');
 
         await expect(page.locator('h1', { hasText: 'Welcome to Zeppelin!' })).toBeVisible();
