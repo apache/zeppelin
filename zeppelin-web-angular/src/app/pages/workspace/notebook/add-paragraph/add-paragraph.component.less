@@ -18,7 +18,7 @@
     text-align: center;
     color: @primary-color;
     font-weight: 500;
-    position: relative;;
+    position: relative;
 
     .inner {
       position: absolute;
@@ -29,7 +29,6 @@
       z-index: 10;
       display: none;
       line-height: 30px;
-      background: @blue-1;
       border: 1px solid @border-color-split;
       box-shadow: @btn-shadow;
       padding: 0 12px;
@@ -47,3 +46,15 @@
     }
   }
 });
+
+:host-context(.light) {
+  .add-paragraph .inner {
+    background: @blue-1;
+  }
+}
+
+:host-context(.dark) {
+  .add-paragraph .inner {
+    background: #141414;
+  }
+}

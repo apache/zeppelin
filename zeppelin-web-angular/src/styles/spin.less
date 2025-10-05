@@ -31,6 +31,10 @@
     filter: blur(4px);
     background-repeat: no-repeat;
     background-position: center;
+
+    html.dark & {
+      background-image: url("../assets/images/bg-dark.png");
+    }
   }
 
   &.transparent {
@@ -40,6 +44,10 @@
   }
 
   & > div {
+    html.dark & {
+      background: unset;
+    }
+
     background: rgba(255, 255, 255, 0.5);
     text-align: center;
     position: absolute;
