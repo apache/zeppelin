@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.rest.exception;
 
-package org.apache.zeppelin.notebook.exception;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import org.apache.zeppelin.utils.ExceptionUtils;
 
-import java.io.IOException;
+/**
+ * ConflictException handler for WebApplicationException
+ */
+public class ConflictException extends WebApplicationException {
+  private static Response conflictJson(String message) {
+    return ExceptionUtils.jsonResponseContent(Response.Status.CONFLICT, message);
+  }
 
-public class NotePathAlreadyExistsException extends IOException {
-    private static final long serialVersionUID = -9004313429043423507L;
-
-    public NotePathAlreadyExistsException(final String message) {
-        super(message);
-    }
-
-    public NotePathAlreadyExistsException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
-
+  public ConflictException(String message) {
+    super(conflictJson(message));
+  }
 }
