@@ -68,6 +68,7 @@
               }
             ],
             "styles": [
+              "src/styles/theme/dark-theme-overrides.css",
               "src/styles/theme/dark/antd-dark.less",
               "src/styles/theme/light/antd-light.less",
               "src/styles.less",
