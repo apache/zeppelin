@@ -98,7 +98,9 @@ export class LoginTestUtil {
 
   private static _parseUserLine(line: string, users: Record<string, TestCredentials>): void {
     const [userPart, ...roleParts] = line.split('=');
-    if (!userPart || roleParts.length === 0) return;
+    if (!userPart || roleParts.length === 0) {
+      return;
+    }
 
     const username = userPart.trim();
     const rightSide = roleParts.join('=').trim();
