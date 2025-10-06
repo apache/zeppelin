@@ -11,18 +11,15 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { ZeppelinHelper } from '../helper';
 import { BasePage } from '../models/base-page';
 import { LoginTestUtil } from '../models/login-page.util';
-import { addPageAnnotationBeforeEach, PAGES } from '../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
-  let zeppelinHelper: ZeppelinHelper;
   let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
-    zeppelinHelper = new ZeppelinHelper(page);
     basePage = new BasePage(page);
 
     await page.goto('/', { waitUntil: 'load' });
@@ -56,7 +53,7 @@ test.describe('Zeppelin App Component', () => {
   });
 
   test('should display workspace after loading', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
     const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
     if (isShiroEnabled) {
       await expect(page.locator('zeppelin-login')).toBeVisible();
@@ -66,7 +63,7 @@ test.describe('Zeppelin App Component', () => {
   });
 
   test('should handle navigation events correctly', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     // Test navigation back to root path
     try {
@@ -79,7 +76,7 @@ test.describe('Zeppelin App Component', () => {
       const spinnerCount = await loadingSpinner.count();
       expect(spinnerCount).toBeGreaterThanOrEqual(0);
 
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
 
       // After ready, loading should be hidden if it was visible
       if (await loadingSpinner.isVisible()) {
@@ -108,12 +105,12 @@ test.describe('Zeppelin App Component', () => {
     }
 
     // Wait for loading to complete
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
     await expect(loadingSpinner).toBeHidden();
   });
 
   test('should handle logout observable correctly', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     const logoutSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
 
@@ -142,7 +139,7 @@ test.describe('Zeppelin App Component', () => {
   });
 
   test('should maintain component integrity during navigation', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     const zeppelinRoot = page.locator('zeppelin-root');
 
@@ -160,7 +157,7 @@ test.describe('Zeppelin App Component', () => {
         const routerOutlet = zeppelinRoot.locator('router-outlet');
         await expect(routerOutlet).toBeAttached();
 
-        await zeppelinHelper.waitForZeppelinReady();
+        await waitForZeppelinReady(page);
       } catch (error) {
         // Skip paths that don't exist or are not accessible
         console.log(`Skipping path ${path}: ${error}`);
