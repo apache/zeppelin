@@ -84,6 +84,7 @@
       (editorFocus)="onEditorFocus()"
       (textChanged)="textChanged($event)"
       (toggleEditorShow)="toggleEditorShow()"
+      (initKeyBindings)="initKeyBindingsOnMonaco($event)"
     ></zeppelin-notebook-paragraph-code-editor>
     <zeppelin-notebook-paragraph-progress
       *ngIf="paragraph.status === 'RUNNING'"
