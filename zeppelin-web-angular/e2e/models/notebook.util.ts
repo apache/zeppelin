@@ -28,7 +28,9 @@ export class NotebookUtil extends BasePage {
 
     // Wait for the modal to appear and fill the notebook name
     const notebookNameInput = this.page.locator('input[ng-reflect-name="noteName"]');
-    await expect(notebookNameInput).toBeVisible();
+    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
+
+    // Fill notebook name
     await notebookNameInput.fill(notebookName);
 
     // Click the 'Create' button in the modal
