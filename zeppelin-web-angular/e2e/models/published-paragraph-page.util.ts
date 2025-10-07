@@ -25,10 +25,10 @@ export class PublishedParagraphTestUtil {
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
-    const modal = this.page.locator('.ant-modal');
+    const modal = this.page.locator('.ant-modal', { hasText: 'Paragraph Not Found' });
     await expect(modal).toBeVisible({ timeout: 10000 });
 
-    await expect(modal).toContainText('Paragraph Not Found', { timeout: 5000 });
+    await expect(modal).toContainText('Paragraph Not Found');
 
     const content = await this.publishedParagraphPage.getErrorModalContent();
     expect(content).toContain(invalidParagraphId);
@@ -48,8 +48,7 @@ export class PublishedParagraphTestUtil {
     await this.page.waitForLoadState('networkidle');
 
     // 2. Find the correct paragraph result element and go up to the parent paragraph container
-    const resultElement = this.page.locator(`zeppelin-notebook-paragraph-result[ng-reflect-id="${paragraphId}"]`);
-    const paragraphElement = resultElement.locator('xpath=ancestor::zeppelin-notebook-paragraph');
+    const paragraphElement = this.page.locator(`[data-testid="${paragraphId}"]`);
     await expect(paragraphElement).toBeVisible();
 
     // 3. Click the settings button to open the dropdown
@@ -79,10 +78,11 @@ export class PublishedParagraphTestUtil {
     await this.page.waitForLoadState('networkidle');
 
     const treeContainer = this.page.locator('nz-tree.ant-tree');
-    await expect(treeContainer).toBeVisible();
+    await this.page.waitForLoadState('networkidle');
+    await treeContainer.waitFor({ state: 'attached', timeout: 15000 });
 
-    // Find the first node in the tree
     const firstNode = treeContainer.locator('nz-tree-node').first();
+    await firstNode.waitFor({ state: 'attached', timeout: 15000 });
     await expect(firstNode).toBeVisible();
 
     // Check if the first node is a closed folder and expand it
@@ -113,13 +113,21 @@ export class PublishedParagraphTestUtil {
 
     // Get the first paragraph ID from the page
     await expect(this.page.locator('zeppelin-notebook-paragraph-result').first()).toBeVisible({ timeout: 10000 });
+    const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first(); // 첫 번째 paragraph
+    const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+    await dropdownTrigger.click();
 
-    const resultElement = this.page.locator('zeppelin-notebook-paragraph-result').first();
-    const paragraphId = await resultElement.getAttribute('ng-reflect-id');
+    const paragraphLink = this.page.locator('li.paragraph-id a').first();
+    await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+
+    const paragraphId = await paragraphLink.textContent();
 
     if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
       throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
     }
+
+    await this.page.goto('/');
+    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
 
     return { noteId, paragraphId };
   }

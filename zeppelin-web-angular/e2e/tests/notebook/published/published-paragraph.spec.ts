@@ -67,8 +67,8 @@ test.describe('Published Paragraph', () => {
       await page.goto(`/#/notebook/${nonExistentIds.noteId}/paragraph/${nonExistentIds.paragraphId}`);
       await page.waitForLoadState('networkidle');
 
-      const modal = page.locator('.ant-modal');
-      const isModalVisible = await modal.isVisible({ timeout: 5000 });
+      const modal = page.locator('.ant-modal', { hasText: 'Paragraph Not Found' });
+      const isModalVisible = await modal.isVisible();
 
       if (isModalVisible) {
         const okButton = page.locator('button:has-text("OK"), button:has-text("확인"), [role="button"]:has-text("OK")');
