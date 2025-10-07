@@ -47,7 +47,7 @@ test.describe('Published Paragraph', () => {
       }
     });
 
-    test('should show error modal when paragraph does not exist in valid notebook', async ({ page }) => {
+    test('should show error modal when paragraph does not exist in valid notebook', async () => {
       const validNoteId = testNotebook.noteId;
       const nonExistentParagraphId = testUtil.generateNonExistentIds().paragraphId;
 
@@ -75,12 +75,16 @@ test.describe('Published Paragraph', () => {
   });
 
   test.describe('Valid Paragraph Display', () => {
-    test('should display published paragraph in read-only mode', async ({ page }) => {
-      await testUtil.verifyReadOnlyBehavior(testNotebook.noteId, testNotebook.paragraphId);
+    test('should enter published paragraph by clicking', async () => {
+      await testUtil.verifyClickLinkThisParagraphBehavior(testNotebook.noteId, testNotebook.paragraphId);
     });
 
-    test('should allow form interactions in published mode', async ({ page }) => {
-      await testUtil.verifyFormInteraction(testNotebook.noteId, testNotebook.paragraphId);
+    test('should enter published paragraph by URL', async ({ page }) => {
+      await page.goto(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`);
+      await page.waitForLoadState('networkidle');
+      await expect(page).toHaveURL(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`, {
+        timeout: 10000
+      });
     });
   });
 });

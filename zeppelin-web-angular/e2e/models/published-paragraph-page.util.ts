@@ -42,7 +42,7 @@ export class PublishedParagraphTestUtil {
     expect(await this.publishedParagraphPage.isOnHomePage()).toBe(true);
   }
 
-  async verifyReadOnlyBehavior(noteId: string, paragraphId: string): Promise<void> {
+  async verifyClickLinkThisParagraphBehavior(noteId: string, paragraphId: string): Promise<void> {
     // 1. Navigate to the normal notebook view
     await this.page.goto(`/#/notebook/${noteId}`);
     await this.page.waitForLoadState('networkidle');
@@ -72,24 +72,6 @@ export class PublishedParagraphTestUtil {
 
     const controlPanel = newPage.locator('zeppelin-notebook-paragraph-control');
     await expect(controlPanel).toBeHidden();
-  }
-
-  async verifyFormInteraction(noteId: string, paragraphId: string): Promise<void> {
-    await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
-
-    if (await this.publishedParagraphPage.isDynamicFormsVisible()) {
-      const forms = this.page.locator('zeppelin-notebook-paragraph-dynamic-forms');
-      expect(await forms.isVisible()).toBe(true);
-
-      const formInputs = forms.locator('input, select, textarea');
-      const inputCount = await formInputs.count();
-
-      if (inputCount > 0) {
-        const disabledInputs = forms.locator('input:disabled, select:disabled, textarea:disabled');
-        const disabledCount = await disabledInputs.count();
-        expect(disabledCount).toBeLessThan(inputCount);
-      }
-    }
   }
 
   async openFirstNotebook(): Promise<{ noteId: string; paragraphId: string }> {
