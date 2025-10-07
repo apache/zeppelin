@@ -32,6 +32,8 @@ test.describe('Zeppelin App Component', () => {
     const zeppelinRoot = page.locator('zeppelin-root');
     await expect(zeppelinRoot).toBeAttached();
 
+    await waitForZeppelinReady(page);
+
     // Verify router-outlet is inside zeppelin-root (use first to avoid multiple elements)
     const routerOutlet = zeppelinRoot.locator('router-outlet').first();
     await expect(routerOutlet).toBeAttached();
@@ -142,30 +144,25 @@ test.describe('Zeppelin App Component', () => {
     await waitForZeppelinReady(page);
 
     const zeppelinRoot = page.locator('zeppelin-root');
+    const routerOutlet = zeppelinRoot.locator('router-outlet').first();
 
     // Navigate to different pages and ensure component remains intact
-    const testPaths = ['/notebook', '/jobmanager', '/configuration'];
+    const testPaths = ['/#/notebook', '/#/jobmanager', '/#/configuration'];
 
     for (const path of testPaths) {
-      try {
-        await page.goto(path, { waitUntil: 'load', timeout: 5000 });
+      await page.goto(path, { waitUntil: 'load', timeout: 10000 });
+      await waitForZeppelinReady(page);
 
-        // Component should still be attached
-        await expect(zeppelinRoot).toBeAttached();
+      // Component should still be attached
+      await expect(zeppelinRoot).toBeAttached();
 
-        // Router outlet should still be present
-        const routerOutlet = zeppelinRoot.locator('router-outlet');
-        await expect(routerOutlet).toBeAttached();
-
-        await waitForZeppelinReady(page);
-      } catch (error) {
-        // Skip paths that don't exist or are not accessible
-        console.log(`Skipping path ${path}: ${error}`);
-      }
+      // Router outlet should still be present
+      await expect(routerOutlet).toBeAttached();
     }
 
     // Return to home
     await page.goto('/', { waitUntil: 'load' });
+    await waitForZeppelinReady(page);
     await expect(zeppelinRoot).toBeAttached();
   });
 
