@@ -125,6 +125,10 @@ export class NotebookParagraphComponent extends ParagraphBase
     }
   }
 
+  highlightMatches(searchText: string) {
+    this.notebookParagraphCodeEditorComponent?.highlightMatches(searchText);
+  }
+
   textChanged(text: string) {
     this.dirtyText = text;
     this.paragraph.text = text;
