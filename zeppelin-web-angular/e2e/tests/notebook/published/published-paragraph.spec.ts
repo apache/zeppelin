@@ -12,7 +12,13 @@
 
 import { expect, test } from '@playwright/test';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import {
+  addPageAnnotationBeforeEach,
+  createNotebookIfListEmpty,
+  performLoginIfRequired,
+  waitForZeppelinReady,
+  PAGES
+} from '../../../utils';
 
 test.describe('Published Paragraph', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
@@ -24,6 +30,7 @@ test.describe('Published Paragraph', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
+    await createNotebookIfListEmpty(page);
 
     testUtil = new PublishedParagraphTestUtil(page);
     testNotebook = await testUtil.openFirstNotebook();
