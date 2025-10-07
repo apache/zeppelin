@@ -225,8 +225,8 @@ export async function createNotebookIfListEmpty(page: Page): Promise<void> {
 
   if (notebookCount === 0) {
     console.log('No notebooks found, creating a new one...');
-    const { createNotebook } = new NotebookUtil(page);
-    await createNotebook(notebookName);
+    const notebookUtil = new NotebookUtil(page);
+    await notebookUtil.createNotebook(notebookName);
     await expect(page.locator(`text=${notebookName}`)).toBeVisible();
     console.log(`Notebook '${notebookName}' created successfully.`);
   } else {
