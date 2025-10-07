@@ -34,6 +34,7 @@ import { NotebookParagraphControlComponent } from '../control/control.component'
 
 type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
 type IEditor = MonacoEditor.IEditor;
+type DecorationIdentifier = ReturnType<monaco.editor.ICodeEditor['deltaDecorations']>[number];
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-code-editor',
@@ -62,6 +63,7 @@ export class NotebookParagraphCodeEditorComponent
   @Output() readonly initKeyBindings = new EventEmitter<IStandaloneCodeEditor>();
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
+  private highlightDecorations: DecorationIdentifier[] = [];
   height = 18;
   interpreterName?: string;
 
@@ -344,6 +346,37 @@ export class NotebookParagraphCodeEditorComponent
         this.editor!.layout();
       });
     }
+  }
+
+  highlightMatches(term: string) {
+    if (!this.editor || !term) {
+      // Remove previous highlights if term is empty
+      this.highlightDecorations = this.editor?.deltaDecorations(this.highlightDecorations, []) || [];
+      return;
+    }
+    const model = this.editor.getModel();
+    if (!model) {
+      return;
+    }
+    const text = model.getValue();
+    const newDecorations = [];
+    let startIndex = 0;
+    while (term && text) {
+      const idx = text.indexOf(term, startIndex);
+      if (idx === -1) {
+        break;
+      }
+      const startPos = model.getPositionAt(idx);
+      const endPos = model.getPositionAt(idx + term.length);
+      newDecorations.push({
+        range: new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+        options: {
+          inlineClassName: 'editor-search-highlight'
+        }
+      });
+      startIndex = idx + term.length;
+    }
+    this.highlightDecorations = this.editor.deltaDecorations(this.highlightDecorations, newDecorations);
   }
 
   constructor(

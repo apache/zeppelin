@@ -14,11 +14,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Inject,
   Input,
   OnInit,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -51,6 +53,8 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   >();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
+  @Output() readonly handleSearch = new EventEmitter<string>();
+  @ViewChild('searchInput', { static: false }) searchInputRef?: ElementRef<HTMLInputElement>;
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
   isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
@@ -58,6 +62,8 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   editorHide = false;
   commitVisible = false;
   tableHide = false;
+  searchText = '';
+  replaceText = '';
   cronOption = [
     { name: 'None', value: undefined },
     { name: '1m', value: '0 0/1 * * * ?' },
@@ -219,7 +225,32 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   searchCode() {
-    // TODO(hsuanxyz)
+    this.handleSearch.emit(this.searchText);
+  }
+
+  onSearchMenuOpenChange(open: boolean) {
+    if (open) {
+      setTimeout(() => {
+        this.searchInputRef?.nativeElement?.focus();
+      }, 0);
+    } else {
+      this.searchText = '';
+      this.searchCode();
+    }
+  }
+
+  // TODO: Implement logic to find the previous search match in the notebook editor
+  onFindPrevClick(searchText: string) {}
+
+  // TODO: Implement logic to find the next search match in the notebook editor
+  onFindNextClick(searchText: string) {}
+
+  // TODO: Implement logic to replace the current search match with the replacement text
+  onReplaceClick(searchText: string, replaceText: string) {}
+
+  // TODO: Implement logic to replace all search matches with the replacement text
+  onReplaceAllClick(searchText: string, replaceText: string) {
+    this.handleSearch.emit(searchText);
   }
 
   deleteNote() {
