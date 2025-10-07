@@ -30,7 +30,6 @@ test.describe('Published Paragraph', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
     await createNotebookIfListEmpty(page);
 
     testUtil = new PublishedParagraphTestUtil(page);
