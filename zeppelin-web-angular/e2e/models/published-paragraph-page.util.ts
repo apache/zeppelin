@@ -48,7 +48,7 @@ export class PublishedParagraphTestUtil {
     await this.page.waitForLoadState('networkidle');
 
     // 2. Find the correct paragraph result element and go up to the parent paragraph container
-    const paragraphElement = this.page.locator(`[data-testid="${paragraphId}"]`);
+    const paragraphElement = this.page.locator(`zeppelin-notebook-paragraph[data-testid="${paragraphId}"]`);
     await expect(paragraphElement).toBeVisible();
 
     // 3. Click the settings button to open the dropdown
