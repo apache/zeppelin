@@ -189,7 +189,7 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
     await passwordInput.fill(testUser.password);
     await loginButton.click();
 
-    await page.waitForSelector('zeppelin-workspace', { timeout: 10000 });
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
     return true;
   }
 
@@ -232,4 +232,6 @@ export async function createNotebookIfListEmpty(page: Page): Promise<void> {
   } else {
     console.log(`${notebookCount} notebooks already exist. Skipping creation.`);
   }
+  await page.goto('/');
+  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
 }
