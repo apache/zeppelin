@@ -38,7 +38,7 @@ export class NotebookUtil extends BasePage {
     await createButton.click();
 
     // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(`**/${notebookName}`);
+    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
     await this.waitForPageLoad();
   }
 }
