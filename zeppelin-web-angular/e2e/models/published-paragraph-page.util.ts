@@ -60,7 +60,7 @@ export class PublishedParagraphTestUtil {
     await expect(linkParagraphButton).toBeVisible();
 
     // 5. Handle the new page/tab that opens
-    const [newPage] = await Promise.all([this.page.context().waitForEvent('page'), linkParagraphButton.click()]);
+    const [newPage] = await Promise.all([this.page.waitForEvent('popup'), linkParagraphButton.click()]);
     await newPage.waitForLoadState();
 
     // 6. Perform assertions on the new page
@@ -127,6 +127,7 @@ export class PublishedParagraphTestUtil {
     }
 
     await this.page.goto('/');
+    await this.page.waitForLoadState('networkidle');
     await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
 
     return { noteId, paragraphId };

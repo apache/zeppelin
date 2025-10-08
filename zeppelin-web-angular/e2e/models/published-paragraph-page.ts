@@ -30,7 +30,7 @@ export class PublishedParagraphPage extends BasePage {
     this.errorModal = page.locator('.ant-modal');
     this.errorModalTitle = page.locator('.ant-modal-title');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
-    this.errorModalOkButton = page.getByRole('button', { name: 'OK' });
+    this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
   }
 
   async navigateToPublishedParagraph(noteId: string, paragraphId: string): Promise<void> {
