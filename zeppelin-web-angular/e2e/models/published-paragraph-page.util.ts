@@ -25,6 +25,36 @@ export class PublishedParagraphTestUtil {
     this.notebookUtil = new NotebookUtil(page);
   }
 
+  async testConfirmationModalForNoResultParagraph({
+    noteId,
+    paragraphId
+  }: {
+    noteId: string;
+    paragraphId: string;
+  }): Promise<void> {
+    await this.publishedParagraphPage.navigateToNotebook(noteId);
+
+    const paragraphElement = this.page.locator('zeppelin-notebook-paragraph').first();
+
+    const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+    await settingsButton.click();
+
+    const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
+    await clearOutputButton.click();
+    await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
+
+    await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+    const modal = this.publishedParagraphPage.confirmationModal;
+    await expect(modal).toBeVisible();
+    await expect(this.publishedParagraphPage.modalTitle).toHaveText(
+      'There is no result. Would you like to run this paragraph?'
+    );
+
+    await this.publishedParagraphPage.runButton.click();
+    await expect(modal).toBeHidden();
+  }
+
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 

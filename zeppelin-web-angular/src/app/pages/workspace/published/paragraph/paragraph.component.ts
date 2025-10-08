@@ -70,6 +70,13 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (!isNil(note)) {
       this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
       if (this.paragraph) {
+        if (!this.paragraph.results) {
+          this.nzModalService.confirm({
+            nzTitle: 'There is no result. Would you like to run this paragraph?',
+            nzOkText: 'Run',
+            nzOnOk: () => this.runParagraph()
+          });
+        }
         this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);

@@ -11,6 +11,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { PublishedParagraphPage } from 'e2e/models/published-paragraph-page';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import {
   addPageAnnotationBeforeEach,
@@ -23,14 +24,22 @@ import {
 test.describe('Published Paragraph', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
 
+  let publishedParagraphPage: PublishedParagraphPage;
   let testUtil: PublishedParagraphTestUtil;
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
+    publishedParagraphPage = new PublishedParagraphPage(page);
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     await createNotebookIfListEmpty(page);
+
+    // Handle the welcome modal if it appears
+    const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
+    if ((await cancelButton.count()) > 0) {
+      await cancelButton.click();
+    }
 
     testUtil = new PublishedParagraphTestUtil(page);
     testNotebook = await testUtil.createTestNotebook();
@@ -46,10 +55,9 @@ test.describe('Published Paragraph', () => {
     test('should show error modal when notebook does not exist', async ({ page }) => {
       const nonExistentIds = testUtil.generateNonExistentIds();
 
-      await page.goto(`/#/notebook/${nonExistentIds.noteId}/paragraph/${nonExistentIds.paragraphId}`);
-      await page.waitForLoadState('networkidle');
+      await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
-      const modal = page.locator('.ant-modal');
+      const modal = page.locator('.ant-modal:has-text("Notebook not found")').last();
       const isModalVisible = await modal.isVisible({ timeout: 10000 });
 
       if (isModalVisible) {
@@ -70,8 +78,7 @@ test.describe('Published Paragraph', () => {
     test('should redirect to home page after error modal dismissal', async ({ page }) => {
       const nonExistentIds = testUtil.generateNonExistentIds();
 
-      await page.goto(`/#/notebook/${nonExistentIds.noteId}/paragraph/${nonExistentIds.paragraphId}`);
-      await page.waitForLoadState('networkidle');
+      await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
       const modal = page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).last();
       const isModalVisible = await modal.isVisible();
@@ -99,5 +106,35 @@ test.describe('Published Paragraph', () => {
         timeout: 10000
       });
     });
+  });
+
+  test('should show confirmation modal and allow running the paragraph', async ({ page }) => {
+    const { noteId, paragraphId } = testNotebook;
+
+    await publishedParagraphPage.navigateToNotebook(noteId);
+
+    const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+    const paragraphResult = paragraphElement.locator('zeppelin-notebook-paragraph-result');
+
+    // Only clear output if result exists
+    if (await paragraphResult.isVisible()) {
+      const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+      await settingsButton.click();
+
+      const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
+      await clearOutputButton.click();
+      await expect(paragraphResult).toBeHidden();
+    }
+
+    await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+    const modal = publishedParagraphPage.confirmationModal;
+    await expect(modal).toBeVisible();
+    await expect(publishedParagraphPage.modalTitle).toHaveText(
+      'There is no result. Would you like to run this paragraph?'
+    );
+
+    await publishedParagraphPage.runButton.click();
+    await expect(modal).toBeHidden();
   });
 });
