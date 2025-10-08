@@ -29,7 +29,7 @@ export class PublishedParagraphPage extends BasePage {
     this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
     this.errorModal = page.locator('.ant-modal');
     this.errorModalTitle = page.locator('.ant-modal-title');
-    this.errorModalContent = page.locator('.ant-modal-body');
+    this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' });
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' });
   }
 
