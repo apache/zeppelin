@@ -33,7 +33,13 @@ test.describe('Published Paragraph', () => {
     await createNotebookIfListEmpty(page);
 
     testUtil = new PublishedParagraphTestUtil(page);
-    testNotebook = await testUtil.openFirstNotebook();
+    testNotebook = await testUtil.createTestNotebook();
+  });
+
+  test.afterEach(async () => {
+    if (testNotebook?.noteId) {
+      await testUtil.deleteTestNotebook(testNotebook.noteId);
+    }
   });
 
   test.describe('Error Handling', () => {
