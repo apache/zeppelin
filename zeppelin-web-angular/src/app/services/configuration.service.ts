@@ -20,11 +20,25 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class ConfigurationService extends BaseRest {
+  private _wsMaxMessageSize?: number;
+
   constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
     super(baseUrlService);
   }
 
+  get wsMaxMessageSize() {
+    return this._wsMaxMessageSize;
+  }
+
   getAll() {
     return this.http.get<{ [key: string]: string }>(this.restUrl`/configurations/all`);
+  }
+
+  fetchWsMaxMessageSize() {
+    return this.http.get<number>(this.restUrl`/configurations/wsMaxMessageSize`);
+  }
+
+  async initialize(): Promise<void> {
+    this._wsMaxMessageSize = await this.fetchWsMaxMessageSize().toPromise();
   }
 }

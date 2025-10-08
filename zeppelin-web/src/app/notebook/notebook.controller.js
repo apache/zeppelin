@@ -270,9 +270,10 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   // Export notebook
   let limit = 0;
 
-  websocketMsgSrv.listConfigurations();
-  $scope.$on('configurationsInfo', function(scope, event) {
-    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
+  $http.get(baseUrlSrv.getRestApiBase() + '/configurations/wsMaxMessageSize').then(function(response) {
+    limit = response.data.body;
+  }).catch(function(err) {
+    console.error('Error while fetching max message size', err);
   });
 
   $scope.exportNote = function() {
