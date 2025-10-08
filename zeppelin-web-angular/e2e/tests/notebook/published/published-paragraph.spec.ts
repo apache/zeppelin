@@ -67,7 +67,7 @@ test.describe('Published Paragraph', () => {
       await page.goto(`/#/notebook/${nonExistentIds.noteId}/paragraph/${nonExistentIds.paragraphId}`);
       await page.waitForLoadState('networkidle');
 
-      const modal = page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).first();
+      const modal = page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).last();
       const isModalVisible = await modal.isVisible();
 
       if (isModalVisible) {

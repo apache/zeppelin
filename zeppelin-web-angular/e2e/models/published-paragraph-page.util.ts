@@ -25,7 +25,7 @@ export class PublishedParagraphTestUtil {
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
-    const modal = this.page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).first();
+    const modal = this.page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).last();
     await expect(modal).toBeVisible({ timeout: 10000 });
 
     await expect(modal).toContainText('Paragraph Not Found');
