@@ -32,7 +32,7 @@ import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.AuthenticationService;
 
 /** Configurations Rest API Endpoint. */
-@Path("/configurations")
+@Path("/")
 @Produces("application/json")
 @Singleton
 public class ConfigurationsRestApi extends AbstractRestApi {
@@ -47,7 +47,19 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   }
 
   @GET
-  @Path("all")
+  @Path("wsMaxMessageSize")
+  @ZeppelinApi
+  public Response getWsMaxMessageSize() {
+    try {
+        int maxMessageSize = configurationService.getWsMaxMessageSize();
+        return new JsonResponse<>(Status.OK, "", maxMessageSize).build();
+        } catch (Exception e) {
+        return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to get max message size", e).build();
+    }
+  }
+
+  @GET
+  @Path("configurations/all")
   @ZeppelinApi
   public Response getAll() {
     try {
@@ -60,7 +72,7 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   }
 
   @GET
-  @Path("prefix/{prefix}")
+  @Path("configurations/prefix/{prefix}")
   @ZeppelinApi
   public Response getByPrefix(@PathParam("prefix") final String prefix) {
     try {

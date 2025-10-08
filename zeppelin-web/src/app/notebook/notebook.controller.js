@@ -267,30 +267,29 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return note && note.path ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
   };
 
-  // Export notebook
-  let limit = 0;
-
-  websocketMsgSrv.listConfigurations();
-  $scope.$on('configurationsInfo', function(scope, event) {
-    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
-  });
-
   $scope.exportNote = function() {
-    let jsonContent = JSON.stringify($scope.note, null, 2);
-    if (jsonContent.length > limit) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: 'Note size exceeds importable limit (' + limit + ')',
-        message: 'Do you still want to export this note?',
-        callback: function(result) {
-          if (result) {
-            saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
-          }
-        },
-      });
-    } else {
-      saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
-    }
+    $http.get(baseUrlSrv.getRestApiBase() + '/wsMaxMessageSize').then(function(response) {
+      const limit = response.data.body;
+
+      let jsonContent = JSON.stringify($scope.note, null, 2);
+
+      if (jsonContent.length > limit) {
+        BootstrapDialog.confirm({
+          closable: true,
+          title: 'Note size exceeds importable limit (' + limit + ')',
+          message: 'Do you still want to export this note?',
+          callback: function(result) {
+            if (result) {
+              saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
+            }
+          },
+        });
+      } else {
+        saveAsService.saveAs(jsonContent, $scope.note.name + '_' + $scope.note.id, 'zpln');
+      }
+    }).catch(function(err) {
+      console.error('Error while fetching max message size', err);
+    });
   };
 
   // Export nbformat

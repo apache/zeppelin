@@ -13,6 +13,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { Observable } from 'rxjs';
 import { BaseRest } from './base-rest';
 import { BaseUrlService } from './base-url.service';
 
@@ -27,7 +28,11 @@ export class ConfigurationService extends BaseRest {
     super(baseUrlService);
   }
 
-  getAll() {
+  fetchWsMaxMessageSize(): Promise<number> {
+    return this.http.get<number>(this.restUrl`/wsMaxMessageSize`).toPromise();
+  }
+
+  getAll(): Observable<{ [p: string]: string }> {
     return this.http.get<{ [key: string]: string }>(this.restUrl`/configurations/all`);
   }
 }

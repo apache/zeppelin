@@ -29,7 +29,14 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NotebookService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import {
+  ConfigurationService,
+  MessageService,
+  NotebookService,
+  NoteStatusService,
+  SaveAsService,
+  TicketService
+} from '@zeppelin/services';
 import { NoteCreateComponent, ShortcutComponent } from '@zeppelin/share';
 
 @Component({
@@ -189,11 +196,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     });
   }
 
-  exportNote() {
+  async exportNote() {
     if (!this.ticketService.configuration) {
       throw new Error('Configuration is not loaded');
     }
-    const sizeLimit = +this.ticketService.configuration['zeppelin.websocket.max.text.message.size'];
+
+    const sizeLimit = await this.configurationService.fetchWsMaxMessageSize();
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
       this.nzModalService.confirm({
@@ -324,6 +332,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private nzModalService: NzModalService,
     private ticketService: TicketService,
+    private configurationService: ConfigurationService,
     private nzMessageService: NzMessageService,
     private router: Router,
     private cdr: ChangeDetectorRef,
