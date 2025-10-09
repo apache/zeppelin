@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
-import { HomePage } from './home-page';
+import { expect, Page } from '@playwright/test';
 import { getBasicPageMetadata, waitForUrlNotContaining } from '../utils';
+import { HomePage } from './home-page';
 
 export class HomePageUtil {
   private homePage: HomePage;
@@ -82,10 +82,18 @@ export class HomePageUtil {
     const issuesCount = await this.homePage.externalLinks.issuesTracking.count();
     const githubCount = await this.homePage.externalLinks.github.count();
 
-    if (docCount > 0) await expect(this.homePage.externalLinks.documentation).toBeVisible();
-    if (mailCount > 0) await expect(this.homePage.externalLinks.mailingList).toBeVisible();
-    if (issuesCount > 0) await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
-    if (githubCount > 0) await expect(this.homePage.externalLinks.github).toBeVisible();
+    if (docCount > 0) {
+      await expect(this.homePage.externalLinks.documentation).toBeVisible();
+    }
+    if (mailCount > 0) {
+      await expect(this.homePage.externalLinks.mailingList).toBeVisible();
+    }
+    if (issuesCount > 0) {
+      await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
+    }
+    if (githubCount > 0) {
+      await expect(this.homePage.externalLinks.github).toBeVisible();
+    }
   }
 
   async testNavigationConsistency(): Promise<{
