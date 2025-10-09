@@ -85,6 +85,7 @@
             [revisionView]="revisionView"
             [first]="first"
             [last]="last"
+            [attr.data-testid]="p.id"
             (selectAtIndex)="onSelectAtIndex($event)"
             (selected)="onParagraphSelect($event)"
             (triggerSaveParagraph)="saveParagraph($event)"
