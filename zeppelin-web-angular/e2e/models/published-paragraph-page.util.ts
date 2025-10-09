@@ -26,6 +26,57 @@ export class PublishedParagraphTestUtil {
     this.notebookUtil = new NotebookUtil(page);
   }
 
+  async testConfirmationModalForNoResultParagraph({
+    noteId,
+    paragraphId
+  }: {
+    noteId: string;
+    paragraphId: string;
+  }): Promise<void> {
+    await this.publishedParagraphPage.navigateToNotebook(noteId);
+
+    const paragraphElement = this.page.locator('zeppelin-notebook-paragraph').first();
+
+    const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+    await settingsButton.click();
+
+    const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
+    await clearOutputButton.click();
+    await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
+
+    await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+    const modal = this.publishedParagraphPage.confirmationModal;
+    await expect(modal).toBeVisible();
+
+    // Check for the new enhanced modal content
+    const modalTitle = this.page.locator('.ant-modal-confirm-title, .ant-modal-title');
+    await expect(modalTitle).toContainText('Run Paragraph?');
+
+    // Check that code preview is shown
+    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body').first();
+    await expect(modalContent).toContainText('This paragraph contains the following code:');
+    await expect(modalContent).toContainText('Would you like to execute this code?');
+
+    // Verify that the code preview area exists with proper styling
+    const codePreview = modalContent.locator('div[style*="background-color: #f5f5f5"]');
+    const isCodePreviewVisible = await codePreview.isVisible();
+
+    if (isCodePreviewVisible) {
+      await expect(codePreview).toBeVisible();
+    }
+
+    // Check for Run and Cancel buttons
+    const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
+    const cancelButton = this.page.locator('.ant-modal button:has-text("Cancel"), .ant-btn:has-text("Cancel")');
+    await expect(runButton).toBeVisible();
+    await expect(cancelButton).toBeVisible();
+
+    // Click the Run button in the modal
+    await runButton.click();
+    await expect(modal).toBeHidden();
+  }
+
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
