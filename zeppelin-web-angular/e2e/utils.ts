@@ -208,3 +208,12 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
     throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
   }
 }
+
+export async function waitForNotebookLinks(page: Page, timeout: number = 10000): Promise<boolean> {
+  try {
+    await page.waitForSelector('a[href*="#/notebook/"]', { timeout });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
