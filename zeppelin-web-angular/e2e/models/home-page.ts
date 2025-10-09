@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { Locator, Page, expect } from '@playwright/test';
-import { BasePage } from './base-page';
+import { expect, Locator, Page } from '@playwright/test';
 import { getCurrentPath, waitForUrlNotContaining } from '../utils';
+import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
   readonly welcomeHeading: Locator;
