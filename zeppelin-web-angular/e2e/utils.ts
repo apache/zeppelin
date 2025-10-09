@@ -10,8 +10,9 @@
  * limitations under the License.
  */
 
-import { test, Page, TestInfo } from '@playwright/test';
+import { expect, test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
+import { NotebookUtil } from './models/notebook.util';
 
 export const PAGES = {
   // Main App
@@ -188,7 +189,7 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
     await passwordInput.fill(testUser.password);
     await loginButton.click();
 
-    await page.waitForSelector('zeppelin-workspace', { timeout: 10000 });
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
     return true;
   }
 
@@ -213,4 +214,24 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
   } catch (error) {
     throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
   }
+}
+
+export async function createNotebookIfListEmpty(page: Page): Promise<void> {
+  const notebookName = `My Test Notebook ${Date.now()}`;
+
+  // Check if any notebooks are listed
+  const notebookItems = page.locator('a[href*="#/notebook/"]'); // Assuming notebooks are links with #/notebook/ in their href
+  const notebookCount = await notebookItems.count();
+
+  if (notebookCount === 0) {
+    console.log('No notebooks found, creating a new one...');
+    const notebookUtil = new NotebookUtil(page);
+    await notebookUtil.createNotebook(notebookName);
+    await expect(page.locator(`text=${notebookName}`)).toBeVisible();
+    console.log(`Notebook '${notebookName}' created successfully.`);
+  } else {
+    console.log(`${notebookCount} notebooks already exist. Skipping creation.`);
+  }
+  await page.goto('/');
+  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
 }

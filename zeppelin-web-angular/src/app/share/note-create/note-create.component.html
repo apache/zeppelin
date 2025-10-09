@@ -41,8 +41,8 @@
 
   <div class="modal-footer ant-modal-footer">
     <button nz-button nzType="primary" (click)="createNote()">
-      <ng-container *ngIf="cloneNote; else importTpl">Clone</ng-container>
-      <ng-template #importTpl>Create</ng-template>
+      <ng-container *ngIf="cloneNote; else importTplBtn">Clone</ng-container>
+      <ng-template #importTplBtn>Create</ng-template>
     </button>
   </div>
 </form>
