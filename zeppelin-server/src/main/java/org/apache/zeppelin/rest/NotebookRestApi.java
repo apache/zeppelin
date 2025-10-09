@@ -46,11 +46,9 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
-import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.BadRequestException;
-import org.apache.zeppelin.rest.exception.ConflictException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
@@ -488,15 +486,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response importNote(@QueryParam("notePath") String notePath, String noteJson) throws IOException {
     String noteId = notebookService.importNote(notePath, noteJson, getServiceContext(),
-            new RestServiceCallback<>() {
-              @Override
-              public void onFailure(Exception ex, ServiceContext context) throws IOException {
-                if (ex instanceof NotePathAlreadyExistsException) {
-                  ex = new ConflictException(ex.getMessage());
-                }
-                super.onFailure(ex, context);
-              }
-            });
+            new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK, "", noteId).build();
   }
 
@@ -522,15 +512,7 @@ public class NotebookRestApi extends AbstractRestApi {
             defaultInterpreterGroup,
             request.getAddingEmptyParagraph(),
             getServiceContext(),
-            new RestServiceCallback<>() {
-              @Override
-              public void onFailure(Exception ex, ServiceContext context) throws IOException {
-                if (ex instanceof NotePathAlreadyExistsException) {
-                  ex = new ConflictException(ex.getMessage());
-                }
-                super.onFailure(ex, context);
-              }
-            });
+            new RestServiceCallback<>());
     return notebook.processNote(noteId,
       note -> {
         AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
@@ -630,13 +612,6 @@ public class NotebookRestApi extends AbstractRestApi {
               public void onSuccess(Note note, ServiceContext context) throws IOException {
                 notebookServer.broadcastNote(note);
                 notebookServer.broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
-              }
-              @Override
-              public void onFailure(Exception ex, ServiceContext context) throws IOException {
-                if (ex instanceof NotePathAlreadyExistsException) {
-                  ex = new ConflictException(ex.getMessage());
-                }
-                super.onFailure(ex, context);
               }
             });
     return new JsonResponse<>(Status.OK, "").build();

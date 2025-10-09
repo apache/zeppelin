@@ -22,6 +22,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
+import org.apache.zeppelin.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,8 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable>
   public Response toResponse(Throwable exception) {
     if (exception instanceof WebApplicationException) {
       return ((WebApplicationException) exception).getResponse();
+    } else if (exception instanceof NotePathAlreadyExistsException) {
+      return ExceptionUtils.jsonResponseContent(Response.Status.CONFLICT, exception.getMessage());
     } else {
       LOGGER.error("Error response", exception);
       // Return generic error message to prevent information disclosure
