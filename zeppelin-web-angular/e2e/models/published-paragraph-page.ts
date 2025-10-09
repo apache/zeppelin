@@ -30,7 +30,7 @@ export class PublishedParagraphPage extends BasePage {
     this.publishedParagraphContainer = page.locator('zeppelin-publish-paragraph');
     this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms');
     this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
-    this.errorModal = page.locator('.ant-modal');
+    this.errorModal = page.locator('.ant-modal').last();
     this.errorModalTitle = page.locator('.ant-modal-title');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();

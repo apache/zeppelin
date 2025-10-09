@@ -123,11 +123,19 @@ test.describe('Published Paragraph', () => {
 
     const modal = publishedParagraphPage.confirmationModal;
     await expect(modal).toBeVisible();
-    await expect(publishedParagraphPage.modalTitle).toHaveText(
-      'There is no result. Would you like to run this paragraph?'
-    );
 
-    await publishedParagraphPage.runButton.click();
+    // Check for the new enhanced modal content
+    await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
+
+    // Verify that the modal shows code preview
+    const modalContent = publishedParagraphPage.confirmationModal.locator('.ant-modal-confirm-content');
+    await expect(modalContent).toContainText('This paragraph contains the following code:');
+    await expect(modalContent).toContainText('Would you like to execute this code?');
+
+    // Click the Run button in the modal (OK button in confirmation modal)
+    const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');
+    await expect(runButton).toBeVisible();
+    await runButton.click();
     await expect(modal).toBeHidden();
   });
 });
