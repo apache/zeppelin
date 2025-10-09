@@ -13,13 +13,7 @@
 import { expect, test } from '@playwright/test';
 import { PublishedParagraphPage } from 'e2e/models/published-paragraph-page';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
-import {
-  addPageAnnotationBeforeEach,
-  createNotebookIfListEmpty,
-  performLoginIfRequired,
-  waitForZeppelinReady,
-  PAGES
-} from '../../../utils';
+import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Published Paragraph', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
@@ -33,7 +27,6 @@ test.describe('Published Paragraph', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    await createNotebookIfListEmpty(page);
 
     // Handle the welcome modal if it appears
     const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });

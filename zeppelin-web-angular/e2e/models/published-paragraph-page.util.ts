@@ -106,66 +106,6 @@ export class PublishedParagraphTestUtil {
     await expect(controlPanel).toBeHidden();
   }
 
-  async openFirstNotebook(): Promise<{ noteId: string; paragraphId: string }> {
-    await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-
-    const treeContainer = this.page.locator('nz-tree.ant-tree');
-    await this.page.waitForLoadState('networkidle');
-    await treeContainer.waitFor({ state: 'attached', timeout: 15000 });
-
-    const firstNode = treeContainer.locator('nz-tree-node').first();
-    await firstNode.waitFor({ state: 'attached', timeout: 15000 });
-    await expect(firstNode).toBeVisible();
-
-    // Check if the first node is a closed folder and expand it
-    const switcher = firstNode.locator('.ant-tree-switcher').first();
-    if ((await switcher.isVisible()) && (await switcher.getAttribute('class'))?.includes('ant-tree-switcher_close')) {
-      await switcher.click();
-      await expect(switcher).toHaveClass(/ant-tree-switcher_open/);
-    }
-
-    // After potentially expanding the first folder, find the first notebook and click its link.
-    const firstNotebookNode = treeContainer.locator('nz-tree-node:has(.ant-tree-switcher-noop)').first();
-    await expect(firstNotebookNode).toBeVisible();
-
-    const notebookLink = firstNotebookNode.locator('a[href*="/notebook/"]').first();
-    await notebookLink.click();
-
-    // Wait for navigation to the notebook
-    await this.page.waitForURL(/\/notebook\//, { timeout: 10000 });
-    await this.page.waitForLoadState('networkidle');
-
-    // Extract notebook ID from URL
-    const url = this.page.url();
-    const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
-    if (!noteIdMatch) {
-      throw new Error('Failed to extract notebook ID from URL: ' + url);
-    }
-    const noteId = noteIdMatch[1];
-
-    // Get the first paragraph ID from the page
-    await expect(this.page.locator('zeppelin-notebook-paragraph-result').first()).toBeVisible({ timeout: 10000 });
-    const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first(); // 첫 번째 paragraph
-    const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
-    await dropdownTrigger.click();
-
-    const paragraphLink = this.page.locator('li.paragraph-id a').first();
-    await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
-
-    const paragraphId = await paragraphLink.textContent();
-
-    if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
-      throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
-    }
-
-    await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
-
-    return { noteId, paragraphId };
-  }
-
   async createTestNotebook(): Promise<{ noteId: string; paragraphId: string }> {
     const notebookName = `Test Notebook ${Date.now()}`;
 
