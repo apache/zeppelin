@@ -138,13 +138,9 @@ export class NotebookPageUtil extends BasePage {
 
   async verifyResponsiveLayout(): Promise<void> {
     await this.page.setViewportSize({ width: 1200, height: 800 });
-    await this.page.waitForTimeout(500);
-
     await expect(this.notebookPage.notebookContainer).toBeVisible();
 
     await this.page.setViewportSize({ width: 800, height: 600 });
-    await this.page.waitForTimeout(500);
-
     await expect(this.notebookPage.notebookContainer).toBeVisible();
   }
 

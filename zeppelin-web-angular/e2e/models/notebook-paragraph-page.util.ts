@@ -132,8 +132,9 @@ export class NotebookParagraphUtil {
   async verifyParagraphControlActions(): Promise<void> {
     await this.paragraphPage.openSettingsDropdown();
 
-    // Wait for dropdown to appear
-    await this.page.waitForTimeout(500);
+    // Wait for dropdown to appear by checking for any menu item
+    const dropdownMenu = this.page.locator('ul.ant-dropdown-menu, .dropdown-menu');
+    await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
 
     // Check if dropdown menu items are present (they might use different selectors)
     const moveUpVisible = await this.page.locator('li:has-text("Move up")').isVisible();
@@ -179,8 +180,9 @@ export class NotebookParagraphUtil {
   async verifyAdvancedParagraphOperations(): Promise<void> {
     await this.paragraphPage.openSettingsDropdown();
 
-    // Wait for dropdown to appear
-    await this.page.waitForTimeout(500);
+    // Wait for dropdown to appear by checking for any menu item
+    const dropdownMenu = this.page.locator('ul.ant-dropdown-menu, .dropdown-menu');
+    await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
 
     const clearOutputItem = this.page.locator('li:has-text("Clear output")');
     const toggleEditorItem = this.page.locator('li:has-text("Toggle editor")');

@@ -91,7 +91,7 @@ export class NotebookSidebarPage extends BasePage {
         success = true;
         break;
       } catch (error) {
-        console.log(`TOC button strategy failed: ${error.message}`);
+        console.log(`TOC button strategy failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -99,8 +99,13 @@ export class NotebookSidebarPage extends BasePage {
       console.log('All TOC button strategies failed - sidebar may not have TOC functionality');
     }
 
-    // Wait for state change
-    await this.page.waitForTimeout(1000);
+    // Wait for TOC to be visible if it was successfully opened
+    const tocContent = this.page.locator('.sidebar-content .toc, .outline-content');
+    try {
+      await expect(tocContent).toBeVisible({ timeout: 3000 });
+    } catch {
+      // TOC might not be available or visible
+    }
   }
 
   async openFileTree(): Promise<void> {
@@ -116,8 +121,13 @@ export class NotebookSidebarPage extends BasePage {
       await fallbackFileTreeButton.click();
     }
 
-    // Wait for state change
-    await this.page.waitForTimeout(500);
+    // Wait for file tree content to be visible
+    const fileTreeContent = this.page.locator('.sidebar-content .file-tree, .file-browser');
+    try {
+      await expect(fileTreeContent).toBeVisible({ timeout: 3000 });
+    } catch {
+      // File tree might not be available or visible
+    }
   }
 
   async closeSidebar(): Promise<void> {
@@ -163,7 +173,7 @@ export class NotebookSidebarPage extends BasePage {
         success = true;
         break;
       } catch (error) {
-        console.log(`Close button strategy failed: ${error.message}`);
+        console.log(`Close button strategy failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -171,8 +181,12 @@ export class NotebookSidebarPage extends BasePage {
       console.log('All close button strategies failed - sidebar may not have close functionality');
     }
 
-    // Wait for state change
-    await this.page.waitForTimeout(1000);
+    // Wait for sidebar to be hidden if it was successfully closed
+    try {
+      await expect(this.sidebarContainer).toBeHidden({ timeout: 3000 });
+    } catch {
+      // Sidebar might still be visible or close functionality not available
+    }
   }
 
   async isSidebarVisible(): Promise<boolean> {

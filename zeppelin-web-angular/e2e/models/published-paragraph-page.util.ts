@@ -221,8 +221,9 @@ export class PublishedParagraphTestUtil {
         const treeNode = notebookLink.locator('xpath=ancestor::nz-tree-node[1]');
         await treeNode.hover();
 
-        // Wait a bit for hover effects
-        await this.page.waitForTimeout(1000);
+        // Wait for delete button to become visible after hover
+        const deleteButtonLocator = treeNode.locator('i[nztype="delete"], i.anticon-delete');
+        await expect(deleteButtonLocator).toBeVisible({ timeout: 5000 });
 
         // Try multiple selectors for the delete button
         const deleteButtonSelectors = [
