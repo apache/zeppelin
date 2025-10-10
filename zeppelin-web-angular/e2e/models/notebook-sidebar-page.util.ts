@@ -136,7 +136,10 @@ export class NotebookSidebarUtil {
       const firstItem = tocItems[0];
       await this.sidebarPage.clickTocItem(firstItem);
 
-      await this.page.waitForTimeout(1000);
+      // Wait for navigation or selection to take effect
+      await expect(this.page.locator('.paragraph-selected, .active-item'))
+        .toBeVisible({ timeout: 3000 })
+        .catch(() => {});
     }
   }
 
@@ -148,7 +151,10 @@ export class NotebookSidebarUtil {
       const firstItem = fileTreeItems[0];
       await this.sidebarPage.clickFileTreeItem(firstItem);
 
-      await this.page.waitForTimeout(1000);
+      // Wait for file tree item interaction to complete
+      await expect(this.page.locator('.file-tree-item.selected, .active-file'))
+        .toBeVisible({ timeout: 3000 })
+        .catch(() => {});
     }
   }
 
@@ -182,7 +188,8 @@ export class NotebookSidebarUtil {
       expect(tocState).toBe('FILE_TREE');
     }
 
-    await this.page.waitForTimeout(500);
+    // Wait for TOC state to stabilize before testing FILE_TREE
+    await expect(this.sidebarPage.sidebarContainer).toBeVisible();
 
     // Test FILE_TREE functionality
     await this.sidebarPage.openFileTree();
@@ -190,7 +197,8 @@ export class NotebookSidebarUtil {
     expect(fileTreeState).toBe('FILE_TREE');
     await expect(this.sidebarPage.nodeList).toBeVisible();
 
-    await this.page.waitForTimeout(500);
+    // Wait for file tree state to stabilize before testing close functionality
+    await expect(this.sidebarPage.nodeList).toBeVisible();
 
     // Test close functionality
     await this.sidebarPage.closeSidebar();
