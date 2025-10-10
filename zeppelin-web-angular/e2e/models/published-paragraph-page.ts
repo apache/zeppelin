@@ -21,16 +21,27 @@ export class PublishedParagraphPage extends BasePage {
   readonly errorModalTitle: Locator;
   readonly errorModalContent: Locator;
   readonly errorModalOkButton: Locator;
+  readonly confirmationModal: Locator;
+  readonly modalTitle: Locator;
+  readonly runButton: Locator;
 
   constructor(page: Page) {
     super(page);
     this.publishedParagraphContainer = page.locator('zeppelin-publish-paragraph');
     this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms');
     this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
-    this.errorModal = page.locator('.ant-modal');
+    this.errorModal = page.locator('.ant-modal').last();
     this.errorModalTitle = page.locator('.ant-modal-title');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
+    this.confirmationModal = page.locator('div.ant-modal-confirm').last();
+    this.modalTitle = this.confirmationModal.locator('.ant-modal-confirm-title');
+    this.runButton = this.confirmationModal.locator('button', { hasText: 'Run' });
+  }
+
+  async navigateToNotebook(noteId: string): Promise<void> {
+    await this.page.goto(`/#/notebook/${noteId}`);
+    await this.waitForPageLoad();
   }
 
   async navigateToPublishedParagraph(noteId: string, paragraphId: string): Promise<void> {
