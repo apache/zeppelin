@@ -19,7 +19,7 @@ export default defineConfig({
   globalTeardown: require.resolve('./e2e/global-teardown'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: 2,
   workers: 4,
   reporter: [
     [!!process.env.CI ? 'github' : 'list'],
