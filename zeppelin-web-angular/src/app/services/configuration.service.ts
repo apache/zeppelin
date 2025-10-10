@@ -35,7 +35,7 @@ export class ConfigurationService extends BaseRest {
   }
 
   fetchWsMaxMessageSize() {
-    return this.http.get<number>(this.restUrl`/configurations/wsMaxMessageSize`);
+    return this.http.get<number>(this.restUrl`/wsMaxMessageSize`);
   }
 
   async initialize(): Promise<void> {

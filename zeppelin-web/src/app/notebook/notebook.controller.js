@@ -270,7 +270,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   // Export notebook
   let limit = 0;
 
-  $http.get(baseUrlSrv.getRestApiBase() + '/configurations/wsMaxMessageSize').then(function(response) {
+  $http.get(baseUrlSrv.getRestApiBase() + '/wsMaxMessageSize').then(function(response) {
     limit = response.data.body;
   }).catch(function(err) {
     console.error('Error while fetching max message size', err);

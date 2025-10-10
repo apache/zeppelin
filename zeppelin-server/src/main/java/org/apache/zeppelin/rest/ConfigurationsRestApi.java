@@ -32,7 +32,7 @@ import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.AuthenticationService;
 
 /** Configurations Rest API Endpoint. */
-@Path("/configurations")
+@Path("/")
 @Produces("application/json")
 @Singleton
 public class ConfigurationsRestApi extends AbstractRestApi {
@@ -59,7 +59,7 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   }
 
   @GET
-  @Path("all")
+  @Path("configurations/all")
   @ZeppelinApi
   public Response getAll() {
     try {
@@ -72,7 +72,7 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   }
 
   @GET
-  @Path("prefix/{prefix}")
+  @Path("configurations/prefix/{prefix}")
   @ZeppelinApi
   public Response getByPrefix(@PathParam("prefix") final String prefix) {
     try {

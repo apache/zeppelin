@@ -26,7 +26,7 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
   $scope.maxLimit = '';
   let limit = 0;
 
-  $http.get(baseUrlSrv.getRestApiBase() + '/configurations/wsMaxMessageSize').then(function(response) {
+  $http.get(baseUrlSrv.getRestApiBase() + '/wsMaxMessageSize').then(function(response) {
     limit = response.data.body;
   }).catch(function(err) {
     console.error('Error while fetching max message size', err);
