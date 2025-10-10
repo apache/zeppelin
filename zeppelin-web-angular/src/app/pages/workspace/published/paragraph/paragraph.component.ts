@@ -9,7 +9,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { publishedSymbol, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
 import {
@@ -36,7 +45,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
 
   noteId: string | null = null;
   paragraphId: string | null = null;
+  previewCode: string = '';
 
+  @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -70,6 +81,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (!isNil(note)) {
       this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
       if (this.paragraph) {
+        if (!this.paragraph.results) {
+          this.showRunConfirmationModal();
+        }
         this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);
@@ -126,6 +140,23 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (resultComponent) {
       resultComponent.updateResult(config, result);
     }
+  }
+
+  private showRunConfirmationModal(): void {
+    if (!this.paragraph) {
+      return;
+    }
+
+    this.previewCode = this.paragraph.text || '';
+
+    this.nzModalService.confirm({
+      nzTitle: 'Run Paragraph?',
+      nzContent: this.codePreviewModal,
+      nzOkText: 'Run',
+      nzCancelText: 'Cancel',
+      nzWidth: 600,
+      nzOnOk: () => this.runParagraph()
+    });
   }
 
   private handleParagraphNotFound(noteName: string, paragraphId: string): void {
