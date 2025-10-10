@@ -32,7 +32,7 @@
     <name>Zeppelin: Plugins Parent</name>
     <description>Zeppelin Plugins Parent</description>
     <properties>
-        <!-- no need to include hadoop jar, because it's already included in zeppelin-zengine -->
+        <!-- no need to include hadoop jar, because it's already included in zeppelin-server -->
         <hadoop.deps.scope>provided</hadoop.deps.scope>
     </properties>
 
@@ -54,7 +54,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>zeppelin-zengine</artifactId>
+            <artifactId>zeppelin-server</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
