@@ -26,4 +26,8 @@ public class NotePathAlreadyExistsException extends IOException {
         super(message);
     }
 
+    public NotePathAlreadyExistsException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
 }

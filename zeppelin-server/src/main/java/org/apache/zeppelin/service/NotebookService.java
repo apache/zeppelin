@@ -385,7 +385,9 @@ public class NotebookService {
           callback.onSuccess(note, context);
           return note.getId();
         });
-
+    } catch (NotePathAlreadyExistsException e) {
+      callback.onFailure(new NotePathAlreadyExistsException("Fail to import note: " + e.getMessage(), e), context);
+      return null;
     } catch (IOException e) {
       callback.onFailure(new IOException("Fail to import note: " + e.getMessage(), e), context);
       return null;
