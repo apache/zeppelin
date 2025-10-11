@@ -12,9 +12,8 @@
 
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MessageService, TicketService } from '@zeppelin/services';
+import { ConfigurationService, MessageService, TicketService } from '@zeppelin/services';
 
-import { get } from 'lodash';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
 
@@ -32,7 +31,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   importUrl?: string;
   errorText?: string;
   importLoading = false;
-  maxLimit = get(this.ticketService.configuration, ['zeppelin.websocket.max.text.message.size'], null);
+  wsMaxLimit?: number;
 
   @MessageListener(OP.IMPORT_NOTE)
   noteImported(_: MessageReceiveDataTypeMap[OP.IMPORT_NOTE]) {
@@ -59,7 +58,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
 
   beforeUpload = (file: NzUploadFile): boolean => {
     this.errorText = '';
-    if (file.size !== undefined && this.maxLimit && file.size > Number.parseInt(this.maxLimit, 10)) {
+    if (file.size !== undefined && this.wsMaxLimit && file.size > this.wsMaxLimit) {
       this.errorText = 'File size limit Exceeded!';
     } else {
       const reader = new FileReader();
@@ -102,6 +101,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   constructor(
     public messageService: MessageService,
     private ticketService: TicketService,
+    private configurationService: ConfigurationService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,
     private httpClient: HttpClient
@@ -109,5 +109,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     super(messageService);
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    this.wsMaxLimit = await this.configurationService.fetchWsMaxMessageSize();
+  }
 }
