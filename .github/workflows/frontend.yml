@@ -62,6 +62,9 @@ jobs:
 
   run-playwright-e2e-tests:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        mode: [anonymous, auth]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,13 +88,19 @@ jobs:
             ${{ runner.os }}-zeppelin-
       - name: Install application
         run: ./mvnw clean install -DskipTests -am -pl zeppelin-web-angular ${MAVEN_ARGS}
+      - name: Setup Zeppelin Server (Shiro.ini)
+        run: |
+          export ZEPPELIN_CONF_DIR=./conf
+          if [ "${{ matrix.mode }}" != "anonymous" ]; then
+            cp conf/shiro.ini.template conf/shiro.ini
+          fi
       - name: Run headless E2E test with Maven
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
-      - name: Upload Playwright report
+      - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.mode }}
           path: zeppelin-web-angular/playwright-report/
           retention-days: 30
       - name: Print Zeppelin logs
@@ -104,28 +113,44 @@ jobs:
       run:
         shell: bash -l {0}
     env:
-      ZEPPELIN_SELENIUM_BROWSER: firefox
+      ZEPPELIN_SELENIUM_BROWSER: "edge"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Firefox (non-snap) and geckodriver
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Install Microsoft Edge
         run: |
-          sudo snap remove firefox || true
-          sudo add-apt-repository -y ppa:mozillateam/ppa
-          sudo tee -a /etc/apt/preferences.d/mozilla-firefox <<EOF
-          Package: *
-          Pin: release o=LP-PPA-mozillateam
-          Pin-Priority: 1001
-          EOF
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
           sudo apt-get update
-          sudo apt-get install -y firefox
-          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep tag_name | cut -d '"' -f 4)
-          wget -q https://github.com/mozilla/geckodriver/releases/download/${GECKODRIVER_VERSION}/geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-          tar -xzf geckodriver-${GECKODRIVER_VERSION}-linux64.tar.gz
-          chmod +x geckodriver
-          sudo mv geckodriver /usr/local/bin/
-          geckodriver --version
-          firefox --version
+          sudo apt-get install -y microsoft-edge-stable
+      - name: Install msedgedriver
+        run: |
+          EDGE_VERSION=$(microsoft-edge --version | awk '{print $3}')
+          wget -q "https://msedgedriver.microsoft.com/${EDGE_VERSION}/edgedriver_linux64.zip" -O edgedriver.zip
+          unzip -q edgedriver.zip
+          sudo mv msedgedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/msedgedriver
+          rm edgedriver.zip
+      - name: Print Edge version
+        run: msedgedriver --version
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 11
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -136,19 +161,19 @@ jobs:
           channel-priority: strict
           auto-activate-base: false
           use-mamba: true
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}
-      - name: Print browser version
-        run: |
-          echo "Firefox version:"
-          firefox --version
-          echo "GeckoDriver version:"
-          geckodriver --version
-      - name: Run integration tests with Firefox
+      - name: run tests
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" \
             ./mvnw verify -DfailIfNoTests=false \
             -pl zeppelin-integration \
             -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist -Pusing-source-tree \
             ${MAVEN_ARGS}
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi

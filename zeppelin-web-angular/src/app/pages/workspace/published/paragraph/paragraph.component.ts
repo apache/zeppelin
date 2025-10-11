@@ -9,8 +9,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { publishedSymbol, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
 import {
   MessageReceiveDataTypeMap,
@@ -22,6 +31,7 @@ import {
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 
 @Component({
@@ -35,7 +45,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
 
   noteId: string | null = null;
   paragraphId: string | null = null;
+  previewCode: string = '';
 
+  @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -44,6 +56,8 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     public messageService: MessageService,
     private activatedRoute: ActivatedRoute,
     private heliumService: HeliumService,
+    private router: Router,
+    private nzModalService: NzModalService,
     noteStatusService: NoteStatusService,
     ngZService: NgZService,
     cdr: ChangeDetectorRef
@@ -67,12 +81,25 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (!isNil(note)) {
       this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
       if (this.paragraph) {
+        if (!this.paragraph.results) {
+          this.showRunConfirmationModal();
+        }
         this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);
+      } else {
+        this.handleParagraphNotFound(note.name || this.noteId!, this.paragraphId!);
+        return;
       }
     }
     this.cdr.markForCheck();
+  }
+
+  @MessageListener(OP.ERROR_INFO)
+  handleError(data: MessageReceiveDataTypeMap[OP.ERROR_INFO]) {
+    if (data.info && data.info.includes('404')) {
+      this.handleNoteNotFound(this.noteId!);
+    }
   }
 
   trackByIndexFn(index: number) {
@@ -113,5 +140,42 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (resultComponent) {
       resultComponent.updateResult(config, result);
     }
+  }
+
+  private showRunConfirmationModal(): void {
+    if (!this.paragraph) {
+      return;
+    }
+
+    this.previewCode = this.paragraph.text || '';
+
+    this.nzModalService.confirm({
+      nzTitle: 'Run Paragraph?',
+      nzContent: this.codePreviewModal,
+      nzOkText: 'Run',
+      nzCancelText: 'Cancel',
+      nzWidth: 600,
+      nzOnOk: () => this.runParagraph()
+    });
+  }
+
+  private handleParagraphNotFound(noteName: string, paragraphId: string): void {
+    this.router.navigate(['/']).then(() => {
+      this.nzModalService.error({
+        nzTitle: 'Paragraph Not Found',
+        nzContent: `The paragraph "${paragraphId}" does not exist in notebook "${noteName}". You have been redirected to the home page.`,
+        nzOkText: 'OK'
+      });
+    });
+  }
+
+  private handleNoteNotFound(noteId: string): void {
+    this.router.navigate(['/']).then(() => {
+      this.nzModalService.error({
+        nzTitle: 'Notebook Not Found',
+        nzContent: `The notebook "${noteId}" does not exist or you don't have permission to access it. You have been redirected to the home page.`,
+        nzOkText: 'OK'
+      });
+    });
   }
 }

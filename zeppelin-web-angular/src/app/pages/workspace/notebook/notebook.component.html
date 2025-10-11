@@ -23,6 +23,7 @@
     [currentRevision]="currentRevision"
     (tableHideChange)="setAllParagraphTableHide($event)"
     (editorHideChange)="setAllParagraphEditorHide($event)"
+    (handleSearch)="onParagraphSearch($event)"
     #actionBar
   ></zeppelin-notebook-action-bar>
   <div class="flex-container">
@@ -84,6 +85,7 @@
             [revisionView]="revisionView"
             [first]="first"
             [last]="last"
+            [attr.data-testid]="p.id"
             (selectAtIndex)="onSelectAtIndex($event)"
             (selected)="onParagraphSelect($event)"
             (triggerSaveParagraph)="saveParagraph($event)"

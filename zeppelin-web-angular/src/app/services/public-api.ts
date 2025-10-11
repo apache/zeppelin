@@ -31,4 +31,5 @@ export * from './runtime-compiler.service';
 export * from './save-as.service';
 export * from './security.service';
 export * from './shortcut.service';
+export * from './theme.service';
 export * from './ticket.service';

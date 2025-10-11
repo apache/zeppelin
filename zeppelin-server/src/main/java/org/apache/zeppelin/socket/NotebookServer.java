@@ -1200,7 +1200,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           public void onSuccess(Note note, ServiceContext context) throws IOException {
             super.onSuccess(note, context);
             try {
-              broadcastNote(note);
+              conn.send(serializeMessage(new Message(OP.IMPORT_NOTE).put("note", note)));
               broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
             } catch (NullPointerException e) {
               // TODO(zjffdu) remove this try catch. This is only for test of

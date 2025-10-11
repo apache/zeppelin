@@ -11,17 +11,15 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { ZeppelinHelper } from '../helper';
 import { BasePage } from '../models/base-page';
-import { addPageAnnotationBeforeEach, PAGES } from '../utils';
+import { LoginTestUtil } from '../models/login-page.util';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
-  let zeppelinHelper: ZeppelinHelper;
   let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
-    zeppelinHelper = new ZeppelinHelper(page);
     basePage = new BasePage(page);
 
     await page.goto('/', { waitUntil: 'load' });
@@ -33,6 +31,8 @@ test.describe('Zeppelin App Component', () => {
     // Test zeppelin-root selector
     const zeppelinRoot = page.locator('zeppelin-root');
     await expect(zeppelinRoot).toBeAttached();
+
+    await waitForZeppelinReady(page);
 
     // Verify router-outlet is inside zeppelin-root (use first to avoid multiple elements)
     const routerOutlet = zeppelinRoot.locator('router-outlet').first();
@@ -55,12 +55,17 @@ test.describe('Zeppelin App Component', () => {
   });
 
   test('should display workspace after loading', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
-    await expect(page.locator('zeppelin-workspace')).toBeVisible();
+    await waitForZeppelinReady(page);
+    const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
+    if (isShiroEnabled) {
+      await expect(page.locator('zeppelin-login')).toBeVisible();
+    } else {
+      await expect(page.locator('zeppelin-workspace')).toBeVisible();
+    }
   });
 
   test('should handle navigation events correctly', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     // Test navigation back to root path
     try {
@@ -73,7 +78,7 @@ test.describe('Zeppelin App Component', () => {
       const spinnerCount = await loadingSpinner.count();
       expect(spinnerCount).toBeGreaterThanOrEqual(0);
 
-      await zeppelinHelper.waitForZeppelinReady();
+      await waitForZeppelinReady(page);
 
       // After ready, loading should be hidden if it was visible
       if (await loadingSpinner.isVisible()) {
@@ -102,12 +107,12 @@ test.describe('Zeppelin App Component', () => {
     }
 
     // Wait for loading to complete
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
     await expect(loadingSpinner).toBeHidden();
   });
 
   test('should handle logout observable correctly', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     const logoutSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
 
@@ -136,33 +141,28 @@ test.describe('Zeppelin App Component', () => {
   });
 
   test('should maintain component integrity during navigation', async ({ page }) => {
-    await zeppelinHelper.waitForZeppelinReady();
+    await waitForZeppelinReady(page);
 
     const zeppelinRoot = page.locator('zeppelin-root');
+    const routerOutlet = zeppelinRoot.locator('router-outlet').first();
 
     // Navigate to different pages and ensure component remains intact
-    const testPaths = ['/notebook', '/jobmanager', '/configuration'];
+    const testPaths = ['/#/notebook', '/#/jobmanager', '/#/configuration'];
 
     for (const path of testPaths) {
-      try {
-        await page.goto(path, { waitUntil: 'load', timeout: 5000 });
+      await page.goto(path, { waitUntil: 'load', timeout: 10000 });
+      await waitForZeppelinReady(page);
 
-        // Component should still be attached
-        await expect(zeppelinRoot).toBeAttached();
+      // Component should still be attached
+      await expect(zeppelinRoot).toBeAttached();
 
-        // Router outlet should still be present
-        const routerOutlet = zeppelinRoot.locator('router-outlet');
-        await expect(routerOutlet).toBeAttached();
-
-        await zeppelinHelper.waitForZeppelinReady();
-      } catch (error) {
-        // Skip paths that don't exist or are not accessible
-        console.log(`Skipping path ${path}: ${error}`);
-      }
+      // Router outlet should still be present
+      await expect(routerOutlet).toBeAttached();
     }
 
     // Return to home
     await page.goto('/', { waitUntil: 'load' });
+    await waitForZeppelinReady(page);
     await expect(zeppelinRoot).toBeAttached();
   });
 

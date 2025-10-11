@@ -27,3 +27,14 @@
     [result]="result"
   ></zeppelin-notebook-paragraph-result>
 </ng-container>
+
+<!-- Code Preview Modal Template -->
+<ng-template #codePreviewModal>
+  <div class="code-preview-modal">
+    <p>This paragraph contains the following code:</p>
+    <pre class="code-preview-content">{{ previewCode }}</pre>
+    <p>
+      <strong>Would you like to execute this code?</strong>
+    </p>
+  </div>
+</ng-template>

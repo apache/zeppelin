@@ -20,7 +20,7 @@ import {
   MessageSendDataTypeMap,
   MixMessageDataTypeMap
 } from './interfaces/message-data-type-map.interface';
-import { Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
+import { ImportNote, Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
 import { OP } from './interfaces/message-operator.interface';
 import {
   DynamicFormParams,
@@ -465,7 +465,7 @@ export class Message {
     });
   }
 
-  importNote(note: SendNote): void {
+  importNote(note: ImportNote['note']): void {
     this.send<OP.IMPORT_NOTE>(OP.IMPORT_NOTE, {
       note: note
     });

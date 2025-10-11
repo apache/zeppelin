@@ -16,7 +16,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ComponentFactoryResolver,
   EventEmitter,
   Injector,
   Input,
@@ -52,9 +51,14 @@ import {
   HeliumClassicVisualizationConstructor,
   HeliumVisualizationBundle
 } from '@zeppelin/interfaces';
-import { DynamicTemplate, HeliumService, NgZService, RuntimeCompilerService } from '@zeppelin/services';
-import { ClassicVisualizationService } from '@zeppelin/services/classic-visualization.service';
-import { TableData, Visualization } from '@zeppelin/visualization';
+import {
+  ClassicVisualizationService,
+  DynamicTemplate,
+  HeliumService,
+  NgZService,
+  RuntimeCompilerService
+} from '@zeppelin/services';
+import { TableData, Visualization, VisualizationConstructor } from '@zeppelin/visualization';
 import {
   AreaChartVisualization,
   BarChartVisualization,
@@ -68,7 +72,6 @@ interface VisualizationItem {
   id: string;
   name: string;
   changeSubscription: Subscription | null;
-  componentFactoryResolver?: ComponentFactoryResolver;
 }
 
 interface ClassicVisualizationItem extends VisualizationItem {
@@ -81,8 +84,7 @@ interface ClassicVisualizationItem extends VisualizationItem {
 interface ModernVisualizationItem extends VisualizationItem {
   isClassic: false;
   icon: string;
-  // tslint:disable-next-line:no-any
-  Class: any;
+  Class: VisualizationConstructor;
   instance: Visualization | undefined;
 }
 
@@ -431,12 +433,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         return; // Exit early for classic visualizations
       } else {
         // Modern visualization
-        const classicVisInstance = new visualizationItem.Class(
-          config.graph,
-          this.portalOutlet,
-          this.viewContainerRef,
-          visualizationItem.componentFactoryResolver
-        ) as Visualization;
+        const classicVisInstance = new visualizationItem.Class(this.portalOutlet, this.viewContainerRef, config.graph);
         visualizationItem.instance = classicVisInstance;
         visualizationItem.changeSubscription = classicVisInstance.configChanged().subscribe(c => {
           if (!this.config) {

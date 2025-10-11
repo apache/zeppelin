@@ -10,7 +10,9 @@
  * limitations under the License.
  */
 
-import { test, TestInfo } from '@playwright/test';
+import { expect, test, Page, TestInfo } from '@playwright/test';
+import { LoginTestUtil } from './models/login-page.util';
+import { NotebookUtil } from './models/notebook.util';
 
 export const PAGES = {
   // Main App
@@ -76,7 +78,8 @@ export const PAGES = {
     PAGE_HEADER: 'src/app/share/page-header/page-header.component',
     RESIZE_HANDLE: 'src/app/share/resize-handle/resize-handle.component',
     SHORTCUT: 'src/app/share/shortcut/shortcut.component',
-    SPIN: 'src/app/share/spin/spin.component'
+    SPIN: 'src/app/share/spin/spin.component',
+    THEME_TOGGLE: 'src/app/share/theme-toggle/theme-toggle.component'
   },
 
   // Visualizations
@@ -136,4 +139,79 @@ export function flattenPageComponents(pages: PageStructureType): string[] {
 
 export function getCoverageTransformPaths(): string[] {
   return flattenPageComponents(PAGES);
+}
+
+export async function waitForUrlNotContaining(page: Page, fragment: string) {
+  await page.waitForURL(url => !url.toString().includes(fragment));
+}
+
+export function getCurrentPath(page: Page): string {
+  const url = new URL(page.url());
+  return url.hash || url.pathname;
+}
+
+export async function getBasicPageMetadata(
+  page: Page
+): Promise<{
+  title: string;
+  path: string;
+}> {
+  return {
+    title: await page.title(),
+    path: getCurrentPath(page)
+  };
+}
+
+export async function performLoginIfRequired(page: Page): Promise<boolean> {
+  const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
+  if (!isShiroEnabled) {
+    return false;
+  }
+
+  const credentials = await LoginTestUtil.getTestCredentials();
+  const validUsers = Object.values(credentials).filter(
+    cred => cred.username && cred.password && cred.username !== 'INVALID_USER' && cred.username !== 'EMPTY_CREDENTIALS'
+  );
+
+  if (validUsers.length === 0) {
+    return false;
+  }
+
+  const testUser = validUsers[0];
+
+  const isLoginVisible = await page.locator('zeppelin-login').isVisible();
+  if (isLoginVisible) {
+    const userNameInput = page.getByRole('textbox', { name: 'User Name' });
+    const passwordInput = page.getByRole('textbox', { name: 'Password' });
+    const loginButton = page.getByRole('button', { name: 'Login' });
+
+    await userNameInput.fill(testUser.username);
+    await passwordInput.fill(testUser.password);
+    await loginButton.click();
+
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    return true;
+  }
+
+  return false;
+}
+
+export async function waitForZeppelinReady(page: Page): Promise<void> {
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
+    await page.waitForFunction(
+      () => {
+        const hasAngular = document.querySelector('[ng-version]') !== null;
+        const hasZeppelinContent =
+          document.body.textContent?.includes('Zeppelin') ||
+          document.body.textContent?.includes('Notebook') ||
+          document.body.textContent?.includes('Welcome');
+        const hasZeppelinRoot = document.querySelector('zeppelin-root') !== null;
+        return hasAngular && (hasZeppelinContent || hasZeppelinRoot);
+      },
+      { timeout: 60 * 1000 }
+    );
+  } catch (error) {
+    throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
+  }
 }
