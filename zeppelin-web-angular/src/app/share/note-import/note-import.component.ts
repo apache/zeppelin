@@ -31,7 +31,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   importUrl?: string;
   errorText?: string;
   importLoading = false;
-  maxLimit = this.configurationService.wsMaxMessageSize;
+  wsMaxLimit?: number;
 
   @MessageListener(OP.IMPORT_NOTE)
   noteImported(_: MessageReceiveDataTypeMap[OP.IMPORT_NOTE]) {
@@ -58,7 +58,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
 
   beforeUpload = (file: NzUploadFile): boolean => {
     this.errorText = '';
-    if (file.size !== undefined && this.maxLimit && file.size > this.maxLimit) {
+    if (file.size !== undefined && this.wsMaxLimit && file.size > this.wsMaxLimit) {
       this.errorText = 'File size limit Exceeded!';
     } else {
       const reader = new FileReader();
@@ -109,5 +109,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     super(messageService);
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    this.wsMaxLimit = await this.configurationService.fetchWsMaxMessageSize();
+  }
 }

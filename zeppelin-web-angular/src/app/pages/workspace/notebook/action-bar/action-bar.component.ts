@@ -198,11 +198,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     });
   }
 
-  exportNote() {
-    if (!this.ticketService.configuration || !this.configurationService.wsMaxMessageSize) {
+  async exportNote() {
+    if (!this.ticketService.configuration) {
       throw new Error('Configuration is not loaded');
     }
-    const sizeLimit = +this.configurationService.wsMaxMessageSize;
+
+    const sizeLimit = await this.configurationService.fetchWsMaxMessageSize();
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
       this.nzModalService.confirm({

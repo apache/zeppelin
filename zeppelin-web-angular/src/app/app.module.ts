@@ -66,12 +66,6 @@ registerLocaleData(en);
       deps: [TicketService]
     },
     {
-      provide: APP_INITIALIZER,
-      useFactory: (configService: ConfigurationService) => () => configService.initialize(),
-      deps: [ConfigurationService],
-      multi: true
-    },
-    {
       provide: NZ_CODE_EDITOR_CONFIG,
       useValue: {
         defaultEditorOption: {
