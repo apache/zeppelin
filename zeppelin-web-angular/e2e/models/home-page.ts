@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { Locator, Page, expect } from '@playwright/test';
-import { BasePage } from './base-page';
+import { expect, Locator, Page } from '@playwright/test';
 import { getCurrentPath, waitForUrlNotContaining } from '../utils';
+import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
   readonly welcomeHeading: Locator;
@@ -25,6 +25,19 @@ export class HomePage extends BasePage {
   readonly filterInput: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
+  readonly welcomeSection: Locator;
+  readonly moreInfoGrid: Locator;
+  readonly notebookColumn: Locator;
+  readonly helpCommunityColumn: Locator;
+  readonly welcomeDescription: Locator;
+  readonly refreshNoteButton: Locator;
+  readonly refreshIcon: Locator;
+  readonly notebookList: Locator;
+  readonly notebookHeading: Locator;
+  readonly helpHeading: Locator;
+  readonly communityHeading: Locator;
+  readonly helpHeading: Locator;
+  readonly communityHeading: Locator;
   readonly tutorialNotebooks: {
     flinkTutorial: Locator;
     pythonTutorial: Locator;
@@ -51,6 +64,19 @@ export class HomePage extends BasePage {
     this.filterInput = page.locator('input[placeholder*="Filter"]');
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
+    this.welcomeSection = page.locator('.welcome');
+    this.moreInfoGrid = page.locator('.more-info');
+    this.notebookColumn = page.locator('[nz-col]').first();
+    this.helpCommunityColumn = page.locator('[nz-col]').last();
+    this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
+    this.refreshNoteButton = page.locator('a.refresh-note');
+    this.refreshIcon = page.locator('a.refresh-note i[nz-icon]');
+    this.notebookList = page.locator('zeppelin-node-list');
+    this.notebookHeading = this.notebookColumn.locator('h3');
+    this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
+    this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
+    this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
+    this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
 
     this.tutorialNotebooks = {
       flinkTutorial: page.locator('text=Flink Tutorial'),
@@ -112,5 +138,23 @@ export class HomePage extends BasePage {
 
   async getPageTitle(): Promise<string> {
     return this.page.title();
+  }
+
+  async getWelcomeHeadingText(): Promise<string> {
+    const text = await this.welcomeHeading.textContent();
+    return text || '';
+  }
+
+  async getWelcomeDescriptionText(): Promise<string> {
+    const text = await this.welcomeDescription.textContent();
+    return text || '';
+  }
+
+  async clickRefreshNotes(): Promise<void> {
+    await this.refreshNoteButton.click();
+  }
+
+  async isNotebookListVisible(): Promise<boolean> {
+    return this.notebookList.isVisible();
   }
 }
