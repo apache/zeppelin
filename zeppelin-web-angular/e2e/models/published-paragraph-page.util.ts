@@ -41,7 +41,7 @@ export class PublishedParagraphTestUtil {
 
     const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
     await clearOutputButton.click();
-    await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
+    await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
 
     await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
 
