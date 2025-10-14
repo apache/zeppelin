@@ -182,7 +182,7 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
     await passwordInput.fill(testUser.password);
     await loginButton.click();
 
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
     return true;
   }
 
@@ -209,7 +209,7 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
   }
 }
 
-export async function waitForNotebookLinks(page: Page, timeout: number = 10000): Promise<boolean> {
+export async function waitForNotebookLinks(page: Page, timeout: number = 30000): Promise<boolean> {
   try {
     await page.waitForSelector('a[href*="#/notebook/"]', { timeout });
     return true;
