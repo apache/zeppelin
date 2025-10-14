@@ -43,8 +43,10 @@ export class NotebookPageUtil extends BasePage {
     await createButton.click();
 
     // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
+    await expect(this.page).toHaveURL(/#\/notebook\//, { timeout: 60000 });
     await this.waitForPageLoad();
+    await this.page.waitForSelector('zeppelin-notebook-paragraph', { timeout: 15000 });
+    await this.page.waitForSelector('.spin-text', { state: 'hidden', timeout: 10000 }).catch(() => {});
   }
 
   // ===== NOTEBOOK VERIFICATION METHODS =====

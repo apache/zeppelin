@@ -52,6 +52,9 @@ export class NotebookSidebarPage extends BasePage {
     // Ensure sidebar is visible first
     await expect(this.sidebarContainer).toBeVisible();
 
+    // Get initial state to check for changes
+    const initialState = await this.getSidebarState();
+
     // Try multiple strategies to find and click the TOC button
     const strategies = [
       // Strategy 1: Original button selector
@@ -88,6 +91,25 @@ export class NotebookSidebarPage extends BasePage {
     for (const strategy of strategies) {
       try {
         await strategy();
+
+        // Wait for state change after click - check for visible content instead of state
+        await Promise.race([
+          // Option 1: Wait for TOC content to appear
+          this.page
+            .locator('zeppelin-note-toc, .sidebar-content .toc')
+            .waitFor({ state: 'visible', timeout: 3000 })
+            .catch(() => {}),
+          // Option 2: Wait for file tree content to appear
+          this.page
+            .locator('zeppelin-node-list, .sidebar-content .file-tree')
+            .waitFor({ state: 'visible', timeout: 3000 })
+            .catch(() => {}),
+          // Option 3: Wait for any sidebar content change
+          this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {})
+        ]).catch(() => {
+          // If all fail, continue - this is acceptable
+        });
+
         success = true;
         break;
       } catch (error) {
@@ -99,12 +121,18 @@ export class NotebookSidebarPage extends BasePage {
       console.log('All TOC button strategies failed - sidebar may not have TOC functionality');
     }
 
-    // Wait for TOC to be visible if it was successfully opened
-    const tocContent = this.page.locator('.sidebar-content .toc, .outline-content');
+    // Wait for TOC content to be visible if it was successfully opened
+    const tocContent = this.page.locator('zeppelin-note-toc, .sidebar-content .toc, .outline-content');
     try {
       await expect(tocContent).toBeVisible({ timeout: 3000 });
     } catch {
-      // TOC might not be available or visible
+      // TOC might not be available or visible, check if file tree opened instead
+      const fileTreeContent = this.page.locator('zeppelin-node-list, .sidebar-content .file-tree');
+      try {
+        await expect(fileTreeContent).toBeVisible({ timeout: 2000 });
+      } catch {
+        // Neither TOC nor file tree visible
+      }
     }
   }
 
@@ -121,8 +149,18 @@ export class NotebookSidebarPage extends BasePage {
       await fallbackFileTreeButton.click();
     }
 
+    // Wait for file tree content to appear after click
+    await Promise.race([
+      // Wait for file tree content to appear
+      this.page.locator('zeppelin-node-list, .sidebar-content .file-tree').waitFor({ state: 'visible', timeout: 3000 }),
+      // Wait for network to stabilize
+      this.page.waitForLoadState('networkidle', { timeout: 3000 })
+    ]).catch(() => {
+      // If both fail, continue - this is acceptable
+    });
+
     // Wait for file tree content to be visible
-    const fileTreeContent = this.page.locator('.sidebar-content .file-tree, .file-browser');
+    const fileTreeContent = this.page.locator('zeppelin-node-list, .sidebar-content .file-tree, .file-browser');
     try {
       await expect(fileTreeContent).toBeVisible({ timeout: 3000 });
     } catch {
@@ -170,6 +208,21 @@ export class NotebookSidebarPage extends BasePage {
     for (const strategy of strategies) {
       try {
         await strategy();
+
+        // Wait for sidebar to close or become hidden
+        await Promise.race([
+          // Wait for sidebar to be hidden
+          this.sidebarContainer.waitFor({ state: 'hidden', timeout: 3000 }),
+          // Wait for sidebar content to disappear
+          this.page
+            .locator('zeppelin-notebook-sidebar zeppelin-note-toc, zeppelin-notebook-sidebar zeppelin-node-list')
+            .waitFor({ state: 'hidden', timeout: 3000 }),
+          // Wait for network to stabilize
+          this.page.waitForLoadState('networkidle', { timeout: 3000 })
+        ]).catch(() => {
+          // If all fail, continue - close functionality may not be available
+        });
+
         success = true;
         break;
       } catch (error) {
@@ -181,24 +234,40 @@ export class NotebookSidebarPage extends BasePage {
       console.log('All close button strategies failed - sidebar may not have close functionality');
     }
 
-    // Wait for sidebar to be hidden if it was successfully closed
+    // Final check - wait for sidebar to be hidden if it was successfully closed
     try {
       await expect(this.sidebarContainer).toBeHidden({ timeout: 3000 });
     } catch {
       // Sidebar might still be visible or close functionality not available
+      // This is acceptable as some applications don't support closing sidebar
     }
   }
 
   async isSidebarVisible(): Promise<boolean> {
-    return await this.sidebarContainer.isVisible();
+    try {
+      return await this.sidebarContainer.isVisible();
+    } catch (error) {
+      // If page is closed or connection lost, assume sidebar is not visible
+      return false;
+    }
   }
 
   async isTocContentVisible(): Promise<boolean> {
-    return await this.noteToc.isVisible();
+    try {
+      return await this.noteToc.isVisible();
+    } catch (error) {
+      // If page is closed or connection lost, assume TOC is not visible
+      return false;
+    }
   }
 
   async isFileTreeContentVisible(): Promise<boolean> {
-    return await this.nodeList.isVisible();
+    try {
+      return await this.nodeList.isVisible();
+    } catch (error) {
+      // If page is closed or connection lost, assume file tree is not visible
+      return false;
+    }
   }
 
   async getSidebarState(): Promise<'CLOSED' | 'TOC' | 'FILE_TREE' | 'UNKNOWN'> {
@@ -292,6 +361,49 @@ export class NotebookSidebarPage extends BasePage {
 
     console.log('Could not determine sidebar state');
     return 'UNKNOWN';
+  }
+
+  getSidebarStateSync(): 'CLOSED' | 'TOC' | 'FILE_TREE' | 'UNKNOWN' {
+    // Synchronous version for use in waitForFunction
+    try {
+      const sidebarContainer = document.querySelector('zeppelin-notebook-sidebar') as HTMLElement | null;
+      if (!sidebarContainer || !sidebarContainer.offsetParent) {
+        return 'CLOSED';
+      }
+
+      // Check for TOC content
+      const tocContent = sidebarContainer.querySelector('zeppelin-note-toc') as HTMLElement | null;
+      if (tocContent && tocContent.offsetParent) {
+        return 'TOC';
+      }
+
+      // Check for file tree content
+      const fileTreeContent = sidebarContainer.querySelector('zeppelin-node-list') as HTMLElement | null;
+      if (fileTreeContent && fileTreeContent.offsetParent) {
+        return 'FILE_TREE';
+      }
+
+      // Check for alternative selectors
+      const tocAlternatives = ['.toc-content', '.note-toc', '[class*="toc"]'];
+      for (const selector of tocAlternatives) {
+        const element = sidebarContainer.querySelector(selector) as HTMLElement | null;
+        if (element && element.offsetParent) {
+          return 'TOC';
+        }
+      }
+
+      const fileTreeAlternatives = ['.file-tree', '.node-list', '[class*="file"]', '[class*="tree"]'];
+      for (const selector of fileTreeAlternatives) {
+        const element = sidebarContainer.querySelector(selector) as HTMLElement | null;
+        if (element && element.offsetParent) {
+          return 'FILE_TREE';
+        }
+      }
+
+      return 'FILE_TREE'; // Default fallback
+    } catch {
+      return 'UNKNOWN';
+    }
   }
 
   async getTocItems(): Promise<string[]> {

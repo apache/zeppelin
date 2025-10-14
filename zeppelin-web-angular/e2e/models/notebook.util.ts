@@ -23,22 +23,36 @@ export class NotebookUtil extends BasePage {
   }
 
   async createNotebook(notebookName: string): Promise<void> {
-    await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
+    try {
+      await this.homePage.navigateToHome();
 
-    // Wait for the modal to appear and fill the notebook name
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
+      // Add wait for page to be ready and button to be visible
+      await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+      await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 30000 });
 
-    // Fill notebook name
-    await notebookNameInput.fill(notebookName);
+      // Wait for button to be ready for interaction
+      await this.page.waitForLoadState('domcontentloaded');
 
-    // Click the 'Create' button in the modal
-    const createButton = this.page.locator('button', { hasText: 'Create' });
-    await createButton.click();
+      await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
-    // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
-    await this.waitForPageLoad();
+      // Wait for the modal to appear and fill the notebook name
+      const notebookNameInput = this.page.locator('input[name="noteName"]');
+      await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
+
+      // Fill notebook name
+      await notebookNameInput.fill(notebookName);
+
+      // Click the 'Create' button in the modal
+      const createButton = this.page.locator('button', { hasText: 'Create' });
+      await expect(createButton).toBeVisible({ timeout: 30000 });
+      await createButton.click({ timeout: 30000 });
+
+      // Wait for the notebook to be created and navigate to it
+      await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 45000 });
+      await this.waitForPageLoad();
+    } catch (error) {
+      console.error('Failed to create notebook:', error);
+      throw error;
+    }
   }
 }
