@@ -26,7 +26,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { loadMonacoBefore } from '@zeppelin/languages';
-import { ConfigurationService, TicketService } from '@zeppelin/services';
+import { TicketService } from '@zeppelin/services';
 import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG, ShareModule } from '@zeppelin/share';
 
 import { AppHttpInterceptor } from './app-http.interceptor';
