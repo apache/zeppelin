@@ -92,6 +92,7 @@
             <relocation>
               <pattern>org</pattern>
               <shadedPattern>${shaded.dependency.prefix}.org</shadedPattern>
+              <rawString>true</rawString>
               <excludes>
                 <exclude>org/apache/zeppelin/*</exclude>
                 <exclude>org/apache/zeppelin/**/*</exclude>

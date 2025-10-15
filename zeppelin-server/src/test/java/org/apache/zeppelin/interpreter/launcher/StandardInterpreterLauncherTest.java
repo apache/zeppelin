@@ -35,7 +35,9 @@ class StandardInterpreterLauncherTest {
 
   @BeforeEach
   public void setUp() {
-    zConf = ZeppelinConfiguration.load();
+    // Use test-specific configuration file without timeout override
+    // (not the 30000ms from zeppelin-site.xml used by server tests)
+    zConf = ZeppelinConfiguration.load("zeppelin-site-launcher-test.xml");
   }
 
   @Test

@@ -52,8 +52,7 @@ import org.slf4j.LoggerFactory;
 public class DependencyResolver extends AbstractDependencyResolver {
   private static final Logger LOGGER = LoggerFactory.getLogger(DependencyResolver.class);
 
-  private final String[] exclusions = new String[] {"org.apache.zeppelin:zeppelin-zengine",
-                                                    "org.apache.zeppelin:zeppelin-interpreter",
+  private final String[] exclusions = new String[] {"org.apache.zeppelin:zeppelin-interpreter",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
   public DependencyResolver(String localRepoPath, ZeppelinConfiguration zConf) {
