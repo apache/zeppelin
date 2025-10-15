@@ -798,10 +798,6 @@
           <id>cloudera</id>
           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
-        <repository>
-          <id>hortonworks</id>
-          <url>https://repo.hortonworks.com/content/groups/public/</url>
-        </repository>
       </repositories>
     </profile>
 
