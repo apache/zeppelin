@@ -52,7 +52,6 @@ export class RuntimeCompilerService {
     const dynamicModule = NgModule({
       declarations: [dynamicComponent],
       exports: [dynamicComponent],
-      entryComponents: [dynamicComponent],
       imports: [RuntimeDynamicModuleModule]
     })(class DynamicModule {});
 

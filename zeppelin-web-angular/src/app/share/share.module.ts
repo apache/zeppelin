@@ -77,7 +77,6 @@ const PIPES = [HumanizeBytesPipe];
 
 @NgModule({
   declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective],
-  entryComponents: [MODAL_LIST],
   exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective, CodeEditorModule],
   imports: [
     FormsModule,

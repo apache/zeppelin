@@ -101,7 +101,6 @@
     "no-parameter-reassignment": true,
     "no-unnecessary-initializer": true,
     "no-unused-expression": true,
-    "no-use-before-declare": true,
     "no-var-keyword": true,
     "number-literal-format": true,
     "one-line": [true, "check-open-brace", "check-catch", "check-else", "check-whitespace"],

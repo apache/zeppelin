@@ -29,7 +29,7 @@ import { NoteActionService } from './note-action.service';
 })
 export class NodeListComponent extends MessageListenersManager implements OnInit {
   @Input() headerMode = false;
-  searchValue?: string;
+  searchValue = '';
   nodes: NzTreeNodeOptions[] = [];
   activatedId?: string;
 

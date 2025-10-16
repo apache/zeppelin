@@ -10,9 +10,11 @@
  * limitations under the License.
  */
 
-import { OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 
+@Component({ template: '' })
+// tslint:disable-next-line:component-class-suffix
 export class DestroyHookComponent implements OnDestroy {
   readonly destroy$ = new Subject();
 

@@ -138,50 +138,6 @@
         }
       }
     },
-    "zeppelin-helium": {
-      "projectType": "library",
-      "root": "projects/zeppelin-helium",
-      "sourceRoot": "projects/zeppelin-helium/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
-          "options": {
-            "tsConfig": "projects/zeppelin-helium/tsconfig.lib.json",
-            "project": "projects/zeppelin-helium/ng-package.json"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": ["projects/zeppelin-helium/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
-          }
-        }
-      }
-    },
-    "helium-vis-example": {
-      "projectType": "library",
-      "root": "projects/helium-vis-example",
-      "sourceRoot": "projects/helium-vis-example/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
-          "options": {
-            "tsConfig": "projects/helium-vis-example/tsconfig.lib.json",
-            "project": "projects/helium-vis-example/ng-package.json"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": ["projects/helium-vis-example/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
-          }
-        }
-      }
-    },
     "zeppelin-visualization": {
       "projectType": "library",
       "root": "projects/zeppelin-visualization",

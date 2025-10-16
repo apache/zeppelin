@@ -44,7 +44,7 @@ export class CodeEditorService {
   private loadingStatus = NzCodeEditorLoadingStatus.UNLOAD;
   private option: JoinedEditorOptions;
 
-  option$ = new BehaviorSubject<JoinedEditorOptions>(this.option);
+  option$: BehaviorSubject<JoinedEditorOptions>;
 
   constructor(
     @Inject(NZ_CODE_EDITOR_CONFIG) private config: NzCodeEditorConfig,
@@ -52,6 +52,7 @@ export class CodeEditorService {
   ) {
     this.document = _document;
     this.option = this.config.defaultEditorOption || {};
+    this.option$ = new BehaviorSubject<JoinedEditorOptions>(this.option);
   }
 
   // TODO(hsuanxyz): use config service later.

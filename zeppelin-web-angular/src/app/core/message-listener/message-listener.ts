@@ -10,11 +10,13 @@
  * limitations under the License.
  */
 
-import { OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Subscriber } from 'rxjs';
 
 import { Message, MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
 
+@Component({ template: '' })
+// tslint:disable-next-line:component-class-suffix
 export class MessageListenersManager implements OnDestroy {
   __zeppelinMessageListeners__?: Array<() => void>;
   __zeppelinMessageListeners$__: Subscriber<unknown> | null = new Subscriber();
