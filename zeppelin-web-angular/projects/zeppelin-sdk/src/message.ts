@@ -43,11 +43,11 @@ export type ReceiveArgumentsType<
 export class Message {
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
-  private ws: WebSocketSubject<WebSocketMessage<keyof MixMessageDataTypeMap>> | null = null;
+  private ws: WebSocketSubject<WebSocketMessage<MixMessageDataTypeMap>> | null = null;
   private open$ = new Subject<Event>();
   private close$ = new Subject<CloseEvent>();
-  private sent$ = new Subject<WebSocketMessage<keyof MessageSendDataTypeMap>>();
-  private received$ = new Subject<WebSocketMessage<keyof MessageReceiveDataTypeMap>>();
+  private sent$ = new Subject<WebSocketMessage<MessageSendDataTypeMap>>();
+  private received$ = new Subject<WebSocketMessage<MessageReceiveDataTypeMap>>();
   private pingIntervalSubscription = new Subscription();
   private wsUrl?: string;
   private ticket?: Ticket;
@@ -88,9 +88,7 @@ export class Message {
     this.ticket = ticket;
   }
 
-  interceptReceived(
-    data: WebSocketMessage<keyof MessageReceiveDataTypeMap>
-  ): WebSocketMessage<keyof MessageReceiveDataTypeMap> {
+  interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     return data;
   }
 
@@ -98,7 +96,7 @@ export class Message {
     if (!this.wsUrl) {
       throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
     }
-    this.ws = webSocket<WebSocketMessage<keyof MixMessageDataTypeMap>>({
+    this.ws = webSocket<WebSocketMessage<MixMessageDataTypeMap>>({
       url: this.wsUrl,
       openObserver: this.open$,
       closeObserver: this.close$
@@ -111,7 +109,7 @@ export class Message {
       )
       .subscribe(e => {
         console.log('Receive:', e);
-        this.received$.next(this.interceptReceived(e as WebSocketMessage<keyof MessageReceiveDataTypeMap>));
+        this.received$.next(this.interceptReceived(e as WebSocketMessage<MessageReceiveDataTypeMap>));
       });
   }
 
@@ -131,11 +129,11 @@ export class Message {
     return this.close$.asObservable();
   }
 
-  sent(): Observable<WebSocketMessage<keyof MessageSendDataTypeMap>> {
+  sent(): Observable<WebSocketMessage<MessageSendDataTypeMap>> {
     return this.sent$.asObservable();
   }
 
-  received(): Observable<WebSocketMessage<keyof MessageReceiveDataTypeMap>> {
+  received(): Observable<WebSocketMessage<MessageReceiveDataTypeMap>> {
     return this.received$.asObservable();
   }
 
@@ -144,10 +142,10 @@ export class Message {
       throw new Error('WebSocket is not connected. Bootstrap first.');
     }
     const [op, data] = args;
-    const message: WebSocketMessage<K> = {
+    const message = {
       op,
       msgId: `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
-      data: data as MixMessageDataTypeMap[K],
+      data: data,
       ...this.ticket
     };
     console.log('Send:', message);
@@ -184,7 +182,7 @@ export class Message {
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
 
-  shortCircuit(message: WebSocketMessage<keyof MessageReceiveDataTypeMap>) {
+  shortCircuit(message: WebSocketMessage<MessageReceiveDataTypeMap>) {
     this.received$.next(this.interceptReceived(message));
   }
 

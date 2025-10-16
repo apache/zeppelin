@@ -46,9 +46,7 @@ export class MessageService extends Message implements OnDestroy {
     super();
   }
 
-  interceptReceived(
-    data: WebSocketMessage<keyof MessageReceiveDataTypeMap>
-  ): WebSocketMessage<keyof MessageReceiveDataTypeMap> {
+  interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     return this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
   }
 
@@ -64,20 +62,20 @@ export class MessageService extends Message implements OnDestroy {
     return super.closed();
   }
 
-  sent(): Observable<WebSocketMessage<keyof MessageSendDataTypeMap>> {
+  sent(): Observable<WebSocketMessage<MessageSendDataTypeMap>> {
     return super.sent();
   }
 
-  received(): Observable<WebSocketMessage<keyof MessageReceiveDataTypeMap>> {
+  received(): Observable<WebSocketMessage<MessageReceiveDataTypeMap>> {
     return super.received();
   }
 
   send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
-    super.send(...args);
+    super.send<K>(...args);
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
-    return super.receive(op);
+    return super.receive<K>(op);
   }
 
   opened(): Observable<Event> {

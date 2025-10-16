@@ -30,7 +30,7 @@ export class AppMessageInterceptor implements MessageInterceptor {
     private prevErrorInfo: string | null = null
   ) {}
 
-  received<T extends keyof MessageReceiveDataTypeMap>(data: WebSocketMessage<T>): WebSocketMessage<T> {
+  received(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     if (data.op === OP.NEW_NOTE) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.NEW_NOTE];
       if (rData.note?.id) {

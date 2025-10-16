@@ -43,7 +43,7 @@
     nzType="error"
     nzCloseable
     nzShowIcon
-    [nzMessage]="interpreter?.errorReason"
+    [nzMessage]="interpreter?.errorReason || null"
   ></nz-alert>
 
   <ng-template #extraTemplate>
