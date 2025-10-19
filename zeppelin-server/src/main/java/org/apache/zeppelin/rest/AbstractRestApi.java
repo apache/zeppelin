@@ -55,6 +55,8 @@ public class AbstractRestApi {
       super.onFailure(ex, context);
       if (ex instanceof WebApplicationException) {
         throw (WebApplicationException) ex;
+      } else if (ex instanceof IOException) {
+        throw (IOException) ex;
       } else {
         throw new IOException(ex);
       }
