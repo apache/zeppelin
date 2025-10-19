@@ -103,29 +103,6 @@ export class NotebookPageUtil extends BasePage {
     }
   }
 
-  // ===== NAVIGATION VERIFICATION METHODS =====
-
-  async verifyNotebookNavigationPatterns(noteId: string): Promise<void> {
-    await this.notebookPage.navigateToNotebook(noteId);
-    expect(this.page.url()).toContain(`/#/notebook/${noteId}`);
-
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-  }
-
-  async verifyRevisionNavigationIfSupported(noteId: string, revisionId: string): Promise<void> {
-    await this.notebookPage.navigateToNotebookRevision(noteId, revisionId);
-    expect(this.page.url()).toContain(`/#/notebook/${noteId}/revision/${revisionId}`);
-
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-  }
-
-  async verifyParagraphModeNavigation(noteId: string, paragraphId: string): Promise<void> {
-    await this.notebookPage.navigateToNotebookParagraph(noteId, paragraphId);
-    expect(this.page.url()).toContain(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-  }
-
   // ===== LAYOUT VERIFICATION METHODS =====
 
   async verifyGridLayoutForParagraphs(): Promise<void> {
