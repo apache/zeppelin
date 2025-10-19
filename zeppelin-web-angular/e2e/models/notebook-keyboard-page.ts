@@ -971,25 +971,6 @@ export class NotebookKeyboardPage extends BasePage {
     throw new Error(`No paragraphs found after ${timeout}ms - system appears broken`);
   }
 
-  async getCurrentCursorPosition(): Promise<{ line: number; column: number } | null> {
-    try {
-      return await this.page.evaluate(() => {
-        // tslint:disable-next-line:no-any
-        const win = (window as unknown) as any;
-        const editor = win.monaco?.editor?.getModels?.()?.[0];
-        if (editor) {
-          const position = editor.getPosition?.();
-          if (position) {
-            return { line: position.lineNumber, column: position.column };
-          }
-        }
-        return null;
-      });
-    } catch {
-      return null;
-    }
-  }
-
   async isSearchDialogVisible(): Promise<boolean> {
     const searchDialog = this.page.locator('.search-widget, .find-widget, [role="dialog"]:has-text("Find")');
     return await searchDialog.isVisible();
@@ -1005,13 +986,6 @@ export class NotebookKeyboardPage extends BasePage {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const selectedClass = await paragraph.getAttribute('class');
     return selectedClass?.includes('focused') || selectedClass?.includes('selected') || false;
-  }
-
-  async getSelectedContent(): Promise<string> {
-    return await this.page.evaluate(() => {
-      const selection = window.getSelection();
-      return selection?.toString() || '';
-    });
   }
 
   async clickModalOkButton(timeout: number = 10000): Promise<void> {
