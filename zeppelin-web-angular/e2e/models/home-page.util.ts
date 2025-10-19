@@ -44,13 +44,6 @@ export class HomePageUtil {
     };
   }
 
-  async verifyHomePageIntegrity(): Promise<void> {
-    await this.verifyHomePageElements();
-    await this.verifyNotebookFunctionalities();
-    await this.verifyTutorialNotebooks();
-    await this.verifyExternalLinks();
-  }
-
   async verifyHomePageElements(): Promise<void> {
     await expect(this.homePage.welcomeHeading).toBeVisible();
     await expect(this.homePage.notebookSection).toBeVisible();
@@ -58,42 +51,11 @@ export class HomePageUtil {
     await expect(this.homePage.communitySection).toBeVisible();
   }
 
-  async verifyNotebookFunctionalities(): Promise<void> {
-    await expect(this.homePage.createNewNoteButton).toBeVisible();
-    await expect(this.homePage.importNoteButton).toBeVisible();
-
-    const filterInputCount = await this.homePage.filterInput.count();
-    if (filterInputCount > 0) {
-      await expect(this.homePage.filterInput).toBeVisible();
-    }
-  }
-
-  async verifyTutorialNotebooks(): Promise<void> {
-    await expect(this.homePage.tutorialNotebooks.flinkTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.pythonTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.sparkTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.rTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.miscellaneousTutorial).toBeVisible();
-  }
-
   async verifyExternalLinks(): Promise<void> {
-    const docCount = await this.homePage.externalLinks.documentation.count();
-    const mailCount = await this.homePage.externalLinks.mailingList.count();
-    const issuesCount = await this.homePage.externalLinks.issuesTracking.count();
-    const githubCount = await this.homePage.externalLinks.github.count();
-
-    if (docCount > 0) {
-      await expect(this.homePage.externalLinks.documentation).toBeVisible();
-    }
-    if (mailCount > 0) {
-      await expect(this.homePage.externalLinks.mailingList).toBeVisible();
-    }
-    if (issuesCount > 0) {
-      await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
-    }
-    if (githubCount > 0) {
-      await expect(this.homePage.externalLinks.github).toBeVisible();
-    }
+    await expect(this.homePage.externalLinks.documentation).toBeVisible();
+    await expect(this.homePage.externalLinks.mailingList).toBeVisible();
+    await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
+    await expect(this.homePage.externalLinks.github).toBeVisible();
   }
 
   async testNavigationConsistency(): Promise<{
@@ -193,26 +155,6 @@ export class HomePageUtil {
   async verifyCommunitySection(): Promise<void> {
     await expect(this.homePage.communitySection).toBeVisible();
     await expect(this.homePage.communityHeading).toBeVisible();
-  }
-
-  async verifyExternalLinks(): Promise<void> {
-    const docCount = await this.homePage.externalLinks.documentation.count();
-    const mailCount = await this.homePage.externalLinks.mailingList.count();
-    const issuesCount = await this.homePage.externalLinks.issuesTracking.count();
-    const githubCount = await this.homePage.externalLinks.github.count();
-
-    if (docCount > 0) {
-      await expect(this.homePage.externalLinks.documentation).toBeVisible();
-    }
-    if (mailCount > 0) {
-      await expect(this.homePage.externalLinks.mailingList).toBeVisible();
-    }
-    if (issuesCount > 0) {
-      await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
-    }
-    if (githubCount > 0) {
-      await expect(this.homePage.externalLinks.github).toBeVisible();
-    }
   }
 
   async testExternalLinkTargets(): Promise<{
