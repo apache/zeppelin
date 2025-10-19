@@ -95,11 +95,6 @@ export const PAGES = {
       SCATTER_SETTING: 'src/app/visualizations/common/scatter-setting/scatter-setting.component',
       X_AXIS_SETTING: 'src/app/visualizations/common/x-axis-setting/x-axis-setting.component'
     }
-  },
-
-  // Projects
-  PROJECTS: {
-    JSON_VIS: 'projects/helium-vis-example/src/json-vis.component'
   }
 } as const;
 
