@@ -9,7 +9,6 @@
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider ng build --prod --extra-webpack-config webpack.partial.js",
     "build:tslint-rules": "tsc -p tslint-rules/tsconfig.json",
     "build:projects": "npm run build-project:sdk && npm run build-project:vis",
-    "build-helium-vis-example": " ng build --project helium-vis-example",
     "build-project:sdk": " ng build --project zeppelin-sdk",
     "build-project:vis": " ng build --project zeppelin-visualization",
     "lint": "ng lint && tslint -p tslint-rules/tsconfig.json && prettier --check \"**/*.{ts,js,json,css,html}\"",
