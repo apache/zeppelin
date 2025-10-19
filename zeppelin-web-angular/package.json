@@ -88,7 +88,6 @@
     "ngx-build-plus": "^10.1.1",
     "nz-tslint-rules": "^0.901.0",
     "prettier": "^1.17.0",
-    "protractor": "~7.0.0",
     "scandirectory": "8.1.1",
     "ts-node": "~7.0.0",
     "tslint": "~6.1.0",
