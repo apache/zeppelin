@@ -13,6 +13,20 @@
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = {
+  // To avoid path conflict with websocket server path of ZeppelinServer
+  devServer: {
+    client: {
+      webSocketURL: {
+        pathname: '/wds-ws'
+      }
+    },
+    webSocketServer: {
+      type: 'ws',
+      options: {
+        path: '/wds-ws'
+      }
+    }
+  },
   plugins: [
     new MonacoWebpackPlugin({
       languages: [
