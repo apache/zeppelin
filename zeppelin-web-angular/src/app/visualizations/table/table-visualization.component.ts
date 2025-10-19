@@ -67,7 +67,7 @@ export class TableVisualizationComponent implements OnInit {
     if (all) {
       ws = utils.json_to_sheet(this.rows);
     } else {
-      ws = utils.json_to_sheet(this.nzTable.data);
+      ws = utils.json_to_sheet([...this.nzTable.data]);
     }
     utils.book_append_sheet(wb, ws, 'Sheet1');
     writeFile(wb, `export.${type}`);

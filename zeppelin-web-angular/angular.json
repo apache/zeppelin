@@ -145,7 +145,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/zeppelin-visualization/tsconfig.lib.json",
             "project": "projects/zeppelin-visualization/ng-package.json"
@@ -167,7 +167,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/zeppelin-sdk/tsconfig.lib.json",
             "project": "projects/zeppelin-sdk/ng-package.json"
