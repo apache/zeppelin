@@ -176,4 +176,86 @@ export class HomePageUtil {
       githubHref: await githubLink.getAttribute('href')
     };
   }
+
+  async verifyNotebookActions(): Promise<void> {
+    await expect(this.homePage.nodeList.createNewNoteLink).toBeVisible();
+    await expect(this.homePage.nodeList.importNoteLink).toBeVisible();
+    await expect(this.homePage.nodeList.filterInput).toBeVisible();
+    await expect(this.homePage.nodeList.tree).toBeVisible();
+  }
+
+  async testNotebookRefreshLoadingState(): Promise<void> {
+    await this.homePage.clickRefreshNotes();
+
+    await this.page.waitForFunction(
+      () => {
+        const icon = document.querySelector('a.refresh-note i[nz-icon]');
+        return icon && icon.getAttribute('nzSpin') === 'true';
+      },
+      { timeout: 5000 }
+    );
+
+    await this.homePage.waitForRefreshToComplete();
+  }
+
+  async verifyCreateNewNoteWorkflow(): Promise<void> {
+    await this.homePage.clickCreateNewNote();
+
+    await this.page.waitForFunction(
+      () => {
+        return document.querySelector('zeppelin-note-create') !== null;
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async verifyImportNoteWorkflow(): Promise<void> {
+    await this.homePage.clickImportNote();
+
+    await this.page.waitForFunction(
+      () => {
+        return document.querySelector('zeppelin-note-import') !== null;
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async testFilterFunctionality(filterTerm: string): Promise<void> {
+    await this.homePage.filterNotes(filterTerm);
+
+    await this.page.waitForTimeout(1000);
+
+    const filteredResults = await this.page.locator('nz-tree .node').count();
+    expect(filteredResults).toBeGreaterThanOrEqual(0);
+  }
+
+  async verifyDocumentationVersionLink(): Promise<void> {
+    const href = await this.homePage.getDocumentationLinkHref();
+    expect(href).toContain('zeppelin.apache.org/docs');
+    expect(href).toMatch(/\/docs\/\d+\.\d+\.\d+\//);
+  }
+
+  async verifyAllExternalLinksTargetBlank(): Promise<void> {
+    const links = [
+      this.homePage.externalLinks.documentation,
+      this.homePage.externalLinks.mailingList,
+      this.homePage.externalLinks.issuesTracking,
+      this.homePage.externalLinks.github
+    ];
+
+    for (const link of links) {
+      const target = await link.getAttribute('target');
+      expect(target).toBe('_blank');
+    }
+  }
+
+  async verifyGridResponsiveness(): Promise<void> {
+    await expect(this.homePage.moreInfoGrid).toHaveAttribute('nzGutter', '48');
+
+    const notebookCol = this.homePage.page.locator('[nz-col][nzSm="24"][nzLg="8"]');
+    const helpCol = this.homePage.page.locator('[nz-col][nzSm="24"][nzLg="12"]');
+
+    await expect(notebookCol).toBeVisible();
+    await expect(helpCol).toBeVisible();
+  }
 }

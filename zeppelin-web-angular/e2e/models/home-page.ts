@@ -36,8 +36,6 @@ export class HomePage extends BasePage {
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
   readonly communityHeading: Locator;
-  readonly helpHeading: Locator;
-  readonly communityHeading: Locator;
   readonly tutorialNotebooks: {
     flinkTutorial: Locator;
     pythonTutorial: Locator;
@@ -50,6 +48,26 @@ export class HomePage extends BasePage {
     mailingList: Locator;
     issuesTracking: Locator;
     github: Locator;
+  };
+  readonly nodeList: {
+    createNewNoteLink: Locator;
+    importNoteLink: Locator;
+    filterInput: Locator;
+    tree: Locator;
+    noteActions: {
+      renameNote: Locator;
+      clearOutput: Locator;
+      moveToTrash: Locator;
+    };
+    folderActions: {
+      createNote: Locator;
+      renameFolder: Locator;
+      moveToTrash: Locator;
+    };
+    trashActions: {
+      restoreAll: Locator;
+      emptyAll: Locator;
+    };
   };
 
   constructor(page: Page) {
@@ -91,6 +109,27 @@ export class HomePage extends BasePage {
       mailingList: page.locator('a[href*="community.html"]'),
       issuesTracking: page.locator('a[href*="issues.apache.org"]'),
       github: page.locator('a[href*="github.com/apache/zeppelin"]')
+    };
+
+    this.nodeList = {
+      createNewNoteLink: page.locator('zeppelin-node-list a').filter({ hasText: 'Create new Note' }),
+      importNoteLink: page.locator('zeppelin-node-list a').filter({ hasText: 'Import Note' }),
+      filterInput: page.locator('zeppelin-node-list input[placeholder*="Filter"]'),
+      tree: page.locator('zeppelin-node-list nz-tree'),
+      noteActions: {
+        renameNote: page.locator('.file .operation a[nztooltiptitle*="Rename note"]'),
+        clearOutput: page.locator('.file .operation a[nztooltiptitle*="Clear output"]'),
+        moveToTrash: page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]')
+      },
+      folderActions: {
+        createNote: page.locator('.folder .operation a[nztooltiptitle*="Create new note"]'),
+        renameFolder: page.locator('.folder .operation a[nztooltiptitle*="Rename folder"]'),
+        moveToTrash: page.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')
+      },
+      trashActions: {
+        restoreAll: page.locator('.folder .operation a[nztooltiptitle*="Restore all"]'),
+        emptyAll: page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')
+      }
     };
   }
 
@@ -156,5 +195,60 @@ export class HomePage extends BasePage {
 
   async isNotebookListVisible(): Promise<boolean> {
     return this.notebookList.isVisible();
+  }
+
+  async clickCreateNewNote(): Promise<void> {
+    await this.nodeList.createNewNoteLink.click();
+  }
+
+  async clickImportNote(): Promise<void> {
+    await this.nodeList.importNoteLink.click();
+  }
+
+  async filterNotes(searchTerm: string): Promise<void> {
+    await this.nodeList.filterInput.fill(searchTerm);
+  }
+
+  async isRefreshIconSpinning(): Promise<boolean> {
+    const spinAttribute = await this.refreshIcon.getAttribute('nzSpin');
+    return spinAttribute === 'true' || spinAttribute === '';
+  }
+
+  async waitForRefreshToComplete(): Promise<void> {
+    await this.page.waitForFunction(
+      () => {
+        const icon = document.querySelector('a.refresh-note i[nz-icon]');
+        return icon && !icon.hasAttribute('nzSpin');
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async getDocumentationLinkHref(): Promise<string | null> {
+    return this.externalLinks.documentation.getAttribute('href');
+  }
+
+  async areExternalLinksVisible(): Promise<boolean> {
+    const links = [
+      this.externalLinks.documentation,
+      this.externalLinks.mailingList,
+      this.externalLinks.issuesTracking,
+      this.externalLinks.github
+    ];
+
+    for (const link of links) {
+      if (!(await link.isVisible())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  async isWelcomeSectionVisible(): Promise<boolean> {
+    return this.welcomeSection.isVisible();
+  }
+
+  async isMoreInfoGridVisible(): Promise<boolean> {
+    return this.moreInfoGrid.isVisible();
   }
 }
