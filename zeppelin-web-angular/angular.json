@@ -108,8 +108,11 @@
               "buildOptimizer": false
             },
             "development": {
+              "buildOptimizer": false,
               "optimization": false,
+              "vendorChunk": true,
               "extractLicenses": false,
+              "namedChunks": true,
               "sourceMap": true
             }
           }
@@ -126,7 +129,8 @@
             "development": {
               "browserTarget": "zeppelin:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
