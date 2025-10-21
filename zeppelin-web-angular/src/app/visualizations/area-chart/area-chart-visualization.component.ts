@@ -44,7 +44,10 @@ export class AreaChartVisualizationComponent extends G2VisualizationComponentBas
   pivotSettingComponent!: VisualizationPivotSettingComponent;
   style: 'stream' | 'expand' | 'stack' = 'stack';
 
-  constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(VISUALIZATION) public visualization: Visualization,
+    private cdr: ChangeDetectorRef
+  ) {
     super(visualization);
   }
 
@@ -92,23 +95,13 @@ export class AreaChartVisualizationComponent extends G2VisualizationComponentBas
     this.setScale(chart);
     if (this.style === 'stack') {
       // area:stack
-      chart
-        .areaStack()
-        .position(`${key}*__value__`)
-        .color('__key__');
+      chart.areaStack().position(`${key}*__value__`).color('__key__');
     } else if (this.style === 'stream') {
       // area:stream
-      chart
-        .area()
-        .position(`${key}*__value__`)
-        .adjust(['stack', 'symmetric'])
-        .color('__key__');
+      chart.area().position(`${key}*__value__`).adjust(['stack', 'symmetric']).color('__key__');
     } else {
       // area:percent
-      chart
-        .areaStack()
-        .position(`${key}*__percent__`)
-        .color('__key__');
+      chart.areaStack().position(`${key}*__percent__`).color('__key__');
     }
 
     setChartXAxis(this.visualization, 'stackedAreaChart', chart, key);

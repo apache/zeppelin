@@ -24,10 +24,11 @@ import { TicketService } from '@zeppelin/services';
 export class AppHttpInterceptor implements HttpInterceptor {
   constructor(private ticketService: TicketService) {}
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   intercept(httpRequest: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let httpRequestUpdated = httpRequest.clone({ withCredentials: true });
     if (environment.production) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       httpRequestUpdated = httpRequest.clone({ setHeaders: { 'X-Requested-With': 'XMLHttpRequest' } });
     }
     return next.handle(httpRequestUpdated).pipe(

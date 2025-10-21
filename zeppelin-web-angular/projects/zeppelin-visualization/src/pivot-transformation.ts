@@ -27,9 +27,8 @@ export class PivotTransformation extends Transformation {
     for (let i = 0; i < array.length; i++) {
       // remove non existing column
       let found = false;
-      for (let j = 0; j < tableData.columns.length; j++) {
-        const a = array[i];
-        const b = tableData.columns[j];
+      const a = array[i];
+      for (const b of tableData.columns) {
         if (a.name === b) {
           found = true;
           break;
@@ -73,7 +72,7 @@ export class PivotTransformation extends Transformation {
     }
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transform(tableData: TableData): any {
     const config = this.getConfig();
     this.setDefaultConfig(tableData);

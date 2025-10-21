@@ -26,7 +26,11 @@ export class PieChartVisualization extends G2VisualizationBase {
     this.viewContainerRef
   );
 
-  constructor(private portalOutlet: CdkPortalOutlet, private viewContainerRef: ViewContainerRef, config: GraphConfig) {
+  constructor(
+    private portalOutlet: CdkPortalOutlet,
+    private viewContainerRef: ViewContainerRef,
+    config: GraphConfig
+  ) {
     super(config);
   }
 }

@@ -31,7 +31,11 @@ export class TableVisualization extends Visualization<TableVisualizationComponen
     this.portalOutlet,
     this.viewContainerRef
   );
-  constructor(private portalOutlet: CdkPortalOutlet, private viewContainerRef: ViewContainerRef, config: GraphConfig) {
+  constructor(
+    private portalOutlet: CdkPortalOutlet,
+    private viewContainerRef: ViewContainerRef,
+    config: GraphConfig
+  ) {
     super(config);
   }
 

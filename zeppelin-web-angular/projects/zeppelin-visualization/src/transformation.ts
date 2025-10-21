@@ -15,9 +15,9 @@ import { GraphConfig } from '@zeppelin/sdk';
 import { DataSet } from './data-set';
 
 export interface Setting {
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   template: any;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scope: any;
 }
 
@@ -25,7 +25,7 @@ export abstract class Transformation {
   dataset: DataSet | null = null;
   constructor(private config: GraphConfig) {}
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   abstract transform(tableData: any): any;
 
   setConfig(config: GraphConfig) {

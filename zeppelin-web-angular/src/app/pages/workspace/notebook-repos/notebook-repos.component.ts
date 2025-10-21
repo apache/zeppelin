@@ -22,7 +22,10 @@ import { NotebookRepoService } from '@zeppelin/services';
 export class NotebookReposComponent implements OnInit {
   repositories: NotebookRepo[] = [];
 
-  constructor(private notebookRepoService: NotebookRepoService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private notebookRepoService: NotebookRepoService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.getRepos();

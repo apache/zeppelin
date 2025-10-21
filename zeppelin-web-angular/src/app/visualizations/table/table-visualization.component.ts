@@ -53,13 +53,13 @@ function typeCoercion(value: string, type: ColType): string | number | Date {
 })
 export class TableVisualizationComponent implements OnInit {
   tableData?: TableData;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rows: any[] = [];
   columns: string[] = [];
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
   aggregations: AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   @ViewChild(NzTableComponent, { static: false }) nzTable!: NzTableComponent<any>;
 
   exportFile(type: 'csv' | 'xlsx', all = true) {
@@ -120,7 +120,7 @@ export class TableVisualizationComponent implements OnInit {
     }
     const tableData = this.tableData;
     this.colOptions.forEach((opt, key) => {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const numValue = (row: any) => {
         const value = typeCoercion(row[key], opt.type);
         if (typeof value === 'number') {
@@ -163,19 +163,19 @@ export class TableVisualizationComponent implements OnInit {
     if (!this.tableData) {
       throw new Error('tableData is not defined');
     }
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sortKeys: any[] = [];
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sortTypes: any[] = [];
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const terms: any[] = [];
     this.colOptions.forEach((value, key) => {
       if (value.sort) {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sortKeys.push((row: any) => typeCoercion(row[key], value.type));
         sortTypes.push(value.sort);
       }
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       terms.push((row: any) => String(row[key]).search(value.term) !== -1);
     });
     this.rows = filter(this.tableData.rows, row => terms.every(term => term(row)));
@@ -183,7 +183,10 @@ export class TableVisualizationComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {}
+  constructor(
+    @Inject(VISUALIZATION) public visualization: Visualization,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {}
 

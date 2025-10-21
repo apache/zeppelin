@@ -261,8 +261,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   exportFile(type: 'csv' | 'tsv'): void {
     if (this.tableData && this.tableData.rows) {
       const wb = utils.book_new();
-      let ws: WorkSheet;
-      ws = utils.json_to_sheet(this.tableData.rows);
+      const ws = utils.json_to_sheet(this.tableData.rows);
       utils.book_append_sheet(wb, ws, 'Sheet1');
       writeFile(wb, `export.${type}`, {
         bookType: 'csv',
@@ -561,7 +560,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.destroy$.complete();
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private commitClassicVizConfigChange(configForMode: GraphConfig, mode: string) {
     if (this.isPending) {
       return;
@@ -571,7 +570,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       throw new Error('config is not defined');
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newConfigGraph: any = cloneDeep(this.config.graph) || {};
 
     // copy setting for mode

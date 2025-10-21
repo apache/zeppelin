@@ -85,13 +85,13 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     this.addProperties();
     this.addDependence();
     const formData = this.formGroup.getRawValue();
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const properties: Record<any, any> = {};
 
     formData.properties
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .sort((e: any) => e.key)
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .forEach((e: any) => {
         const { key, value, type } = e;
         properties[key] = {
@@ -101,7 +101,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
         };
       });
     formData.properties = properties;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     formData.dependencies.forEach((e: any) => {
       e.exclusions = e.exclusions.split(',').filter((s: string) => s !== '');
     });
@@ -335,7 +335,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       Object.entries(this.interpreter.properties).forEach(([key, item]) => {
         this.propertiesFormArray!.push(
           this.formBuilder.group({
-            key: key,
+            key,
             value: item.value,
             description: null,
             type: item.type

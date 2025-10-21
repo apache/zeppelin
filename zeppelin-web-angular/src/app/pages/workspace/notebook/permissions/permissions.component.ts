@@ -52,7 +52,9 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
     if (this.isOwnerEmpty()) {
       this.nzModalService.create({
         nzTitle: 'Setting Owners Permissions',
-        nzContent: `Please fill the [Owners] field. If not, it will set as current user. Current user : [ ${this.ticketService.ticket.principal.trim()} ]`,
+        nzContent:
+          'Please fill the [Owners] field. If not, it will set as current user. ' +
+          `Current user : [ ${this.ticketService.ticket.principal.trim()} ]`,
         nzOnOk: () => {
           this.permissions.owners = [this.ticketService.ticket.principal];
           this.setPermissions();

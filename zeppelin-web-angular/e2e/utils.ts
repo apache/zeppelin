@@ -145,9 +145,7 @@ export function getCurrentPath(page: Page): string {
   return url.hash || url.pathname;
 }
 
-export async function getBasicPageMetadata(
-  page: Page
-): Promise<{
+export async function getBasicPageMetadata(page: Page): Promise<{
   title: string;
   path: string;
 }> {

@@ -34,8 +34,8 @@ import { JobsItem, JobStatus } from '@zeppelin/sdk';
 export class JobManagerJobComponent implements OnInit, OnChanges {
   @Input() note!: JobsItem;
   @Input() highlight = '';
-  @Output() readonly start = new EventEmitter<string>();
-  @Output() readonly stop = new EventEmitter<string>();
+  @Output() readonly startJob = new EventEmitter<string>();
+  @Output() readonly stopJob = new EventEmitter<string>();
 
   icon = 'file';
   relativeTime = '';
@@ -64,11 +64,11 @@ export class JobManagerJobComponent implements OnInit, OnChanges {
   }
 
   onStartClick(): void {
-    this.start.emit(this.note.noteId);
+    this.startJob.emit(this.note.noteId);
   }
 
   onStopClick(): void {
-    this.stop.emit(this.note.noteId);
+    this.stopJob.emit(this.note.noteId);
   }
 
   constructor() {}

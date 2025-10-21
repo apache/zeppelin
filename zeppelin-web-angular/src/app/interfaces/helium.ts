@@ -83,7 +83,7 @@ export interface HeliumClassicVisualization {
  * @returns A new instance of HeliumClassicVisualization
  */
 export interface HeliumClassicVisualizationConstructor {
-  prototype: {};
+  prototype: Record<string, unknown>;
   new (targetEl: JQuery<HTMLElement>, config: GraphConfig): HeliumClassicVisualization;
 }
 

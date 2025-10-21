@@ -137,6 +137,12 @@
           "options": {
             "browserTarget": "zeppelin:build"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+          }
         }
       }
     },
@@ -151,6 +157,12 @@
           "options": {
             "tsConfig": "projects/zeppelin-visualization/tsconfig.lib.json",
             "project": "projects/zeppelin-visualization/ng-package.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/zeppelin-visualization/**/*.ts", "projects/zeppelin-visualization/**/*.html"]
           }
         }
       }
@@ -167,9 +179,18 @@
             "tsConfig": "projects/zeppelin-sdk/tsconfig.lib.json",
             "project": "projects/zeppelin-sdk/ng-package.json"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/zeppelin-sdk/**/*.ts", "projects/zeppelin-sdk/**/*.html"]
+          }
         }
       }
     }
   },
-  "defaultProject": "zeppelin"
+  "defaultProject": "zeppelin",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

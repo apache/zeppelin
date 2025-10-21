@@ -99,15 +99,13 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
     this.noteListService.setNotes(data.notes);
     this.nodes = this.noteListService.notes.root.children
       .sort((v1, v2) => this.noteComparator(v1, v2))
-      .map(item => {
-        return { ...item, key: item.id };
-      });
+      .map(item => ({ ...item, key: item.id }));
     this.cdr.markForCheck();
   }
 
   getNoteName(note: NodeItem) {
     if (note.title === undefined || note.title.trim() === '') {
-      return 'Note ' + note.id;
+      return `Note ${note.id}`;
     } else {
       return note.title;
     }

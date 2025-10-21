@@ -18,7 +18,7 @@ import { GraphConfig } from '@zeppelin/sdk';
 import { Visualization } from './visualization';
 
 @Component({ template: '' })
-// tslint:disable-next-line:component-class-suffix
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class G2VisualizationComponentBase implements OnDestroy {
   abstract container: ElementRef<HTMLDivElement>;
   chart?: G2.Chart | null;
@@ -87,7 +87,7 @@ export abstract class G2VisualizationComponentBase implements OnDestroy {
         });
         this.chart.legend({
           position: 'top-right'
-          // tslint:disable-next-line
+          // eslint-disable-next-line
         } as any);
       } else {
         throw new Error(`Can't find the container, Please make sure on correct assignment.`);
