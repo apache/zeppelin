@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "prepare": "cd .. && husky",
-    "postinstall": "npm run build:projects && npm run build:tslint-rules",
+    "postinstall": "npm run build:projects && npm run build:tslint-rules && npx playwright install --with-deps",
     "ng": "./node_modules/.bin/ng",
     "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider ng serve --proxy-config proxy.conf.js --extra-webpack-config webpack.partial.js",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider ng build --prod --extra-webpack-config webpack.partial.js",
@@ -68,7 +68,7 @@
     "@angular/cli": "~9.1.15",
     "@angular/compiler-cli": "~9.1.13",
     "@angular/language-service": "~9.1.13",
-    "@playwright/test": "1.53.2",
+    "@playwright/test": "1.56.1",
     "@types/angular": "^1.8.0",
     "@types/diff-match-patch": "^1.0.36",
     "@types/highlight.js": "^9.12.3",
