@@ -42,7 +42,7 @@
     "ansi_up": "^6.0.6",
     "core-js": "^2.5.4",
     "d3": "3.5.17",
-    "date-fns": "^2.30.0",
+    "date-fns": "^3.6.0",
     "diff-match-patch": "^1.0.4",
     "github-markdown-css": "^3.0.1",
     "highlight.js": "^9.15.8",
