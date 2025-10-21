@@ -16,9 +16,9 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 import { Ticket } from './interfaces/message-common.interface';
 import {
+  MessageDataTypeMap,
   MessageReceiveDataTypeMap,
-  MessageSendDataTypeMap,
-  MixMessageDataTypeMap
+  MessageSendDataTypeMap
 } from './interfaces/message-data-type-map.interface';
 import { ImportNote, Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
 import { OP } from './interfaces/message-operator.interface';
@@ -43,7 +43,7 @@ export type ReceiveArgumentsType<
 export class Message {
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
-  private ws: WebSocketSubject<WebSocketMessage<MixMessageDataTypeMap>> | null = null;
+  private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
   private open$ = new Subject<Event>();
   private close$ = new Subject<CloseEvent>();
   private sent$ = new Subject<WebSocketMessage<MessageSendDataTypeMap>>();
@@ -96,7 +96,7 @@ export class Message {
     if (!this.wsUrl) {
       throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
     }
-    this.ws = webSocket<WebSocketMessage<MixMessageDataTypeMap>>({
+    this.ws = webSocket<WebSocketMessage<MessageDataTypeMap>>({
       url: this.wsUrl,
       openObserver: this.open$,
       closeObserver: this.close$
