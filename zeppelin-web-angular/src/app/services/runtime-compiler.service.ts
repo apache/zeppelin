@@ -44,7 +44,7 @@ export class RuntimeCompilerService {
         };
 
         constructor() {
-          ngZService.bindParagraph(paragraphId, this);
+          ngZService.bindParagraph(paragraphId, this as Record<string, unknown>);
           Object.freeze(this.z);
         }
       }
