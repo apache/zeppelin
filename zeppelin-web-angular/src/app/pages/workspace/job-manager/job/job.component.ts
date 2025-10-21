@@ -21,7 +21,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 
-import formatDistance from 'date-fns/formatDistance';
+import { formatDistance } from 'date-fns';
 
 import { JobsItem, JobStatus } from '@zeppelin/sdk';
 
