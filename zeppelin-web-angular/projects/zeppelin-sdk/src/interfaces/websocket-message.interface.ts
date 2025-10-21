@@ -10,12 +10,12 @@
  * limitations under the License.
  */
 
-import { MixMessageDataTypeMap } from './message-data-type-map.interface';
+import { MessageDataTypeMap } from './message-data-type-map.interface';
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 
 export interface WebSocketMessage<
-  T extends Partial<Record<keyof MixMessageDataTypeMap, unknown>>,
+  T extends Partial<Record<keyof MessageDataTypeMap, unknown>>,
   Op extends KeysOfUnion<T> = KeysOfUnion<T>
 > {
   op: Op;
