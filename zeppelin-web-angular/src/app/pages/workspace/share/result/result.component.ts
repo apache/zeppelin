@@ -26,7 +26,7 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
-import { default as AnsiUp } from 'ansi_up';
+import { AnsiUp } from 'ansi_up';
 import * as hljs from 'highlight.js';
 import { cloneDeep, isEqual } from 'lodash';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
