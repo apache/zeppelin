@@ -77,7 +77,7 @@
     "@types/webpack-env": "^1.18.8",
     "codelyzer": "^6.0.0",
     "cross-env": "^10.1.0",
-    "dotenv": "^8.0.0",
+    "dotenv": "^17.2.3",
     "https-proxy-agent": "^2.2.1",
     "husky": "9.1.7",
     "lint-staged": "^8.1.6",
