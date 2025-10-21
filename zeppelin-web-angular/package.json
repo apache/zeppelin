@@ -80,7 +80,7 @@
     "dotenv": "^17.2.3",
     "https-proxy-agent": "^2.2.1",
     "husky": "9.1.7",
-    "lint-staged": "^8.1.6",
+    "lint-staged": "^15.5.2",
     "monaco-editor-webpack-plugin": "6.0.0",
     "ng-packagr": "^13.3.1",
     "ngx-build-plus": "^13.0.1",
