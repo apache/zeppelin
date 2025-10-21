@@ -18,9 +18,9 @@ import { NgZService } from './ng-z.service';
 export class DynamicTemplate {
   constructor(
     public readonly template: string,
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public readonly component: Type<any>,
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public readonly moduleFactory: NgModuleFactory<any>
   ) {}
 }
@@ -35,7 +35,7 @@ export class DynamicTemplateError {
 export class RuntimeCompilerService {
   public async createAndCompileTemplate(paragraphId: string, template: string): Promise<DynamicTemplate> {
     const ngZService = this.ngZService;
-    const dynamicComponent = Component({ template: template, selector: `dynamic-${paragraphId}` })(
+    const dynamicComponent = Component({ template, selector: `dynamic-${paragraphId}` })(
       class DynamicTemplateComponent {
         z = {
           set: (key: string, value: unknown, id: string) => ngZService.setContextValue(key, value, id),
@@ -64,5 +64,8 @@ export class RuntimeCompilerService {
     }
   }
 
-  constructor(private compiler: Compiler, private ngZService: NgZService) {}
+  constructor(
+    private compiler: Compiler,
+    private ngZService: NgZService
+  ) {}
 }

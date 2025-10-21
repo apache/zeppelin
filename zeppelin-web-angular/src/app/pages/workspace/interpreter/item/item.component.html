@@ -270,7 +270,7 @@
             nzMode="tags"
             class="owners-input"
             [nzTokenSeparators]="[',']"
-            style="width: 100%;"
+            style="width: 100%"
             formControlName="owners"
             nzPlaceHolder=""
             nzAllowClear
@@ -448,11 +448,7 @@
   </ng-container>
 
   <div class="item-footer" *ngIf="mode !== 'view'">
-    <button nz-button nzType="primary" [disabled]="!formGroup.valid" (click)="handleSave()">
-      Save
-    </button>
-    <button nz-button (click)="handleCancel()">
-      Cancel
-    </button>
+    <button nz-button nzType="primary" [disabled]="!formGroup.valid" (click)="handleSave()">Save</button>
+    <button nz-button (click)="handleCancel()">Cancel</button>
   </div>
 </nz-card>

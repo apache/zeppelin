@@ -57,7 +57,7 @@ export class CompletionService extends MessageListenersManager {
   }
 
   private bindMonacoCompletion(): void {
-    // tslint:disable-next-line:no-this-assignment
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     this.completionLanguages.forEach(l => {
@@ -76,23 +76,21 @@ export class CompletionService extends MessageListenersManager {
             .pipe(
               filter(d => d.id === id),
               take(1),
-              map(d => {
-                return {
-                  suggestions: d.completions.map(
-                    (i): languages.CompletionItem => ({
-                      kind: languages.CompletionItemKind.Keyword,
-                      label: i.name,
-                      insertText: i.name,
-                      range: {
-                        startLineNumber: position.lineNumber,
-                        endLineNumber: position.lineNumber,
-                        startColumn: word.startColumn,
-                        endColumn: word.endColumn
-                      }
-                    })
-                  )
-                };
-              })
+              map(d => ({
+                suggestions: d.completions.map(
+                  (i): languages.CompletionItem => ({
+                    kind: languages.CompletionItemKind.Keyword,
+                    label: i.name,
+                    insertText: i.name,
+                    range: {
+                      startLineNumber: position.lineNumber,
+                      endLineNumber: position.lineNumber,
+                      startColumn: word.startColumn,
+                      endColumn: word.endColumn
+                    }
+                  })
+                )
+              }))
             )
             .toPromise();
         }

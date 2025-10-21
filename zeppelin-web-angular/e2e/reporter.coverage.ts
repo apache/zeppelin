@@ -11,10 +11,10 @@
  */
 
 // @see https://playwright.dev/docs/test-reporters#custom-reporters
-import { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { promises as fs } from 'fs';
-import { flatMap, sortBy } from 'lodash';
 import { join } from 'path';
+import { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
+import { flatMap, sortBy } from 'lodash';
 import { scanDirectory, Results } from 'scandirectory';
 import cfg from './reporter.coverage.config';
 
@@ -33,7 +33,7 @@ interface ResultType {
   rate: number;
 }
 type ResultsType = ResultType[];
-type TestStatusType = typeof TEST_STATUS[keyof typeof TEST_STATUS];
+type TestStatusType = (typeof TEST_STATUS)[keyof typeof TEST_STATUS];
 interface TestedPathType {
   success: number;
   skipped: number;

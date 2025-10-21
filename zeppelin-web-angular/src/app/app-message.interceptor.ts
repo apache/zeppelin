@@ -61,8 +61,8 @@ export class AppMessageInterceptor implements MessageInterceptor {
         });
       }
     } else if (data.op === OP.ERROR_INFO) {
-      // tslint:disable-next-line:no-any
-      const rData = (data.data as any) as MessageReceiveDataTypeMap[OP.ERROR_INFO];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rData = data.data as any as MessageReceiveDataTypeMap[OP.ERROR_INFO];
       const isDuplicateError = this.prevErrorInfo === rData.info;
 
       if (!isDuplicateError && rData.info) {

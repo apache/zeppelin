@@ -67,22 +67,22 @@ export interface ImportNote {
 }
 
 export interface NoteAngularObjects {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteInfo {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteParams {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteForms {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
