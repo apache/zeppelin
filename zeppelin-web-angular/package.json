@@ -11,8 +11,8 @@
     "build:projects": "npm run build-project:sdk && npm run build-project:vis",
     "build-project:sdk": "ng build --project zeppelin-sdk",
     "build-project:vis": "ng build --project zeppelin-visualization",
-    "lint": "cross-env NODE_OPTIONS='--max-old-space-size=9128' ng lint && tslint -p tslint-rules/tsconfig.json && prettier --check \"**/*.{ts,js,json,css,html}\"",
-    "lint:fix": "cross-env NODE_OPTIONS='--max-old-space-size=9128' ng lint --fix && tslint --fix -p tslint-rules/tsconfig.json && prettier --write \"**/*.{ts,js,json,css,html}\"",
+    "lint": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint && tslint -p tslint-rules/tsconfig.json && prettier --check \"**/*.{ts,js,json,css,html}\"",
+    "lint:fix": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint --fix && tslint --fix -p tslint-rules/tsconfig.json && prettier --write \"**/*.{ts,js,json,css,html}\"",
     "e2e": "playwright test",
     "e2e:fast": "playwright test --project=chromium",
     "e2e:ui": "playwright test --ui",
@@ -89,7 +89,6 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^50.8.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "eslint-plugin-prettier": "^5.5.4",
     "https-proxy-agent": "^2.2.1",
     "husky": "9.1.7",
     "lint-staged": "^15.5.2",
@@ -105,7 +104,7 @@
   },
   "lint-staged": {
     "**/*.ts": [
-      "cross-env NODE_OPTIONS='--max-old-space-size=9128' eslint --fix",
+      "cross-env NODE_OPTIONS='--max-old-space-size=8192' eslint --fix",
       "./node_modules/.bin/prettier --write",
       "git add"
     ],

@@ -27,73 +27,7 @@
             "prefix": "lib",
             "style": "camelCase"
           }
-        ],
-        "@angular-eslint/no-forward-ref": "off",
-        "@angular-eslint/prefer-output-readonly": "error",
-        "@typescript-eslint/array-type": [
-          "error",
-          {
-            "default": "array-simple"
-          }
-        ],
-        "@typescript-eslint/ban-types": [
-          "error",
-          {
-            "types": {
-              "Object": {
-                "message": "Use {} instead."
-              },
-              "String": {
-                "message": "Use string instead."
-              },
-              "Number": {
-                "message": "Use number instead."
-              },
-              "Boolean": {
-                "message": "Use boolean instead."
-              },
-              "Function": {
-                "message": "Use specific callable interface instead."
-              }
-            }
-          }
-        ],
-        "@typescript-eslint/consistent-type-definitions": "error",
-        "@typescript-eslint/explicit-member-accessibility": [
-          "off",
-          {
-            "accessibility": "explicit"
-          }
-        ],
-        "@typescript-eslint/no-explicit-any": "error",
-        "@typescript-eslint/no-floating-promises": "off",
-        "@typescript-eslint/no-for-in-array": "error",
-        "@typescript-eslint/no-inferrable-types": [
-          "error",
-          {
-            "ignoreParameters": true,
-            "ignoreProperties": true
-          }
-        ],
-        "@typescript-eslint/no-non-null-assertion": "off",
-        "@typescript-eslint/no-this-alias": "error",
-        "brace-style": ["error", "1tbs"],
-        "comma-dangle": "error",
-        "import/no-unassigned-import": "error",
-        "import/order": "error",
-        "no-bitwise": "off",
-        "no-duplicate-imports": "error",
-        "no-invalid-this": "error",
-        "no-irregular-whitespace": "error",
-        "no-magic-numbers": "off",
-        "no-multiple-empty-lines": "error",
-        "no-param-reassign": "error",
-        "no-redeclare": "error",
-        "no-sparse-arrays": "error",
-        "no-template-curly-in-string": "error",
-        "prefer-object-spread": "error",
-        "prefer-template": "error",
-        "yoda": "error"
+        ]
       }
     },
     {
