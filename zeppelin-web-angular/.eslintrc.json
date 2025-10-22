@@ -1,6 +1,7 @@
 {
+  "extends": ["prettier"],
   "root": true,
-  "ignorePatterns": ["projects/**/*"],
+  "ignorePatterns": ["node_modules/**/*", "projects/**/*"],
   "overrides": [
     {
       "files": ["*.ts"],
@@ -11,8 +12,7 @@
       "extends": [
         "plugin:@angular-eslint/ng-cli-compat",
         "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
-        "plugin:@angular-eslint/template/process-inline-templates",
-        "plugin:prettier/recommended"
+        "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
         "@angular-eslint/component-selector": [
@@ -33,12 +33,23 @@
         ],
         "@angular-eslint/no-forward-ref": "off",
         "@angular-eslint/prefer-output-readonly": "error",
-        "@typescript-eslint/array-type": [
-          "error",
-          {
-            "default": "array-simple"
-          }
-        ],
+        "@typescript-eslint/adjacent-overload-signatures": "off",
+        "@typescript-eslint/array-type": "off",
+        "@typescript-eslint/ban-tslint-comment": "off",
+        "@typescript-eslint/class-literal-property-style": "off",
+        "@typescript-eslint/consistent-generic-constructors": "off",
+        "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/consistent-type-assertions": "off",
+        "@typescript-eslint/consistent-type-definitions": "off",
+        "@typescript-eslint/no-confusing-non-null-assertion": "off",
+        "o-empty-function": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/prefer-for-of": "off",
+        "@typescript-eslint/prefer-function-type": "off",
+        "@typescript-eslint/member-delimiter-style": "off",
+        "@typescript-eslint/semi": "off",
+        "@typescript-eslint/type-annotation-spacing": "off",
         "@typescript-eslint/ban-types": [
           "error",
           {
@@ -61,7 +72,6 @@
             }
           }
         ],
-        "@typescript-eslint/consistent-type-definitions": "error",
         "@typescript-eslint/member-ordering": "warn",
         "@typescript-eslint/explicit-member-accessibility": [
           "off",
@@ -72,34 +82,33 @@
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-floating-promises": "off",
         "@typescript-eslint/no-for-in-array": "error",
-        "@typescript-eslint/no-inferrable-types": [
-          "error",
-          {
-            "ignoreParameters": true,
-            "ignoreProperties": true
-          }
-        ],
         "@typescript-eslint/naming-convention": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-this-alias": "error",
-        "comma-dangle": "error",
+        "@typescript-eslint/quotes": "off",
+        "eol-last": "off",
+        "import/no-deprecated": "off",
         "import/no-unassigned-import": "error",
         "import/order": "error",
         "jsdoc/newline-after-description": "off",
+        "max-len": "off",
+        "new-parens": "off",
         "no-bitwise": "off",
         "no-duplicate-imports": "error",
         "no-invalid-this": "error",
         "no-irregular-whitespace": "error",
         "no-magic-numbers": "off",
-        "no-multiple-empty-lines": "error",
         "no-param-reassign": "error",
         "no-redeclare": "error",
         "no-sparse-arrays": "error",
         "no-template-curly-in-string": "error",
+        "no-trailing-spaces": "off",
         "no-underscore-dangle": "off",
         "prefer-arrow/prefer-arrow-functions": "warn",
         "prefer-object-spread": "error",
         "prefer-template": "error",
+        "quote-props": "off",
+        "space-before-function-paren": "off",
         "yoda": "error"
       }
     },
