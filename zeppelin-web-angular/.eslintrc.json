@@ -87,6 +87,7 @@
         "@typescript-eslint/no-this-alias": "error",
         "@typescript-eslint/quotes": "off",
         "eol-last": "off",
+        "import/no-cycle": "error",
         "import/no-deprecated": "off",
         "import/no-unassigned-import": "error",
         "import/order": "error",
