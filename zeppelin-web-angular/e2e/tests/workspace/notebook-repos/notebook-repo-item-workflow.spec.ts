@@ -13,7 +13,7 @@
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
 import { NotebookRepoItemUtil } from '../../../models/notebook-repos-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, PAGES } from '../../../utils';
+import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Item - Edit Workflow', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS_ITEM);
@@ -24,6 +24,8 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
     await notebookReposPage.navigate();

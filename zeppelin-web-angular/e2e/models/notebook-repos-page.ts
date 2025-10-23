@@ -26,8 +26,16 @@ export class NotebookReposPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/#/notebook-repos', { waitUntil: 'load' });
+    await this.page.goto('/#/notebook-repos', { waitUntil: 'networkidle' });
+    await this.page.waitForURL('**/#/notebook-repos', { timeout: 15000 });
     await this.waitForPageLoad();
+    await this.page.waitForLoadState('domcontentloaded');
+    try {
+      await this.pageHeader.waitFor({ state: 'visible', timeout: 15000 });
+    } catch (e) {
+      await this.page.waitForTimeout(2000);
+      await this.pageHeader.waitFor({ state: 'visible', timeout: 5000 });
+    }
   }
 
   async getRepositoryItemByName(name: string): Promise<Locator> {
