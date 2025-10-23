@@ -135,15 +135,13 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   runAllParagraphs() {
     this.messageService.runAllParagraphs(
       this.note.id,
-      this.note.paragraphs.map(p => {
-        return {
-          id: p.id,
-          title: p.title,
-          paragraph: p.text,
-          config: p.config,
-          params: p.settings.params
-        };
-      })
+      this.note.paragraphs.map(p => ({
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }))
     );
   }
 

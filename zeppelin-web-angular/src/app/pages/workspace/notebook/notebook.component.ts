@@ -105,7 +105,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
           }
         });
       }
-      this.titleService.setTitle(this.note?.name + ' - Zeppelin');
+      this.titleService.setTitle(`${this.note?.name} - Zeppelin`);
       this.themeService.updateMonacoTheme();
       this.cdr.markForCheck();
     }

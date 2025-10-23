@@ -21,7 +21,10 @@ import { TicketService } from '@zeppelin/services';
   providedIn: 'root'
 })
 export class LoginGuard implements CanActivate {
-  constructor(private ticketService: TicketService, private router: Router) {}
+  constructor(
+    private ticketService: TicketService,
+    private router: Router
+  ) {}
 
   canActivate(): Observable<boolean> {
     return this.ticketService.isAuthenticated().pipe(

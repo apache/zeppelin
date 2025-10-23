@@ -99,10 +99,10 @@ export class CredentialComponent {
   }
 
   submitForm(): void {
-    for (const i in this.addForm.controls) {
-      this.addForm.controls[i].markAsDirty();
-      this.addForm.controls[i].updateValueAndValidity();
-    }
+    Object.keys(this.addForm.controls).forEach(key => {
+      this.addForm.controls[key].markAsDirty();
+      this.addForm.controls[key].updateValueAndValidity();
+    });
     if (this.addForm.valid) {
       const data = this.addForm.getRawValue() as CredentialForm;
       this.addCredential(data);
@@ -110,10 +110,10 @@ export class CredentialComponent {
   }
 
   saveCredential(form: FormGroup) {
-    for (const i in form.controls) {
-      form.controls[i].markAsDirty();
-      form.controls[i].updateValueAndValidity();
-    }
+    Object.keys(form.controls).forEach(key => {
+      form.controls[key].markAsDirty();
+      form.controls[key].updateValueAndValidity();
+    });
     if (form.valid) {
       this.credentialService.updateCredential(form.getRawValue()).subscribe(() => {
         this.nzMessageService.success('Successfully saved credentials.');

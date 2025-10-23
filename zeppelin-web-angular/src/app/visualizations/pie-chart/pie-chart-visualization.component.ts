@@ -66,7 +66,7 @@ export class PieChartVisualizationComponent extends G2VisualizationComponentBase
         lineWidth: 1,
         stroke: '#fff'
       })
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .tooltip('__key__*__value__', (name: any, value: any) => ({ name, value }));
   }
 

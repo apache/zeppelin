@@ -26,7 +26,7 @@ export class ArrayOrderingService {
 
   getNoteName(note: NodeItem) {
     if (note.title.trim() === '') {
-      return 'Note ' + note.id;
+      return `Note ${note.id}`;
     } else {
       return note.title;
     }

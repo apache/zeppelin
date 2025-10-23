@@ -17,6 +17,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzNoAnimationModule } from 'ng-zorro-antd/core/no-animation';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
@@ -36,6 +37,7 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 
+import { WorkspaceShareModule } from '../share/share.module';
 import { NotebookAddParagraphComponent } from './add-paragraph/add-paragraph.component';
 import { NotebookInterpreterBindingComponent } from './interpreter-binding/interpreter-binding.component';
 import { NotebookParagraphCodeEditorComponent } from './paragraph/code-editor/code-editor.component';
@@ -46,8 +48,6 @@ import { NotebookParagraphProgressComponent } from './paragraph/progress/progres
 import { NotebookPermissionsComponent } from './permissions/permissions.component';
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { WorkspaceShareModule } from '../share/share.module';
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
 import { NoteFormBlockComponent } from './note-form-block/note-form-block.component';
 import { NotebookRoutingModule } from './notebook-routing.module';

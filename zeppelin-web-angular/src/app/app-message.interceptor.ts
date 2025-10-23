@@ -22,15 +22,16 @@ import { TicketService } from '@zeppelin/services';
 
 @Injectable()
 export class AppMessageInterceptor implements MessageInterceptor {
+  private prevErrorInfo: string | null = null;
+
   constructor(
     private router: Router,
     private nzNotificationService: NzNotificationService,
     private ticketService: TicketService,
-    private nzModalService: NzModalService,
-    private prevErrorInfo: string | null = null
+    private nzModalService: NzModalService
   ) {}
 
-  received<T extends keyof MessageReceiveDataTypeMap>(data: WebSocketMessage<T>): WebSocketMessage<T> {
+  received(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     if (data.op === OP.NEW_NOTE) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.NEW_NOTE];
       if (rData.note?.id) {
@@ -61,8 +62,8 @@ export class AppMessageInterceptor implements MessageInterceptor {
         });
       }
     } else if (data.op === OP.ERROR_INFO) {
-      // tslint:disable-next-line:no-any
-      const rData = (data.data as any) as MessageReceiveDataTypeMap[OP.ERROR_INFO];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rData = data.data as any as MessageReceiveDataTypeMap[OP.ERROR_INFO];
       const isDuplicateError = this.prevErrorInfo === rData.info;
 
       if (!isDuplicateError && rData.info) {

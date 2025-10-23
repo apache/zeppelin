@@ -63,7 +63,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
       this.errorText = 'File size limit Exceeded!';
     } else {
       const reader = new FileReader();
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reader.readAsText(file as any);
       reader.onloadend = () => {
         this.processImportJson(reader.result);

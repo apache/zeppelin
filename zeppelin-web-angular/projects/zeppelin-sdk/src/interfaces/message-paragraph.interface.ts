@@ -49,7 +49,7 @@ export interface ParagraphEditorSetting {
 
 // TODO(hsuanxyz)
 export interface ParagraphParams {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -80,7 +80,7 @@ export interface ParagraphResults {
   code?: string;
   msg?: ParagraphIResultsMsgItem[];
 
-  [index: number]: {};
+  [index: number]: Record<string, unknown>;
 }
 
 export enum DatasetType {
@@ -126,7 +126,7 @@ export interface ParagraphItem {
   config: ParagraphConfig;
   settings: ParagraphEditorSetting;
   results?: ParagraphResults;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   apps: any[];
   progressUpdateIntervalMs: number;
   jobName: string;
@@ -139,10 +139,12 @@ export interface ParagraphItem {
   status: string;
   title?: string;
   focus?: boolean;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
+  // TODO(hsuanxyz): define proper type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aborted: any;
   lineNumbers: boolean;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
+  // TODO(hsuanxyz): define proper type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fontSize: any;
 }
 
@@ -163,7 +165,7 @@ export interface CopyParagraph {
 }
 
 export interface RunParagraph extends SendParagraph {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -341,7 +343,7 @@ interface VisualizationTable {
 interface TableGridState {
   columns: ColumnsItem[];
   scrollFocus: ScrollFocus;
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   selection: any[];
   grouping: Grouping;
   treeView: TreeView;
@@ -358,35 +360,35 @@ interface ColumnsItem {
 }
 
 interface Sort {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface FiltersItem {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface ScrollFocus {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface Grouping {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   grouping: any[];
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   aggregations: any[];
   rowExpandedStates: RowExpandedStates;
 }
 
 interface RowExpandedStates {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface TreeView {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
@@ -485,6 +487,6 @@ interface GraphConfigValuesItem {
 }
 
 interface GraphConfigCommonSetting {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }

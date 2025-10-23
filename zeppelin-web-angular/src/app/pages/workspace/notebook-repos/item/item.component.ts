@@ -35,7 +35,10 @@ export class NotebookRepoItemComponent implements OnChanges {
   settingFormArray: FormArray;
   editMode = false;
 
-  constructor(private cdr: ChangeDetectorRef, private fb: FormBuilder) {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
+  ) {
     // Initialize an empty form array to avoid undefined type error in the template
     this.settingFormArray = this.fb.array([]);
   }
@@ -67,9 +70,7 @@ export class NotebookRepoItemComponent implements OnChanges {
   }
 
   buildForm() {
-    const controls = this.repo.settings.map(setting => {
-      return this.fb.control(setting.selected, [Validators.required]);
-    });
+    const controls = this.repo.settings.map(setting => this.fb.control(setting.selected, [Validators.required]));
     this.settingFormArray = this.fb.array(controls);
   }
 

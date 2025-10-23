@@ -43,7 +43,8 @@ type DecorationIdentifier = ReturnType<monaco.editor.ICodeEditor['deltaDecoratio
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphCodeEditorComponent
-  implements OnChanges, OnDestroy, AfterViewInit, MonacoKeyboardEventHandler {
+  implements OnChanges, OnDestroy, AfterViewInit, MonacoKeyboardEventHandler
+{
   @Input() position: IPosition | null = null;
   @Input() readOnly = false;
   @Input() language?: string = 'text';
@@ -144,7 +145,7 @@ export class NotebookParagraphCodeEditorComponent
       this.editor.executeEdits('my-source', [
         {
           range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-          text: text,
+          text,
           forceMoveMarkers: true
         }
       ]);

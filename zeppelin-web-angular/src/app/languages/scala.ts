@@ -232,6 +232,7 @@ export const language = {
       [/[\/*]/, 'comment.doc']
     ],
 
+    // eslint-disable-next-line id-blacklist
     string: [
       [/[^\\"]+/, 'string'],
       [/@escapes/, 'string.escape'],

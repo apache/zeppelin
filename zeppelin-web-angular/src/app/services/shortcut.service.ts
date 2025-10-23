@@ -31,8 +31,11 @@ export interface ShortcutOption {
 export class ShortcutService {
   private element: HTMLElement;
 
-  // tslint:disable-next-line:no-any
-  constructor(private eventManager: EventManager, @Inject(DOCUMENT) _document: any) {
+  constructor(
+    private eventManager: EventManager,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @Inject(DOCUMENT) _document: any
+  ) {
     this.element = _document;
   }
 
@@ -43,7 +46,7 @@ export class ShortcutService {
   bindShortcut(option: ShortcutOption): Observable<ShortcutEvent> {
     const host = option.scope || this.element;
     const eventName = `keydown.${option.keybindings}`;
-    // tslint:disable-next-line:ban-types
+    // eslint-disable-next-line @typescript-eslint/ban-types
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {
       const handler = (event: KeyboardEvent) => {

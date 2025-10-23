@@ -13,7 +13,7 @@ limitations under the License.
 -->
 <div class="row">
   <form>
-    <fieldset class=" col-xs-12">
+    <fieldset class="col-xs-12">
       <h4>Force Layout settings</h4>
       <div class="form-check col-xs-4">
         <label for="{{$id}}_timeout">Stop Force layout after</label>
@@ -41,7 +41,7 @@ limitations under the License.
       </div>
     </fieldset>
 
-    <fieldset class=" col-xs-12">
+    <fieldset class="col-xs-12">
       <h4>Globals</h4>
       <div class="form-check col-xs-4">
         <div class="form-group">
@@ -53,9 +53,7 @@ limitations under the License.
 
     <fieldset class="form-group col-xs-12">
       <h4>Choose node labels</h4>
-      <div ng-if="isEmptyObject(config.properties)">
-        No labels to set
-      </div>
+      <div ng-if="isEmptyObject(config.properties)">No labels to set</div>
       <div
         class="btn-group network-labels network-badge-settings"
         ng-repeat="(key, value) in config.properties track by key"

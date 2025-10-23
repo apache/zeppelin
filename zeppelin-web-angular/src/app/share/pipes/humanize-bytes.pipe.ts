@@ -39,7 +39,7 @@ export class HumanizeBytesPipe implements PipeTransform {
       }
     };
     if (parsedValue < 1000) {
-      return value + ' B';
+      return `${value} B`;
     } else {
       return converter(parsedValue, 1);
     }

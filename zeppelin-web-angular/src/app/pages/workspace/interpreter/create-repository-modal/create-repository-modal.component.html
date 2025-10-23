@@ -11,21 +11,17 @@
   -->
 
 <form nz-form [nzLayout]="'horizontal'" [formGroup]="validateForm" (ngSubmit)="handleSubmit()">
-  <p style="color: #1890ff; font-size: 12px;">
+  <p style="color: #1890ff; font-size: 12px">
     Adding a repository with an existing ID will update the existing repository.
   </p>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6" nzRequired>
-      ID
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6" nzRequired>ID</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input autofocus formControlName="id" placeholder="Repository id" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6" nzRequired>
-      URL
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6" nzRequired>URL</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <nz-input-group [nzAddOnBefore]="addOnBeforeTemplate">
         <input type="text" nz-input formControlName="url" placeholder="Repository url" />
@@ -40,34 +36,26 @@
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6" nzRequired>
-      Snapshot
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6" nzRequired>Snapshot</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <nz-switch formControlName="snapshot"></nz-switch>
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Username
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Username</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input formControlName="username" placeholder="username" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Password
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Password</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input type="password" formControlName="password" placeholder="password" />
     </nz-form-control>
   </nz-form-item>
   <nz-divider nzType="horizontal"></nz-divider>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Protocol
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Protocol</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <nz-radio-group formControlName="proxyProtocol">
         <label nz-radio nzValue="HTTP">HTTP</label>
@@ -76,33 +64,25 @@
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Host
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Host</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input formControlName="proxyHost" placeholder="proxy host" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Port
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Port</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input formControlName="proxyPort" placeholder="proxy port" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Login
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Login</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input formControlName="proxyLogin" placeholder="proxy login" />
     </nz-form-control>
   </nz-form-item>
   <nz-form-item>
-    <nz-form-label [nzSpan]="6">
-      Password
-    </nz-form-label>
+    <nz-form-label [nzSpan]="6">Password</nz-form-label>
     <nz-form-control nz-col [nzSpan]="16">
       <input nz-input type="password" formControlName="proxyLogin" placeholder="proxy password" />
     </nz-form-control>
@@ -113,7 +93,5 @@
   <button nz-button nzType="primary" [disabled]="!validateForm.valid" (click)="handleSubmit()" [nzLoading]="submitting">
     Add
   </button>
-  <button nz-button (click)="handleCancel()">
-    Cancel
-  </button>
+  <button nz-button (click)="handleCancel()">Cancel</button>
 </div>

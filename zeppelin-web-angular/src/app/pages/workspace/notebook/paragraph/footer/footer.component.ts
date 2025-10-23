@@ -12,9 +12,7 @@
 
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 
-import format from 'date-fns/format';
-import formatDistanceStrict from 'date-fns/formatDistanceStrict';
-import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+import { format, formatDistanceStrict, formatDistanceToNow } from 'date-fns';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-footer',

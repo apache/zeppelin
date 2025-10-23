@@ -4,6 +4,8 @@
   "tabWidth": 2,
   "useTabs": false,
   "htmlWhitespaceSensitivity": "ignore",
+  "trailingComma": "none",
+  "arrowParens": "avoid",
   "overrides": [
     {
       "files": ".prettierrc",

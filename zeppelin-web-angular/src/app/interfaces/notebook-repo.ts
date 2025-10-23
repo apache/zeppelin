@@ -25,7 +25,7 @@ export interface NotebookRepoPutData {
 
 export interface NotebookRepoSettingsItem {
   type: string;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any[];
   selected: string;
   name: string;

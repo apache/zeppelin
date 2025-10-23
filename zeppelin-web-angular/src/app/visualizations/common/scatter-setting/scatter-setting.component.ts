@@ -42,7 +42,7 @@ export class VisualizationScatterSettingComponent implements OnInit {
     size: []
   };
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   drop(event: CdkDragDrop<any[]>) {
     this.clean(event.container.data, false);
     event.container.data.push(event.previousContainer.data[event.previousIndex]);
@@ -50,7 +50,7 @@ export class VisualizationScatterSettingComponent implements OnInit {
     this.updateConfig();
   }
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   clean(data: any[], update = true): void {
     while (data.length > 0) {
       data.splice(0, 1);

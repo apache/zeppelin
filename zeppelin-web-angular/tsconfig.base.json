@@ -4,8 +4,6 @@
     "baseUrl": "./",
     "paths": {
       "@zeppelin/*": ["./src/app/*", "./src/environments/*"],
-      "@zeppelin/helium": ["./dist/zeppelin-helium"],
-      "@zeppelin/helium/*": ["./dist/zeppelin-helium/*"],
       "@zeppelin/visualization": ["dist/zeppelin-visualization"],
       "@zeppelin/visualization/*": ["dist/zeppelin-visualization/*"],
       "@zeppelin/sdk": ["dist/zeppelin-sdk"],
@@ -18,12 +16,16 @@
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "importHelpers": true,
     "target": "es5",
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2018", "dom"]
+  },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "strictTemplates": true
   }
 }

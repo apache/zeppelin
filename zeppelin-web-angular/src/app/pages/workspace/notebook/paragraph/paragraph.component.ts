@@ -17,6 +17,8 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -68,19 +70,17 @@ type Mode = 'edit' | 'command';
   selector: 'zeppelin-notebook-paragraph',
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.less'],
-  host: {
-    tabindex: '-1',
-    '(focusin)': 'onFocus()'
-  },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookParagraphComponent extends ParagraphBase
-  implements OnInit, OnChanges, OnDestroy, AfterViewInit, AngularKeyboardEventHandler {
+export class NotebookParagraphComponent
+  extends ParagraphBase
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit, AngularKeyboardEventHandler
+{
+  @HostBinding('attr.tabindex') tabindex = '-1';
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
   notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
-  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
-    NotebookParagraphResultComponent
-  >;
+  @ViewChildren(NotebookParagraphResultComponent)
+  notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
   @Input() paragraph!: ParagraphItem;
   @Input() note!: Exclude<Note['note'], undefined>;
   @Input() looknfeel!: string;
@@ -155,6 +155,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.saveNoteTimer.emit();
   }
 
+  @HostListener('focusin')
   onFocus() {
     this.selected.emit(this.paragraph.id);
   }
@@ -231,15 +232,13 @@ export class NotebookParagraphComponent extends ParagraphBase
     const index = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id);
     const toRunParagraphs = this.note.paragraphs.filter((p, i) => i < index);
 
-    const paragraphs = toRunParagraphs.map(p => {
-      return {
-        id: p.id,
-        title: p.title,
-        paragraph: p.text,
-        config: p.config,
-        params: p.settings.params
-      };
-    });
+    const paragraphs = toRunParagraphs.map(p => ({
+      id: p.id,
+      title: p.title,
+      paragraph: p.text,
+      config: p.config,
+      params: p.settings.params
+    }));
     this.nzModalService
       .confirm({
         nzTitle: 'Run all above?',
@@ -272,15 +271,13 @@ export class NotebookParagraphComponent extends ParagraphBase
     const index = this.note.paragraphs.findIndex(p => p.id === this.paragraph.id);
     const toRunParagraphs = this.note.paragraphs.filter((p, i) => i >= index);
 
-    const paragraphs = toRunParagraphs.map(p => {
-      return {
-        id: p.id,
-        title: p.title,
-        paragraph: p.text,
-        config: p.config,
-        params: p.settings.params
-      };
-    });
+    const paragraphs = toRunParagraphs.map(p => ({
+      id: p.id,
+      title: p.title,
+      paragraph: p.text,
+      config: p.config,
+      params: p.settings.params
+    }));
     this.nzModalService
       .confirm({
         nzTitle: 'Run current and all below?',
@@ -582,7 +579,7 @@ export class NotebookParagraphComponent extends ParagraphBase
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
-    this.noteVarShareService.set(this.paragraph.id + '_paragraphScope', this);
+    this.noteVarShareService.set(`${this.paragraph.id}_paragraphScope`, this);
     this.initializeDefault(this.paragraph.config, this.paragraph.settings);
     this.angularContextManager
       .runParagraphAction()

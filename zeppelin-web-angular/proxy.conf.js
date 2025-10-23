@@ -42,7 +42,7 @@ function setupForCorporateProxy(proxyConfig) {
     if (httpProxy) {
       agent = new HttpsProxyAgent(httpProxy);
     }
-    proxyConfig.forEach(function(entry) {
+    proxyConfig.forEach(function (entry) {
       if (entry.context === '/ws') {
         entry.target = httpUrlToWSUrl(proxyServer);
       } else {

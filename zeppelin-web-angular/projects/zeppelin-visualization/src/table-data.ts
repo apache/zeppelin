@@ -18,7 +18,7 @@ import { DataSet } from './data-set';
 
 export class TableData extends DataSet {
   columns: string[] = [];
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   rows: any[] = [];
 
   loadParagraphResult({ data, type }: ParagraphIResultsMsgItem): void {

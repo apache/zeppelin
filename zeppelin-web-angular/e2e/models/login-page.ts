@@ -46,10 +46,8 @@ export class LoginPage extends BasePage {
 
   async getErrorMessageText(): Promise<string> {
     return (
-      (await this.page
-        .locator("text=The username and password that you entered don't match.")
-        .first()
-        .textContent()) || ''
+      (await this.page.locator("text=The username and password that you entered don't match.").first().textContent()) ||
+      ''
     );
   }
 }

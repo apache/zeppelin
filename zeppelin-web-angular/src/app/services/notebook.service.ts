@@ -24,7 +24,10 @@ import { BaseUrlService } from './base-url.service';
 export class NotebookService extends BaseRest {
   private queryStr$ = new BehaviorSubject<string | null>(null);
 
-  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
+  constructor(
+    private http: HttpClient,
+    baseUrlService: BaseUrlService
+  ) {
     super(baseUrlService);
   }
 

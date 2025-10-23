@@ -19,7 +19,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 
-import { ZeppelinHeliumModule } from '@zeppelin/helium';
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -50,8 +49,7 @@ registerLocaleData(en);
     BrowserAnimationsModule,
     ShareModule,
     AppRoutingModule,
-    RouterModule,
-    ZeppelinHeliumModule
+    RouterModule
   ],
   providers: [
     ...RUNTIME_COMPILER_PROVIDERS,

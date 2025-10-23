@@ -175,15 +175,12 @@ export class PublishedParagraphTestUtil {
     const url = this.page.url();
     const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
     if (!noteIdMatch) {
-      throw new Error('Failed to extract notebook ID from URL: ' + url);
+      throw new Error(`Failed to extract notebook ID from URL: ${url}`);
     }
     const noteId = noteIdMatch[1];
 
     // Get first paragraph ID
-    await this.page
-      .locator('zeppelin-notebook-paragraph')
-      .first()
-      .waitFor({ state: 'visible', timeout: 10000 });
+    await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
     const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first();
     const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
     await dropdownTrigger.click();

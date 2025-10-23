@@ -1,11 +1,12 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "../out-tsc/app",
     "types": ["mathjax"]
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
     "strictTemplates": true
   },
   "exclude": ["test.ts", "**/*.spec.ts"]

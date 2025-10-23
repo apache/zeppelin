@@ -95,7 +95,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
     this.cdr.markForCheck();
   }
 
-  onStart(noteId: string): void {
+  onStartJob(noteId: string): void {
     this.nzModalService.confirm({
       nzTitle: 'Job Dialog',
       nzContent: 'Run all paragraphs?',
@@ -105,7 +105,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
     });
   }
 
-  onStop(noteId: string): void {
+  onStopJob(noteId: string): void {
     this.nzModalService.confirm({
       nzTitle: 'Job Dialog',
       nzContent: 'Stop all paragraphs?',

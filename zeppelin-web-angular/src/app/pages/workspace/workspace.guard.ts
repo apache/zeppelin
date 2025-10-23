@@ -21,7 +21,11 @@ import { MessageService, TicketService } from '@zeppelin/services';
   providedIn: 'root'
 })
 export class WorkspaceGuard implements CanActivate {
-  constructor(private ticketService: TicketService, private router: Router, private messageService: MessageService) {}
+  constructor(
+    private ticketService: TicketService,
+    private router: Router,
+    private messageService: MessageService
+  ) {}
 
   canActivate(
     next: ActivatedRouteSnapshot,

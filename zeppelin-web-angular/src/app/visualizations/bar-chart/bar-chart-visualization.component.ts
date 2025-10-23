@@ -60,7 +60,10 @@ export class BarChartVisualizationComponent extends G2VisualizationComponentBase
     this.visualization.configChange$.next(this.config);
   }
 
-  constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(VISUALIZATION) public visualization: Visualization,
+    private cdr: ChangeDetectorRef
+  ) {
     super(visualization);
   }
 
@@ -94,11 +97,7 @@ export class BarChartVisualizationComponent extends G2VisualizationComponentBase
       shared: false
     });
     if (get(config.setting, 'multiBarChart.stacked', false)) {
-      chart
-        .intervalStack()
-        .position(`${key}*__value__`)
-        .color('__key__')
-        .opacity(1);
+      chart.intervalStack().position(`${key}*__value__`).color('__key__').opacity(1);
     } else {
       chart
         .interval()

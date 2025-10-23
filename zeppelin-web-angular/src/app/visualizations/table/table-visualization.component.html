@@ -45,8 +45,7 @@
         nzWidth="200px"
         nzShowSort
         nzCustomFilter
-        [nzSortKey]="col"
-        (nzSortChange)="onSortChange(col, $event)"
+        (nzSortOrderChange)="onSortChange(col, $event)"
       >
         {{ col }}
         <i

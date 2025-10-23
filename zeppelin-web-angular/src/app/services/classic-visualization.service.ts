@@ -160,7 +160,7 @@ export class ClassicVisualizationService {
     targetElementId: string,
     config: GraphConfig,
     tableData: TableData,
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     emitter: (config: any) => void
   ): Promise<HeliumClassicVisualization> {
     // Inject Bootstrap compatibility styles before creating visualization
@@ -251,9 +251,10 @@ export class ClassicVisualizationService {
     return vizInstance;
   }
 
-  private getOrCreateInjector(
-    targetElement: HTMLElement
-  ): { injector: angular.auto.IInjectorService; appName: string } {
+  private getOrCreateInjector(targetElement: HTMLElement): {
+    injector: angular.auto.IInjectorService;
+    appName: string;
+  } {
     // Check if element is already bootstrapped
     const existingInjector = angular.element(targetElement).injector();
 
@@ -408,7 +409,7 @@ export class ClassicVisualizationService {
 
   private getClassicVizConfig(graph: GraphConfig) {
     const mode = graph.mode;
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const configForMode: any = graph?.setting?.[mode as keyof ParagraphConfigResult['graph']['setting']]
       ? cloneDeep(graph.setting[mode as keyof ParagraphConfigResult['graph']['setting']])
       : {};

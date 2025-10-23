@@ -44,7 +44,7 @@ export class AngularDragDropService {
     // Drag and drop service to maintain state across directives
     module.factory('customDragDropService', [
       '$parse',
-      function($parse: angular.IParseService): CustomDragDropService {
+      function ($parse: angular.IParseService): CustomDragDropService {
         return {
           draggableScope: null,
           dragData: null,
@@ -53,7 +53,7 @@ export class AngularDragDropService {
           dragSettings: null,
           draggableElement: null,
 
-          callEventCallback: function(scope, callbackStr, event, ui) {
+          callEventCallback(scope, callbackStr, event, ui) {
             if (!callbackStr) {
               return;
             }
@@ -96,7 +96,7 @@ export class AngularDragDropService {
             }
           },
 
-          updateModel: function(scope, modelPath, newValue, index) {
+          updateModel(scope, modelPath, newValue, index) {
             const getter = $parse(modelPath);
             const setter = getter.assign;
             const modelValue = getter(scope);
@@ -116,7 +116,7 @@ export class AngularDragDropService {
             scope.$apply();
           },
 
-          removeFromModel: function(scope, modelPath, index) {
+          removeFromModel(scope, modelPath, index) {
             const getter = $parse(modelPath);
             const modelValue = getter(scope);
 
@@ -132,30 +132,30 @@ export class AngularDragDropService {
     // jqyoui-draggable directive
     module.directive('jqyouiDraggable', [
       'customDragDropService',
-      function(dragDropService: CustomDragDropService) {
+      function (dragDropService: CustomDragDropService) {
         return {
           restrict: 'A',
-          link: function(scope, element, attrs) {
+          link(scope, element, attrs) {
             const el = element[0];
 
             // Check if dragging is enabled
-            const isDragEnabled = function() {
+            const isDragEnabled = function () {
               return attrs.drag === 'true' || scope.$eval(attrs.drag) === true;
             };
 
             // Make element draggable when enabled
-            const updateDraggable = function() {
+            const updateDraggable = function () {
               el.draggable = isDragEnabled();
             };
 
             updateDraggable();
 
             // Watch for changes in drag attribute
-            scope.$watch(function() {
+            scope.$watch(function () {
               return scope.$eval(attrs.drag);
             }, updateDraggable);
 
-            el.addEventListener('dragstart', function(event) {
+            el.addEventListener('dragstart', function (event) {
               if (!isDragEnabled()) {
                 event.preventDefault();
                 return;
@@ -207,7 +207,7 @@ export class AngularDragDropService {
               }
             });
 
-            el.addEventListener('dragend', function(event) {
+            el.addEventListener('dragend', function (event) {
               // Remove visual feedback
               el.style.opacity = '';
 
@@ -232,18 +232,18 @@ export class AngularDragDropService {
     // jqyoui-droppable directive
     module.directive('jqyouiDroppable', [
       'customDragDropService',
-      function(dragDropService: CustomDragDropService) {
+      function (dragDropService: CustomDragDropService) {
         return {
           restrict: 'A',
-          link: function(scope, element, attrs) {
+          link(scope, element, attrs) {
             const el = element[0];
 
             // Check if dropping is enabled
-            const isDropEnabled = function() {
+            const isDropEnabled = function () {
               return attrs.drop === 'true' || scope.$eval(attrs.drop) === true;
             };
 
-            el.addEventListener('dragover', function(event) {
+            el.addEventListener('dragover', function (event) {
               if (!isDropEnabled()) {
                 return;
               }
@@ -257,12 +257,12 @@ export class AngularDragDropService {
               el.style.backgroundColor = '#f0f0f0';
             });
 
-            el.addEventListener('dragleave', function() {
+            el.addEventListener('dragleave', function () {
               // Remove visual feedback
               el.style.backgroundColor = '';
             });
 
-            el.addEventListener('drop', function(event) {
+            el.addEventListener('drop', function (event) {
               if (!isDropEnabled()) {
                 return;
               }

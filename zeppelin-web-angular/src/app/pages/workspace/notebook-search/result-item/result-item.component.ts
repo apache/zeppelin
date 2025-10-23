@@ -60,7 +60,11 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
     }
   } as JoinedEditorOptions;
 
-  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private router: ActivatedRoute) {}
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+    private router: ActivatedRoute
+  ) {}
 
   setDisplayNameAndRouterLink(): void {
     const term = this.router.snapshot.params.queryStr;

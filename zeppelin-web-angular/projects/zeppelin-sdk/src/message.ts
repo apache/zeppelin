@@ -16,9 +16,9 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 import { Ticket } from './interfaces/message-common.interface';
 import {
+  MessageDataTypeMap,
   MessageReceiveDataTypeMap,
-  MessageSendDataTypeMap,
-  MixMessageDataTypeMap
+  MessageSendDataTypeMap
 } from './interfaces/message-data-type-map.interface';
 import { ImportNote, Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
 import { OP } from './interfaces/message-operator.interface';
@@ -36,24 +36,21 @@ export type SendArgumentsType<K extends keyof MessageSendDataTypeMap> = MessageS
   ? ArgumentsType<(op: K) => void>
   : ArgumentsType<(op: K, data: MessageSendDataTypeMap[K]) => void>;
 
-export type ReceiveArgumentsType<
-  K extends keyof MessageReceiveDataTypeMap
-> = MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
+export type ReceiveArgumentsType<K extends keyof MessageReceiveDataTypeMap> =
+  MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
 
 export class Message {
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
-  private ws: WebSocketSubject<WebSocketMessage<keyof MixMessageDataTypeMap>> | null = null;
+  private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
   private open$ = new Subject<Event>();
   private close$ = new Subject<CloseEvent>();
-  private sent$ = new Subject<WebSocketMessage<keyof MessageSendDataTypeMap>>();
-  private received$ = new Subject<WebSocketMessage<keyof MessageReceiveDataTypeMap>>();
+  private sent$ = new Subject<WebSocketMessage<MessageSendDataTypeMap>>();
+  private received$ = new Subject<WebSocketMessage<MessageReceiveDataTypeMap>>();
   private pingIntervalSubscription = new Subscription();
   private wsUrl?: string;
   private ticket?: Ticket;
-  private uniqueClientId = Math.random()
-    .toString(36)
-    .substring(2, 7);
+  private uniqueClientId = Math.random().toString(36).substring(2, 7);
   private lastMsgIdSeqSent = 0;
 
   constructor() {
@@ -88,9 +85,7 @@ export class Message {
     this.ticket = ticket;
   }
 
-  interceptReceived(
-    data: WebSocketMessage<keyof MessageReceiveDataTypeMap>
-  ): WebSocketMessage<keyof MessageReceiveDataTypeMap> {
+  interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     return data;
   }
 
@@ -98,7 +93,7 @@ export class Message {
     if (!this.wsUrl) {
       throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
     }
-    this.ws = webSocket<WebSocketMessage<keyof MixMessageDataTypeMap>>({
+    this.ws = webSocket<WebSocketMessage<MessageDataTypeMap>>({
       url: this.wsUrl,
       openObserver: this.open$,
       closeObserver: this.close$
@@ -111,7 +106,7 @@ export class Message {
       )
       .subscribe(e => {
         console.log('Receive:', e);
-        this.received$.next(this.interceptReceived(e as WebSocketMessage<keyof MessageReceiveDataTypeMap>));
+        this.received$.next(this.interceptReceived(e as WebSocketMessage<MessageReceiveDataTypeMap>));
       });
   }
 
@@ -131,11 +126,11 @@ export class Message {
     return this.close$.asObservable();
   }
 
-  sent(): Observable<WebSocketMessage<keyof MessageSendDataTypeMap>> {
+  sent(): Observable<WebSocketMessage<MessageSendDataTypeMap>> {
     return this.sent$.asObservable();
   }
 
-  received(): Observable<WebSocketMessage<keyof MessageReceiveDataTypeMap>> {
+  received(): Observable<WebSocketMessage<MessageReceiveDataTypeMap>> {
     return this.received$.asObservable();
   }
 
@@ -144,10 +139,10 @@ export class Message {
       throw new Error('WebSocket is not connected. Bootstrap first.');
     }
     const [op, data] = args;
-    const message: WebSocketMessage<K> = {
+    const message = {
       op,
       msgId: `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
-      data: data as MixMessageDataTypeMap[K],
+      data,
       ...this.ticket
     };
     console.log('Send:', message);
@@ -184,7 +179,7 @@ export class Message {
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
 
-  shortCircuit(message: WebSocketMessage<keyof MessageReceiveDataTypeMap>) {
+  shortCircuit(message: WebSocketMessage<MessageReceiveDataTypeMap>) {
     this.received$.next(this.interceptReceived(message));
   }
 
@@ -282,7 +277,7 @@ export class Message {
   }
 
   noteRename(noteId: string, noteName: string, relative?: boolean): void {
-    this.send<OP.NOTE_RENAME>(OP.NOTE_RENAME, { id: noteId, name: noteName, relative: relative });
+    this.send<OP.NOTE_RENAME>(OP.NOTE_RENAME, { id: noteId, name: noteName, relative });
   }
 
   folderRename(folderId: string, folderPath: string): void {
@@ -321,29 +316,29 @@ export class Message {
     interpreterGroupId: string
   ): void {
     this.send<OP.ANGULAR_OBJECT_UPDATED>(OP.ANGULAR_OBJECT_UPDATED, {
-      noteId: noteId,
-      paragraphId: paragraphId,
-      name: name,
-      value: value,
-      interpreterGroupId: interpreterGroupId
+      noteId,
+      paragraphId,
+      name,
+      value,
+      interpreterGroupId
     });
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   angularObjectClientBind(noteId: string, name: string, value: any, paragraphId: string): void {
     this.send<OP.ANGULAR_OBJECT_CLIENT_BIND>(OP.ANGULAR_OBJECT_CLIENT_BIND, {
-      noteId: noteId,
-      name: name,
-      value: value,
-      paragraphId: paragraphId
+      noteId,
+      name,
+      value,
+      paragraphId
     });
   }
 
   angularObjectClientUnbind(noteId: string, name: string, paragraphId: string): void {
     this.send<OP.ANGULAR_OBJECT_CLIENT_UNBIND>(OP.ANGULAR_OBJECT_CLIENT_UNBIND, {
-      noteId: noteId,
-      name: name,
-      paragraphId: paragraphId
+      noteId,
+      name,
+      paragraphId
     });
   }
 
@@ -411,7 +406,7 @@ export class Message {
 
   runAllParagraphs(noteId: string, paragraphs: SendParagraph[]): void {
     this.send<OP.RUN_ALL_PARAGRAPHS>(OP.RUN_ALL_PARAGRAPHS, {
-      noteId: noteId,
+      noteId,
       paragraphs: JSON.stringify(paragraphs)
     });
   }
@@ -431,8 +426,8 @@ export class Message {
   completion(paragraphId: string, buf: string, cursor: number): void {
     this.send<OP.COMPLETION>(OP.COMPLETION, {
       id: paragraphId,
-      buf: buf,
-      cursor: cursor
+      buf,
+      cursor
     });
   }
 
@@ -446,7 +441,7 @@ export class Message {
   ): void {
     return this.send<OP.COMMIT_PARAGRAPH>(OP.COMMIT_PARAGRAPH, {
       id: paragraphId,
-      noteId: noteId,
+      noteId,
       title: paragraphTitle,
       paragraph: paragraphData,
       config: paragraphConfig,
@@ -460,56 +455,56 @@ export class Message {
     const normalPatch = patch.replace(/,@@/g, '@@');
     return this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
       id: paragraphId,
-      noteId: noteId,
+      noteId,
       patch: normalPatch
     });
   }
 
   importNote(note: ImportNote['note']): void {
     this.send<OP.IMPORT_NOTE>(OP.IMPORT_NOTE, {
-      note: note
+      note
     });
   }
 
   checkpointNote(noteId: string, commitMessage: string): void {
     this.send<OP.CHECKPOINT_NOTE>(OP.CHECKPOINT_NOTE, {
-      noteId: noteId,
-      commitMessage: commitMessage
+      noteId,
+      commitMessage
     });
   }
 
   setNoteRevision(noteId: string, revisionId: string): void {
     this.send<OP.SET_NOTE_REVISION>(OP.SET_NOTE_REVISION, {
-      noteId: noteId,
-      revisionId: revisionId
+      noteId,
+      revisionId
     });
   }
 
   listRevisionHistory(noteId: string): void {
     this.send<OP.LIST_REVISION_HISTORY>(OP.LIST_REVISION_HISTORY, {
-      noteId: noteId
+      noteId
     });
   }
 
   noteRevision(noteId: string, revisionId: string): void {
     this.send<OP.NOTE_REVISION>(OP.NOTE_REVISION, {
-      noteId: noteId,
-      revisionId: revisionId
+      noteId,
+      revisionId
     });
   }
 
   noteRevisionForCompare(noteId: string, revisionId: string, position: string): void {
     this.send<OP.NOTE_REVISION_FOR_COMPARE>(OP.NOTE_REVISION_FOR_COMPARE, {
-      noteId: noteId,
-      revisionId: revisionId,
-      position: position
+      noteId,
+      revisionId,
+      position
     });
   }
 
   editorSetting(paragraphId: string, paragraphText: string): void {
     this.send<OP.EDITOR_SETTING>(OP.EDITOR_SETTING, {
-      paragraphId: paragraphId,
-      paragraphText: paragraphText
+      paragraphId,
+      paragraphText
     });
   }
 
@@ -522,13 +517,13 @@ export class Message {
   }
 
   getInterpreterBindings(noteId: string): void {
-    this.send<OP.GET_INTERPRETER_BINDINGS>(OP.GET_INTERPRETER_BINDINGS, { noteId: noteId });
+    this.send<OP.GET_INTERPRETER_BINDINGS>(OP.GET_INTERPRETER_BINDINGS, { noteId });
   }
 
   saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
     this.send<OP.SAVE_INTERPRETER_BINDINGS>(OP.SAVE_INTERPRETER_BINDINGS, {
-      noteId: noteId,
-      selectedSettingIds: selectedSettingIds
+      noteId,
+      selectedSettingIds
     });
   }
 
@@ -550,7 +545,7 @@ export class Message {
   removeNoteForms(note: Required<Note>['note'], formName: string): void {
     this.send<OP.REMOVE_NOTE_FORMS>(OP.REMOVE_NOTE_FORMS, {
       noteId: note.id,
-      formName: formName
+      formName
     });
   }
 }

@@ -12,22 +12,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div
-  style="border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,.05); margin-top: 10px; margin-bottom: 11px; background-color: #fff;"
+  style="
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    margin-top: 10px;
+    margin-bottom: 11px;
+    background-color: #fff;
+  "
 >
   <div
-    style="background-color: #f5f5f5; border-bottom: 1px solid #ddd; border-radius: 3px 3px 0 0; padding: 6px 12px 6px 12px; font-size: 13px;"
+    style="
+      background-color: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      border-radius: 3px 3px 0 0;
+      padding: 6px 12px 6px 12px;
+      font-size: 13px;
+    "
   >
-    <span style="vertical-align: middle; display: inline-block; margin-top: 3px; color: #333;">Available Fields</span>
-    <div style="clear: both;"></div>
+    <span style="vertical-align: middle; display: inline-block; margin-top: 3px; color: #333">Available Fields</span>
+    <div style="clear: both"></div>
     <!-- to fix previous span which has float: right -->
   </div>
 
   <!-- panel-body: columns -->
-  <div style="padding: 8px; margin-top: 3px;">
-    <ul style="list-style: none; padding: 0; margin: 0;">
-      <li style="display: inline-block; margin: 2px;" ng-repeat="col in tableDataColumns">
+  <div style="padding: 8px; margin-top: 3px">
+    <ul style="list-style: none; padding: 0; margin: 0">
+      <li style="display: inline-block; margin: 2px" ng-repeat="col in tableDataColumns">
         <div
-          style="display: inline-block; font-size: 12px; font-weight: 400; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; padding: 2px 6px; margin-bottom: 0; user-select: none; background-color: #EFEFEF; color: #333;"
+          style="
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 6px;
+            margin-bottom: 0;
+            user-select: none;
+            background-color: #efefef;
+            color: #333;
+          "
           data-drag="true"
           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
           ng-model="tableDataColumns"
@@ -42,15 +71,36 @@ limitations under the License.
   </div>
 
   <!-- panel-body: axis -->
-  <hr style="margin: 1px 0; border: 0; border-top: 1px solid #eee;" />
-  <div style="margin-top: 7px; padding: 9px 8px 4px 8px;">
+  <hr style="margin: 1px 0; border: 0; border-top: 1px solid #eee" />
+  <div style="margin-top: 7px; padding: 9px 8px 4px 8px">
     <!-- axis: keys -->
     <div
-      style="width: 33.33333333%; float: left; position: relative; min-height: 1px; padding-left: 8px; padding-right: 8px;"
+      style="
+        width: 33.33333333%;
+        float: left;
+        position: relative;
+        min-height: 1px;
+        padding-left: 8px;
+        padding-right: 8px;
+      "
     >
-      <div style="display: block; font-weight: 500;">
+      <div style="display: block; font-weight: 500">
         <span
-          style="display: inline; padding: 0.2em 0.6em 0.3em; font-size: 75%; font-weight: 300; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25em; background-color: #906ebd; font-size: 13px; margin-left: 1px;"
+          style="
+            display: inline;
+            padding: 0.2em 0.6em 0.3em;
+            font-size: 75%;
+            font-weight: 300;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25em;
+            background-color: #906ebd;
+            font-size: 13px;
+            margin-left: 1px;
+          "
         >
           keys
         </span>
@@ -58,7 +108,17 @@ limitations under the License.
           ng-model="config.keys"
           data-drop="true"
           jqyoui-droppable="{multiple:true, onDrop:'save()'}"
-          style="margin: 0; padding: 0; list-style: none; border: 1px dashed #ddd; border-radius: 6px; margin-top: 7px; background-color: #fafafa; min-height: 150px; overflow: visible !important;"
+          style="
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            margin-top: 7px;
+            background-color: #fafafa;
+            min-height: 150px;
+            overflow: visible !important;
+          "
         >
           <li
             ng-repeat="item in config.keys track by $index"
@@ -66,16 +126,33 @@ limitations under the License.
             data-drag="true"
             jqyoui-draggable="{index: {{$index}}, animate: false}"
             data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}"
-            style="margin: 2px 0px 0px 2px; display: inline-block;"
+            style="margin: 2px 0px 0px 2px; display: inline-block"
           >
             <div
-              style="display: inline-block; font-size: 12px; font-weight: 400; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; padding: 2px 6px; margin-bottom: 0; user-select: none; background-color: #EFEFEF; color: #333; margin: 2px 0px 0px 2px;"
+              style="
+                display: inline-block;
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 1.5;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 2px 6px;
+                margin-bottom: 0;
+                user-select: none;
+                background-color: #efefef;
+                color: #333;
+                margin: 2px 0px 0px 2px;
+              "
             >
               {{item.name}}
               <span
                 class="fa fa-close"
                 ng-click="removeKey($index)"
-                style="margin-left: 5px; cursor: pointer; color: #999;"
+                style="margin-left: 5px; cursor: pointer; color: #999"
                 onmouseover="this.style.color='#d9534f';"
                 onmouseout="this.style.color='#999';"
               ></span>
@@ -86,11 +163,32 @@ limitations under the License.
     </div>
     <!-- axis: groups -->
     <div
-      style="width: 33.33333333%; float: left; position: relative; min-height: 1px; padding-left: 8px; padding-right: 8px;"
+      style="
+        width: 33.33333333%;
+        float: left;
+        position: relative;
+        min-height: 1px;
+        padding-left: 8px;
+        padding-right: 8px;
+      "
     >
-      <div style="display: block; font-weight: 500;">
+      <div style="display: block; font-weight: 500">
         <span
-          style="display: inline; padding: 0.2em 0.6em 0.3em; font-size: 75%; font-weight: 300; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25em; background-color: #cd5c5c; font-size: 13px; margin-left: 1px;"
+          style="
+            display: inline;
+            padding: 0.2em 0.6em 0.3em;
+            font-size: 75%;
+            font-weight: 300;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25em;
+            background-color: #cd5c5c;
+            font-size: 13px;
+            margin-left: 1px;
+          "
         >
           groups
         </span>
@@ -98,7 +196,17 @@ limitations under the License.
           data-drop="true"
           ng-model="config.groups"
           jqyoui-droppable="{multiple:true, onDrop:'save()'}"
-          style="margin: 0; padding: 0; list-style: none; border: 1px dashed #ddd; border-radius: 6px; margin-top: 7px; background-color: #fafafa; min-height: 150px; overflow: visible !important;"
+          style="
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            margin-top: 7px;
+            background-color: #fafafa;
+            min-height: 150px;
+            overflow: visible !important;
+          "
         >
           <li
             ng-repeat="item in config.groups track by $index"
@@ -106,16 +214,33 @@ limitations under the License.
             data-drag="true"
             jqyoui-draggable="{index: {{$index}}, animate: false}"
             data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}"
-            style="margin: 2px 0px 0px 2px; display: inline-block;"
+            style="margin: 2px 0px 0px 2px; display: inline-block"
           >
             <div
-              style="display: inline-block; font-size: 12px; font-weight: 400; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; padding: 2px 6px; margin-bottom: 0; user-select: none; background-color: #EFEFEF; color: #333; margin: 2px 0px 0px 2px;"
+              style="
+                display: inline-block;
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 1.5;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: middle;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 2px 6px;
+                margin-bottom: 0;
+                user-select: none;
+                background-color: #efefef;
+                color: #333;
+                margin: 2px 0px 0px 2px;
+              "
             >
               {{item.name}}
               <span
                 class="fa fa-close"
                 ng-click="removeGroup($index)"
-                style="margin-left: 5px; cursor: pointer; color: #999;"
+                style="margin-left: 5px; cursor: pointer; color: #999"
                 onmouseover="this.style.color='#d9534f';"
                 onmouseout="this.style.color='#999';"
               ></span>
@@ -126,11 +251,32 @@ limitations under the License.
     </div>
     <!-- axis: values -->
     <div
-      style="width: 33.33333333%; float: left; position: relative; min-height: 1px; padding-left: 8px; padding-right: 8px;"
+      style="
+        width: 33.33333333%;
+        float: left;
+        position: relative;
+        min-height: 1px;
+        padding-left: 8px;
+        padding-right: 8px;
+      "
     >
-      <div style="display: block; font-weight: 500;">
+      <div style="display: block; font-weight: 500">
         <span
-          style="display: inline; padding: 0.2em 0.6em 0.3em; font-size: 75%; font-weight: 300; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25em; background-color: #5782bd; font-size: 13px; margin-left: 1px;"
+          style="
+            display: inline;
+            padding: 0.2em 0.6em 0.3em;
+            font-size: 75%;
+            font-weight: 300;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25em;
+            background-color: #5782bd;
+            font-size: 13px;
+            margin-left: 1px;
+          "
         >
           values
         </span>
@@ -138,7 +284,17 @@ limitations under the License.
           data-drop="true"
           ng-model="config.values"
           jqyoui-droppable="{multiple:true, onDrop:'save()'}"
-          style="margin: 0; padding: 0; list-style: none; border: 1px dashed #ddd; border-radius: 6px; margin-top: 7px; background-color: #fafafa; min-height: 150px; overflow: visible !important;"
+          style="
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+            margin-top: 7px;
+            background-color: #fafafa;
+            min-height: 150px;
+            overflow: visible !important;
+          "
         >
           <li
             ng-repeat="item in config.values track by $index"
@@ -146,33 +302,67 @@ limitations under the License.
             data-drag="true"
             jqyoui-draggable="{index: {{$index}}, animate: false}"
             data-jqyoui-options="{revert: 'invalid', placeholder: 'keep', helper: 'clone'}"
-            style="margin: 2px 0px 0px 2px; display: inline-block;"
+            style="margin: 2px 0px 0px 2px; display: inline-block"
           >
-            <div style="position: relative; display: inline-block; vertical-align: middle;">
+            <div style="position: relative; display: inline-block; vertical-align: middle">
               <div
-                style="display: inline-block; font-size: 12px; font-weight: 400; line-height: 1.5; text-align: center; white-space: nowrap; vertical-align: middle; cursor: pointer; border: 1px solid #ccc; border-radius: 3px; padding: 2px 6px; margin-bottom: 0; user-select: none; background-color: #EFEFEF; color: #333; margin: 2px 0px 0px 2px;"
+                style="
+                  display: inline-block;
+                  font-size: 12px;
+                  font-weight: 400;
+                  line-height: 1.5;
+                  text-align: center;
+                  white-space: nowrap;
+                  vertical-align: middle;
+                  cursor: pointer;
+                  border: 1px solid #ccc;
+                  border-radius: 3px;
+                  padding: 2px 6px;
+                  margin-bottom: 0;
+                  user-select: none;
+                  background-color: #efefef;
+                  color: #333;
+                  margin: 2px 0px 0px 2px;
+                "
                 type="button"
                 data-toggle="dropdown"
                 onclick="var menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; event.stopPropagation();"
               >
                 {{item.name | limitTo: 30}}{{item.name.length > 30 ? '...' : ''}}
-                <span style="text-transform: uppercase; color:#717171; font-weight: 500;">{{item.aggr}}</span>
+                <span style="text-transform: uppercase; color: #717171; font-weight: 500">{{item.aggr}}</span>
                 <span
                   class="fa fa-close"
                   ng-click="removeValue($index); $event.stopPropagation();"
-                  style="margin-left: 5px; cursor: pointer; color: #999;"
+                  style="margin-left: 5px; cursor: pointer; color: #999"
                   onmouseover="this.style.color='#d9534f';"
                   onmouseout="this.style.color='#999';"
                 ></span>
               </div>
               <ul
                 role="menu"
-                style="position: absolute; top: 100%; left: 0; z-index: 1000; display: none; float: left; min-width: 160px; padding: 5px 0; margin: 2px 0 0; font-size: 14px; text-align: left; list-style: none; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);"
+                style="
+                  position: absolute;
+                  top: 100%;
+                  left: 0;
+                  z-index: 1000;
+                  display: none;
+                  float: left;
+                  min-width: 160px;
+                  padding: 5px 0;
+                  margin: 2px 0 0;
+                  font-size: 14px;
+                  text-align: left;
+                  list-style: none;
+                  background-color: #fff;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+                "
                 onclick="event.stopPropagation();"
               >
                 <li
                   ng-click="setValueAggr($index, 'sum')"
-                  style="padding: 3px 20px; cursor: pointer; color: #333;"
+                  style="padding: 3px 20px; cursor: pointer; color: #333"
                   onmouseover="this.style.backgroundColor='#f5f5f5';"
                   onmouseout="this.style.backgroundColor='transparent';"
                 >
@@ -180,7 +370,7 @@ limitations under the License.
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'count')"
-                  style="padding: 3px 20px; cursor: pointer; color: #333;"
+                  style="padding: 3px 20px; cursor: pointer; color: #333"
                   onmouseover="this.style.backgroundColor='#f5f5f5';"
                   onmouseout="this.style.backgroundColor='transparent';"
                 >
@@ -188,7 +378,7 @@ limitations under the License.
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'avg')"
-                  style="padding: 3px 20px; cursor: pointer; color: #333;"
+                  style="padding: 3px 20px; cursor: pointer; color: #333"
                   onmouseover="this.style.backgroundColor='#f5f5f5';"
                   onmouseout="this.style.backgroundColor='transparent';"
                 >
@@ -196,7 +386,7 @@ limitations under the License.
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'min')"
-                  style="padding: 3px 20px; cursor: pointer; color: #333;"
+                  style="padding: 3px 20px; cursor: pointer; color: #333"
                   onmouseover="this.style.backgroundColor='#f5f5f5';"
                   onmouseout="this.style.backgroundColor='transparent';"
                 >
@@ -204,7 +394,7 @@ limitations under the License.
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'max')"
-                  style="padding: 3px 20px; cursor: pointer; color: #333;"
+                  style="padding: 3px 20px; cursor: pointer; color: #333"
                   onmouseover="this.style.backgroundColor='#f5f5f5';"
                   onmouseout="this.style.backgroundColor='transparent';"
                 >
@@ -216,7 +406,7 @@ limitations under the License.
         </ul>
       </div>
     </div>
-    <div style="clear: both;"></div>
+    <div style="clear: both"></div>
   </div>
   <!-- panel-body -->
 </div>
@@ -224,9 +414,9 @@ limitations under the License.
 
 <script>
   // Close dropdown menus when clicking outside
-  document.addEventListener('click', function(event) {
+  document.addEventListener('click', function (event) {
     var dropdowns = document.querySelectorAll('[role="menu"]');
-    dropdowns.forEach(function(dropdown) {
+    dropdowns.forEach(function (dropdown) {
       if (!dropdown.contains(event.target)) {
         dropdown.style.display = 'none';
       }

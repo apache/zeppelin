@@ -62,7 +62,10 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     this.visualization.configChange$.next(this.config);
   }
 
-  constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(VISUALIZATION) public visualization: Visualization,
+    private cdr: ChangeDetectorRef
+  ) {
     super(visualization);
   }
 
@@ -98,15 +101,12 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     }
     const setting = config.setting.lineChart;
     this.setScale(chart);
-    chart
-      .line()
-      .position(`${key}*__value__`)
-      .color('__key__');
+    chart.line().position(`${key}*__value__`).color('__key__');
     setChartXAxis(this.visualization, 'lineChart', chart, key);
 
     if (setting.isDateFormat) {
       if (this.visualization.transformed && this.visualization.transformed.rows) {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const invalid = this.visualization.transformed.rows.some((r: any) => {
           const isInvalidDate = Number.isNaN(new Date(r[key]).valueOf());
           if (isInvalidDate) {
@@ -141,10 +141,10 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     }
     const setting = config.setting.lineChart;
     if (setting.lineWithFocus) {
-      // tslint:disable-next-line
+      // eslint-disable-next-line
       (this.chart as any).interact('brush');
     } else {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.chart as any).clearInteraction();
     }
   }

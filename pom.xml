@@ -1031,7 +1031,7 @@
 
               <!-- bundled from zeppelin-web-angular -->
               <exclude>**/*.json</exclude>
-              <exclude>**/browserslist</exclude>
+              <exclude>**/.browserslistrc</exclude>
               <exclude>**/.prettierrc</exclude>
               <exclude>**/.prettierignore</exclude>
               <exclude>**/.editorconfig</exclude>

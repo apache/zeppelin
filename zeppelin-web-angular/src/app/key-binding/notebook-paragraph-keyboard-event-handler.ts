@@ -70,7 +70,9 @@ export const ParagraphActionToHandlerName = {
   [ParagraphActions.SearchInsideCode]: 'handleSearchInsideCode',
   [ParagraphActions.FindInCode]: 'handleFindInCode'
 } as const;
-// TODO: Replace `as const` with `satisfies Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler>` when typescript version is over 4.9.
+// TODO: Replace `as const` with
+//       `satisfies Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler>`
+//       when typescript version is over 4.9.
 //       This allows checking both keys and values at the type level,
 //       while preserving the binding between them.
 
@@ -86,9 +88,9 @@ const MonacoHandledParagraphActions = [
 //       This ensures that the array contains only valid ParagraphActions,
 //       while preserving the literal value of the each element.
 
-type MonacoHandledParagraphAction = typeof MonacoHandledParagraphActions[number];
+type MonacoHandledParagraphAction = (typeof MonacoHandledParagraphActions)[number];
 
-type MonacoHandledParagraphActionHandlerName = typeof ParagraphActionToHandlerName[MonacoHandledParagraphAction];
+type MonacoHandledParagraphActionHandlerName = (typeof ParagraphActionToHandlerName)[MonacoHandledParagraphAction];
 
 export type MonacoKeyboardEventHandler = Pick<
   NotebookParagraphKeyboardEventHandler,

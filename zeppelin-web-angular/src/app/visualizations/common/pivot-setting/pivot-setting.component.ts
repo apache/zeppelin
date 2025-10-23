@@ -29,7 +29,7 @@ export class VisualizationPivotSettingComponent implements OnInit {
   columns: Array<{ name: string; index: number; aggr: string }> = [];
   aggregates = ['sum', 'count', 'avg', 'min', 'max'];
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   drop(event: CdkDragDrop<any[]>) {
     if (!this.visualization.configChange$) {
       throw new Error('Visualization configChange$ is not defined');
@@ -55,7 +55,7 @@ export class VisualizationPivotSettingComponent implements OnInit {
     this.visualization.configChange$.next(this.config);
   }
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   removeFieldAt(data: any[], index: number): void {
     if (!this.visualization.configChange$) {
       throw new Error('Visualization configChange$ is not defined');
