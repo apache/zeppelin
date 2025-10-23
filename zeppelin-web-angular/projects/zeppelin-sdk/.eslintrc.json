@@ -5,7 +5,7 @@
     {
       "files": ["*.ts"],
       "parserOptions": {
-        "project": ["projects/zeppelin-sdk/tsconfig.lib.json", "projects/zeppelin-sdk/tsconfig.spec.json"],
+        "project": true,
         "createDefaultProgram": true
       },
       "rules": {
