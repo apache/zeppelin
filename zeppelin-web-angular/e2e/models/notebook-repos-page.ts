@@ -11,6 +11,7 @@
  */
 
 import { Locator, Page } from '@playwright/test';
+import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 
 export class NotebookReposPage extends BasePage {
@@ -26,16 +27,14 @@ export class NotebookReposPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/#/notebook-repos', { waitUntil: 'networkidle' });
+    await this.page.goto('/#/notebook-repos', { waitUntil: 'load' });
     await this.page.waitForURL('**/#/notebook-repos', { timeout: 15000 });
-    await this.waitForPageLoad();
-    await this.page.waitForLoadState('domcontentloaded');
-    try {
-      await this.pageHeader.waitFor({ state: 'visible', timeout: 15000 });
-    } catch (e) {
-      await this.page.waitForTimeout(2000);
-      await this.pageHeader.waitFor({ state: 'visible', timeout: 5000 });
-    }
+    await waitForZeppelinReady(this.page);
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+    await this.page.waitForSelector('zeppelin-notebook-repo-item, zeppelin-page-header[title="Notebook Repository"]', {
+      state: 'visible',
+      timeout: 20000
+    });
   }
 
   async getRepositoryItemByName(name: string): Promise<Locator> {
