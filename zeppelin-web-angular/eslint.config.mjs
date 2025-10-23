@@ -29,6 +29,7 @@ export default defineConfig([
       sourceType: 'script',
       parserOptions: {
         project: ['tsconfig.json', 'e2e/tsconfig.json'],
+        tsconfigRootDir: __dirname,
         createDefaultProgram: true
       }
     },
