@@ -5,10 +5,7 @@
     {
       "files": ["*.ts"],
       "parserOptions": {
-        "project": [
-          "projects/zeppelin-visualization/tsconfig.lib.json",
-          "projects/zeppelin-visualization/tsconfig.spec.json"
-        ],
+        "project": true,
         "createDefaultProgram": true
       },
       "rules": {

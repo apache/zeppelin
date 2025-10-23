@@ -22,12 +22,13 @@ import { TicketService } from '@zeppelin/services';
 
 @Injectable()
 export class AppMessageInterceptor implements MessageInterceptor {
+  private prevErrorInfo: string | null = null;
+
   constructor(
     private router: Router,
     private nzNotificationService: NzNotificationService,
     private ticketService: TicketService,
-    private nzModalService: NzModalService,
-    private prevErrorInfo: string | null = null
+    private nzModalService: NzModalService
   ) {}
 
   received(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
