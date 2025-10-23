@@ -23,8 +23,10 @@ export default defineConfig([
       ecmaVersion: 5,
       sourceType: 'script',
       parserOptions: {
-        project: ['tsconfig.lib.json', 'tsconfig.spec.json'],
-        tsconfigRootDir: __dirname,
+        project: [
+          'projects/zeppelin-visualization/tsconfig.lib.json',
+          'projects/zeppelin-visualization/tsconfig.spec.json'
+        ],
         createDefaultProgram: true
       }
     },
