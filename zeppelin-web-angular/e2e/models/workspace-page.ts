@@ -29,16 +29,4 @@ export class WorkspacePage extends BasePage {
     await this.page.goto('/', { waitUntil: 'load' });
     await this.waitForPageLoad();
   }
-
-  async isHeaderVisible(): Promise<boolean> {
-    return this.header.isVisible();
-  }
-
-  async isWorkspaceVisible(): Promise<boolean> {
-    return this.workspaceComponent.isVisible();
-  }
-
-  async isRouterOutletPresent(): Promise<boolean> {
-    return this.routerOutlet.count().then(count => count > 0);
-  }
 }

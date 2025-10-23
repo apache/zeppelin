@@ -36,13 +36,6 @@ export class HomePage extends BasePage {
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
   readonly communityHeading: Locator;
-  readonly tutorialNotebooks: {
-    flinkTutorial: Locator;
-    pythonTutorial: Locator;
-    sparkTutorial: Locator;
-    rTutorial: Locator;
-    miscellaneousTutorial: Locator;
-  };
   readonly externalLinks: {
     documentation: Locator;
     mailingList: Locator;
@@ -93,16 +86,6 @@ export class HomePage extends BasePage {
     this.notebookHeading = this.notebookColumn.locator('h3');
     this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
     this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
-    this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
-    this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
-
-    this.tutorialNotebooks = {
-      flinkTutorial: page.locator('text=Flink Tutorial'),
-      pythonTutorial: page.locator('text=Python Tutorial'),
-      sparkTutorial: page.locator('text=Spark Tutorial'),
-      rTutorial: page.locator('text=R Tutorial'),
-      miscellaneousTutorial: page.locator('text=Miscellaneous Tutorial')
-    };
 
     this.externalLinks = {
       documentation: page.locator('a[href*="zeppelin.apache.org/docs"]'),
