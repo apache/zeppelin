@@ -44,7 +44,7 @@
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.app.json",
+            "tsConfig": "src/tsconfig.json",
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -155,7 +155,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/zeppelin-visualization/tsconfig.lib.json",
+            "tsConfig": "projects/zeppelin-visualization/tsconfig.json",
             "project": "projects/zeppelin-visualization/ng-package.json"
           }
         },
@@ -176,7 +176,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/zeppelin-sdk/tsconfig.lib.json",
+            "tsConfig": "projects/zeppelin-sdk/tsconfig.json",
             "project": "projects/zeppelin-sdk/ng-package.json"
           }
         },
