@@ -11,7 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
-import { getBasicPageMetadata, waitForUrlNotContaining } from '../utils';
+import { getBasicPageMetadata } from '../utils';
 import { HomePage } from './home-page';
 
 export class HomePageUtil {
