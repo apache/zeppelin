@@ -19,14 +19,18 @@ async function globalTeardown() {
   console.log('✅ Test cache cleared');
 
   // Clean up test notebooks that may have been left behind due to test failures
-  await cleanupTestNotebooks();
+  if (!process.env.CI) {
+    await cleanupTestNotebooks();
+  } else {
+    console.log('ℹ️ Skipping test notebook cleanup in CI environment.');
+  }
 }
 
 async function cleanupTestNotebooks() {
   try {
     console.log('🗂️ Cleaning up test notebooks...');
 
-    const baseURL = process.env.CI ? 'http://localhost:8080' : 'http://localhost:4200';
+    const baseURL = 'http://localhost:4200';
 
     // Get all notebooks
     const response = await fetch(`${baseURL}/api/notebook`);
