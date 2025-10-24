@@ -36,16 +36,6 @@ test.describe('Home Page Enhanced Functionality', () => {
     });
   });
 
-  test.describe('Given responsive grid layout', () => {
-    test('When page loads Then should display responsive grid with correct attributes', async ({ page }) => {
-      await homeUtil.verifyGridResponsiveness();
-    });
-
-    test('When grid is displayed Then should have proper column structure', async ({ page }) => {
-      await homeUtil.verifyResponsiveGrid();
-    });
-  });
-
   test.describe('Given welcome section display', () => {
     test('When page loads Then should show welcome content with proper text', async ({ page }) => {
       await homeUtil.verifyWelcomeSection();
@@ -69,18 +59,6 @@ test.describe('Home Page Enhanced Functionality', () => {
       expect(linkTargets.mailingListHref).toContain('community.html');
       expect(linkTargets.issuesTrackingHref).toContain('issues.apache.org');
       expect(linkTargets.githubHref).toContain('github.com/apache/zeppelin');
-    });
-  });
-
-  test.describe('Given message service integration', () => {
-    test('When notes info message is received Then should update loading state', async ({ page }) => {
-      await page.evaluate(() => {
-        const mockData = { notes: [] };
-        window.dispatchEvent(new CustomEvent('notes-info', { detail: mockData }));
-      });
-
-      await page.waitForTimeout(1000);
-      await homeUtil.verifyNotebookSection();
     });
   });
 });

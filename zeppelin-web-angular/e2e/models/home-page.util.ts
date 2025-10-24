@@ -78,13 +78,6 @@ export class HomePageUtil {
     };
   }
 
-  async getPageMetadata(): Promise<{
-    title: string;
-    path: string;
-  }> {
-    return await getBasicPageMetadata(this.page);
-  }
-
   async getHomePageMetadata(): Promise<{
     title: string;
     path: string;
@@ -97,17 +90,6 @@ export class HomePageUtil {
       ...basicMetadata,
       isAnonymous
     };
-  }
-
-  async navigateToLoginAndWaitForRedirect(): Promise<void> {
-    await this.page.goto('/#/login', { waitUntil: 'load' });
-    await waitForUrlNotContaining(this.page, '#/login');
-  }
-
-  async verifyResponsiveGrid(): Promise<void> {
-    await expect(this.homePage.moreInfoGrid).toBeVisible();
-    await expect(this.homePage.notebookColumn).toBeVisible();
-    await expect(this.homePage.helpCommunityColumn).toBeVisible();
   }
 
   async verifyWelcomeSection(): Promise<void> {
@@ -247,16 +229,5 @@ export class HomePageUtil {
       const target = await link.getAttribute('target');
       expect(target).toBe('_blank');
     }
-  }
-
-  async verifyGridResponsiveness(): Promise<void> {
-    await expect(this.homePage.moreInfoGrid).toBeVisible();
-
-    // Use the notebook and help sections as they are the actual grid columns
-    const notebookSection = this.homePage.page.locator('h3:has-text("Notebook")');
-    const helpSection = this.homePage.page.locator('h3:has-text("Help")');
-
-    await expect(notebookSection).toBeVisible();
-    await expect(helpSection).toBeVisible();
   }
 }

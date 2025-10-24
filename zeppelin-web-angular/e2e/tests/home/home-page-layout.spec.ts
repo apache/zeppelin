@@ -36,10 +36,6 @@ test.describe('Home Page - Layout and Grid', () => {
       await test.step('When the page loads', async () => {
         await waitForZeppelinReady(page);
       });
-
-      await test.step('Then I should see the responsive grid layout', async () => {
-        await homePageUtil.verifyResponsiveGrid();
-      });
     });
 
     test('should have proper column distribution', async ({ page }) => {
@@ -97,7 +93,6 @@ test.describe('Home Page - Layout and Grid', () => {
 
       await test.step('Then the grid should adapt to mobile layout', async () => {
         await expect(homePage.moreInfoGrid).toBeVisible();
-        // Check that both columns are still visible and stacked vertically
         await expect(homePage.notebookColumn).toBeVisible();
         await expect(homePage.helpCommunityColumn).toBeVisible();
 

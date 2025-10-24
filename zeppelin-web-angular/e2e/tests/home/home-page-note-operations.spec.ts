@@ -61,6 +61,16 @@ test.describe('Home Page Note Operations', () => {
         await expect(renameIcon).toBeVisible();
         await expect(clearIcon).toBeVisible();
         await expect(deleteIcon).toBeVisible();
+
+        // Test tooltip visibility by hovering over each icon
+        await renameIcon.hover();
+        await expect(page.locator('.ant-tooltip', { hasText: 'Rename note' })).toBeVisible();
+
+        await clearIcon.hover();
+        await expect(page.locator('.ant-tooltip', { hasText: 'Clear output' })).toBeVisible();
+
+        await deleteIcon.hover();
+        await expect(page.locator('.ant-tooltip', { hasText: 'Move note to Trash' })).toBeVisible();
       }
     });
   });
