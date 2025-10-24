@@ -162,22 +162,6 @@
           </execution>
 
           <execution>
-            <id>playwright-install</id>
-            <phase>pre-integration-test</phase>
-            <configuration>
-              <skip>${web.e2e.disabled}</skip>
-              <target unless="skipTests">
-                <exec executable="./node/npx" spawn="false">
-                  <arg line="playwright@1.53.2 install --with-deps" />
-                </exec>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-
-          <execution>
             <id>stop-zeppelin</id>
             <phase>post-integration-test</phase>
             <configuration>
