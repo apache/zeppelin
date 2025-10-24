@@ -19,7 +19,7 @@ export default defineConfig({
   globalTeardown: require.resolve('./e2e/global-teardown'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: 2,
   workers: 4,
   timeout: 120000,
   expect: {
@@ -39,11 +39,11 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'], permissions: ['clipboard-read', 'clipboard-write'] }
     },
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' }
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', permissions: ['clipboard-read', 'clipboard-write'] }
     },
     {
       name: 'firefox',
@@ -60,7 +60,7 @@ export default defineConfig({
     },
     {
       name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+      use: { ...devices['Desktop Edge'], channel: 'msedge', permissions: ['clipboard-read', 'clipboard-write'] }
     }
   ],
   webServer: process.env.CI

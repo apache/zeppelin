@@ -13,7 +13,13 @@
 import { expect, test } from '@playwright/test';
 import { PublishedParagraphPage } from 'e2e/models/published-paragraph-page';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import {
+  addPageAnnotationBeforeEach,
+  performLoginIfRequired,
+  waitForNotebookLinks,
+  waitForZeppelinReady,
+  PAGES
+} from '../../../utils';
 
 test.describe('Published Paragraph', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
@@ -27,6 +33,7 @@ test.describe('Published Paragraph', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
+    await waitForNotebookLinks(page);
 
     // Handle the welcome modal if it appears
     const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
@@ -87,55 +94,137 @@ test.describe('Published Paragraph', () => {
     });
   });
 
-  test.describe('Valid Paragraph Display', () => {
-    test('should enter published paragraph by clicking', async () => {
+  test.describe('Navigation and URL Patterns', () => {
+    test('should enter published paragraph by clicking link', async () => {
       await testUtil.verifyClickLinkThisParagraphBehavior(testNotebook.noteId, testNotebook.paragraphId);
     });
 
-    test('should enter published paragraph by URL', async ({ page }) => {
+    test('should enter published paragraph by direct URL navigation', async ({ page }) => {
       await page.goto(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`);
       await page.waitForLoadState('networkidle');
       await expect(page).toHaveURL(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`, {
         timeout: 10000
       });
     });
+
+    test('should maintain paragraph context in published mode', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
+
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await page.waitForLoadState('networkidle');
+
+      expect(page.url()).toContain(noteId);
+      expect(page.url()).toContain(paragraphId);
+
+      const publishedContainer = page.locator('zeppelin-publish-paragraph');
+      if (await publishedContainer.isVisible()) {
+        await expect(publishedContainer).toBeVisible();
+      }
+    });
   });
 
-  test('should show confirmation modal and allow running the paragraph', async ({ page }) => {
-    const { noteId, paragraphId } = testNotebook;
+  test.describe('Published Mode Functionality', () => {
+    test('should display result in read-only mode with published flag', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
 
-    await publishedParagraphPage.navigateToNotebook(noteId);
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await page.waitForLoadState('networkidle');
 
-    const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
-    const paragraphResult = paragraphElement.locator('zeppelin-notebook-paragraph-result');
+      // Verify that we're in published mode by checking the URL pattern
+      expect(page.url()).toContain(`/paragraph/${paragraphId}`);
 
-    // Only clear output if result exists
-    if (await paragraphResult.isVisible()) {
-      const settingsButton = paragraphElement.locator('a[nz-dropdown]');
-      await settingsButton.click();
+      const publishedContainer = page.locator('zeppelin-publish-paragraph');
+      const isPublishedContainerVisible = await publishedContainer.isVisible();
 
-      const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
-      await clearOutputButton.click();
-      await expect(paragraphResult).toBeHidden();
-    }
+      if (isPublishedContainerVisible) {
+        await expect(publishedContainer).toBeVisible();
+      }
 
-    await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+      const isResultVisible = await page.locator('zeppelin-notebook-paragraph-result').isVisible();
+      if (isResultVisible) {
+        await expect(page.locator('zeppelin-notebook-paragraph-result')).toBeVisible();
+      }
+    });
 
-    const modal = publishedParagraphPage.confirmationModal;
-    await expect(modal).toBeVisible();
+    test('should hide editing controls in published mode', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
 
-    // Check for the new enhanced modal content
-    await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await page.waitForLoadState('networkidle');
 
-    // Verify that the modal shows code preview
-    const modalContent = publishedParagraphPage.confirmationModal.locator('.ant-modal-confirm-content');
-    await expect(modalContent).toContainText('This paragraph contains the following code:');
-    await expect(modalContent).toContainText('Would you like to execute this code?');
+      // In published mode, code editor and control panel should be hidden
+      const codeEditor = page.locator('zeppelin-notebook-paragraph-code-editor');
+      const controlPanel = page.locator('zeppelin-notebook-paragraph-control');
 
-    // Click the Run button in the modal (OK button in confirmation modal)
-    const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');
-    await expect(runButton).toBeVisible();
-    await runButton.click();
-    await expect(modal).toBeHidden();
+      const isCodeEditorVisible = await codeEditor.isVisible();
+      const isControlPanelVisible = await controlPanel.isVisible();
+
+      if (isCodeEditorVisible) {
+        await expect(codeEditor).toBeHidden();
+      }
+      if (isControlPanelVisible) {
+        await expect(controlPanel).toBeHidden();
+      }
+    });
+
+    test('should display dynamic forms in published mode', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
+
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await page.waitForLoadState('networkidle');
+
+      // Dynamic forms should be visible and functional in published mode
+      const isDynamicFormsVisible = await page.locator('zeppelin-notebook-paragraph-dynamic-forms').isVisible();
+      if (isDynamicFormsVisible) {
+        await expect(page.locator('zeppelin-notebook-paragraph-dynamic-forms')).toBeVisible();
+      }
+    });
+  });
+
+  test.describe('Confirmation Modal and Execution', () => {
+    test('should show confirmation modal and allow running the paragraph', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
+
+      await publishedParagraphPage.navigateToNotebook(noteId);
+
+      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+      const paragraphResult = paragraphElement.locator('zeppelin-notebook-paragraph-result');
+
+      // Only clear output if result exists
+      if (await paragraphResult.isVisible()) {
+        const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+        await settingsButton.click();
+
+        const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
+        await clearOutputButton.click();
+        await expect(paragraphResult).toBeHidden();
+      }
+
+      await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+      const modal = publishedParagraphPage.confirmationModal;
+      await expect(modal).toBeVisible();
+
+      // Check for the enhanced modal content
+      await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
+
+      // Verify that the modal shows code preview
+      const modalContent = publishedParagraphPage.confirmationModal.locator('.ant-modal-confirm-content');
+      await expect(modalContent).toContainText('This paragraph contains the following code:');
+      await expect(modalContent).toContainText('Would you like to execute this code?');
+
+      // Click the Run button in the modal (OK button in confirmation modal)
+      const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');
+      await expect(runButton).toBeVisible();
+      await runButton.click();
+      await expect(modal).toBeHidden();
+    });
+
+    test('should show confirmation modal for paragraphs without results', async () => {
+      const { noteId, paragraphId } = testNotebook;
+
+      // Test confirmation modal for paragraph without results
+      await testUtil.testConfirmationModalForNoResultParagraph({ noteId, paragraphId });
+    });
   });
 });

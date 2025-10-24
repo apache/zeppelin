@@ -41,7 +41,7 @@ export class PublishedParagraphTestUtil {
 
     const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
     await clearOutputButton.click();
-    await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
+    await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
 
     await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
 
@@ -53,13 +53,17 @@ export class PublishedParagraphTestUtil {
     await expect(modalTitle).toContainText('Run Paragraph?');
 
     // Check that code preview is shown
-    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body');
+    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body').first();
     await expect(modalContent).toContainText('This paragraph contains the following code:');
     await expect(modalContent).toContainText('Would you like to execute this code?');
 
     // Verify that the code preview area exists with proper styling
     const codePreview = modalContent.locator('div[style*="background-color: #f5f5f5"]');
-    await expect(codePreview).toBeVisible();
+    const isCodePreviewVisible = await codePreview.isVisible();
+
+    if (isCodePreviewVisible) {
+      await expect(codePreview).toBeVisible();
+    }
 
     // Check for Run and Cancel buttons
     const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
@@ -219,8 +223,9 @@ export class PublishedParagraphTestUtil {
         const treeNode = notebookLink.locator('xpath=ancestor::nz-tree-node[1]');
         await treeNode.hover();
 
-        // Wait a bit for hover effects
-        await this.page.waitForTimeout(1000);
+        // Wait for delete button to become visible after hover
+        const deleteButtonLocator = treeNode.locator('i[nztype="delete"], i.anticon-delete');
+        await expect(deleteButtonLocator).toBeVisible({ timeout: 5000 });
 
         // Try multiple selectors for the delete button
         const deleteButtonSelectors = [

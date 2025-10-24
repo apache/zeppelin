@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { Locator, Page, expect } from '@playwright/test';
-import { BasePage } from './base-page';
+import { expect, Locator, Page } from '@playwright/test';
 import { getCurrentPath, waitForUrlNotContaining } from '../utils';
+import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
   readonly welcomeHeading: Locator;
@@ -45,7 +45,7 @@ export class HomePage extends BasePage {
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
-    this.createNewNoteButton = page.locator('text=Create new Note');
+    this.createNewNoteButton = page.locator('zeppelin-node-list a').filter({ hasText: 'Create new Note' });
     this.importNoteButton = page.locator('text=Import Note');
     this.searchInput = page.locator('textbox', { hasText: 'Search' });
     this.filterInput = page.locator('input[placeholder*="Filter"]');

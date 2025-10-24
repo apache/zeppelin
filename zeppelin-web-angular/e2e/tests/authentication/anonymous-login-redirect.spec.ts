@@ -62,7 +62,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      await homePageUtil.verifyHomePageIntegrity();
+      await homePageUtil.verifyHomePageElements();
     });
 
     test('When clicking Zeppelin logo after redirect, Then should maintain home URL and content', async ({ page }) => {
