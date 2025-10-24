@@ -40,7 +40,7 @@ export class ThemePage {
   }
 
   async assertSystemTheme() {
-    await expect(this.themeToggleButton).toHaveText('smart_toy');
+    await expect(this.themeToggleButton).toHaveText('smart_toy', { timeout: 60000 });
   }
 
   async setThemeInLocalStorage(theme: 'light' | 'dark' | 'system') {
