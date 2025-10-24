@@ -62,7 +62,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      await homePageUtil.verifyHomePageIntegrity();
+      await homePageUtil.verifyHomePageElements();
     });
 
     test('When clicking Zeppelin logo after redirect, Then should maintain home URL and content', async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      const metadata = await homePageUtil.getPageMetadata();
+      const metadata = await homePageUtil.getHomePageMetadata();
 
       expect(metadata.title).toContain('Zeppelin');
       expect(metadata.path).toContain('#/');
@@ -148,7 +148,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await page.goto('/', { waitUntil: 'load' });
       await waitForZeppelinReady(page);
 
-      const homeMetadata = await homePageUtil.getPageMetadata();
+      const homeMetadata = await homePageUtil.getHomePageMetadata();
       expect(homeMetadata.path).toContain('#/');
       expect(homeMetadata.isAnonymous).toBe(true);
 
@@ -156,7 +156,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      const loginMetadata = await homePageUtil.getPageMetadata();
+      const loginMetadata = await homePageUtil.getHomePageMetadata();
       expect(loginMetadata.path).toContain('#/');
       expect(loginMetadata.path).not.toContain('#/login');
       expect(loginMetadata.isAnonymous).toBe(true);
