@@ -28,6 +28,7 @@ export class NotebookUtil extends BasePage {
 
       // Add wait for page to be ready and button to be visible
       await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+      await this.page.waitForSelector('zeppelin-node-list a', { timeout: 30000 });
       await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 30000 });
 
       // Wait for button to be ready for interaction
