@@ -36,7 +36,7 @@
 
     <!--library versions -->
     <pty4j.version>0.12.10-jdk8</pty4j.version>
-    <jinjava.version>2.4.0</jinjava.version>
+    <jinjava.version>2.7.5</jinjava.version>
     <guava.version>32.0.0-jre</guava.version>
   </properties>
 
