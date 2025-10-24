@@ -37,20 +37,8 @@ export class NotebookReposPage extends BasePage {
     });
   }
 
-  async getRepositoryItemByName(name: string): Promise<Locator> {
-    return this.page.locator('nz-card').filter({ hasText: name });
-  }
-
   async getRepositoryItemCount(): Promise<number> {
     return await this.repositoryItems.count();
-  }
-
-  async isPageHeaderVisible(): Promise<boolean> {
-    return await this.pageHeader.isVisible();
-  }
-
-  async isPageDescriptionVisible(): Promise<boolean> {
-    return await this.pageDescription.isVisible();
   }
 }
 
@@ -89,18 +77,6 @@ export class NotebookRepoItemPage {
 
   async isEditMode(): Promise<boolean> {
     return await this.repositoryCard.evaluate(el => el.classList.contains('edit'));
-  }
-
-  async isEditButtonVisible(): Promise<boolean> {
-    return await this.editButton.isVisible();
-  }
-
-  async isSaveButtonVisible(): Promise<boolean> {
-    return await this.saveButton.isVisible();
-  }
-
-  async isCancelButtonVisible(): Promise<boolean> {
-    return await this.cancelButton.isVisible();
   }
 
   async isSaveButtonEnabled(): Promise<boolean> {
