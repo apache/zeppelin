@@ -10,6 +10,4 @@
  * limitations under the License.
  */
 
-import './styles/global.css';
-
 export { default as PublishedParagraph, mount } from './pages/PublishedParagraph';
