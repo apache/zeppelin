@@ -11,6 +11,7 @@
  */
 
 import { createRoot } from 'react-dom/client';
+import { ConfigProvider } from 'antd';
 import { Empty } from '@/components';
 import { SingleResultRenderer } from '@/templates';
 import type { ParagraphResult, ParagraphConfig } from '@/types';
@@ -27,13 +28,21 @@ const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
   }
 
   return (
-    <div>
-      {results.map((result: ParagraphResult, index: number) => (
-        <div key={index}>
-          <SingleResultRenderer result={result} config={config} />
-        </div>
-      ))}
-    </div>
+    <ConfigProvider
+      theme={{
+        token: {
+          fontFamily: "'Lucida Console', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace"
+        }
+      }}
+    >
+      <div>
+        {results.map((result: ParagraphResult, index: number) => (
+          <div key={index}>
+            <SingleResultRenderer result={result} config={config} />
+          </div>
+        ))}
+      </div>
+    </ConfigProvider>
   );
 };
 
