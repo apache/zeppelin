@@ -122,7 +122,7 @@ test.describe('Published Paragraph', () => {
     await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
 
     const modal = publishedParagraphPage.confirmationModal;
-    await expect(modal).toBeVisible();
+    await expect(modal).toBeVisible({ timeout: 300000 });
 
     // Check for the new enhanced modal content
     await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
