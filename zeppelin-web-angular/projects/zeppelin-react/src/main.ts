@@ -10,7 +10,6 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
-};
+import './styles/global.css';
+
+export { default as PublishedParagraph, mount } from './pages/PublishedParagraph';
