@@ -10,7 +10,5 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
-};
+export { VisualizationControls } from './VisualizationControls';
+export { TableVisualization } from './TableVisualization';
