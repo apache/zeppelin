@@ -56,6 +56,17 @@ test.describe('Dark Mode Theme Switching', () => {
       await darkModePage.assertDarkTheme();
     });
 
+    // AND: User refreshes the page.
+    await test.step('AND the user refreshes the page', async () => {
+      await page.reload();
+      await waitForZeppelinReady(page);
+    });
+
+    // THEN: Dark mode is maintained after refresh.
+    await test.step('THEN dark mode is maintained after refresh', async () => {
+      await darkModePage.assertDarkTheme();
+    });
+
     // AND: User clicks the toggle again to switch back to light mode.
     await test.step('AND the user clicks the toggle to switch back to light mode', async () => {
       await darkModePage.toggleTheme();
