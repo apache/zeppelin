@@ -49,28 +49,12 @@ export class PublishedParagraphPage extends BasePage {
     await this.waitForPageLoad();
   }
 
-  async isPublishedParagraphVisible(): Promise<boolean> {
-    return await this.publishedParagraphContainer.isVisible();
-  }
-
-  async getErrorModalTitle(): Promise<string> {
-    return (await this.errorModalTitle.textContent()) || '';
-  }
-
   async getErrorModalContent(): Promise<string> {
     return (await this.errorModalContent.textContent()) || '';
   }
 
   async clickErrorModalOk(): Promise<void> {
     await this.errorModalOkButton.click();
-  }
-
-  async isDynamicFormsVisible(): Promise<boolean> {
-    return await this.dynamicForms.isVisible();
-  }
-
-  async isResultVisible(): Promise<boolean> {
-    return await this.paragraphResult.isVisible();
   }
 
   async getCurrentUrl(): Promise<string> {
