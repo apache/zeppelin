@@ -60,7 +60,7 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^13.3.11",
+    "@angular-devkit/build-angular": "^20.3.7",
     "@angular-eslint/builder": "13.5.0",
     "@angular-eslint/eslint-plugin": "13.5.0",
     "@angular-eslint/eslint-plugin-template": "13.5.0",
@@ -92,8 +92,8 @@
     "husky": "9.1.7",
     "lint-staged": "^15.5.2",
     "monaco-editor-webpack-plugin": "6.0.0",
-    "ng-packagr": "^13.3.1",
-    "ngx-build-plus": "^13.0.1",
+    "ng-packagr": "^20.3.0",
+    "ngx-build-plus": "^20.0.0",
     "prettier": "^3.6.2",
     "scandirectory": "8.1.1",
     "ts-node": "~7.0.0",
