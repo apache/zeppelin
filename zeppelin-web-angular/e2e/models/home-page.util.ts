@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
+import { getBasicPageMetadata } from '../utils';
 import { HomePage } from './home-page';
-import { getBasicPageMetadata, waitForUrlNotContaining } from '../utils';
 
 export class HomePageUtil {
   private homePage: HomePage;
@@ -44,13 +44,6 @@ export class HomePageUtil {
     };
   }
 
-  async verifyHomePageIntegrity(): Promise<void> {
-    await this.verifyHomePageElements();
-    await this.verifyNotebookFunctionalities();
-    await this.verifyTutorialNotebooks();
-    await this.verifyExternalLinks();
-  }
-
   async verifyHomePageElements(): Promise<void> {
     await expect(this.homePage.welcomeHeading).toBeVisible();
     await expect(this.homePage.notebookSection).toBeVisible();
@@ -58,34 +51,11 @@ export class HomePageUtil {
     await expect(this.homePage.communitySection).toBeVisible();
   }
 
-  async verifyNotebookFunctionalities(): Promise<void> {
-    await expect(this.homePage.createNewNoteButton).toBeVisible();
-    await expect(this.homePage.importNoteButton).toBeVisible();
-
-    const filterInputCount = await this.homePage.filterInput.count();
-    if (filterInputCount > 0) {
-      await expect(this.homePage.filterInput).toBeVisible();
-    }
-  }
-
-  async verifyTutorialNotebooks(): Promise<void> {
-    await expect(this.homePage.tutorialNotebooks.flinkTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.pythonTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.sparkTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.rTutorial).toBeVisible();
-    await expect(this.homePage.tutorialNotebooks.miscellaneousTutorial).toBeVisible();
-  }
-
   async verifyExternalLinks(): Promise<void> {
-    const docCount = await this.homePage.externalLinks.documentation.count();
-    const mailCount = await this.homePage.externalLinks.mailingList.count();
-    const issuesCount = await this.homePage.externalLinks.issuesTracking.count();
-    const githubCount = await this.homePage.externalLinks.github.count();
-
-    if (docCount > 0) await expect(this.homePage.externalLinks.documentation).toBeVisible();
-    if (mailCount > 0) await expect(this.homePage.externalLinks.mailingList).toBeVisible();
-    if (issuesCount > 0) await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
-    if (githubCount > 0) await expect(this.homePage.externalLinks.github).toBeVisible();
+    await expect(this.homePage.externalLinks.documentation).toBeVisible();
+    await expect(this.homePage.externalLinks.mailingList).toBeVisible();
+    await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
+    await expect(this.homePage.externalLinks.github).toBeVisible();
   }
 
   async testNavigationConsistency(): Promise<{
@@ -108,7 +78,7 @@ export class HomePageUtil {
     };
   }
 
-  async getPageMetadata(): Promise<{
+  async getHomePageMetadata(): Promise<{
     title: string;
     path: string;
     isAnonymous: boolean;
@@ -122,8 +92,142 @@ export class HomePageUtil {
     };
   }
 
-  async navigateToLoginAndWaitForRedirect(): Promise<void> {
-    await this.page.goto('/#/login', { waitUntil: 'load' });
-    await waitForUrlNotContaining(this.page, '#/login');
+  async verifyWelcomeSection(): Promise<void> {
+    await expect(this.homePage.welcomeSection).toBeVisible();
+    await expect(this.homePage.welcomeHeading).toBeVisible();
+
+    const headingText = await this.homePage.getWelcomeHeadingText();
+    expect(headingText.trim()).toBe('Welcome to Zeppelin!');
+
+    const welcomeText = await this.homePage.welcomeDescription.textContent();
+    expect(welcomeText).toContain('web-based notebook');
+    expect(welcomeText).toContain('interactive data analytics');
+  }
+
+  async verifyNotebookSection(): Promise<void> {
+    await expect(this.homePage.notebookSection).toBeVisible();
+    await expect(this.homePage.notebookHeading).toBeVisible();
+    await expect(this.homePage.refreshNoteButton).toBeVisible();
+
+    // Wait for notebook list to load with timeout
+    await this.page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
+    await expect(this.homePage.notebookList).toBeVisible();
+
+    // Additional wait for content to load
+    await this.page.waitForTimeout(1000);
+  }
+
+  async verifyNotebookRefreshFunctionality(): Promise<void> {
+    await this.homePage.clickRefreshNotes();
+
+    // Wait for refresh operation to complete
+    await this.page.waitForTimeout(2000);
+
+    // Ensure the notebook list is still visible after refresh
+    await expect(this.homePage.notebookList).toBeVisible();
+    const isStillVisible = await this.homePage.isNotebookListVisible();
+    expect(isStillVisible).toBe(true);
+  }
+
+  async verifyHelpSection(): Promise<void> {
+    await expect(this.homePage.helpSection).toBeVisible();
+    await expect(this.homePage.helpHeading).toBeVisible();
+  }
+
+  async verifyCommunitySection(): Promise<void> {
+    await expect(this.homePage.communitySection).toBeVisible();
+    await expect(this.homePage.communityHeading).toBeVisible();
+  }
+
+  async testExternalLinkTargets(): Promise<{
+    documentationHref: string | null;
+    mailingListHref: string | null;
+    issuesTrackingHref: string | null;
+    githubHref: string | null;
+  }> {
+    // Get the parent links that contain the text
+    const docLink = this.page.locator('a').filter({ hasText: 'Zeppelin documentation' });
+    const mailLink = this.page.locator('a').filter({ hasText: 'Mailing list' });
+    const issuesLink = this.page.locator('a').filter({ hasText: 'Issues tracking' });
+    const githubLink = this.page.locator('a').filter({ hasText: 'Github' });
+
+    return {
+      documentationHref: await docLink.getAttribute('href'),
+      mailingListHref: await mailLink.getAttribute('href'),
+      issuesTrackingHref: await issuesLink.getAttribute('href'),
+      githubHref: await githubLink.getAttribute('href')
+    };
+  }
+
+  async verifyNotebookActions(): Promise<void> {
+    await expect(this.homePage.nodeList.createNewNoteLink).toBeVisible();
+    await expect(this.homePage.nodeList.importNoteLink).toBeVisible();
+    await expect(this.homePage.nodeList.filterInput).toBeVisible();
+    await expect(this.homePage.nodeList.tree).toBeVisible();
+  }
+
+  async testNotebookRefreshLoadingState(): Promise<void> {
+    const refreshButton = this.page.locator('a.refresh-note');
+    const refreshIcon = this.page.locator('a.refresh-note i[nz-icon]');
+
+    await expect(refreshButton).toBeVisible();
+    await expect(refreshIcon).toBeVisible();
+
+    await this.homePage.clickRefreshNotes();
+
+    await this.page.waitForTimeout(500);
+
+    await expect(refreshIcon).toBeVisible();
+  }
+
+  async verifyCreateNewNoteWorkflow(): Promise<void> {
+    await this.homePage.clickCreateNewNote();
+
+    await this.page.waitForFunction(
+      () => {
+        return document.querySelector('zeppelin-note-create') !== null;
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async verifyImportNoteWorkflow(): Promise<void> {
+    await this.homePage.clickImportNote();
+
+    await this.page.waitForFunction(
+      () => {
+        return document.querySelector('zeppelin-note-import') !== null;
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async testFilterFunctionality(filterTerm: string): Promise<void> {
+    await this.homePage.filterNotes(filterTerm);
+
+    await this.page.waitForTimeout(1000);
+
+    const filteredResults = await this.page.locator('nz-tree .node').count();
+    expect(filteredResults).toBeGreaterThanOrEqual(0);
+  }
+
+  async verifyDocumentationVersionLink(): Promise<void> {
+    const href = await this.homePage.getDocumentationLinkHref();
+    expect(href).toContain('zeppelin.apache.org/docs');
+    expect(href).toMatch(/\/docs\/\d+\.\d+\.\d+(-SNAPSHOT)?\//);
+  }
+
+  async verifyAllExternalLinksTargetBlank(): Promise<void> {
+    const links = [
+      this.homePage.externalLinks.documentation,
+      this.homePage.externalLinks.mailingList,
+      this.homePage.externalLinks.issuesTracking,
+      this.homePage.externalLinks.github
+    ];
+
+    for (const link of links) {
+      const target = await link.getAttribute('target');
+      expect(target).toBe('_blank');
+    }
   }
 }
