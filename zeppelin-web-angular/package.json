@@ -69,8 +69,6 @@
     "@angular/cli": "~13.3.11",
     "@angular/compiler-cli": "~13.4.0",
     "@angular/language-service": "~13.4.0",
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^8.57.1",
     "@playwright/test": "1.56.1",
     "@types/angular": "^1.8.0",
     "@types/diff-match-patch": "^1.0.36",
