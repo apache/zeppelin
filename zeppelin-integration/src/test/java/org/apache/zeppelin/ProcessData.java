@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,16 @@ public class ProcessData {
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ProcessData.class);
+
+  // Patterns to filter out download-related messages from error stream
+  private static final Pattern[] DOWNLOAD_PATTERNS = {
+    Pattern.compile(".*\\[INFO\\]\\s+(Downloading|Downloaded):.*"),     // Maven download messages
+    Pattern.compile(".*Downloading\\s+.*"),                              // Generic downloading messages
+    Pattern.compile(".*Downloaded\\s+.*"),                               // Generic downloaded messages
+    Pattern.compile(".*progress:\\s*\\d+%.*", Pattern.CASE_INSENSITIVE), // Progress indicators
+    Pattern.compile(".*\\d+/\\d+\\s*(KB|MB|GB|bytes).*"),               // Size progress (e.g., 1024/2048 KB)
+    Pattern.compile(".*\\d+\\.\\d+\\s*(KB|MB|GB)\\s+(downloaded|transferred).*", Pattern.CASE_INSENSITIVE) // Size with downloaded/transferred
+  };
 
   private Process checked_process;
   private boolean printToConsole = false;
@@ -149,6 +160,27 @@ public class ProcessData {
     return this.errorStream;
   }
 
+  /**
+   * Filters out download-related messages from error stream output.
+   * This method checks if the given message matches common download patterns
+   * (Maven downloads, progress indicators, size information, etc.)
+   *
+   * @param message The message to check
+   * @return true if the message should be filtered out (is a download message), false otherwise
+   */
+  private boolean isDownloadMessage(String message) {
+    if (message == null || message.trim().isEmpty()) {
+      return false;
+    }
+
+    for (Pattern pattern : DOWNLOAD_PATTERNS) {
+      if (pattern.matcher(message).matches()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
@@ -208,9 +240,8 @@ public class ProcessData {
             outputProduced = true;
             String temp = new String(tempSB);
             temp = temp.replaceAll("Pseudo-terminal will not be allocated because stdin is not a terminal.", "");
-            //TODO : error stream output need to be improved, because it outputs downloading information.
             if (printToConsole) {
-              if (!temp.trim().equals("")) {
+              if (!temp.trim().equals("") && !isDownloadMessage(temp)) {
                 if (temp.toLowerCase().contains("error") || temp.toLowerCase().contains("failed")) {
                   LOGGER.warn(temp.trim());
                 } else {
