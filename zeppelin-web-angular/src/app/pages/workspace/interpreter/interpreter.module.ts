@@ -41,7 +41,6 @@ import { InterpreterItemComponent } from './item/item.component';
 
 @NgModule({
   declarations: [InterpreterComponent, InterpreterCreateRepositoryModalComponent, InterpreterItemComponent],
-  entryComponents: [InterpreterCreateRepositoryModalComponent],
   imports: [
     CommonModule,
     FormsModule,

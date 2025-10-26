@@ -20,7 +20,7 @@ import { Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class NgZService implements OnDestroy {
-  private paragraphMap: Map<string, unknown> = new Map<string, {}>();
+  private paragraphMap: Map<string, unknown> = new Map<string, Record<string, unknown>>();
   private contextChange$ = new Subject<AngularContext>();
   private runParagraph$ = new Subject<string>();
 
@@ -42,7 +42,7 @@ export class NgZService implements OnDestroy {
     this.runParagraph$.next(paragraphId);
   }
 
-  bindParagraph(paragraphId: string, context: {}) {
+  bindParagraph(paragraphId: string, context: Record<string, unknown>) {
     this.paragraphMap.set(paragraphId, context);
   }
 

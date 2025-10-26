@@ -22,7 +22,10 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class SecurityService extends BaseRest {
-  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
+  constructor(
+    private http: HttpClient,
+    baseUrlService: BaseUrlService
+  ) {
     super(baseUrlService);
   }
 

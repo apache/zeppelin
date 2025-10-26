@@ -29,9 +29,6 @@
         "@schematics/angular:guard": {
           "skipTests": true
         },
-        "@schematics/angular:module": {
-          "skipTests": true
-        },
         "@schematics/angular:pipe": {
           "skipTests": true
         },
@@ -47,7 +44,7 @@
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "src/tsconfig.app.json",
+            "tsConfig": "src/tsconfig.json",
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -109,6 +106,14 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": false
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "namedChunks": true,
+              "sourceMap": true
             }
           }
         },
@@ -120,8 +125,12 @@
           "configurations": {
             "production": {
               "browserTarget": "zeppelin:build:production"
+            },
+            "development": {
+              "browserTarget": "zeppelin:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -130,54 +139,9 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": ["src/tsconfig.app.json"],
-            "exclude": ["**/node_modules/**"]
-          }
-        }
-      }
-    },
-    "zeppelin-helium": {
-      "projectType": "library",
-      "root": "projects/zeppelin-helium",
-      "sourceRoot": "projects/zeppelin-helium/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
-          "options": {
-            "tsConfig": "projects/zeppelin-helium/tsconfig.lib.json",
-            "project": "projects/zeppelin-helium/ng-package.json"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": ["projects/zeppelin-helium/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
-          }
-        }
-      }
-    },
-    "helium-vis-example": {
-      "projectType": "library",
-      "root": "projects/helium-vis-example",
-      "sourceRoot": "projects/helium-vis-example/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
-          "options": {
-            "tsConfig": "projects/helium-vis-example/tsconfig.lib.json",
-            "project": "projects/helium-vis-example/ng-package.json"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": ["projects/helium-vis-example/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -189,17 +153,16 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/zeppelin-visualization/tsconfig.lib.json",
+            "tsConfig": "projects/zeppelin-visualization/tsconfig.json",
             "project": "projects/zeppelin-visualization/ng-package.json"
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": ["projects/zeppelin-visualization/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
+            "lintFilePatterns": ["projects/zeppelin-visualization/**/*.ts", "projects/zeppelin-visualization/**/*.html"]
           }
         }
       }
@@ -211,21 +174,23 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/zeppelin-sdk/tsconfig.lib.json",
+            "tsConfig": "projects/zeppelin-sdk/tsconfig.json",
             "project": "projects/zeppelin-sdk/ng-package.json"
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": ["projects/zeppelin-sdk/tsconfig.lib.json"],
-            "exclude": ["**/node_modules/**"]
+            "lintFilePatterns": ["projects/zeppelin-sdk/**/*.ts", "projects/zeppelin-sdk/**/*.html"]
           }
         }
       }
     }
   },
-  "defaultProject": "zeppelin"
+  "defaultProject": "zeppelin",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

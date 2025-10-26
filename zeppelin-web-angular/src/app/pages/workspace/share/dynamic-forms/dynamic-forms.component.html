@@ -21,7 +21,7 @@
     nzMd="12"
     nzSm="24"
   >
-    <div nz-row nzType="flex">
+    <div nz-row>
       <label class="item-label" *ngIf="form.displayName" nz-col nzSpan="6">{{ form.displayName }}:</label>
       <div class="control-wrap" nz-col [nzSpan]="form.displayName ? 16 : 24">
         <ng-container [ngSwitch]="form.type">

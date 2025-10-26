@@ -39,7 +39,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   ) {}
 
   onActivate(component: unknown) {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.publishMode = !!(isRecord(component) && publishedSymbol in component && component[publishedSymbol as any]);
     this.cdr.markForCheck();
   }

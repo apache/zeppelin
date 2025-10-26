@@ -48,9 +48,8 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   previewCode: string = '';
 
   @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
-  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents!: QueryList<
-    NotebookParagraphResultComponent
-  >;
+  @ViewChildren(NotebookParagraphResultComponent)
+  notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
   constructor(
     public messageService: MessageService,

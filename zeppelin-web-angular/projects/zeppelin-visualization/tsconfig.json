@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/lib",
     "target": "es2015",
@@ -16,7 +16,7 @@
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true,
     "enableResourceInlining": true,
-    "flatModuleId": "@zeppelin/sdk"
+    "flatModuleId": "@zeppelin/visualization"
   },
   "exclude": ["src/test.ts", "**/*.spec.ts"]
 }

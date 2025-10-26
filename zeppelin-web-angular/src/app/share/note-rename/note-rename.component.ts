@@ -31,7 +31,10 @@ export class NoteRenameComponent implements OnInit {
     this.nzModalRef.destroy();
   }
 
-  constructor(private messageService: MessageService, private nzModalRef: NzModalRef) {}
+  constructor(
+    private messageService: MessageService,
+    private nzModalRef: NzModalRef
+  ) {}
 
   ngOnInit() {}
 }

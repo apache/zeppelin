@@ -15,7 +15,7 @@
     <i nz-icon class="note-icon" [nzType]="icon" nzTheme="outline"></i>
     <a
       [routerLink]="['/', 'notebook', note.noteId]"
-      [innerHTML]="note.noteName | nzHighlight: highlight:'gi':'mark-highlight'"
+      [innerHTML]="note.noteName | nzHighlight: highlight : 'gi' : 'mark-highlight'"
     ></a>
     -
     <span class="interpreter" [class.unset]="!note.interpreter">
@@ -41,7 +41,7 @@
       *ngFor="let item of note.paragraphs"
       [nz-tooltip]="item.name + ' is ' + item.status"
       nzTooltipPlacement="topLeft"
-      [nzOverlayStyle]="{ 'margin-left': '-14px' }"
+      [nzTooltipOverlayStyle]="{ 'margin-left': '-14px' }"
       [routerLink]="['/', 'notebook', note.noteId]"
       [queryParams]="{ paragraph: item.id }"
     >

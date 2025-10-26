@@ -21,7 +21,10 @@ import { ConfigurationService } from '@zeppelin/services';
 export class ConfigurationComponent implements OnInit {
   configEntries: Array<[string, string]> = [];
 
-  constructor(private configurationService: ConfigurationService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private configurationService: ConfigurationService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.getAllConfig();
