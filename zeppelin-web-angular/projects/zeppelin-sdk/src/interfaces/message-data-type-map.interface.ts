@@ -84,7 +84,7 @@ import { JobManagerDisabled, ListNoteJobs, ListUpdateNoteJobs } from './message-
 import { InterpreterBindings, InterpreterSetting } from './message-interpreter.interface';
 import { OP } from './message-operator.interface';
 
-export type MixMessageDataTypeMap = MessageSendDataTypeMap & MessageReceiveDataTypeMap;
+export type MessageDataTypeMap = MessageSendDataTypeMap | MessageReceiveDataTypeMap;
 
 export interface MessageReceiveDataTypeMap {
   [OP.COMPLETION_LIST]: CompletionReceived;

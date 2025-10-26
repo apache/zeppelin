@@ -24,7 +24,10 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 export class HeliumService extends BaseRest {
   private visualizationBundles$ = new BehaviorSubject<HeliumVisualizationBundle[]>([]);
 
-  constructor(private http: HttpClient, baseUrlService: BaseUrlService) {
+  constructor(
+    private http: HttpClient,
+    baseUrlService: BaseUrlService
+  ) {
     super(baseUrlService);
   }
 
@@ -70,30 +73,30 @@ export class HeliumService extends BaseRest {
 
         return forkJoin(bundleRequests);
       }),
-      map(bundles => {
-        return bundles.reduce((acc, bundle) => {
+      map(bundles =>
+        bundles.reduce((acc, bundle) => {
           if (bundle === '') {
             return acc;
           }
           acc.push(bundle);
           return acc;
-        }, [] as string[]);
-      })
+        }, [] as string[])
+      )
     );
   }
 
   initPackages() {
     const bundles$ = this.getBundlesParallel();
     bundles$.subscribe(availableBundles => {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)._heliumBundles = [] as HeliumBundle[];
       availableBundles.forEach(bundle => {
-        // tslint:disable-next-line:no-eval
+        // eslint-disable-next-line no-eval
         eval(bundle);
       });
 
       const visualizationBundles = [] as HeliumVisualizationBundle[];
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ((window as any)._heliumBundles as HeliumBundle[]).forEach(bundle => {
         switch (bundle.type) {
           case 'VISUALIZATION':
@@ -103,7 +106,7 @@ export class HeliumService extends BaseRest {
       this.visualizationBundles$.next(visualizationBundles);
 
       try {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (window as any)._heliumBundles;
       } catch (e) {
         console.error('Failed to delete window.heliumBundles', e);

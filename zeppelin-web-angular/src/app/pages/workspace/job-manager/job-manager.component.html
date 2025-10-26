@@ -70,8 +70,8 @@
         *ngFor="let item of filteredJobs"
         [note]="item"
         [highlight]="filterString"
-        (start)="onStart($event)"
-        (stop)="onStop($event)"
+        (startJob)="onStartJob($event)"
+        (stopJob)="onStopJob($event)"
       ></zeppelin-job-manager-job>
       <nz-empty *ngIf="filteredJobs.length === 0" nzNotFoundContent="No Job found"></nz-empty>
     </ng-container>

@@ -37,7 +37,7 @@
     ></i>
     <i
       nz-icon
-      *ngIf="status == 'RUNNING' || status == 'PENDING'"
+      *ngIf="status === 'RUNNING' || status === 'PENDING'"
       (click)="cancelParagraph.emit()"
       class="cancel-para"
       nzType="pause-circle"
@@ -63,7 +63,7 @@
         <a (click)="copyClipboard(pid)">{{ pid }}</a>
       </li>
       <li nz-menu-divider></li>
-      <li nz-menu-item *ngIf="runOnSelectionChange == true || runOnSelectionChange == false" class="list-item">
+      <li nz-menu-item *ngIf="runOnSelectionChange === true || runOnSelectionChange === false" class="list-item">
         <span>
           <i nz-icon nzType="filter" nzTheme="outline"></i>
           Run on selection change

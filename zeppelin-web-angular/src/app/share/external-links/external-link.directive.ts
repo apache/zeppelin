@@ -13,7 +13,7 @@
 import { Directive, ElementRef, HostBinding, Input, OnChanges } from '@angular/core';
 
 @Directive({
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   selector: 'a[href]'
 })
 export class ExternalLinkDirective implements OnChanges {

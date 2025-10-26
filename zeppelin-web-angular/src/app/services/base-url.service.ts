@@ -37,7 +37,7 @@ export class BaseUrlService {
   }
 
   getRestApiBase() {
-    return this.skipTrailingSlash(this.getBase()) + '/api';
+    return `${this.skipTrailingSlash(this.getBase())}/api`;
   }
 
   skipTrailingSlash(path: string) {

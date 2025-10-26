@@ -25,9 +25,7 @@ const compilerOptions: CompilerOptions = {
   defaultEncapsulation: ViewEncapsulation.None
 };
 
-export function createCompiler(compilerFactory: CompilerFactory) {
-  return compilerFactory.createCompiler([compilerOptions]);
-}
+const createCompiler = (compilerFactory: CompilerFactory) => compilerFactory.createCompiler([compilerOptions]);
 
 export const RUNTIME_COMPILER_PROVIDERS: StaticProvider[] = [
   { provide: COMPILER_OPTIONS, useValue: compilerOptions, multi: true },

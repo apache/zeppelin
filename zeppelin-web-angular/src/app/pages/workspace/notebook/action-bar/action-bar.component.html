@@ -258,7 +258,8 @@
         nzTrigger="click"
         [nzDropdownMenu]="menu"
         [disabled]="isTrash || revisionView"
-        [nzType]="note.config.cron ? 'primary' : note.info.cron ? 'danger' : 'default'"
+        [nzType]="note.config.cron ? 'primary' : 'default'"
+        [nzDanger]="!note.config.cron && note.info.cron"
       >
         <i nz-icon nzType="clock-circle" nzTheme="outline"></i>
         {{ getCronOptionNameFromValue }}

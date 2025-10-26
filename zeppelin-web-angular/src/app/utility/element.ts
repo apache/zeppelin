@@ -11,9 +11,9 @@
  */
 
 export function scrollIntoViewIfNeeded(element: HTMLElement, center = true): void {
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (element && typeof (element as any).scrollIntoViewIfNeeded === 'function') {
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (element as any).scrollIntoViewIfNeeded(center);
   }
 }

@@ -10,12 +10,15 @@
  * limitations under the License.
  */
 
-import { HeliumPackageType } from '@zeppelin/helium';
 import { GraphConfig, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
 import * as angular from 'angular';
 import * as JQuery from 'jquery';
 
 export type HeliumType = 'VISUALIZATION';
+
+enum HeliumPackageType {
+  Visualization
+}
 
 interface HeliumPackage {
   name: string;
@@ -80,7 +83,7 @@ export interface HeliumClassicVisualization {
  * @returns A new instance of HeliumClassicVisualization
  */
 export interface HeliumClassicVisualizationConstructor {
-  prototype: {};
+  prototype: Record<string, unknown>;
   new (targetEl: JQuery<HTMLElement>, config: GraphConfig): HeliumClassicVisualization;
 }
 

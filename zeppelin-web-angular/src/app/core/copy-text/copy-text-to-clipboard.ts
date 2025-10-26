@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-export function copyTextToClipboard(text: string): void {
+export const copyTextToClipboard = (text: string): void => {
   const textArea: HTMLTextAreaElement = document.createElement('textarea');
 
   //
@@ -62,4 +62,4 @@ export function copyTextToClipboard(text: string): void {
   }
 
   document.body.removeChild(textArea);
-}
+};
