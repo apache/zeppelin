@@ -73,11 +73,7 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
     }
 
     const firstRow = repoItemPage.settingRows.first();
-    const settingName =
-      (await firstRow
-        .locator('td')
-        .first()
-        .textContent()) || '';
+    const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 
     await repoItemPage.clickEdit();
