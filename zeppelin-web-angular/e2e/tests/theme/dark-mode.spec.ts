@@ -50,7 +50,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step('WHEN the user switches to dark mode', async () => {
       await themePage.setThemeInLocalStorage('dark');
       const newPage = await context.newPage();
-      await newPage.goto(currentPage.url());
+      await newPage.goto(currentPage.url(), { waitUntil: 'networkidle' });
       await waitForZeppelinReady(newPage);
 
       // Update themePage to use newPage and verify dark mode
