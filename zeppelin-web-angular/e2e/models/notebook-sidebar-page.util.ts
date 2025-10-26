@@ -295,15 +295,12 @@ export class NotebookSidebarUtil {
       const url = this.page.url();
       const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
       if (!noteIdMatch) {
-        throw new Error('Failed to extract notebook ID from URL: ' + url);
+        throw new Error(`Failed to extract notebook ID from URL: ${url}`);
       }
       const noteId = noteIdMatch[1];
 
       // Get first paragraph ID with increased timeout
-      await this.page
-        .locator('zeppelin-notebook-paragraph')
-        .first()
-        .waitFor({ state: 'visible', timeout: 20000 });
+      await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 20000 });
       const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first();
 
       // Try to get paragraph ID from the paragraph element's data-testid attribute
