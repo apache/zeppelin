@@ -60,17 +60,9 @@ export class NotebookSidebarPage extends BasePage {
       // Strategy 1: Original button selector
       () => this.tocButton.click(),
       // Strategy 2: Look for unordered-list icon specifically in sidebar
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar i[nzType="unordered-list"]')
-          .first()
-          .click(),
+      () => this.page.locator('zeppelin-notebook-sidebar i[nzType="unordered-list"]').first().click(),
       // Strategy 3: Look for any button with list-related icons
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar button:has(i[nzType="unordered-list"])')
-          .first()
-          .click(),
+      () => this.page.locator('zeppelin-notebook-sidebar button:has(i[nzType="unordered-list"])').first().click(),
       // Strategy 4: Try aria-label or title containing "table" or "content"
       () =>
         this.page
@@ -177,31 +169,16 @@ export class NotebookSidebarPage extends BasePage {
       // Strategy 1: Original close button selector
       () => this.closeButton.click(),
       // Strategy 2: Look for close icon specifically in sidebar
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar i[nzType="close"]')
-          .first()
-          .click(),
+      () => this.page.locator('zeppelin-notebook-sidebar i[nzType="close"]').first().click(),
       // Strategy 3: Look for any button with close-related icons
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar button:has(i[nzType="close"])')
-          .first()
-          .click(),
+      () => this.page.locator('zeppelin-notebook-sidebar button:has(i[nzType="close"])').first().click(),
       // Strategy 4: Try any close-related elements
       () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar .close, zeppelin-notebook-sidebar .sidebar-close')
-          .first()
-          .click(),
+        this.page.locator('zeppelin-notebook-sidebar .close, zeppelin-notebook-sidebar .sidebar-close').first().click(),
       // Strategy 5: Try keyboard shortcut (Escape key)
       () => this.page.keyboard.press('Escape'),
       // Strategy 6: Click on the sidebar toggle button again (might close it)
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar button')
-          .first()
-          .click()
+      () => this.page.locator('zeppelin-notebook-sidebar button').first().click()
     ];
 
     let success = false;
