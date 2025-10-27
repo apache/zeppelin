@@ -10,10 +10,10 @@
  * limitations under the License.
  */
 
-import { defineConfig, devices } from '@playwright/test';
+const { defineConfig, devices } = require('@playwright/test');
 
 // https://playwright.dev/docs/test-configuration
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './e2e',
   globalSetup: require.resolve('./e2e/global-setup'),
   globalTeardown: require.resolve('./e2e/global-teardown'),
@@ -34,7 +34,10 @@ export default defineConfig({
     baseURL: process.env.CI ? 'http://localhost:8080' : 'http://localhost:4200',
     trace: 'on-first-retry', // https://playwright.dev/docs/trace-viewer
     screenshot: process.env.CI ? 'off' : 'only-on-failure',
-    video: process.env.CI ? 'off' : 'retain-on-failure'
+    video: process.env.CI ? 'off' : 'retain-on-failure',
+    launchOptions: {
+      args: ['--disable-dev-shm-usage']
+    }
   },
   projects: [
     {
