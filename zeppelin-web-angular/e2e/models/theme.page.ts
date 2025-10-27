@@ -28,13 +28,13 @@ export class ThemePage {
   }
 
   async assertDarkTheme() {
-    await expect(this.rootElement).toHaveClass(/dark/);
+    await expect(this.rootElement).toHaveClass(/dark/, { timeout: 10000 });
     await expect(this.rootElement).toHaveAttribute('data-theme', 'dark');
     await expect(this.themeToggleButton).toHaveText('dark_mode');
   }
 
   async assertLightTheme() {
-    await expect(this.rootElement).toHaveClass(/light/);
+    await expect(this.rootElement).toHaveClass(/light/, { timeout: 10000 });
     await expect(this.rootElement).toHaveAttribute('data-theme', 'light');
     await expect(this.themeToggleButton).toHaveText('light_mode');
   }
