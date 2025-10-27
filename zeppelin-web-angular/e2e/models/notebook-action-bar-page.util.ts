@@ -60,7 +60,11 @@ export class NotebookActionBarUtil {
     await expect(this.actionBarPage.showHideCodeButton).toBeVisible();
     await expect(this.actionBarPage.showHideCodeButton).toBeEnabled();
 
+    const initialCodeVisibility = await this.actionBarPage.isCodeVisible();
     await this.actionBarPage.toggleCodeVisibility();
+    const newCodeVisibility = await this.actionBarPage.isCodeVisible();
+
+    expect(newCodeVisibility).toBe(!initialCodeVisibility);
 
     // Verify the button is still functional after click
     await expect(this.actionBarPage.showHideCodeButton).toBeEnabled();
@@ -70,7 +74,11 @@ export class NotebookActionBarUtil {
     await expect(this.actionBarPage.showHideOutputButton).toBeVisible();
     await expect(this.actionBarPage.showHideOutputButton).toBeEnabled();
 
+    const initialOutputVisibility = await this.actionBarPage.isOutputVisible();
     await this.actionBarPage.toggleOutputVisibility();
+    const newOutputVisibility = await this.actionBarPage.isOutputVisible();
+
+    expect(newOutputVisibility).toBe(!initialOutputVisibility);
 
     // Verify the button is still functional after click
     await expect(this.actionBarPage.showHideOutputButton).toBeEnabled();

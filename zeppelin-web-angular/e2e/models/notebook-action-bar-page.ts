@@ -184,14 +184,15 @@ export class NotebookActionBarPage extends BasePage {
   }
 
   async isCodeVisible(): Promise<boolean> {
-    const icon = this.showHideCodeButton.locator('i[nz-icon]');
-    const iconType = await icon.getAttribute('nztype');
+    const icon = this.showHideCodeButton.locator('i[nz-icon] svg');
+    const iconType = await icon.getAttribute('data-icon');
+    console.log(icon, iconType);
     return iconType === 'fullscreen-exit';
   }
 
   async isOutputVisible(): Promise<boolean> {
-    const icon = this.showHideOutputButton.locator('i[nz-icon]');
-    const iconType = await icon.getAttribute('nztype');
+    const icon = this.showHideOutputButton.locator('i[nz-icon] svg');
+    const iconType = await icon.getAttribute('data-icon');
     return iconType === 'read';
   }
 }
