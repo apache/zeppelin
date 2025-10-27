@@ -114,7 +114,7 @@ export class HomePageUtil {
     await expect(this.homePage.notebookList).toBeVisible();
 
     // Additional wait for content to load
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 
   async verifyNotebookRefreshFunctionality(): Promise<void> {
@@ -183,29 +183,19 @@ export class HomePageUtil {
   async verifyCreateNewNoteWorkflow(): Promise<void> {
     await this.homePage.clickCreateNewNote();
 
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('zeppelin-note-create') !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-create') !== null, { timeout: 10000 });
   }
 
   async verifyImportNoteWorkflow(): Promise<void> {
     await this.homePage.clickImportNote();
 
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('zeppelin-note-import') !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-import') !== null, { timeout: 10000 });
   }
 
   async testFilterFunctionality(filterTerm: string): Promise<void> {
     await this.homePage.filterNotes(filterTerm);
 
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
     const filteredResults = await this.page.locator('nz-tree .node').count();
     expect(filteredResults).toBeGreaterThanOrEqual(0);
