@@ -26,7 +26,7 @@ export class WorkspacePage extends BasePage {
   }
 
   async navigateToWorkspace(): Promise<void> {
-    await this.page.goto('/', { waitUntil: 'load' });
+    await this.page.goto('/');
     await this.waitForPageLoad();
   }
 }

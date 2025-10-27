@@ -35,10 +35,10 @@ test.describe('Published Paragraph', () => {
     await performLoginIfRequired(page);
     await waitForNotebookLinks(page);
 
-    // Handle the welcome modal if it appears
     const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
     if ((await cancelButton.count()) > 0) {
       await cancelButton.click();
+      await cancelButton.waitFor({ state: 'detached', timeout: 5000 });
     }
 
     testUtil = new PublishedParagraphTestUtil(page);
