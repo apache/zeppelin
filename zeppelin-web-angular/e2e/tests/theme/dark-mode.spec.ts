@@ -19,10 +19,6 @@ test.describe('Dark Mode Theme Switching', () => {
   let themePage: ThemePage;
 
   test.beforeEach(async ({ page, browserName }) => {
-    // TODO: This crash occurs only on WebKit. The root cause should be investigated and addressed.
-    if (browserName === 'webkit') {
-      test.skip();
-    }
     themePage = new ThemePage(page);
     await page.goto('/');
     await waitForZeppelinReady(page);
