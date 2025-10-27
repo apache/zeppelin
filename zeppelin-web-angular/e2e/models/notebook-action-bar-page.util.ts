@@ -35,15 +35,19 @@ export class NotebookActionBarUtil {
     }
   }
 
-  async verifyTitleEditingFunctionality(expectedTitle?: string): Promise<void> {
+  async verifyTitleEditingFunctionality(newTitle: string): Promise<void> {
     await expect(this.actionBarPage.titleEditor).toBeVisible();
-    const titleText = await this.actionBarPage.getTitleText();
-    expect(titleText).toBeDefined();
-    expect(titleText.length).toBeGreaterThan(0);
 
-    if (expectedTitle) {
-      expect(titleText).toContain(expectedTitle);
-    }
+    await this.actionBarPage.titleEditor.click();
+
+    const titleInputField = this.actionBarPage.titleEditor.locator('input');
+    await expect(titleInputField).toBeVisible();
+
+    await titleInputField.fill(newTitle);
+
+    await this.page.keyboard.press('Enter');
+
+    await expect(this.actionBarPage.titleEditor).toHaveText(newTitle, { timeout: 10000 });
   }
 
   async verifyRunAllWorkflow(): Promise<void> {
