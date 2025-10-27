@@ -53,8 +53,7 @@ export class NotebookKeyboardPage extends BasePage {
 
   async navigateToNotebook(noteId: string): Promise<void> {
     if (!noteId) {
-      console.error('noteId is undefined or null. Cannot navigate to notebook.');
-      return;
+      throw new Error('noteId is undefined or null. Cannot navigate to notebook.');
     }
     try {
       await this.page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle' });
@@ -70,9 +69,9 @@ export class NotebookKeyboardPage extends BasePage {
       await this.page.waitForTimeout(2000);
 
       // Check if we at least have the notebook structure
-      const hasNotebookStructure = await this.page.evaluate(() => {
-        return document.querySelector('zeppelin-notebook, .notebook-content, [data-testid="notebook"]') !== null;
-      });
+      const hasNotebookStructure = await this.page.evaluate(
+        () => document.querySelector('zeppelin-notebook, .notebook-content, [data-testid="notebook"]') !== null
+      );
 
       if (!hasNotebookStructure) {
         console.error('Notebook page structure not found. May be a navigation or server issue.');
@@ -667,7 +666,7 @@ export class NotebookKeyboardPage extends BasePage {
     try {
       // Try to get content directly from Monaco Editor's model first
       const monacoContent = await this.page.evaluate(() => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         const win = window as any;
         if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
           const editor = win.monaco.editor.getActiveEditor();
@@ -686,7 +685,7 @@ export class NotebookKeyboardPage extends BasePage {
       const angularContent = await this.page.evaluate(() => {
         const paragraphElement = document.querySelector('zeppelin-notebook-paragraph');
         if (paragraphElement) {
-          // tslint:disable-next-line:no-any
+          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
           const angular = (window as any).angular;
           if (angular) {
             const scope = angular.element(paragraphElement).scope();
@@ -740,7 +739,7 @@ export class NotebookKeyboardPage extends BasePage {
     try {
       // Try to set content directly via Monaco Editor API
       const success = await this.page.evaluate(newContent => {
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         const win = window as any;
         if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
           const editor = win.monaco.editor.getActiveEditor();
