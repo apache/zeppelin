@@ -18,7 +18,10 @@ test.describe('Notebook Sidebar Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_SIDEBAR);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', {
+      waitUntil: 'load',
+      timeout: 60000
+    });
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });

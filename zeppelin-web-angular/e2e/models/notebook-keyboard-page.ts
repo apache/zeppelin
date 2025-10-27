@@ -65,8 +65,10 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn('Initial navigation failed, trying alternative approach:', navigationError);
 
       // Fallback: Try a more basic navigation
-      await this.page.goto(`/#/notebook/${noteId}`);
-      await this.page.waitForTimeout(2000);
+      await this.page.goto(`/#/notebook/${noteId}`, {
+        waitUntil: 'load',
+        timeout: 60000
+      });
 
       // Check if we at least have the notebook structure
       const hasNotebookStructure = await this.page.evaluate(
