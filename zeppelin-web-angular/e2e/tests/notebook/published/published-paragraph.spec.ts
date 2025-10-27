@@ -202,6 +202,8 @@ test.describe('Published Paragraph', () => {
 
       await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
 
+      await expect(page).toHaveURL(new RegExp(`/paragraph/${paragraphId}`));
+
       const modal = publishedParagraphPage.confirmationModal;
       await expect(modal).toBeVisible();
 
