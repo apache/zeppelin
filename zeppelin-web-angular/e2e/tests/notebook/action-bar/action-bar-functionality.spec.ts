@@ -43,7 +43,8 @@ test.describe('Notebook Action Bar Functionality', () => {
   test('should display and allow title editing with tooltip', async ({ page }) => {
     // Then: Title editor should be functional with proper tooltip
     const actionBarUtil = new NotebookActionBarUtil(page);
-    await actionBarUtil.verifyTitleEditingFunctionality();
+    const notebookName = `Test Notebook ${Date.now()}`;
+    await actionBarUtil.verifyTitleEditingFunctionality(notebookName);
   });
 
   test('should execute run all paragraphs workflow', async ({ page }) => {
