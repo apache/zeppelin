@@ -169,16 +169,65 @@ export class NotebookKeyboardPage extends BasePage {
     return this.getPlatform() === 'darwin';
   }
 
+  private async executeWebkitShortcut(formattedShortcut: string): Promise<void> {
+    const parts = formattedShortcut.split('+');
+    const mainKey = parts[parts.length - 1];
+    const hasControl = formattedShortcut.includes('control');
+    const hasShift = formattedShortcut.includes('shift');
+    const hasAlt = formattedShortcut.includes('alt');
+    const keyMap: Record<string, string> = {
+      arrowup: 'ArrowUp',
+      arrowdown: 'ArrowDown',
+      enter: 'Enter'
+    };
+    const resolvedKey = keyMap[mainKey] || mainKey.toUpperCase();
+
+    if (hasAlt) {
+      await this.page.keyboard.down('Alt');
+    }
+    if (hasShift) {
+      await this.page.keyboard.down('Shift');
+    }
+    if (hasControl) {
+      await this.page.keyboard.down('Control');
+    }
+
+    await this.page.keyboard.press(resolvedKey, { delay: 50 });
+
+    if (hasControl) {
+      await this.page.keyboard.up('Control');
+    }
+    if (hasShift) {
+      await this.page.keyboard.up('Shift');
+    }
+    if (hasAlt) {
+      await this.page.keyboard.up('Alt');
+    }
+  }
+
+  private async executeStandardShortcut(formattedShortcut: string): Promise<void> {
+    const isMac = this.isMacOS();
+    const formattedKey = formattedShortcut
+      .replace(/alt/g, 'Alt')
+      .replace(/shift/g, 'Shift')
+      .replace(/arrowup/g, 'ArrowUp')
+      .replace(/arrowdown/g, 'ArrowDown')
+      .replace(/enter/g, 'Enter')
+      .replace(/control/g, isMac ? 'Meta' : 'Control')
+      .replace(/\+([a-z0-9-=])$/, (_, c) => `+${c.toUpperCase()}`);
+
+    console.log('Final key combination:', formattedKey);
+    await this.page.keyboard.press(formattedKey, { delay: 50 });
+  }
+
   // Platform-aware keyboard shortcut execution
   private async executePlatformShortcut(shortcuts: string | string[]): Promise<void> {
     const shortcutArray = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
-    const isMac = this.isMacOS();
     const browserName = test.info().project.name;
 
     for (const shortcut of shortcutArray) {
       try {
         const formatted = shortcut.toLowerCase().replace(/\./g, '+');
-
         console.log('Shortcut:', shortcut, '->', formatted, 'on', browserName);
 
         await this.page.evaluate(() => {
@@ -189,54 +238,9 @@ export class NotebookKeyboardPage extends BasePage {
         });
 
         if (browserName === 'webkit') {
-          const parts = formatted.split('+');
-          const mainKey = parts[parts.length - 1];
-
-          const hasControl = formatted.includes('control');
-          const hasShift = formatted.includes('shift');
-          const hasAlt = formatted.includes('alt');
-
-          // Key mapping for special keys
-          const keyMap: Record<string, string> = {
-            arrowup: 'ArrowUp',
-            arrowdown: 'ArrowDown',
-            enter: 'Enter'
-          };
-          const resolvedKey = keyMap[mainKey] || mainKey.toUpperCase();
-
-          if (hasAlt) {
-            await this.page.keyboard.down('Alt');
-          }
-          if (hasShift) {
-            await this.page.keyboard.down('Shift');
-          }
-          if (hasControl) {
-            await this.page.keyboard.down('Control');
-          }
-
-          await this.page.keyboard.press(resolvedKey, { delay: 50 });
-
-          if (hasControl) {
-            await this.page.keyboard.up('Control');
-          }
-          if (hasShift) {
-            await this.page.keyboard.up('Shift');
-          }
-          if (hasAlt) {
-            await this.page.keyboard.up('Alt');
-          }
+          await this.executeWebkitShortcut(formatted);
         } else {
-          const formattedKey = formatted
-            .replace(/alt/g, 'Alt')
-            .replace(/shift/g, 'Shift')
-            .replace(/arrowup/g, 'ArrowUp')
-            .replace(/arrowdown/g, 'ArrowDown')
-            .replace(/enter/g, 'Enter')
-            .replace(/control/g, isMac ? 'Meta' : 'Control')
-            .replace(/\+([a-z0-9-=])$/, (_, c) => `+${c.toUpperCase()}`);
-
-          console.log('Final key combination:', formattedKey);
-          await this.page.keyboard.press(formattedKey, { delay: 50 });
+          await this.executeStandardShortcut(formatted);
         }
 
         return;
