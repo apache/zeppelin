@@ -27,7 +27,10 @@ export class NotebookReposPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/#/notebook-repos', { waitUntil: 'load' });
+    await this.page.goto('/#/notebook-repos', {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000
+    });
     await this.page.waitForURL('**/#/notebook-repos', { timeout: 15000 });
     await waitForZeppelinReady(this.page);
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });

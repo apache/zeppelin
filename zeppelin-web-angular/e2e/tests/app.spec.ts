@@ -22,7 +22,7 @@ test.describe('Zeppelin App Component', () => {
   test.beforeEach(async ({ page }) => {
     basePage = new BasePage(page);
 
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/');
   });
 
   test('should have correct component selector and structure', async ({ page }) => {
@@ -157,7 +157,7 @@ test.describe('Zeppelin App Component', () => {
     }
 
     // Return to home
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/');
     await waitForZeppelinReady(page);
     await expect(zeppelinRoot).toBeAttached();
   });
