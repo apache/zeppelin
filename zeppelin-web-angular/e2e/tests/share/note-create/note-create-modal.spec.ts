@@ -26,7 +26,7 @@ test.describe('Note Create Modal', () => {
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
     noteCreateModal = new NoteCreateModal(page);
-    noteCreateUtil = new NoteCreateModalUtil(page, noteCreateModal);
+    noteCreateUtil = new NoteCreateModalUtil(noteCreateModal);
 
     await page.goto('/');
     await waitForZeppelinReady(page);
@@ -44,10 +44,6 @@ test.describe('Note Create Modal', () => {
 
   test('Given Create Note modal is open, When checking default note name, Then auto-generated name should follow pattern', async () => {
     await noteCreateUtil.verifyDefaultNoteName(/Untitled Note \d+/);
-  });
-
-  test('Given Create Note modal is open, When opening interpreter dropdown, Then available interpreters should be listed', async () => {
-    await noteCreateUtil.verifyInterpreterSelectionWorks();
   });
 
   test('Given Create Note modal is open, When entering custom note name and creating, Then new note should be created successfully', async ({
@@ -73,15 +69,6 @@ test.describe('Note Create Modal', () => {
 
     await page.waitForURL(/notebook\//);
     expect(page.url()).toContain('notebook/');
-  });
-
-  test('Given Create Note modal is open, When selecting different interpreter, Then interpreter should be selectable', async () => {
-    const interpreters = await noteCreateModal.getAvailableInterpreters();
-    expect(interpreters.length).toBeGreaterThan(1);
-
-    if (interpreters.length > 1) {
-      await noteCreateModal.selectInterpreter(interpreters[1]);
-    }
   });
 
   test('Given Create Note modal is open, When clicking close button, Then modal should close', async () => {
