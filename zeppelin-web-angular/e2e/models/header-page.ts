@@ -45,7 +45,7 @@ export class HeaderPage extends BasePage {
     this.brandLink = page.locator('.header .brand');
     this.notebookMenuItem = page.locator('[nz-menu-item]').filter({ hasText: 'Notebook' });
     this.notebookDropdownTrigger = page.locator('.node-list-trigger');
-    this.notebookDropdown = page.locator('zeppelin-node-list');
+    this.notebookDropdown = page.locator('zeppelin-node-list.ant-dropdown-menu');
     this.jobMenuItem = page.getByRole('link', { name: 'Job' });
     this.userDropdownTrigger = page.locator('.header .user .status');
     this.userBadge = page.locator('.header .user nz-badge');
