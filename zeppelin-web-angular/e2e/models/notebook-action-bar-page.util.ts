@@ -66,8 +66,13 @@ export class NotebookActionBarUtil {
 
     const initialCodeVisibility = await this.actionBarPage.isCodeVisible();
     await this.actionBarPage.toggleCodeVisibility();
-    const newCodeVisibility = await this.actionBarPage.isCodeVisible();
 
+    // Wait for the icon to change by checking for the expected icon
+    const expectedIcon = initialCodeVisibility ? 'fullscreen' : 'fullscreen-exit';
+    const icon = this.actionBarPage.showHideCodeButton.locator('i[nz-icon] svg');
+    await expect(icon).toHaveAttribute('data-icon', expectedIcon, { timeout: 5000 });
+
+    const newCodeVisibility = await this.actionBarPage.isCodeVisible();
     expect(newCodeVisibility).toBe(!initialCodeVisibility);
 
     // Verify the button is still functional after click
@@ -80,8 +85,13 @@ export class NotebookActionBarUtil {
 
     const initialOutputVisibility = await this.actionBarPage.isOutputVisible();
     await this.actionBarPage.toggleOutputVisibility();
-    const newOutputVisibility = await this.actionBarPage.isOutputVisible();
 
+    // Wait for the icon to change by checking for the expected icon
+    const expectedIcon = initialOutputVisibility ? 'book' : 'read';
+    const icon = this.actionBarPage.showHideOutputButton.locator('i[nz-icon] svg');
+    await expect(icon).toHaveAttribute('data-icon', expectedIcon, { timeout: 5000 });
+
+    const newOutputVisibility = await this.actionBarPage.isOutputVisible();
     expect(newOutputVisibility).toBe(!initialOutputVisibility);
 
     // Verify the button is still functional after click
