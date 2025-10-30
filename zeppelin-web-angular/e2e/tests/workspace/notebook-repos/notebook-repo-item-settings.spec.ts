@@ -60,11 +60,7 @@ test.describe('Notebook Repository Item - Settings', () => {
 
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName =
-        (await row
-          .locator('td')
-          .first()
-          .textContent()) || '';
+      const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isInputVisible = await repoItemPage.isInputVisible(settingName);
       if (isInputVisible) {
@@ -86,11 +82,7 @@ test.describe('Notebook Repository Item - Settings', () => {
 
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName =
-        (await row
-          .locator('td')
-          .first()
-          .textContent()) || '';
+      const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isDropdownVisible = await repoItemPage.isDropdownVisible(settingName);
       if (isDropdownVisible) {
@@ -112,11 +104,7 @@ test.describe('Notebook Repository Item - Settings', () => {
     let foundInput = false;
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName =
-        (await row
-          .locator('td')
-          .first()
-          .textContent()) || '';
+      const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isInputVisible = await repoItemPage.isInputVisible(settingName);
       if (isInputVisible) {

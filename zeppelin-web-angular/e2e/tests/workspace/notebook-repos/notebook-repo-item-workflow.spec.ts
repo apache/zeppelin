@@ -51,11 +51,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     let foundSetting = false;
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName =
-        (await row
-          .locator('td')
-          .first()
-          .textContent()) || '';
+      const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isInputVisible = await repoItemPage.isInputVisible(settingName);
       if (isInputVisible) {
@@ -91,11 +87,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     await repoItemUtil.verifyDisplayMode();
 
     const firstRow = repoItemPage.settingRows.first();
-    const settingName =
-      (await firstRow
-        .locator('td')
-        .first()
-        .textContent()) || '';
+    const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 
     await repoItemPage.clickEdit();

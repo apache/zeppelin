@@ -1,0 +1,32 @@
+{
+  "name": "@zeppelin/react",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "webpack serve --config webpack.config.js --mode development",
+    "build": "webpack --config webpack.config.js --mode production",
+    "dev": "webpack serve --config webpack.config.js --mode development"
+  },
+  "dependencies": {
+    "@ant-design/icons": "5.4.0",
+    "@antv/g2plot": "2.4.35",
+    "antd": "5.21.0",
+    "file-saver": "2.0.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "@types/file-saver": "2.0.7",
+    "@types/react": "18.3.26",
+    "@types/react-dom": "18.3.7",
+    "@types/xlsx": "0.0.36",
+    "css-loader": "6.8.0",
+    "html-webpack-plugin": "5.5.0",
+    "style-loader": "3.3.0",
+    "ts-loader": "9.4.0",
+    "typescript": "4.6.4",
+    "webpack": "5.88.0",
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "4.15.0"
+  }
+}
