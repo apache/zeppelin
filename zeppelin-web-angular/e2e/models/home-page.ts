@@ -69,7 +69,7 @@ export class HomePage extends BasePage {
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
-    this.createNewNoteButton = page.locator('zeppelin-node-list a').filter({ hasText: 'Create new Note' });
+    this.createNewNoteButton = page.getByText('Create new Note', { exact: true }).first();
     this.importNoteButton = page.locator('text=Import Note');
     this.searchInput = page.locator('textbox', { hasText: 'Search' });
     this.filterInput = page.locator('input[placeholder*="Filter"]');

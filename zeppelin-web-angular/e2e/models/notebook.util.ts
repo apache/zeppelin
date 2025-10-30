@@ -26,24 +26,23 @@ export class NotebookUtil extends BasePage {
     try {
       await this.homePage.navigateToHome();
 
-      // Enhanced wait for page to be ready and button to be visible
-      await this.page.waitForLoadState('networkidle', { timeout: 45000 });
+      // WebKit-specific handling for loading issues
+      const browserName = this.page.context().browser()?.browserType().name();
+      if (browserName === 'webkit') {
+        // Wait for Zeppelin to finish loading ticket data in WebKit
+        await this.page.waitForFunction(() => !document.body.textContent?.includes('Getting Ticket Data'), {
+          timeout: 60000
+        });
 
-      // Wait for either zeppelin-node-list or the create button to be available
-      try {
-        await this.page.waitForSelector('zeppelin-node-list a, button[nz-button]', { timeout: 45000 });
-      } catch (selectorError) {
-        console.warn('zeppelin-node-list not found, checking for create button directly');
+        // Wait for home page content to load
+        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+
+        // Wait specifically for the notebook list element
+        await this.page.waitForSelector('zeppelin-node-list', { timeout: 45000 });
       }
 
+      await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
       await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
-
-      // Wait for button to be ready for interaction with additional stability checks
-      await this.page.waitForLoadState('domcontentloaded');
-      // Wait for button to be stable and clickable
-      await this.homePage.createNewNoteButton.waitFor({ state: 'attached', timeout: 10000 });
-      await this.homePage.createNewNoteButton.waitFor({ state: 'visible', timeout: 10000 });
-
       await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
       // Wait for the modal to appear and fill the notebook name
@@ -60,7 +59,9 @@ export class NotebookUtil extends BasePage {
 
       // Wait for the notebook to be created and navigate to it with enhanced error handling
       try {
-        await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 60000 });
+        await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 90000 });
+        const notebookTitleLocator = this.page.locator('.notebook-title-editor');
+        await expect(notebookTitleLocator).toHaveText(notebookName, { timeout: 15000 });
       } catch (urlError) {
         console.warn('URL change timeout, checking current URL:', this.page.url());
         // If URL didn't change as expected, check if we're already on a notebook page
