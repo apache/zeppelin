@@ -118,6 +118,18 @@ export class HomePage extends BasePage {
 
   async navigateToHome(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'load' });
+
+    // Check if we're redirected to login page and handle authentication
+    const currentUrl = this.page.url();
+    if (currentUrl.includes('#/login')) {
+      console.log('Redirected to login page, performing authentication...');
+      const { performLoginIfRequired } = await import('../utils');
+      await performLoginIfRequired(this.page);
+
+      // Navigate again after login
+      await this.page.goto('/', { waitUntil: 'load' });
+    }
+
     await this.waitForPageLoad();
   }
 

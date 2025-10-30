@@ -51,9 +51,10 @@ export class HeaderPageUtil {
 
   async verifyNotebookDropdownOpens(): Promise<void> {
     await this.headerPage.clickNotebookMenu();
-    // Target the header dropdown version specifically using ng-reflect-header-mode attribute
-    const dropdownNodeList = this.page.locator('zeppelin-node-list[ng-reflect-header-mode="true"]');
-    await expect(dropdownNodeList).toBeVisible();
+    await expect(this.headerPage.notebookDropdown).toBeVisible();
+
+    const nodeList = new NodeListPage(this.page);
+    await expect(nodeList.createNewNoteButton).toBeVisible();
   }
 
   async verifyAboutZeppelinModalOpens(): Promise<void> {
