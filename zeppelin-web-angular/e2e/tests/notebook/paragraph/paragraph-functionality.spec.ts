@@ -17,6 +17,7 @@ import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinRea
 
 test.describe('Notebook Paragraph Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH);
+  addPageAnnotationBeforeEach(PAGES.SHARE.CODE_EDITOR);
 
   let testUtil: PublishedParagraphTestUtil;
   let testNotebook: { noteId: string; paragraphId: string };

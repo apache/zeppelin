@@ -17,6 +17,7 @@ import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../uti
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
+  addPageAnnotationBeforeEach(PAGES.SHARE.SPIN);
   let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
