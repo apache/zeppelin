@@ -27,6 +27,7 @@ import {
  */
 test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
+  addPageAnnotationBeforeEach(PAGES.SHARE.SHORTCUT);
 
   let keyboardPage: NotebookKeyboardPage;
   let testUtil: NotebookKeyboardPageUtil;
