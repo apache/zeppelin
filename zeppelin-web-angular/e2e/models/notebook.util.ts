@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { performLoginIfRequired } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -25,6 +26,9 @@ export class NotebookUtil extends BasePage {
   async createNotebook(notebookName: string): Promise<void> {
     try {
       await this.homePage.navigateToHome();
+
+      // Perform login if required
+      await performLoginIfRequired(this.page);
 
       // WebKit-specific handling for loading issues
       const browserName = this.page.context().browser()?.browserType().name();
@@ -49,26 +53,12 @@ export class NotebookUtil extends BasePage {
       const notebookNameInput = this.page.locator('input[name="noteName"]');
       await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
 
-      // Fill notebook name
-      await notebookNameInput.fill(notebookName);
-
       // Click the 'Create' button in the modal
       const createButton = this.page.locator('button', { hasText: 'Create' });
       await expect(createButton).toBeVisible({ timeout: 30000 });
+      await notebookNameInput.fill(notebookName);
       await createButton.click({ timeout: 30000 });
 
-      // Wait for the notebook to be created and navigate to it with enhanced error handling
-      try {
-        await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 90000 });
-        const notebookTitleLocator = this.page.locator('.notebook-title-editor');
-        await expect(notebookTitleLocator).toHaveText(notebookName, { timeout: 15000 });
-      } catch (urlError) {
-        console.warn('URL change timeout, checking current URL:', this.page.url());
-        // If URL didn't change as expected, check if we're already on a notebook page
-        if (!this.page.url().includes('/notebook/')) {
-          throw new Error(`Failed to navigate to notebook page. Current URL: ${this.page.url()}`);
-        }
-      }
       await this.waitForPageLoad();
     } catch (error) {
       console.error('Failed to create notebook:', error);

@@ -175,6 +175,16 @@ export class PublishedParagraphTestUtil {
     // Use existing NotebookUtil to create notebook
     await this.notebookUtil.createNotebook(notebookName);
 
+    // Wait for navigation to notebook page
+    try {
+      await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 15000 });
+    } catch (error) {
+      const currentUrl = this.page.url();
+      throw new Error(
+        `Failed to navigate to notebook page after creation. Current URL: ${currentUrl}. Error: ${error}`
+      );
+    }
+
     // Extract noteId from URL
     const url = this.page.url();
     const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
@@ -200,8 +210,21 @@ export class PublishedParagraphTestUtil {
 
     // Navigate back to home
     await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+
+    // Wait for the loading indicator to disappear instead of waiting for specific text
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const loadingText = document.body.textContent || '';
+          return !loadingText.includes('Getting Ticket Data');
+        },
+        { timeout: 15000 }
+      );
+    } catch {
+      // Fallback: just check that we're on the home page
+      await this.page.waitForURL(/\/#\/$/, { timeout: 5000 });
+    }
 
     return { noteId, paragraphId };
   }

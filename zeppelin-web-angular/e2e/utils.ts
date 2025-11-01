@@ -12,6 +12,7 @@
 
 import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
+import { NotebookUtil } from './models/notebook.util';
 
 export const PAGES = {
   // Main App
@@ -237,5 +238,111 @@ export async function waitForNotebookLinks(page: Page, timeout: number = 30000):
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+export async function createTestNotebook(
+  page: Page,
+  folderPath?: string
+): Promise<{ noteId: string; paragraphId: string }> {
+  const notebookUtil = new NotebookUtil(page);
+
+  const baseNotebookName = `Test Notebook ${Date.now()}`;
+  const notebookName = folderPath ? `${folderPath}/${baseNotebookName}` : baseNotebookName;
+
+  // Use existing NotebookUtil to create notebook
+  await notebookUtil.createNotebook(notebookName);
+
+  // Extract noteId from URL
+  const url = page.url();
+  const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+  if (!noteIdMatch) {
+    throw new Error(`Failed to extract notebook ID from URL: ${url}`);
+  }
+  const noteId = noteIdMatch[1];
+
+  // Get first paragraph ID
+  await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
+
+  const paragraphContainer = page.locator('zeppelin-notebook-paragraph').first();
+  const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+  await dropdownTrigger.click();
+
+  const paragraphLink = page.locator('li.paragraph-id a').first();
+  await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+
+  const paragraphId = await paragraphLink.textContent();
+  if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
+    throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
+  }
+
+  // Navigate back to home
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+
+  return { noteId, paragraphId };
+}
+
+export async function deleteTestNotebook(page: Page, noteId: string): Promise<void> {
+  try {
+    // Navigate to home page
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+
+    // Find the notebook in the tree
+    const treeNode = page.locator(`//span[@class='node-name' and contains(text(), 'Test Notebook')]`);
+
+    if ((await treeNode.count()) > 0) {
+      // Right-click on the notebook
+      await treeNode.first().click({ button: 'right' });
+
+      // Click the delete button
+      const deleteButton = page.locator('li:has-text("Move to Trash"), li:has-text("Delete")');
+      const deleteClicked = await deleteButton
+        .first()
+        .click()
+        .then(() => true)
+        .catch(() => false);
+
+      if (!deleteClicked) {
+        console.warn(`Delete button not found for notebook ${noteId}`);
+        return;
+      }
+
+      // Confirm deletion in popconfirm with timeout
+      try {
+        const confirmButton = page.locator('button:has-text("OK")');
+        await confirmButton.click({ timeout: 5000 });
+
+        // Wait for the notebook to be removed with timeout
+        await treeNode.first().waitFor({ state: 'hidden', timeout: 10000 });
+      } catch (e) {
+        // If confirmation fails, try alternative OK button selectors
+        const altConfirmButtons = [
+          '.ant-popover button:has-text("OK")',
+          '.ant-popconfirm button:has-text("OK")',
+          'button.ant-btn-primary:has-text("OK")'
+        ];
+
+        for (const selector of altConfirmButtons) {
+          try {
+            const button = page.locator(selector);
+            if (await button.isVisible({ timeout: 1000 })) {
+              await button.click({ timeout: 3000 });
+              await treeNode.first().waitFor({ state: 'hidden', timeout: 10000 });
+              break;
+            }
+          } catch (altError) {
+            // Continue to next selector
+            continue;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(`Failed to delete test notebook ${noteId}:`, error);
+    // Don't throw error to avoid failing the test cleanup
   }
 }

@@ -650,7 +650,7 @@ export class NotebookKeyboardPage extends BasePage {
 
     // Wait for output to be cleared by checking the result element is not visible
     const result = paragraph.locator('[data-testid="paragraph-result"]');
-    await result.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await result.waitFor({ state: 'detached', timeout: 5000 });
   }
 
   async getCurrentParagraphIndex(): Promise<number> {
@@ -996,7 +996,7 @@ export class NotebookKeyboardPage extends BasePage {
   async clickModalOkButton(timeout: number = 10000): Promise<void> {
     // Wait for any modal to appear
     const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout }).catch(() => {});
+    await modal.waitFor({ state: 'visible', timeout });
 
     // Define all acceptable OK button labels
     const okButtons = this.page.locator(
@@ -1029,7 +1029,7 @@ export class NotebookKeyboardPage extends BasePage {
   async clickModalCancelButton(timeout: number = 10000): Promise<void> {
     // Wait for any modal to appear
     const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout }).catch(() => {});
+    await modal.waitFor({ state: 'visible', timeout });
 
     // Define all acceptable Cancel button labels
     const cancelButtons = this.page.locator(
