@@ -12,6 +12,7 @@
 
 import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
+import { NotebookUtil } from './models/notebook.util';
 
 export const PAGES = {
   // Main App
@@ -181,7 +182,15 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
     await passwordInput.fill(testUser.password);
     await loginButton.click();
 
+    // Enhanced login verification: ensure we're redirected away from login page
+    await page.waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 30000 });
+
+    // Wait for home page to be fully loaded
     await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
+
+    // Additional check: ensure zeppelin-node-list is available after login
+    await page.waitForFunction(() => document.querySelector('zeppelin-node-list') !== null, { timeout: 15000 });
+
     return true;
   }
 
@@ -192,6 +201,14 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
   try {
     // Enhanced wait for network idle with longer timeout for CI environments
     await page.waitForLoadState('networkidle', { timeout: 45000 });
+
+    // Additional check: ensure we're not stuck on login page
+    await page
+      .waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 10000 })
+      .catch(() => {
+        // If still on login page, this is expected - login will handle redirect
+        console.log('Still on login page - this is normal if authentication is required');
+      });
 
     // Wait for Angular and Zeppelin to be ready with more robust checks
     await page.waitForFunction(
@@ -237,5 +254,212 @@ export async function waitForNotebookLinks(page: Page, timeout: number = 30000):
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+export async function navigateToNotebookWithFallback(page: Page, noteId: string, notebookName?: string): Promise<void> {
+  let navigationSuccessful = false;
+
+  try {
+    // Strategy 1: Direct navigation
+    await page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle', timeout: 30000 });
+    navigationSuccessful = true;
+  } catch (error) {
+    console.log('Direct navigation failed, trying fallback strategies...');
+
+    // Strategy 2: Wait for loading completion and check URL
+    try {
+      await page.waitForFunction(
+        () => {
+          const loadingText = document.body.textContent || '';
+          return !loadingText.includes('Getting Ticket Data');
+        },
+        { timeout: 15000 }
+      );
+
+      const currentUrl = page.url();
+      if (currentUrl.includes('/notebook/')) {
+        navigationSuccessful = true;
+      }
+    } catch (loadingError) {
+      console.log('Loading wait failed, trying home page fallback...');
+    }
+
+    // Strategy 3: Navigate through home page if notebook name is provided
+    if (!navigationSuccessful && notebookName) {
+      try {
+        await page.goto('/');
+        await page.waitForLoadState('networkidle', { timeout: 15000 });
+        await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+        const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
+        await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
+        await notebookLink.click();
+
+        await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+        navigationSuccessful = true;
+      } catch (fallbackError) {
+        throw new Error(`All navigation strategies failed. Final error: ${fallbackError}`);
+      }
+    }
+  }
+
+  if (!navigationSuccessful) {
+    throw new Error(`Failed to navigate to notebook ${noteId}`);
+  }
+
+  // Wait for notebook to be ready
+  await waitForZeppelinReady(page);
+}
+
+export async function createTestNotebook(
+  page: Page,
+  folderPath?: string
+): Promise<{ noteId: string; paragraphId: string }> {
+  const notebookUtil = new NotebookUtil(page);
+
+  const baseNotebookName = `Test Notebook ${Date.now()}`;
+  const notebookName = folderPath ? `${folderPath}/${baseNotebookName}` : baseNotebookName;
+
+  // Use existing NotebookUtil to create notebook
+  await notebookUtil.createNotebook(notebookName);
+
+  let noteId = '';
+
+  // Wait for navigation to notebook page - first try direct wait, then fallback
+  try {
+    await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 30000 });
+    // Extract noteId from URL if direct navigation worked
+    const url = page.url();
+    const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+    if (noteIdMatch) {
+      noteId = noteIdMatch[1];
+    }
+  } catch (error) {
+    console.log('Direct navigation failed, trying fallback strategies...');
+
+    // Extract noteId first to use fallback navigation
+    const currentUrl = page.url();
+    let tempNoteId = '';
+
+    // Try to get noteId from current URL
+    if (currentUrl.includes('/notebook/')) {
+      const match = currentUrl.match(/\/notebook\/([^\/\?]+)/);
+      tempNoteId = match ? match[1] : '';
+    }
+
+    if (tempNoteId) {
+      // Use the fallback navigation with the extracted noteId
+      await navigateToNotebookWithFallback(page, tempNoteId, notebookName);
+      noteId = tempNoteId;
+    } else {
+      // Manual fallback if no noteId found - go through home page
+      await page.goto('/');
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+      const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
+      await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
+      await notebookLink.click();
+      await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+
+      // Extract noteId after successful navigation through home page
+      const url = page.url();
+      const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+      if (noteIdMatch) {
+        noteId = noteIdMatch[1];
+      }
+    }
+  }
+
+  // Final check - if we still don't have a noteId, throw an error
+  if (!noteId) {
+    const currentUrl = page.url();
+    throw new Error(`Failed to extract notebook ID from URL: ${currentUrl}`);
+  }
+
+  // Get first paragraph ID
+  await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
+
+  const paragraphContainer = page.locator('zeppelin-notebook-paragraph').first();
+  const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+  await dropdownTrigger.click();
+
+  const paragraphLink = page.locator('li.paragraph-id a').first();
+  await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+
+  const paragraphId = await paragraphLink.textContent();
+  if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
+    throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
+  }
+
+  // Navigate back to home
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+
+  return { noteId, paragraphId };
+}
+
+export async function deleteTestNotebook(page: Page, noteId: string): Promise<void> {
+  try {
+    // Navigate to home page
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+
+    // Find the notebook in the tree
+    const treeNode = page.locator(`//span[@class='node-name' and contains(text(), 'Test Notebook')]`);
+
+    if ((await treeNode.count()) > 0) {
+      // Right-click on the notebook
+      await treeNode.first().click({ button: 'right' });
+
+      // Click the delete button
+      const deleteButton = page.locator('li:has-text("Move to Trash"), li:has-text("Delete")');
+      const deleteClicked = await deleteButton
+        .first()
+        .click()
+        .then(() => true)
+        .catch(() => false);
+
+      if (!deleteClicked) {
+        console.warn(`Delete button not found for notebook ${noteId}`);
+        return;
+      }
+
+      // Confirm deletion in popconfirm with timeout
+      try {
+        const confirmButton = page.locator('button:has-text("OK")');
+        await confirmButton.click({ timeout: 5000 });
+
+        // Wait for the notebook to be removed with timeout
+        await treeNode.first().waitFor({ state: 'hidden', timeout: 10000 });
+      } catch (e) {
+        // If confirmation fails, try alternative OK button selectors
+        const altConfirmButtons = [
+          '.ant-popover button:has-text("OK")',
+          '.ant-popconfirm button:has-text("OK")',
+          'button.ant-btn-primary:has-text("OK")'
+        ];
+
+        for (const selector of altConfirmButtons) {
+          try {
+            const button = page.locator(selector);
+            if (await button.isVisible({ timeout: 1000 })) {
+              await button.click({ timeout: 3000 });
+              await treeNode.first().waitFor({ state: 'hidden', timeout: 10000 });
+              break;
+            }
+          } catch (altError) {
+            // Continue to next selector
+            continue;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(`Failed to delete test notebook ${noteId}:`, error);
+    // Don't throw error to avoid failing the test cleanup
   }
 }

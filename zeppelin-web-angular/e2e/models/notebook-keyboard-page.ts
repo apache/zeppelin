@@ -11,6 +11,7 @@
  */
 
 import test, { expect, Locator, Page } from '@playwright/test';
+import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class NotebookKeyboardPage extends BasePage {
@@ -55,39 +56,17 @@ export class NotebookKeyboardPage extends BasePage {
     if (!noteId) {
       throw new Error('noteId is undefined or null. Cannot navigate to notebook.');
     }
+
+    // Use the reusable navigation function with fallback strategies
+    await navigateToNotebookWithFallback(this.page, noteId);
+
+    // Ensure paragraphs are visible after navigation
     try {
-      await this.page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle' });
-      await this.waitForPageLoad();
-
-      // Ensure paragraphs are visible with better error handling
       await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 15000 });
-    } catch (navigationError) {
-      console.warn('Initial navigation failed, trying alternative approach:', navigationError);
-
-      // Fallback: Try a more basic navigation
-      await this.page.goto(`/#/notebook/${noteId}`, {
-        waitUntil: 'load',
-        timeout: 60000
-      });
-
-      // Check if we at least have the notebook structure
-      const hasNotebookStructure = await this.page.evaluate(
-        () => document.querySelector('zeppelin-notebook, .notebook-content, [data-testid="notebook"]') !== null
-      );
-
-      if (!hasNotebookStructure) {
-        console.error('Notebook page structure not found. May be a navigation or server issue.');
-        // Don't throw - let tests continue with graceful degradation
-      }
-
-      // Try to ensure we have at least one paragraph, create if needed
+    } catch (error) {
+      // If no paragraphs found, log but don't throw - let tests handle gracefully
       const paragraphCount = await this.page.locator('zeppelin-notebook-paragraph').count();
       console.log(`Found ${paragraphCount} paragraphs after navigation`);
-
-      if (paragraphCount === 0) {
-        console.log('No paragraphs found, the notebook may not have loaded properly');
-        // Don't throw error - let individual tests handle this gracefully
-      }
     }
   }
 
@@ -119,7 +98,7 @@ export class NotebookKeyboardPage extends BasePage {
         return;
       }
 
-      await this.page.waitForTimeout(200);
+      // Wait for editor to be focused instead of fixed timeout
       await expect(editor).toHaveClass(/focused|focus/, { timeout: 5000 });
     } catch (error) {
       console.warn(`Focus code editor for paragraph ${paragraphIndex} failed:`, error);
@@ -264,7 +243,7 @@ export class NotebookKeyboardPage extends BasePage {
         const paragraph = this.getParagraphByIndex(0);
         const textarea = paragraph.locator('textarea').first();
         await textarea.focus();
-        await this.page.waitForTimeout(200);
+        await expect(textarea).toBeFocused({ timeout: 1000 });
         await textarea.press('Shift+Enter');
         console.log(`${browserName}: Used textarea.press for Shift+Enter`);
         return;
@@ -300,7 +279,14 @@ export class NotebookKeyboardPage extends BasePage {
           if (count > 0) {
             await runElement.waitFor({ state: 'visible', timeout: 3000 });
             await runElement.click({ force: true });
-            await this.page.waitForTimeout(200);
+
+            // Wait for paragraph to start running instead of fixed timeout
+            const runningIndicator = paragraph.locator(
+              '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
+            );
+            await runningIndicator.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {
+              console.log('No running indicator found, execution may have completed quickly');
+            });
 
             console.log(`${browserName}: Used selector "${selector}" for run button`);
             clickSuccess = true;
@@ -313,12 +299,20 @@ export class NotebookKeyboardPage extends BasePage {
       }
 
       if (clickSuccess) {
-        // Additional wait for WebKit to ensure execution starts
-        if (browserName === 'webkit') {
-          await this.page.waitForTimeout(1000);
-        } else {
-          await this.page.waitForTimeout(500);
-        }
+        // Wait for execution to start or complete instead of fixed timeout
+        const targetParagraph = this.getParagraphByIndex(0);
+        const runningIndicator = targetParagraph.locator(
+          '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
+        );
+        const resultIndicator = targetParagraph.locator('[data-testid="paragraph-result"]');
+
+        // Wait for either execution to start (running indicator) or complete (result appears)
+        await Promise.race([
+          runningIndicator.waitFor({ state: 'visible', timeout: browserName === 'webkit' ? 3000 : 2000 }),
+          resultIndicator.waitFor({ state: 'visible', timeout: browserName === 'webkit' ? 3000 : 2000 })
+        ]).catch(() => {
+          console.log(`${browserName}: No execution indicators found, continuing...`);
+        });
 
         console.log(`${browserName}: Used Run button click as fallback`);
         return;
@@ -332,13 +326,31 @@ export class NotebookKeyboardPage extends BasePage {
       if (browserName === 'webkit') {
         try {
           // WebKit specific: Try clicking on paragraph area first to ensure focus
-          const paragraph = this.getParagraphByIndex(0);
-          await paragraph.click();
-          await this.page.waitForTimeout(300);
+          const webkitParagraph = this.getParagraphByIndex(0);
+          await webkitParagraph.click();
+
+          // Wait for focus to be set instead of fixed timeout
+          const editor = webkitParagraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
+          await expect(editor)
+            .toHaveClass(/focused|focus/, { timeout: 2000 })
+            .catch(() => {
+              console.log('WebKit: Focus not detected, continuing anyway...');
+            });
 
           // Try to trigger run via keyboard
           await this.executePlatformShortcut('shift.enter');
-          await this.page.waitForTimeout(500);
+
+          // Wait for execution to start instead of fixed timeout
+          const runningIndicator = webkitParagraph.locator(
+            '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
+          );
+          const resultIndicator = webkitParagraph.locator('[data-testid="paragraph-result"]');
+          await Promise.race([
+            runningIndicator.waitFor({ state: 'visible', timeout: 2000 }),
+            resultIndicator.waitFor({ state: 'visible', timeout: 2000 })
+          ]).catch(() => {
+            console.log('WebKit: No execution indicators found after keyboard shortcut');
+          });
 
           console.log(`${browserName}: Used WebKit-specific keyboard fallback`);
           return;
@@ -650,7 +662,7 @@ export class NotebookKeyboardPage extends BasePage {
 
     // Wait for output to be cleared by checking the result element is not visible
     const result = paragraph.locator('[data-testid="paragraph-result"]');
-    await result.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await result.waitFor({ state: 'detached', timeout: 5000 });
   }
 
   async getCurrentParagraphIndex(): Promise<number> {
@@ -963,7 +975,19 @@ export class NotebookKeyboardPage extends BasePage {
         return false; // Partial success
       }
 
-      await this.page.waitForTimeout(500);
+      // Wait for DOM changes instead of fixed timeout
+      await this.page
+        .waitForFunction(
+          prevCount => {
+            const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+            return paragraphs.length !== prevCount;
+          },
+          currentCount,
+          { timeout: 500 }
+        )
+        .catch(() => {
+          // If no changes detected, continue the loop
+        });
     }
 
     // Final check: if we have any paragraphs, consider it acceptable
@@ -996,7 +1020,7 @@ export class NotebookKeyboardPage extends BasePage {
   async clickModalOkButton(timeout: number = 10000): Promise<void> {
     // Wait for any modal to appear
     const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout }).catch(() => {});
+    await modal.waitFor({ state: 'visible', timeout });
 
     // Define all acceptable OK button labels
     const okButtons = this.page.locator(
@@ -1016,20 +1040,31 @@ export class NotebookKeyboardPage extends BasePage {
       try {
         await button.waitFor({ state: 'visible', timeout });
         await button.click({ delay: 100 });
-        await this.page.waitForTimeout(300); // allow modal to close
+        // Wait for modal to actually close instead of fixed timeout
+        await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
+          console.log('Modal did not close within expected time, continuing...');
+        });
       } catch (e) {
         console.warn(`⚠️ Failed to click OK button #${i + 1}:`, e);
       }
     }
 
-    // Wait briefly to ensure all modals have closed
-    await this.page.waitForTimeout(500);
+    // Wait for all modals to be closed
+    await this.page
+      .locator('.ant-modal, .modal-dialog, .ant-modal-confirm')
+      .waitFor({
+        state: 'detached',
+        timeout: 2000
+      })
+      .catch(() => {
+        console.log('Some modals may still be present, continuing...');
+      });
   }
 
   async clickModalCancelButton(timeout: number = 10000): Promise<void> {
     // Wait for any modal to appear
     const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout }).catch(() => {});
+    await modal.waitFor({ state: 'visible', timeout });
 
     // Define all acceptable Cancel button labels
     const cancelButtons = this.page.locator(
@@ -1049,13 +1084,24 @@ export class NotebookKeyboardPage extends BasePage {
       try {
         await button.waitFor({ state: 'visible', timeout });
         await button.click({ delay: 100 });
-        await this.page.waitForTimeout(300); // allow modal to close
+        // Wait for modal to actually close instead of fixed timeout
+        await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
+          console.log('Modal did not close within expected time, continuing...');
+        });
       } catch (e) {
         console.warn(`⚠️ Failed to click Cancel button #${i + 1}:`, e);
       }
     }
 
-    // Wait briefly to ensure all modals have closed
-    await this.page.waitForTimeout(500);
+    // Wait for all modals to be closed
+    await this.page
+      .locator('.ant-modal, .modal-dialog, .ant-modal-confirm')
+      .waitFor({
+        state: 'detached',
+        timeout: 2000
+      })
+      .catch(() => {
+        console.log('Some modals may still be present, continuing...');
+      });
   }
 }
