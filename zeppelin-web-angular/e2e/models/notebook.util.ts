@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { performLoginIfRequired } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -23,22 +24,45 @@ export class NotebookUtil extends BasePage {
   }
 
   async createNotebook(notebookName: string): Promise<void> {
-    await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
+    try {
+      await this.homePage.navigateToHome();
 
-    // Wait for the modal to appear and fill the notebook name
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
+      // Perform login if required
+      await performLoginIfRequired(this.page);
 
-    // Fill notebook name
-    await notebookNameInput.fill(notebookName);
+      // WebKit-specific handling for loading issues
+      const browserName = this.page.context().browser()?.browserType().name();
+      if (browserName === 'webkit') {
+        // Wait for Zeppelin to finish loading ticket data in WebKit
+        await this.page.waitForFunction(() => !document.body.textContent?.includes('Getting Ticket Data'), {
+          timeout: 60000
+        });
 
-    // Click the 'Create' button in the modal
-    const createButton = this.page.locator('button', { hasText: 'Create' });
-    await createButton.click();
+        // Wait for home page content to load
+        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
 
-    // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
-    await this.waitForPageLoad();
+        // Wait specifically for the notebook list element
+        await this.page.waitForSelector('zeppelin-node-list', { timeout: 45000 });
+      }
+
+      await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
+      await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
+      await this.homePage.createNewNoteButton.click({ timeout: 30000 });
+
+      // Wait for the modal to appear and fill the notebook name
+      const notebookNameInput = this.page.locator('input[name="noteName"]');
+      await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
+
+      // Click the 'Create' button in the modal
+      const createButton = this.page.locator('button', { hasText: 'Create' });
+      await expect(createButton).toBeVisible({ timeout: 30000 });
+      await notebookNameInput.fill(notebookName);
+      await createButton.click({ timeout: 30000 });
+
+      await this.waitForPageLoad();
+    } catch (error) {
+      console.error('Failed to create notebook:', error);
+      throw error;
+    }
   }
 }

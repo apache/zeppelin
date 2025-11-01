@@ -17,12 +17,13 @@ import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../uti
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
+  addPageAnnotationBeforeEach(PAGES.SHARE.SPIN);
   let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
     basePage = new BasePage(page);
 
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/');
   });
 
   test('should have correct component selector and structure', async ({ page }) => {
@@ -68,24 +69,20 @@ test.describe('Zeppelin App Component', () => {
     await waitForZeppelinReady(page);
 
     // Test navigation back to root path
-    try {
-      await page.goto('/', { waitUntil: 'load', timeout: 10000 });
+    await page.goto('/', { waitUntil: 'load', timeout: 10000 });
 
-      // Check if loading spinner appears during navigation
-      const loadingSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
+    // Check if loading spinner appears during navigation
+    const loadingSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
 
-      // Loading might be very fast, so we check if it exists
-      const spinnerCount = await loadingSpinner.count();
-      expect(spinnerCount).toBeGreaterThanOrEqual(0);
+    // Loading might be very fast, so we check if it exists
+    const spinnerCount = await loadingSpinner.count();
+    expect(spinnerCount).toBeGreaterThanOrEqual(0);
 
-      await waitForZeppelinReady(page);
+    await waitForZeppelinReady(page);
 
-      // After ready, loading should be hidden if it was visible
-      if (await loadingSpinner.isVisible()) {
-        await expect(loadingSpinner).toBeHidden();
-      }
-    } catch (error) {
-      console.log('Navigation test skipped due to timeout:', error);
+    // After ready, loading should be hidden if it was visible
+    if (await loadingSpinner.isVisible()) {
+      await expect(loadingSpinner).toBeHidden();
     }
   });
 
@@ -161,7 +158,7 @@ test.describe('Zeppelin App Component', () => {
     }
 
     // Return to home
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('/');
     await waitForZeppelinReady(page);
     await expect(zeppelinRoot).toBeAttached();
   });

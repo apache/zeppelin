@@ -69,7 +69,7 @@ export class HomePage extends BasePage {
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
-    this.createNewNoteButton = page.locator('text=Create new Note');
+    this.createNewNoteButton = page.getByText('Create new Note', { exact: true }).first();
     this.importNoteButton = page.locator('text=Import Note');
     this.searchInput = page.locator('textbox', { hasText: 'Search' });
     this.filterInput = page.locator('input[placeholder*="Filter"]');
@@ -117,12 +117,15 @@ export class HomePage extends BasePage {
   }
 
   async navigateToHome(): Promise<void> {
-    await this.page.goto('/', { waitUntil: 'load' });
+    await this.page.goto('/', {
+      waitUntil: 'load',
+      timeout: 60000
+    });
     await this.waitForPageLoad();
   }
 
   async navigateToLogin(): Promise<void> {
-    await this.page.goto('/#/login', { waitUntil: 'load' });
+    await this.page.goto('/#/login');
     await this.waitForPageLoad();
     // Wait for potential redirect to complete by checking URL change
     await waitForUrlNotContaining(this.page, '#/login');

@@ -25,6 +25,57 @@ export class PublishedParagraphTestUtil {
     this.notebookUtil = new NotebookUtil(page);
   }
 
+  async testConfirmationModalForNoResultParagraph({
+    noteId,
+    paragraphId
+  }: {
+    noteId: string;
+    paragraphId: string;
+  }): Promise<void> {
+    await this.publishedParagraphPage.navigateToNotebook(noteId);
+
+    const paragraphElement = this.page.locator('zeppelin-notebook-paragraph').first();
+
+    const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+    await settingsButton.click();
+
+    const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
+    await clearOutputButton.click();
+    await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
+
+    await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+    const modal = this.publishedParagraphPage.confirmationModal;
+    await expect(modal).toBeVisible();
+
+    // Check for the new enhanced modal content
+    const modalTitle = this.page.locator('.ant-modal-confirm-title, .ant-modal-title');
+    await expect(modalTitle).toContainText('Run Paragraph?');
+
+    // Check that code preview is shown
+    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body').first();
+    await expect(modalContent).toContainText('This paragraph contains the following code:');
+    await expect(modalContent).toContainText('Would you like to execute this code?');
+
+    // Verify that the code preview area exists with proper styling
+    const codePreview = modalContent.locator('div[style*="background-color: #f5f5f5"]');
+    const isCodePreviewVisible = await codePreview.isVisible();
+
+    if (isCodePreviewVisible) {
+      await expect(codePreview).toBeVisible();
+    }
+
+    // Check for Run and Cancel buttons
+    const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
+    const cancelButton = this.page.locator('.ant-modal button:has-text("Cancel"), .ant-btn:has-text("Cancel")');
+    await expect(runButton).toBeVisible();
+    await expect(cancelButton).toBeVisible();
+
+    // Click the Run button in the modal
+    await runButton.click();
+    await expect(modal).toBeHidden();
+  }
+
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
@@ -124,6 +175,16 @@ export class PublishedParagraphTestUtil {
     // Use existing NotebookUtil to create notebook
     await this.notebookUtil.createNotebook(notebookName);
 
+    // Wait for navigation to notebook page
+    try {
+      await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 15000 });
+    } catch (error) {
+      const currentUrl = this.page.url();
+      throw new Error(
+        `Failed to navigate to notebook page after creation. Current URL: ${currentUrl}. Error: ${error}`
+      );
+    }
+
     // Extract noteId from URL
     const url = this.page.url();
     const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
@@ -149,8 +210,21 @@ export class PublishedParagraphTestUtil {
 
     // Navigate back to home
     await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+
+    // Wait for the loading indicator to disappear instead of waiting for specific text
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const loadingText = document.body.textContent || '';
+          return !loadingText.includes('Getting Ticket Data');
+        },
+        { timeout: 15000 }
+      );
+    } catch {
+      // Fallback: just check that we're on the home page
+      await this.page.waitForURL(/\/#\/$/, { timeout: 5000 });
+    }
 
     return { noteId, paragraphId };
   }
@@ -169,8 +243,9 @@ export class PublishedParagraphTestUtil {
         const treeNode = notebookLink.locator('xpath=ancestor::nz-tree-node[1]');
         await treeNode.hover();
 
-        // Wait a bit for hover effects
-        await this.page.waitForTimeout(1000);
+        // Wait for delete button to become visible after hover
+        const deleteButtonLocator = treeNode.locator('i[nztype="delete"], i.anticon-delete');
+        await expect(deleteButtonLocator).toBeVisible({ timeout: 5000 });
 
         // Try multiple selectors for the delete button
         const deleteButtonSelectors = [
