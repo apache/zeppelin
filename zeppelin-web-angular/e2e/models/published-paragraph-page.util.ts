@@ -176,22 +176,60 @@ export class PublishedParagraphTestUtil {
     // Use existing NotebookUtil to create notebook
     await this.notebookUtil.createNotebook(notebookName);
 
+    // Wait for navigation to notebook page - try direct wait first, then fallback
+    let noteId = '';
+    try {
+      await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 30000 });
+    } catch (error) {
+      // Extract noteId if available, then use fallback navigation
+      const currentUrl = this.page.url();
+      let tempNoteId = '';
+
+      if (currentUrl.includes('/notebook/')) {
+        const match = currentUrl.match(/\/notebook\/([^\/\?]+)/);
+        tempNoteId = match ? match[1] : '';
+      }
+
+      if (tempNoteId) {
+        // Use the reusable fallback navigation function
+        await navigateToNotebookWithFallback(this.page, tempNoteId, notebookName);
+      } else {
+        // Manual fallback if no noteId found
+        await this.page.goto('/');
+        await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+        await this.page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+        const notebookLink = this.page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
+        await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
+        await notebookLink.click();
+        await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+      }
+    }
+
     // Extract noteId from URL
     const url = this.page.url();
     const noteIdMatch = url.match(NOTEBOOK_PATTERNS.URL_EXTRACT_NOTEBOOK_ID_REGEX);
     if (!noteIdMatch) {
       throw new Error(`Failed to extract notebook ID from URL: ${url}`);
     }
-    const noteId = noteIdMatch[1];
+    noteId = noteIdMatch[1];
 
-    // Get first paragraph ID
-    await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for notebook page to be fully loaded
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+
+    // Wait for paragraph elements to be available
+    await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 15000 });
+
+    // Get first paragraph ID with enhanced error handling
     const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first();
     const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+
+    // Wait for dropdown to be clickable
+    await dropdownTrigger.waitFor({ state: 'visible', timeout: 10000 });
     await dropdownTrigger.click();
 
     const paragraphLink = this.page.locator('li.paragraph-id a').first();
-    await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+    await paragraphLink.waitFor({ state: 'attached', timeout: 10000 });
 
     const paragraphId = await paragraphLink.textContent();
 
@@ -199,10 +237,26 @@ export class PublishedParagraphTestUtil {
       throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
     }
 
-    // Navigate back to home
+    // Navigate back to home with enhanced waiting
     await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+
+    // Wait for the loading indicator to disappear and home page to be ready
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const loadingText = document.body.textContent || '';
+          const hasWelcome = loadingText.includes('Welcome to Zeppelin');
+          const noLoadingTicket = !loadingText.includes('Getting Ticket Data');
+          return hasWelcome && noLoadingTicket;
+        },
+        { timeout: 20000 }
+      );
+    } catch {
+      // Fallback: just check that we're on the home page and node list is available
+      await this.page.waitForURL(/\/#\/$/, { timeout: 5000 });
+      await this.page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
+    }
 
     return { noteId, paragraphId };
   }

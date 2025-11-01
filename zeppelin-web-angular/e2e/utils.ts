@@ -228,6 +228,14 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
       return;
     }
 
+    // Additional check: ensure we're not stuck on login page
+    await page
+      .waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 10000 })
+      .catch(() => {
+        // If still on login page, this is expected - login will handle redirect
+        console.log('Still on login page - this is normal if authentication is required');
+      });
+
     // Wait for Angular and Zeppelin to be ready with more robust checks
     await page.waitForFunction(
       () => {

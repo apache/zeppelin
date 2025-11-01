@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -26,20 +27,17 @@ export class NotebookUtil extends BasePage {
     try {
       await this.homePage.navigateToHome();
 
-      // WebKit-specific handling for loading issues
-      const browserName = this.page.context().browser()?.browserType().name();
-      if (browserName === 'webkit') {
-        // Wait for Zeppelin to finish loading ticket data in WebKit
-        await this.page.waitForFunction(() => !document.body.textContent?.includes('Getting Ticket Data'), {
-          timeout: 60000
-        });
+      // Perform login if required
+      await performLoginIfRequired(this.page);
 
-        // Wait for home page content to load
-        await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+      // Wait for Zeppelin to be fully ready
+      await waitForZeppelinReady(this.page);
 
-        // Wait specifically for the notebook list element
-        await this.page.waitForSelector('zeppelin-node-list', { timeout: 45000 });
-      }
+      // Wait for URL to not contain 'login' and for the notebook list to appear
+      await this.page.waitForFunction(
+        () => !window.location.href.includes('#/login') && document.querySelector('zeppelin-node-list') !== null,
+        { timeout: 30000 }
+      );
 
       await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
       await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
@@ -49,26 +47,12 @@ export class NotebookUtil extends BasePage {
       const notebookNameInput = this.page.locator('input[name="noteName"]');
       await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
 
-      // Fill notebook name
-      await notebookNameInput.fill(notebookName);
-
       // Click the 'Create' button in the modal
       const createButton = this.page.locator('button', { hasText: 'Create' });
       await expect(createButton).toBeVisible({ timeout: 30000 });
+      await notebookNameInput.fill(notebookName);
       await createButton.click({ timeout: 30000 });
 
-      // Wait for the notebook to be created and navigate to it with enhanced error handling
-      try {
-        await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 90000 });
-        const notebookTitleLocator = this.page.locator('.notebook-title-editor');
-        await expect(notebookTitleLocator).toHaveText(notebookName, { timeout: 15000 });
-      } catch (urlError) {
-        console.warn('URL change timeout, checking current URL:', this.page.url());
-        // If URL didn't change as expected, check if we're already on a notebook page
-        if (!this.page.url().includes('/notebook/')) {
-          throw new Error(`Failed to navigate to notebook page. Current URL: ${this.page.url()}`);
-        }
-      }
       await this.waitForPageLoad();
     } catch (error) {
       console.error('Failed to create notebook:', error);

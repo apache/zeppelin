@@ -1067,7 +1067,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should handle Control+Space key combination', async () => {
       // Given: Code editor with partial code
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('pr');
+      await keyboardPage.setCodeEditorContent('%python\npr');
       await keyboardPage.pressKey('End'); // Position cursor at end
 
       // When: User presses Control+Space
@@ -1155,6 +1155,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('Cross-platform Compatibility', () => {
     test('should handle macOS-specific character variants', async () => {
+      // Navigate to the test notebook first
+      await keyboardPage.navigateToNotebook(testNotebook.noteId);
+
       // Given: A paragraph ready for shortcuts
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("macOS compatibility test")');
@@ -1196,6 +1199,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     });
 
     test('should work consistently across different browser contexts', async () => {
+      // Navigate to the test notebook first
+      await keyboardPage.navigateToNotebook(testNotebook.noteId);
+
       // Given: Standard keyboard shortcuts
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Cross-browser test")');

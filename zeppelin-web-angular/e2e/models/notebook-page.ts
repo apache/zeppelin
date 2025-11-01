@@ -11,6 +11,7 @@
  */
 
 import { Locator, Page } from '@playwright/test';
+import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class NotebookPage extends BasePage {
@@ -36,8 +37,7 @@ export class NotebookPage extends BasePage {
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}`);
-    await this.waitForPageLoad();
+    await navigateToNotebookWithFallback(this.page, noteId);
   }
 
   async navigateToNotebookRevision(noteId: string, revisionId: string): Promise<void> {
