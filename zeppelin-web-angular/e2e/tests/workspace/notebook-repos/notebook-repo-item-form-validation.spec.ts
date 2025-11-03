@@ -46,11 +46,7 @@ test.describe('Notebook Repository Item - Form Validation', () => {
     await repoItemPage.clickEdit();
 
     const firstRow = repoItemPage.settingRows.first();
-    const settingName =
-      (await firstRow
-        .locator('td')
-        .first()
-        .textContent()) || '';
+    const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
     const isInputVisible = await repoItemPage.isInputVisible(settingName);
     if (isInputVisible) {
@@ -73,11 +69,7 @@ test.describe('Notebook Repository Item - Form Validation', () => {
     await repoItemPage.clickEdit();
 
     const firstRow = repoItemPage.settingRows.first();
-    const settingName =
-      (await firstRow
-        .locator('td')
-        .first()
-        .textContent()) || '';
+    const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
     const isInputVisible = await repoItemPage.isInputVisible(settingName);
     if (isInputVisible) {
@@ -102,11 +94,7 @@ test.describe('Notebook Repository Item - Form Validation', () => {
 
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName =
-        (await row
-          .locator('td')
-          .first()
-          .textContent()) || '';
+      const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isInputVisible = await repoItemPage.isInputVisible(settingName);
       if (isInputVisible) {
