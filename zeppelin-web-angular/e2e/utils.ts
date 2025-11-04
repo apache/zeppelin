@@ -228,6 +228,28 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
       return;
     }
 
+    // Check if we're on login page and authentication is required
+    const isOnLoginPage = page.url().includes('#/login');
+    if (isOnLoginPage) {
+      console.log('On login page - checking if authentication is enabled');
+
+      // If we're on login page, this is expected when authentication is required
+      // Just wait for login elements to be ready instead of waiting for app content
+      await page.waitForFunction(
+        () => {
+          const hasAngular = document.querySelector('[ng-version]') !== null;
+          const hasLoginElements =
+            document.querySelector('zeppelin-login') !== null ||
+            document.querySelector('input[placeholder*="User"], input[placeholder*="user"], input[type="text"]') !==
+              null;
+          return hasAngular && hasLoginElements;
+        },
+        { timeout: 30000 }
+      );
+      console.log('Login page is ready');
+      return;
+    }
+
     // Additional check: ensure we're not stuck on login page
     await page
       .waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 10000 })

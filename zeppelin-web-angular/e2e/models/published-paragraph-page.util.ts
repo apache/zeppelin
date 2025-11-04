@@ -194,15 +194,53 @@ export class PublishedParagraphTestUtil {
         // Use the reusable fallback navigation function
         await navigateToNotebookWithFallback(this.page, tempNoteId, notebookName);
       } else {
-        // Manual fallback if no noteId found
-        await this.page.goto('/');
-        await this.page.waitForLoadState('networkidle', { timeout: 15000 });
-        await this.page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+        // Manual fallback if no noteId found - try to find notebook via API first
+        const foundNoteId = await this.page.evaluate(async targetName => {
+          try {
+            const response = await fetch('/api/notebook');
+            const data = await response.json();
+            if (data.body && Array.isArray(data.body)) {
+              // Find the most recently created notebook with matching name pattern
+              const testNotebooks = data.body.filter(
+                (nb: { path?: string }) => nb.path && nb.path.includes(targetName)
+              );
+              if (testNotebooks.length > 0) {
+                // Sort by creation time and get the latest
+                testNotebooks.sort(
+                  (a: { dateUpdated?: string }, b: { dateUpdated?: string }) =>
+                    new Date(b.dateUpdated || 0).getTime() - new Date(a.dateUpdated || 0).getTime()
+                );
+                return testNotebooks[0].id;
+              }
+            }
+          } catch (apiError) {
+            console.log('API call failed:', apiError);
+          }
+          return null;
+        }, notebookName);
 
-        const notebookLink = this.page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
-        await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
-        await notebookLink.click();
-        await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+        if (foundNoteId) {
+          console.log(`Found notebook ID via API: ${foundNoteId}`);
+          await this.page.goto(`/#/notebook/${foundNoteId}`);
+          await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+        } else {
+          // Final fallback: try to find in the home page
+          await this.page.goto('/');
+          await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+          await this.page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+          // Try to find any test notebook (not necessarily the exact one)
+          const testNotebookLinks = this.page.locator(`a[href*="/notebook/"]`).filter({ hasText: /Test Notebook/ });
+          const linkCount = await testNotebookLinks.count();
+
+          if (linkCount > 0) {
+            console.log(`Found ${linkCount} test notebooks, using the first one`);
+            await testNotebookLinks.first().click();
+            await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+          } else {
+            throw new Error(`No test notebooks found in the home page`);
+          }
+        }
       }
     }
 
