@@ -933,6 +933,9 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async areLineNumbersVisible(paragraphIndex: number = 0): Promise<boolean> {
+    if (this.page.isClosed()) {
+      return false;
+    }
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const lineNumbers = paragraph.locator('.monaco-editor .margin .line-numbers').first();
     return await lineNumbers.isVisible();

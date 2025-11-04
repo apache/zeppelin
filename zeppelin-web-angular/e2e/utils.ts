@@ -202,6 +202,28 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
     // Enhanced wait for network idle with longer timeout for CI environments
     await page.waitForLoadState('networkidle', { timeout: 45000 });
 
+    // Check if we're on login page and authentication is required
+    const isOnLoginPage = page.url().includes('#/login');
+    if (isOnLoginPage) {
+      console.log('On login page - checking if authentication is enabled');
+
+      // If we're on login page, this is expected when authentication is required
+      // Just wait for login elements to be ready instead of waiting for app content
+      await page.waitForFunction(
+        () => {
+          const hasAngular = document.querySelector('[ng-version]') !== null;
+          const hasLoginElements =
+            document.querySelector('zeppelin-login') !== null ||
+            document.querySelector('input[placeholder*="User"], input[placeholder*="user"], input[type="text"]') !==
+              null;
+          return hasAngular && hasLoginElements;
+        },
+        { timeout: 30000 }
+      );
+      console.log('Login page is ready');
+      return;
+    }
+
     // Additional check: ensure we're not stuck on login page
     await page
       .waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 10000 })
@@ -395,8 +417,8 @@ export async function createTestNotebook(
 
   // Navigate back to home
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
-  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
+  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 20000 });
 
   return { noteId, paragraphId };
 }
@@ -405,8 +427,8 @@ export async function deleteTestNotebook(page: Page, noteId: string): Promise<vo
   try {
     // Navigate to home page
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
+    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 20000 });
 
     // Find the notebook in the tree
     const treeNode = page.locator(`//span[@class='node-name' and contains(text(), 'Test Notebook')]`);

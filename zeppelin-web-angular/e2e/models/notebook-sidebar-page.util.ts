@@ -291,12 +291,74 @@ export class NotebookSidebarUtil {
       // Add extra wait for page stabilization
       await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
+      // Wait for navigation to notebook page or try to navigate
+      await this.page
+        .waitForFunction(
+          () => window.location.href.includes('/notebook/') || document.querySelector('zeppelin-notebook-paragraph'),
+          { timeout: 10000 }
+        )
+        .catch(() => {
+          console.log('Notebook navigation timeout, checking current state...');
+        });
+
       // Extract noteId from URL
-      const url = this.page.url();
-      const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+      let url = this.page.url();
+      let noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+
+      // If URL doesn't contain notebook ID, try to find it from the DOM or API
       if (!noteIdMatch) {
-        throw new Error(`Failed to extract notebook ID from URL: ${url}`);
+        console.log(`URL ${url} doesn't contain notebook ID, trying alternative methods...`);
+
+        // Try to get notebook ID from the page content or API
+        const foundNoteId = await this.page.evaluate(async targetName => {
+          // Check if there's a notebook element with data attributes
+          const notebookElement = document.querySelector('zeppelin-notebook');
+          if (notebookElement) {
+            const noteIdAttr = notebookElement.getAttribute('data-note-id') || notebookElement.getAttribute('note-id');
+            if (noteIdAttr) {
+              return noteIdAttr;
+            }
+          }
+
+          // Try to fetch from API to get the latest created notebook
+          try {
+            const response = await fetch('/api/notebook');
+            const data = await response.json();
+            if (data.body && Array.isArray(data.body)) {
+              // Find the most recently created notebook with matching name pattern
+              const testNotebooks = data.body.filter(
+                (nb: { path?: string }) => nb.path && nb.path.includes(targetName)
+              );
+              if (testNotebooks.length > 0) {
+                // Sort by creation time and get the latest
+                testNotebooks.sort(
+                  (a: { dateUpdated?: string }, b: { dateUpdated?: string }) =>
+                    new Date(b.dateUpdated || 0).getTime() - new Date(a.dateUpdated || 0).getTime()
+                );
+                return testNotebooks[0].id;
+              }
+            }
+          } catch (apiError) {
+            console.log('API call failed:', apiError);
+          }
+
+          return null;
+        }, notebookName);
+
+        if (foundNoteId) {
+          console.log(`Found notebook ID via alternative method: ${foundNoteId}`);
+          // Navigate to the notebook page
+          await this.page.goto(`/#/notebook/${foundNoteId}`);
+          await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+          url = this.page.url();
+          noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+        }
+
+        if (!noteIdMatch) {
+          throw new Error(`Failed to extract notebook ID from URL: ${url}. Notebook creation may have failed.`);
+        }
       }
+
       const noteId = noteIdMatch[1];
 
       // Get first paragraph ID with increased timeout
