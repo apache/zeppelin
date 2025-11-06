@@ -94,6 +94,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     if (!isNil(note)) {
       this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
       if (this.paragraph) {
+        if (!this.paragraph.results) {
+          this.showRunConfirmationModal();
+        }
         if (this.useReact) {
           this.setResults(this.paragraph);
           this.isLoading = false;
@@ -101,9 +104,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
           this.loadReactWidget();
           return;
         }
-        if (!this.paragraph.results) {
-          this.showRunConfirmationModal();
-        }
+
         this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);
