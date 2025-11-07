@@ -271,16 +271,6 @@ export class NotebookSidebarUtil {
     }
   }
 
-  async verifyAllSidebarFunctionality(): Promise<void> {
-    await this.verifyNavigationButtons();
-    await this.verifyStateManagement();
-    await this.verifyToggleBehavior();
-    await this.verifyTocContentLoading();
-    await this.verifyFileTreeContentLoading();
-    await this.verifyCloseFunctionality();
-    await this.verifyAllSidebarStates();
-  }
-
   async createTestNotebook(): Promise<{ noteId: string; paragraphId: string }> {
     const notebookName = `Test Notebook ${Date.now()}`;
 

@@ -11,7 +11,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../../../models/home-page';
 import { FolderRenamePage } from '../../../models/folder-rename-page';
 import { FolderRenamePageUtil } from '../../../models/folder-rename-page.util';
 import {
@@ -24,7 +23,6 @@ import {
 } from '../../../utils';
 
 test.describe('Folder Rename', () => {
-  let homePage: HomePage;
   let folderRenamePage: FolderRenamePage;
   let folderRenameUtil: FolderRenamePageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
@@ -34,7 +32,6 @@ test.describe('Folder Rename', () => {
   addPageAnnotationBeforeEach(PAGES.SHARE.FOLDER_RENAME);
 
   test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
     folderRenamePage = new FolderRenamePage(page);
     folderRenameUtil = new FolderRenamePageUtil(page, folderRenamePage);
 

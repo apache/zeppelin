@@ -10,14 +10,11 @@
  * limitations under the License.
  */
 
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { NoteTocPage } from './note-toc-page';
 
 export class NoteTocPageUtil {
-  constructor(
-    private readonly page: Page,
-    private readonly noteTocPage: NoteTocPage
-  ) {}
+  constructor(private readonly noteTocPage: NoteTocPage) {}
 
   async verifyTocPanelOpens(): Promise<void> {
     await this.noteTocPage.clickTocToggle();
@@ -37,23 +34,5 @@ export class NoteTocPageUtil {
   async verifyTocPanelCloses(): Promise<void> {
     await this.noteTocPage.clickTocClose();
     await expect(this.noteTocPage.tocPanel).not.toBeVisible();
-  }
-
-  async verifyTocItemsAreDisplayed(expectedCount: number): Promise<void> {
-    const count = await this.noteTocPage.getTocItemCount();
-    expect(count).toBeGreaterThanOrEqual(expectedCount);
-  }
-
-  async verifyTocItemClick(itemIndex: number): Promise<void> {
-    const initialScrollY = await this.page.evaluate(() => window.scrollY);
-    await this.noteTocPage.clickTocItem(itemIndex);
-    await this.page.waitForTimeout(500);
-    const finalScrollY = await this.page.evaluate(() => window.scrollY);
-    expect(finalScrollY).not.toBe(initialScrollY);
-  }
-
-  async openTocAndVerifyContent(): Promise<void> {
-    await this.verifyTocPanelOpens();
-    await this.verifyTocTitleIsDisplayed();
   }
 }

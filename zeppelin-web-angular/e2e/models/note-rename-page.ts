@@ -24,11 +24,6 @@ export class NoteRenamePage extends BasePage {
     this.noteTitleInput = page.locator('.elastic input');
   }
 
-  async navigate(noteId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}`);
-    await this.waitForPageLoad();
-  }
-
   async clickTitle(): Promise<void> {
     await this.noteTitle.click();
   }
@@ -57,15 +52,7 @@ export class NoteRenamePage extends BasePage {
     return (await this.noteTitle.textContent()) || '';
   }
 
-  async getTitleInputValue(): Promise<string> {
-    return (await this.noteTitleInput.inputValue()) || '';
-  }
-
   async isTitleInputVisible(): Promise<boolean> {
     return this.noteTitleInput.isVisible();
-  }
-
-  async isTitleVisible(): Promise<boolean> {
-    return this.noteTitle.isVisible();
   }
 }

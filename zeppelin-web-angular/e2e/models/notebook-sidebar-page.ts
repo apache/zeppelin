@@ -20,7 +20,6 @@ export class NotebookSidebarPage extends BasePage {
   readonly closeButton: Locator;
   readonly nodeList: Locator;
   readonly noteToc: Locator;
-  readonly sidebarContent: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -45,15 +44,11 @@ export class NotebookSidebarPage extends BasePage {
       .first();
     this.nodeList = page.locator('zeppelin-node-list');
     this.noteToc = page.locator('zeppelin-note-toc');
-    this.sidebarContent = page.locator('.sidebar-content');
   }
 
   async openToc(): Promise<void> {
     // Ensure sidebar is visible first
     await expect(this.sidebarContainer).toBeVisible();
-
-    // Get initial state to check for changes
-    const initialState = await this.getSidebarState();
 
     // Try multiple strategies to find and click the TOC button
     const strategies = [
@@ -338,49 +333,6 @@ export class NotebookSidebarPage extends BasePage {
 
     console.log('Could not determine sidebar state');
     return 'UNKNOWN';
-  }
-
-  getSidebarStateSync(): 'CLOSED' | 'TOC' | 'FILE_TREE' | 'UNKNOWN' {
-    // Synchronous version for use in waitForFunction
-    try {
-      const sidebarContainer = document.querySelector('zeppelin-notebook-sidebar') as HTMLElement | null;
-      if (!sidebarContainer || !sidebarContainer.offsetParent) {
-        return 'CLOSED';
-      }
-
-      // Check for TOC content
-      const tocContent = sidebarContainer.querySelector('zeppelin-note-toc') as HTMLElement | null;
-      if (tocContent && tocContent.offsetParent) {
-        return 'TOC';
-      }
-
-      // Check for file tree content
-      const fileTreeContent = sidebarContainer.querySelector('zeppelin-node-list') as HTMLElement | null;
-      if (fileTreeContent && fileTreeContent.offsetParent) {
-        return 'FILE_TREE';
-      }
-
-      // Check for alternative selectors
-      const tocAlternatives = ['.toc-content', '.note-toc', '[class*="toc"]'];
-      for (const selector of tocAlternatives) {
-        const element = sidebarContainer.querySelector(selector) as HTMLElement | null;
-        if (element && element.offsetParent) {
-          return 'TOC';
-        }
-      }
-
-      const fileTreeAlternatives = ['.file-tree', '.node-list', '[class*="file"]', '[class*="tree"]'];
-      for (const selector of fileTreeAlternatives) {
-        const element = sidebarContainer.querySelector(selector) as HTMLElement | null;
-        if (element && element.offsetParent) {
-          return 'FILE_TREE';
-        }
-      }
-
-      return 'FILE_TREE'; // Default fallback
-    } catch {
-      return 'UNKNOWN';
-    }
   }
 
   async getTocItems(): Promise<string[]> {

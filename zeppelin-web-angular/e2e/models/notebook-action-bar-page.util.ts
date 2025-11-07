@@ -148,18 +148,6 @@ export class NotebookActionBarUtil {
     }
   }
 
-  async verifyCommitWorkflow(commitMessage: string): Promise<void> {
-    if (await this.actionBarPage.commitButton.isVisible()) {
-      await this.actionBarPage.openCommitPopover();
-      await expect(this.actionBarPage.commitPopover).toBeVisible();
-
-      await this.actionBarPage.enterCommitMessage(commitMessage);
-      await this.actionBarPage.confirmCommit();
-
-      await expect(this.actionBarPage.commitPopover).not.toBeVisible();
-    }
-  }
-
   async verifySchedulerControlsIfEnabled(): Promise<void> {
     if (await this.actionBarPage.schedulerButton.isVisible()) {
       await this.actionBarPage.openSchedulerDropdown();

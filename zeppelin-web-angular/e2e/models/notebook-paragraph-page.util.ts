@@ -98,25 +98,6 @@ export class NotebookParagraphUtil {
     }
   }
 
-  async verifyProgressIndicatorDuringExecution(): Promise<void> {
-    if (await this.paragraphPage.runButton.isVisible()) {
-      await this.paragraphPage.runParagraph();
-
-      const isRunning = await this.paragraphPage.isRunning();
-      if (isRunning) {
-        await expect(this.paragraphPage.progressIndicator).toBeVisible();
-
-        await this.page.waitForFunction(
-          () => {
-            const progressElement = document.querySelector('zeppelin-notebook-paragraph-progress');
-            return !progressElement || !progressElement.isConnected;
-          },
-          { timeout: 30000 }
-        );
-      }
-    }
-  }
-
   async verifyDynamicFormsIfPresent(): Promise<void> {
     const isDynamicFormsVisible = await this.paragraphPage.isDynamicFormsVisible();
     if (isDynamicFormsVisible) {
@@ -202,17 +183,5 @@ export class NotebookParagraphUtil {
 
     // Close dropdown if it's open
     await this.page.keyboard.press('Escape');
-  }
-
-  async verifyAllParagraphFunctionality(): Promise<void> {
-    await this.verifyParagraphContainerStructure();
-    await this.verifyAddParagraphButtons();
-    await this.verifyParagraphControlInterface();
-    await this.verifyCodeEditorFunctionality();
-    await this.verifyResultDisplaySystem();
-    await this.verifyTitleEditingIfPresent();
-    await this.verifyDynamicFormsIfPresent();
-    await this.verifyFooterInformation();
-    await this.verifyParagraphControlActions();
   }
 }

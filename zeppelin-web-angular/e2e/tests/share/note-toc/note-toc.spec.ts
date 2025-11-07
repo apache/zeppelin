@@ -31,7 +31,7 @@ test.describe('Note Table of Contents', () => {
 
   test.beforeEach(async ({ page }) => {
     noteTocPage = new NoteTocPage(page);
-    noteTocUtil = new NoteTocPageUtil(page, noteTocPage);
+    noteTocUtil = new NoteTocPageUtil(noteTocPage);
 
     await page.goto('/');
     await waitForZeppelinReady(page);
