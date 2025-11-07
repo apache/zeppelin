@@ -106,7 +106,6 @@ test.describe('Published Paragraph', () => {
         await page.goto(reactModeUrl);
         await waitForZeppelinReady(page);
 
-        // URL 이동 완료까지 명시적으로 대기
         await page.waitForURL(`**/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}*`, {
           timeout: 15000
         });
