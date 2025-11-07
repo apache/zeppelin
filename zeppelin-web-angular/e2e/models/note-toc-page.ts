@@ -23,7 +23,7 @@ export class NoteTocPage extends NotebookKeyboardPage {
 
   constructor(page: Page) {
     super(page);
-    this.tocToggleButton = page.locator('.sidebar-button').first();
+    this.tocToggleButton = page.getByRole('button', { name: 'Toggle Table of Contents' });
     this.tocPanel = page.locator('zeppelin-note-toc').first();
     this.tocTitle = page.getByText('Table of Contents');
     this.tocCloseButton = page

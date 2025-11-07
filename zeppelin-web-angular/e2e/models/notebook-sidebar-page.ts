@@ -24,195 +24,25 @@ export class NotebookSidebarPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.sidebarContainer = page.locator('zeppelin-notebook-sidebar');
-    // Try multiple possible selectors for TOC button with more specific targeting
-    this.tocButton = page
-      .locator(
-        'zeppelin-notebook-sidebar button[nzTooltipTitle*="Table"], zeppelin-notebook-sidebar button[title*="Table"], zeppelin-notebook-sidebar i[nz-icon][nzType="unordered-list"], zeppelin-notebook-sidebar button:has(i[nzType="unordered-list"]), zeppelin-notebook-sidebar .sidebar-button:has(i[nzType="unordered-list"])'
-      )
-      .first();
-    // Try multiple possible selectors for File Tree button with more specific targeting
-    this.fileTreeButton = page
-      .locator(
-        'zeppelin-notebook-sidebar button[nzTooltipTitle*="File"], zeppelin-notebook-sidebar button[title*="File"], zeppelin-notebook-sidebar i[nz-icon][nzType="folder"], zeppelin-notebook-sidebar button:has(i[nzType="folder"]), zeppelin-notebook-sidebar .sidebar-button:has(i[nzType="folder"])'
-      )
-      .first();
-    // Try multiple selectors for close button with more specific targeting
-    this.closeButton = page
-      .locator(
-        'zeppelin-notebook-sidebar button.sidebar-close, zeppelin-notebook-sidebar button[nzTooltipTitle*="Close"], zeppelin-notebook-sidebar i[nz-icon][nzType="close"], zeppelin-notebook-sidebar button:has(i[nzType="close"]), zeppelin-notebook-sidebar .close-button, zeppelin-notebook-sidebar [aria-label*="close" i]'
-      )
-      .first();
+    this.tocButton = page.getByRole('button', { name: 'Toggle Table of Contents' });
+    this.fileTreeButton = page.getByRole('button', { name: 'Toggle File Tree' });
+    this.closeButton = page.getByRole('button', { name: 'Close Sidebar' });
     this.nodeList = page.locator('zeppelin-node-list');
     this.noteToc = page.locator('zeppelin-note-toc');
   }
 
   async openToc(): Promise<void> {
-    // Ensure sidebar is visible first
-    await expect(this.sidebarContainer).toBeVisible();
-
-    // Try multiple strategies to find and click the TOC button
-    const strategies = [
-      // Strategy 1: Original button selector
-      () => this.tocButton.click(),
-      // Strategy 2: Look for unordered-list icon specifically in sidebar
-      () => this.page.locator('zeppelin-notebook-sidebar i[nzType="unordered-list"]').first().click(),
-      // Strategy 3: Look for any button with list-related icons
-      () => this.page.locator('zeppelin-notebook-sidebar button:has(i[nzType="unordered-list"])').first().click(),
-      // Strategy 4: Try aria-label or title containing "table" or "content"
-      () =>
-        this.page
-          .locator(
-            'zeppelin-notebook-sidebar button[aria-label*="Table"], zeppelin-notebook-sidebar button[aria-label*="Contents"]'
-          )
-          .first()
-          .click(),
-      // Strategy 5: Look for any clickable element with specific classes
-      () =>
-        this.page
-          .locator('zeppelin-notebook-sidebar .sidebar-nav button, zeppelin-notebook-sidebar [role="button"]')
-          .first()
-          .click()
-    ];
-
-    let success = false;
-    for (const strategy of strategies) {
-      try {
-        await strategy();
-
-        // Wait for state change after click - check for visible content instead of state
-        await Promise.race([
-          // Option 1: Wait for TOC content to appear
-          this.page
-            .locator('zeppelin-note-toc, .sidebar-content .toc')
-            .waitFor({ state: 'visible', timeout: 3000 })
-            .catch(() => {}),
-          // Option 2: Wait for file tree content to appear
-          this.page
-            .locator('zeppelin-node-list, .sidebar-content .file-tree')
-            .waitFor({ state: 'visible', timeout: 3000 })
-            .catch(() => {}),
-          // Option 3: Wait for any sidebar content change
-          this.page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {})
-        ]).catch(() => {
-          // If all fail, continue - this is acceptable
-        });
-
-        success = true;
-        break;
-      } catch (error) {
-        console.log(`TOC button strategy failed: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
-
-    if (!success) {
-      console.log('All TOC button strategies failed - sidebar may not have TOC functionality');
-    }
-
-    // Wait for TOC content to be visible if it was successfully opened
-    const tocContent = this.page.locator('zeppelin-note-toc, .sidebar-content .toc, .outline-content');
-    try {
-      await expect(tocContent).toBeVisible({ timeout: 3000 });
-    } catch {
-      // TOC might not be available or visible, check if file tree opened instead
-      const fileTreeContent = this.page.locator('zeppelin-node-list, .sidebar-content .file-tree');
-      try {
-        await expect(fileTreeContent).toBeVisible({ timeout: 2000 });
-      } catch {
-        // Neither TOC nor file tree visible
-      }
-    }
+    await this.tocButton.click();
+    await expect(this.noteToc).toBeVisible();
   }
 
   async openFileTree(): Promise<void> {
-    // Ensure sidebar is visible first
-    await expect(this.sidebarContainer).toBeVisible();
-
-    // Try multiple ways to find and click the File Tree button
-    try {
-      await this.fileTreeButton.click();
-    } catch (error) {
-      // Fallback: try clicking any folder icon in the sidebar
-      const fallbackFileTreeButton = this.page.locator('zeppelin-notebook-sidebar i[nzType="folder"]').first();
-      await fallbackFileTreeButton.click();
-    }
-
-    // Wait for file tree content to appear after click
-    await Promise.race([
-      // Wait for file tree content to appear
-      this.page.locator('zeppelin-node-list, .sidebar-content .file-tree').waitFor({ state: 'visible', timeout: 3000 }),
-      // Wait for network to stabilize
-      this.page.waitForLoadState('networkidle', { timeout: 3000 })
-    ]).catch(() => {
-      // If both fail, continue - this is acceptable
-    });
-
-    // Wait for file tree content to be visible
-    const fileTreeContent = this.page.locator('zeppelin-node-list, .sidebar-content .file-tree, .file-browser');
-    try {
-      await expect(fileTreeContent).toBeVisible({ timeout: 3000 });
-    } catch {
-      // File tree might not be available or visible
-    }
+    await this.fileTreeButton.click();
+    await expect(this.nodeList).toBeVisible();
   }
 
   async closeSidebar(): Promise<void> {
-    // Ensure sidebar is visible first
-    await expect(this.sidebarContainer).toBeVisible();
-
-    // Try multiple strategies to find and click the close button
-    const strategies = [
-      // Strategy 1: Original close button selector
-      () => this.closeButton.click(),
-      // Strategy 2: Look for close icon specifically in sidebar
-      () => this.page.locator('zeppelin-notebook-sidebar i[nzType="close"]').first().click(),
-      // Strategy 3: Look for any button with close-related icons
-      () => this.page.locator('zeppelin-notebook-sidebar button:has(i[nzType="close"])').first().click(),
-      // Strategy 4: Try any close-related elements
-      () =>
-        this.page.locator('zeppelin-notebook-sidebar .close, zeppelin-notebook-sidebar .sidebar-close').first().click(),
-      // Strategy 5: Try keyboard shortcut (Escape key)
-      () => this.page.keyboard.press('Escape'),
-      // Strategy 6: Click on the sidebar toggle button again (might close it)
-      () => this.page.locator('zeppelin-notebook-sidebar button').first().click()
-    ];
-
-    let success = false;
-    for (const strategy of strategies) {
-      try {
-        await strategy();
-
-        // Wait for sidebar to close or become hidden
-        await Promise.race([
-          // Wait for sidebar to be hidden
-          this.sidebarContainer.waitFor({ state: 'hidden', timeout: 3000 }),
-          // Wait for sidebar content to disappear
-          this.page
-            .locator('zeppelin-notebook-sidebar zeppelin-note-toc, zeppelin-notebook-sidebar zeppelin-node-list')
-            .waitFor({ state: 'hidden', timeout: 3000 }),
-          // Wait for network to stabilize
-          this.page.waitForLoadState('networkidle', { timeout: 3000 })
-        ]).catch(() => {
-          // If all fail, continue - close functionality may not be available
-        });
-
-        success = true;
-        break;
-      } catch (error) {
-        console.log(`Close button strategy failed: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    }
-
-    if (!success) {
-      console.log('All close button strategies failed - sidebar may not have close functionality');
-    }
-
-    // Final check - wait for sidebar to be hidden if it was successfully closed
-    try {
-      await expect(this.sidebarContainer).toBeHidden({ timeout: 3000 });
-    } catch {
-      // Sidebar might still be visible or close functionality not available
-      // This is acceptable as some applications don't support closing sidebar
-    }
+    await this.closeButton.click();
   }
 
   async isSidebarVisible(): Promise<boolean> {
