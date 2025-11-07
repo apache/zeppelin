@@ -52,17 +52,13 @@ export class NotebookPageUtil extends BasePage {
   }
 
   async verifyExtensionAreaIfVisible(): Promise<void> {
-    const isExtensionVisible = await this.notebookPage.isExtensionAreaVisible();
-    if (isExtensionVisible) {
-      await expect(this.notebookPage.extensionArea).toBeVisible();
-    }
+    await this.notebookPage.isExtensionAreaVisible();
+    await expect(this.notebookPage.extensionArea).toBeVisible();
   }
 
   async verifyNoteFormBlockIfVisible(): Promise<void> {
-    const isFormBlockVisible = await this.notebookPage.isNoteFormBlockVisible();
-    if (isFormBlockVisible) {
-      await expect(this.notebookPage.noteFormBlock).toBeVisible();
-    }
+    await this.notebookPage.isNoteFormBlockVisible();
+    await expect(this.notebookPage.noteFormBlock).toBeVisible();
   }
 
   // ===== LAYOUT VERIFICATION METHODS =====

@@ -106,6 +106,24 @@ export class NotebookActionBarUtil {
 
     // Check if confirmation dialog appears (it might not in some configurations)
     await this.handleOptionalConfirmation('Clear output executed without confirmation dialog');
+
+    // Verify that paragraph outputs are actually cleared
+    await this.page.waitForLoadState('networkidle');
+    const paragraphResults = this.page.locator('zeppelin-notebook-paragraph-result');
+    const resultCount = await paragraphResults.count();
+
+    if (resultCount > 0) {
+      // If results exist, check that they are empty or hidden
+      for (let i = 0; i < resultCount; i++) {
+        const result = paragraphResults.nth(i);
+        const isVisible = await result.isVisible();
+        if (isVisible) {
+          // Result is visible, check if it's empty
+          const textContent = await result.textContent();
+          expect(textContent?.trim() || '').toBe('');
+        }
+      }
+    }
   }
 
   async verifyNoteManagementButtons(): Promise<void> {
@@ -123,8 +141,12 @@ export class NotebookActionBarUtil {
 
       if (personalVisible) {
         await this.actionBarPage.switchToPersonalMode();
+        // Verify the switch was successful - collaboration button should now be visible
+        await expect(this.actionBarPage.collaborationModeButton).toBeVisible({ timeout: 5000 });
       } else if (collaborationVisible) {
         await this.actionBarPage.switchToCollaborationMode();
+        // Verify the switch was successful - personal button should now be visible
+        await expect(this.actionBarPage.personalModeButton).toBeVisible({ timeout: 5000 });
       }
     }
   }
@@ -165,21 +187,28 @@ export class NotebookActionBarUtil {
   }
 
   async verifySettingsGroup(): Promise<void> {
-    if (await this.actionBarPage.shortcutInfoButton.isVisible()) {
-      await expect(this.actionBarPage.shortcutInfoButton).toBeEnabled();
+    // Settings buttons may be conditionally displayed based on permissions/configuration
+    // At minimum, at least one settings control should be available
+    const settingsControls = [
+      this.actionBarPage.shortcutInfoButton,
+      this.actionBarPage.interpreterSettingsButton,
+      this.actionBarPage.permissionsButton,
+      this.actionBarPage.lookAndFeelDropdown
+    ];
+
+    let visibleControlsCount = 0;
+    for (const control of settingsControls) {
+      const isVisible = await control.isVisible();
+      if (isVisible) {
+        visibleControlsCount++;
+        await expect(control).toBeEnabled();
+        console.log(`Settings control is visible and enabled: ${control}`);
+      }
     }
 
-    if (await this.actionBarPage.interpreterSettingsButton.isVisible()) {
-      await expect(this.actionBarPage.interpreterSettingsButton).toBeEnabled();
-    }
-
-    if (await this.actionBarPage.permissionsButton.isVisible()) {
-      await expect(this.actionBarPage.permissionsButton).toBeEnabled();
-    }
-
-    if (await this.actionBarPage.lookAndFeelDropdown.isVisible()) {
-      await expect(this.actionBarPage.lookAndFeelDropdown).toBeEnabled();
-    }
+    // Verify at least one settings control is available
+    expect(visibleControlsCount).toBeGreaterThan(0);
+    console.log(`Total visible settings controls: ${visibleControlsCount}`);
   }
 
   async verifyAllActionBarFunctionality(): Promise<void> {
