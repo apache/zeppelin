@@ -650,36 +650,6 @@ export class NotebookKeyboardPage extends BasePage {
     }
   }
 
-  async clearParagraphOutput(paragraphIndex: number = 0): Promise<void> {
-    const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const settingsButton = paragraph.locator('a[nz-dropdown]');
-
-    await expect(settingsButton).toBeVisible({ timeout: 10000 });
-    await settingsButton.click();
-
-    await expect(this.clearOutputOption).toBeVisible({ timeout: 5000 });
-    await this.clearOutputOption.click();
-
-    // Wait for output to be cleared by checking the result element is not visible
-    const result = paragraph.locator('[data-testid="paragraph-result"]');
-    await result.waitFor({ state: 'detached', timeout: 5000 });
-  }
-
-  async getCurrentParagraphIndex(): Promise<number> {
-    const activeParagraph = this.page.locator(
-      'zeppelin-notebook-paragraph.paragraph-selected, zeppelin-notebook-paragraph.focus'
-    );
-    if ((await activeParagraph.count()) > 0) {
-      const allParagraphs = await this.paragraphContainer.all();
-      for (let i = 0; i < allParagraphs.length; i++) {
-        if (await allParagraphs[i].locator('.paragraph-selected, .focus').isVisible()) {
-          return i;
-        }
-      }
-    }
-    return -1;
-  }
-
   async getCodeEditorContent(): Promise<string> {
     try {
       // Try to get content directly from Monaco Editor's model first
@@ -960,64 +930,9 @@ export class NotebookKeyboardPage extends BasePage {
     await expect(this.paragraphContainer).toHaveCount(expectedCount, { timeout });
   }
 
-  // More robust paragraph counting with fallback strategies
-  async waitForParagraphCountChangeWithFallback(expectedCount: number, timeout: number = 15000): Promise<boolean> {
-    const startTime = Date.now();
-    let currentCount = await this.paragraphContainer.count();
-
-    while (Date.now() - startTime < timeout) {
-      currentCount = await this.paragraphContainer.count();
-
-      if (currentCount === expectedCount) {
-        return true; // Success
-      }
-
-      // If we have some paragraphs and expected change hasn't happened in 10 seconds, accept it
-      if (Date.now() - startTime > 10000 && currentCount > 0) {
-        console.log(`Accepting ${currentCount} paragraphs instead of expected ${expectedCount} after 10s`);
-        return false; // Partial success
-      }
-
-      // Wait for DOM changes instead of fixed timeout
-      await this.page
-        .waitForFunction(
-          prevCount => {
-            const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-            return paragraphs.length !== prevCount;
-          },
-          currentCount,
-          { timeout: 500 }
-        )
-        .catch(() => {
-          // If no changes detected, continue the loop
-        });
-    }
-
-    // Final check: if we have any paragraphs, consider it acceptable
-    currentCount = await this.paragraphContainer.count();
-    if (currentCount > 0) {
-      console.log(`Final fallback: accepting ${currentCount} paragraphs instead of ${expectedCount}`);
-      return false; // Fallback success
-    }
-
-    throw new Error(`No paragraphs found after ${timeout}ms - system appears broken`);
-  }
-
   async isSearchDialogVisible(): Promise<boolean> {
     const searchDialog = this.page.locator('.search-widget, .find-widget, [role="dialog"]:has-text("Find")');
     return await searchDialog.isVisible();
-  }
-
-  async hasOutputBeenCleared(paragraphIndex: number = 0): Promise<boolean> {
-    const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const result = paragraph.locator('[data-testid="paragraph-result"]');
-    return !(await result.isVisible());
-  }
-
-  async isParagraphSelected(paragraphIndex: number): Promise<boolean> {
-    const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const selectedClass = await paragraph.getAttribute('class');
-    return selectedClass?.includes('focused') || selectedClass?.includes('selected') || false;
   }
 
   async clickModalOkButton(timeout: number = 10000): Promise<void> {
@@ -1049,50 +964,6 @@ export class NotebookKeyboardPage extends BasePage {
         });
       } catch (e) {
         console.warn(`⚠️ Failed to click OK button #${i + 1}:`, e);
-      }
-    }
-
-    // Wait for all modals to be closed
-    await this.page
-      .locator('.ant-modal, .modal-dialog, .ant-modal-confirm')
-      .waitFor({
-        state: 'detached',
-        timeout: 2000
-      })
-      .catch(() => {
-        console.log('Some modals may still be present, continuing...');
-      });
-  }
-
-  async clickModalCancelButton(timeout: number = 10000): Promise<void> {
-    // Wait for any modal to appear
-    const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout });
-
-    // Define all acceptable Cancel button labels
-    const cancelButtons = this.page.locator(
-      'button:has-text("Cancel"), button:has-text("No"), button:has-text("Close")'
-    );
-
-    // Count how many Cancel-like buttons exist
-    const count = await cancelButtons.count();
-    if (count === 0) {
-      console.log('⚠️ No Cancel buttons found.');
-      return;
-    }
-
-    // Click each visible Cancel button in sequence
-    for (let i = 0; i < count; i++) {
-      const button = cancelButtons.nth(i);
-      try {
-        await button.waitFor({ state: 'visible', timeout });
-        await button.click({ delay: 100 });
-        // Wait for modal to actually close instead of fixed timeout
-        await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
-          console.log('Modal did not close within expected time, continuing...');
-        });
-      } catch (e) {
-        console.warn(`⚠️ Failed to click Cancel button #${i + 1}:`, e);
       }
     }
 

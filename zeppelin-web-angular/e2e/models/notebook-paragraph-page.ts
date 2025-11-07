@@ -27,11 +27,6 @@ export class NotebookParagraphPage extends BasePage {
   readonly runButton: Locator;
   readonly stopButton: Locator;
   readonly settingsDropdown: Locator;
-  readonly moveUpButton: Locator;
-  readonly moveDownButton: Locator;
-  readonly deleteButton: Locator;
-  readonly cloneButton: Locator;
-  readonly linkButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -58,59 +53,16 @@ export class NotebookParagraphPage extends BasePage {
       .first()
       .locator('zeppelin-notebook-paragraph-control a[nz-dropdown]')
       .first();
-    this.moveUpButton = page.locator('nz-dropdown-menu').getByRole('button', { name: 'Move up' });
-    this.moveDownButton = page.locator('nz-dropdown-menu').getByRole('button', { name: 'Move down' });
-    this.deleteButton = page.locator('nz-dropdown-menu').getByRole('button', { name: 'Delete' });
-    this.cloneButton = page.locator('nz-dropdown-menu').getByRole('button', { name: 'Clone' });
-    this.linkButton = page.locator('nz-dropdown-menu').getByRole('button', { name: 'Link this paragraph' });
   }
 
   async doubleClickToEdit(): Promise<void> {
     await this.paragraphContainer.dblclick();
   }
-
-  async addParagraphAboveClick(): Promise<void> {
-    await this.addParagraphAbove.click();
-  }
-
-  async addParagraphBelowClick(): Promise<void> {
-    await this.addParagraphBelow.click();
-  }
-
-  async enterTitle(title: string): Promise<void> {
-    await this.titleEditor.fill(title);
-  }
-
   async runParagraph(): Promise<void> {
     await this.runButton.click();
   }
-
-  async stopParagraph(): Promise<void> {
-    await this.stopButton.click();
-  }
-
   async openSettingsDropdown(): Promise<void> {
     await this.settingsDropdown.click();
-  }
-
-  async moveUp(): Promise<void> {
-    await this.moveUpButton.click();
-  }
-
-  async moveDown(): Promise<void> {
-    await this.moveDownButton.click();
-  }
-
-  async deleteParagraph(): Promise<void> {
-    await this.deleteButton.click();
-  }
-
-  async cloneParagraph(): Promise<void> {
-    await this.cloneButton.click();
-  }
-
-  async getLinkToParagraph(): Promise<void> {
-    await this.linkButton.click();
   }
 
   async isRunning(): Promise<boolean> {
@@ -133,30 +85,11 @@ export class NotebookParagraphPage extends BasePage {
     return (await this.footerInfo.textContent()) || '';
   }
 
-  async getTitleText(): Promise<string> {
-    return (await this.titleEditor.textContent()) || '';
-  }
-
   async isRunButtonEnabled(): Promise<boolean> {
     return await this.runButton.isEnabled();
   }
 
   async isStopButtonVisible(): Promise<boolean> {
     return await this.stopButton.isVisible();
-  }
-
-  async clearOutput(): Promise<void> {
-    await this.openSettingsDropdown();
-    await this.page.locator('li.list-item:has-text("Clear output")').click();
-  }
-
-  async toggleEditor(): Promise<void> {
-    await this.openSettingsDropdown();
-    await this.page.locator('li.list-item:has-text("Toggle editor")').click();
-  }
-
-  async insertBelow(): Promise<void> {
-    await this.openSettingsDropdown();
-    await this.page.locator('li.list-item:has-text("Insert below")').click();
   }
 }

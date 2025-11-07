@@ -12,41 +12,14 @@
 
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './base-page';
-import { HomePage } from './home-page';
 import { NotebookPage } from './notebook-page';
 
 export class NotebookPageUtil extends BasePage {
-  private homePage: HomePage;
   private notebookPage: NotebookPage;
 
   constructor(page: Page) {
     super(page);
-    this.homePage = new HomePage(page);
     this.notebookPage = new NotebookPage(page);
-  }
-
-  // ===== NOTEBOOK CREATION METHODS =====
-
-  async createNotebook(notebookName: string): Promise<void> {
-    await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
-
-    // Wait for the modal to appear and fill the notebook name
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
-
-    // Fill notebook name
-    await notebookNameInput.fill(notebookName);
-
-    // Click the 'Create' button in the modal
-    const createButton = this.page.locator('button', { hasText: 'Create' });
-    await createButton.click();
-
-    // Wait for the notebook to be created and navigate to it
-    await expect(this.page).toHaveURL(/#\/notebook\//, { timeout: 60000 });
-    await this.waitForPageLoad();
-    await this.page.waitForSelector('zeppelin-notebook-paragraph', { timeout: 15000 });
-    await this.page.waitForSelector('.spin-text', { state: 'hidden', timeout: 10000 }).catch(() => {});
   }
 
   // ===== NOTEBOOK VERIFICATION METHODS =====
@@ -78,17 +51,6 @@ export class NotebookPageUtil extends BasePage {
     expect(width).toBeLessThanOrEqual(800);
   }
 
-  async verifyParagraphContainerStructure(): Promise<void> {
-    // Wait for the notebook container to be fully loaded first
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-
-    // Wait for the paragraph inner area to be visible
-    await expect(this.notebookPage.paragraphInner).toBeVisible({ timeout: 15000 });
-
-    const paragraphCount = await this.notebookPage.getParagraphCount();
-    expect(paragraphCount).toBeGreaterThanOrEqual(0);
-  }
-
   async verifyExtensionAreaIfVisible(): Promise<void> {
     const isExtensionVisible = await this.notebookPage.isExtensionAreaVisible();
     if (isExtensionVisible) {
@@ -115,14 +77,6 @@ export class NotebookPageUtil extends BasePage {
     await expect(paragraphInner).toHaveAttribute('nz-row');
   }
 
-  async verifyResponsiveLayout(): Promise<void> {
-    await this.page.setViewportSize({ width: 1200, height: 800 });
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-
-    await this.page.setViewportSize({ width: 800, height: 600 });
-    await expect(this.notebookPage.notebookContainer).toBeVisible();
-  }
-
   // ===== ADDITIONAL VERIFICATION METHODS FOR TESTS =====
 
   async verifyActionBarComponent(): Promise<void> {
@@ -143,17 +97,5 @@ export class NotebookPageUtil extends BasePage {
 
   async verifyNoteFormsBlockWhenPresent(): Promise<void> {
     await this.verifyNoteFormBlockIfVisible();
-  }
-
-  // ===== COMPREHENSIVE VERIFICATION METHOD =====
-
-  async verifyAllNotebookComponents(): Promise<void> {
-    await this.verifyNotebookContainerStructure();
-    await this.verifyActionBarPresence();
-    await this.verifySidebarFunctionality();
-    await this.verifyParagraphContainerStructure();
-    await this.verifyExtensionAreaIfVisible();
-    await this.verifyNoteFormBlockIfVisible();
-    await this.verifyGridLayoutForParagraphs();
   }
 }

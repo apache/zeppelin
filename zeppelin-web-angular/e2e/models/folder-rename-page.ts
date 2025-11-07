@@ -49,11 +49,6 @@ export class FolderRenamePage extends BasePage {
     this.deleteCancelButton = page.getByRole('button', { name: 'Cancel' }).last();
   }
 
-  async navigate(): Promise<void> {
-    await this.page.goto('/#/');
-    await this.waitForPageLoad();
-  }
-
   async hoverOverFolder(folderName: string): Promise<void> {
     // Wait for the folder list to be loaded
     await this.folderList.waitFor({ state: 'visible' });
@@ -100,7 +95,7 @@ export class FolderRenamePage extends BasePage {
     await deleteIcon.click();
   }
 
-  async clickRenameMenuItem(folderName?: string): Promise<void> {
+  async clickRenameMenuItem(folderName: string): Promise<void> {
     if (folderName) {
       // Ensure the specific folder is hovered first
       await this.hoverOverFolder(folderName);
@@ -160,18 +155,6 @@ export class FolderRenamePage extends BasePage {
 
   async isRenameModalVisible(): Promise<boolean> {
     return this.renameModal.isVisible();
-  }
-
-  async getRenameInputValue(): Promise<string> {
-    return (await this.renameInput.inputValue()) || '';
-  }
-
-  async isValidationErrorVisible(): Promise<boolean> {
-    return this.validationError.isVisible();
-  }
-
-  async isConfirmButtonDisabled(): Promise<boolean> {
-    return !(await this.confirmButton.isEnabled());
   }
 
   async isFolderVisible(folderName: string): Promise<boolean> {
