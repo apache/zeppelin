@@ -116,10 +116,9 @@ test.describe('Published Paragraph', () => {
       expect(page.url()).toContain(noteId);
       expect(page.url()).toContain(paragraphId);
 
+      // Published container should be visible when accessing published paragraph
       const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      if (await publishedContainer.isVisible()) {
-        await expect(publishedContainer).toBeVisible();
-      }
+      await expect(publishedContainer).toBeVisible();
     });
   });
 
@@ -133,17 +132,12 @@ test.describe('Published Paragraph', () => {
       // Verify that we're in published mode by checking the URL pattern
       expect(page.url()).toContain(`/paragraph/${paragraphId}`);
 
+      // Published container should be visible in published mode
       const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      const isPublishedContainerVisible = await publishedContainer.isVisible();
+      await expect(publishedContainer).toBeVisible();
 
-      if (isPublishedContainerVisible) {
-        await expect(publishedContainer).toBeVisible();
-      }
-
-      const isResultVisible = await page.locator('zeppelin-notebook-paragraph-result').isVisible();
-      if (isResultVisible) {
-        await expect(page.locator('zeppelin-notebook-paragraph-result')).toBeVisible();
-      }
+      // Result should be visible when viewing published paragraph
+      await expect(page.locator('zeppelin-notebook-paragraph-result')).toBeVisible();
     });
 
     test('should hide editing controls in published mode', async ({ page }) => {

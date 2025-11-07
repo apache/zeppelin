@@ -60,11 +60,7 @@ export class PublishedParagraphTestUtil {
 
     // Verify that the code preview area exists with proper styling
     const codePreview = modalContent.locator('div[style*="background-color: #f5f5f5"]');
-    const isCodePreviewVisible = await codePreview.isVisible();
-
-    if (isCodePreviewVisible) {
-      await expect(codePreview).toBeVisible();
-    }
+    await expect(codePreview).toBeVisible();
 
     // Check for Run and Cancel buttons
     const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
@@ -115,13 +111,9 @@ export class PublishedParagraphTestUtil {
     await expect(modal).toBeVisible({ timeout: 10000 });
 
     // Try to get content and check if available
-    try {
-      const content = await this.publishedParagraphPage.getErrorModalContent();
-      if (content && content.includes(invalidParagraphId)) {
-        expect(content).toContain(invalidParagraphId);
-      }
-    } catch {
-      throw Error('Content check failed, continue with OK button click');
+    const content = await this.publishedParagraphPage.getErrorModalContent();
+    if (content && content.includes(invalidParagraphId)) {
+      expect(content).toContain(invalidParagraphId);
     }
 
     await this.publishedParagraphPage.clickErrorModalOk();
