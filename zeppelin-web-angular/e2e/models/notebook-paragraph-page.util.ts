@@ -48,61 +48,32 @@ export class NotebookParagraphUtil {
 
   async verifyParagraphControlInterface(): Promise<void> {
     await expect(this.paragraphPage.controlPanel).toBeVisible();
-
-    // Check if run button exists and is visible
-    try {
-      const runButtonVisible = await this.paragraphPage.runButton.isVisible();
-      if (runButtonVisible) {
-        await expect(this.paragraphPage.runButton).toBeVisible();
-        const isRunEnabled = await this.paragraphPage.isRunButtonEnabled();
-        expect(isRunEnabled).toBe(true);
-      } else {
-        console.log('Run button not found - paragraph may not support execution');
-      }
-    } catch (error) {
-      console.log('Run button not accessible - paragraph may not support execution');
-    }
+    await this.paragraphPage.runButton.isVisible();
+    await expect(this.paragraphPage.runButton).toBeVisible();
+    const isRunEnabled = await this.paragraphPage.isRunButtonEnabled();
+    expect(isRunEnabled).toBe(true);
   }
 
   async verifyCodeEditorFunctionality(): Promise<void> {
-    const isCodeEditorVisible = await this.paragraphPage.isCodeEditorVisible();
-    if (isCodeEditorVisible) {
-      await expect(this.paragraphPage.codeEditor).toBeVisible();
-    }
+    await this.paragraphPage.isCodeEditorVisible();
+    await expect(this.paragraphPage.codeEditor).toBeVisible();
   }
 
   async verifyResultDisplaySystem(): Promise<void> {
-    const hasResult = await this.paragraphPage.hasResult();
-    if (hasResult) {
-      await expect(this.paragraphPage.resultDisplay).toBeVisible();
-    }
+    await this.paragraphPage.hasResult();
+    await expect(this.paragraphPage.resultDisplay).toBeVisible();
   }
 
   async verifyTitleEditingIfPresent(): Promise<void> {
     const titleVisible = await this.paragraphPage.titleEditor.isVisible();
     if (titleVisible) {
-      // Check if it's actually editable - some custom components may not be detected as editable
-      try {
-        await expect(this.paragraphPage.titleEditor).toBeEditable();
-      } catch (error) {
-        // If it's not detected as editable by default, check if it has contenteditable or can receive focus
-        const isContentEditable = await this.paragraphPage.titleEditor.getAttribute('contenteditable');
-        const hasInputChild = (await this.paragraphPage.titleEditor.locator('input, textarea').count()) > 0;
-
-        if (isContentEditable === 'true' || hasInputChild) {
-          console.log('Title editor is a custom editable component');
-        } else {
-          console.log('Title editor may not be editable in current state');
-        }
-      }
+      await expect(this.paragraphPage.titleEditor).toBeEditable();
     }
   }
 
   async verifyDynamicFormsIfPresent(): Promise<void> {
-    const isDynamicFormsVisible = await this.paragraphPage.isDynamicFormsVisible();
-    if (isDynamicFormsVisible) {
-      await expect(this.paragraphPage.dynamicForms).toBeVisible();
-    }
+    await this.paragraphPage.isDynamicFormsVisible();
+    await expect(this.paragraphPage.dynamicForms).toBeVisible();
   }
 
   async verifyFooterInformation(): Promise<void> {
@@ -117,45 +88,24 @@ export class NotebookParagraphUtil {
     const dropdownMenu = this.page.locator('ul.ant-dropdown-menu, .dropdown-menu');
     await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
 
-    // Check if dropdown menu items are present (they might use different selectors)
-    const moveUpVisible = await this.page.locator('li:has-text("Move up")').isVisible();
-    const deleteVisible = await this.page.locator('li:has-text("Delete")').isVisible();
-    const cloneVisible = await this.page.locator('li:has-text("Clone")').isVisible();
-
-    if (moveUpVisible) {
-      await expect(this.page.locator('li:has-text("Move up")')).toBeVisible();
-    }
-    if (deleteVisible) {
-      await expect(this.page.locator('li:has-text("Delete")')).toBeVisible();
-    }
-    if (cloneVisible) {
-      await expect(this.page.locator('li:has-text("Clone")')).toBeVisible();
-    }
+    // These dropdown menu items should be available
+    await expect(this.page.locator('li:has-text("Move up")')).toBeVisible();
+    await expect(this.page.locator('li:has-text("Delete")')).toBeVisible();
+    await expect(this.page.locator('li:has-text("Clone")')).toBeVisible();
 
     // Close dropdown if it's open
     await this.page.keyboard.press('Escape');
   }
 
   async verifyParagraphExecutionWorkflow(): Promise<void> {
-    // Check if run button exists and is accessible
-    try {
-      const runButtonVisible = await this.paragraphPage.runButton.isVisible();
-      if (runButtonVisible) {
-        await expect(this.paragraphPage.runButton).toBeVisible();
-        await expect(this.paragraphPage.runButton).toBeEnabled();
+    await this.paragraphPage.runButton.isVisible();
+    await expect(this.paragraphPage.runButton).toBeVisible();
+    await expect(this.paragraphPage.runButton).toBeEnabled();
 
-        await this.paragraphPage.runParagraph();
+    await this.paragraphPage.runParagraph();
 
-        const isStopVisible = await this.paragraphPage.isStopButtonVisible();
-        if (isStopVisible) {
-          await expect(this.paragraphPage.stopButton).toBeVisible();
-        }
-      } else {
-        console.log('Run button not found - paragraph execution not available');
-      }
-    } catch (error) {
-      console.log('Run button not accessible - paragraph execution not supported');
-    }
+    await this.paragraphPage.isStopButtonVisible();
+    await expect(this.paragraphPage.stopButton).toBeVisible();
   }
 
   async verifyAdvancedParagraphOperations(): Promise<void> {
@@ -169,17 +119,10 @@ export class NotebookParagraphUtil {
     const toggleEditorItem = this.page.locator('li:has-text("Toggle editor")');
     const insertBelowItem = this.page.locator('li:has-text("Insert below")');
 
-    if (await clearOutputItem.isVisible()) {
-      await expect(clearOutputItem).toBeVisible();
-    }
-
-    if (await toggleEditorItem.isVisible()) {
-      await expect(toggleEditorItem).toBeVisible();
-    }
-
-    if (await insertBelowItem.isVisible()) {
-      await expect(insertBelowItem).toBeVisible();
-    }
+    // These menu items should be available in the dropdown
+    await expect(clearOutputItem).toBeVisible();
+    await expect(toggleEditorItem).toBeVisible();
+    await expect(insertBelowItem).toBeVisible();
 
     // Close dropdown if it's open
     await this.page.keyboard.press('Escape');
