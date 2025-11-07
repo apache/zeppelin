@@ -11,13 +11,11 @@
  */
 
 import { Locator, Page } from '@playwright/test';
-import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class NotebookPage extends BasePage {
   readonly notebookContainer: Locator;
   readonly actionBar: Locator;
-  readonly sidebar: Locator;
   readonly sidebarArea: Locator;
   readonly paragraphContainer: Locator;
   readonly extensionArea: Locator;
@@ -28,38 +26,11 @@ export class NotebookPage extends BasePage {
     super(page);
     this.notebookContainer = page.locator('.notebook-container');
     this.actionBar = page.locator('zeppelin-notebook-action-bar');
-    this.sidebar = page.locator('zeppelin-notebook-sidebar');
     this.sidebarArea = page.locator('.sidebar-area[nz-resizable]');
     this.paragraphContainer = page.locator('zeppelin-notebook-paragraph');
     this.extensionArea = page.locator('.extension-area');
     this.noteFormBlock = page.locator('zeppelin-note-form-block');
     this.paragraphInner = page.locator('.paragraph-inner[nz-row]');
-  }
-
-  async navigateToNotebook(noteId: string): Promise<void> {
-    await navigateToNotebookWithFallback(this.page, noteId);
-  }
-
-  async navigateToNotebookRevision(noteId: string, revisionId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}/revision/${revisionId}`);
-    await this.waitForPageLoad();
-  }
-
-  async navigateToNotebookParagraph(noteId: string, paragraphId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-    await this.waitForPageLoad();
-  }
-
-  async getParagraphCount(): Promise<number> {
-    return await this.paragraphContainer.count();
-  }
-
-  getParagraphByIndex(index: number): Locator {
-    return this.paragraphContainer.nth(index);
-  }
-
-  async isSidebarVisible(): Promise<boolean> {
-    return await this.sidebarArea.isVisible();
   }
 
   async getSidebarWidth(): Promise<number> {

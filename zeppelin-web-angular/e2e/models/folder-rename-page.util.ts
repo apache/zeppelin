@@ -50,7 +50,7 @@ export class FolderRenamePageUtil {
     await expect(renameButton).toBeVisible();
   }
 
-  async verifyRenameModalOpens(folderName?: string): Promise<void> {
+  async verifyRenameModalOpens(folderName: string): Promise<void> {
     await this.folderRenamePage.clickRenameMenuItem(folderName);
 
     // Wait for modal to appear with extended timeout
@@ -87,10 +87,6 @@ export class FolderRenamePageUtil {
     await this.folderRenamePage.clickRenameMenuItem(folderName);
     await this.folderRenamePage.clearNewName();
 
-    // Record initial state before attempting submission
-    const initialModalVisible = await this.folderRenamePage.isRenameModalVisible();
-    const initialFolderVisible = await this.folderRenamePage.isFolderVisible(folderName);
-
     await this.folderRenamePage.clickConfirm();
 
     // Strategy 1: Wait for immediate client-side validation indicators
@@ -124,9 +120,7 @@ export class FolderRenamePageUtil {
         clientValidationFound = true;
         // Client-side validation working - empty name prevented
         break;
-      } catch (error) {
-        continue;
-      }
+      } catch (error) {}
     }
 
     if (clientValidationFound) {

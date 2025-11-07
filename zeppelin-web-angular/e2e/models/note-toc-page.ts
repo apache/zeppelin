@@ -18,12 +18,8 @@ export class NoteTocPage extends NotebookKeyboardPage {
   readonly tocPanel: Locator;
   readonly tocTitle: Locator;
   readonly tocCloseButton: Locator;
-  readonly tocListArea: Locator;
   readonly tocEmptyMessage: Locator;
   readonly tocItems: Locator;
-  readonly codeEditor: Locator;
-  readonly runButton: Locator;
-  readonly addParagraphButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -35,21 +31,8 @@ export class NoteTocPage extends NotebookKeyboardPage {
       .filter({ hasText: /close|×/ })
       .or(page.locator('[class*="close"]'))
       .first();
-    this.tocListArea = page.locator('[class*="toc"]').first();
     this.tocEmptyMessage = page.getByText('Headings in the output show up here');
     this.tocItems = page.locator('[class*="toc"] li, [class*="heading"]');
-    this.codeEditor = page.locator('textarea, [contenteditable], .monaco-editor textarea').first();
-    this.runButton = page
-      .locator('button')
-      .filter({ hasText: /run|실행|▶/ })
-      .or(page.locator('[title*="run"], [aria-label*="run"]'))
-      .first();
-    this.addParagraphButton = page.locator('.add-paragraph-button').or(page.locator('button[title="Add Paragraph"]'));
-  }
-
-  async navigate(noteId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}`);
-    await this.waitForPageLoad();
   }
 
   async clickTocToggle(): Promise<void> {
@@ -69,51 +52,7 @@ export class NoteTocPage extends NotebookKeyboardPage {
     await this.tocItems.nth(index).click();
   }
 
-  async isTocPanelVisible(): Promise<boolean> {
-    try {
-      return await this.tocPanel.isVisible({ timeout: 2000 });
-    } catch {
-      // Fallback to check if any TOC-related element is visible
-      const fallbackToc = this.page.locator('[class*="toc"], zeppelin-note-toc');
-      return await fallbackToc.first().isVisible({ timeout: 1000 });
-    }
-  }
-
   async getTocItemCount(): Promise<number> {
     return this.tocItems.count();
-  }
-
-  async getTocItemText(index: number): Promise<string> {
-    return (await this.tocItems.nth(index).textContent()) || '';
-  }
-
-  async typeCodeInEditor(code: string): Promise<void> {
-    await this.codeEditor.fill(code);
-  }
-
-  async runParagraph(): Promise<void> {
-    await this.codeEditor.focus();
-    await this.pressRunParagraph();
-  }
-
-  async addNewParagraph(): Promise<void> {
-    // Use keyboard shortcut to add new paragraph below (Ctrl+Alt+B)
-    await this.pressInsertBelow();
-    // Wait for the second editor to appear
-    await this.page
-      .getByRole('textbox', { name: /Editor content/i })
-      .nth(1)
-      .waitFor();
-  }
-
-  async typeCodeInSecondEditor(code: string): Promise<void> {
-    const secondEditor = this.page.getByRole('textbox', { name: /Editor content/i }).nth(1);
-    await secondEditor.fill(code);
-  }
-
-  async runSecondParagraph(): Promise<void> {
-    const secondEditor = this.page.getByRole('textbox', { name: /Editor content/i }).nth(1);
-    await secondEditor.focus();
-    await this.pressRunParagraph();
   }
 }

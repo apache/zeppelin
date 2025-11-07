@@ -15,13 +15,10 @@ import { BasePage } from './base-page';
 
 export class NotebookActionBarPage extends BasePage {
   readonly titleEditor: Locator;
-  readonly titleTooltip: Locator;
   readonly runAllButton: Locator;
-  readonly runAllConfirm: Locator;
   readonly showHideCodeButton: Locator;
   readonly showHideOutputButton: Locator;
   readonly clearOutputButton: Locator;
-  readonly clearOutputConfirm: Locator;
   readonly cloneButton: Locator;
   readonly exportButton: Locator;
   readonly reloadButton: Locator;
@@ -48,13 +45,10 @@ export class NotebookActionBarPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.titleEditor = page.locator('zeppelin-elastic-input');
-    this.titleTooltip = page.locator('[nzTooltipTitle]');
     this.runAllButton = page.locator('button[nzTooltipTitle="Run all paragraphs"]');
-    this.runAllConfirm = page.locator('nz-popconfirm').getByRole('button', { name: 'OK' });
     this.showHideCodeButton = page.locator('button[nzTooltipTitle="Show/hide the code"]');
     this.showHideOutputButton = page.locator('button[nzTooltipTitle="Show/hide the output"]');
     this.clearOutputButton = page.locator('button[nzTooltipTitle="Clear all output"]');
-    this.clearOutputConfirm = page.locator('nz-popconfirm').getByRole('button', { name: 'OK' });
     this.cloneButton = page.locator('button[nzTooltipTitle="Clone this note"]');
     this.exportButton = page.locator('button[nzTooltipTitle="Export this note"]');
     this.reloadButton = page.locator('button[nzTooltipTitle="Reload from note file"]');
@@ -83,10 +77,6 @@ export class NotebookActionBarPage extends BasePage {
     await this.runAllButton.click();
   }
 
-  async confirmRunAll(): Promise<void> {
-    await this.runAllConfirm.click();
-  }
-
   async toggleCodeVisibility(): Promise<void> {
     await this.showHideCodeButton.click();
   }
@@ -98,23 +88,6 @@ export class NotebookActionBarPage extends BasePage {
   async clickClearOutput(): Promise<void> {
     await this.clearOutputButton.click();
   }
-
-  async confirmClearOutput(): Promise<void> {
-    await this.clearOutputConfirm.click();
-  }
-
-  async clickClone(): Promise<void> {
-    await this.cloneButton.click();
-  }
-
-  async clickExport(): Promise<void> {
-    await this.exportButton.click();
-  }
-
-  async clickReload(): Promise<void> {
-    await this.reloadButton.click();
-  }
-
   async switchToPersonalMode(): Promise<void> {
     await this.personalModeButton.click();
   }
@@ -134,53 +107,12 @@ export class NotebookActionBarPage extends BasePage {
   async confirmCommit(): Promise<void> {
     await this.commitConfirmButton.click();
   }
-
-  async setAsDefaultRevision(): Promise<void> {
-    await this.setRevisionButton.click();
-  }
-
-  async compareWithCurrentRevision(): Promise<void> {
-    await this.compareRevisionsButton.click();
-  }
-
   async openRevisionDropdown(): Promise<void> {
     await this.revisionDropdown.click();
   }
 
   async openSchedulerDropdown(): Promise<void> {
     await this.schedulerButton.click();
-  }
-
-  async enterCronExpression(expression: string): Promise<void> {
-    await this.cronInput.fill(expression);
-  }
-
-  async selectCronPreset(preset: string): Promise<void> {
-    await this.cronPresets.filter({ hasText: preset }).click();
-  }
-
-  async openShortcutInfo(): Promise<void> {
-    await this.shortcutInfoButton.click();
-  }
-
-  async openInterpreterSettings(): Promise<void> {
-    await this.interpreterSettingsButton.click();
-  }
-
-  async openPermissions(): Promise<void> {
-    await this.permissionsButton.click();
-  }
-
-  async openLookAndFeelDropdown(): Promise<void> {
-    await this.lookAndFeelDropdown.click();
-  }
-
-  async getTitleText(): Promise<string> {
-    return (await this.titleEditor.textContent()) || '';
-  }
-
-  async isRunAllEnabled(): Promise<boolean> {
-    return await this.runAllButton.isEnabled();
   }
 
   async isCodeVisible(): Promise<boolean> {
