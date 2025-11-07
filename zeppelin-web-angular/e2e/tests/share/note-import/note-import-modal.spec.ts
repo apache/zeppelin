@@ -102,10 +102,8 @@ test.describe('Note Import Modal', () => {
 
     await page.waitForTimeout(2000);
 
-    const hasError = await noteImportModal.isErrorAlertVisible();
-    if (hasError) {
-      const errorMessage = await noteImportModal.getErrorMessage();
-      expect(errorMessage).toBeTruthy();
-    }
+    await noteImportModal.isErrorAlertVisible();
+    const errorMessage = await noteImportModal.getErrorMessage();
+    expect(errorMessage).toBeTruthy();
   });
 });

@@ -55,6 +55,16 @@ test.describe('Note Create Modal', () => {
 
     await page.waitForURL(/notebook\//);
     expect(page.url()).toContain('notebook/');
+
+    // Verify the note was created with the correct name
+    const notebookTitle = page.locator('.notebook-title, .note-title, h1, [data-testid="notebook-title"]');
+    await expect(notebookTitle).toContainText(uniqueName);
+
+    // Verify in the navigation tree if available
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const noteInTree = page.locator(`a:has-text("${uniqueName}")`);
+    await expect(noteInTree).toBeVisible();
   });
 
   test('Given Create Note modal is open, When entering note name with folder path, Then note should be created in folder', async ({
@@ -69,6 +79,29 @@ test.describe('Note Create Modal', () => {
 
     await page.waitForURL(/notebook\//);
     expect(page.url()).toContain('notebook/');
+
+    // Verify the note was created with the correct name (without folder path)
+    const notebookTitle = page.locator('.notebook-title, .note-title, h1, [data-testid="notebook-title"]');
+    await expect(notebookTitle).toContainText(noteName);
+
+    // Verify the note appears in the correct folder structure
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+
+    // Navigate through folder structure to find the note
+    // Look for TestFolder
+    const testFolder = page.locator('.folder-name, .tree-node').filter({ hasText: 'TestFolder' }).first();
+    await expect(testFolder).toBeVisible();
+    await testFolder.click();
+
+    // Look for SubFolder
+    const subFolder = page.locator('.folder-name, .tree-node').filter({ hasText: 'SubFolder' }).first();
+    await expect(subFolder).toBeVisible();
+    await subFolder.click();
+
+    // Verify the note exists in the subfolder
+    const noteInSubFolder = page.locator(`a:has-text("${noteName}")`);
+    await expect(noteInSubFolder).toBeVisible();
   });
 
   test('Given Create Note modal is open, When clicking close button, Then modal should close', async () => {

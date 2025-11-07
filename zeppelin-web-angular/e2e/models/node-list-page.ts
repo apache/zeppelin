@@ -51,11 +51,11 @@ export class NodeListPage extends BasePage {
     await this.filterInput.clear();
   }
 
-  async getFolderByName(folderName: string): Locator {
+  getFolderByName(folderName: string): Locator {
     return this.page.locator('nz-tree-node').filter({ hasText: folderName }).first();
   }
 
-  async getNoteByName(noteName: string): Locator {
+  getNoteByName(noteName: string): Locator {
     return this.page.locator('nz-tree-node').filter({ hasText: noteName }).first();
   }
 
