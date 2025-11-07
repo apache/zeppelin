@@ -15,6 +15,7 @@
     <button
       [class.sidebar-button-active]="sidebarState === SidebarState.TOC"
       class="sidebar-button"
+      aria-label="Toggle Table of Contents"
       (click)="setOrToggleSidebarState(SidebarState.TOC)"
     >
       <i nz-icon nzType="unordered-list" nzTheme="outline"></i>
@@ -22,12 +23,17 @@
     <button
       [class.sidebar-button-active]="sidebarState === SidebarState.FILE_TREE"
       class="sidebar-button"
+      aria-label="Toggle File Tree"
       (click)="setOrToggleSidebarState(SidebarState.FILE_TREE)"
     >
       <i nz-icon nzType="folder" nzTheme="outline"></i>
     </button>
   </div>
-  <button class="sidebar-button sidebar-close" (click)="setOrToggleSidebarState(SidebarState.CLOSED)">
+  <button
+    class="sidebar-button sidebar-close"
+    aria-label="Close Sidebar"
+    (click)="setOrToggleSidebarState(SidebarState.CLOSED)"
+  >
     <i *ngIf="sidebarState !== SidebarState.CLOSED" nz-icon nzType="close" nzTheme="outline"></i>
   </button>
   <div class="sidebar-main" *ngIf="sidebarState !== SidebarState.CLOSED">
