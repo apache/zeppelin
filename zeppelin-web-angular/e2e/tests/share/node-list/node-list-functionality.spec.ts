@@ -53,7 +53,7 @@ test.describe('Node List Functionality', () => {
   test('Given there are notes in node list, When clicking a note, Then user should navigate to that note', async ({
     page
   }) => {
-    await page.waitForTimeout(1000);
+    await expect(nodeListPage.treeView).toBeVisible();
     const notes = await nodeListPage.getAllVisibleNoteNames();
 
     if (notes.length > 0 && notes[0]) {

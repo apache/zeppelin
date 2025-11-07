@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
@@ -141,21 +141,11 @@ export class HomePage extends BasePage {
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
-    try {
-      await expect(this.welcomeHeading).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.welcomeHeading.isVisible();
   }
 
   async isAnonymousUser(): Promise<boolean> {
-    try {
-      await expect(this.anonymousUserIndicator).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.anonymousUserIndicator.isVisible();
   }
 
   async clickZeppelinLogo(): Promise<void> {

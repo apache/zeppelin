@@ -23,10 +23,6 @@ export class BasePage {
 
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
-    try {
-      await this.loadingScreen.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      console.log('Loading screen not found');
-    }
+    await this.loadingScreen.waitFor({ state: 'hidden', timeout: 5000 });
   }
 }

@@ -93,14 +93,12 @@ test.describe('Note Import Modal', () => {
     await expect(noteImportModal.modal).not.toBeVisible();
   });
 
-  test('Given URL tab is selected, When entering invalid URL and clicking import, Then error should be displayed', async ({
-    page
-  }) => {
+  test('Given URL tab is selected, When entering invalid URL and clicking import, Then error should be displayed', async () => {
     await noteImportModal.switchToUrlTab();
     await noteImportModal.setImportUrl('invalid-url');
     await noteImportModal.clickImportNote();
 
-    await page.waitForTimeout(2000);
+    await expect(noteImportModal.errorAlert).toBeVisible();
 
     await noteImportModal.isErrorAlertVisible();
     const errorMessage = await noteImportModal.getErrorMessage();
