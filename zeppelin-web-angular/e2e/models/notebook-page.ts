@@ -19,7 +19,6 @@ export class NotebookPage extends BasePage {
   readonly sidebarArea: Locator;
   readonly paragraphContainer: Locator;
   readonly extensionArea: Locator;
-  readonly noteFormBlock: Locator;
   readonly paragraphInner: Locator;
 
   constructor(page: Page) {
@@ -29,21 +28,12 @@ export class NotebookPage extends BasePage {
     this.sidebarArea = page.locator('.sidebar-area[nz-resizable]');
     this.paragraphContainer = page.locator('zeppelin-notebook-paragraph');
     this.extensionArea = page.locator('.extension-area');
-    this.noteFormBlock = page.locator('zeppelin-note-form-block');
     this.paragraphInner = page.locator('.paragraph-inner[nz-row]');
   }
 
   async getSidebarWidth(): Promise<number> {
     const sidebarElement = await this.sidebarArea.boundingBox();
     return sidebarElement?.width || 0;
-  }
-
-  async isExtensionAreaVisible(): Promise<boolean> {
-    return await this.extensionArea.isVisible();
-  }
-
-  async isNoteFormBlockVisible(): Promise<boolean> {
-    return await this.noteFormBlock.isVisible();
   }
 
   async getNotebookContainerClass(): Promise<string | null> {
