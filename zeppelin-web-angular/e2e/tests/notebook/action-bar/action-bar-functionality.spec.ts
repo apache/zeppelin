@@ -96,14 +96,20 @@ test.describe('Notebook Action Bar Functionality', () => {
   });
 
   test('should display settings group properly', async ({ page }) => {
-    // Then: Settings group should be displayed properly
+    // Wait for action bar to be visible first
     const actionBarUtil = new NotebookActionBarUtil(page);
+    await actionBarUtil.verifyActionBarPresence();
+
+    // Then: Settings group should be displayed properly
     await actionBarUtil.verifySettingsGroup();
   });
 
   test('should verify all action bar functionality', async ({ page }) => {
-    // Then: All action bar functionality should work properly
+    // Wait for action bar to be visible first
     const actionBarUtil = new NotebookActionBarUtil(page);
+    await actionBarUtil.verifyActionBarPresence();
+
+    // Then: All action bar functionality should work properly
     await actionBarUtil.verifyAllActionBarFunctionality();
   });
 });

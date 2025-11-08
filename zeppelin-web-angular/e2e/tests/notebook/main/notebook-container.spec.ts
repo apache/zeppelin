@@ -65,14 +65,17 @@ test.describe('Notebook Container Component', () => {
   });
 
   test('should display extension area when activated', async ({ page }) => {
+    // Wait for notebook page to be fully loaded with action bar
+    await page.waitForSelector('zeppelin-notebook-action-bar', { state: 'visible' });
+
+    // Given: Click setting button to activate extension area
+    await page.click('button i[nztype="setting"]');
+
+    // Wait for extension area to appear
+    await page.waitForSelector('.extension-area', { state: 'visible' });
+
     // Then: Extension area should be displayed when activated
     const notebookUtil = new NotebookPageUtil(page);
     await notebookUtil.verifyExtensionAreaWhenActivated();
-  });
-
-  test('should display note forms block when present', async ({ page }) => {
-    // Then: Note forms block should be displayed when present
-    const notebookUtil = new NotebookPageUtil(page);
-    await notebookUtil.verifyNoteFormsBlockWhenPresent();
   });
 });

@@ -67,10 +67,10 @@ export class NotebookActionBarPage extends BasePage {
     this.schedulerDropdown = page.locator('.scheduler-dropdown');
     this.cronInput = page.locator('input[placeholder*="cron"]');
     this.cronPresets = page.locator('.cron-preset');
-    this.shortcutInfoButton = page.getByRole('button', { name: 'Shortcut list' });
-    this.interpreterSettingsButton = page.getByRole('button', { name: 'Interpreter binding' });
-    this.permissionsButton = page.getByRole('button', { name: 'Permissions' });
-    this.lookAndFeelDropdown = page.locator('button[nz-dropdown]').filter({ hasText: 'Look & feel' });
+    this.shortcutInfoButton = page.locator('.setting button:has(i[nzType="info-circle"])');
+    this.interpreterSettingsButton = page.locator('.setting button:has(i[nzType="setting"])');
+    this.permissionsButton = page.locator('.setting button:has(i[nzType="lock"])');
+    this.lookAndFeelDropdown = page.locator('.setting button[nz-dropdown]:has(i[nzType="down"])');
   }
 
   async clickRunAll(): Promise<void> {

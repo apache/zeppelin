@@ -186,6 +186,12 @@ export class NotebookActionBarUtil {
     }
   }
 
+  async verifyActionBarPresence(): Promise<void> {
+    // Wait for the action bar to be visible before checking its components
+    const actionBar = this.page.locator('zeppelin-notebook-action-bar');
+    await expect(actionBar).toBeVisible({ timeout: 15000 });
+  }
+
   async verifySettingsGroup(): Promise<void> {
     // Settings buttons may be conditionally displayed based on permissions/configuration
     // At minimum, at least one settings control should be available
