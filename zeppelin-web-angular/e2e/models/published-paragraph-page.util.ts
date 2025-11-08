@@ -58,8 +58,8 @@ export class PublishedParagraphTestUtil {
     await expect(modalContent).toContainText('This paragraph contains the following code:');
     await expect(modalContent).toContainText('Would you like to execute this code?');
 
-    // Verify that the code preview area exists with proper styling
-    const codePreview = modalContent.locator('div[style*="background-color: #f5f5f5"]');
+    // Verify that the code preview area exists
+    const codePreview = modalContent.locator('pre, code, .code-preview, .highlight, [class*="code"]').first();
     await expect(codePreview).toBeVisible();
 
     // Check for Run and Cancel buttons

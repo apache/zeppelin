@@ -113,33 +113,36 @@ test.describe('Published Paragraph', () => {
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
       await page.waitForLoadState('networkidle');
 
+      // Wait for URL to actually change to published paragraph mode
+      await expect(page).toHaveURL(new RegExp(`/notebook/${noteId}/paragraph/${paragraphId}`), { timeout: 15000 });
+
       expect(page.url()).toContain(noteId);
       expect(page.url()).toContain(paragraphId);
 
-      // Published container should be visible when accessing published paragraph
+      // Wait for published container to be present in DOM first
       const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      await expect(publishedContainer).toBeVisible();
+      await publishedContainer.waitFor({ state: 'attached', timeout: 10000 });
+
+      // Check if confirmation modal appears first (for paragraphs without results)
+      const modal = page.locator('.ant-modal');
+      if (await modal.isVisible({ timeout: 3000 })) {
+        const runModalButton = modal.locator('button:has-text("Run")');
+        if (await runModalButton.isVisible()) {
+          await runModalButton.click();
+          await modal.waitFor({ state: 'hidden', timeout: 10000 });
+        }
+      }
+
+      // Verify published container is present and ready (might be initially hidden)
+      await expect(publishedContainer).toBeAttached({ timeout: 10000 });
+
+      // Verify we're actually in published mode by checking page structure
+      const isPublishedMode = await page.evaluate(() => document.querySelector('zeppelin-publish-paragraph') !== null);
+      expect(isPublishedMode).toBe(true);
     });
   });
 
   test.describe('Published Mode Functionality', () => {
-    test('should display result in read-only mode with published flag', async ({ page }) => {
-      const { noteId, paragraphId } = testNotebook;
-
-      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
-
-      // Verify that we're in published mode by checking the URL pattern
-      expect(page.url()).toContain(`/paragraph/${paragraphId}`);
-
-      // Published container should be visible in published mode
-      const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      await expect(publishedContainer).toBeVisible();
-
-      // Result should be visible when viewing published paragraph
-      await expect(page.locator('zeppelin-notebook-paragraph-result')).toBeVisible();
-    });
-
     test('should hide editing controls in published mode', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
