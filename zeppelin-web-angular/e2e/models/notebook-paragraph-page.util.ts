@@ -64,27 +64,19 @@ export class NotebookParagraphUtil {
     await expect(this.paragraphPage.resultDisplay).toBeVisible();
   }
 
-  async verifyTitleEditingIfPresent(): Promise<void> {
+  async verifyTitleEditing(): Promise<void> {
     // First ensure we're actually on a notebook page
     await expect(this.page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
 
-    const titleVisible = await this.paragraphPage.titleEditor.isVisible();
-    if (titleVisible) {
-      // Look for the actual input element inside the elastic input component
-      const titleInput = this.paragraphPage.titleEditor.locator('input, textarea').first();
+    // Title editor should be visible and editable
+    await expect(this.paragraphPage.titleEditor).toBeVisible();
 
-      // Check if input element exists and is editable
-      if ((await titleInput.count()) > 0) {
-        await expect(titleInput).toBeEditable();
-      } else {
-        // Fallback: verify the component is clickable (indicates editability)
-        await expect(this.paragraphPage.titleEditor).toBeVisible();
-      }
-    }
+    // Look for the actual input element inside the elastic input component
+    const titleInput = this.paragraphPage.titleEditor.locator('input, textarea').first();
+    await expect(titleInput).toBeEditable();
   }
 
-  async verifyDynamicFormsIfPresent(): Promise<void> {
-    await this.paragraphPage.isDynamicFormsVisible();
+  async verifyDynamicForms(): Promise<void> {
     await expect(this.paragraphPage.dynamicForms).toBeVisible();
   }
 

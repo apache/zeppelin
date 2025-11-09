@@ -109,21 +109,16 @@ test.describe('Notebook Paragraph Functionality', () => {
     // When: Execute the paragraph
     await paragraphPage.runParagraph();
 
-    // Wait for execution to complete
-    await page.waitForTimeout(5000);
+    // Wait for execution to complete by checking for result
+    await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 15000 });
 
     // Then: Result display system should work properly
     await paragraphUtil.verifyResultDisplaySystem();
   });
 
-  test('should support title editing when present', async ({ page }) => {
-    // Then: Title editing should be functional if present
-    const paragraphUtil = new NotebookParagraphUtil(page);
-    await paragraphUtil.verifyTitleEditingIfPresent();
-  });
-
-  test('should display dynamic forms when present', async ({ page }) => {
+  test('should display dynamic forms', async ({ page }) => {
     const paragraphPage = new NotebookParagraphPage(page);
+    const paragraphUtil = new NotebookParagraphUtil(page);
 
     // Create dynamic forms by using form syntax
     await paragraphPage.doubleClickToEdit();
@@ -147,14 +142,11 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
     // Run the paragraph to generate dynamic forms
     await paragraphPage.runParagraph();
 
-    // Wait for execution and check if dynamic forms appear
-    await page.waitForTimeout(3000);
+    // Wait for execution to complete by checking for result or dynamic forms
+    await expect(paragraphPage.resultDisplay.or(paragraphPage.dynamicForms)).toBeVisible({ timeout: 15000 });
 
     // Then: Dynamic forms should be displayed
-    const dynamicFormsVisible = await paragraphPage.dynamicForms.isVisible();
-    if (dynamicFormsVisible) {
-      await expect(paragraphPage.dynamicForms).toBeVisible();
-    }
+    await paragraphUtil.verifyDynamicForms();
   });
 
   test('should display footer information', async ({ page }) => {

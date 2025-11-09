@@ -123,15 +123,14 @@ test.describe('Published Paragraph', () => {
       const publishedContainer = page.locator('zeppelin-publish-paragraph');
       await publishedContainer.waitFor({ state: 'attached', timeout: 10000 });
 
-      // Check if confirmation modal appears first (for paragraphs without results)
+      // Wait for and handle confirmation modal
       const modal = page.locator('.ant-modal');
-      if (await modal.isVisible({ timeout: 3000 })) {
-        const runModalButton = modal.locator('button:has-text("Run")');
-        if (await runModalButton.isVisible()) {
-          await runModalButton.click();
-          await modal.waitFor({ state: 'hidden', timeout: 10000 });
-        }
-      }
+      await expect(modal).toBeVisible({ timeout: 5000 });
+
+      const runModalButton = modal.locator('button:has-text("Run")');
+      await expect(runModalButton).toBeVisible();
+      await runModalButton.click();
+      await expect(modal).not.toBeVisible({ timeout: 10000 });
 
       // Verify published container is present and ready (might be initially hidden)
       await expect(publishedContainer).toBeAttached({ timeout: 10000 });
