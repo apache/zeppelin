@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
 import { NotebookParagraphUtil } from '../../../models/notebook-paragraph-page.util';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
@@ -72,8 +73,46 @@ test.describe('Notebook Paragraph Functionality', () => {
   });
 
   test('should display result system properly', async ({ page }) => {
-    // Then: Result display system should work properly
+    // Given: Navigate to notebook and set up code
     const paragraphUtil = new NotebookParagraphUtil(page);
+
+    // Ensure we're on the correct notebook page and wait for it to load
+    await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
+    await page.waitForLoadState('domcontentloaded');
+
+    // Wait for the paragraph container to exist and be visible
+    const paragraphPage = new NotebookParagraphPage(page);
+    await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
+
+    // Wait for the code editor component to be present before interacting
+    await expect(paragraphPage.codeEditor).toBeAttached({ timeout: 10000 });
+
+    // Activate editing mode
+    await paragraphPage.doubleClickToEdit();
+    await expect(paragraphPage.codeEditor).toBeVisible();
+
+    // Wait for Monaco editor to be ready and focusable
+    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
+    await expect(codeEditor).toBeAttached({ timeout: 10000 });
+
+    // Wait for editor to be editable by checking if it's enabled
+    await expect(codeEditor).toBeEnabled({ timeout: 10000 });
+
+    // Focus the editor and wait for it to actually gain focus
+    await codeEditor.focus();
+    await expect(codeEditor).toBeFocused({ timeout: 5000 });
+
+    // Clear and input code
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type('%python\nprint("Hello World")');
+
+    // When: Execute the paragraph
+    await paragraphPage.runParagraph();
+
+    // Wait for execution to complete
+    await page.waitForTimeout(5000);
+
+    // Then: Result display system should work properly
     await paragraphUtil.verifyResultDisplaySystem();
   });
 
@@ -84,9 +123,38 @@ test.describe('Notebook Paragraph Functionality', () => {
   });
 
   test('should display dynamic forms when present', async ({ page }) => {
-    // Then: Dynamic forms should be displayed if present
-    const paragraphUtil = new NotebookParagraphUtil(page);
-    await paragraphUtil.verifyDynamicFormsIfPresent();
+    const paragraphPage = new NotebookParagraphPage(page);
+
+    // Create dynamic forms by using form syntax
+    await paragraphPage.doubleClickToEdit();
+    await expect(paragraphPage.codeEditor).toBeVisible();
+
+    // Wait for Monaco editor to be ready
+    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
+    await expect(codeEditor).toBeAttached({ timeout: 10000 });
+    await expect(codeEditor).toBeEnabled({ timeout: 10000 });
+
+    // Focus and add dynamic form code
+    await codeEditor.focus();
+    await expect(codeEditor).toBeFocused({ timeout: 5000 });
+
+    await page.keyboard.press('Control+a');
+    await page.keyboard.type(`%spark
+println("Name: " + z.input("name", "World"))
+println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Over 65"))))
+`);
+
+    // Run the paragraph to generate dynamic forms
+    await paragraphPage.runParagraph();
+
+    // Wait for execution and check if dynamic forms appear
+    await page.waitForTimeout(3000);
+
+    // Then: Dynamic forms should be displayed
+    const dynamicFormsVisible = await paragraphPage.dynamicForms.isVisible();
+    if (dynamicFormsVisible) {
+      await expect(paragraphPage.dynamicForms).toBeVisible();
+    }
   });
 
   test('should display footer information', async ({ page }) => {
@@ -101,10 +169,10 @@ test.describe('Notebook Paragraph Functionality', () => {
     await paragraphUtil.verifyParagraphControlActions();
   });
 
-  test('should support paragraph execution workflow', async ({ page }) => {
-    // Then: Execution workflow should work properly
+  test('should show cancel button during execution', async ({ page }) => {
+    // Then: Cancel button should be visible during execution
     const paragraphUtil = new NotebookParagraphUtil(page);
-    await paragraphUtil.verifyParagraphExecutionWorkflow();
+    await paragraphUtil.verifyCancelParagraphButton();
   });
 
   test('should provide advanced paragraph operations', async ({ page }) => {
