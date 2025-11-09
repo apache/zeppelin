@@ -142,10 +142,10 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
     // Run the paragraph to generate dynamic forms
     await paragraphPage.runParagraph();
 
-    // Wait for execution to complete by checking for result or dynamic forms
-    await expect(paragraphPage.resultDisplay.or(paragraphPage.dynamicForms)).toBeVisible({ timeout: 15000 });
+    // Wait for execution to complete by checking for result first
+    await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 15000 });
 
-    // Then: Dynamic forms should be displayed
+    // Then: Dynamic forms should be displayed (handles error cases gracefully)
     await paragraphUtil.verifyDynamicForms();
   });
 
