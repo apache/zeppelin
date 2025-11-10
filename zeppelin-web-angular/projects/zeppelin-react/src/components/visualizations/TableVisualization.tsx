@@ -83,7 +83,7 @@ export const TableVisualization = ({ result, config, index }: TableVisualization
       y: parseFloat(row[1] || '0') || 0
     }));
 
-    let chart = null;
+    let chart: Column | Line | Pie | Scatter | null = null;
 
     switch (currentMode) {
       case 'multiBarChart':
