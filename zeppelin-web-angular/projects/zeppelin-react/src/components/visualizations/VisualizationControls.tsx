@@ -11,9 +11,17 @@
  */
 
 import { Button, Space } from 'antd';
-import { BarChartOutlined, PieChartOutlined, LineChartOutlined, DotChartOutlined, TableOutlined, AreaChartOutlined, DownOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
-
-type VisualizationMode = 'table' | 'multiBarChart' | 'pieChart' | 'lineChart' | 'stackedAreaChart' | 'scatterChart';
+import {
+  BarChartOutlined,
+  PieChartOutlined,
+  LineChartOutlined,
+  DotChartOutlined,
+  TableOutlined,
+  AreaChartOutlined,
+  DownloadOutlined,
+  FileExcelOutlined
+} from '@ant-design/icons';
+import type { VisualizationMode } from '@zeppelin/sdk';
 
 interface VisualizationControlsProps {
   currentMode: VisualizationMode;
@@ -21,11 +29,7 @@ interface VisualizationControlsProps {
   onExport: (type: 'csv' | 'xlsx') => void;
 }
 
-export const VisualizationControls = ({
-  currentMode,
-  onModeChange,
-  onExport
-}: VisualizationControlsProps) => {
+export const VisualizationControls = ({ currentMode, onModeChange, onExport }: VisualizationControlsProps) => {
   const visualizations = [
     { id: 'table', name: 'Table', icon: <TableOutlined /> },
     { id: 'multiBarChart', name: 'Bar Chart', icon: <BarChartOutlined /> },
@@ -52,23 +56,14 @@ export const VisualizationControls = ({
           ))}
         </Space.Compact>
         <Space.Compact>
-          <Button
-            icon={<DownloadOutlined />}
-            size="small"
-            onClick={() => onExport('csv')}
-          >
+          <Button icon={<DownloadOutlined />} size="small" onClick={() => onExport('csv')}>
             Export CSV
           </Button>
-          <Button
-            icon={<FileExcelOutlined />}
-            size="small"
-            onClick={() => onExport('xlsx')}
-          >
+          <Button icon={<FileExcelOutlined />} size="small" onClick={() => onExport('xlsx')}>
             Export Excel
           </Button>
         </Space.Compact>
       </Space>
-
     </div>
   );
 };

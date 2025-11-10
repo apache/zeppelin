@@ -14,12 +14,12 @@ import { createRoot } from 'react-dom/client';
 import { ConfigProvider } from 'antd';
 import { Empty } from '@/components';
 import { SingleResultRenderer } from '@/templates';
-import type { ParagraphResult, ParagraphConfig } from '@/types';
+import type { ParagraphConfigResults, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
 
 export interface PublishedParagraphProps {
   paragraphId: string;
-  results?: ParagraphResult[];
-  config?: ParagraphConfig;
+  results?: ParagraphIResultsMsgItem[];
+  config?: ParagraphConfigResults;
 }
 
 const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
@@ -36,9 +36,9 @@ const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
       }}
     >
       <div>
-        {results.map((result: ParagraphResult, index: number) => (
+        {results.map((result, index) => (
           <div key={index}>
-            <SingleResultRenderer result={result} config={config} />
+            <SingleResultRenderer result={result} index={index} config={config} />
           </div>
         ))}
       </div>

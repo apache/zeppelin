@@ -38,7 +38,8 @@ module.exports = (_env, argv) => {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
       modules: ['node_modules', path.resolve(__dirname, '../../node_modules')],
       alias: {
-        '@': path.resolve(__dirname, 'src')
+        '@': path.resolve(__dirname, 'src'),
+        '@zeppelin/sdk': path.resolve(__dirname, '../zeppelin-sdk/src')
       }
     },
     resolveLoader: {

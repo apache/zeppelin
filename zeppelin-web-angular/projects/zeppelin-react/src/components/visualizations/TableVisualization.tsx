@@ -15,14 +15,15 @@ import { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
 import { parseTableData, TableData } from '@/utils';
 import { useTableExport } from '@/hooks';
-import type { ParagraphResult, ParagraphConfig, VisualizationMode } from '@/types';
+import type { ParagraphConfigResults, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
 
 interface TableVisualizationProps {
-  result: ParagraphResult;
-  config?: ParagraphConfig;
+  result: ParagraphIResultsMsgItem;
+  index: number;
+  config?: ParagraphConfigResults;
 }
 
-export const TableVisualization = ({ result, config }: TableVisualizationProps) => {
+export const TableVisualization = ({ result, config, index }: TableVisualizationProps) => {
   const [currentMode, setCurrentMode] = useState<VisualizationMode>('table');
   const [tableData, setTableData] = useState<TableData | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -35,8 +36,8 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
   };
 
   useEffect(() => {
-    if (config && config.graph && config.graph.mode) {
-      setCurrentMode(config.graph.mode);
+    if (config?.[index].graph.mode) {
+      setCurrentMode(config[index].graph.mode as VisualizationMode);
     }
     setTableData(parseTableData(result.data));
   }, [result, config]);
@@ -91,7 +92,7 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
           xField: 'category',
           yField: 'value',
           color: '#1890ff',
-          columnWidthRatio: 0.8,
+          columnWidthRatio: 0.8
         });
         break;
       case 'lineChart':
@@ -99,14 +100,14 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
           data,
           xField: 'category',
           yField: 'value',
-          color: '#1890ff',
+          color: '#1890ff'
         });
         break;
       case 'pieChart':
         chart = new Pie(chartRef.current, {
           data,
           angleField: 'value',
-          colorField: 'category',
+          colorField: 'category'
         });
         break;
       case 'scatterChart':
@@ -114,7 +115,7 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
           data,
           xField: 'x',
           yField: 'y',
-          color: '#1890ff',
+          color: '#1890ff'
         });
         break;
       case 'stackedAreaChart':
@@ -125,11 +126,11 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
           color: '#1890ff',
           point: {
             size: 3,
-            shape: 'circle',
+            shape: 'circle'
           },
           lineStyle: {
-            lineWidth: 2,
-          },
+            lineWidth: 2
+          }
         });
         break;
     }
@@ -147,11 +148,7 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
 
   return (
     <div>
-      <VisualizationControls
-        currentMode={currentMode}
-        onModeChange={setCurrentMode}
-        onExport={handleExport}
-      />
+      <VisualizationControls currentMode={currentMode} onModeChange={setCurrentMode} onExport={handleExport} />
       {renderVisualization()}
     </div>
   );

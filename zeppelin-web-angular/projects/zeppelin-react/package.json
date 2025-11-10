@@ -9,6 +9,7 @@
   "dependencies": {
     "@ant-design/icons": "5.4.0",
     "@antv/g2plot": "2.4.35",
+    "@zeppelin/sdk": "file:../zeppelin-sdk",
     "antd": "5.21.0",
     "file-saver": "2.0.5",
     "react": "18.3.1",

@@ -11,25 +11,20 @@
  */
 
 import { Alert } from 'antd';
-import {
-  HTMLRenderer,
-  TextRenderer,
-  ImageRenderer,
-  TableVisualization
-} from '@/components';
-import { DatasetType } from '@/types';
-import type { ParagraphResult, ParagraphConfig } from '@/types';
+import { HTMLRenderer, TextRenderer, ImageRenderer, TableVisualization } from '@/components';
 import { checkAndReplaceCarriageReturn } from '@/utils';
+import { DatasetType, ParagraphConfigResults, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
 
 interface SingleResultRendererProps {
-  result: ParagraphResult;
-  config?: ParagraphConfig;
+  result: ParagraphIResultsMsgItem;
+  index: number;
+  config?: ParagraphConfigResults;
 }
 
-export const SingleResultRenderer = ({ result, config }: SingleResultRendererProps) => {
+export const SingleResultRenderer = ({ result, index, config }: SingleResultRendererProps) => {
   switch (result.type) {
     case DatasetType.TABLE:
-      return <TableVisualization result={result} config={config} />;
+      return <TableVisualization result={result} index={index} config={config} />;
     case DatasetType.HTML:
       return <HTMLRenderer html={result.data} />;
     case DatasetType.TEXT:

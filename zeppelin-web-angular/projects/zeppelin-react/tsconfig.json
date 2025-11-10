@@ -18,7 +18,9 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@zeppelin/sdk": ["../../zeppelin-sdk/src"],
+      "@zeppelin/sdk/*": ["../../zeppelin-sdk/src/*"]
     }
   },
   "include": ["src"],
