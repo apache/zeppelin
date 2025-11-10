@@ -25,19 +25,11 @@ export const useTableExport = () => {
       return;
     }
 
-    const wb: {
-      Sheets: { [key: string]: XLSX.WorkSheet };
-      SheetNames: string[];
-    } = {
-      Sheets: {},
-      SheetNames: []
-    };
-
-    const ws = XLSX.utils.json_to_sheet(tableData.rows);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([tableData.columnNames, ...tableData.rows]);
 
     if (type === 'xlsx') {
-      wb.Sheets['Sheet1'] = ws;
-      wb.SheetNames.push('Sheet1');
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
       const excelBuffer = XLSX.write(wb, {
         bookType: 'xlsx',
