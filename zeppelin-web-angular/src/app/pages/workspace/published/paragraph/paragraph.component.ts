@@ -13,7 +13,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  OnInit,
+  ElementRef,
+  OnDestroy,
   QueryList,
   TemplateRef,
   ViewChild,
@@ -33,6 +34,7 @@ import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'zeppelin-publish-paragraph',
@@ -40,14 +42,18 @@ import { NotebookParagraphResultComponent } from '../../share/result/result.comp
   styleUrls: ['./paragraph.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PublishedParagraphComponent extends ParagraphBase implements Published, OnInit {
+export class PublishedParagraphComponent extends ParagraphBase implements Published, OnDestroy {
   readonly [publishedSymbol] = true;
 
   noteId: string | null = null;
   paragraphId: string | null = null;
   previewCode: string = '';
+  useReact = false;
+  isLoading = true;
+  error: string | null = null;
 
   @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
+  @ViewChild('reactContainer', { static: false }) reactContainer!: ElementRef<HTMLDivElement>;
   @ViewChildren(NotebookParagraphResultComponent)
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
@@ -62,6 +68,10 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     cdr: ChangeDetectorRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
+    this.activatedRoute.queryParams.subscribe(queryParams => {
+      this.useReact = queryParams.react === 'true' || queryParams.react === '';
+    });
+
     this.activatedRoute.params.subscribe(params => {
       if (typeof params.noteId !== 'string') {
         throw new Error(`noteId path parameter should be string, but got ${typeof params.noteId} instead.`);
@@ -72,7 +82,11 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     });
   }
 
-  ngOnInit() {}
+  ngOnDestroy() {
+    if (this.useReact) {
+      this.cleanupReactWidget();
+    }
+  }
 
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
@@ -83,6 +97,14 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
         if (!this.paragraph.results) {
           this.showRunConfirmationModal();
         }
+        if (this.useReact) {
+          this.setResults(this.paragraph);
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          this.loadReactWidget();
+          return;
+        }
+
         this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);
@@ -176,5 +198,47 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
         nzOkText: 'OK'
       });
     });
+  }
+
+  private loadReactWidget() {
+    if (!this.reactContainer || !this.paragraph) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = environment.reactRemoteEntryUrl;
+
+    script.onload = async () => {
+      // @ts-ignore
+      const container = window.reactApp;
+      if (!container) {
+        throw new Error('window.reactApp not available');
+      }
+
+      const factory = await container.get('./PublishedParagraph');
+      const { mount } = factory();
+
+      if (!mount || typeof mount !== 'function') {
+        throw new Error('mount function not found');
+      }
+
+      const mountPoint = this.reactContainer.nativeElement;
+      const props = {
+        paragraphId: this.paragraphId,
+        noteId: this.noteId,
+        results: this.paragraph?.results?.msg,
+        config: this.paragraph?.config?.results
+      };
+
+      mount(mountPoint, props);
+    };
+
+    document.head.appendChild(script);
+  }
+
+  private cleanupReactWidget() {
+    if (this.reactContainer?.nativeElement) {
+      this.reactContainer.nativeElement.innerHTML = '';
+    }
   }
 }

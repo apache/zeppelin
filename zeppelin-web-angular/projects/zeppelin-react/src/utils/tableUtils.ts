@@ -10,7 +10,17 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+export interface TableData {
+  columnNames: string[];
+  rows: string[][];
+}
+
+export const parseTableData = (data: string): TableData => {
+  const lines = data.trim().split('\n');
+  if (lines.length === 0) return { columnNames: [], rows: [] };
+
+  const columnNames = lines[0].split('\t');
+  const rows = lines.slice(1).map(line => line.split('\t'));
+
+  return { columnNames, rows };
 };

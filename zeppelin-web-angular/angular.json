@@ -38,13 +38,16 @@
       },
       "architect": {
         "build": {
-          "builder": "ngx-build-plus:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/zeppelin",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.json",
+            "customWebpackConfig": {
+              "path": "./webpack.config.js"
+            },
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -62,6 +65,11 @@
                 "glob": "**/*",
                 "input": "./WEB-INF",
                 "output": "/WEB-INF/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./projects/zeppelin-react/dist",
+                "output": "/assets/react/"
               }
             ],
             "styles": [
@@ -100,7 +108,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -108,19 +115,22 @@
               "buildOptimizer": false
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "namedChunks": true,
               "sourceMap": true
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "ngx-build-plus:dev-server",
+          "builder": "@angular-builders/custom-webpack:dev-server",
           "options": {
-            "browserTarget": "zeppelin:build"
+            "browserTarget": "zeppelin:build",
+            "port": 4200,
+            "host": "localhost",
+            "liveReload": true,
+            "hmr": true
           },
           "configurations": {
             "production": {
