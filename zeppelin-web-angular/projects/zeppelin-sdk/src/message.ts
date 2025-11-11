@@ -52,6 +52,7 @@ export class Message {
   private ticket?: Ticket;
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
   private lastMsgIdSeqSent = 0;
+  private readonly normalCloseCode = 1000;
 
   constructor() {
     this.open$.subscribe(() => {
@@ -60,10 +61,15 @@ export class Message {
       this.pingIntervalSubscription.unsubscribe();
       this.pingIntervalSubscription = interval(1000 * 10).subscribe(() => this.ping());
     });
-    this.close$.subscribe(() => {
+    this.close$.subscribe(event => {
       this.connectedStatus = false;
       this.connectedStatus$.next(this.connectedStatus);
       this.pingIntervalSubscription.unsubscribe();
+
+      if (event.code !== this.normalCloseCode) {
+        console.log('WebSocket closed unexpectedly. Reconnecting...');
+        this.connect();
+      }
     });
   }
 
