@@ -28,7 +28,19 @@ export class NotebookReposPage extends BasePage {
 
   async navigate(): Promise<void> {
     await this.page.goto('/#/notebook-repos', { waitUntil: 'load' });
-    await this.page.waitForURL('**/#/notebook-repos', { timeout: 15000 });
+
+    // Check if we're redirected to login page and handle authentication
+    const currentUrl = this.page.url();
+    if (currentUrl.includes('#/login')) {
+      console.log('Redirected to login page, performing authentication...');
+      const { performLoginIfRequired } = await import('../utils');
+      await performLoginIfRequired(this.page);
+
+      // Navigate again after login
+      await this.page.goto('/#/notebook-repos', { waitUntil: 'load' });
+    }
+
+    await this.page.waitForURL('**/#/notebook-repos', { timeout: 30000 });
     await waitForZeppelinReady(this.page);
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
     await this.page.waitForSelector('zeppelin-notebook-repo-item, zeppelin-page-header[title="Notebook Repository"]', {
