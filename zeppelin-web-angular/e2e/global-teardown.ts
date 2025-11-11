@@ -18,17 +18,16 @@ async function globalTeardown() {
   LoginTestUtil.resetCache();
   console.log('✅ Test cache cleared');
 
-  // Clean up test notebooks that may have been left behind due to test failures
+  // Clean up based on test notebook directory configuration
   if (!process.env.CI) {
+    // Use dedicated test directory (typically in CI)
     await cleanupTestNotebooks();
-  } else {
-    console.log('ℹ️ Skipping test notebook cleanup in CI environment.');
   }
 }
 
 async function cleanupTestNotebooks() {
   try {
-    console.log('🗂️ Cleaning up test notebooks...');
+    console.log('🗂️ Cleaning up test notebooks via API...');
 
     const baseURL = 'http://localhost:4200';
 
@@ -47,11 +46,11 @@ async function cleanupTestNotebooks() {
     );
 
     if (testNotebooks.length === 0) {
-      console.log('✅ No test notebooks to clean up');
+      console.log('✅ No test notebooks to clean up via API');
       return;
     }
 
-    console.log(`Found ${testNotebooks.length} test notebooks to delete`);
+    console.log(`Found ${testNotebooks.length} test notebooks to delete via API`);
 
     // Delete test notebooks
     for (const notebook of testNotebooks) {
@@ -74,9 +73,9 @@ async function cleanupTestNotebooks() {
       }
     }
 
-    console.log('✅ Test notebook cleanup completed');
+    console.log('✅ Test notebook cleanup via API completed');
   } catch (error) {
-    console.warn('⚠️ Failed to cleanup test notebooks:', error);
+    console.warn('⚠️ Failed to cleanup test notebooks via API:', error);
   }
 }
 
