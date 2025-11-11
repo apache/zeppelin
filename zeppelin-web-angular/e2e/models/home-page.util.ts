@@ -15,8 +15,8 @@ import { getBasicPageMetadata } from '../utils';
 import { HomePage } from './home-page';
 
 export class HomePageUtil {
-  private homePage: HomePage;
-  private page: Page;
+  private readonly homePage: HomePage;
+  private readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
@@ -183,23 +183,13 @@ export class HomePageUtil {
   async verifyCreateNewNoteWorkflow(): Promise<void> {
     await this.homePage.clickCreateNewNote();
 
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('zeppelin-note-create') !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-create') !== null, { timeout: 10000 });
   }
 
   async verifyImportNoteWorkflow(): Promise<void> {
     await this.homePage.clickImportNote();
 
-    await this.page.waitForFunction(
-      () => {
-        return document.querySelector('zeppelin-note-import') !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-import') !== null, { timeout: 10000 });
   }
 
   async testFilterFunctionality(filterTerm: string): Promise<void> {

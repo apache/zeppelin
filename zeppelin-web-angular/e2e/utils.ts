@@ -10,9 +10,8 @@
  * limitations under the License.
  */
 
-import { expect, test, Page, TestInfo } from '@playwright/test';
+import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
-import { NotebookUtil } from './models/notebook.util';
 
 export const PAGES = {
   // Main App

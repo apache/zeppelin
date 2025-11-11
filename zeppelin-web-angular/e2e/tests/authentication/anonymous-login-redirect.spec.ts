@@ -43,9 +43,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
     });
 
-    test('When accessing login page directly, Then should redirect to home with proper URL change', async ({
-      page
-    }) => {
+    test('When accessing login page directly, Then should redirect to home with proper URL change', async () => {
       const redirectResult = await homePageUtil.verifyAnonymousUserRedirectFromLogin();
 
       expect(redirectResult.isLoginUrlMaintained).toBe(false);
