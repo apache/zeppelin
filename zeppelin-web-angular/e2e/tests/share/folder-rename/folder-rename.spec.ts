@@ -22,12 +22,11 @@ import {
   deleteTestNotebook
 } from '../../../utils';
 
-test.describe('Folder Rename', () => {
+test.describe.serial('Folder Rename', () => {
   let folderRenamePage: FolderRenamePage;
   let folderRenameUtil: FolderRenamePageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
   let testFolderName: string;
-  const renamedFolderName = `RenamedFolder_${Date.now()}`;
 
   addPageAnnotationBeforeEach(PAGES.SHARE.FOLDER_RENAME);
 
@@ -46,9 +45,10 @@ test.describe('Folder Rename', () => {
   });
 
   test.afterEach(async ({ page }) => {
-    // Clean up the test notebook
+    // Clean up the test notebook and folder
     if (testNotebook?.noteId) {
       await deleteTestNotebook(page, testNotebook.noteId);
+      await deleteTestNotebook(page, testFolderName);
     }
   });
 
@@ -72,7 +72,10 @@ test.describe('Folder Rename', () => {
     await folderRenameUtil.verifyRenameInputIsDisplayed();
   });
 
-  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async () => {
+  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async ({
+    page
+  }) => {
+    const renamedFolderName = `RenamedFolder_${Date.now()}`;
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });
 
@@ -104,6 +107,7 @@ test.describe('Folder Rename', () => {
   test('Given folder is renamed, When checking folder list, Then old name should not exist and new name should exist', async ({
     page
   }) => {
+    const renamedFolderName = `RenamedFolder_${Date.now()}`;
     await folderRenamePage.hoverOverFolder(testFolderName);
     await folderRenamePage.clickRenameMenuItem(testFolderName);
     await folderRenamePage.clearNewName();
