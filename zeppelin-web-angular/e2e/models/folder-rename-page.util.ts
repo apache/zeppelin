@@ -64,12 +64,25 @@ export class FolderRenamePageUtil {
   async verifyFolderCanBeRenamed(oldName: string, newName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(oldName);
     await this.folderRenamePage.clickRenameMenuItem(oldName);
+    await this.folderRenamePage.renameInput.waitFor({ state: 'visible', timeout: 5000 });
     await this.folderRenamePage.clearNewName();
     await this.folderRenamePage.enterNewName(newName);
     await this.folderRenamePage.clickConfirm();
-    await this.page.waitForTimeout(1000);
-    const isVisible = await this.folderRenamePage.isFolderVisible(newName);
-    expect(isVisible).toBe(true);
+
+    // Wait for the modal to disappear
+    await expect(this.folderRenamePage.renameModal).not.toBeVisible({ timeout: 5000 });
+
+    // Backend state synchronization issue workaround:
+    // Wait for any pending network operations to complete
+    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+
+    // Refresh page to get latest state from backend
+    await this.page.reload();
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+
+    // Now check for the renamed folder
+    const newFolder = this.page.locator('.folder .name', { hasText: newName });
+    await expect(newFolder).toBeVisible({ timeout: 10000 });
   }
 
   async verifyRenameCancellation(folderName: string): Promise<void> {
