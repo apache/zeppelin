@@ -264,24 +264,20 @@ export class NotebookSidebarUtil {
           }
         }
 
-        // Try to fetch from API to get the latest created notebook
-        try {
-          const response = await fetch('/api/notebook');
-          const data = await response.json();
-          if (data.body && Array.isArray(data.body)) {
-            // Find the most recently created notebook with matching name pattern
-            const testNotebooks = data.body.filter((nb: { path?: string }) => nb.path && nb.path.includes(targetName));
-            if (testNotebooks.length > 0) {
-              // Sort by creation time and get the latest
-              testNotebooks.sort(
-                (a: { dateUpdated?: string }, b: { dateUpdated?: string }) =>
-                  new Date(b.dateUpdated || 0).getTime() - new Date(a.dateUpdated || 0).getTime()
-              );
-              return testNotebooks[0].id;
-            }
+        // Fetch from API to get the latest created notebook
+        const response = await fetch('/api/notebook');
+        const data = await response.json();
+        if (data.body && Array.isArray(data.body)) {
+          // Find the most recently created notebook with matching name pattern
+          const testNotebooks = data.body.filter((nb: { path?: string }) => nb.path && nb.path.includes(targetName));
+          if (testNotebooks.length > 0) {
+            // Sort by creation time and get the latest
+            testNotebooks.sort(
+              (a: { dateUpdated?: string }, b: { dateUpdated?: string }) =>
+                new Date(b.dateUpdated || 0).getTime() - new Date(a.dateUpdated || 0).getTime()
+            );
+            return testNotebooks[0].id;
           }
-        } catch (apiError) {
-          console.log('API call failed:', apiError);
         }
 
         return null;
@@ -383,15 +379,10 @@ export class NotebookSidebarUtil {
       let deleteClicked = false;
       for (const selector of deleteButtonSelectors) {
         const deleteButton = treeNode.locator(selector);
-        try {
-          if (await deleteButton.isVisible({ timeout: 2000 })) {
-            await deleteButton.click({ timeout: 5000 });
-            deleteClicked = true;
-            break;
-          }
-        } catch (error) {
-          // Continue to next selector
-          continue;
+        if (await deleteButton.isVisible({ timeout: 2000 })) {
+          await deleteButton.click({ timeout: 5000 });
+          deleteClicked = true;
+          break;
         }
       }
 
@@ -400,34 +391,27 @@ export class NotebookSidebarUtil {
         return;
       }
 
-      // Confirm deletion in popconfirm with timeout
-      try {
-        const confirmButton = this.page.locator('button:has-text("OK")');
-        await confirmButton.click({ timeout: 5000 });
+      // Confirm deletion in popconfirm
+      const confirmButtonSelectors = [
+        'button:has-text("OK")',
+        '.ant-popover button:has-text("OK")',
+        '.ant-popconfirm button:has-text("OK")',
+        'button.ant-btn-primary:has-text("OK")'
+      ];
 
-        // Wait for the notebook to be removed with timeout
-        await expect(treeNode).toBeHidden({ timeout: 10000 });
-      } catch (error) {
-        // If confirmation fails, try alternative OK button selectors
-        const altConfirmButtons = [
-          '.ant-popover button:has-text("OK")',
-          '.ant-popconfirm button:has-text("OK")',
-          'button.ant-btn-primary:has-text("OK")'
-        ];
-
-        for (const selector of altConfirmButtons) {
-          try {
-            const button = this.page.locator(selector);
-            if (await button.isVisible({ timeout: 1000 })) {
-              await button.click({ timeout: 3000 });
-              await expect(treeNode).toBeHidden({ timeout: 10000 });
-              break;
-            }
-          } catch (altError) {
-            // Continue to next selector
-            continue;
-          }
+      let confirmClicked = false;
+      for (const selector of confirmButtonSelectors) {
+        const button = this.page.locator(selector);
+        if (await button.isVisible({ timeout: 1000 })) {
+          await button.click({ timeout: 3000 });
+          confirmClicked = true;
+          break;
         }
+      }
+
+      if (confirmClicked) {
+        // Wait for the notebook to be removed
+        await expect(treeNode).toBeHidden({ timeout: 10000 });
       }
     }
   }

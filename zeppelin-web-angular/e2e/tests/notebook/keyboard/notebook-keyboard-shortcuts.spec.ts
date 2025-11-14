@@ -71,91 +71,25 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
     test('should run current paragraph with Shift+Enter', async ({ page }) => {
-      // Verify notebook loaded properly first
-      const paragraphCount = await page.locator('zeppelin-notebook-paragraph').count();
-      if (paragraphCount === 0) {
-        console.warn('No paragraphs found - notebook may not have loaded properly');
-        // Skip this test gracefully if notebook didn't load
-        console.log('✓ Test skipped due to notebook loading issues (not a keyboard shortcut problem)');
-        return;
-      }
-
-      // Given: A paragraph with executable code
+      // Given: A paragraph with markdown content
       await keyboardPage.focusCodeEditor();
-
-      // Set simple, reliable content that doesn't require backend execution
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\nThis is a test.');
 
       // Verify content was set
       const content = await keyboardPage.getCodeEditorContent();
       expect(content.replace(/\s+/g, '')).toContain('#TestHeading');
 
-      // When: User presses Shift+Enter (run paragraph)
-      await keyboardPage.focusCodeEditor(0);
-
-      // Wait a bit to ensure focus is properly set
-      await page.waitForTimeout(500);
-
+      // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Verify that Shift+Enter triggered the run action (focus on UI, not backend execution)
-      // Wait a brief moment for UI to respond to the shortcut
-      await page.waitForTimeout(1000);
-
-      // Check if the shortcut triggered any UI changes indicating run was attempted
-      const runAttempted = await page.evaluate(() => {
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-        if (!paragraph) {
-          return false;
-        }
-
-        // Check for various indicators that run was triggered (not necessarily completed)
-        const runIndicators = [
-          '.fa-spin', // Running spinner
-          '.running-indicator', // Running indicator
-          '.paragraph-status-running', // Running status
-          '[data-testid="paragraph-result"]', // Result container
-          '.paragraph-result', // Result area
-          '.result-content', // Result content
-          '.ant-spin', // Ant Design spinner
-          '.paragraph-control .ant-icon-loading' // Loading icon
-        ];
-
-        const hasRunIndicator = runIndicators.some(selector => paragraph.querySelector(selector) !== null);
-
-        // Also check if run button state changed (disabled during execution)
-        const runButton = paragraph.querySelector('i.run-para, i[nzType="play-circle"]');
-        const runButtonDisabled =
-          runButton &&
-          (runButton.hasAttribute('disabled') ||
-            runButton.classList.contains('ant-btn-loading') ||
-            runButton.parentElement?.hasAttribute('disabled'));
-
-        console.log(`Run indicators found: ${hasRunIndicator}, Run button disabled: ${runButtonDisabled}`);
-        return hasRunIndicator || runButtonDisabled;
-      });
-
-      if (runAttempted) {
-        console.log('✓ Shift+Enter successfully triggered paragraph run action');
-        expect(runAttempted).toBe(true);
-      } else {
-        // Fallback: Just verify the shortcut was processed without errors
-        console.log('ℹ Backend may not be available, but shortcut was processed');
-
-        // Verify the page is still functional (shortcut didn't break anything)
-        const pageStillFunctional = await page.evaluate(() => {
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          const editor = document.querySelector('textarea, .monaco-editor');
-          return paragraph !== null && editor !== null;
-        });
-
-        expect(pageStillFunctional).toBe(true);
-        console.log('✓ Keyboard shortcut processed successfully (UI test passed)');
-      }
+      // Then: Paragraph should execute and show result
+      await keyboardPage.waitForParagraphExecution(0);
+      const hasResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasResult).toBe(true);
     });
 
     test('should handle markdown paragraph execution when Shift+Enter is pressed', async () => {
-      // Given: A markdown paragraph (more likely to work in test environment)
+      // Given: A markdown paragraph
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
 
@@ -167,191 +101,82 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Verify markdown execution was triggered (simple UI check)
-      await keyboardPage.page.waitForTimeout(1000);
-
-      // For markdown, check if execution was triggered (should be faster than Python)
-      const executionTriggered = await keyboardPage.page.evaluate(() => {
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-        if (!paragraph) {
-          return false;
-        }
-
-        // Look for execution indicators or results
-        const indicators = [
-          '[data-testid="paragraph-result"]',
-          '.paragraph-result',
-          '.result-content',
-          '.fa-spin',
-          '.running-indicator'
-        ];
-
-        return indicators.some(selector => paragraph.querySelector(selector) !== null);
-      });
-
-      if (executionTriggered) {
-        console.log('✓ Markdown execution triggered successfully');
-        expect(executionTriggered).toBe(true);
-      } else {
-        // Very lenient fallback - just verify shortcut was processed
-        console.log('ℹ Execution may not be available, verifying shortcut processed');
-        const pageWorking = await keyboardPage.page.evaluate(
-          () =>
-            document.querySelector(
-              'zeppelin-notebook-paragraph textarea, zeppelin-notebook-paragraph .monaco-editor'
-            ) !== null
-        );
-        expect(pageWorking).toBe(true);
-        console.log('✓ Keyboard shortcut test passed (UI level)');
-      }
+      // Then: Markdown should execute and show result
+      await keyboardPage.waitForParagraphExecution(0);
+      const hasResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasResult).toBe(true);
     });
 
-    test('should trigger paragraph execution attempt when Shift+Enter is pressed', async () => {
-      // Given: A paragraph with content (using markdown for reliability)
+    test('should execute markdown content with Shift+Enter', async () => {
+      // Given: A paragraph with markdown content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Error Test\nThis tests the execution trigger.');
+      await keyboardPage.setCodeEditorContent('%md\n# Execution Test\nThis tests markdown execution.');
 
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Verify shortcut triggered execution attempt (UI-focused test)
-      await keyboardPage.page.waitForTimeout(500);
-
-      // Simple check: verify the keyboard shortcut was processed
-      const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-        // Just verify the page structure is intact and responsive
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-        const editor = document.querySelector('textarea, .monaco-editor');
-
-        return paragraph !== null && editor !== null;
-      });
-
-      expect(shortcutProcessed).toBe(true);
-      console.log('✓ Shift+Enter keyboard shortcut processed successfully');
+      // Then: Execution should succeed
+      await keyboardPage.waitForParagraphExecution(0);
+      const hasResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasResult).toBe(true);
     });
   });
 
   test.describe('ParagraphActions.RunAbove: Control+Shift+ArrowUp', () => {
     test('should run all paragraphs above current with Control+Shift+ArrowUp', async () => {
-      // Given: Multiple paragraphs with the second one focused (use markdown for reliability)
+      // Given: Multiple paragraphs
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nTest content for run above', 0);
-      const firstParagraph = keyboardPage.getParagraphByIndex(0);
-      await firstParagraph.click();
       await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
 
-      // Use more flexible waiting strategy
-      try {
-        await keyboardPage.waitForParagraphCountChange(2);
-      } catch {
-        // If paragraph creation failed, continue with existing paragraphs
-        console.log('Paragraph creation may have failed, continuing with existing paragraphs');
-      }
+      // Focus on second paragraph
+      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nTest content for second paragraph', 1);
 
-      const currentCount = await keyboardPage.getParagraphCount();
+      // When: User presses Control+Shift+ArrowUp from second paragraph
+      await keyboardPage.pressRunAbove();
 
-      if (currentCount >= 2) {
-        // Focus on second paragraph and add content
-        const secondParagraph = keyboardPage.getParagraphByIndex(1);
-        await secondParagraph.click();
-        await keyboardPage.focusCodeEditor(1);
-        await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nTest content for second paragraph', 1);
+      // Confirmation modal must appear when running paragraphs
+      await keyboardPage.clickModalOkButton();
 
-        // When: User presses Control+Shift+ArrowUp from second paragraph
-        await keyboardPage.pressRunAbove();
-
-        try {
-          await keyboardPage.clickModalOkButton();
-        } catch (error) {
-          console.log('Could not click modal OK button, maybe it did not appear.');
-        }
-
-        // Wait for any UI response to the shortcut
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Then: Verify the keyboard shortcut was processed (focus on UI, not backend execution)
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that the page structure is still intact after shortcut
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-          return paragraphs.length >= 2;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Shift+ArrowUp (RunAbove) shortcut processed successfully');
-      } else {
-        // Not enough paragraphs, just trigger the shortcut to verify it doesn't break
-        await keyboardPage.pressRunAbove();
-        try {
-          await keyboardPage.clickModalOkButton();
-        } catch (error) {
-          console.log('Could not click modal OK button, maybe it did not appear.');
-        }
-        console.log('RunAbove shortcut tested with single paragraph');
-      }
-
-      // Final verification: system remains stable
-      const finalParagraphCount = await keyboardPage.getParagraphCount();
-      expect(finalParagraphCount).toBeGreaterThanOrEqual(1);
-
-      console.log('✓ RunAbove keyboard shortcut test completed successfully');
+      // Then: First paragraph should execute
+      await keyboardPage.waitForParagraphExecution(0);
+      const hasResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasResult).toBe(true);
     });
   });
 
   test.describe('ParagraphActions.RunBelow: Control+Shift+ArrowDown', () => {
     test('should run current and all paragraphs below with Control+Shift+ArrowDown', async () => {
-      // Given: Multiple paragraphs with the first one focused (use markdown for reliability)
+      // Given: Multiple paragraphs with content
       await keyboardPage.focusCodeEditor(0);
-      const firstParagraph = keyboardPage.getParagraphByIndex(0);
-      await firstParagraph.click();
+      await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for run below test', 0);
       await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
 
-      // Use more flexible waiting strategy
-      try {
-        await keyboardPage.waitForParagraphCountChange(2);
-      } catch {
-        // If paragraph creation failed, continue with existing paragraphs
-        console.log('Paragraph creation may have failed, continuing with existing paragraphs');
-      }
+      // Add content to second paragraph
+      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for run below test', 1);
 
-      const currentCount = await keyboardPage.getParagraphCount();
-
-      if (currentCount >= 2) {
-        // Add content to second paragraph
-        const secondParagraph = keyboardPage.getParagraphByIndex(1);
-        await secondParagraph.click();
-        await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for run below test', 1);
-        // Focus first paragraph
-        await firstParagraph.click();
-        await keyboardPage.focusCodeEditor(0);
-        await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for run below test', 0);
-      }
+      // Focus first paragraph
+      await keyboardPage.focusCodeEditor(0);
 
       // When: User presses Control+Shift+ArrowDown
       await keyboardPage.pressRunBelow();
 
-      try {
-        await keyboardPage.clickModalOkButton();
-      } catch (error) {
-        console.log('Could not click modal OK button, maybe it did not appear.');
-      }
+      // Confirmation modal must appear when running paragraphs
+      await keyboardPage.clickModalOkButton();
 
-      // Wait for any UI response to the shortcut
-      await keyboardPage.page.waitForTimeout(1000);
+      // Then: Both paragraphs should execute
+      await keyboardPage.waitForParagraphExecution(0);
+      await keyboardPage.waitForParagraphExecution(1);
 
-      // Then: Verify the keyboard shortcut was processed (focus on UI, not backend execution)
-      const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-        // Check that the page structure is still intact after shortcut
-        const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-        return paragraphs.length >= 1;
-      });
+      const firstHasResult = await keyboardPage.hasParagraphResult(0);
+      const secondHasResult = await keyboardPage.hasParagraphResult(1);
 
-      expect(shortcutProcessed).toBe(true);
-
-      // Verify system remains stable
-      const finalCount = await keyboardPage.getParagraphCount();
-      expect(finalCount).toBeGreaterThanOrEqual(currentCount);
-
-      console.log('✓ Control+Shift+ArrowDown (RunBelow) shortcut processed successfully');
+      expect(firstHasResult).toBe(true);
+      expect(secondHasResult).toBe(true);
     });
   });
 
@@ -469,30 +294,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+A
       await keyboardPage.pressInsertAbove();
 
-      // Then: Wait for paragraph creation with graceful fallback
-      try {
-        await keyboardPage.waitForParagraphCountChange(initialCount + 1);
-        const finalCount = await keyboardPage.getParagraphCount();
-        expect(finalCount).toBe(initialCount + 1);
-        console.log('✓ Control+Alt+A successfully created new paragraph above');
-      } catch (error) {
-        // If paragraph creation fails, verify the shortcut was at least processed
-        console.log('Insert above may not work in this environment, verifying shortcut processed');
-
-        // Wait for any UI response
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Verify the keyboard shortcut was processed without errors
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that the page is still functional after shortcut
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          const editor = document.querySelector('textarea, .monaco-editor');
-          return paragraph !== null && editor !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+A keyboard shortcut processed successfully (UI test)');
-      }
+      // Then: A new paragraph should be inserted above
+      await keyboardPage.waitForParagraphCountChange(initialCount + 1);
+      const finalCount = await keyboardPage.getParagraphCount();
+      expect(finalCount).toBe(initialCount + 1);
     });
   });
 
@@ -507,30 +312,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+B
       await keyboardPage.pressInsertBelow();
 
-      // Then: Wait for paragraph creation with graceful fallback
-      try {
-        await keyboardPage.waitForParagraphCountChange(initialCount + 1);
-        const finalCount = await keyboardPage.getParagraphCount();
-        expect(finalCount).toBe(initialCount + 1);
-        console.log('✓ Control+Alt+B successfully created new paragraph below');
-      } catch (error) {
-        // If paragraph creation fails, verify the shortcut was at least processed
-        console.log('Insert below may not work in this environment, verifying shortcut processed');
-
-        // Wait for any UI response
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Verify the keyboard shortcut was processed without errors
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that the page is still functional after shortcut
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          const editor = document.querySelector('textarea, .monaco-editor');
-          return paragraph !== null && editor !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+B keyboard shortcut processed successfully (UI test)');
-      }
+      // Then: A new paragraph should be inserted below
+      await keyboardPage.waitForParagraphCountChange(initialCount + 1);
+      const finalCount = await keyboardPage.getParagraphCount();
+      expect(finalCount).toBe(initialCount + 1);
     });
   });
 
@@ -545,75 +330,32 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+C
       await keyboardPage.pressInsertCopy();
 
-      // Then: Wait for paragraph copy creation with graceful fallback
-      try {
-        await keyboardPage.waitForParagraphCountChange(initialCount + 1);
-        const finalCount = await keyboardPage.getParagraphCount();
-        expect(finalCount).toBe(initialCount + 1);
-        console.log('✓ Control+Shift+C successfully created copy of paragraph below');
-      } catch (error) {
-        // If paragraph copy creation fails, verify the shortcut was at least processed
-        console.log('Insert copy may not work in this environment, verifying shortcut processed');
-
-        // Wait for any UI response
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Verify the keyboard shortcut was processed without errors
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that the page is still functional after shortcut
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          const editor = document.querySelector('textarea, .monaco-editor');
-          return paragraph !== null && editor !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Shift+C keyboard shortcut processed successfully (UI test)');
-      }
+      // Then: A copy of the paragraph should be inserted below
+      await keyboardPage.waitForParagraphCountChange(initialCount + 1);
+      const finalCount = await keyboardPage.getParagraphCount();
+      expect(finalCount).toBe(initialCount + 1);
     });
   });
 
   test.describe('ParagraphActions.MoveParagraphUp: Control+Alt+K', () => {
     test('should move paragraph up with Control+Alt+K', async () => {
+      // Given: Two paragraphs with second one focused
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for move up test', 0);
       await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
 
-      // Use graceful waiting for paragraph creation
-      try {
-        await keyboardPage.waitForParagraphCountChange(2);
-        await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for second paragraph', 1);
+      // Focus on second paragraph and add content
+      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nThis should move up', 1);
 
-        // When: User presses Control+Alt+K
-        await keyboardPage.pressMoveParagraphUp();
+      // When: User presses Control+Alt+K from second paragraph
+      await keyboardPage.pressMoveParagraphUp();
 
-        // Wait for any UI response
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Then: Verify the keyboard shortcut was processed (focus on UI, not exact ordering)
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that paragraphs are still present after move operation
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-          return paragraphs.length >= 2;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+K (MoveParagraphUp) shortcut processed successfully');
-      } catch (error) {
-        // If paragraph creation fails, test with single paragraph
-        console.log('Multiple paragraph setup failed, testing shortcut with single paragraph');
-
-        await keyboardPage.pressMoveParagraphUp();
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Verify the keyboard shortcut was processed without errors
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          return paragraph !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+K keyboard shortcut processed successfully (single paragraph)');
-      }
+      // Then: Paragraph order should change (second becomes first)
+      await keyboardPage.page.waitForTimeout(1000);
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBe(2);
     });
   });
 
@@ -621,49 +363,24 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should move paragraph down with Control+Alt+J', async () => {
       // Given: Two paragraphs with first one focused
       await keyboardPage.focusCodeEditor(0);
-      await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for move down test', 0);
+      await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nThis should move down', 0);
       await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
 
-      // Use graceful waiting for paragraph creation
-      try {
-        await keyboardPage.waitForParagraphCountChange(2);
-        await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for second paragraph', 1);
+      // Add content to second paragraph
+      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for second paragraph', 1);
 
-        // Focus first paragraph
-        const firstParagraph = keyboardPage.getParagraphByIndex(0);
-        await firstParagraph.click();
+      // Focus first paragraph
+      await keyboardPage.focusCodeEditor(0);
 
-        // When: User presses Control+Alt+J
-        await keyboardPage.pressMoveParagraphDown();
+      // When: User presses Control+Alt+J from first paragraph
+      await keyboardPage.pressMoveParagraphDown();
 
-        // Wait for any UI response
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Then: Verify the keyboard shortcut was processed (focus on UI, not exact ordering)
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that paragraphs are still present after move operation
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-          return paragraphs.length >= 2;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+J (MoveParagraphDown) shortcut processed successfully');
-      } catch (error) {
-        // If paragraph creation fails, test with single paragraph
-        console.log('Multiple paragraph setup failed, testing shortcut with single paragraph');
-
-        await keyboardPage.pressMoveParagraphDown();
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Verify the keyboard shortcut was processed without errors
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          return paragraph !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-        console.log('✓ Control+Alt+J keyboard shortcut processed successfully (single paragraph)');
-      }
+      // Then: Paragraph order should change (first becomes second)
+      await keyboardPage.page.waitForTimeout(1000);
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBe(2);
     });
   });
 
@@ -698,20 +415,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+R
       await keyboardPage.pressSwitchEnable();
 
-      // Then: Paragraph enabled state should toggle (or handle gracefully)
-      try {
-        // Wait for state change
-        await keyboardPage.page.waitForTimeout(1000);
-        const finalEnabledState = await keyboardPage.isParagraphEnabled(0);
-        expect(finalEnabledState).not.toBe(initialEnabledState);
-      } catch {
-        // If toggle doesn't work, verify shortcut was triggered
-        console.log('Enable toggle shortcut triggered but may not change state in this environment');
-
-        // Verify system remains stable
-        const currentState = await keyboardPage.isParagraphEnabled(0);
-        expect(typeof currentState).toBe('boolean');
-      }
+      // Then: Paragraph enabled state should toggle
+      await keyboardPage.page.waitForTimeout(1000);
+      const finalEnabledState = await keyboardPage.isParagraphEnabled(0);
+      expect(finalEnabledState).not.toBe(initialEnabledState);
     });
   });
 
@@ -728,20 +435,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+O
       await keyboardPage.pressSwitchOutputShow();
 
-      // Then: Output visibility should toggle (or handle gracefully)
-      try {
-        // Wait for visibility change
-        await keyboardPage.page.waitForTimeout(1000);
-        const finalOutputVisibility = await keyboardPage.isOutputVisible(0);
-        expect(finalOutputVisibility).not.toBe(initialOutputVisibility);
-      } catch {
-        // If toggle doesn't work, verify shortcut was triggered
-        console.log('Output toggle shortcut triggered but may not change visibility in this environment');
-
-        // Verify system remains stable
-        const currentVisibility = await keyboardPage.isOutputVisible(0);
-        expect(typeof currentVisibility).toBe('boolean');
-      }
+      // Then: Output visibility should toggle
+      await keyboardPage.page.waitForTimeout(1000);
+      const finalOutputVisibility = await keyboardPage.isOutputVisible(0);
+      expect(finalOutputVisibility).not.toBe(initialOutputVisibility);
     });
   });
 
@@ -782,37 +479,23 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('ParagraphActions.Clear: Control+Alt+L', () => {
     test('should clear output with Control+Alt+L', async () => {
-      // Given: A paragraph (focus on keyboard shortcut, not requiring actual output)
+      // Given: A paragraph with executed content that has output
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Content\nFor clear output test');
+      await keyboardPage.pressRunParagraph();
+      await keyboardPage.waitForParagraphExecution(0);
 
-      // When: User presses Control+Alt+L (test the keyboard shortcut)
+      // Verify there is output to clear
+      const hasResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasResult).toBe(true);
+
+      // When: User presses Control+Alt+L
       await keyboardPage.pressClearOutput();
 
-      // Wait for any UI response
+      // Then: Output should be cleared
       await keyboardPage.page.waitForTimeout(1000);
-
-      // Then: Verify the keyboard shortcut was processed (focus on UI interaction)
-      const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-        // Check that the page is still functional and responsive
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-
-        // The shortcut should trigger UI interaction without errors
-        return paragraph !== null;
-      });
-
-      expect(shortcutProcessed).toBe(true);
-      console.log('✓ Control+Alt+L clear output shortcut processed successfully');
-
-      // Optional: Check if clear action had any effect (but don't require it)
-      const systemStable = await keyboardPage.page.evaluate(() => {
-        // Just verify the page is still working after the shortcut
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-        return paragraph !== null;
-      });
-
-      expect(systemStable).toBe(true);
-      console.log('✓ System remains stable after clear shortcut');
+      const stillHasResult = await keyboardPage.hasParagraphResult(0);
+      expect(stillHasResult).toBe(false);
     });
   });
 
@@ -820,52 +503,24 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should trigger link paragraph with Control+Alt+W', async () => {
       // Given: A paragraph with content
       await keyboardPage.focusCodeEditor();
-      const testContent = '%md\n# Link Test\nTesting link paragraph functionality';
-      await keyboardPage.setCodeEditorContent(testContent);
+      await keyboardPage.setCodeEditorContent('%md\n# Link Test\nTesting link paragraph functionality');
 
-      // Verify content was set correctly before testing shortcut
+      // Verify content was set correctly
       const initialContent = await keyboardPage.getCodeEditorContent();
       expect(initialContent.replace(/\s+/g, ' ')).toContain('link');
 
-      // When: User presses Control+Alt+W (test keyboard shortcut functionality)
-      const browserName = test.info().project.name;
+      // When: User presses Control+Alt+W
+      await keyboardPage.pressLinkParagraph();
 
-      try {
-        await keyboardPage.pressLinkParagraph();
+      // Then: Link action should be triggered (verify basic functionality)
+      await keyboardPage.page.waitForTimeout(1000);
+      const content = await keyboardPage.getCodeEditorContent();
+      expect(content.length).toBeGreaterThan(0);
+      expect(content).toMatch(/link|test/i);
 
-        // Wait for any UI changes that might occur from link action
-        await keyboardPage.page.waitForTimeout(1000);
-
-        // Then: Verify keyboard shortcut was processed (focus on UI, not new tab functionality)
-        const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-          // Check that the page structure is still intact after shortcut
-          const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-          return paragraph !== null;
-        });
-
-        expect(shortcutProcessed).toBe(true);
-
-        // Additional verification: content should still be accessible
-        const content = await keyboardPage.getCodeEditorContent();
-        expect(content.length).toBeGreaterThan(0);
-        expect(content).toMatch(/link|test/i);
-
-        // Ensure paragraph is still functional
-        const paragraphCount = await keyboardPage.getParagraphCount();
-        expect(paragraphCount).toBeGreaterThanOrEqual(1);
-
-        console.log(`✓ Control+Alt+W link shortcut processed successfully in ${browserName}`);
-      } catch (error) {
-        // Link shortcut may not be fully implemented or available in test environment
-        console.warn('Link paragraph shortcut may not be available:', error);
-
-        // Fallback: Just verify system stability and content existence
-        const content = await keyboardPage.getCodeEditorContent();
-        expect(content.length).toBeGreaterThan(0);
-
-        const paragraphCount = await keyboardPage.getParagraphCount();
-        expect(paragraphCount).toBeGreaterThanOrEqual(1);
-      }
+      // Verify system remains functional
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -899,20 +554,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+=
       await keyboardPage.pressIncreaseWidth();
 
-      // Then: Paragraph width should change (or handle gracefully)
-      try {
-        // Wait for width change to be applied
-        await keyboardPage.page.waitForTimeout(1000);
-        const finalWidth = await keyboardPage.getParagraphWidth(0);
-        expect(finalWidth).not.toBe(initialWidth);
-      } catch {
-        // If width adjustment doesn't work, verify shortcut was triggered
-        console.log('Width increase shortcut triggered but may not affect width in this environment');
-
-        // Verify system remains stable
-        const currentWidth = await keyboardPage.getParagraphWidth(0);
-        expect(typeof currentWidth).toBe('string');
-      }
+      // Then: Paragraph width should change
+      await keyboardPage.page.waitForTimeout(1000);
+      const finalWidth = await keyboardPage.getParagraphWidth(0);
+      expect(finalWidth).not.toBe(initialWidth);
     });
   });
 
@@ -922,94 +567,42 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should cut line with Control+K', async () => {
       // Given: Code editor with content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('test content for cut line test');
+      await keyboardPage.setCodeEditorContent('first line\nsecond line\nthird line');
 
       const initialContent = await keyboardPage.getCodeEditorContent();
-      console.log('Initial content:', JSON.stringify(initialContent));
+      expect(initialContent).toContain('first line');
 
-      // When: User presses Control+K
+      // When: User presses Control+K (cut to end of line)
       await keyboardPage.pressCutLine();
-      await keyboardPage.page.waitForTimeout(1000);
 
-      // Then: Verify the keyboard shortcut was processed (focus on UI interaction, not content manipulation)
+      // Then: Line content should be cut
+      await keyboardPage.page.waitForTimeout(500);
       const finalContent = await keyboardPage.getCodeEditorContent();
-      console.log('Final content:', JSON.stringify(finalContent));
-
       expect(finalContent).toBeDefined();
       expect(typeof finalContent).toBe('string');
-
-      // Verify system remains stable after shortcut
-      const shortcutProcessed = await keyboardPage.page.evaluate(() => {
-        const paragraph = document.querySelector('zeppelin-notebook-paragraph');
-        const editor = document.querySelector('textarea, .monaco-editor');
-        return paragraph !== null && editor !== null;
-      });
-
-      expect(shortcutProcessed).toBe(true);
-      console.log('✓ Control+K (CutLine) shortcut processed successfully');
     });
   });
 
   test.describe('ParagraphActions.PasteLine: Control+Y', () => {
     test('should paste line with Control+Y', async () => {
-      const browserName = test.info().project.name;
-
-      if (browserName === 'webkit' || browserName === 'firefox') {
-        await keyboardPage.focusCodeEditor();
-        await keyboardPage.setCodeEditorContent('test content for paste');
-
-        const pasteInitialContent = await keyboardPage.getCodeEditorContent();
-        console.log(`${browserName} Control+Y initial content:`, JSON.stringify(pasteInitialContent));
-
-        await keyboardPage.pressPasteLine();
-        await keyboardPage.page.waitForTimeout(1000);
-
-        const finalContent = await keyboardPage.getCodeEditorContent();
-        console.log(`${browserName} Control+Y final content:`, JSON.stringify(finalContent));
-
-        expect(finalContent).toBeDefined();
-        expect(typeof finalContent).toBe('string');
-        console.log(`${browserName}: Control+Y shortcut executed without errors`);
-        return;
-      }
-
+      // Given: Content in the editor
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('original line');
+      await keyboardPage.setCodeEditorContent('line to cut and paste');
 
-      // Get initial content for comparison
       const initialContent = await keyboardPage.getCodeEditorContent();
-      console.log('Control+Y initial content:', JSON.stringify(initialContent));
+      expect(initialContent).toContain('line to cut and paste');
 
-      // 문자열 정규화 후 비교
-      const normalizedInitial = initialContent.replace(/\s+/g, ' ').trim();
-      const expectedText = 'original line';
-      expect(normalizedInitial).toContain(expectedText);
+      // Cut the line first
+      await keyboardPage.pressCutLine();
+      await keyboardPage.page.waitForTimeout(500);
 
-      try {
-        // Cut the line first
-        await keyboardPage.focusCodeEditor();
-        await keyboardPage.pressCutLine();
-        await keyboardPage.page.waitForTimeout(500);
+      // When: User presses Control+Y to paste
+      await keyboardPage.pressPasteLine();
 
-        // When: User presses Control+Y
-        await keyboardPage.pressPasteLine();
-        await keyboardPage.page.waitForTimeout(500);
-
-        // Then: Verify system stability
-        const finalContent = await keyboardPage.getCodeEditorContent();
-        console.log('Control+Y final content:', JSON.stringify(finalContent));
-
-        expect(finalContent.length).toBeGreaterThan(0);
-
-        const paragraphCount = await keyboardPage.getParagraphCount();
-        expect(paragraphCount).toBeGreaterThanOrEqual(1);
-      } catch (error) {
-        console.warn('Cut/Paste operations may not work in test environment:', error);
-
-        // Fallback: Just verify system stability
-        const content = await keyboardPage.getCodeEditorContent();
-        expect(content.length).toBeGreaterThanOrEqual(0);
-      }
+      // Then: Content should be pasted back
+      await keyboardPage.page.waitForTimeout(500);
+      const finalContent = await keyboardPage.getCodeEditorContent();
+      expect(finalContent.length).toBeGreaterThan(0);
     });
   });
 
@@ -1039,24 +632,14 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+F
       await keyboardPage.pressFindInCode();
 
-      // Then: Find functionality should be triggered (or handle gracefully)
-      try {
-        // Wait for search dialog to appear
-        await keyboardPage.page.waitForTimeout(1000);
-        const isSearchVisible = await keyboardPage.isSearchDialogVisible();
-        expect(isSearchVisible).toBe(true);
+      // Then: Find functionality should be triggered
+      await keyboardPage.page.waitForTimeout(1000);
+      const isSearchVisible = await keyboardPage.isSearchDialogVisible();
+      expect(isSearchVisible).toBe(true);
 
-        // Close search dialog if it appeared
-        if (isSearchVisible) {
-          await keyboardPage.pressEscape();
-        }
-      } catch {
-        // If find dialog doesn't appear, verify shortcut was triggered
-        console.log('Find shortcut triggered but dialog may not appear in this environment');
-
-        // Verify system remains stable
-        const editorVisible = await keyboardPage.isEditorVisible(0);
-        expect(editorVisible).toBe(true);
+      // Close search dialog
+      if (isSearchVisible) {
+        await keyboardPage.pressEscape();
       }
     });
   });
@@ -1154,48 +737,21 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CROSS-PLATFORM COMPATIBILITY =====
 
   test.describe('Cross-platform Compatibility', () => {
-    test('should handle macOS-specific character variants', async () => {
-      // Navigate to the test notebook first
-      await keyboardPage.navigateToNotebook(testNotebook.noteId);
-
+    test('should handle cancel shortcut on all platforms', async () => {
       // Given: A paragraph ready for shortcuts
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("macOS compatibility test")');
+      await keyboardPage.setCodeEditorContent('%python\nprint("Platform compatibility test")');
 
-      try {
-        // When: User uses generic shortcut method (handles platform differences)
-        await keyboardPage.pressCancel(); // Cancel shortcut
+      // When: User uses cancel shortcut
+      await keyboardPage.pressCancel();
 
-        // Wait for any potential cancel effects
-        await keyboardPage.page.waitForTimeout(1000);
+      // Then: Shortcut should work appropriately
+      await keyboardPage.page.waitForTimeout(1000);
+      const content = await keyboardPage.getCodeEditorContent();
+      expect(content).toMatch(/platform.*compatibility.*test/i);
 
-        // Then: Should handle the shortcut appropriately
-        const content = await keyboardPage.getCodeEditorContent();
-        expect(content).toMatch(/macOS.*compatibility.*test|compatibility.*test/i);
-
-        // Additional stability check
-        const paragraphCount = await keyboardPage.getParagraphCount();
-        expect(paragraphCount).toBeGreaterThanOrEqual(1);
-      } catch (error) {
-        // Platform-specific shortcuts may behave differently in test environment
-        console.warn('Platform-specific shortcut behavior may vary:', error);
-
-        // Fallback: Just verify content and system stability
-        const content = await keyboardPage.getCodeEditorContent();
-        expect(content).toMatch(/macOS.*compatibility.*test|compatibility.*test/i);
-
-        // Test alternative shortcut to verify platform compatibility layer works
-        try {
-          await keyboardPage.pressClearOutput(); // Clear shortcut
-          await keyboardPage.page.waitForTimeout(500);
-        } catch {
-          // Even fallback shortcuts may not work - that's acceptable
-        }
-
-        // Final check: system should remain stable
-        const isEditorVisible = await keyboardPage.isEditorVisible(0);
-        expect(isEditorVisible).toBe(true);
-      }
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBeGreaterThanOrEqual(1);
     });
 
     test('should work consistently across different browser contexts', async () => {
@@ -1218,130 +774,47 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('Comprehensive Shortcuts Integration', () => {
     test('should maintain shortcut functionality after errors', async () => {
-      const browserName = test.info().project.name;
-
       // Given: An error has occurred
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('invalid python syntax here');
       await keyboardPage.pressRunParagraph();
+      await keyboardPage.waitForParagraphExecution(0);
 
-      // Wait for error result
-      if (!keyboardPage.page.isClosed()) {
-        await keyboardPage.waitForParagraphExecution(0);
+      // Verify error result exists
+      const hasErrorResult = await keyboardPage.hasParagraphResult(0);
+      expect(hasErrorResult).toBe(true);
 
-        // Verify error result exists
-        if (browserName === 'webkit') {
-          console.log('WebKit: Skipping error result verification due to browser compatibility');
-        } else {
-          const hasErrorResult = await keyboardPage.hasParagraphResult(0);
-          expect(hasErrorResult).toBe(true);
-        }
+      // When: User continues with shortcuts (insert new paragraph)
+      const initialCount = await keyboardPage.getParagraphCount();
+      await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(initialCount + 1, 10000);
 
-        // When: User continues with shortcuts
-        const initialCount = await keyboardPage.getParagraphCount();
-        await keyboardPage.pressInsertBelow();
+      // Set valid content in new paragraph and run
+      const newParagraphIndex = (await keyboardPage.getParagraphCount()) - 1;
+      await keyboardPage.focusCodeEditor(newParagraphIndex);
+      await keyboardPage.setCodeEditorContent('%md\n# Recovery Test\nShortcuts work after error', newParagraphIndex);
+      await keyboardPage.pressRunParagraph();
 
-        // Wait for new paragraph to be created
-        try {
-          await keyboardPage.waitForParagraphCountChange(initialCount + 1, 10000);
-
-          // Set content in new paragraph and run
-          if (!keyboardPage.page.isClosed()) {
-            const newParagraphIndex = (await keyboardPage.getParagraphCount()) - 1;
-            await keyboardPage.setCodeEditorContent('%python\nprint("Recovery after error")');
-            await keyboardPage.pressRunParagraph();
-
-            // Then: Shortcuts should continue to work
-            if (browserName === 'webkit') {
-              try {
-                await keyboardPage.waitForParagraphExecution(newParagraphIndex);
-                const hasResult = await keyboardPage.hasParagraphResult(newParagraphIndex);
-                console.log(`WebKit: Recovery result detection = ${hasResult}`);
-
-                if (hasResult) {
-                  expect(hasResult).toBe(true);
-                } else {
-                  const paragraphCount = await keyboardPage.getParagraphCount();
-                  expect(paragraphCount).toBeGreaterThanOrEqual(1);
-                  console.log('WebKit: System remains stable after error recovery');
-                }
-              } catch (error) {
-                console.log('WebKit: Error recovery test completed with basic stability check');
-                const paragraphCount = await keyboardPage.getParagraphCount();
-                expect(paragraphCount).toBeGreaterThanOrEqual(1);
-              }
-            } else {
-              await keyboardPage.waitForParagraphExecution(newParagraphIndex);
-              const hasResult = await keyboardPage.hasParagraphResult(newParagraphIndex);
-              expect(hasResult).toBe(true);
-            }
-          }
-        } catch {
-          // If paragraph creation fails, test recovery in existing paragraph
-          console.log('New paragraph creation failed, testing recovery in existing paragraph');
-
-          // Clear the error content and try valid content
-          if (!keyboardPage.page.isClosed()) {
-            await keyboardPage.setCodeEditorContent('%python\nprint("Recovery test")');
-            await keyboardPage.pressRunParagraph();
-
-            if (browserName === 'webkit') {
-              try {
-                await keyboardPage.waitForParagraphExecution(0);
-                const recoveryResult = await keyboardPage.hasParagraphResult(0);
-                console.log(`WebKit: Fallback recovery result = ${recoveryResult}`);
-
-                if (recoveryResult) {
-                  expect(recoveryResult).toBe(true);
-                } else {
-                  const paragraphCount = await keyboardPage.getParagraphCount();
-                  expect(paragraphCount).toBeGreaterThanOrEqual(1);
-                  console.log('WebKit: Fallback recovery completed with stability check');
-                }
-              } catch (error) {
-                console.log('WebKit: Fallback recovery test completed');
-                const paragraphCount = await keyboardPage.getParagraphCount();
-                expect(paragraphCount).toBeGreaterThanOrEqual(1);
-              }
-            } else {
-              await keyboardPage.waitForParagraphExecution(0);
-              const recoveryResult = await keyboardPage.hasParagraphResult(0);
-              expect(recoveryResult).toBe(true);
-            }
-          }
-        }
-      }
+      // Then: New paragraph should execute successfully
+      await keyboardPage.waitForParagraphExecution(newParagraphIndex);
+      const hasResult = await keyboardPage.hasParagraphResult(newParagraphIndex);
+      expect(hasResult).toBe(true);
     });
 
-    test('should handle shortcuts gracefully when no paragraph is focused', async () => {
+    test('should handle shortcuts when no paragraph is focused', async () => {
       // Given: No focused paragraph
-      await keyboardPage.page.click('body'); // Click outside paragraphs
-      await keyboardPage.page.waitForTimeout(500); // Wait for focus to clear
+      await keyboardPage.page.click('body');
+      await keyboardPage.page.waitForTimeout(500);
 
-      // When: User presses various shortcuts (these may or may not work without focus)
-      // Use page.isClosed() to ensure page is still available before actions
-      if (!keyboardPage.page.isClosed()) {
-        try {
-          await keyboardPage.pressRunParagraph();
-        } catch {
-          // It's expected that some shortcuts might not work without proper focus
-        }
+      const initialCount = await keyboardPage.getParagraphCount();
 
-        if (!keyboardPage.page.isClosed()) {
-          try {
-            await keyboardPage.pressInsertBelow();
-          } catch {
-            // It's expected that some shortcuts might not work without proper focus
-          }
-        }
+      // When: User presses insert shortcut without focus
+      await keyboardPage.pressInsertBelow();
 
-        // Then: Should handle gracefully without errors
-        const paragraphCount = await keyboardPage.getParagraphCount();
-        expect(paragraphCount).toBeGreaterThanOrEqual(1);
-      } else {
-        // If page is closed, just pass the test as the graceful handling worked
-        expect(true).toBe(true);
-      }
+      // Then: Shortcut should still work and create new paragraph
+      await keyboardPage.waitForParagraphCountChange(initialCount + 1);
+      const finalCount = await keyboardPage.getParagraphCount();
+      expect(finalCount).toBe(initialCount + 1);
     });
 
     test('should handle rapid keyboard operations without instability', async () => {
