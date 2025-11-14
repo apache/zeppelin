@@ -21,6 +21,24 @@ export class NotebookSidebarPage extends BasePage {
   readonly nodeList: Locator;
   readonly noteToc: Locator;
 
+  // Selector constants for state detection
+  private static readonly TOC_ALTERNATIVE_SELECTORS = [
+    'zeppelin-notebook-sidebar .toc-content',
+    'zeppelin-notebook-sidebar .note-toc',
+    'zeppelin-notebook-sidebar [class*="toc"]',
+    'zeppelin-notebook-sidebar zeppelin-note-toc',
+    'zeppelin-notebook-sidebar .sidebar-content zeppelin-note-toc'
+  ];
+
+  private static readonly FILE_TREE_ALTERNATIVE_SELECTORS = [
+    'zeppelin-notebook-sidebar .file-tree',
+    'zeppelin-notebook-sidebar .node-list',
+    'zeppelin-notebook-sidebar [class*="file"]',
+    'zeppelin-notebook-sidebar [class*="tree"]',
+    'zeppelin-notebook-sidebar zeppelin-node-list',
+    'zeppelin-notebook-sidebar .sidebar-content zeppelin-node-list'
+  ];
+
   constructor(page: Page) {
     super(page);
     this.sidebarContainer = page.locator('zeppelin-notebook-sidebar');
@@ -45,120 +63,50 @@ export class NotebookSidebarPage extends BasePage {
     await this.closeButton.click();
   }
 
+  // Direct visibility checks - failures exposed immediately
   async isSidebarVisible(): Promise<boolean> {
-    try {
-      return await this.sidebarContainer.isVisible();
-    } catch (error) {
-      // If page is closed or connection lost, assume sidebar is not visible
-      return false;
-    }
+    return await this.sidebarContainer.isVisible();
   }
 
   async isTocContentVisible(): Promise<boolean> {
-    try {
-      return await this.noteToc.isVisible();
-    } catch (error) {
-      // If page is closed or connection lost, assume TOC is not visible
-      return false;
-    }
+    return await this.noteToc.isVisible();
   }
 
   async isFileTreeContentVisible(): Promise<boolean> {
-    try {
-      return await this.nodeList.isVisible();
-    } catch (error) {
-      // If page is closed or connection lost, assume file tree is not visible
-      return false;
-    }
+    return await this.nodeList.isVisible();
   }
 
   async getSidebarState(): Promise<'CLOSED' | 'TOC' | 'FILE_TREE' | 'UNKNOWN'> {
-    const isVisible = await this.isSidebarVisible();
-    if (!isVisible) {
+    if (!(await this.isSidebarVisible())) {
       return 'CLOSED';
     }
 
-    // Enhanced state detection with multiple strategies
+    // Method 1: Check primary content elements
+    const primaryState = await this.checkByPrimaryContent();
+    if (primaryState) {
+      return primaryState;
+    }
 
-    // Method 1: Check specific content elements
-    const isTocVisible = await this.isTocContentVisible();
-    const isFileTreeVisible = await this.isFileTreeContentVisible();
-
-    console.log(`State detection - TOC visible: ${isTocVisible}, FileTree visible: ${isFileTreeVisible}`);
-
-    if (isTocVisible) {
+    // Method 2: Check alternative TOC selectors
+    if (await this.checkTocByAlternativeSelectors()) {
       return 'TOC';
-    } else if (isFileTreeVisible) {
+    }
+
+    // Method 3: Check alternative FileTree selectors
+    if (await this.checkFileTreeByAlternativeSelectors()) {
       return 'FILE_TREE';
     }
 
-    // Method 2: Check for alternative TOC selectors (more comprehensive)
-    const tocAlternatives = [
-      'zeppelin-notebook-sidebar .toc-content',
-      'zeppelin-notebook-sidebar .note-toc',
-      'zeppelin-notebook-sidebar [class*="toc"]',
-      'zeppelin-notebook-sidebar zeppelin-note-toc',
-      'zeppelin-notebook-sidebar .sidebar-content zeppelin-note-toc'
-    ];
-
-    for (const selector of tocAlternatives) {
-      const tocElementVisible = await this.page.locator(selector).isVisible();
-      if (tocElementVisible) {
-        console.log(`Found TOC using selector: ${selector}`);
-        return 'TOC';
-      }
+    // Method 4: Check active button states
+    const buttonState = await this.checkByButtonState();
+    if (buttonState) {
+      return buttonState;
     }
 
-    // Method 3: Check for alternative FileTree selectors
-    const fileTreeAlternatives = [
-      'zeppelin-notebook-sidebar .file-tree',
-      'zeppelin-notebook-sidebar .node-list',
-      'zeppelin-notebook-sidebar [class*="file"]',
-      'zeppelin-notebook-sidebar [class*="tree"]',
-      'zeppelin-notebook-sidebar zeppelin-node-list',
-      'zeppelin-notebook-sidebar .sidebar-content zeppelin-node-list'
-    ];
-
-    for (const selector of fileTreeAlternatives) {
-      const fileTreeElementVisible = await this.page.locator(selector).isVisible();
-      if (fileTreeElementVisible) {
-        console.log(`Found FileTree using selector: ${selector}`);
-        return 'FILE_TREE';
-      }
-    }
-
-    // Method 4: Check for active button states
-    const tocButtonActive = await this.page
-      .locator(
-        'zeppelin-notebook-sidebar button.active:has(i[nzType="unordered-list"]), zeppelin-notebook-sidebar .active:has(i[nzType="unordered-list"])'
-      )
-      .isVisible();
-    const fileTreeButtonActive = await this.page
-      .locator(
-        'zeppelin-notebook-sidebar button.active:has(i[nzType="folder"]), zeppelin-notebook-sidebar .active:has(i[nzType="folder"])'
-      )
-      .isVisible();
-
-    if (tocButtonActive) {
-      console.log('Found active TOC button');
-      return 'TOC';
-    } else if (fileTreeButtonActive) {
-      console.log('Found active FileTree button');
-      return 'FILE_TREE';
-    }
-
-    // Method 5: Check for any content in sidebar and make best guess
-    const hasAnyContent = (await this.page.locator('zeppelin-notebook-sidebar *').count()) > 1;
-    if (hasAnyContent) {
-      // Check content type by text patterns
-      const sidebarText = (await this.page.locator('zeppelin-notebook-sidebar').textContent()) || '';
-      if (sidebarText.toLowerCase().includes('heading') || sidebarText.toLowerCase().includes('title')) {
-        console.log('Guessing TOC based on content text');
-        return 'TOC';
-      }
-      // Default to FILE_TREE (most common)
-      console.log('Defaulting to FILE_TREE as fallback');
-      return 'FILE_TREE';
+    // Method 5: Check content text patterns
+    const contentState = await this.checkByContentText();
+    if (contentState) {
+      return contentState;
     }
 
     console.log('Could not determine sidebar state');
@@ -201,5 +149,84 @@ export class NotebookSidebarPage extends BasePage {
 
   async clickFileTreeItem(itemText: string): Promise<void> {
     await this.nodeList.locator(`li:has-text("${itemText}")`).click();
+  }
+
+  // ===== PRIVATE HELPER METHODS FOR STATE DETECTION =====
+
+  private async checkByPrimaryContent(): Promise<'TOC' | 'FILE_TREE' | null> {
+    const isTocVisible = await this.isTocContentVisible();
+    const isFileTreeVisible = await this.isFileTreeContentVisible();
+
+    console.log(`State detection - TOC visible: ${isTocVisible}, FileTree visible: ${isFileTreeVisible}`);
+
+    if (isTocVisible) {
+      return 'TOC';
+    }
+    if (isFileTreeVisible) {
+      return 'FILE_TREE';
+    }
+    return null;
+  }
+
+  private async checkTocByAlternativeSelectors(): Promise<boolean> {
+    for (const selector of NotebookSidebarPage.TOC_ALTERNATIVE_SELECTORS) {
+      if (await this.page.locator(selector).isVisible()) {
+        console.log(`Found TOC using selector: ${selector}`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private async checkFileTreeByAlternativeSelectors(): Promise<boolean> {
+    for (const selector of NotebookSidebarPage.FILE_TREE_ALTERNATIVE_SELECTORS) {
+      if (await this.page.locator(selector).isVisible()) {
+        console.log(`Found FileTree using selector: ${selector}`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private async checkByButtonState(): Promise<'TOC' | 'FILE_TREE' | null> {
+    const tocButtonActive = await this.page
+      .locator(
+        'zeppelin-notebook-sidebar button.active:has(i[nzType="unordered-list"]), zeppelin-notebook-sidebar .active:has(i[nzType="unordered-list"])'
+      )
+      .isVisible();
+
+    if (tocButtonActive) {
+      console.log('Found active TOC button');
+      return 'TOC';
+    }
+
+    const fileTreeButtonActive = await this.page
+      .locator(
+        'zeppelin-notebook-sidebar button.active:has(i[nzType="folder"]), zeppelin-notebook-sidebar .active:has(i[nzType="folder"])'
+      )
+      .isVisible();
+
+    if (fileTreeButtonActive) {
+      console.log('Found active FileTree button');
+      return 'FILE_TREE';
+    }
+
+    return null;
+  }
+
+  private async checkByContentText(): Promise<'TOC' | 'FILE_TREE' | null> {
+    const hasAnyContent = (await this.page.locator('zeppelin-notebook-sidebar *').count()) > 1;
+    if (!hasAnyContent) {
+      return null;
+    }
+
+    const sidebarText = (await this.page.locator('zeppelin-notebook-sidebar').textContent()) || '';
+    if (sidebarText.toLowerCase().includes('heading') || sidebarText.toLowerCase().includes('title')) {
+      console.log('Guessing TOC based on content text');
+      return 'TOC';
+    }
+
+    console.log('Defaulting to FILE_TREE as fallback');
+    return 'FILE_TREE';
   }
 }

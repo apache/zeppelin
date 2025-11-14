@@ -75,34 +75,19 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn('Cannot focus code editor: page is closed');
       return;
     }
-    try {
-      // First check if paragraphs exist at all
-      const paragraphCount = await this.page.locator('zeppelin-notebook-paragraph').count();
-      if (paragraphCount === 0) {
-        console.warn('No paragraphs found on page, cannot focus editor');
-        return;
-      }
 
-      const paragraph = this.getParagraphByIndex(paragraphIndex);
-      await paragraph.waitFor({ state: 'visible', timeout: 10000 });
-
-      const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
-      await editor.waitFor({ state: 'visible', timeout: 5000 });
-
-      await editor.click({ force: true });
-
-      const textArea = editor.locator('textarea');
-      if (await textArea.count()) {
-        await textArea.press('ArrowRight');
-        await expect(textArea).toBeFocused({ timeout: 2000 });
-        return;
-      }
-
-      // Wait for editor to be focused instead of fixed timeout
-      await expect(editor).toHaveClass(/focused|focus/, { timeout: 5000 });
-    } catch (error) {
-      console.warn(`Focus code editor for paragraph ${paragraphIndex} failed:`, error);
+    const paragraphCount = await this.getParagraphCount();
+    if (paragraphCount === 0) {
+      console.warn('No paragraphs found on page, cannot focus editor');
+      return;
     }
+
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
+    await paragraph.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
+      console.warn(`Paragraph ${paragraphIndex} not visible`);
+    });
+
+    await this.focusEditorElement(paragraph, paragraphIndex);
   }
 
   async typeInEditor(text: string): Promise<void> {
@@ -141,95 +126,27 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.keyboard.press('Escape');
   }
 
-  // Platform detection utility
-  private getPlatform(): string {
-    return process.platform || 'unknown';
+  // Simple, direct keyboard execution - no hiding failures
+  private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
+    const key = Array.isArray(shortcut) ? shortcut[0] : shortcut;
+    const formatted = this.formatKey(key);
+
+    await this.page.keyboard.press(formatted);
   }
 
-  private isMacOS(): boolean {
-    return this.getPlatform() === 'darwin';
-  }
+  private formatKey(shortcut: string): string {
+    const isMac = process.platform === 'darwin';
 
-  private async executeWebkitShortcut(formattedShortcut: string): Promise<void> {
-    const parts = formattedShortcut.split('+');
-    const mainKey = parts[parts.length - 1];
-    const hasControl = formattedShortcut.includes('control');
-    const hasShift = formattedShortcut.includes('shift');
-    const hasAlt = formattedShortcut.includes('alt');
-    const keyMap: Record<string, string> = {
-      arrowup: 'ArrowUp',
-      arrowdown: 'ArrowDown',
-      enter: 'Enter'
-    };
-    const resolvedKey = keyMap[mainKey] || mainKey.toUpperCase();
-
-    if (hasAlt) {
-      await this.page.keyboard.down('Alt');
-    }
-    if (hasShift) {
-      await this.page.keyboard.down('Shift');
-    }
-    if (hasControl) {
-      await this.page.keyboard.down('Control');
-    }
-
-    await this.page.keyboard.press(resolvedKey, { delay: 50 });
-
-    if (hasControl) {
-      await this.page.keyboard.up('Control');
-    }
-    if (hasShift) {
-      await this.page.keyboard.up('Shift');
-    }
-    if (hasAlt) {
-      await this.page.keyboard.up('Alt');
-    }
-  }
-
-  private async executeStandardShortcut(formattedShortcut: string): Promise<void> {
-    const isMac = this.isMacOS();
-    const formattedKey = formattedShortcut
-      .replace(/alt/g, 'Alt')
+    return shortcut
+      .toLowerCase()
+      .replace(/\./g, '+')
+      .replace(/control/g, isMac ? 'Meta' : 'Control')
       .replace(/shift/g, 'Shift')
+      .replace(/alt/g, 'Alt')
       .replace(/arrowup/g, 'ArrowUp')
       .replace(/arrowdown/g, 'ArrowDown')
       .replace(/enter/g, 'Enter')
-      .replace(/control/g, isMac ? 'Meta' : 'Control')
-      .replace(/\+([a-z0-9-=])$/, (_, c) => `+${c.toUpperCase()}`);
-
-    console.log('Final key combination:', formattedKey);
-    await this.page.keyboard.press(formattedKey, { delay: 50 });
-  }
-
-  // Platform-aware keyboard shortcut execution
-  private async executePlatformShortcut(shortcuts: string | string[]): Promise<void> {
-    const shortcutArray = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
-    const browserName = test.info().project.name;
-
-    for (const shortcut of shortcutArray) {
-      try {
-        const formatted = shortcut.toLowerCase().replace(/\./g, '+');
-        console.log('Shortcut:', shortcut, '->', formatted, 'on', browserName);
-
-        await this.page.evaluate(() => {
-          const el = document.activeElement || document.querySelector('body');
-          if (el && 'focus' in el && typeof (el as HTMLElement).focus === 'function') {
-            (el as HTMLElement).focus();
-          }
-        });
-
-        if (browserName === 'webkit') {
-          await this.executeWebkitShortcut(formatted);
-        } else {
-          await this.executeStandardShortcut(formatted);
-        }
-
-        return;
-      } catch (error) {
-        console.log(`Shortcut ${shortcut} failed:`, error);
-        // Continue to next shortcut variant
-      }
-    }
+      .replace(/\+([a-z])$/, (_, c) => `+${c.toUpperCase()}`);
   }
 
   // All ShortcutsMap keyboard shortcuts
@@ -395,134 +312,26 @@ export class NotebookKeyboardPage extends BasePage {
     if (this.page.isClosed()) {
       return false;
     }
-    try {
-      const browserName = test.info().project.name;
-      const paragraph = this.getParagraphByIndex(paragraphIndex);
 
-      const selectors = [
-        '[data-testid="paragraph-result"]',
-        'zeppelin-notebook-paragraph-result',
-        '.paragraph-result',
-        '.result-content'
-      ];
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
 
-      for (const selector of selectors) {
-        try {
-          const result = paragraph.locator(selector);
-          const count = await result.count();
-          if (count > 0) {
-            const isVisible = await result.first().isVisible();
-            if (isVisible) {
-              console.log(`Found result with selector: ${selector}`);
-              return true;
-            }
-          }
-        } catch (e) {
-          continue;
-        }
-      }
-
-      const hasResultInDOM = await this.page.evaluate(pIndex => {
-        const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-        const targetParagraph = paragraphs[pIndex];
-        if (!targetParagraph) {
-          return false;
-        }
-
-        const resultElements = [
-          targetParagraph.querySelector('[data-testid="paragraph-result"]'),
-          targetParagraph.querySelector('zeppelin-notebook-paragraph-result'),
-          targetParagraph.querySelector('.paragraph-result'),
-          targetParagraph.querySelector('.result-content')
-        ];
-
-        return resultElements.some(el => el && getComputedStyle(el).display !== 'none');
-      }, paragraphIndex);
-
-      if (hasResultInDOM) {
-        console.log('Found result via DOM evaluation');
-        return true;
-      }
-
-      // WebKit specific: Additional checks for execution completion
-      if (browserName === 'webkit') {
-        try {
-          // Check if paragraph has any output text content
-          const hasAnyContent = await this.page.evaluate(pIndex => {
-            const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-            const targetParagraph = paragraphs[pIndex];
-            if (!targetParagraph) {
-              return false;
-            }
-
-            // Look for any text content that suggests execution happened
-            const textContent = targetParagraph.textContent || '';
-
-            // Check for common execution indicators
-            const executionIndicators = [
-              '1 + 1', // Our test content
-              '2', // Expected result
-              'print', // Python output
-              'Out[', // Jupyter-style output
-              '>>>', // Python prompt
-              'result', // Generic result indicator
-              'output' // Generic output indicator
-            ];
-
-            return executionIndicators.some(indicator => textContent.toLowerCase().includes(indicator.toLowerCase()));
-          }, paragraphIndex);
-
-          if (hasAnyContent) {
-            console.log('WebKit: Found execution content via text analysis');
-            return true;
-          }
-
-          // Final WebKit check: Look for changes in DOM structure that indicate execution
-          const hasStructuralChanges = await this.page.evaluate(pIndex => {
-            const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-            const targetParagraph = paragraphs[pIndex];
-            if (!targetParagraph) {
-              return false;
-            }
-
-            // Count total elements - execution usually adds DOM elements
-            const elementCount = targetParagraph.querySelectorAll('*').length;
-
-            // Look for any elements that typically appear after execution
-            const executionElements = [
-              'pre', // Code output
-              'code', // Inline code
-              '.output', // Output containers
-              '.result', // Result containers
-              'table', // Table results
-              'div[class*="result"]', // Any div with result in class
-              'span[class*="output"]' // Any span with output in class
-            ];
-
-            const hasExecutionElements = executionElements.some(
-              selector => targetParagraph.querySelector(selector) !== null
-            );
-
-            console.log(
-              `WebKit structural check: ${elementCount} elements, hasExecutionElements: ${hasExecutionElements}`
-            );
-            return hasExecutionElements || elementCount > 10; // Arbitrary threshold for "complex" paragraph
-          }, paragraphIndex);
-
-          if (hasStructuralChanges) {
-            console.log('WebKit: Found execution via structural analysis');
-            return true;
-          }
-        } catch (webkitError) {
-          console.log('WebKit specific checks failed:', webkitError);
-        }
-      }
-
-      return false;
-    } catch (error) {
-      console.log('hasParagraphResult error:', error);
-      return false;
+    // Strategy 1: Check by standard selectors
+    if (await this.findResultBySelectors(paragraph)) {
+      return true;
     }
+
+    // Strategy 2: Check by DOM evaluation
+    if (await this.checkResultInDOM(paragraphIndex)) {
+      return true;
+    }
+
+    // Strategy 3: WebKit-specific checks
+    const browserName = test.info().project.name;
+    if (browserName === 'webkit') {
+      return await this.checkWebKitResult(paragraphIndex);
+    }
+
+    return false;
   }
 
   async getCodeEditorContent(): Promise<string> {
@@ -636,7 +445,6 @@ export class NotebookKeyboardPage extends BasePage {
   // Helper methods for verifying shortcut effects
 
   async waitForParagraphExecution(paragraphIndex: number = 0, timeout: number = 30000): Promise<void> {
-    // Check if page is still accessible
     if (this.page.isClosed()) {
       console.warn('Cannot wait for paragraph execution: page is closed');
       return;
@@ -644,89 +452,17 @@ export class NotebookKeyboardPage extends BasePage {
 
     const paragraph = this.getParagraphByIndex(paragraphIndex);
 
-    // First check if paragraph is currently running
+    // Step 1: Wait for execution to start
+    await this.waitForExecutionStart(paragraphIndex);
+
+    // Step 2: Wait for execution to complete
     const runningIndicator = paragraph.locator(
       '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
     );
+    await this.waitForExecutionComplete(runningIndicator, paragraphIndex, timeout);
 
-    // Wait for execution to start (brief moment) - more lenient approach
-    try {
-      await this.page.waitForFunction(
-        index => {
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-          const targetParagraph = paragraphs[index];
-          if (!targetParagraph) {
-            return false;
-          }
-
-          // Check if execution started
-          const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
-          const hasResult = targetParagraph.querySelector('[data-testid="paragraph-result"]');
-
-          return hasRunning || hasResult;
-        },
-        paragraphIndex,
-        { timeout: 8000 }
-      );
-    } catch (error) {
-      // If we can't detect execution start, check if result already exists
-      try {
-        if (!this.page.isClosed()) {
-          const existingResult = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
-          if (!existingResult) {
-            console.log(`Warning: Could not detect execution start for paragraph ${paragraphIndex}`);
-          }
-        }
-      } catch {
-        console.warn('Page closed during execution check');
-        return;
-      }
-    }
-
-    // Wait for running indicator to disappear (execution completed)
-    try {
-      if (!this.page.isClosed()) {
-        await runningIndicator.waitFor({ state: 'detached', timeout: timeout / 2 }).catch(() => {
-          console.log(`Running indicator timeout for paragraph ${paragraphIndex} - continuing`);
-        });
-      }
-    } catch {
-      console.warn('Page closed while waiting for running indicator');
-      return;
-    }
-
-    // Wait for result to appear and be populated - more flexible approach
-    try {
-      if (!this.page.isClosed()) {
-        await this.page.waitForFunction(
-          index => {
-            const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-            const targetParagraph = paragraphs[index];
-            if (!targetParagraph) {
-              return false;
-            }
-
-            const result = targetParagraph.querySelector('[data-testid="paragraph-result"]');
-            // Accept any visible result, even if content is empty (e.g., for errors or empty outputs)
-            return result && getComputedStyle(result).display !== 'none';
-          },
-          paragraphIndex,
-          { timeout: Math.min(timeout / 2, 15000) } // Cap at 15 seconds
-        );
-      }
-    } catch {
-      // Final fallback: just check if result element exists
-      try {
-        if (!this.page.isClosed()) {
-          const resultExists = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
-          if (!resultExists) {
-            console.log(`Warning: No result found for paragraph ${paragraphIndex} after execution`);
-          }
-        }
-      } catch {
-        console.warn('Page closed during final result check');
-      }
-    }
+    // Step 3: Wait for result to be visible
+    await this.waitForResultVisible(paragraphIndex, timeout);
   }
 
   async isParagraphEnabled(paragraphIndex: number = 0): Promise<boolean> {
@@ -852,5 +588,223 @@ export class NotebookKeyboardPage extends BasePage {
       .catch(() => {
         console.log('Some modals may still be present, continuing...');
       });
+  }
+
+  // ===== PRIVATE HELPER METHODS =====
+
+  private async findResultBySelectors(paragraph: Locator): Promise<boolean> {
+    const selectors = [
+      '[data-testid="paragraph-result"]',
+      'zeppelin-notebook-paragraph-result',
+      '.paragraph-result',
+      '.result-content'
+    ];
+
+    for (const selector of selectors) {
+      const result = paragraph.locator(selector);
+      const count = await result.count();
+
+      if (count > 0 && (await result.first().isVisible())) {
+        console.log(`Found result with selector: ${selector}`);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private async checkResultInDOM(paragraphIndex: number): Promise<boolean> {
+    const hasResult = await this.page.evaluate(pIndex => {
+      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+      const targetParagraph = paragraphs[pIndex];
+
+      if (!targetParagraph) {
+        return false;
+      }
+
+      const resultElements = [
+        targetParagraph.querySelector('[data-testid="paragraph-result"]'),
+        targetParagraph.querySelector('zeppelin-notebook-paragraph-result'),
+        targetParagraph.querySelector('.paragraph-result'),
+        targetParagraph.querySelector('.result-content')
+      ];
+
+      return resultElements.some(el => el && getComputedStyle(el).display !== 'none');
+    }, paragraphIndex);
+
+    if (hasResult) {
+      console.log('Found result via DOM evaluation');
+    }
+
+    return hasResult;
+  }
+
+  private async checkWebKitResult(paragraphIndex: number): Promise<boolean> {
+    // Check 1: Text content analysis
+    if (await this.checkWebKitTextContent(paragraphIndex)) {
+      console.log('WebKit: Found execution content via text analysis');
+      return true;
+    }
+
+    // Check 2: Structural changes
+    if (await this.checkWebKitStructuralChanges(paragraphIndex)) {
+      console.log('WebKit: Found execution via structural analysis');
+      return true;
+    }
+
+    return false;
+  }
+
+  private async checkWebKitTextContent(paragraphIndex: number): Promise<boolean> {
+    return await this.page.evaluate(pIndex => {
+      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+      const targetParagraph = paragraphs[pIndex];
+
+      if (!targetParagraph) {
+        return false;
+      }
+
+      const textContent = targetParagraph.textContent || '';
+      const executionIndicators = ['1 + 1', '2', 'print', 'Out[', '>>>', 'result', 'output'];
+
+      return executionIndicators.some(indicator => textContent.toLowerCase().includes(indicator.toLowerCase()));
+    }, paragraphIndex);
+  }
+
+  private async checkWebKitStructuralChanges(paragraphIndex: number): Promise<boolean> {
+    return await this.page.evaluate(pIndex => {
+      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+      const targetParagraph = paragraphs[pIndex];
+
+      if (!targetParagraph) {
+        return false;
+      }
+
+      const elementCount = targetParagraph.querySelectorAll('*').length;
+      const executionElements = [
+        'pre',
+        'code',
+        '.output',
+        '.result',
+        'table',
+        'div[class*="result"]',
+        'span[class*="output"]'
+      ];
+
+      const hasExecutionElements = executionElements.some(selector => targetParagraph.querySelector(selector) !== null);
+
+      console.log(`WebKit structural check: ${elementCount} elements, hasExecutionElements: ${hasExecutionElements}`);
+
+      return hasExecutionElements || elementCount > 10;
+    }, paragraphIndex);
+  }
+
+  private async waitForExecutionStart(paragraphIndex: number): Promise<void> {
+    const started = await this.page
+      .waitForFunction(
+        index => {
+          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+          const targetParagraph = paragraphs[index];
+          if (!targetParagraph) {
+            return false;
+          }
+
+          const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
+          const hasResult = targetParagraph.querySelector('[data-testid="paragraph-result"]');
+
+          return hasRunning || hasResult;
+        },
+        paragraphIndex,
+        { timeout: 8000 }
+      )
+      .catch(() => false);
+
+    if (!started) {
+      const paragraph = this.getParagraphByIndex(paragraphIndex);
+      const existingResult = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
+      if (!existingResult) {
+        console.log(`Warning: Could not detect execution start for paragraph ${paragraphIndex}`);
+      }
+    }
+  }
+
+  private async waitForExecutionComplete(
+    runningIndicator: Locator,
+    paragraphIndex: number,
+    timeout: number
+  ): Promise<void> {
+    if (this.page.isClosed()) {
+      return;
+    }
+
+    await runningIndicator.waitFor({ state: 'detached', timeout: timeout / 2 }).catch(() => {
+      console.log(`Running indicator timeout for paragraph ${paragraphIndex} - continuing`);
+    });
+  }
+
+  private async waitForResultVisible(paragraphIndex: number, timeout: number): Promise<void> {
+    if (this.page.isClosed()) {
+      return;
+    }
+
+    const resultVisible = await this.page
+      .waitForFunction(
+        index => {
+          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
+          const targetParagraph = paragraphs[index];
+          if (!targetParagraph) {
+            return false;
+          }
+
+          const result = targetParagraph.querySelector('[data-testid="paragraph-result"]');
+          return result && getComputedStyle(result).display !== 'none';
+        },
+        paragraphIndex,
+        { timeout: Math.min(timeout / 2, 15000) }
+      )
+      .catch(() => false);
+
+    if (!resultVisible) {
+      const paragraph = this.getParagraphByIndex(paragraphIndex);
+      const resultExists = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
+      if (!resultExists) {
+        console.log(`Warning: No result found for paragraph ${paragraphIndex} after execution`);
+      }
+    }
+  }
+
+  private async focusEditorElement(paragraph: Locator, paragraphIndex: number): Promise<void> {
+    const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
+    await editor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
+      console.warn(`Editor not visible in paragraph ${paragraphIndex}`);
+    });
+
+    await editor.click({ force: true }).catch(() => {
+      console.warn(`Failed to click editor in paragraph ${paragraphIndex}`);
+    });
+
+    await this.ensureEditorFocused(editor, paragraphIndex);
+  }
+
+  private async ensureEditorFocused(editor: Locator, paragraphIndex: number): Promise<void> {
+    const textArea = editor.locator('textarea');
+    const hasTextArea = (await textArea.count()) > 0;
+
+    if (hasTextArea) {
+      await textArea.press('ArrowRight').catch(() => {
+        console.warn(`Failed to press ArrowRight in paragraph ${paragraphIndex}`);
+      });
+      await expect(textArea)
+        .toBeFocused({ timeout: 2000 })
+        .catch(() => {
+          console.warn(`Textarea not focused in paragraph ${paragraphIndex}`);
+        });
+    } else {
+      await expect(editor)
+        .toHaveClass(/focused|focus/, { timeout: 5000 })
+        .catch(() => {
+          console.warn(`Editor not focused in paragraph ${paragraphIndex}`);
+        });
+    }
   }
 }
