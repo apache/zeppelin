@@ -76,45 +76,14 @@ export class PublishedParagraphTestUtil {
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
-    // Try different possible error modal texts
-    const possibleModals = [
-      this.page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }),
-      this.page.locator('.ant-modal', { hasText: 'not found' }),
-      this.page.locator('.ant-modal', { hasText: 'Error' }),
-      this.page.locator('.ant-modal').filter({ hasText: /not found|error|paragraph/i })
-    ];
+    // Expect a specific error modal - fail fast if not found
+    const errorModal = this.page.locator('.ant-modal', { hasText: /Paragraph Not Found|not found|Error/i });
+    await expect(errorModal).toBeVisible({ timeout: 10000 });
 
-    let modal;
-    for (const possibleModal of possibleModals) {
-      const count = await possibleModal.count();
-
-      for (let i = 0; i < count; i++) {
-        const m = possibleModal.nth(i);
-
-        if (await m.isVisible()) {
-          modal = m;
-          break;
-        }
-      }
-
-      if (modal) {
-        break;
-      }
-    }
-
-    if (!modal) {
-      // If no modal is found, check if we're redirected to home
-      await expect(this.page).toHaveURL(/\/#\/$/, { timeout: 10000 });
-      return;
-    }
-
-    await expect(modal).toBeVisible({ timeout: 10000 });
-
-    // Try to get content and check if available
+    // Verify modal content includes the invalid paragraph ID
     const content = await this.publishedParagraphPage.getErrorModalContent();
-    if (content && content.includes(invalidParagraphId)) {
-      expect(content).toContain(invalidParagraphId);
-    }
+    expect(content).toBeDefined();
+    expect(content).toContain(invalidParagraphId);
 
     await this.publishedParagraphPage.clickErrorModalOk();
 
