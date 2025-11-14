@@ -1,3 +1,5 @@
+/* eslint-disable arrow-body-style */
+/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,22 +179,62 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Delete paragraph - control.alt.d (or control.alt.∂ for macOS)
   async pressDeleteParagraph(): Promise<void> {
+    const currentCount = await this.getParagraphCount();
     await this.executePlatformShortcut(['control.alt.d', 'control.alt.∂']);
+
+    // Wait for paragraph count to decrease
+    await this.page.waitForFunction(
+      expectedCount => {
+        return document.querySelectorAll('zeppelin-notebook-paragraph').length < expectedCount;
+      },
+      currentCount,
+      { timeout: 10000 }
+    );
   }
 
   // Insert paragraph above - control.alt.a (or control.alt.å for macOS)
   async pressInsertAbove(): Promise<void> {
+    const currentCount = await this.getParagraphCount();
     await this.executePlatformShortcut(['control.alt.a', 'control.alt.å']);
+
+    // Wait for paragraph count to increase
+    await this.page.waitForFunction(
+      expectedCount => {
+        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
+      },
+      currentCount,
+      { timeout: 10000 }
+    );
   }
 
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
   async pressInsertBelow(): Promise<void> {
+    const currentCount = await this.getParagraphCount();
     await this.executePlatformShortcut(['control.alt.b', 'control.alt.∫']);
+
+    // Wait for paragraph count to increase
+    await this.page.waitForFunction(
+      expectedCount => {
+        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
+      },
+      currentCount,
+      { timeout: 10000 }
+    );
   }
 
   // Insert copy of paragraph below - control.shift.c
   async pressInsertCopy(): Promise<void> {
+    const currentCount = await this.getParagraphCount();
     await this.executePlatformShortcut('control.shift.c');
+
+    // Wait for paragraph count to increase
+    await this.page.waitForFunction(
+      expectedCount => {
+        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
+      },
+      currentCount,
+      { timeout: 10000 }
+    );
   }
 
   // Move paragraph up - control.alt.k (or control.alt.˚ for macOS)
