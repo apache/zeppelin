@@ -22,16 +22,31 @@ export class NotebookActionBarUtil {
     this.actionBarPage = new NotebookActionBarPage(page);
   }
 
-  private async handleOptionalConfirmation(logMessage: string): Promise<void> {
+  private async handleConfirmation(): Promise<void> {
+    // Expect confirmation dialog to appear - fail fast if not found
     const confirmSelector = this.page
       .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
       .first();
 
-    if (await confirmSelector.isVisible({ timeout: 2000 })) {
+    await expect(confirmSelector).toBeVisible({ timeout: 5000 });
+    await confirmSelector.click();
+    await expect(confirmSelector).not.toBeVisible();
+  }
+
+  private async handleOptionalConfirmation(actionDescription: string): Promise<void> {
+    // Check if confirmation dialog appears
+    const confirmSelector = this.page
+      .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
+      .first();
+
+    const isVisible = await confirmSelector.isVisible({ timeout: 2000 }).catch(() => false);
+
+    if (isVisible) {
+      console.log(`Confirmation dialog appeared for: ${actionDescription}`);
       await confirmSelector.click();
       await expect(confirmSelector).not.toBeVisible();
     } else {
-      console.log(logMessage);
+      console.log(`No confirmation dialog for: ${actionDescription} - proceeding without confirmation`);
     }
   }
 
@@ -56,8 +71,8 @@ export class NotebookActionBarUtil {
 
     await this.actionBarPage.clickRunAll();
 
-    // Check if confirmation dialog appears (it might not in some configurations)
-    await this.handleOptionalConfirmation('Run all executed without confirmation dialog');
+    // Confirmation dialog must appear when running all paragraphs
+    await this.handleConfirmation();
   }
 
   async verifyCodeVisibilityToggle(): Promise<void> {
