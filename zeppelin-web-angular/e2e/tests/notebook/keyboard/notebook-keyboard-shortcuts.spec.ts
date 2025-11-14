@@ -59,11 +59,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     await page.keyboard.press('Escape').catch(() => {});
 
     if (testNotebook?.noteId) {
-      try {
-        await testUtil.deleteTestNotebook(testNotebook.noteId);
-      } catch (error) {
-        console.warn('Failed to delete test notebook:', error);
-      }
+      await testUtil.deleteTestNotebook(testNotebook.noteId);
     }
   });
 
@@ -251,12 +247,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.pressInsertBelow();
 
       // Use more flexible waiting strategy
-      try {
-        await keyboardPage.waitForParagraphCountChange(2);
-      } catch {
-        // If paragraph creation failed, continue with existing paragraphs
-        console.log('Paragraph creation may have failed, continuing with existing paragraphs');
-      }
+      await keyboardPage.waitForParagraphCountChange(2);
 
       const currentCount = await keyboardPage.getParagraphCount();
 
@@ -272,11 +263,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User presses Control+Alt+D
       await keyboardPage.pressDeleteParagraph();
-      try {
-        await keyboardPage.clickModalOkButton();
-      } catch (error) {
-        console.log('Could not click modal OK button, maybe it did not appear.');
-      }
+      await keyboardPage.clickModalOkButton();
+
       // Then: Paragraph count should decrease
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toEqual(1);
