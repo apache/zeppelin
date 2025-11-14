@@ -61,13 +61,7 @@ export class NotebookKeyboardPage extends BasePage {
     await navigateToNotebookWithFallback(this.page, noteId);
 
     // Ensure paragraphs are visible after navigation
-    try {
-      await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 15000 });
-    } catch (error) {
-      // If no paragraphs found, log but don't throw - let tests handle gracefully
-      const paragraphCount = await this.page.locator('zeppelin-notebook-paragraph').count();
-      console.log(`Found ${paragraphCount} paragraphs after navigation`);
-    }
+    await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 15000 });
   }
 
   async focusCodeEditor(paragraphIndex: number = 0): Promise<void> {
@@ -280,11 +274,7 @@ export class NotebookKeyboardPage extends BasePage {
     if (this.page.isClosed()) {
       return 0;
     }
-    try {
-      return await this.paragraphContainer.count();
-    } catch {
-      return 0;
-    }
+    return await this.paragraphContainer.count();
   }
 
   getParagraphByIndex(index: number): Locator {
@@ -335,62 +325,58 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async getCodeEditorContent(): Promise<string> {
-    try {
-      // Try to get content directly from Monaco Editor's model first
-      const monacoContent = await this.page.evaluate(() => {
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        const win = window as any;
-        if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
-          const editor = win.monaco.editor.getActiveEditor();
-          if (editor) {
-            return editor.getModel().getValue();
-          }
-        }
-        return null;
-      });
-
-      if (monacoContent !== null) {
-        return monacoContent;
-      }
-
-      // Fallback to Angular scope
-      const angularContent = await this.page.evaluate(() => {
-        const paragraphElement = document.querySelector('zeppelin-notebook-paragraph');
-        if (paragraphElement) {
-          // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-          const angular = (window as any).angular;
-          if (angular) {
-            const scope = angular.element(paragraphElement).scope();
-            if (scope && scope.$ctrl && scope.$ctrl.paragraph) {
-              return scope.$ctrl.paragraph.text || '';
-            }
-          }
-        }
-        return null;
-      });
-
-      if (angularContent !== null) {
-        return angularContent;
-      }
-
-      // Fallback to DOM-based approaches
-      const selectors = ['textarea', '.monaco-editor .view-lines', '.CodeMirror-line', '.ace_line'];
-
-      for (const selector of selectors) {
-        const element = this.page.locator(selector).first();
-        if (await element.isVisible({ timeout: 1000 })) {
-          if (selector === 'textarea') {
-            return await element.inputValue();
-          } else {
-            return (await element.textContent()) || '';
-          }
+    // Try to get content directly from Monaco Editor's model first
+    const monacoContent = await this.page.evaluate(() => {
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const win = window as any;
+      if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
+        const editor = win.monaco.editor.getActiveEditor();
+        if (editor) {
+          return editor.getModel().getValue();
         }
       }
+      return null;
+    });
 
-      return '';
-    } catch {
-      return '';
+    if (monacoContent !== null) {
+      return monacoContent;
     }
+
+    // Fallback to Angular scope
+    const angularContent = await this.page.evaluate(() => {
+      const paragraphElement = document.querySelector('zeppelin-notebook-paragraph');
+      if (paragraphElement) {
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        const angular = (window as any).angular;
+        if (angular) {
+          const scope = angular.element(paragraphElement).scope();
+          if (scope && scope.$ctrl && scope.$ctrl.paragraph) {
+            return scope.$ctrl.paragraph.text || '';
+          }
+        }
+      }
+      return null;
+    });
+
+    if (angularContent !== null) {
+      return angularContent;
+    }
+
+    // Fallback to DOM-based approaches
+    const selectors = ['textarea', '.monaco-editor .view-lines', '.CodeMirror-line', '.ace_line'];
+
+    for (const selector of selectors) {
+      const element = this.page.locator(selector).first();
+      if (await element.isVisible({ timeout: 1000 })) {
+        if (selector === 'textarea') {
+          return await element.inputValue();
+        } else {
+          return (await element.textContent()) || '';
+        }
+      }
+    }
+
+    return '';
   }
 
   async setCodeEditorContent(content: string, paragraphIndex: number = 0): Promise<void> {
@@ -408,38 +394,27 @@ export class NotebookKeyboardPage extends BasePage {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const editorInput = paragraph.locator('.monaco-editor .inputarea, .monaco-editor textarea').first();
 
-    try {
-      // Try to set content directly via Monaco Editor API
-      const success = await this.page.evaluate(newContent => {
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        const win = window as any;
-        if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
-          const editor = win.monaco.editor.getActiveEditor();
-          if (editor) {
-            editor.getModel().setValue(newContent);
-            return true;
-          }
+    // Try to set content directly via Monaco Editor API
+    const success = await this.page.evaluate(newContent => {
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const win = window as any;
+      if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
+        const editor = win.monaco.editor.getActiveEditor();
+        if (editor) {
+          editor.getModel().setValue(newContent);
+          return true;
         }
-        return false;
-      }, content);
-
-      if (success) {
-        return;
       }
+      return false;
+    }, content);
 
-      // Fallback to Playwright's fill method if Monaco API didn't work
-      await editorInput.click({ force: true });
-      await editorInput.fill(content);
-    } catch (e) {
-      // Fallback to keyboard actions if fill method fails
-      if (this.page.isClosed()) {
-        console.warn('Page closed during fallback content setting');
-        return;
-      }
-      await this.page.keyboard.press('Control+a');
-      await this.page.keyboard.press('Delete');
-      await this.page.keyboard.type(content, { delay: 10 });
+    if (success) {
+      return;
     }
+
+    // Fallback to Playwright's fill method if Monaco API didn't work
+    await editorInput.click({ force: true });
+    await editorInput.fill(content);
   }
 
   // Helper methods for verifying shortcut effects
@@ -478,14 +453,9 @@ export class NotebookKeyboardPage extends BasePage {
     ];
 
     for (const selector of disabledSelectors) {
-      try {
-        const disabledIndicator = paragraph.locator(selector).first();
-        if (await disabledIndicator.isVisible()) {
-          return false;
-        }
-      } catch (error) {
-        // Ignore selector errors for ambiguous selectors
-        continue;
+      const disabledIndicator = paragraph.locator(selector).first();
+      if (await disabledIndicator.isVisible()) {
+        return false;
       }
     }
 
@@ -566,16 +536,12 @@ export class NotebookKeyboardPage extends BasePage {
     // Click each visible OK button in sequence
     for (let i = 0; i < count; i++) {
       const button = okButtons.nth(i);
-      try {
-        await button.waitFor({ state: 'visible', timeout });
-        await button.click({ delay: 100 });
-        // Wait for modal to actually close instead of fixed timeout
-        await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
-          console.log('Modal did not close within expected time, continuing...');
-        });
-      } catch (e) {
-        console.warn(`⚠️ Failed to click OK button #${i + 1}:`, e);
-      }
+      await button.waitFor({ state: 'visible', timeout });
+      await button.click({ delay: 100 });
+      // Wait for modal to actually close
+      await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
+        console.log('Modal did not close within expected time, continuing...');
+      });
     }
 
     // Wait for all modals to be closed
