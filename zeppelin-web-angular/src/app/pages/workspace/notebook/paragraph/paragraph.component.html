@@ -107,6 +107,7 @@
         (sizeChange)="onSizeChange($event)"
         (configChange)="onConfigChange($event, i)"
         [result]="result"
+        [attr.data-testid]="'paragraph-result'"
       ></zeppelin-notebook-paragraph-result>
     </ng-container>
     <zeppelin-notebook-paragraph-footer

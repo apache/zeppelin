@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -24,21 +25,33 @@ export class NotebookUtil extends BasePage {
 
   async createNotebook(notebookName: string): Promise<void> {
     await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
+
+    // Perform login if required
+    await performLoginIfRequired(this.page);
+
+    // Wait for Zeppelin to be fully ready
+    await waitForZeppelinReady(this.page);
+
+    // Wait for URL to not contain 'login' and for the notebook list to appear
+    await this.page.waitForFunction(
+      () => !window.location.href.includes('#/login') && document.querySelector('zeppelin-node-list') !== null,
+      { timeout: 30000 }
+    );
+
+    await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
+    await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
+    await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
     // Wait for the modal to appear and fill the notebook name
     const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
-
-    // Fill notebook name
-    await notebookNameInput.fill(notebookName);
+    await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
 
     // Click the 'Create' button in the modal
     const createButton = this.page.locator('button', { hasText: 'Create' });
-    await createButton.click();
+    await expect(createButton).toBeVisible({ timeout: 30000 });
+    await notebookNameInput.fill(notebookName);
+    await createButton.click({ timeout: 30000 });
 
-    // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
     await this.waitForPageLoad();
   }
 }
