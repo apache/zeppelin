@@ -210,7 +210,11 @@ export class NotebookKeyboardPage extends BasePage {
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
   async pressInsertBelow(): Promise<void> {
     const currentCount = await this.getParagraphCount();
+    const urlBefore = this.page.url();
+    console.log(`[pressInsertBelow] Current URL: ${urlBefore}, Paragraph count before: ${currentCount}`);
+
     await this.executePlatformShortcut(['control.alt.b', 'control.alt.∫']);
+    console.log(`[pressInsertBelow] Keyboard shortcut executed: Control+Alt+B`);
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
@@ -220,6 +224,9 @@ export class NotebookKeyboardPage extends BasePage {
       currentCount,
       { timeout: 10000 }
     );
+
+    const newCount = await this.getParagraphCount();
+    console.log(`[pressInsertBelow] Success! Paragraph count increased from ${currentCount} to ${newCount}`);
   }
 
   // Insert copy of paragraph below - control.shift.c
@@ -455,7 +462,8 @@ export class NotebookKeyboardPage extends BasePage {
     }
 
     // Fallback to Playwright's fill method if Monaco API didn't work
-    await editorInput.click({ force: true });
+    // Scroll into view to ensure element is in viewport (especially for Firefox)
+    await editorInput.scrollIntoViewIfNeeded();
     await editorInput.fill(content);
   }
 
