@@ -36,12 +36,34 @@ export class NotebookKeyboardPageUtil extends BasePage {
   }
 
   async prepareNotebookForKeyboardTesting(noteId: string): Promise<void> {
+    console.log(`Preparing notebook for keyboard testing. noteId: ${noteId}`);
+
+    // Verify we're starting from a valid state
+    const urlBefore = this.page.url();
+    console.log(`Current URL before navigation: ${urlBefore}`);
+
     await this.keyboardPage.navigateToNotebook(noteId);
+
+    // Verify navigation succeeded
+    const urlAfter = this.page.url();
+    console.log(`Current URL after navigation: ${urlAfter}`);
+
+    if (!urlAfter.includes(`/notebook/${noteId}`)) {
+      throw new Error(
+        `Navigation to notebook ${noteId} failed. ` +
+          `Expected URL to contain '/notebook/${noteId}', but got: ${urlAfter}`
+      );
+    }
 
     // Wait for the notebook to load
     await expect(this.keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
 
+    const paragraphCount = await this.keyboardPage.getParagraphCount();
+    console.log(`Paragraph count after navigation: ${paragraphCount}`);
+
     await this.keyboardPage.setCodeEditorContent('%python\nprint("Hello World")');
+
+    console.log(`Notebook preparation complete for noteId: ${noteId}`);
   }
 
   async verifyRapidKeyboardOperations(): Promise<void> {
