@@ -43,10 +43,11 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     await waitForNotebookLinks(page);
 
     // Handle the welcome modal if it appears
-    const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
-    if ((await cancelButton.count()) > 0) {
+    const welcomeModal = page.locator('.ant-modal-root', { hasText: 'Welcome to Zeppelin!' });
+    if ((await welcomeModal.count()) > 0) {
+      const cancelButton = welcomeModal.locator('button', { hasText: 'Cancel' });
       await cancelButton.click();
-      await cancelButton.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+      await welcomeModal.waitFor({ state: 'hidden', timeout: 5000 });
     }
 
     // Simple notebook creation without excessive waiting
@@ -123,7 +124,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Given: Multiple paragraphs
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nTest content for run above', 0);
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Focus on second paragraph
@@ -148,7 +149,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Given: Multiple paragraphs with content
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for run below test', 0);
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Add content to second paragraph
@@ -244,7 +245,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%python\nprint("First paragraph")', 0);
       const firstParagraph = keyboardPage.getParagraphByIndex(0);
       await firstParagraph.click();
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
 
       // Use more flexible waiting strategy
       await keyboardPage.waitForParagraphCountChange(2);
@@ -298,7 +299,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialCount = await keyboardPage.getParagraphCount();
 
       // When: User presses Control+Alt+B
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
 
       // Then: A new paragraph should be inserted below
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);
@@ -330,7 +331,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Given: Two paragraphs with second one focused
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for move up test', 0);
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Focus on second paragraph and add content
@@ -352,7 +353,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Given: Two paragraphs with first one focused
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nThis should move down', 0);
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Add content to second paragraph
@@ -774,7 +775,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User continues with shortcuts (insert new paragraph)
       const initialCount = await keyboardPage.getParagraphCount();
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(initialCount + 1, 10000);
 
       // Set valid content in new paragraph and run
@@ -797,7 +798,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialCount = await keyboardPage.getParagraphCount();
 
       // When: User presses insert shortcut without focus
-      await keyboardPage.pressInsertBelow();
+      await keyboardPage.addParagraph();
 
       // Then: Shortcut should still work and create new paragraph
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);

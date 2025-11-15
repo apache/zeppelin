@@ -180,7 +180,20 @@ export class NotebookKeyboardPage extends BasePage {
   // Delete paragraph - control.alt.d (or control.alt.∂ for macOS)
   async pressDeleteParagraph(): Promise<void> {
     const currentCount = await this.getParagraphCount();
+
+    // Set up API response listener BEFORE executing keyboard shortcut
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/notebook/') &&
+        (res.request().method() === 'DELETE' || res.request().method() === 'POST'),
+      { timeout: 10000 }
+    );
+
     await this.executePlatformShortcut(['control.alt.d', 'control.alt.∂']);
+
+    // Wait for API response to complete
+    const response = await responsePromise;
+    expect(response.ok()).toBe(true);
 
     // Wait for paragraph count to decrease
     await this.page.waitForFunction(
@@ -195,7 +208,19 @@ export class NotebookKeyboardPage extends BasePage {
   // Insert paragraph above - control.alt.a (or control.alt.å for macOS)
   async pressInsertAbove(): Promise<void> {
     const currentCount = await this.getParagraphCount();
+
+    // Set up API response listener BEFORE executing keyboard shortcut
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/notebook/') && (res.request().method() === 'POST' || res.request().method() === 'PUT'),
+      { timeout: 10000 }
+    );
+
     await this.executePlatformShortcut(['control.alt.a', 'control.alt.å']);
+
+    // Wait for API response to complete
+    const response = await responsePromise;
+    expect(response.ok()).toBe(true);
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
@@ -209,8 +234,18 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
   async pressInsertBelow(): Promise<void> {
+    await this.addParagraph();
+  }
+
+  async addParagraph(): Promise<void> {
     const currentCount = await this.getParagraphCount();
-    await this.executePlatformShortcut(['control.alt.b', 'control.alt.∫']);
+    const urlBefore = this.page.url();
+    console.log(`[addParagraph] Current URL: ${urlBefore}, Paragraph count before: ${currentCount}`);
+
+    // Hover over the last paragraph to make the 'add' button appear
+    await this.paragraphContainer.last().hover();
+    await this.page.locator('zeppelin-notebook-add-paragraph .add-paragraph a.inner').first().click();
+    console.log(`[addParagraph] "Add Paragraph" button clicked`);
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
@@ -220,12 +255,27 @@ export class NotebookKeyboardPage extends BasePage {
       currentCount,
       { timeout: 10000 }
     );
+
+    const newCount = await this.getParagraphCount();
+    console.log(`[addParagraph] Success! Paragraph count increased from ${currentCount} to ${newCount}`);
   }
 
   // Insert copy of paragraph below - control.shift.c
   async pressInsertCopy(): Promise<void> {
     const currentCount = await this.getParagraphCount();
+
+    // Set up API response listener BEFORE executing keyboard shortcut
+    const responsePromise = this.page.waitForResponse(
+      res =>
+        res.url().includes('/api/notebook/') && (res.request().method() === 'POST' || res.request().method() === 'PUT'),
+      { timeout: 10000 }
+    );
+
     await this.executePlatformShortcut('control.shift.c');
+
+    // Wait for API response to complete
+    const response = await responsePromise;
+    expect(response.ok()).toBe(true);
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
@@ -426,9 +476,18 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn('Cannot set code editor content: page is closed');
       return;
     }
+
+    // Wait for the URL to be correct for the notebook page
+    await expect(this.page).toHaveURL(/\/notebook\//, { timeout: 15000 });
+
+    // Wait for the main welcome message to disappear, indicating the notebook is loading
+    await expect(this.page.locator('text=Welcome to Zeppelin!')).not.toBeVisible({ timeout: 10000 });
+
+    // Ensure the first paragraph is visible before proceeding
+    await expect(this.page.locator('zeppelin-notebook-paragraph').first()).toBeVisible({ timeout: 10000 });
+
     await this.focusCodeEditor(paragraphIndex);
     if (this.page.isClosed()) {
-      // Re-check after focusCodeEditor
       console.warn('Cannot set code editor content: page closed after focusing');
       return;
     }
@@ -436,9 +495,9 @@ export class NotebookKeyboardPage extends BasePage {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const editorInput = paragraph.locator('.monaco-editor .inputarea, .monaco-editor textarea').first();
 
-    // Try to set content directly via Monaco Editor API
+    // Try Monaco API first
     const success = await this.page.evaluate(newContent => {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const win = window as any;
       if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
         const editor = win.monaco.editor.getActiveEditor();
@@ -454,9 +513,20 @@ export class NotebookKeyboardPage extends BasePage {
       return;
     }
 
-    // Fallback to Playwright's fill method if Monaco API didn't work
-    await editorInput.click({ force: true });
-    await editorInput.fill(content);
+    // Fallback: wait for code editor component to be visible first
+    const codeEditorComponent = paragraph.locator('zeppelin-notebook-paragraph-code-editor').first();
+    await codeEditorComponent.waitFor({ state: 'visible', timeout: 10000 });
+
+    await editorInput.scrollIntoViewIfNeeded();
+    // Skip waiting for editorInput visibility in Firefox as it can be flaky
+    if (test.info().project.name === 'firefox') {
+      // Use a more direct interaction for Firefox
+      await editorInput.click({ force: true });
+      await this.page.keyboard.insertText(content);
+    } else {
+      await editorInput.waitFor({ state: 'visible', timeout: 5000 });
+      await editorInput.fill(content);
+    }
   }
 
   // Helper methods for verifying shortcut effects
@@ -787,8 +857,8 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn(`Editor not visible in paragraph ${paragraphIndex}`);
     });
 
-    await editor.click({ force: true }).catch(() => {
-      console.warn(`Failed to click editor in paragraph ${paragraphIndex}`);
+    await editor.dblclick({ force: true }).catch(() => {
+      console.warn(`Failed to double-click editor in paragraph ${paragraphIndex}`);
     });
 
     await this.ensureEditorFocused(editor, paragraphIndex);

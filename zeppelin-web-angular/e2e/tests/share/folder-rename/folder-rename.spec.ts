@@ -75,7 +75,7 @@ test.describe.serial('Folder Rename', () => {
   test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async ({
     page
   }) => {
-    const renamedFolderName = `RenamedFolder_${Date.now()}`;
+    const renamedFolderName = `RenamedFolder_${test.info().project.name}_${Date.now()}`;
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });
 
@@ -107,14 +107,14 @@ test.describe.serial('Folder Rename', () => {
   test('Given folder is renamed, When checking folder list, Then old name should not exist and new name should exist', async ({
     page
   }) => {
-    const renamedFolderName = `RenamedFolder_${Date.now()}`;
+    const renamedFolderName = `RenamedFolder_${test.info().project.name}_${Date.now()}`;
     await folderRenamePage.hoverOverFolder(testFolderName);
     await folderRenamePage.clickRenameMenuItem(testFolderName);
     await folderRenamePage.clearNewName();
     await folderRenamePage.enterNewName(renamedFolderName);
 
-    // Wait for modal state to stabilize before clicking confirm
-    await page.waitForTimeout(500);
+    // Wait for the confirm button to be enabled before clicking
+    await folderRenamePage.confirmButton.waitFor({ state: 'enabled' });
     await folderRenamePage.clickConfirm();
 
     // Wait for any processing to complete
