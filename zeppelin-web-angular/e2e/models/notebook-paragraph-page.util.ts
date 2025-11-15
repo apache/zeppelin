@@ -36,14 +36,17 @@ export class NotebookParagraphUtil {
   }
 
   async verifyAddParagraphButtons(): Promise<void> {
+    // Verify "Add Paragraph Above" button
     await expect(this.paragraphPage.addParagraphAbove).toBeVisible();
-    await expect(this.paragraphPage.addParagraphBelow).toBeVisible();
-
     const addAboveCount = await this.paragraphPage.addParagraphAbove.count();
-    const addBelowCount = await this.paragraphPage.addParagraphBelow.count();
+    expect(addAboveCount).toBe(1); // Expect exactly one "Add Above" button
+    console.log(`✓ Add Paragraph Above button verified (count: ${addAboveCount})`);
 
-    expect(addAboveCount).toBeGreaterThan(0);
-    expect(addBelowCount).toBeGreaterThan(0);
+    // Verify "Add Paragraph Below" button
+    await expect(this.paragraphPage.addParagraphBelow).toBeVisible();
+    const addBelowCount = await this.paragraphPage.addParagraphBelow.count();
+    expect(addBelowCount).toBe(1); // Expect exactly one "Add Below" button
+    console.log(`✓ Add Paragraph Below button verified (count: ${addBelowCount})`);
   }
 
   async verifyParagraphControlInterface(): Promise<void> {
@@ -77,20 +80,28 @@ export class NotebookParagraphUtil {
   }
 
   async verifyDynamicForms(): Promise<void> {
-    // First check if there's an interpreter error in the result
+    // Check if there's an interpreter error in the result
     const resultText = await this.paragraphPage.resultDisplay.textContent().catch(() => null);
 
-    if (
-      (resultText &&
-        resultText.toLowerCase().includes('interpreter') &&
-        resultText.toLowerCase().includes('not found')) ||
-      resultText.toLowerCase().includes('error')
-    ) {
-      console.log('Dynamic forms verification skipped due to missing interpreter');
+    // Log the result for debugging
+    if (resultText) {
+      console.log(`Result text for dynamic forms check: ${resultText.substring(0, 100)}`);
+    }
+
+    const hasInterpreterError =
+      resultText &&
+      ((resultText.toLowerCase().includes('interpreter') && resultText.toLowerCase().includes('not found')) ||
+        resultText.toLowerCase().includes('error'));
+
+    if (hasInterpreterError) {
+      console.log(
+        '⚠️ Dynamic forms verification skipped: Interpreter not available or error occurred. This test requires proper interpreter configuration.'
+      );
       return;
     }
 
     // If no interpreter error, dynamic forms should be visible
+    console.log('✓ No interpreter errors detected, verifying dynamic forms visibility');
     await expect(this.paragraphPage.dynamicForms).toBeVisible();
   }
 

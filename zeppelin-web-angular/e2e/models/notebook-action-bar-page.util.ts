@@ -208,28 +208,38 @@ export class NotebookActionBarUtil {
   }
 
   async verifySettingsGroup(): Promise<void> {
-    // Settings buttons may be conditionally displayed based on permissions/configuration
-    // At minimum, at least one settings control should be available
-    const settingsControls = [
-      this.actionBarPage.shortcutInfoButton,
-      this.actionBarPage.interpreterSettingsButton,
-      this.actionBarPage.permissionsButton,
-      this.actionBarPage.lookAndFeelDropdown
-    ];
+    // Define required vs optional controls
+    const requiredControls = {
+      shortcutInfo: this.actionBarPage.shortcutInfoButton
+    };
 
-    let visibleControlsCount = 0;
-    for (const control of settingsControls) {
+    const optionalControls = {
+      interpreterSettings: this.actionBarPage.interpreterSettingsButton,
+      permissions: this.actionBarPage.permissionsButton,
+      lookAndFeel: this.actionBarPage.lookAndFeelDropdown
+    };
+
+    // Verify required controls are present and enabled
+    for (const [name, control] of Object.entries(requiredControls)) {
+      await expect(control).toBeVisible({ timeout: 5000 });
+      await expect(control).toBeEnabled();
+      console.log(`✓ Required control "${name}" is visible and enabled`);
+    }
+
+    // Check optional controls and log their status
+    let optionalVisibleCount = 0;
+    for (const [name, control] of Object.entries(optionalControls)) {
       const isVisible = await control.isVisible();
       if (isVisible) {
-        visibleControlsCount++;
         await expect(control).toBeEnabled();
-        console.log(`Settings control is visible and enabled: ${control}`);
+        console.log(`✓ Optional control "${name}" is visible and enabled`);
+        optionalVisibleCount++;
+      } else {
+        console.log(`ℹ️ Optional control "${name}" is not visible (may be disabled by permissions/config)`);
       }
     }
 
-    // Verify at least one settings control is available
-    expect(visibleControlsCount).toBeGreaterThan(0);
-    console.log(`Total visible settings controls: ${visibleControlsCount}`);
+    console.log(`Settings group verified: 1 required + ${optionalVisibleCount}/3 optional controls`);
   }
 
   async verifyAllActionBarFunctionality(): Promise<void> {

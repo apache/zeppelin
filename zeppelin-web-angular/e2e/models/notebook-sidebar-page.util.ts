@@ -26,30 +26,19 @@ export class NotebookSidebarUtil {
   }
 
   async verifyNavigationButtons(): Promise<void> {
-    // Check if sidebar container is visible first
+    // Verify sidebar container is visible
     await expect(this.sidebarPage.sidebarContainer).toBeVisible();
 
-    // Try to find any navigation buttons in the sidebar area
-    const sidebarButtons = this.page.locator('zeppelin-notebook-sidebar button, .sidebar-nav button');
-    const buttonCount = await sidebarButtons.count();
+    // Look for navigation controls (buttons or icons)
+    const navigationControls = this.page.locator(
+      'zeppelin-notebook-sidebar button, .sidebar-nav button, zeppelin-notebook-sidebar i[nz-icon], .sidebar-nav i'
+    );
 
-    if (buttonCount > 0) {
-      // If we find buttons, verify they exist
-      await expect(sidebarButtons.first()).toBeVisible();
-      console.log(`Found ${buttonCount} sidebar navigation buttons`);
-    } else {
-      // If no buttons found, try to find the sidebar icons/controls
-      const sidebarIcons = this.page.locator('zeppelin-notebook-sidebar i[nz-icon], .sidebar-nav i');
-      const iconCount = await sidebarIcons.count();
+    // Playwright assertion will fail with clear message if no controls found
+    await expect(navigationControls.first()).toBeVisible();
 
-      if (iconCount > 0) {
-        await expect(sidebarIcons.first()).toBeVisible();
-        console.log(`Found ${iconCount} sidebar navigation icons`);
-      } else {
-        // As a fallback, just verify the sidebar container is functional
-        console.log('Sidebar container is visible, assuming navigation is functional');
-      }
-    }
+    const controlCount = await navigationControls.count();
+    console.log(`✓ Found ${controlCount} sidebar navigation controls`);
   }
 
   async verifyStateManagement(): Promise<void> {
