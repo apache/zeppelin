@@ -42,14 +42,14 @@ export class NotebookUtil extends BasePage {
     await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
     await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
-    // Wait for the modal to appear and fill the notebook name
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
-
     // Click the 'Create' button in the modal
     const createButton = this.page.locator('button', { hasText: 'Create' });
     await expect(createButton).toBeVisible({ timeout: 30000 });
+
+    const notebookNameInput = this.page.locator('input[name="noteName"]');
+    await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
     await notebookNameInput.fill(notebookName);
+
     await createButton.click({ timeout: 30000 });
 
     await this.waitForPageLoad();

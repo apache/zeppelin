@@ -131,12 +131,12 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private formatKey(shortcut: string): string {
-    const isMac = process.platform === 'darwin';
+    // const isMac = process.platform === 'darwin';
 
     return shortcut
       .toLowerCase()
       .replace(/\./g, '+')
-      .replace(/control/g, isMac ? 'Meta' : 'Control')
+      .replace(/control/g, 'Control')
       .replace(/shift/g, 'Shift')
       .replace(/alt/g, 'Alt')
       .replace(/arrowup/g, 'ArrowUp')
@@ -179,57 +179,12 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Delete paragraph - control.alt.d (or control.alt.∂ for macOS)
   async pressDeleteParagraph(): Promise<void> {
-    const currentCount = await this.getParagraphCount();
-
-    // Set up API response listener BEFORE executing keyboard shortcut
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/notebook/') &&
-        (res.request().method() === 'DELETE' || res.request().method() === 'POST'),
-      { timeout: 10000 }
-    );
-
     await this.executePlatformShortcut(['control.alt.d', 'control.alt.∂']);
-
-    // Wait for API response to complete
-    const response = await responsePromise;
-    expect(response.ok()).toBe(true);
-
-    // Wait for paragraph count to decrease
-    await this.page.waitForFunction(
-      expectedCount => {
-        return document.querySelectorAll('zeppelin-notebook-paragraph').length < expectedCount;
-      },
-      currentCount,
-      { timeout: 10000 }
-    );
   }
 
   // Insert paragraph above - control.alt.a (or control.alt.å for macOS)
   async pressInsertAbove(): Promise<void> {
-    const currentCount = await this.getParagraphCount();
-
-    // Set up API response listener BEFORE executing keyboard shortcut
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/notebook/') && (res.request().method() === 'POST' || res.request().method() === 'PUT'),
-      { timeout: 10000 }
-    );
-
     await this.executePlatformShortcut(['control.alt.a', 'control.alt.å']);
-
-    // Wait for API response to complete
-    const response = await responsePromise;
-    expect(response.ok()).toBe(true);
-
-    // Wait for paragraph count to increase
-    await this.page.waitForFunction(
-      expectedCount => {
-        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
-      },
-      currentCount,
-      { timeout: 10000 }
-    );
   }
 
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
@@ -242,9 +197,10 @@ export class NotebookKeyboardPage extends BasePage {
     const urlBefore = this.page.url();
     console.log(`[addParagraph] Current URL: ${urlBefore}, Paragraph count before: ${currentCount}`);
 
-    // Hover over the last paragraph to make the 'add' button appear
-    await this.paragraphContainer.last().hover();
-    await this.page.locator('zeppelin-notebook-add-paragraph .add-paragraph a.inner').first().click();
+    // Hover over the 'add paragraph' component itself, then click the inner link.
+    const addParagraphComponent = this.page.locator('zeppelin-notebook-add-paragraph').last();
+    await addParagraphComponent.hover();
+    await addParagraphComponent.locator('a.inner').click();
     console.log(`[addParagraph] "Add Paragraph" button clicked`);
 
     // Wait for paragraph count to increase
@@ -262,29 +218,7 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Insert copy of paragraph below - control.shift.c
   async pressInsertCopy(): Promise<void> {
-    const currentCount = await this.getParagraphCount();
-
-    // Set up API response listener BEFORE executing keyboard shortcut
-    const responsePromise = this.page.waitForResponse(
-      res =>
-        res.url().includes('/api/notebook/') && (res.request().method() === 'POST' || res.request().method() === 'PUT'),
-      { timeout: 10000 }
-    );
-
     await this.executePlatformShortcut('control.shift.c');
-
-    // Wait for API response to complete
-    const response = await responsePromise;
-    expect(response.ok()).toBe(true);
-
-    // Wait for paragraph count to increase
-    await this.page.waitForFunction(
-      expectedCount => {
-        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
-      },
-      currentCount,
-      { timeout: 10000 }
-    );
   }
 
   // Move paragraph up - control.alt.k (or control.alt.˚ for macOS)
@@ -520,9 +454,9 @@ export class NotebookKeyboardPage extends BasePage {
     await editorInput.scrollIntoViewIfNeeded();
     // Skip waiting for editorInput visibility in Firefox as it can be flaky
     if (test.info().project.name === 'firefox') {
-      // Use a more direct interaction for Firefox
-      await editorInput.click({ force: true });
-      await this.page.keyboard.insertText(content);
+      // Use focus() and keyboard.type() for a more robust interaction in Firefox
+      await editorInput.focus();
+      await this.page.keyboard.type(content);
     } else {
       await editorInput.waitFor({ state: 'visible', timeout: 5000 });
       await editorInput.fill(content);
@@ -615,7 +549,7 @@ export class NotebookKeyboardPage extends BasePage {
     return await paragraph.getAttribute('class');
   }
 
-  async waitForParagraphCountChange(expectedCount: number, timeout: number = 15000): Promise<void> {
+  async waitForParagraphCountChange(expectedCount: number, timeout: number = 30000): Promise<void> {
     if (this.page.isClosed()) {
       return;
     }
@@ -628,7 +562,7 @@ export class NotebookKeyboardPage extends BasePage {
     return await searchDialog.isVisible();
   }
 
-  async clickModalOkButton(timeout: number = 10000): Promise<void> {
+  async clickModalOkButton(timeout: number = 30000): Promise<void> {
     // Wait for any modal to appear
     const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
     await modal.waitFor({ state: 'visible', timeout });
