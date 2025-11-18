@@ -114,7 +114,6 @@ test.describe.serial('Folder Rename', () => {
     await folderRenamePage.enterNewName(renamedFolderName);
 
     // Wait for the confirm button to be enabled before clicking
-    await folderRenamePage.confirmButton.waitFor({ state: 'enabled' });
     await folderRenamePage.clickConfirm();
 
     // Wait for any processing to complete

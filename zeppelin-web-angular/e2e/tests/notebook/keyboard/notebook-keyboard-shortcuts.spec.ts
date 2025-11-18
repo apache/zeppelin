@@ -67,7 +67,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CORE EXECUTION SHORTCUTS =====
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
-    test('should run current paragraph with Shift+Enter', async ({ page }) => {
+    test('should run current paragraph with Shift+Enter', async () => {
       // Given: A paragraph with markdown content
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\nThis is a test.');
@@ -130,11 +130,15 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Focus on second paragraph
       await keyboardPage.focusCodeEditor(1);
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nTest content for second paragraph', 1);
+      await keyboardPage.focusCodeEditor(1); // Ensure focus on the second paragraph
+
+      // Add an explicit wait for the page to be completely stable and the notebook UI to be interactive
+      await keyboardPage.page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network to be idle
+      await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 15000 }); // Ensure a paragraph is visible
 
       // When: User presses Control+Shift+ArrowUp from second paragraph
       await keyboardPage.pressRunAbove();
 
-      // Confirmation modal must appear when running paragraphs
       await keyboardPage.clickModalOkButton();
 
       // Then: First paragraph should execute
@@ -279,6 +283,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Original Paragraph\nContent for insert above test');
 
       const initialCount = await keyboardPage.getParagraphCount();
+
+      await keyboardPage.focusCodeEditor(0);
 
       // When: User presses Control+Alt+A
       await keyboardPage.pressInsertAbove();
