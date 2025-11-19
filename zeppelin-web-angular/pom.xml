@@ -158,6 +158,7 @@
               <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                 <arg value="start" />
                 <env key="ZEPPELIN_NOTEBOOK_DIR" value="${zeppelin.notebook.dir}" />
+                <env key="PATH" value="${env.PATH}" />
               </exec>
               </target>
             </configuration>
@@ -174,6 +175,7 @@
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                   <arg value="stop" />
+                  <env key="PATH" value="${env.PATH}" />
                 </exec>
               </target>
             </configuration>

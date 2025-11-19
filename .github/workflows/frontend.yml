@@ -66,6 +66,7 @@ jobs:
     strategy:
       matrix:
         mode: [anonymous, auth]
+        python: [ 3.9 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,10 +77,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -98,8 +95,18 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
+      - name: Setup conda environment with python ${{ matrix.python }} and R
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_3_with_R
+          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          python-version: ${{ matrix.python }}
+          channels: conda-forge,defaults
+          channel-priority: strict
+          auto-activate-base: false
+          use-mamba: true
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web-angular ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl python,rlang,zeppelin-jupyter-interpreter,zeppelin-web-angular ${MAVEN_ARGS}
       - name: Setup Zeppelin Server (Shiro.ini)
         run: |
           export ZEPPELIN_CONF_DIR=./conf
