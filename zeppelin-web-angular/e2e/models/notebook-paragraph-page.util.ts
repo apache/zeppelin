@@ -150,11 +150,6 @@ export class NotebookParagraphUtil {
 
     await this.paragraphPage.runParagraph();
 
-    // TODO: Need to fix the setup so the CI no longer shows the “Interpreter Python not found” error
-    if (process.env.CI) {
-      test.skip();
-    }
-
     // Cancel button should appear during execution
     const cancelButton = this.page.locator(
       '.cancel-para, [nz-tooltip*="Cancel"], [title*="Cancel"], button:has-text("Cancel"), i[nz-icon="pause-circle"], .anticon-pause-circle'

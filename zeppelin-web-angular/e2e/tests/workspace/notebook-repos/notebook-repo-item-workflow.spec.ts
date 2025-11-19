@@ -38,10 +38,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
 
   test('should complete full edit workflow with save', async ({ page }) => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemUtil.verifyDisplayMode();
 
@@ -62,11 +58,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
       }
     }
 
-    if (!foundSetting) {
-      test.skip();
-      return;
-    }
-
     const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
     expect(isSaveEnabled).toBe(true);
 
@@ -78,12 +69,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
   });
 
   test('should complete full edit workflow with cancel', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     await repoItemUtil.verifyDisplayMode();
 
     const firstRow = repoItemPage.settingRows.first();
@@ -93,13 +78,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     await repoItemPage.clickEdit();
     await repoItemUtil.verifyEditMode();
 
-    const isInputVisible = await repoItemPage.isInputVisible(settingName);
-    if (isInputVisible) {
-      await repoItemPage.fillSettingInput(settingName, 'temp-modified-value');
-    } else {
-      test.skip();
-      return;
-    }
+    await repoItemPage.fillSettingInput(settingName, 'temp-modified-value');
 
     await repoItemPage.clickCancel();
     await repoItemUtil.verifyDisplayMode();

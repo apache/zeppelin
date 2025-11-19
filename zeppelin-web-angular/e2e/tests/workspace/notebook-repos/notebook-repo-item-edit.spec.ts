@@ -66,22 +66,13 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
   });
 
   test('should reset form when cancel is clicked', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     const firstRow = repoItemPage.settingRows.first();
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 
     await repoItemPage.clickEdit();
 
-    const isInputVisible = await repoItemPage.isInputVisible(settingName);
-    if (isInputVisible) {
-      await repoItemPage.fillSettingInput(settingName, 'temp-value');
-    }
+    await repoItemPage.fillSettingInput(settingName, 'temp-value');
 
     await repoItemPage.clickCancel();
 
