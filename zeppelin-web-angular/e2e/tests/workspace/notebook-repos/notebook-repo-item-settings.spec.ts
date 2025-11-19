@@ -48,10 +48,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should show input controls for INPUT type settings in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
@@ -70,10 +66,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should show dropdown controls for DROPDOWN type settings in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
@@ -91,10 +83,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should update input value in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
@@ -113,19 +101,9 @@ test.describe('Notebook Repository Item - Settings', () => {
         break;
       }
     }
-
-    if (!foundInput) {
-      test.skip();
-    }
   });
 
   test('should display setting name and value in display mode', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     const firstRow = repoItemPage.settingRows.first();
     const nameCell = firstRow.locator('td').first();
     const valueCell = firstRow.locator('td').nth(1);
