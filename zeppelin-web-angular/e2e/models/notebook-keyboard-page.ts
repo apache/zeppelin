@@ -124,10 +124,46 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Simple, direct keyboard execution - no hiding failures
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
-    const key = Array.isArray(shortcut) ? shortcut[0] : shortcut;
-    const formatted = this.formatKey(key);
+    const browserName = test.info().project.name;
+    const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
 
-    await this.page.keyboard.press(formatted);
+    for (const s of shortcutsToTry) {
+      const formatted = this.formatKey(s); // e.g., "Control+Shift+ArrowDown"
+      const parts = formatted.split('+');
+      const modifiers: string[] = [];
+      let mainKey: string = '';
+
+      // Identify modifiers and main key
+      for (const part of parts) {
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(part)) {
+          modifiers.push(part);
+        } else {
+          mainKey = part;
+        }
+      }
+
+      // If WebKit or simple shortcut (no complex modifiers or just a single key), use direct press
+      // If no mainKey is found (e.g., just 'Control+Shift'), it's likely a modifier combination,
+      // and direct press is still appropriate.
+      if (browserName === 'webkit' || modifiers.length === 0 || mainKey === '') {
+        await this.page.keyboard.press(formatted);
+      } else {
+        // For non-WebKit browsers with complex shortcuts, use down/press/up
+        for (const modifier of modifiers) {
+          await this.page.keyboard.down(modifier);
+        }
+        if (mainKey) {
+          await this.page.keyboard.down(mainKey);
+          await this.page.keyboard.up(mainKey);
+        }
+        for (const modifier of modifiers) {
+          await this.page.keyboard.up(modifier);
+        }
+      }
+      // Assuming one of the shortcuts in the array will eventually work if provided.
+      // For now, we return after the first attempt.
+      return;
+    }
   }
 
   private formatKey(shortcut: string): string {
@@ -429,6 +465,14 @@ export class NotebookKeyboardPage extends BasePage {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const editorInput = paragraph.locator('.monaco-editor .inputarea, .monaco-editor textarea').first();
 
+    // Clear existing content
+    const browserName = this.page.context().browser()?.browserType().name();
+    if (browserName !== 'firefox') {
+      await editorInput.click();
+    }
+    await this.page.keyboard.press('Control+A');
+    await this.page.keyboard.press('Delete');
+
     // Try Monaco API first
     const success = await this.page.evaluate(newContent => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -488,33 +532,8 @@ export class NotebookKeyboardPage extends BasePage {
 
   async isParagraphEnabled(paragraphIndex: number = 0): Promise<boolean> {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-
-    // Check multiple possible indicators for disabled state
-    const disabledSelectors = [
-      '.paragraph-disabled',
-      '[disabled="true"]',
-      '.disabled:not(.monaco-sash)',
-      '[aria-disabled="true"]',
-      '.paragraph-status-disabled'
-    ];
-
-    for (const selector of disabledSelectors) {
-      const disabledIndicator = paragraph.locator(selector).first();
-      if (await disabledIndicator.isVisible()) {
-        return false;
-      }
-    }
-
-    // Also check paragraph attributes and classes
-    const paragraphClass = (await paragraph.getAttribute('class')) || '';
-    const paragraphDisabled = await paragraph.getAttribute('disabled');
-
-    if (paragraphClass.includes('disabled') || paragraphDisabled === 'true') {
-      return false;
-    }
-
-    // If no disabled indicators found, paragraph is enabled
-    return true;
+    const runButton = paragraph.locator('i[nztooltiptitle="Run paragraph"]');
+    return await runButton.isVisible();
   }
 
   async isEditorVisible(paragraphIndex: number = 0): Promise<boolean> {

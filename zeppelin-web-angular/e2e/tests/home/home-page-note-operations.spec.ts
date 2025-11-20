@@ -185,8 +185,6 @@ test.describe('Home Page Note Operations', () => {
         if (await confirmButton.isVisible()) {
           await confirmButton.click();
 
-          await page.waitForTimeout(2000);
-
           const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
           await expect(trashFolder).toBeVisible();
         }

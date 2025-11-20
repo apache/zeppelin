@@ -63,8 +63,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
 
     await repoItemPage.clickSave();
 
-    await page.waitForTimeout(1000);
-
     await repoItemUtil.verifyDisplayMode();
   });
 

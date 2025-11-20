@@ -57,7 +57,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.afterEach(async ({ page }) => {
     // Clean up any open dialogs or modals
-    await page.keyboard.press('Escape').catch(() => {});
+    await page.keyboard.press('Escape');
 
     if (testNotebook?.noteId) {
       await testUtil.deleteTestNotebook(testNotebook.noteId);
@@ -185,7 +185,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should cancel running paragraph with Control+Alt+C', async () => {
       // Given: A long-running paragraph
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nimport time\ntime.sleep(3)\nprint("Should be cancelled")');
+      await keyboardPage.setCodeEditorContent('%python\nimport time;time.sleep(3)\nprint("Should be cancelled")');
 
       // Start execution
       await keyboardPage.pressRunParagraph();
@@ -428,6 +428,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialOutputVisibility = await keyboardPage.isOutputVisible(0);
 
       // When: User presses Control+Alt+O
+      await keyboardPage.focusCodeEditor(0);
       await keyboardPage.pressSwitchOutputShow();
 
       // Then: Output visibility should toggle

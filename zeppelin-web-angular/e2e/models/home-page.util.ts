@@ -121,7 +121,7 @@ export class HomePageUtil {
     await this.homePage.clickRefreshNotes();
 
     // Wait for refresh operation to complete
-    await this.page.waitForTimeout(2000);
+    await this.homePage.waitForRefreshToComplete();
 
     // Ensure the notebook list is still visible after refresh
     await expect(this.homePage.notebookList).toBeVisible();

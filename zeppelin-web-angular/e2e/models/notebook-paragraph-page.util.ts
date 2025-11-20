@@ -146,7 +146,7 @@ export class NotebookParagraphUtil {
     await expect(codeEditor).toBeFocused({ timeout: 5000 });
 
     await this.page.keyboard.press('Control+a');
-    await this.page.keyboard.type('%python\nimport time\ntime.sleep(10)\nprint("Done")');
+    await this.page.keyboard.type('%python\nimport time;time.sleep(10)\nprint("Done")');
 
     await this.paragraphPage.runParagraph();
 

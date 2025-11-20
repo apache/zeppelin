@@ -196,8 +196,17 @@ export class HomePage extends BasePage {
   }
 
   async isRefreshIconSpinning(): Promise<boolean> {
-    const spinAttribute = await this.refreshIcon.getAttribute('nzSpin');
-    return spinAttribute === 'true' || spinAttribute === '';
+    // Check for various spinning indicators
+    const hasSpinAttribute = await this.refreshIcon.getAttribute('nzSpin');
+    const hasSpinClass = await this.refreshIcon.evaluate(
+      el =>
+        el.classList.contains('anticon-spin') ||
+        el.classList.contains('nz-spin') ||
+        el.style.animation.includes('spin') ||
+        getComputedStyle(el).animation.includes('spin')
+    );
+
+    return hasSpinAttribute === 'true' || hasSpinAttribute === '' || hasSpinClass;
   }
 
   async waitForRefreshToComplete(): Promise<void> {
