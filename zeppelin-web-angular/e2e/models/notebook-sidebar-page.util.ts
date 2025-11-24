@@ -353,8 +353,16 @@ export class NotebookSidebarUtil {
       const treeNode = notebookLink.locator('xpath=ancestor::nz-tree-node[1]');
       await treeNode.hover();
 
+      // Additional wait to ensure hover animation/transition completes
+      await this.page.waitForTimeout(300);
+
       // Wait for delete button to become visible after hover
       const deleteButtonLocator = treeNode.locator('i[nztype="delete"], i.anticon-delete');
+
+      // Retry hover to ensure button appears
+      await treeNode.hover({ force: true });
+      await this.page.waitForTimeout(500);
+
       await expect(deleteButtonLocator).toBeVisible({ timeout: 5000 });
 
       // Try multiple selectors for the delete button
@@ -369,6 +377,8 @@ export class NotebookSidebarUtil {
       for (const selector of deleteButtonSelectors) {
         const deleteButton = treeNode.locator(selector);
         if (await deleteButton.isVisible({ timeout: 2000 })) {
+          // Ensure the button is still hovered before clicking
+          await deleteButton.hover();
           await deleteButton.click({ timeout: 5000 });
           deleteClicked = true;
           break;

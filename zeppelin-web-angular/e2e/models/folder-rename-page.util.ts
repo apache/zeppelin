@@ -132,12 +132,10 @@ export class FolderRenamePageUtil {
     ];
 
     for (const check of clientValidationChecks) {
-      try {
-        await check();
-        clientValidationFound = true;
-        // Client-side validation working - empty name prevented
-        break;
-      } catch (error) {}
+      await check();
+      clientValidationFound = true;
+      // Client-side validation working - empty name prevented
+      break;
     }
 
     if (clientValidationFound) {

@@ -15,16 +15,12 @@ import { BasePage } from './base-page';
 
 export class FolderRenamePage extends BasePage {
   readonly folderList: Locator;
-  readonly contextMenu: Locator;
   readonly renameMenuItem: Locator;
-  readonly deleteMenuItem: Locator;
-  readonly moveToTrashMenuItem: Locator;
   readonly renameModal: Locator;
   readonly renameInput: Locator;
   readonly confirmButton: Locator;
   readonly cancelButton: Locator;
   readonly validationError: Locator;
-  readonly deleteIcon: Locator;
   readonly deleteConfirmation: Locator;
   readonly deleteConfirmButton: Locator;
   readonly deleteCancelButton: Locator;
@@ -32,10 +28,7 @@ export class FolderRenamePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.folderList = page.locator('zeppelin-node-list');
-    this.contextMenu = page.locator('.operation'); // Operation buttons area instead of dropdown
     this.renameMenuItem = page.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]').first();
-    this.deleteMenuItem = page.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]').first();
-    this.moveToTrashMenuItem = page.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]').first();
     this.renameModal = page.locator('.ant-modal');
     this.renameInput = page.locator('input[placeholder="Insert New Name"]');
     this.confirmButton = page.getByRole('button', { name: 'Rename' });
@@ -43,7 +36,6 @@ export class FolderRenamePage extends BasePage {
     this.validationError = page.locator(
       '.ant-form-item-explain, .error-message, .validation-error, .ant-form-item-explain-error'
     );
-    this.deleteIcon = page.locator('i[nz-icon][nztype="delete"]');
     this.deleteConfirmation = page.locator('.ant-popover').filter({ hasText: 'This folder will be moved to trash.' });
     this.deleteConfirmButton = page.getByRole('button', { name: 'OK' }).last();
     this.deleteCancelButton = page.getByRole('button', { name: 'Cancel' }).last();

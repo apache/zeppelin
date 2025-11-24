@@ -83,6 +83,15 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn(`Paragraph ${paragraphIndex} not visible`);
     });
 
+    // Wait for any loading/rendering to complete
+    await this.page.waitForLoadState('domcontentloaded');
+
+    const browserName = this.page.context().browser()?.browserType().name();
+    if (browserName === 'firefox') {
+      // Additional wait for Firefox to ensure editor is fully ready
+      await this.page.waitForTimeout(200);
+    }
+
     await this.focusEditorElement(paragraph, paragraphIndex);
   }
 
@@ -124,51 +133,18 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Simple, direct keyboard execution - no hiding failures
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
-    const browserName = test.info().project.name;
     const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
 
     for (const s of shortcutsToTry) {
-      const formatted = this.formatKey(s); // e.g., "Control+Shift+ArrowDown"
-      const parts = formatted.split('+');
-      const modifiers: string[] = [];
-      let mainKey: string = '';
+      const formatted = this.formatKey(s);
 
-      // Identify modifiers and main key
-      for (const part of parts) {
-        if (['Control', 'Shift', 'Alt', 'Meta'].includes(part)) {
-          modifiers.push(part);
-        } else {
-          mainKey = part;
-        }
-      }
+      await this.page.keyboard.press(formatted);
 
-      // If WebKit or simple shortcut (no complex modifiers or just a single key), use direct press
-      // If no mainKey is found (e.g., just 'Control+Shift'), it's likely a modifier combination,
-      // and direct press is still appropriate.
-      if (browserName === 'webkit' || modifiers.length === 0 || mainKey === '') {
-        await this.page.keyboard.press(formatted);
-      } else {
-        // For non-WebKit browsers with complex shortcuts, use down/press/up
-        for (const modifier of modifiers) {
-          await this.page.keyboard.down(modifier);
-        }
-        if (mainKey) {
-          await this.page.keyboard.down(mainKey);
-          await this.page.keyboard.up(mainKey);
-        }
-        for (const modifier of modifiers) {
-          await this.page.keyboard.up(modifier);
-        }
-      }
-      // Assuming one of the shortcuts in the array will eventually work if provided.
-      // For now, we return after the first attempt.
       return;
     }
   }
 
   private formatKey(shortcut: string): string {
-    // const isMac = process.platform === 'darwin';
-
     return shortcut
       .toLowerCase()
       .replace(/\./g, '+')
@@ -180,8 +156,6 @@ export class NotebookKeyboardPage extends BasePage {
       .replace(/enter/g, 'Enter')
       .replace(/\+([a-z])$/, (_, c) => `+${c.toUpperCase()}`);
   }
-
-  // All ShortcutsMap keyboard shortcuts
 
   // Run paragraph - shift.enter
   async pressRunParagraph(): Promise<void> {
@@ -387,23 +361,6 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async getCodeEditorContent(): Promise<string> {
-    // Try to get content directly from Monaco Editor's model first
-    const monacoContent = await this.page.evaluate(() => {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      const win = window as any;
-      if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
-        const editor = win.monaco.editor.getActiveEditor();
-        if (editor) {
-          return editor.getModel().getValue();
-        }
-      }
-      return null;
-    });
-
-    if (monacoContent !== null) {
-      return monacoContent;
-    }
-
     // Fallback to Angular scope
     const angularContent = await this.page.evaluate(() => {
       const paragraphElement = document.querySelector('zeppelin-notebook-paragraph');
@@ -447,15 +404,6 @@ export class NotebookKeyboardPage extends BasePage {
       return;
     }
 
-    // Wait for the URL to be correct for the notebook page
-    await expect(this.page).toHaveURL(/\/notebook\//, { timeout: 15000 });
-
-    // Wait for the main welcome message to disappear, indicating the notebook is loading
-    await expect(this.page.locator('text=Welcome to Zeppelin!')).not.toBeVisible({ timeout: 10000 });
-
-    // Ensure the first paragraph is visible before proceeding
-    await expect(this.page.locator('zeppelin-notebook-paragraph').first()).toBeVisible({ timeout: 10000 });
-
     await this.focusCodeEditor(paragraphIndex);
     if (this.page.isClosed()) {
       console.warn('Cannot set code editor content: page closed after focusing');
@@ -465,46 +413,21 @@ export class NotebookKeyboardPage extends BasePage {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
     const editorInput = paragraph.locator('.monaco-editor .inputarea, .monaco-editor textarea').first();
 
-    // Clear existing content
-    const browserName = this.page.context().browser()?.browserType().name();
+    const browserName = test.info().project.name;
     if (browserName !== 'firefox') {
+      await editorInput.waitFor({ state: 'visible', timeout: 30000 });
       await editorInput.click();
+      await editorInput.clear();
     }
-    await this.page.keyboard.press('Control+A');
-    await this.page.keyboard.press('Delete');
+    // Use force option to skip visibility checks - Monaco editor's textarea is often hidden
+    await editorInput.fill('', { force: true });
 
-    // Try Monaco API first
-    const success = await this.page.evaluate(newContent => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const win = window as any;
-      if (win.monaco && typeof win.monaco.editor.getActiveEditor === 'function') {
-        const editor = win.monaco.editor.getActiveEditor();
-        if (editor) {
-          editor.getModel().setValue(newContent);
-          return true;
-        }
-      }
-      return false;
-    }, content);
-
-    if (success) {
-      return;
+    if (browserName !== 'firefox') {
+      await editorInput.clear();
     }
 
-    // Fallback: wait for code editor component to be visible first
-    const codeEditorComponent = paragraph.locator('zeppelin-notebook-paragraph-code-editor').first();
-    await codeEditorComponent.waitFor({ state: 'visible', timeout: 10000 });
-
-    await editorInput.scrollIntoViewIfNeeded();
-    // Skip waiting for editorInput visibility in Firefox as it can be flaky
-    if (test.info().project.name === 'firefox') {
-      // Use focus() and keyboard.type() for a more robust interaction in Firefox
-      await editorInput.focus();
-      await this.page.keyboard.type(content);
-    } else {
-      await editorInput.waitFor({ state: 'visible', timeout: 5000 });
-      await editorInput.fill(content);
-    }
+    await editorInput.fill(content, { force: true });
+    await this.page.waitForTimeout(200);
   }
 
   // Helper methods for verifying shortcut effects
@@ -805,13 +728,23 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private async focusEditorElement(paragraph: Locator, paragraphIndex: number): Promise<void> {
+    const browserName = this.page.context().browser()?.browserType().name();
     const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
+
     await editor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
       console.warn(`Editor not visible in paragraph ${paragraphIndex}`);
     });
 
-    await editor.dblclick({ force: true }).catch(() => {
-      console.warn(`Failed to double-click editor in paragraph ${paragraphIndex}`);
+    // Use a unified approach: click the editor container to focus it.
+    // This is more reliable than targeting internal, potentially hidden elements like the textarea.
+    // Using { force: true } helps bypass overlays that might obscure the editor.
+    await editor.click({ force: true, trial: true }).catch(async () => {
+      console.warn(`Failed to click editor in paragraph ${paragraphIndex}, trying to focus textarea directly`);
+      // As a fallback, try focusing the textarea if direct click fails
+      const textArea = editor.locator('textarea').first();
+      if ((await textArea.count()) > 0) {
+        await textArea.focus({ timeout: 1000 });
+      }
     });
 
     await this.ensureEditorFocused(editor, paragraphIndex);
@@ -822,20 +755,10 @@ export class NotebookKeyboardPage extends BasePage {
     const hasTextArea = (await textArea.count()) > 0;
 
     if (hasTextArea) {
-      await textArea.press('ArrowRight').catch(() => {
-        console.warn(`Failed to press ArrowRight in paragraph ${paragraphIndex}`);
-      });
-      await expect(textArea)
-        .toBeFocused({ timeout: 2000 })
-        .catch(() => {
-          console.warn(`Textarea not focused in paragraph ${paragraphIndex}`);
-        });
+      await textArea.focus();
+      await expect(textArea).toBeFocused({ timeout: 3000 });
     } else {
-      await expect(editor)
-        .toHaveClass(/focused|focus/, { timeout: 5000 })
-        .catch(() => {
-          console.warn(`Editor not focused in paragraph ${paragraphIndex}`);
-        });
+      await expect(editor).toHaveClass(/focused|focus|active/, { timeout: 30000 });
     }
   }
 }

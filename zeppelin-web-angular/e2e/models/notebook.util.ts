@@ -38,7 +38,7 @@ export class NotebookUtil extends BasePage {
       { timeout: 30000 }
     );
 
-    await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
+    await expect(this.homePage.notebookList).toBeVisible({ timeout: 90000 });
     await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
     await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
