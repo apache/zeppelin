@@ -110,32 +110,35 @@ export class FolderRenamePageUtil {
     let clientValidationFound = false;
     const clientValidationChecks = [
       // Check for validation error message
-      async () => {
-        await expect(this.folderRenamePage.validationError).toBeVisible({ timeout: 1000 });
-        return true;
-      },
+      async () =>
+        // Use isVisible() to check without asserting, and catch if element is not found
+        await this.folderRenamePage.validationError.isVisible({ timeout: 1000 }).catch(() => false),
       // Check if input shows validation state
       async () => {
-        await expect(this.folderRenamePage.renameInput).toHaveAttribute('aria-invalid', 'true', { timeout: 1000 });
-        return true;
+        // Check attribute value, and catch if element is not found
+        const ariaInvalid = await this.folderRenamePage.renameInput
+          .getAttribute('aria-invalid', { timeout: 1000 })
+          .catch(() => null);
+        return ariaInvalid === 'true';
       },
       // Check if rename button is disabled
-      async () => {
-        await expect(this.folderRenamePage.confirmButton).toBeDisabled({ timeout: 1000 });
-        return true;
-      },
+      async () =>
+        // Use isDisabled() to check without asserting, and catch if element is not found
+        await this.folderRenamePage.confirmButton.isDisabled({ timeout: 1000 }).catch(() => false),
       // Check input validity via CSS classes
-      async () => {
-        await expect(this.folderRenamePage.renameInput).toHaveClass(/invalid|error/, { timeout: 1000 });
-        return true;
-      }
+      async () =>
+        // Evaluate the class directly, and catch if element is not found
+        await this.folderRenamePage.renameInput
+          .evaluate(el => el.classList.contains('invalid') || el.classList.contains('error'), { timeout: 1000 })
+          .catch(() => false)
     ];
 
     for (const check of clientValidationChecks) {
-      await check();
-      clientValidationFound = true;
-      // Client-side validation working - empty name prevented
-      break;
+      if (await check()) {
+        clientValidationFound = true;
+        // Client-side validation working - empty name prevented
+        break;
+      }
     }
 
     if (clientValidationFound) {
