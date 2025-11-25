@@ -13,7 +13,14 @@
 import { test } from '@playwright/test';
 import { NotebookActionBarUtil } from '../../../models/notebook-action-bar-page.util';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import {
+  addPageAnnotationBeforeEach,
+  performLoginIfRequired,
+  waitForZeppelinReady,
+  PAGES,
+  createTestNotebook,
+  deleteTestNotebook
+} from '../../../utils';
 
 test.describe('Notebook Action Bar Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_ACTION_BAR);
@@ -27,16 +34,16 @@ test.describe('Notebook Action Bar Functionality', () => {
     await performLoginIfRequired(page);
 
     testUtil = new PublishedParagraphTestUtil(page);
-    testNotebook = await testUtil.createTestNotebook();
+    testNotebook = await createTestNotebook(page);
 
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({ page }) => {
     if (testNotebook?.noteId) {
-      await testUtil.deleteTestNotebook(testNotebook.noteId);
+      await deleteTestNotebook(page, testNotebook.noteId);
     }
   });
 

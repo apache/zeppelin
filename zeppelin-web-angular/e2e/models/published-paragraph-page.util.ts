@@ -18,12 +18,10 @@ import { PublishedParagraphPage } from './published-paragraph-page';
 export class PublishedParagraphTestUtil {
   private page: Page;
   private publishedParagraphPage: PublishedParagraphPage;
-  private notebookUtil: NotebookUtil;
 
   constructor(page: Page) {
     this.page = page;
     this.publishedParagraphPage = new PublishedParagraphPage(page);
-    this.notebookUtil = new NotebookUtil(page);
   }
 
   async testConfirmationModalForNoResultParagraph({

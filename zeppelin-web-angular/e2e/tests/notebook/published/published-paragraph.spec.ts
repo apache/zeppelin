@@ -18,7 +18,9 @@ import {
   performLoginIfRequired,
   waitForNotebookLinks,
   waitForZeppelinReady,
-  PAGES
+  PAGES,
+  createTestNotebook,
+  deleteTestNotebook
 } from '../../../utils';
 
 test.describe('Published Paragraph', () => {
@@ -42,12 +44,12 @@ test.describe('Published Paragraph', () => {
     }
 
     testUtil = new PublishedParagraphTestUtil(page);
-    testNotebook = await testUtil.createTestNotebook();
+    testNotebook = await createTestNotebook(page);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({ page }) => {
     if (testNotebook?.noteId) {
-      await testUtil.deleteTestNotebook(testNotebook.noteId);
+      await deleteTestNotebook(page, testNotebook?.noteId);
     }
   });
 
