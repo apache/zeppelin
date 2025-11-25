@@ -12,7 +12,14 @@
 
 import { test } from '@playwright/test';
 import { NotebookSidebarUtil } from '../../../models/notebook-sidebar-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import {
+  addPageAnnotationBeforeEach,
+  performLoginIfRequired,
+  waitForZeppelinReady,
+  PAGES,
+  createTestNotebook,
+  deleteTestNotebook
+} from '../../../utils';
 
 test.describe('Notebook Sidebar Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_SIDEBAR);
@@ -29,16 +36,16 @@ test.describe('Notebook Sidebar Functionality', () => {
     await performLoginIfRequired(page);
 
     testUtil = new NotebookSidebarUtil(page);
-    testNotebook = await testUtil.createTestNotebook();
+    testNotebook = await createTestNotebook(page);
 
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({ page }) => {
     if (testNotebook?.noteId) {
-      await testUtil.deleteTestNotebook(testNotebook.noteId);
+      await deleteTestNotebook(page, testNotebook.noteId);
     }
   });
 

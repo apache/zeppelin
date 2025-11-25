@@ -14,7 +14,14 @@ import { expect, test } from '@playwright/test';
 import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
 import { NotebookParagraphUtil } from '../../../models/notebook-paragraph-page.util';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import {
+  addPageAnnotationBeforeEach,
+  performLoginIfRequired,
+  waitForZeppelinReady,
+  PAGES,
+  createTestNotebook,
+  deleteTestNotebook
+} from '../../../utils';
 
 test.describe('Notebook Paragraph Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH);
@@ -29,16 +36,16 @@ test.describe('Notebook Paragraph Functionality', () => {
     await performLoginIfRequired(page);
 
     testUtil = new PublishedParagraphTestUtil(page);
-    testNotebook = await testUtil.createTestNotebook();
+    testNotebook = await createTestNotebook(page);
 
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({ page }) => {
     if (testNotebook?.noteId) {
-      await testUtil.deleteTestNotebook(testNotebook.noteId);
+      await deleteTestNotebook(page, testNotebook.noteId);
     }
   });
 

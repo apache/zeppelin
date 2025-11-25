@@ -18,7 +18,9 @@ import {
   performLoginIfRequired,
   waitForNotebookLinks,
   waitForZeppelinReady,
-  PAGES
+  PAGES,
+  createTestNotebook,
+  deleteTestNotebook
 } from '../../../utils';
 
 /**
@@ -51,7 +53,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     }
 
     // Simple notebook creation without excessive waiting
-    testNotebook = await testUtil.createTestNotebook();
+    testNotebook = await createTestNotebook(page);
     await testUtil.prepareNotebookForKeyboardTesting(testNotebook.noteId);
   });
 
@@ -60,7 +62,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     await page.keyboard.press('Escape');
 
     if (testNotebook?.noteId) {
-      await testUtil.deleteTestNotebook(testNotebook.noteId);
+      await deleteTestNotebook(page, testNotebook.noteId);
     }
   });
 

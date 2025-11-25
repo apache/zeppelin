@@ -13,26 +13,12 @@
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 import { NotebookKeyboardPage } from './notebook-keyboard-page';
-import { PublishedParagraphTestUtil } from './published-paragraph-page.util';
-
 export class NotebookKeyboardPageUtil extends BasePage {
   private keyboardPage: NotebookKeyboardPage;
-  private testUtil: PublishedParagraphTestUtil;
 
   constructor(page: Page) {
     super(page);
     this.keyboardPage = new NotebookKeyboardPage(page);
-    this.testUtil = new PublishedParagraphTestUtil(page);
-  }
-
-  // ===== SETUP AND PREPARATION METHODS =====
-
-  async createTestNotebook(): Promise<{ noteId: string; paragraphId: string }> {
-    return await this.testUtil.createTestNotebook();
-  }
-
-  async deleteTestNotebook(noteId: string): Promise<void> {
-    await this.testUtil.deleteTestNotebook(noteId);
   }
 
   async prepareNotebookForKeyboardTesting(noteId: string): Promise<void> {
