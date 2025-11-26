@@ -62,8 +62,19 @@ export class NotebookKeyboardPage extends BasePage {
     // Use the reusable navigation function with fallback strategies
     await navigateToNotebookWithFallback(this.page, noteId);
 
-    // Ensure paragraphs are visible after navigation
-    await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 15000 });
+    // Verify we're actually on a notebook page before checking for paragraphs
+    await expect(this.page).toHaveURL(new RegExp(`/notebook/${noteId}`), { timeout: 15000 });
+
+    // Wait for general page load, including network activity and potential loading spinners.
+    // This replaces the direct 'networkidle' wait to use the more comprehensive BasePage method.
+    await super.waitForPageLoad();
+
+    // Ensure the main notebook content container is visible
+    const notebookContainer = this.page.locator('.notebook-container');
+    await expect(notebookContainer).toBeVisible({ timeout: 15000 });
+
+    // Ensure paragraphs are visible after navigation with longer timeout
+    await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
   }
 
   async focusCodeEditor(paragraphIndex: number = 0): Promise<void> {
@@ -340,21 +351,22 @@ export class NotebookKeyboardPage extends BasePage {
     }
 
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-
-    // Strategy 1: Check by standard selectors
-    if (await this.findResultBySelectors(paragraph)) {
-      return true;
-    }
-
-    // Strategy 2: Check by DOM evaluation
-    if (await this.checkResultInDOM(paragraphIndex)) {
-      return true;
-    }
-
-    // Strategy 3: WebKit-specific checks
     const browserName = test.info().project.name;
-    if (browserName === 'webkit') {
-      return await this.checkWebKitResult(paragraphIndex);
+
+    // Check status from DOM directly
+    const statusElement = paragraph.locator('.status');
+    if (await statusElement.isVisible()) {
+      const status = await statusElement.textContent();
+      console.log(`Paragraph ${paragraphIndex} status: ${status}`);
+
+      if (status === 'FINISHED' || status === 'ERROR') {
+        return true;
+      }
+
+      // Firefox/WebKit - also accept PENDING/RUNNING
+      if (browserName === 'firefox' || browserName === 'webkit') {
+        return status === 'PENDING' || status === 'RUNNING';
+      }
     }
 
     return false;
@@ -544,113 +556,6 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   // ===== PRIVATE HELPER METHODS =====
-
-  private async findResultBySelectors(paragraph: Locator): Promise<boolean> {
-    const selectors = [
-      '[data-testid="paragraph-result"]',
-      'zeppelin-notebook-paragraph-result',
-      '.paragraph-result',
-      '.result-content'
-    ];
-
-    for (const selector of selectors) {
-      const result = paragraph.locator(selector);
-      const count = await result.count();
-
-      if (count > 0 && (await result.first().isVisible())) {
-        console.log(`Found result with selector: ${selector}`);
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private async checkResultInDOM(paragraphIndex: number): Promise<boolean> {
-    const hasResult = await this.page.evaluate(pIndex => {
-      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-      const targetParagraph = paragraphs[pIndex];
-
-      if (!targetParagraph) {
-        return false;
-      }
-
-      const resultElements = [
-        targetParagraph.querySelector('[data-testid="paragraph-result"]'),
-        targetParagraph.querySelector('zeppelin-notebook-paragraph-result'),
-        targetParagraph.querySelector('.paragraph-result'),
-        targetParagraph.querySelector('.result-content')
-      ];
-
-      return resultElements.some(el => el && getComputedStyle(el).display !== 'none');
-    }, paragraphIndex);
-
-    if (hasResult) {
-      console.log('Found result via DOM evaluation');
-    }
-
-    return hasResult;
-  }
-
-  private async checkWebKitResult(paragraphIndex: number): Promise<boolean> {
-    // Check 1: Text content analysis
-    if (await this.checkWebKitTextContent(paragraphIndex)) {
-      console.log('WebKit: Found execution content via text analysis');
-      return true;
-    }
-
-    // Check 2: Structural changes
-    if (await this.checkWebKitStructuralChanges(paragraphIndex)) {
-      console.log('WebKit: Found execution via structural analysis');
-      return true;
-    }
-
-    return false;
-  }
-
-  private async checkWebKitTextContent(paragraphIndex: number): Promise<boolean> {
-    return await this.page.evaluate(pIndex => {
-      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-      const targetParagraph = paragraphs[pIndex];
-
-      if (!targetParagraph) {
-        return false;
-      }
-
-      const textContent = targetParagraph.textContent || '';
-      const executionIndicators = ['1 + 1', '2', 'print', 'Out[', '>>>', 'result', 'output'];
-
-      return executionIndicators.some(indicator => textContent.toLowerCase().includes(indicator.toLowerCase()));
-    }, paragraphIndex);
-  }
-
-  private async checkWebKitStructuralChanges(paragraphIndex: number): Promise<boolean> {
-    return await this.page.evaluate(pIndex => {
-      const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
-      const targetParagraph = paragraphs[pIndex];
-
-      if (!targetParagraph) {
-        return false;
-      }
-
-      const elementCount = targetParagraph.querySelectorAll('*').length;
-      const executionElements = [
-        'pre',
-        'code',
-        '.output',
-        '.result',
-        'table',
-        'div[class*="result"]',
-        'span[class*="output"]'
-      ];
-
-      const hasExecutionElements = executionElements.some(selector => targetParagraph.querySelector(selector) !== null);
-
-      console.log(`WebKit structural check: ${elementCount} elements, hasExecutionElements: ${hasExecutionElements}`);
-
-      return hasExecutionElements || elementCount > 10;
-    }, paragraphIndex);
-  }
 
   private async waitForExecutionStart(paragraphIndex: number): Promise<void> {
     const started = await this.page

@@ -22,7 +22,7 @@ export class BasePage {
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.loadingScreen.waitFor({ state: 'hidden', timeout: 15000 });
+    await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
   }
 }

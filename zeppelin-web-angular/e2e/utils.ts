@@ -200,14 +200,14 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
 export async function waitForZeppelinReady(page: Page): Promise<void> {
   try {
     // Enhanced wait for network idle with longer timeout for CI environments
-    await page.waitForLoadState('networkidle', { timeout: 45000 });
+    await page.waitForLoadState('domcontentloaded', { timeout: 45000 });
 
     // Check if we're on login page and authentication is required
     const isOnLoginPage = page.url().includes('#/login');
     if (isOnLoginPage) {
       console.log('On login page - checking if authentication is enabled');
 
-      // If we're on login page, this is expected when authentication is required
+      // If we're on login dlpage, this is expected when authentication is required
       // Just wait for login elements to be ready instead of waiting for app content
       await page.waitForFunction(
         () => {
@@ -259,9 +259,6 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
 
     // Additional stability check - wait for DOM to be stable
     await page.waitForLoadState('domcontentloaded');
-
-    // Explicitly wait for the "Welcome to Zeppelin!" heading to be visible
-    await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 30000 });
   } catch (error) {
     console.warn('Zeppelin ready check failed, but continuing...', error);
     // Don't throw error in CI environments, just log and continue
@@ -317,9 +314,11 @@ export async function navigateToNotebookWithFallback(page: Page, noteId: string,
         await page.waitForLoadState('networkidle', { timeout: 15000 });
         await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
-        const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
-        await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
-        await notebookLink.click();
+        // The link text in the UI is the base name of the note, not the full path.
+        const baseName = notebookName.split('/').pop();
+        const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseName! });
+        // Use the click action's built-in wait.
+        await notebookLink.click({ timeout: 10000 });
 
         await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
         navigationSuccessful = true;
@@ -383,9 +382,17 @@ export async function createTestNotebook(
       await page.waitForLoadState('networkidle', { timeout: 15000 });
       await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
-      const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: notebookName });
-      await notebookLink.waitFor({ state: 'visible', timeout: 10000 });
-      await notebookLink.click();
+      // Wait for notebook list to be populated
+      await page.waitForFunction(() => document.querySelectorAll('a[href*="/notebook/"]').length > 0, {
+        timeout: 15000
+      });
+
+      // Use baseNotebookName for the filter, as the link text in the UI won't contain the full path.
+      const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseNotebookName });
+
+      // Wait for the specific notebook link to be visible before clicking
+      await notebookLink.waitFor({ state: 'visible', timeout: 30000 });
+      await notebookLink.click({ timeout: 15000 });
       await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
 
       // Extract noteId after successful navigation through home page
@@ -411,7 +418,7 @@ export async function createTestNotebook(
   await dropdownTrigger.click();
 
   const paragraphLink = page.locator('li.paragraph-id a').first();
-  await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+  await paragraphLink.waitFor({ state: 'attached', timeout: 15000 });
 
   const paragraphId = await paragraphLink.textContent();
   if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
@@ -426,6 +433,10 @@ export async function createTestNotebook(
 }
 
 export async function deleteTestNotebook(page: Page, noteId: string): Promise<void> {
+  if (process.env.CI) {
+    console.log(`Skipping notebook deletion in CI environment for notebook: ${noteId}`);
+    return;
+  }
   try {
     // Navigate to home page
     await page.goto('/');

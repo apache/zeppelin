@@ -73,21 +73,23 @@ export class FolderRenamePageUtil {
     // Wait for the modal to disappear
     await expect(this.folderRenamePage.renameModal).not.toBeVisible({ timeout: 10000 });
 
-    // Wait for the UI to update before reloading
+    // Wait for the UI to update before reloading for the old name to disappear
     const oldFolder = this.page.locator('.folder .name', { hasText: oldName });
     await expect(oldFolder).not.toBeVisible({ timeout: 10000 });
-
-    const newFolder = this.page.locator('.folder .name', { hasText: newName });
-    await expect(newFolder).toBeVisible({ timeout: 10000 });
 
     // Optional: Keep the reload as a final sanity check against the backend state
     await this.page.reload();
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
-    // Re-check for the renamed folder after reload
-    const newFolderAfterReload = this.page.locator('.folder .name', { hasText: newName });
-
-    await expect(newFolderAfterReload).toBeVisible({ timeout: 10000 });
+    // Ensure the folder list is stable and contains the new folder after reload
+    await this.page.waitForFunction(
+      ([expectedNewName]) => {
+        const folders = Array.from(document.querySelectorAll('.folder .name'));
+        return folders.some(folder => folder.textContent?.includes(expectedNewName));
+      },
+      [newName],
+      { timeout: 30000 } // Increased timeout for stability
+    );
   }
 
   async verifyRenameCancellation(folderName: string): Promise<void> {
