@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { test, Page, TestInfo } from '@playwright/test';
+import { test, Page, TestInfo, expect } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
 import { NotebookUtil } from './models/notebook.util';
 import { E2E_TEST_FOLDER } from './models/base-page';
@@ -285,6 +285,9 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
 
     // Additional stability check - wait for DOM to be stable
     await page.waitForLoadState('domcontentloaded');
+
+    // Explicitly wait for the "Welcome to Zeppelin!" heading to be visible
+    await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 30000 });
   } catch (error) {
     throw new Error(`Zeppelin loading failed: ${String(error)}`);
   }

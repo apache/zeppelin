@@ -30,7 +30,9 @@
     </nz-form-control>
   </nz-form-item>
   <div class="modal-footer ant-modal-footer">
-    <button nz-button nzType="primary" (click)="rename()">Rename</button>
+    <button nz-button nzType="primary" (click)="rename()" [disabled]="!newFolderPath || !newFolderPath.trim()">
+      Rename
+    </button>
   </div>
 </form>
 
