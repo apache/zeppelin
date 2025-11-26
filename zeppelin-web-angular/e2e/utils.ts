@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { test, Page, TestInfo } from '@playwright/test';
+import { test, Page, TestInfo, expect } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
 import { NotebookUtil } from './models/notebook.util';
 
@@ -259,6 +259,9 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
 
     // Additional stability check - wait for DOM to be stable
     await page.waitForLoadState('domcontentloaded');
+
+    // Explicitly wait for the "Welcome to Zeppelin!" heading to be visible
+    await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 30000 });
   } catch (error) {
     console.warn('Zeppelin ready check failed, but continuing...', error);
     // Don't throw error in CI environments, just log and continue
@@ -417,8 +420,7 @@ export async function createTestNotebook(
 
   // Navigate back to home
   await page.goto('/');
-  await page.waitForLoadState('networkidle', { timeout: 30000 });
-  await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 20000 });
+  await waitForZeppelinReady(page);
 
   return { noteId, paragraphId };
 }
@@ -428,7 +430,7 @@ export async function deleteTestNotebook(page: Page, noteId: string): Promise<vo
     // Navigate to home page
     await page.goto('/');
     await page.waitForLoadState('networkidle', { timeout: 30000 });
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 20000 });
+    await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 20000 });
 
     // Find the notebook in the tree
     const treeNode = page.locator(`//span[@class='node-name' and contains(text(), 'Test Notebook')]`);

@@ -431,7 +431,6 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   // Helper methods for verifying shortcut effects
-
   async waitForParagraphExecution(paragraphIndex: number = 0, timeout: number = 30000): Promise<void> {
     if (this.page.isClosed()) {
       console.warn('Cannot wait for paragraph execution: page is closed');
@@ -728,6 +727,12 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private async focusEditorElement(paragraph: Locator, paragraphIndex: number): Promise<void> {
+    // Add check for page.isClosed() at the beginning
+    if (this.page.isClosed()) {
+      console.warn(`Attempted to focus editor in paragraph ${paragraphIndex} but page is closed.`);
+      return; // Exit early if the page is already closed
+    }
+
     const browserName = this.page.context().browser()?.browserType().name();
     const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
 
