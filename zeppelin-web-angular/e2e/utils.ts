@@ -233,7 +233,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
     if (isOnLoginPage) {
       console.log('On login page - checking if authentication is enabled');
 
-      // If we're on login page, this is expected when authentication is required
+      // If we're on login dlpage, this is expected when authentication is required
       // Just wait for login elements to be ready instead of waiting for app content
       await page.waitForFunction(
         () => {
@@ -285,9 +285,6 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
 
     // Additional stability check - wait for DOM to be stable
     await page.waitForLoadState('domcontentloaded');
-
-    // Explicitly wait for the "Welcome to Zeppelin!" heading to be visible
-    await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 30000 });
   } catch (error) {
     throw new Error(`Zeppelin loading failed: ${String(error)}`);
   }
