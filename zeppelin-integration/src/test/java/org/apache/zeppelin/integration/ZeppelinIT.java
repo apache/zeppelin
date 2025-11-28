@@ -334,6 +334,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
 
       // Click on 1 paragraph to trigger z.runParagraph() function
 
+      ZeppelinITUtils.sleep(1000, false);
       clickAndWait(By.xpath(getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
       waitForParagraph(2, "FINISHED");
