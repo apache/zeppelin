@@ -10,7 +10,4 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
-};
+export * from './PublishedParagraph';

@@ -10,7 +10,15 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+import { Alert } from 'antd';
+
+export const Empty = () => {
+  return (
+    <Alert
+      message="No Data"
+      description="No paragraph data found"
+      type="warning"
+      showIcon
+    />
+  );
 };

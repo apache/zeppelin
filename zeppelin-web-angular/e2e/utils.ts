@@ -137,7 +137,8 @@ export function getCoverageTransformPaths(): string[] {
 }
 
 export async function waitForUrlNotContaining(page: Page, fragment: string) {
-  await page.waitForURL(url => !url.toString().includes(fragment));
+  await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+  await page.waitForURL(url => !url.toString().includes(fragment), { timeout: 15000 });
 }
 
 export function getCurrentPath(page: Page): string {
@@ -183,6 +184,7 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
     await loginButton.click();
 
     await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    await page.waitForLoadState('networkidle');
     return true;
   }
 

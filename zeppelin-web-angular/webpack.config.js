@@ -11,8 +11,24 @@
  */
 
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const webpack = require('@angular-devkit/build-angular/node_modules/webpack');
+const ModuleFederationPlugin = webpack.container.ModuleFederationPlugin;
 
 module.exports = {
+  output: {
+    // Unique name for this microfrontend to avoid collisions with other apps
+    uniqueName: 'shell',
+    // Auto-detect publicPath at runtime for Module Federation dynamic imports
+    publicPath: 'auto'
+  },
+  optimization: {
+    // Disable runtime chunk to prevent conflicts with Module Federation's runtime
+    runtimeChunk: false
+  },
+  experiments: {
+    // Enable top-level await for async Module Federation container initialization
+    topLevelAwait: true
+  },
   // To avoid path conflict with websocket server path of ZeppelinServer
   devServer: {
     client: {
@@ -28,6 +44,12 @@ module.exports = {
     }
   },
   plugins: [
+    new ModuleFederationPlugin({
+      name: 'shell',
+      remotes: {
+        reactApp: 'reactApp@http://localhost:3001/remoteEntry.js'
+      }
+    }),
     new MonacoWebpackPlugin({
       languages: [
         'bat',
