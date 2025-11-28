@@ -89,7 +89,6 @@ export class NotebookActionBarPage extends BasePage {
     await this.clearOutputButton.click();
   }
 
-
   async switchToPersonalMode(): Promise<void> {
     await this.personalModeButton.click();
   }
