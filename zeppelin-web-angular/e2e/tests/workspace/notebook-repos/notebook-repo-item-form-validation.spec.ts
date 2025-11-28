@@ -12,7 +12,6 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
-import { NotebookRepoItemUtil } from '../../../models/notebook-repos-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Item - Form Validation', () => {
@@ -20,7 +19,6 @@ test.describe('Notebook Repository Item - Form Validation', () => {
 
   let notebookReposPage: NotebookReposPage;
   let repoItemPage: NotebookRepoItemPage;
-  let repoItemUtil: NotebookRepoItemUtil;
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
@@ -33,7 +31,6 @@ test.describe('Notebook Repository Item - Form Validation', () => {
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
-    repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
   });
 
   test('should disable save button when form is invalid', async () => {

@@ -81,7 +81,7 @@ test.describe('Dark Mode Theme Switching', () => {
     });
   });
 
-  test('Scenario: System Theme and Local Storage Interaction', async ({ page, context }) => {
+  test('Scenario: System Theme and Local Storage Interaction', async ({ page }) => {
     // Ensure localStorage is clear for each sub-scenario
     await themePage.clearLocalStorage();
 

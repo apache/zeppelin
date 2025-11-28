@@ -96,13 +96,6 @@ export class NotebookRepoItemPage {
     await input.fill(value);
   }
 
-  async selectSettingDropdown(settingName: string, optionValue: string): Promise<void> {
-    const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const select = row.locator('nz-select');
-    await select.click();
-    await this.page.locator(`nz-option[nzvalue="${optionValue}"]`).click();
-  }
-
   async getSettingInputValue(settingName: string): Promise<string> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
     const input = row.locator('input[nz-input]');

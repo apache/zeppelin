@@ -15,8 +15,8 @@ import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 import { WorkspacePage } from './workspace-page';
 
 export class WorkspaceTestUtil {
-  private page: Page;
-  private workspacePage: WorkspacePage;
+  private readonly page: Page;
+  private readonly workspacePage: WorkspacePage;
 
   constructor(page: Page) {
     this.page = page;

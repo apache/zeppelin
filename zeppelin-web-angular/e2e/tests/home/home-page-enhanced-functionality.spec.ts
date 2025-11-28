@@ -27,32 +27,32 @@ test.describe('Home Page Enhanced Functionality', () => {
   });
 
   test.describe('Given documentation links are displayed', () => {
-    test('When documentation link is checked Then should have correct version in URL', async ({ page }) => {
+    test('When documentation link is checked Then should have correct version in URL', async () => {
       await homeUtil.verifyDocumentationVersionLink();
     });
 
-    test('When external links are checked Then should all open in new tab', async ({ page }) => {
+    test('When external links are checked Then should all open in new tab', async () => {
       await homeUtil.verifyAllExternalLinksTargetBlank();
     });
   });
 
   test.describe('Given welcome section display', () => {
-    test('When page loads Then should show welcome content with proper text', async ({ page }) => {
+    test('When page loads Then should show welcome content with proper text', async () => {
       await homeUtil.verifyWelcomeSection();
     });
 
-    test('When welcome section is displayed Then should contain interactive elements', async ({ page }) => {
+    test('When welcome section is displayed Then should contain interactive elements', async () => {
       await homeUtil.verifyNotebookSection();
     });
   });
 
   test.describe('Given community section content', () => {
-    test('When community section loads Then should display help and community headings', async ({ page }) => {
+    test('When community section loads Then should display help and community headings', async () => {
       await homeUtil.verifyHelpSection();
       await homeUtil.verifyCommunitySection();
     });
 
-    test('When external links are displayed Then should show correct targets', async ({ page }) => {
+    test('When external links are displayed Then should show correct targets', async () => {
       const linkTargets = await homeUtil.testExternalLinkTargets();
 
       expect(linkTargets.documentationHref).toContain('zeppelin.apache.org/docs');

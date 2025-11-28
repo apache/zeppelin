@@ -12,7 +12,6 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { HomePageUtil } from '../../models/home-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Home Page - Layout and Grid', () => {
@@ -26,8 +25,6 @@ test.describe('Home Page - Layout and Grid', () => {
 
   test.describe('Responsive Grid Layout', () => {
     test('should display responsive grid structure', async ({ page }) => {
-      const homePageUtil = new HomePageUtil(page);
-
       await test.step('Given I am on the home page', async () => {
         const homePage = new HomePage(page);
         await homePage.navigateToHome();

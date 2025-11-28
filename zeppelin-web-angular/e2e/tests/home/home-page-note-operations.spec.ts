@@ -11,16 +11,12 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { HomePage } from '../../models/home-page';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
 test.describe('Home Page Note Operations', () => {
-  let homePage: HomePage;
-
   test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
@@ -93,13 +89,10 @@ test.describe('Home Page Note Operations', () => {
 
         await page
           .waitForFunction(
-            () => {
-              return (
-                document.querySelector('zeppelin-note-rename') !== null ||
-                document.querySelector('[role="dialog"]') !== null ||
-                document.querySelector('.ant-modal') !== null
-              );
-            },
+            () =>
+              document.querySelector('zeppelin-note-rename') !== null ||
+              document.querySelector('[role="dialog"]') !== null ||
+              document.querySelector('.ant-modal') !== null,
             { timeout: 5000 }
           )
           .catch(() => {
