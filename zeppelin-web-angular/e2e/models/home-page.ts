@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
@@ -118,6 +118,18 @@ export class HomePage extends BasePage {
 
   async navigateToHome(): Promise<void> {
     await this.page.goto('/', { waitUntil: 'load' });
+
+    // Check if we're redirected to login page and handle authentication
+    const currentUrl = this.page.url();
+    if (currentUrl.includes('#/login')) {
+      console.log('Redirected to login page, performing authentication...');
+      const { performLoginIfRequired } = await import('../utils');
+      await performLoginIfRequired(this.page);
+
+      // Navigate again after login
+      await this.page.goto('/', { waitUntil: 'load' });
+    }
+
     await this.waitForPageLoad();
   }
 
@@ -129,21 +141,11 @@ export class HomePage extends BasePage {
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
-    try {
-      await expect(this.welcomeHeading).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.welcomeHeading.isVisible();
   }
 
   async isAnonymousUser(): Promise<boolean> {
-    try {
-      await expect(this.anonymousUserIndicator).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.anonymousUserIndicator.isVisible();
   }
 
   async clickZeppelinLogo(): Promise<void> {

@@ -24,7 +24,11 @@ export class NotebookUtil extends BasePage {
 
   async createNotebook(notebookName: string): Promise<void> {
     await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
+
+    // Wait for node list to be visible to ensure home page is fully loaded
+    await expect(this.homePage.notebookList).toBeVisible({ timeout: 45000 });
+    await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
+    await this.homePage.createNewNoteButton.click({ timeout: 30000 });
 
     // Wait for the modal to appear and fill the notebook name
     const notebookNameInput = this.page.locator('input[name="noteName"]');

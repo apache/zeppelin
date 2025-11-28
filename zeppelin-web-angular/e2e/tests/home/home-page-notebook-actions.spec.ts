@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 import { HomePageUtil } from '../../models/home-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
@@ -42,21 +42,13 @@ test.describe('Home Page Notebook Actions', () => {
 
   test.describe('Given create new note action', () => {
     test('When create new note is clicked Then should open note creation modal', async ({ page }) => {
-      try {
-        await homeUtil.verifyCreateNewNoteWorkflow();
-      } catch (error) {
-        console.log('Note creation modal might not appear immediately');
-      }
+      await homeUtil.verifyCreateNewNoteWorkflow();
     });
   });
 
   test.describe('Given import note action', () => {
     test('When import note is clicked Then should open import modal', async ({ page }) => {
-      try {
-        await homeUtil.verifyImportNoteWorkflow();
-      } catch (error) {
-        console.log('Import modal might not appear immediately');
-      }
+      await homeUtil.verifyImportNoteWorkflow();
     });
   });
 

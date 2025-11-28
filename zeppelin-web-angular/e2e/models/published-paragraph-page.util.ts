@@ -63,13 +63,9 @@ export class PublishedParagraphTestUtil {
     await expect(modal).toBeVisible({ timeout: 10000 });
 
     // Try to get content and check if available
-    try {
-      const content = await this.publishedParagraphPage.getErrorModalContent();
-      if (content && content.includes(invalidParagraphId)) {
-        expect(content).toContain(invalidParagraphId);
-      }
-    } catch {
-      throw Error('Content check failed, continue with OK button click');
+    const content = await this.publishedParagraphPage.getErrorModalContent();
+    if (content && content.includes(invalidParagraphId)) {
+      expect(content).toContain(invalidParagraphId);
     }
 
     await this.publishedParagraphPage.clickErrorModalOk();

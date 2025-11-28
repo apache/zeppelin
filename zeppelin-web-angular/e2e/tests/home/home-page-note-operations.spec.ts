@@ -93,13 +93,10 @@ test.describe('Home Page Note Operations', () => {
 
         await page
           .waitForFunction(
-            () => {
-              return (
-                document.querySelector('zeppelin-note-rename') !== null ||
-                document.querySelector('[role="dialog"]') !== null ||
-                document.querySelector('.ant-modal') !== null
-              );
-            },
+            () =>
+              document.querySelector('zeppelin-note-rename') !== null ||
+              document.querySelector('[role="dialog"]') !== null ||
+              document.querySelector('.ant-modal') !== null,
             { timeout: 5000 }
           )
           .catch(() => {
