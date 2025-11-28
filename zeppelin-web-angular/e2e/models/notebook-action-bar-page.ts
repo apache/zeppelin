@@ -109,7 +109,6 @@ export class NotebookActionBarPage extends BasePage {
     await this.commitConfirmButton.click();
   }
 
-
   async openRevisionDropdown(): Promise<void> {
     await this.revisionDropdown.click();
   }
