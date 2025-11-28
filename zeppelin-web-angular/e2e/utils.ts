@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { test, Page, TestInfo, expect } from '@playwright/test';
+import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
 import { NotebookUtil } from './models/notebook.util';
 import { E2E_TEST_FOLDER } from './models/base-page';
@@ -227,36 +227,6 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
       console.log('Login page is ready');
       return;
     }
-
-    // Check if we're on login page and authentication is required
-    const isOnLoginPage = page.url().includes('#/login');
-    if (isOnLoginPage) {
-      console.log('On login page - checking if authentication is enabled');
-
-      // If we're on login dlpage, this is expected when authentication is required
-      // Just wait for login elements to be ready instead of waiting for app content
-      await page.waitForFunction(
-        () => {
-          const hasAngular = document.querySelector('[ng-version]') !== null;
-          const hasLoginElements =
-            document.querySelector('zeppelin-login') !== null ||
-            document.querySelector('input[placeholder*="User"], input[placeholder*="user"], input[type="text"]') !==
-              null;
-          return hasAngular && hasLoginElements;
-        },
-        { timeout: 30000 }
-      );
-      console.log('Login page is ready');
-      return;
-    }
-
-    // Additional check: ensure we're not stuck on login page
-    await page
-      .waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 10000 })
-      .catch(() => {
-        // If still on login page, this is expected - login will handle redirect
-        console.log('Still on login page - this is normal if authentication is required');
-      });
 
     // Wait for Angular and Zeppelin to be ready with more robust checks
     await page.waitForFunction(
