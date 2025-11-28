@@ -145,10 +145,6 @@ export class FolderRenamePage extends BasePage {
     await this.cancelButton.click();
   }
 
-  async isRenameModalVisible(): Promise<boolean> {
-    return this.renameModal.isVisible();
-  }
-
   async isFolderVisible(folderName: string): Promise<boolean> {
     return this.page
       .locator('.node')
