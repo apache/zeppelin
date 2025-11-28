@@ -59,15 +59,12 @@ test.describe('Published Paragraph', () => {
 
       await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
+      // Directly assert that the modal appears and contains the expected text
       const modal = page.locator('.ant-modal:has-text("Notebook not found")').last();
-      const isModalVisible = await modal.isVisible({ timeout: 10000 });
+      await expect(modal).toBeVisible({ timeout: 10000 }); // Expect the modal to be visible
 
-      if (isModalVisible) {
-        const modalContent = await modal.textContent();
-        expect(modalContent?.toLowerCase()).toContain('not found');
-      } else {
-        await expect(page).toHaveURL(/\/#\/$/, { timeout: 5000 });
-      }
+      const modalContent = await modal.textContent();
+      expect(modalContent?.toLowerCase()).toContain('not found');
     });
 
     test('should show error modal when paragraph does not exist in valid notebook', async () => {
