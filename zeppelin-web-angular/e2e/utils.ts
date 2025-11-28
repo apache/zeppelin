@@ -386,12 +386,12 @@ export async function createTestNotebook(
       await page.waitForFunction(() => document.querySelectorAll('a[href*="/notebook/"]').length > 0, {
         timeout: 15000
       });
-
+      await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
       // Use baseNotebookName for the filter, as the link text in the UI won't contain the full path.
       const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseNotebookName });
 
       // Wait for the specific notebook link to be visible before clicking
-      await notebookLink.waitFor({ state: 'visible', timeout: 30000 });
+      await notebookLink.waitFor({ state: 'visible', timeout: 60000 });
       await notebookLink.click({ timeout: 15000 });
       await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
 

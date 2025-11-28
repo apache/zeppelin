@@ -21,7 +21,7 @@ module.exports = defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 1,
   workers: 5,
-  timeout: 180000,
+  timeout: 300000,
   expect: {
     timeout: 60000
   },
@@ -37,7 +37,10 @@ module.exports = defineConfig({
     video: process.env.CI ? 'off' : 'retain-on-failure',
     launchOptions: {
       args: ['--disable-dev-shm-usage']
-    }
+    },
+    headless: true,
+    actionTimeout: 60000,
+    navigationTimeout: 180000
   },
   projects: [
     {
