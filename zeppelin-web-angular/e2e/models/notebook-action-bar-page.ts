@@ -88,6 +88,7 @@ export class NotebookActionBarPage extends BasePage {
   async clickClearOutput(): Promise<void> {
     await this.clearOutputButton.click();
   }
+
   async switchToPersonalMode(): Promise<void> {
     await this.personalModeButton.click();
   }
@@ -107,6 +108,7 @@ export class NotebookActionBarPage extends BasePage {
   async confirmCommit(): Promise<void> {
     await this.commitConfirmButton.click();
   }
+
   async openRevisionDropdown(): Promise<void> {
     await this.revisionDropdown.click();
   }
