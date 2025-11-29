@@ -34,7 +34,7 @@ test.describe.serial('Folder Rename', () => {
     folderRenamePage = new FolderRenamePage(page);
     folderRenameUtil = new FolderRenamePageUtil(page, folderRenamePage);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 

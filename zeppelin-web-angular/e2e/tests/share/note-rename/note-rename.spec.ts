@@ -36,7 +36,7 @@ test.describe('Note Rename', () => {
     noteRenamePage = new NoteRenamePage(page);
     noteRenameUtil = new NoteRenamePageUtil(page, noteRenamePage);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 

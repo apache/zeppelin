@@ -33,7 +33,7 @@ test.describe('Note Table of Contents', () => {
     noteTocPage = new NoteTocPage(page);
     noteTocUtil = new NoteTocPageUtil(noteTocPage);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 

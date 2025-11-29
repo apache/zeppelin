@@ -310,7 +310,7 @@ export async function navigateToNotebookWithFallback(page: Page, noteId: string,
     // Strategy 3: Navigate through home page if notebook name is provided
     if (!navigationSuccessful && notebookName) {
       try {
-        await page.goto('/');
+        await page.goto('/#/');
         await page.waitForLoadState('networkidle', { timeout: 15000 });
         await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
@@ -378,7 +378,7 @@ export async function createTestNotebook(
       noteId = tempNoteId;
     } else {
       // Manual fallback if no noteId found - go through home page
-      await page.goto('/');
+      await page.goto('/#/');
       await page.waitForLoadState('networkidle', { timeout: 15000 });
       await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
@@ -426,7 +426,7 @@ export async function createTestNotebook(
   }
 
   // Navigate back to home
-  await page.goto('/');
+  await page.goto('/#/');
   await waitForZeppelinReady(page);
 
   return { noteId, paragraphId };
@@ -439,7 +439,7 @@ export async function deleteTestNotebook(page: Page, noteId: string): Promise<vo
   }
   try {
     // Navigate to home page
-    await page.goto('/');
+    await page.goto('/#/');
     await page.waitForLoadState('networkidle', { timeout: 30000 });
     await expect(page.locator('h1:has-text("Welcome to Zeppelin!")')).toBeVisible({ timeout: 20000 });
 

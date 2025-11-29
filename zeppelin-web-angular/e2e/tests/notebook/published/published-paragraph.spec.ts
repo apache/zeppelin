@@ -32,7 +32,7 @@ test.describe('Published Paragraph', () => {
 
   test.beforeEach(async ({ page }) => {
     publishedParagraphPage = new PublishedParagraphPage(page);
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     await waitForNotebookLinks(page);

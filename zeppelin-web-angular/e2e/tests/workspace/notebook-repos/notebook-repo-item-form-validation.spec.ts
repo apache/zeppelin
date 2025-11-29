@@ -24,7 +24,7 @@ test.describe('Notebook Repository Item - Form Validation', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);

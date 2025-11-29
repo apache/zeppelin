@@ -21,7 +21,7 @@ test.describe('Home Page Note Operations', () => {
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     const noteListLocator = page.locator('zeppelin-node-list');

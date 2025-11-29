@@ -21,7 +21,7 @@ test.describe('Home Page Notebook Actions', () => {
 
   test.beforeEach(async ({ page }) => {
     homeUtil = new HomePageUtil(page);
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });

@@ -29,7 +29,7 @@ test.describe('Notebook Action Bar Functionality', () => {
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
