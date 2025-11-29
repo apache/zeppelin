@@ -135,7 +135,7 @@ jobs:
         with:
           name: playwright-report-${{ matrix.mode }}
           path: zeppelin-web-angular/playwright-report/
-          retention-days: 30
+          retention-days: 3
       - name: Print Zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
