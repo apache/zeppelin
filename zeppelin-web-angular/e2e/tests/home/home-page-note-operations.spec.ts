@@ -21,10 +21,11 @@ test.describe('Home Page Note Operations', () => {
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+    const noteListLocator = page.locator('zeppelin-node-list');
+    await expect(noteListLocator).toBeVisible({ timeout: 15000 });
   });
 
   test.describe('Given note operations are available', () => {
@@ -93,13 +94,10 @@ test.describe('Home Page Note Operations', () => {
 
         await page
           .waitForFunction(
-            () => {
-              return (
-                document.querySelector('zeppelin-note-rename') !== null ||
-                document.querySelector('[role="dialog"]') !== null ||
-                document.querySelector('.ant-modal') !== null
-              );
-            },
+            () =>
+              document.querySelector('zeppelin-note-rename') !== null ||
+              document.querySelector('[role="dialog"]') !== null ||
+              document.querySelector('.ant-modal') !== null,
             { timeout: 5000 }
           )
           .catch(() => {
@@ -190,8 +188,6 @@ test.describe('Home Page Note Operations', () => {
         const confirmButton = page.locator('button:has-text("Yes")');
         if (await confirmButton.isVisible()) {
           await confirmButton.click();
-
-          await page.waitForTimeout(2000);
 
           const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
           await expect(trashFolder).toBeVisible();

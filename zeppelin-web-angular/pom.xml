@@ -151,9 +151,15 @@
             <configuration>
               <skip>${web.e2e.disabled}</skip>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
-                  <arg value="start" />
-                </exec>
+                <condition property="zeppelin.notebook.dir" value="${env.ZEPPELIN_E2E_TEST_NOTEBOOK_DIR}">
+                  <isset property="env.ZEPPELIN_E2E_TEST_NOTEBOOK_DIR" />
+                </condition>
+              <property name="zeppelin.notebook.dir" value="/tmp/zeppelin-e2e-notebooks" />
+              <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                <arg value="start" />
+                <env key="ZEPPELIN_NOTEBOOK_DIR" value="${zeppelin.notebook.dir}" />
+                <env key="PATH" value="${env.PATH}" />
+              </exec>
               </target>
             </configuration>
             <goals>
@@ -169,6 +175,7 @@
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                   <arg value="stop" />
+                  <env key="PATH" value="${env.PATH}" />
                 </exec>
               </target>
             </configuration>

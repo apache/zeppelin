@@ -18,15 +18,11 @@ export class BasePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.loadingScreen = page.locator('.spin-text');
+    this.loadingScreen = page.locator('section.spin');
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    try {
-      await this.loadingScreen.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      console.log('Loading screen not found');
-    }
+    await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
   }
 }

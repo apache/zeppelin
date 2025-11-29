@@ -22,7 +22,7 @@ test.describe('Notebook Repository Page - Structure', () => {
   let notebookReposUtil: NotebookReposPageUtil;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -41,11 +41,6 @@ test.describe('Notebook Repository Page - Structure', () => {
   });
 
   test('should display all repository items', async () => {
-    const count = await notebookReposPage.getRepositoryItemCount();
-    if (count === 0) {
-      test.skip();
-      return;
-    }
     await notebookReposUtil.verifyAllRepositoriesRendered();
   });
 });
