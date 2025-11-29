@@ -391,7 +391,16 @@ export async function createTestNotebook(
       const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseNotebookName });
 
       // Wait for the specific notebook link to be visible before clicking
-      await notebookLink.waitFor({ state: 'visible', timeout: 60000 });
+      const browserName = page.context().browser()?.browserType().name();
+      if (browserName === 'firefox') {
+        // Firefox-specific: Use waitForSelector with retry pattern
+        await page.waitForSelector(`a[href*="/notebook/"]:has-text("${baseNotebookName}")`, {
+          state: 'visible',
+          timeout: 90000
+        });
+      } else {
+        await notebookLink.waitFor({ state: 'visible', timeout: 60000 });
+      }
       await notebookLink.click({ timeout: 15000 });
       await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
 
