@@ -17,7 +17,6 @@ export class NotebookPage extends BasePage {
   readonly notebookContainer: Locator;
   readonly actionBar: Locator;
   readonly sidebarArea: Locator;
-  readonly paragraphContainer: Locator;
   readonly extensionArea: Locator;
   readonly paragraphInner: Locator;
 
@@ -26,7 +25,6 @@ export class NotebookPage extends BasePage {
     this.notebookContainer = page.locator('.notebook-container');
     this.actionBar = page.locator('zeppelin-notebook-action-bar');
     this.sidebarArea = page.locator('.sidebar-area[nz-resizable]');
-    this.paragraphContainer = page.locator('zeppelin-notebook-paragraph');
     this.extensionArea = page.locator('.extension-area');
     this.paragraphInner = page.locator('.paragraph-inner[nz-row]');
   }

@@ -15,30 +15,20 @@ import { BasePage } from './base-page';
 
 export class FolderRenamePage extends BasePage {
   readonly folderList: Locator;
-  readonly renameMenuItem: Locator;
   readonly renameModal: Locator;
   readonly renameInput: Locator;
   readonly confirmButton: Locator;
   readonly cancelButton: Locator;
-  readonly validationError: Locator;
   readonly deleteConfirmation: Locator;
-  readonly deleteConfirmButton: Locator;
-  readonly deleteCancelButton: Locator;
 
   constructor(page: Page) {
     super(page);
     this.folderList = page.locator('zeppelin-node-list');
-    this.renameMenuItem = page.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]').first();
     this.renameModal = page.locator('.ant-modal');
     this.renameInput = page.locator('input[placeholder="Insert New Name"]');
     this.confirmButton = page.getByRole('button', { name: 'Rename' });
     this.cancelButton = page.locator('.ant-modal-close-x'); // Modal close button
-    this.validationError = page.locator(
-      '.ant-form-item-explain, .error-message, .validation-error, .ant-form-item-explain-error'
-    );
     this.deleteConfirmation = page.locator('.ant-popover').filter({ hasText: 'This folder will be moved to trash.' });
-    this.deleteConfirmButton = page.getByRole('button', { name: 'OK' }).last();
-    this.deleteCancelButton = page.getByRole('button', { name: 'Cancel' }).last();
   }
 
   async hoverOverFolder(folderName: string): Promise<void> {
@@ -88,28 +78,22 @@ export class FolderRenamePage extends BasePage {
   }
 
   async clickRenameMenuItem(folderName: string): Promise<void> {
-    if (folderName) {
-      // Ensure the specific folder is hovered first
-      await this.hoverOverFolder(folderName);
+    // Ensure the specific folder is hovered first
+    await this.hoverOverFolder(folderName);
 
-      // Find the specific folder node and its rename button
-      const folderNode = this.page
-        .locator('.node')
-        .filter({
-          has: this.page.locator('.folder .name', { hasText: folderName })
-        })
-        .first();
+    // Find the specific folder node and its rename button
+    const folderNode = this.page
+      .locator('.node')
+      .filter({
+        has: this.page.locator('.folder .name', { hasText: folderName })
+      })
+      .first();
 
-      const renameIcon = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
-      await renameIcon.click();
+    const renameIcon = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
+    await renameIcon.click();
 
-      // Wait for modal to appear by checking for its presence
-      await this.renameModal.waitFor({ state: 'visible', timeout: 3000 });
-    } else {
-      // Fallback to generic rename button (now using .first() to avoid strict mode)
-      await this.renameMenuItem.click();
-      await this.renameModal.waitFor({ state: 'visible', timeout: 3000 });
-    }
+    // Wait for modal to appear by checking for its presence
+    await this.renameModal.waitFor({ state: 'visible', timeout: 3000 });
   }
 
   async enterNewName(name: string): Promise<void> {

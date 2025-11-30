@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, Page, test } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { NotebookParagraphPage } from './notebook-paragraph-page';
 
 export class NotebookParagraphUtil {
@@ -51,7 +51,6 @@ export class NotebookParagraphUtil {
 
   async verifyParagraphControlInterface(): Promise<void> {
     await expect(this.paragraphPage.controlPanel).toBeVisible();
-    await this.paragraphPage.runButton.isVisible();
     await expect(this.paragraphPage.runButton).toBeVisible();
     const isRunEnabled = await this.paragraphPage.isRunButtonEnabled();
     expect(isRunEnabled).toBe(true);
@@ -94,10 +93,9 @@ export class NotebookParagraphUtil {
         resultText.toLowerCase().includes('error'));
 
     if (hasInterpreterError) {
-      console.log(
-        '⚠️ Dynamic forms verification skipped: Interpreter not available or error occurred. This test requires proper interpreter configuration.'
+      throw new Error(
+        `Interpreter error detected: ${resultText?.substring(0, 200)}. This test requires proper interpreter configuration.`
       );
-      return;
     }
 
     // If no interpreter error, dynamic forms should be visible

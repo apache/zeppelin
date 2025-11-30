@@ -69,10 +69,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CORE EXECUTION SHORTCUTS =====
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
-    test('should run current paragraph with Shift+Enter', async () => {
+    test('should execute markdown paragraph with Shift+Enter', async () => {
       // Given: A paragraph with markdown content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Test Heading\nThis is a test.');
+      await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
 
       // Verify content was set
       const content = await keyboardPage.getCodeEditorContent();
@@ -83,40 +83,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: Paragraph should execute and show result
       await keyboardPage.waitForParagraphExecution(0);
-      const hasResult = await keyboardPage.hasParagraphResult(0);
-      expect(hasResult).toBe(true);
-    });
-
-    test('should handle markdown paragraph execution when Shift+Enter is pressed', async () => {
-      // Given: A markdown paragraph
-      await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
-
-      // Verify content was set
-      const content = await keyboardPage.getCodeEditorContent();
-      const cleanContent = content.replace(/^%[a-z]+\s*/i, '');
-      expect(cleanContent.replace(/\s+/g, '')).toContain('#TestHeading');
-
-      // When: User presses Shift+Enter
-      await keyboardPage.pressRunParagraph();
-
-      // Then: Markdown should execute and show result
-      await keyboardPage.waitForParagraphExecution(0);
-      const hasResult = await keyboardPage.hasParagraphResult(0);
-      expect(hasResult).toBe(true);
-    });
-
-    test('should execute markdown content with Shift+Enter', async () => {
-      // Given: A paragraph with markdown content
-      await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Execution Test\nThis tests markdown execution.');
-
-      // When: User presses Shift+Enter
-      await keyboardPage.pressRunParagraph();
-
-      // Then: Execution should succeed
-      await keyboardPage.waitForParagraphExecution(0);
-      const hasResult = await keyboardPage.hasParagraphResult(0);
+      const hasResult = await keyboardPage.isParagraphResultSettled(0);
       expect(hasResult).toBe(true);
     });
   });
@@ -147,7 +114,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: First paragraph should execute
       await keyboardPage.waitForParagraphExecution(0);
-      const hasResult = await keyboardPage.hasParagraphResult(0);
+      const hasResult = await keyboardPage.isParagraphResultSettled(0);
       expect(hasResult).toBe(true);
     });
   });
@@ -179,8 +146,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphExecution(0);
       await keyboardPage.waitForParagraphExecution(1);
 
-      const firstHasResult = await keyboardPage.hasParagraphResult(0);
-      const secondHasResult = await keyboardPage.hasParagraphResult(1);
+      const firstHasResult = await keyboardPage.isParagraphResultSettled(0);
+      const secondHasResult = await keyboardPage.isParagraphResultSettled(1);
 
       expect(firstHasResult).toBe(true);
       expect(secondHasResult).toBe(true);
@@ -216,15 +183,21 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
 
-      // Position cursor at end
-      await keyboardPage.pressKey('End');
+      // Position cursor at end of last line
+      await keyboardPage.pressKey('Control+End');
 
-      // When: User presses Control+P
+      // When: User presses Control+P (should move cursor up one line)
       await keyboardPage.pressMoveCursorUp();
 
-      // Then: Cursor should move up
+      // Then: Verify cursor movement by checking if we can type at the current position
+      // Type a marker and check where it appears in the content
+      await keyboardPage.pressKey('End'); // Move to end of current line
+      await keyboardPage.page.keyboard.type('_MARKER');
+
       const content = await keyboardPage.getCodeEditorContent();
-      expect(content).toContain('line1');
+      // If cursor moved up correctly, marker should be on line2
+      expect(content).toContain('line2_MARKER');
+      expect(content).not.toContain('line3_MARKER');
     });
   });
 
@@ -234,15 +207,21 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
 
-      // Position cursor at beginning
-      await keyboardPage.pressKey('Home');
+      // Position cursor at beginning of first line
+      await keyboardPage.pressKey('Control+Home');
 
-      // When: User presses Control+N
+      // When: User presses Control+N (should move cursor down one line)
       await keyboardPage.pressMoveCursorDown();
 
-      // Then: Cursor should move down
+      // Then: Verify cursor movement by checking if we can type at the current position
+      // Type a marker and check where it appears in the content
+      await keyboardPage.pressKey('Home'); // Move to beginning of current line
+      await keyboardPage.page.keyboard.type('_MARKER');
+
       const content = await keyboardPage.getCodeEditorContent();
-      expect(content).toContain('line2');
+      // If cursor moved down correctly, marker should be on line2
+      expect(content).toContain('_MARKERline2');
+      expect(content).not.toContain('_MARKERline1');
     });
   });
 
@@ -328,6 +307,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       const initialCount = await keyboardPage.getParagraphCount();
 
+      // Capture the original paragraph content to verify the copy
+      const originalContent = await keyboardPage.getCodeEditorContentByIndex(0);
+
       // When: User presses Control+Shift+C
       await keyboardPage.pressInsertCopy();
 
@@ -335,6 +317,16 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
+
+      // Verify the copied content matches the original
+      const copiedContent = await keyboardPage.getCodeEditorContentByIndex(1);
+      expect(copiedContent).toContain('Copy Test');
+      expect(copiedContent).toContain('Content to be copied below');
+
+      // The copied content should match the original content
+      const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
+      const normalizedCopied = copiedContent.replace(/\s+/g, ' ').trim();
+      expect(normalizedCopied).toBe(normalizedOriginal);
     });
   });
 
@@ -350,6 +342,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor(1);
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nThis should move up', 1);
 
+      // Capture initial paragraph contents to verify position change
+      const initialFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const initialSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
       // When: User presses Control+Alt+K from second paragraph
       await keyboardPage.pressMoveParagraphUp();
 
@@ -357,6 +353,16 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.page.waitForTimeout(1000);
       const paragraphCount = await keyboardPage.getParagraphCount();
       expect(paragraphCount).toBe(2);
+
+      // Verify the paragraphs actually moved positions
+      const finalFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      // The second paragraph should now be first, and the first should be second
+      expect(finalFirstParagraph).toContain('Second Paragraph');
+      expect(finalFirstParagraph).toContain(initialSecondParagraph.replace(/\s+/g, ' ').trim());
+      expect(finalSecondParagraph).toContain('First Paragraph');
+      expect(finalSecondParagraph).toContain(initialFirstParagraph.replace(/\s+/g, ' ').trim());
     });
   });
 
@@ -375,6 +381,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Focus first paragraph
       await keyboardPage.focusCodeEditor(0);
 
+      // Capture initial paragraph contents to verify position change
+      const initialFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const initialSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
       // When: User presses Control+Alt+J from first paragraph
       await keyboardPage.pressMoveParagraphDown();
 
@@ -382,6 +392,16 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.page.waitForTimeout(1000);
       const paragraphCount = await keyboardPage.getParagraphCount();
       expect(paragraphCount).toBe(2);
+
+      // Verify the paragraphs actually moved positions
+      const finalFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      // The first paragraph should now be second, and the second should be first
+      expect(finalFirstParagraph).toContain('Second Paragraph');
+      expect(finalFirstParagraph).toContain(initialSecondParagraph.replace(/\s+/g, ' ').trim());
+      expect(finalSecondParagraph).toContain('First Paragraph');
+      expect(finalSecondParagraph).toContain(initialFirstParagraph.replace(/\s+/g, ' ').trim());
     });
   });
 
@@ -488,7 +508,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphExecution(0);
 
       // Verify there is output to clear
-      const hasResult = await keyboardPage.hasParagraphResult(0);
+      const hasResult = await keyboardPage.isParagraphResultSettled(0);
       expect(hasResult).toBe(true);
 
       // When: User presses Control+Alt+L
@@ -539,9 +559,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+-
       await keyboardPage.pressReduceWidth();
 
-      // Then: Paragraph width should change
+      // Then: Paragraph width should be reduced
       const finalWidth = await keyboardPage.getParagraphWidth(0);
-      expect(finalWidth).not.toBe(initialWidth);
+      expect(finalWidth).toBeLessThan(initialWidth);
     });
   });
 
@@ -560,9 +580,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+=
       await keyboardPage.pressIncreaseWidth();
 
-      // Then: Paragraph width should change
+      // Then: Paragraph width should be increased
       const finalWidth = await keyboardPage.getParagraphWidth(0);
-      expect(finalWidth).not.toBe(initialWidth);
+      expect(finalWidth).toBeGreaterThan(initialWidth);
     });
   });
 
@@ -819,7 +839,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphExecution(0);
 
       // Verify error result exists
-      const hasErrorResult = await keyboardPage.hasParagraphResult(0);
+      const hasErrorResult = await keyboardPage.isParagraphResultSettled(0);
       expect(hasErrorResult).toBe(true);
 
       // When: User continues with shortcuts (insert new paragraph)
@@ -835,7 +855,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: New paragraph should execute successfully
       await keyboardPage.waitForParagraphExecution(newParagraphIndex);
-      const hasResult = await keyboardPage.hasParagraphResult(newParagraphIndex);
+      const hasResult = await keyboardPage.isParagraphResultSettled(newParagraphIndex);
       expect(hasResult).toBe(true);
     });
 

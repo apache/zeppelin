@@ -58,9 +58,11 @@ export class NotebookParagraphPage extends BasePage {
   async doubleClickToEdit(): Promise<void> {
     await this.paragraphContainer.dblclick();
   }
+
   async runParagraph(): Promise<void> {
     await this.runButton.click();
   }
+
   async openSettingsDropdown(): Promise<void> {
     await this.settingsDropdown.click();
   }

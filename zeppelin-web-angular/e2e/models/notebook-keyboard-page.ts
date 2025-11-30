@@ -345,7 +345,7 @@ export class NotebookKeyboardPage extends BasePage {
     return await runningIndicator.isVisible();
   }
 
-  async hasParagraphResult(paragraphIndex: number = 0): Promise<boolean> {
+  async isParagraphResultSettled(paragraphIndex: number = 0): Promise<boolean> {
     if (this.page.isClosed()) {
       return false;
     }
@@ -497,9 +497,31 @@ export class NotebookKeyboardPage extends BasePage {
     return await title.isVisible();
   }
 
-  async getParagraphWidth(paragraphIndex: number = 0): Promise<string | null> {
+  async getParagraphWidth(paragraphIndex: number = 0): Promise<number> {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-    return await paragraph.getAttribute('class');
+    const boundingBox = await paragraph.boundingBox();
+    return boundingBox?.width || 0;
+  }
+
+  async getCodeEditorContentByIndex(paragraphIndex: number): Promise<string> {
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
+    const content = await paragraph.evaluate(el => {
+      // Try Angular approach first
+      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+      const angular = (window as any).angular;
+      if (angular) {
+        const scope = angular.element(el).scope();
+        if (scope && scope.$ctrl && scope.$ctrl.paragraph) {
+          return scope.$ctrl.paragraph.text || '';
+        }
+      }
+
+      // Fallback to text content
+      const textContent = el.textContent || '';
+      return textContent.trim();
+    });
+
+    return content;
   }
 
   async waitForParagraphCountChange(expectedCount: number, timeout: number = 30000): Promise<void> {
@@ -638,7 +660,6 @@ export class NotebookKeyboardPage extends BasePage {
       return; // Exit early if the page is already closed
     }
 
-    const browserName = this.page.context().browser()?.browserType().name();
     const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
 
     await editor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {
@@ -657,10 +678,10 @@ export class NotebookKeyboardPage extends BasePage {
       }
     });
 
-    await this.ensureEditorFocused(editor, paragraphIndex);
+    await this.ensureEditorFocused(editor);
   }
 
-  private async ensureEditorFocused(editor: Locator, paragraphIndex: number): Promise<void> {
+  private async ensureEditorFocused(editor: Locator): Promise<void> {
     const textArea = editor.locator('textarea');
     const hasTextArea = (await textArea.count()) > 0;
 

@@ -19,35 +19,42 @@ export class FolderRenamePageUtil {
     private readonly folderRenamePage: FolderRenamePage
   ) {}
 
-  async verifyContextMenuAppearsOnHover(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-
-    // Find the specific folder node and its rename button
-    const folderNode = this.page
+  private getFolderNode(folderName: string) {
+    return this.page
       .locator('.node')
       .filter({
         has: this.page.locator('.folder .name', { hasText: folderName })
       })
       .first();
+  }
 
+  async verifyCreateNewNoteButtonIsVisible(folderName: string): Promise<void> {
+    await this.folderRenamePage.hoverOverFolder(folderName);
+    const folderNode = this.getFolderNode(folderName);
+    const createButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Create new note"]');
+    await expect(createButton).toBeVisible();
+  }
+
+  async verifyRenameButtonIsVisible(folderName: string): Promise<void> {
+    await this.folderRenamePage.hoverOverFolder(folderName);
+    const folderNode = this.getFolderNode(folderName);
     const renameButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
     await expect(renameButton).toBeVisible();
   }
 
-  async verifyRenameMenuItemIsDisplayed(folderName: string): Promise<void> {
-    // First ensure we hover over the specific folder to show operations
+  async verifyDeleteButtonIsVisible(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
+    const folderNode = this.getFolderNode(folderName);
+    const deleteButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
+    await expect(deleteButton).toBeVisible();
+  }
 
-    // Find the specific folder node and its rename button
-    const folderNode = this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first();
+  async verifyContextMenuAppearsOnHover(folderName: string): Promise<void> {
+    await this.verifyRenameButtonIsVisible(folderName);
+  }
 
-    const renameButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
-    await expect(renameButton).toBeVisible();
+  async verifyRenameMenuItemIsDisplayed(folderName: string): Promise<void> {
+    await this.verifyRenameButtonIsVisible(folderName);
   }
 
   async verifyRenameModalOpens(folderName: string): Promise<void> {
@@ -120,18 +127,7 @@ export class FolderRenamePageUtil {
   }
 
   async verifyDeleteIconIsDisplayed(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-
-    // Find the specific folder node and its delete button
-    const folderNode = this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first();
-
-    const deleteIcon = folderNode.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
-    await expect(deleteIcon).toBeVisible();
+    await this.verifyDeleteButtonIsVisible(folderName);
   }
 
   async verifyDeleteConfirmationAppears(): Promise<void> {
@@ -139,7 +135,8 @@ export class FolderRenamePageUtil {
   }
 
   async openContextMenuOnHoverAndVerifyOptions(folderName: string): Promise<void> {
-    await this.verifyContextMenuAppearsOnHover(folderName);
-    await this.verifyRenameMenuItemIsDisplayed(folderName);
+    await this.verifyCreateNewNoteButtonIsVisible(folderName);
+    await this.verifyRenameButtonIsVisible(folderName);
+    await this.verifyDeleteButtonIsVisible(folderName);
   }
 }
