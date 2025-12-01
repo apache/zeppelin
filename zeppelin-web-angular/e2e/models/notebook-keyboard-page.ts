@@ -150,8 +150,6 @@ export class NotebookKeyboardPage extends BasePage {
       const formatted = this.formatKey(s);
 
       await this.page.keyboard.press(formatted);
-
-      return;
     }
   }
 
@@ -363,7 +361,10 @@ export class NotebookKeyboardPage extends BasePage {
         return true;
       }
 
-      // Firefox/WebKit - also accept PENDING/RUNNING
+      // NOTE: Firefox/WebKit accept PENDING/RUNNING states as "settled" because
+      // these browsers may maintain execution in these states longer than Chromium,
+      // but the paragraph execution has been triggered successfully and will complete.
+      // The key is that execution started, not necessarily that it finished.
       if (browserName === 'firefox' || browserName === 'webkit') {
         return status === 'PENDING' || status === 'RUNNING';
       }
