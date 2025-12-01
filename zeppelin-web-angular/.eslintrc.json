@@ -42,7 +42,6 @@
         "@typescript-eslint/consistent-type-assertions": "off",
         "@typescript-eslint/consistent-type-definitions": "off",
         "@typescript-eslint/no-confusing-non-null-assertion": "off",
-        "o-empty-function": "off",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/prefer-for-of": "off",
@@ -85,6 +84,13 @@
         "@typescript-eslint/naming-convention": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-this-alias": "error",
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_"
+          }
+        ],
         "@typescript-eslint/quotes": "off",
         "eol-last": "off",
         "import/no-cycle": "error",
