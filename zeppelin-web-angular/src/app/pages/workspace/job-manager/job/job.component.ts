@@ -75,7 +75,7 @@ export class JobManagerJobComponent implements OnInit, OnChanges {
 
   ngOnInit() {}
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(_changes: SimpleChanges): void {
     this.setIcon();
     this.setRelativeTime();
     this.setProgress();
