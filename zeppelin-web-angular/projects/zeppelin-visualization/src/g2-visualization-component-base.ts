@@ -41,7 +41,7 @@ export abstract class G2VisualizationComponentBase implements OnDestroy {
     this.renderAfter(this.config);
   }
 
-  renderAfter(config: GraphConfig): void {}
+  renderAfter(_config: GraphConfig): void {}
 
   getKey(): string {
     if (!this.config) {
