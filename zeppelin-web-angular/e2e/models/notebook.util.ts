@@ -40,7 +40,7 @@ export class NotebookUtil extends BasePage {
 
     await expect(this.homePage.notebookList).toBeVisible({ timeout: 90000 });
     await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
-    await this.homePage.createNewNoteButton.click({ timeout: 45000 });
+    await this.homePage.createNewNoteButton.click({ timeout: 45000, force: true });
     // Click the 'Create' button in the modal
     const createButton = this.page.locator('button', { hasText: 'Create' });
     await expect(createButton).toBeVisible({ timeout: 30000 });
