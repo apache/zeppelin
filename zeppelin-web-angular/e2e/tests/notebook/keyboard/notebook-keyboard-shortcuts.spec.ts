@@ -39,7 +39,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     keyboardPage = new NotebookKeyboardPage(page);
     testUtil = new NotebookKeyboardPageUtil(page);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     await waitForNotebookLinks(page);

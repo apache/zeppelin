@@ -34,7 +34,7 @@ test.describe.serial('Folder Rename', () => {
     folderRenamePage = new FolderRenamePage(page);
     folderRenameUtil = new FolderRenamePageUtil(page, folderRenamePage);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
@@ -72,9 +72,7 @@ test.describe.serial('Folder Rename', () => {
     await folderRenameUtil.verifyRenameInputIsDisplayed();
   });
 
-  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async ({
-    page
-  }) => {
+  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async () => {
     const renamedFolderName = `RenamedFolder_${test.info().project.name}_${Date.now()}`;
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });

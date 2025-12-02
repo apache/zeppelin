@@ -39,7 +39,7 @@ test.describe('Anonymous User Login Redirect', () => {
 
   test.describe('Given an anonymous user is already logged in', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
     });
 
@@ -143,7 +143,7 @@ test.describe('Anonymous User Login Redirect', () => {
     test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({
       page
     }) => {
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
 
       const homeMetadata = await homePageUtil.getHomePageMetadata();

@@ -24,7 +24,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -36,7 +36,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
   });
 
-  test('should complete full edit workflow with save', async ({ page }) => {
+  test('should complete full edit workflow with save', async () => {
     const settingRows = await repoItemPage.settingRows.count();
 
     await repoItemUtil.verifyDisplayMode();
@@ -44,7 +44,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     await repoItemPage.clickEdit();
     await repoItemUtil.verifyEditMode();
 
-    let foundSetting = false;
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
       const settingName = (await row.locator('td').first().textContent()) || '';
@@ -53,7 +52,6 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
       if (isInputVisible) {
         const originalValue = await repoItemPage.getSettingInputValue(settingName);
         await repoItemPage.fillSettingInput(settingName, originalValue || 'test-value');
-        foundSetting = true;
         break;
       }
     }

@@ -12,7 +12,6 @@
 
 import { test } from '@playwright/test';
 import { NotebookPageUtil } from '../../../models/notebook-page.util';
-import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import {
   addPageAnnotationBeforeEach,
   performLoginIfRequired,
@@ -25,15 +24,13 @@ import {
 test.describe('Notebook Container Component', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
 
-  let testUtil: PublishedParagraphTestUtil;
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
-    testUtil = new PublishedParagraphTestUtil(page);
     testNotebook = await createTestNotebook(page);
 
     // Navigate to the test notebook

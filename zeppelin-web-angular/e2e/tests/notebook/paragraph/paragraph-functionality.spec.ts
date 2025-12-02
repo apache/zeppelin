@@ -13,7 +13,6 @@
 import { expect, test } from '@playwright/test';
 import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
 import { NotebookParagraphUtil } from '../../../models/notebook-paragraph-page.util';
-import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import {
   addPageAnnotationBeforeEach,
   performLoginIfRequired,
@@ -27,15 +26,13 @@ test.describe('Notebook Paragraph Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH);
   addPageAnnotationBeforeEach(PAGES.SHARE.CODE_EDITOR);
 
-  let testUtil: PublishedParagraphTestUtil;
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
-    testUtil = new PublishedParagraphTestUtil(page);
     testNotebook = await createTestNotebook(page);
 
     // Navigate to the test notebook

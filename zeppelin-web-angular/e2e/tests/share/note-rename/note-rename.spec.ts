@@ -11,7 +11,6 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../../../models/home-page';
 import { NoteRenamePage } from '../../../models/note-rename-page';
 import { NoteRenamePageUtil } from '../../../models/note-rename-page.util';
 import {
@@ -24,7 +23,6 @@ import {
 } from '../../../utils';
 
 test.describe('Note Rename', () => {
-  let homePage: HomePage;
   let noteRenamePage: NoteRenamePage;
   let noteRenameUtil: NoteRenamePageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
@@ -32,11 +30,10 @@ test.describe('Note Rename', () => {
   addPageAnnotationBeforeEach(PAGES.SHARE.NOTE_RENAME);
 
   test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
     noteRenamePage = new NoteRenamePage(page);
     noteRenameUtil = new NoteRenamePageUtil(page, noteRenamePage);
 
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
@@ -52,7 +49,6 @@ test.describe('Note Rename', () => {
     // Clean up the test notebook after each test
     if (testNotebook?.noteId) {
       await deleteTestNotebook(page, testNotebook.noteId);
-      testNotebook = undefined;
     }
   });
 
@@ -91,9 +87,7 @@ test.describe('Note Rename', () => {
     await noteRenameUtil.verifyTitleCanBeChanged(`Third Change-${Date.now()}`);
   });
 
-  test('Given title is in edit mode, When checking input visibility, Then input should be visible and title should be hidden', async ({
-    page
-  }) => {
+  test('Given title is in edit mode, When checking input visibility, Then input should be visible and title should be hidden', async () => {
     await noteRenamePage.clickTitle();
     const isInputVisible = await noteRenamePage.isTitleInputVisible();
     expect(isInputVisible).toBe(true);

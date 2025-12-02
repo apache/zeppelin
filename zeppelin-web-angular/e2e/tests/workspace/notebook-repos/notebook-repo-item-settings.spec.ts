@@ -22,7 +22,7 @@ test.describe('Notebook Repository Item - Settings', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -86,7 +86,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
     await repoItemPage.clickEdit();
 
-    let foundInput = false;
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
       const settingName = (await row.locator('td').first().textContent()) || '';
@@ -97,7 +96,6 @@ test.describe('Notebook Repository Item - Settings', () => {
         await repoItemPage.fillSettingInput(settingName, testValue);
         const inputValue = await repoItemPage.getSettingInputValue(settingName);
         expect(inputValue).toBe(testValue);
-        foundInput = true;
         break;
       }
     }
