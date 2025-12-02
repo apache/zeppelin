@@ -33,29 +33,24 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
-    try {
-      keyboardPage = new NotebookKeyboardPage(page);
-      testUtil = new NotebookKeyboardPageUtil(page);
+    keyboardPage = new NotebookKeyboardPage(page);
+    testUtil = new NotebookKeyboardPageUtil(page);
 
-      await page.goto('/');
-      await waitForZeppelinReady(page);
-      await performLoginIfRequired(page);
-      await waitForNotebookLinks(page);
+    await page.goto('/');
+    await waitForZeppelinReady(page);
+    await performLoginIfRequired(page);
+    await waitForNotebookLinks(page);
 
-      // Handle the welcome modal if it appears
-      const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
-      if ((await cancelButton.count()) > 0) {
-        await cancelButton.click();
-        await cancelButton.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
-      }
-
-      // Simple notebook creation without excessive waiting
-      testNotebook = await testUtil.createTestNotebook();
-      await testUtil.prepareNotebookForKeyboardTesting(testNotebook.noteId);
-    } catch (error) {
-      console.error('Error during beforeEach setup:', error);
-      throw error; // Re-throw to fail the test if setup fails
+    // Handle the welcome modal if it appears
+    const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
+    if ((await cancelButton.count()) > 0) {
+      await cancelButton.click();
+      await cancelButton.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
     }
+
+    // Simple notebook creation without excessive waiting
+    testNotebook = await testUtil.createTestNotebook();
+    await testUtil.prepareNotebookForKeyboardTesting(testNotebook.noteId);
   });
 
   test.afterEach(async ({ page }) => {
@@ -199,13 +194,12 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       } else {
         // Very lenient fallback - just verify shortcut was processed
         console.log('ℹ Execution may not be available, verifying shortcut processed');
-        const pageWorking = await keyboardPage.page.evaluate(() => {
-          return (
+        const pageWorking = await keyboardPage.page.evaluate(
+          () =>
             document.querySelector(
               'zeppelin-notebook-paragraph textarea, zeppelin-notebook-paragraph .monaco-editor'
             ) !== null
-          );
-        });
+        );
         expect(pageWorking).toBe(true);
         console.log('✓ Keyboard shortcut test passed (UI level)');
       }

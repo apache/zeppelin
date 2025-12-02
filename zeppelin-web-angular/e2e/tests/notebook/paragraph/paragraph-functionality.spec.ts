@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 import { NotebookParagraphUtil } from '../../../models/notebook-paragraph-page.util';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';

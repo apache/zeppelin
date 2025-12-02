@@ -22,6 +22,19 @@ export class NotebookActionBarUtil {
     this.actionBarPage = new NotebookActionBarPage(page);
   }
 
+  private async handleOptionalConfirmation(logMessage: string): Promise<void> {
+    const confirmSelector = this.page
+      .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
+      .first();
+
+    if (await confirmSelector.isVisible({ timeout: 2000 })) {
+      await confirmSelector.click();
+      await expect(confirmSelector).not.toBeVisible();
+    } else {
+      console.log(logMessage);
+    }
+  }
+
   async verifyTitleEditingFunctionality(expectedTitle?: string): Promise<void> {
     await expect(this.actionBarPage.titleEditor).toBeVisible();
     const titleText = await this.actionBarPage.getTitleText();
@@ -40,18 +53,7 @@ export class NotebookActionBarUtil {
     await this.actionBarPage.clickRunAll();
 
     // Check if confirmation dialog appears (it might not in some configurations)
-    try {
-      // Try multiple possible confirmation dialog selectors
-      const confirmSelector = this.page
-        .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
-        .first();
-      await expect(confirmSelector).toBeVisible({ timeout: 2000 });
-      await confirmSelector.click();
-      await expect(confirmSelector).not.toBeVisible();
-    } catch (error) {
-      // If no confirmation dialog appears, that's also valid behavior
-      console.log('Run all executed without confirmation dialog');
-    }
+    await this.handleOptionalConfirmation('Run all executed without confirmation dialog');
   }
 
   async verifyCodeVisibilityToggle(): Promise<void> {
@@ -81,18 +83,7 @@ export class NotebookActionBarUtil {
     await this.actionBarPage.clickClearOutput();
 
     // Check if confirmation dialog appears (it might not in some configurations)
-    try {
-      // Try multiple possible confirmation dialog selectors
-      const confirmSelector = this.page
-        .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
-        .first();
-      await expect(confirmSelector).toBeVisible({ timeout: 2000 });
-      await confirmSelector.click();
-      await expect(confirmSelector).not.toBeVisible();
-    } catch (error) {
-      // If no confirmation dialog appears, that's also valid behavior
-      console.log('Clear output executed without confirmation dialog');
-    }
+    await this.handleOptionalConfirmation('Clear output executed without confirmation dialog');
   }
 
   async verifyNoteManagementButtons(): Promise<void> {
