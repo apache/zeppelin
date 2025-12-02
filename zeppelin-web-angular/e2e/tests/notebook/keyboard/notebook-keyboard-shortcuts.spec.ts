@@ -19,8 +19,7 @@ import {
   waitForNotebookLinks,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 /**
@@ -60,10 +59,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.afterEach(async ({ page }) => {
     // Clean up any open dialogs or modals
     await page.keyboard.press('Escape');
-
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   // ===== CORE EXECUTION SHORTCUTS =====

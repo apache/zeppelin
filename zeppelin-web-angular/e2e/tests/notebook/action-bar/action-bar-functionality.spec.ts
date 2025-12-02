@@ -17,8 +17,7 @@ import {
   performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Notebook Action Bar Functionality', () => {
@@ -36,12 +35,6 @@ test.describe('Notebook Action Bar Functionality', () => {
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('should display and allow title editing with tooltip', async ({ page }) => {

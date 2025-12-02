@@ -19,8 +19,7 @@ import {
   waitForNotebookLinks,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Published Paragraph', () => {
@@ -45,12 +44,6 @@ test.describe('Published Paragraph', () => {
 
     testUtil = new PublishedParagraphTestUtil(page);
     testNotebook = await createTestNotebook(page);
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook?.noteId);
-    }
   });
 
   test.describe('Error Handling', () => {

@@ -18,14 +18,12 @@ import {
   PAGES,
   performLoginIfRequired,
   waitForZeppelinReady,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe.serial('Folder Rename', () => {
   let folderRenamePage: FolderRenamePage;
   let folderRenameUtil: FolderRenamePageUtil;
-  let testNotebook: { noteId: string; paragraphId: string };
   let testFolderName: string;
 
   addPageAnnotationBeforeEach(PAGES.SHARE.FOLDER_RENAME);
@@ -40,16 +38,7 @@ test.describe.serial('Folder Rename', () => {
 
     // Create a test notebook with folder structure
     testFolderName = `TestFolder_${Date.now()}`;
-    testNotebook = await createTestNotebook(page, testFolderName);
-    // testFolderName is now the folder that contains the notebook
-  });
-
-  test.afterEach(async ({ page }) => {
-    // Clean up the test notebook and folder
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-      await deleteTestNotebook(page, testFolderName);
-    }
+    await createTestNotebook(page, testFolderName);
   });
 
   test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear', async () => {

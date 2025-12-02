@@ -17,8 +17,7 @@ import {
   performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Notebook Sidebar Functionality', () => {
@@ -41,12 +40,6 @@ test.describe('Notebook Sidebar Functionality', () => {
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('should display navigation buttons', async () => {

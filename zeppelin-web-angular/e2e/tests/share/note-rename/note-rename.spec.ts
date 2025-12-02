@@ -18,8 +18,7 @@ import {
   PAGES,
   performLoginIfRequired,
   waitForZeppelinReady,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Note Rename', () => {
@@ -43,13 +42,6 @@ test.describe('Note Rename', () => {
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach(async ({ page }) => {
-    // Clean up the test notebook after each test
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('Given notebook page is loaded, When checking note title, Then title should be displayed', async () => {

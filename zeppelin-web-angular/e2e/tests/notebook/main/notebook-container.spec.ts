@@ -17,8 +17,7 @@ import {
   performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Notebook Container Component', () => {
@@ -36,12 +35,6 @@ test.describe('Notebook Container Component', () => {
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('should display notebook container with proper structure', async ({ page }) => {

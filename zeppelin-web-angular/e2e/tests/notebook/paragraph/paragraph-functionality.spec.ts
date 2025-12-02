@@ -18,8 +18,7 @@ import {
   performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Notebook Paragraph Functionality', () => {
@@ -38,12 +37,6 @@ test.describe('Notebook Paragraph Functionality', () => {
     // Navigate to the test notebook
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('should display paragraph container with proper structure', async ({ page }) => {

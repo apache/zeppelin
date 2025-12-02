@@ -18,8 +18,7 @@ import {
   PAGES,
   performLoginIfRequired,
   waitForZeppelinReady,
-  createTestNotebook,
-  deleteTestNotebook
+  createTestNotebook
 } from '../../../utils';
 
 test.describe('Note Table of Contents', () => {
@@ -51,12 +50,6 @@ test.describe('Note Table of Contents', () => {
 
     // Only proceed if TOC button exists (confirms notebook context)
     await expect(noteTocPage.tocToggleButton).toBeVisible({ timeout: 10000 });
-  });
-
-  test.afterEach(async ({ page }) => {
-    if (testNotebook?.noteId) {
-      await deleteTestNotebook(page, testNotebook.noteId);
-    }
   });
 
   test('Given notebook page is loaded, When clicking TOC toggle button, Then TOC panel should open', async () => {
