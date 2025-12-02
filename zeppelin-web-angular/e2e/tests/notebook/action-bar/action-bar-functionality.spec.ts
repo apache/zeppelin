@@ -40,7 +40,7 @@ test.describe('Notebook Action Bar Functionality', () => {
   test('should display and allow title editing with tooltip', async ({ page }) => {
     // Then: Title editor should be functional with proper tooltip
     const actionBarUtil = new NotebookActionBarUtil(page);
-    const notebookName = `Test Notebook ${Date.now()}`;
+    const notebookName = `TestNotebook_${Date.now()}`;
     await actionBarUtil.verifyTitleEditingFunctionality(notebookName);
   });
 

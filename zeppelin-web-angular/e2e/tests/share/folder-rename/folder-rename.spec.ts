@@ -62,7 +62,7 @@ test.describe.serial('Folder Rename', () => {
   });
 
   test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async () => {
-    const renamedFolderName = `RenamedFolder_${test.info().project.name}_${Date.now()}`;
+    const renamedFolderName = `TestFolderRenamed_${Date.now()}`;
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });
 
@@ -94,7 +94,7 @@ test.describe.serial('Folder Rename', () => {
   test('Given folder is renamed, When checking folder list, Then old name should not exist and new name should exist', async ({
     page
   }) => {
-    const renamedFolderName = `RenamedFolder_${test.info().project.name}_${Date.now()}`;
+    const renamedFolderName = `TestFolderRenamed_${Date.now()}`;
     await folderRenamePage.hoverOverFolder(testFolderName);
     await folderRenamePage.clickRenameMenuItem(testFolderName);
     await folderRenamePage.clearNewName();
