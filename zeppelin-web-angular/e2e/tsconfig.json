@@ -1,8 +1,12 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "e2e/*": ["./*"]
-    }
-  }
+    },
+    "noUnusedParameters": true,
+    "noUnusedLocals": true
+  },
+  "include": ["**/*.ts"]
 }

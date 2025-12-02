@@ -43,7 +43,7 @@ export class PieChartVisualizationComponent extends G2VisualizationComponentBase
 
   ngOnInit() {}
 
-  refreshSetting(config: GraphConfig) {
+  refreshSetting(_config: GraphConfig) {
     this.pivotSettingComponent.init();
   }
 

@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -73,7 +73,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
   }
 
   @MessageListener(OP.JOB_MANAGER_DISABLED)
-  onJobManagerDisabled(data: JobManagerDisabled) {
+  onJobManagerDisabled(_data: JobManagerDisabled) {
     this.status = 'disabled';
     this.cdr.markForCheck();
   }

@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 import { HomePageUtil } from '../../models/home-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
@@ -27,21 +27,21 @@ test.describe('Home Page Notebook Actions', () => {
   });
 
   test.describe('Given notebook list is displayed', () => {
-    test('When page loads Then should show notebook actions', async ({ page }) => {
+    test('When page loads Then should show notebook actions', async () => {
       await homeUtil.verifyNotebookActions();
     });
 
-    test('When refresh button is clicked Then should trigger reload with loading state', async ({ page }) => {
+    test('When refresh button is clicked Then should trigger reload with loading state', async () => {
       await homeUtil.testNotebookRefreshLoadingState();
     });
 
-    test('When filter is used Then should filter notebook list', async ({ page }) => {
+    test('When filter is used Then should filter notebook list', async () => {
       await homeUtil.testFilterFunctionality('test');
     });
   });
 
   test.describe('Given create new note action', () => {
-    test('When create new note is clicked Then should open note creation modal', async ({ page }) => {
+    test('When create new note is clicked Then should open note creation modal', async () => {
       try {
         await homeUtil.verifyCreateNewNoteWorkflow();
       } catch (error) {
@@ -51,7 +51,7 @@ test.describe('Home Page Notebook Actions', () => {
   });
 
   test.describe('Given import note action', () => {
-    test('When import note is clicked Then should open import modal', async ({ page }) => {
+    test('When import note is clicked Then should open import modal', async () => {
       try {
         await homeUtil.verifyImportNoteWorkflow();
       } catch (error) {
@@ -61,7 +61,7 @@ test.describe('Home Page Notebook Actions', () => {
   });
 
   test.describe('Given notebook refresh functionality', () => {
-    test('When refresh is triggered Then should maintain notebook list visibility', async ({ page }) => {
+    test('When refresh is triggered Then should maintain notebook list visibility', async () => {
       await homeUtil.verifyNotebookRefreshFunctionality();
     });
   });

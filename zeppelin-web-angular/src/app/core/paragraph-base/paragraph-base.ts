@@ -23,8 +23,7 @@ import {
   ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
-  ParagraphIResultsMsgItem,
-  ParagraphResults
+  ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
 
 import * as DiffMatchPatch from 'diff-match-patch';
@@ -339,7 +338,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  runParagraphUsingSpell(paragraphText: string, magic: string, propagated: boolean) {
+  runParagraphUsingSpell(_paragraphText: string, _magic: string, _propagated: boolean) {
     // TODO(hsuanxyz)
   }
 

@@ -32,7 +32,7 @@ import { cloneDeep, isEqual } from 'lodash';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
+import { utils, writeFile, WritingOptions } from 'xlsx';
 
 import {
   DatasetType,

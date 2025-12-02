@@ -115,7 +115,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     }
   }
 
-  changeColWidth(needCommit: boolean, updateResult?: boolean): void {
+  changeColWidth(_needCommit: boolean, _updateResult?: boolean): void {
     // noop
   }
 

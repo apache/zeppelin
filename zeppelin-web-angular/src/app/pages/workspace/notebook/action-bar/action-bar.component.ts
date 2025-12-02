@@ -127,7 +127,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   @MessageListener(OP.PARAGRAPH)
-  paragraphUpdate(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
+  paragraphUpdate(_data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     this.updateIsNoteParagraphRunning();
     this.cdr.markForCheck();
   }
@@ -238,16 +238,16 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   // TODO: Implement logic to find the previous search match in the notebook editor
-  onFindPrevClick(searchText: string) {}
+  onFindPrevClick(_searchText: string) {}
 
   // TODO: Implement logic to find the next search match in the notebook editor
-  onFindNextClick(searchText: string) {}
+  onFindNextClick(_searchText: string) {}
 
   // TODO: Implement logic to replace the current search match with the replacement text
-  onReplaceClick(searchText: string, replaceText: string) {}
+  onReplaceClick(_searchText: string, _replaceText: string) {}
 
   // TODO: Implement logic to replace all search matches with the replacement text
-  onReplaceAllClick(searchText: string, replaceText: string) {
+  onReplaceAllClick(searchText: string, _replaceText: string) {
     this.handleSearch.emit(searchText);
   }
 
