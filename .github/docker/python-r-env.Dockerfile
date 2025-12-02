@@ -16,7 +16,7 @@ RUN conda env create -f /tmp/environment.yml && \
     rm /tmp/environment.yml
 
 # Install R IRkernel
-RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec()"
+RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec(user = TRUE)"
 
 # Install Java 11 for Maven
 RUN apt-get update && \
