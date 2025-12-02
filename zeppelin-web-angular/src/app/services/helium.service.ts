@@ -35,7 +35,7 @@ export class HeliumService extends BaseRest {
     return this.visualizationBundles$.asObservable();
   }
 
-  getSpellByMagic(magic: string): string | null {
+  getSpellByMagic(_magic: string): string | null {
     return null;
   }
 

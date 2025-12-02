@@ -182,7 +182,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   @MessageListener(OP.SET_NOTE_REVISION)
-  setNoteRevision(data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
+  setNoteRevision(_data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
     const { noteId } = this.activatedRoute.snapshot.params;
     this.router.navigate(['/notebook', noteId]).then();
   }
@@ -218,7 +218,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   @MessageListener(OP.PATCH_PARAGRAPH)
-  patchParagraph(data: MessageReceiveDataTypeMap[OP.PATCH_PARAGRAPH]) {
+  patchParagraph(_data: MessageReceiveDataTypeMap[OP.PATCH_PARAGRAPH]) {
     this.collaborativeMode = true;
     this.cdr.markForCheck();
   }

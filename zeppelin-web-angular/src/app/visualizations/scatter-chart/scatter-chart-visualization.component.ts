@@ -48,7 +48,7 @@ export class ScatterChartVisualizationComponent extends G2VisualizationComponent
     super(visualization);
   }
 
-  refreshSetting(config: GraphConfig) {
+  refreshSetting(_config: GraphConfig) {
     this.scatterSettingComponent.init();
     this.cdr.markForCheck();
   }

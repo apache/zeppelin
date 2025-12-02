@@ -42,7 +42,7 @@ export class NotebookInterpreterBindingComponent {
         new Promise(resolve => {
           this.restarting = true;
           this.interpreterService.restartInterpreter(interpreter.id, this.noteId).subscribe(
-            data => {
+            _data => {
               this.restarting = false;
               this.cdr.markForCheck();
               resolve();

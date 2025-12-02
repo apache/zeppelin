@@ -31,7 +31,7 @@ export class HomeComponent extends MessageListenersManager implements OnInit {
   }
 
   @MessageListener(OP.NOTES_INFO)
-  getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
+  getNotes(_data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
     this.loading = false;
     this.cdr.markForCheck();
   }
