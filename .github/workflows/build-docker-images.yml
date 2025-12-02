@@ -1,0 +1,78 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches: [master, 'branch-*']
+    paths:
+      - 'testing/env_*.yml'
+      - '.github/docker/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-python-r-env:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write  # Required for GHCR push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Calculate environment file hash
+        id: hash
+        run: |
+          ENV_HASH=$(sha256sum testing/env_python_3.9_with_R.yml | cut -d' ' -f1 | cut -c1-12)
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${ENV_HASH}"
+
+          echo "hash=${ENV_HASH}" >> $GITHUB_OUTPUT
+          echo "image-name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "📦 Image will be: ${IMAGE_NAME}"
+
+      - name: Check if image already exists
+        id: check
+        run: |
+          IMAGE="${{ steps.hash.outputs.image-name }}"
+
+          if docker manifest inspect ${IMAGE} >/dev/null 2>&1; then
+            echo "✅ Image ${IMAGE} already exists, skipping build"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Image ${IMAGE} does not exist, will build"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .github/docker/python-r-env.Dockerfile
+          push: true
+          tags: |
+            ${{ steps.hash.outputs.image-name }}
+            ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            ENV_FILE=testing/env_python_3.9_with_R.yml
+
+      - name: Image ready
+        run: |
+          echo "🎉 Image is ready: ${{ steps.hash.outputs.image-name }}"
