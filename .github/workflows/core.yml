@@ -51,8 +51,9 @@ jobs:
       - name: Generate image name with hash
         id: image
         run: |
-          ENV_HASH=$(sha256sum testing/env_python_3.9_with_R.yml | cut -d' ' -f1 | cut -c1-12)
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${ENV_HASH}"
+          # Include both environment file AND Dockerfile in hash calculation
+          COMBINED_HASH=$(cat testing/env_python_3.9_with_R.yml .github/docker/python-r-env.Dockerfile | sha256sum | cut -d' ' -f1 | cut -c1-12)
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${COMBINED_HASH}"
 
           echo "name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
 
