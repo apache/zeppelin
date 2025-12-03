@@ -22,10 +22,10 @@ jobs:
       - name: Calculate environment file hash
         id: hash
         run: |
-          ENV_HASH=$(sha256sum testing/env_python_3.9_with_R.yml | cut -d' ' -f1 | cut -c1-12)
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${ENV_HASH}"
-
-          echo "hash=${ENV_HASH}" >> $GITHUB_OUTPUT
+          # Include both environment file AND Dockerfile in hash calculation
+          COMBINED_HASH=$(cat testing/env_python_3.9_with_R.yml .github/docker/python-r-env.Dockerfile | sha256sum | cut -d' ' -f1 | cut -c1-12)
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${COMBINED_HASH}"
+          echo "hash=${COMBINED_HASH}" >> $GITHUB_OUTPUT
           echo "image-name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
           echo "📦 Image will be: ${IMAGE_NAME}"
 
