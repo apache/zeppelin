@@ -22,6 +22,11 @@ RUN mamba env create -f /tmp/environment.yml && \
     conda clean -afy && \
     rm /tmp/environment.yml
 
+# Set environment variables
+ENV PATH=/opt/conda/envs/python_3_with_R/bin:$PATH \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
+    CONDA_DEFAULT_ENV=python_3_with_R
+
 # Install R IRkernel
 RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec(user = TRUE)"
 
@@ -33,11 +38,6 @@ RUN apt-get update && \
         curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Set environment variables
-ENV PATH=/opt/conda/envs/python_3_with_R/bin:$PATH \
-    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
-    CONDA_DEFAULT_ENV=python_3_with_R
 
 WORKDIR /workspace
 
