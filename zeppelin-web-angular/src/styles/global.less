@@ -115,6 +115,14 @@
   }
 }
 
+// Fix `a` tag in nz-dropdown-menu to be clickable with full width
+.ant-dropdown-menu-item > a::before {
+  position: absolute;
+  inset: 0;
+  background-color: transparent;
+  content: '';
+}
+
 //.view-lines {
 //  .view-line {
 //    &:first-child {
