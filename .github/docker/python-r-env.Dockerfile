@@ -7,11 +7,18 @@ ARG ENV_FILE=testing/env_python_3.9_with_R.yml
 LABEL org.opencontainers.image.source=https://github.com/apache/zeppelin
 LABEL org.opencontainers.image.description="Zeppelin test environment with Python 3.9 and R"
 
+# Install mamba for faster and more reliable dependency resolution
+# Configure channels to match GitHub Actions setup-miniconda settings
+RUN conda install -n base -c conda-forge mamba -y && \
+    conda config --add channels conda-forge && \
+    conda config --add channels defaults && \
+    conda config --set channel_priority strict
+
 # Copy environment file
 COPY ${ENV_FILE} /tmp/environment.yml
 
-# Create conda environment (optimized in one layer)
-RUN conda env create -f /tmp/environment.yml && \
+# Create conda environment using mamba (avoids libsolv solver crashes)
+RUN mamba env create -f /tmp/environment.yml && \
     conda clean -afy && \
     rm /tmp/environment.yml
 
