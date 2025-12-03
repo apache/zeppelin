@@ -30,12 +30,22 @@ ENV PATH=/opt/conda/envs/python_3_with_R/bin:$PATH \
 # Install R IRkernel
 RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec(user = TRUE)"
 
-# Install Java 11 for Maven
+# Install Java 11 for Maven and MongoDB dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         openjdk-11-jdk \
         git \
-        curl && \
+        curl \
+        # MongoDB runtime dependencies \
+        libcurl4 \
+        libgssapi-krb5-2 \
+        libldap-2.4-2 \
+        libwrap0 \
+        libsasl2-2 \
+        libsasl2-modules \
+        libsasl2-modules-gssapi-mit \
+        openssl \
+        liblzma5 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
