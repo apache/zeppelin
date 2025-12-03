@@ -104,6 +104,11 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    # Use bash shell to ensure conda environment PATH is properly loaded
+    defaults:
+      run:
+        shell: bash {0}    # login shell 없이 먼저 시도
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
