@@ -36,10 +36,10 @@ RUN apt-get update && \
         openjdk-11-jdk \
         git \
         curl \
-        # MongoDB runtime dependencies \
+        # MongoDB runtime dependencies (Debian 12 compatible) \
         libcurl4 \
         libgssapi-krb5-2 \
-        libldap-2.4-2 \
+        libldap-2.5-0 \
         libwrap0 \
         libsasl2-2 \
         libsasl2-modules \
