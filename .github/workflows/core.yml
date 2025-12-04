@@ -43,10 +43,16 @@ jobs:
       packages: write
     outputs:
       image-name: ${{ steps.image.outputs.name }}
+      pom-hash: ${{ steps.hash.outputs.pom }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Calculate pom.xml hash
+        id: hash
+        run: |
+          echo "pom=${{ hashFiles('**/pom.xml') }}" >> $GITHUB_OUTPUT
 
       - name: Generate image name with hash
         id: image
@@ -122,7 +128,7 @@ jobs:
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
             ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-zeppelin-${{ needs.prepare-python-r-env.outputs.pom-hash }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
 
