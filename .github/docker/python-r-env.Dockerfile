@@ -36,16 +36,7 @@ RUN apt-get update && \
         wget \
         gnupg \
         git \
-        curl \
-        libcurl4 \
-        libgssapi-krb5-2 \
-        libldap-2.5-0 \
-        libwrap0 \
-        libsasl2-2 \
-        libsasl2-modules \
-        libsasl2-modules-gssapi-mit \
-        openssl \
-        liblzma5 && \
+        curl && \
     wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /usr/share/keyrings/adoptium.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
