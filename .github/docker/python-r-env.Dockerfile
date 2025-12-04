@@ -33,10 +33,10 @@ RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec(user = TRUE)
 # Install Java 11 for Maven and MongoDB dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        openjdk-11-jdk \
+        wget \
+        gnupg \
         git \
         curl \
-        # MongoDB runtime dependencies (Debian 12 compatible) \
         libcurl4 \
         libgssapi-krb5-2 \
         libldap-2.5-0 \
@@ -46,8 +46,15 @@ RUN apt-get update && \
         libsasl2-modules-gssapi-mit \
         openssl \
         liblzma5 && \
+    wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /usr/share/keyrings/adoptium.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends temurin-11-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/temurin-11-jdk-amd64
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 WORKDIR /workspace
 
