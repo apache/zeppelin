@@ -526,7 +526,7 @@ jobs:
           path: |
             ~\.m2\repository
             !~\.m2\repository\org\apache\zeppelin\
-          key: os-m2-${{ github.sha }}
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Build on Windows
