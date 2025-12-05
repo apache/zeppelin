@@ -249,18 +249,57 @@ jobs:
   # ============================================
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:
-    needs: prepare-python-r-env
     runs-on: ubuntu-24.04
-    container:
-      image: ${{ needs.prepare-python-r-env.outputs.image-name }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11 ]
     steps:
+      # user/password => root/root
+      - name: Start mysql
+        run: sudo systemctl start mysql.service
       - name: Checkout
         uses: actions/checkout@v4
-      # ... rest of the steps
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.spark-dist
+            ~/.cache
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
+      - name: install environment
+        run: |
+          ./mvnw install -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-117 ${MAVEN_ARGS}
+          ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
+      - name: Setup conda environment with python 3.9 and R
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_3_with_R
+          environment-file: testing/env_python_3_with_R.yml
+          python-version: 3.9
+          channels: conda-forge,defaults
+          channel-priority: strict
+          auto-activate-base: false
+          use-mamba: true
+      - name: Make IRkernel available to Jupyter
+        run: |
+          R -e "IRkernel::installspec()"
+      - name: run tests
+        run: ./mvnw test -pl zeppelin-interpreter-integration -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
 
   flink-test-and-flink-integration-test:
     runs-on: ubuntu-24.04
