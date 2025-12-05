@@ -39,6 +39,7 @@ test.describe.serial('Folder Rename', () => {
     // Create a test notebook with folder structure
     testFolderName = `TestFolder_${Date.now()}`;
     await createTestNotebook(page, testFolderName);
+    await folderRenameUtil.clickE2ETestFolder();
   });
 
   test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear', async () => {
@@ -61,8 +62,12 @@ test.describe.serial('Folder Rename', () => {
     await folderRenameUtil.verifyRenameInputIsDisplayed();
   });
 
-  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async () => {
-    const renamedFolderName = `TestFolderRenamed_${Date.now()}`;
+  test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async ({
+    page
+  }) => {
+    const browserName = page.context().browser()?.browserType().name();
+    const renamedFolderName = `TestFolderRenamed_${`${Date.now()}_${browserName}`}`;
+
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });
 
@@ -106,6 +111,9 @@ test.describe.serial('Folder Rename', () => {
     // Wait for any processing to complete
     await page.waitForLoadState('networkidle', { timeout: 15000 });
     await page.waitForTimeout(2000);
+
+    // After reload, click E2E_TEST_FOLDER again, as requested by the user
+    await folderRenameUtil.clickE2ETestFolder();
 
     // Check current state after rename attempt
     const newFolderVisible = await folderRenamePage.isFolderVisible(renamedFolderName);

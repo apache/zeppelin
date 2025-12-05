@@ -24,24 +24,38 @@ export class NoteRenamePage extends BasePage {
     this.noteTitleInput = page.locator('.elastic input');
   }
 
+  async ensureEditMode(): Promise<void> {
+    if (!(await this.noteTitleInput.isVisible())) {
+      await this.clickTitle();
+    }
+    await this.noteTitleInput.waitFor({ state: 'visible' });
+  }
+
   async clickTitle(): Promise<void> {
     await this.noteTitle.click();
+    await this.noteTitleInput.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async enterTitle(title: string): Promise<void> {
+    await this.ensureEditMode();
     await this.noteTitleInput.fill(title);
   }
 
   async clearTitle(): Promise<void> {
+    await this.ensureEditMode();
     await this.noteTitleInput.clear();
   }
 
   async pressEnter(): Promise<void> {
+    await this.noteTitleInput.waitFor({ state: 'visible', timeout: 5000 });
     await this.noteTitleInput.press('Enter');
+    await this.noteTitleInput.waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   async pressEscape(): Promise<void> {
+    await this.noteTitleInput.waitFor({ state: 'visible', timeout: 5000 });
     await this.noteTitleInput.press('Escape');
+    await this.noteTitleInput.waitFor({ state: 'hidden', timeout: 5000 });
   }
 
   async blur(): Promise<void> {

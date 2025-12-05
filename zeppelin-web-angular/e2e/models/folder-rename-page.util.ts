@@ -12,12 +12,23 @@
 
 import { expect, Page } from '@playwright/test';
 import { FolderRenamePage } from './folder-rename-page';
+import { HomePage } from './home-page'; // Import HomePage
 
 export class FolderRenamePageUtil {
+  private homePage: HomePage; // Add homePage property
+
   constructor(
     private readonly page: Page,
     private readonly folderRenamePage: FolderRenamePage
-  ) {}
+  ) {
+    this.homePage = new HomePage(page); // Initialize homePage
+  }
+
+  // Add this new method
+  async clickE2ETestFolder(): Promise<void> {
+    await this.homePage.clickE2ETestFolder();
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 }); // Wait for UI update
+  }
 
   private getFolderNode(folderName: string) {
     return this.page
@@ -88,13 +99,20 @@ export class FolderRenamePageUtil {
     await this.page.reload();
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
+    await this.clickE2ETestFolder();
+
+    const baseNewName = newName.split('/').pop();
+
     // Ensure the folder list is stable and contains the new folder after reload
     await this.page.waitForFunction(
-      ([expectedNewName]) => {
+      ([expectedBaseName]) => {
+        if (!expectedBaseName) {
+          throw Error('Renamed Folder name is not exist.');
+        }
         const folders = Array.from(document.querySelectorAll('.folder .name'));
-        return folders.some(folder => folder.textContent?.includes(expectedNewName));
+        return folders.some(folder => folder.textContent?.includes(expectedBaseName));
       },
-      [newName],
+      [baseNewName],
       { timeout: 30000 } // Increased timeout for stability
     );
   }

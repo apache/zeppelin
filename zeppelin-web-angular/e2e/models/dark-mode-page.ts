@@ -11,14 +11,14 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
+import { BasePage } from './base-page';
 
-export class ThemePage {
-  readonly page: Page;
+export class DarkModePage extends BasePage {
   readonly themeToggleButton: Locator;
   readonly rootElement: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.themeToggleButton = page.locator('zeppelin-theme-toggle button');
     this.rootElement = page.locator('html');
   }

@@ -232,4 +232,8 @@ export class HomePage extends BasePage {
   async isMoreInfoGridVisible(): Promise<boolean> {
     return this.moreInfoGrid.isVisible();
   }
+
+  async clickE2ETestFolder(): Promise<void> {
+    await this.page.locator('a.name').filter({ hasText: 'E2E_TEST_FOLDER' }).click();
+  }
 }

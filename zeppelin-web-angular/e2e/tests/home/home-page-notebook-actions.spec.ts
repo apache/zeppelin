@@ -36,6 +36,11 @@ test.describe('Home Page Notebook Actions', () => {
     });
 
     test('When filter is used Then should filter notebook list', async () => {
+      // Note (ZEPPELIN-6386):
+      // The Notebook search filter in the New UI is currently too slow,
+      // so this test is temporarily skipped. The skip will be removed
+      // once the performance issue is resolved.
+      test.skip();
       await homeUtil.testFilterFunctionality('test');
     });
   });

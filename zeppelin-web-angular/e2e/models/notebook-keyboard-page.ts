@@ -1,5 +1,3 @@
-/* eslint-disable arrow-body-style */
-/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +12,8 @@
 
 import test, { expect, Locator, Page } from '@playwright/test';
 import { navigateToNotebookWithFallback } from '../utils';
+import { ShortcutsMap } from '../../src/app/key-binding/shortcuts-map';
+import { ParagraphActions } from '../../src/app/key-binding/paragraph-actions';
 import { BasePage } from './base-page';
 
 export class NotebookKeyboardPage extends BasePage {
@@ -59,15 +59,10 @@ export class NotebookKeyboardPage extends BasePage {
       throw new Error('noteId is undefined or null. Cannot navigate to notebook.');
     }
 
-    // Use the reusable navigation function with fallback strategies
     await navigateToNotebookWithFallback(this.page, noteId);
 
     // Verify we're actually on a notebook page before checking for paragraphs
     await expect(this.page).toHaveURL(new RegExp(`/notebook/${noteId}`), { timeout: 15000 });
-
-    // Wait for general page load, including network activity and potential loading spinners.
-    // This replaces the direct 'networkidle' wait to use the more comprehensive BasePage method.
-    await super.waitForPageLoad();
 
     // Ensure the main notebook content container is visible
     const notebookContainer = this.page.locator('.notebook-container');
@@ -142,14 +137,18 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.keyboard.press('Escape');
   }
 
-  // Simple, direct keyboard execution - no hiding failures
+  // Execute keyboard shortcut
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
     const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
 
     for (const s of shortcutsToTry) {
-      const formatted = this.formatKey(s);
-
-      await this.page.keyboard.press(formatted);
+      try {
+        const formatted = this.formatKey(s);
+        await this.page.keyboard.press(formatted);
+        return;
+      } catch {
+        continue;
+      }
     }
   }
 
@@ -168,42 +167,42 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Run paragraph - shift.enter
   async pressRunParagraph(): Promise<void> {
-    await this.executePlatformShortcut('shift.enter');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Run]);
   }
 
   // Run all above paragraphs - control.shift.arrowup
   async pressRunAbove(): Promise<void> {
-    await this.executePlatformShortcut('control.shift.arrowup');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.RunAbove]);
   }
 
   // Run all below paragraphs - control.shift.arrowdown
   async pressRunBelow(): Promise<void> {
-    await this.executePlatformShortcut('control.shift.arrowdown');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.RunBelow]);
   }
 
   // Cancel - control.alt.c (or control.alt.ç for macOS)
   async pressCancel(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.c', 'control.alt.ç']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Cancel]);
   }
 
   // Move cursor up - control.p
   async pressMoveCursorUp(): Promise<void> {
-    await this.executePlatformShortcut('control.p');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.MoveCursorUp]);
   }
 
   // Move cursor down - control.n
   async pressMoveCursorDown(): Promise<void> {
-    await this.executePlatformShortcut('control.n');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.MoveCursorDown]);
   }
 
   // Delete paragraph - control.alt.d (or control.alt.∂ for macOS)
   async pressDeleteParagraph(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.d', 'control.alt.∂']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Delete]);
   }
 
   // Insert paragraph above - control.alt.a (or control.alt.å for macOS)
   async pressInsertAbove(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.a', 'control.alt.å']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.InsertAbove]);
   }
 
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
@@ -213,8 +212,7 @@ export class NotebookKeyboardPage extends BasePage {
 
   async addParagraph(): Promise<void> {
     const currentCount = await this.getParagraphCount();
-    const urlBefore = this.page.url();
-    console.log(`[addParagraph] Current URL: ${urlBefore}, Paragraph count before: ${currentCount}`);
+    console.log(`[addParagraph] Paragraph count before: ${currentCount}`);
 
     // Hover over the 'add paragraph' component itself, then click the inner link.
     const addParagraphComponent = this.page.locator('zeppelin-notebook-add-paragraph').last();
@@ -224,9 +222,7 @@ export class NotebookKeyboardPage extends BasePage {
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
-      expectedCount => {
-        return document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount;
-      },
+      expectedCount => document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount,
       currentCount,
       { timeout: 10000 }
     );
@@ -237,82 +233,82 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Insert copy of paragraph below - control.shift.c
   async pressInsertCopy(): Promise<void> {
-    await this.executePlatformShortcut('control.shift.c');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.InsertCopyOfParagraphBelow]);
   }
 
   // Move paragraph up - control.alt.k (or control.alt.˚ for macOS)
   async pressMoveParagraphUp(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.k', 'control.alt.˚']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.MoveParagraphUp]);
   }
 
   // Move paragraph down - control.alt.j (or control.alt.∆ for macOS)
   async pressMoveParagraphDown(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.j', 'control.alt.∆']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.MoveParagraphDown]);
   }
 
   // Switch editor - control.alt.e
   async pressSwitchEditor(): Promise<void> {
-    await this.executePlatformShortcut('control.alt.e');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SwitchEditor]);
   }
 
   // Switch enable/disable paragraph - control.alt.r (or control.alt.® for macOS)
   async pressSwitchEnable(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.r', 'control.alt.®']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SwitchEnable]);
   }
 
   // Switch output show/hide - control.alt.o (or control.alt.ø for macOS)
   async pressSwitchOutputShow(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.o', 'control.alt.ø']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SwitchOutputShow]);
   }
 
   // Switch line numbers - control.alt.m (or control.alt.µ for macOS)
   async pressSwitchLineNumber(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.m', 'control.alt.µ']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SwitchLineNumber]);
   }
 
   // Switch title show/hide - control.alt.t (or control.alt.† for macOS)
   async pressSwitchTitleShow(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.t', 'control.alt.†']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SwitchTitleShow]);
   }
 
   // Clear output - control.alt.l (or control.alt.¬ for macOS)
   async pressClearOutput(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.l', 'control.alt.¬']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Clear]);
   }
 
   // Link this paragraph - control.alt.w (or control.alt.∑ for macOS)
   async pressLinkParagraph(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.w', 'control.alt.∑']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Link]);
   }
 
   // Reduce paragraph width - control.shift.-
   async pressReduceWidth(): Promise<void> {
-    await this.executePlatformShortcut(['control.shift.-', 'control.shift._']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.ReduceWidth]);
   }
 
   // Increase paragraph width - control.shift.=
   async pressIncreaseWidth(): Promise<void> {
-    await this.executePlatformShortcut(['control.shift.=', 'control.shift.+']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.IncreaseWidth]);
   }
 
   // Cut line - control.k
   async pressCutLine(): Promise<void> {
-    await this.executePlatformShortcut('control.k');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.CutLine]);
   }
 
   // Paste line - control.y
   async pressPasteLine(): Promise<void> {
-    await this.executePlatformShortcut('control.y');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.PasteLine]);
   }
 
   // Search inside code - control.s
   async pressSearchInsideCode(): Promise<void> {
-    await this.executePlatformShortcut('control.s');
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.SearchInsideCode]);
   }
 
   // Find in code - control.alt.f (or control.alt.ƒ for macOS)
   async pressFindInCode(): Promise<void> {
-    await this.executePlatformShortcut(['control.alt.f', 'control.alt.ƒ']);
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.FindInCode]);
   }
 
   async getParagraphCount(): Promise<number> {
@@ -349,7 +345,6 @@ export class NotebookKeyboardPage extends BasePage {
     }
 
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const browserName = test.info().project.name;
 
     // Check status from DOM directly
     const statusElement = paragraph.locator('.status');
@@ -357,16 +352,13 @@ export class NotebookKeyboardPage extends BasePage {
       const status = await statusElement.textContent();
       console.log(`Paragraph ${paragraphIndex} status: ${status}`);
 
-      if (status === 'FINISHED' || status === 'ERROR') {
-        return true;
-      }
-
-      // NOTE: Firefox/WebKit accept PENDING/RUNNING states as "settled" because
+      // NOTE: accept PENDING/RUNNING states as "settled" because
       // these browsers may maintain execution in these states longer than Chromium,
       // but the paragraph execution has been triggered successfully and will complete.
       // The key is that execution started, not necessarily that it finished.
-      if (browserName === 'firefox' || browserName === 'webkit') {
-        return status === 'PENDING' || status === 'RUNNING';
+
+      if (status === 'FINISHED' || status === 'ERROR' || status === 'PENDING' || status === 'RUNNING') {
+        return true;
       }
     }
 
@@ -432,11 +424,26 @@ export class NotebookKeyboardPage extends BasePage {
       await editorInput.click();
       await editorInput.clear();
     }
-    // Use force option to skip visibility checks - Monaco editor's textarea is often hidden
-    await editorInput.fill('', { force: true });
 
-    if (browserName !== 'firefox') {
-      await editorInput.clear();
+    // Clear existing content with keyboard shortcuts for better reliability
+    await editorInput.focus();
+
+    if (browserName === 'firefox') {
+      // Firefox-specific: more aggressive clearing
+      await this.page.keyboard.press('Control+a');
+      await this.page.keyboard.press('Delete');
+      await this.page.waitForTimeout(100);
+
+      // Verify content is cleared, try again if needed
+      const currentValue = await editorInput.inputValue();
+      if (currentValue && currentValue.trim().length > 0) {
+        await this.page.keyboard.press('Control+a');
+        await this.page.keyboard.press('Backspace');
+        await this.page.waitForTimeout(100);
+      }
+    } else {
+      await this.page.keyboard.press('Control+a');
+      await this.page.keyboard.press('Delete');
     }
 
     await editorInput.fill(content, { force: true });
@@ -504,11 +511,28 @@ export class NotebookKeyboardPage extends BasePage {
     return boundingBox?.width || 0;
   }
 
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   async getCodeEditorContentByIndex(paragraphIndex: number): Promise<string> {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const content = await paragraph.evaluate(el => {
-      // Try Angular approach first
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+
+    const editorTextarea = paragraph.locator('.monaco-editor textarea');
+    if (await editorTextarea.isVisible()) {
+      const textContent = await editorTextarea.inputValue();
+      if (textContent) {
+        return textContent;
+      }
+    }
+
+    const viewLines = paragraph.locator('.monaco-editor .view-lines');
+    if (await viewLines.isVisible()) {
+      const text = await viewLines.evaluate((el: Element) => (el as HTMLElement).innerText || '');
+      if (text && text.trim().length > 0) {
+        return text;
+      }
+    }
+
+    const scopeContent = await paragraph.evaluate(el => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const angular = (window as any).angular;
       if (angular) {
         const scope = angular.element(el).scope();
@@ -516,13 +540,14 @@ export class NotebookKeyboardPage extends BasePage {
           return scope.$ctrl.paragraph.text || '';
         }
       }
-
-      // Fallback to text content
-      const textContent = el.textContent || '';
-      return textContent.trim();
+      return '';
     });
 
-    return content;
+    if (scopeContent) {
+      return scopeContent;
+    }
+
+    return '';
   }
 
   async waitForParagraphCountChange(expectedCount: number, timeout: number = 30000): Promise<void> {

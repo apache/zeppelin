@@ -31,18 +31,35 @@ export class FolderRenamePage extends BasePage {
     this.deleteConfirmation = page.locator('.ant-popover').filter({ hasText: 'This folder will be moved to trash.' });
   }
 
+  private async getFolderNode(folderName: string): Promise<Locator> {
+    const nameParts = folderName.split('/');
+    if (nameParts.length > 1) {
+      const parentName = nameParts[0];
+      const childName = nameParts.slice(1).join('/');
+      const parentNode = this.page.locator('a.name').filter({ hasText: new RegExp(parentName, 'i') });
+      await parentNode.first().click();
+      await this.page.waitForTimeout(1000); // Wait for folder to expand
+      return this.page
+        .locator('.node')
+        .filter({
+          has: this.page.locator('.folder .name').filter({ hasText: new RegExp(childName, 'i') })
+        })
+        .first();
+    } else {
+      return this.page
+        .locator('.node')
+        .filter({
+          has: this.page.locator('.folder .name', { hasText: new RegExp(folderName, 'i') })
+        })
+        .first();
+    }
+  }
+
   async hoverOverFolder(folderName: string): Promise<void> {
     // Wait for the folder list to be loaded
     await this.folderList.waitFor({ state: 'visible' });
 
-    // Find the folder node by locating the .node that contains the specific folder name
-    // Use a more reliable selector that targets the folder name exactly
-    const folderNode = this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first();
+    const folderNode = await this.getFolderNode(folderName);
 
     // Wait for the folder to be visible and hover over the entire .node container
     await folderNode.waitFor({ state: 'visible' });
@@ -65,13 +82,7 @@ export class FolderRenamePage extends BasePage {
     // First hover over the folder to reveal the delete icon
     await this.hoverOverFolder(folderName);
 
-    // Find the specific folder node and its delete button
-    const folderNode = this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first();
+    const folderNode = await this.getFolderNode(folderName);
 
     const deleteIcon = folderNode.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
     await deleteIcon.click();
@@ -81,13 +92,7 @@ export class FolderRenamePage extends BasePage {
     // Ensure the specific folder is hovered first
     await this.hoverOverFolder(folderName);
 
-    // Find the specific folder node and its rename button
-    const folderNode = this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first();
+    const folderNode = await this.getFolderNode(folderName);
 
     const renameIcon = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
     await renameIcon.click();
@@ -130,12 +135,7 @@ export class FolderRenamePage extends BasePage {
   }
 
   async isFolderVisible(folderName: string): Promise<boolean> {
-    return this.page
-      .locator('.node')
-      .filter({
-        has: this.page.locator('.folder .name', { hasText: folderName })
-      })
-      .first()
-      .isVisible();
+    const folderNode = await this.getFolderNode(folderName);
+    return folderNode.isVisible();
   }
 }

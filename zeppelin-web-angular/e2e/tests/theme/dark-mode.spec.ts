@@ -11,15 +11,15 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { ThemePage } from '../../models/theme.page';
+import { DarkModePage } from '../../models/dark-mode-page';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Dark Mode Theme Switching', () => {
   addPageAnnotationBeforeEach(PAGES.SHARE.THEME_TOGGLE);
-  let themePage: ThemePage;
+  let themePage: DarkModePage;
 
   test.beforeEach(async ({ page }) => {
-    themePage = new ThemePage(page);
+    themePage = new DarkModePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 

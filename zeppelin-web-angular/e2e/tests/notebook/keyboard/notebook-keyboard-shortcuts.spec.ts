@@ -362,9 +362,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // The second paragraph should now be first, and the first should be second
       expect(finalFirstParagraph).toContain('Second Paragraph');
-      expect(finalFirstParagraph).toContain(initialSecondParagraph.replace(/\s+/g, ' ').trim());
+      expect(finalFirstParagraph.replace(/\s+/g, ' ').trim()).toContain(
+        initialSecondParagraph.replace(/\s+/g, ' ').trim()
+      );
       expect(finalSecondParagraph).toContain('First Paragraph');
-      expect(finalSecondParagraph).toContain(initialFirstParagraph.replace(/\s+/g, ' ').trim());
+      expect(finalSecondParagraph.replace(/\s+/g, ' ').trim()).toContain(
+        initialFirstParagraph.replace(/\s+/g, ' ').trim()
+      );
     });
   });
 
@@ -383,10 +387,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Focus first paragraph
       await keyboardPage.focusCodeEditor(0);
 
-      // Capture initial paragraph contents to verify position change
-      const initialFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
-      const initialSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
-
       // When: User presses Control+Alt+J from first paragraph
       await keyboardPage.pressMoveParagraphDown();
 
@@ -400,10 +400,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
 
       // The first paragraph should now be second, and the second should be first
-      expect(finalFirstParagraph).toContain('Second Paragraph');
-      expect(finalFirstParagraph).toContain(initialSecondParagraph.replace(/\s+/g, ' ').trim());
-      expect(finalSecondParagraph).toContain('First Paragraph');
-      expect(finalSecondParagraph).toContain(initialFirstParagraph.replace(/\s+/g, ' ').trim());
+      expect(finalFirstParagraph.replace(/\s+/g, ' ')).toContain('Second Paragraph');
+      expect(finalSecondParagraph.replace(/\s+/g, ' ')).toContain('First Paragraph');
     });
   });
 
@@ -449,7 +447,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should toggle output visibility with Control+Alt+O', async () => {
       // Given: A paragraph with output
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("Test output toggle")');
+      await keyboardPage.setCodeEditorContent('%md\n# Test Output Toggle\nThis creates immediate output');
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
 

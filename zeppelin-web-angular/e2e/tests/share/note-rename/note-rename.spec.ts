@@ -49,7 +49,7 @@ test.describe('Note Rename', () => {
   });
 
   test('Given note title is displayed, When checking default title, Then title should match pattern', async () => {
-    await noteRenameUtil.verifyTitleText('Test Notebook');
+    await noteRenameUtil.verifyTitleText('TestNotebook');
   });
 
   test('Given note title is displayed, When clicking title, Then title input should appear', async () => {

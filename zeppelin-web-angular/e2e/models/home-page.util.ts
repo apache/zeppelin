@@ -220,4 +220,9 @@ export class HomePageUtil {
       expect(target).toBe('_blank');
     }
   }
+
+  async clickE2ETestFolder(): Promise<void> {
+    await this.homePage.clickE2ETestFolder();
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+  }
 }
