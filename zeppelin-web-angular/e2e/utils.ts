@@ -253,13 +253,7 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
     // Additional stability check - wait for DOM to be stable
     await page.waitForLoadState('domcontentloaded');
   } catch (error) {
-    console.warn('Zeppelin ready check failed, but continuing...', error);
-    // Don't throw error in CI environments, just log and continue
-    if (process.env.CI) {
-      console.log('CI environment detected, continuing despite readiness check failure');
-      return;
-    }
-    throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
+    throw new Error(`Zeppelin loading failed: ${String(error)}`);
   }
 }
 
