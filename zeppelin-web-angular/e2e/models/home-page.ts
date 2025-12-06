@@ -62,6 +62,7 @@ export class HomePage extends BasePage {
       emptyAll: Locator;
     };
   };
+  readonly e2eTestFolder: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -114,6 +115,7 @@ export class HomePage extends BasePage {
         emptyAll: page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')
       }
     };
+    this.e2eTestFolder = page.locator(`text=${E2E_TEST_FOLDER}`);
   }
 
   async navigateToHome(): Promise<void> {
@@ -234,6 +236,6 @@ export class HomePage extends BasePage {
   }
 
   async clickE2ETestFolder(): Promise<void> {
-    await this.page.locator('a.name').filter({ hasText: E2E_TEST_FOLDER }).click({ force: true });
+    await this.e2eTestFolder.click();
   }
 }

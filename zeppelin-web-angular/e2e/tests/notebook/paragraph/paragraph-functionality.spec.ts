@@ -130,7 +130,7 @@ test.describe('Notebook Paragraph Functionality', () => {
     await codeEditor.focus();
     await expect(codeEditor).toBeFocused({ timeout: 5000 });
 
-    await page.keyboard.press('Control+A');
+    await page.keyboard.press('ControlOrMeta+A');
     await page.keyboard.type(`%spark
 println("Name: " + z.input("name", "World"))
 println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Over 65"))))

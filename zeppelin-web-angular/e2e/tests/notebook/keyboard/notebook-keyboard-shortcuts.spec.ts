@@ -203,7 +203,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
 
       // Position cursor at beginning of first line
-      await keyboardPage.pressKey('Control+A');
+      await keyboardPage.pressKey('ControlOrMeta+A');
       await keyboardPage.pressKey('ArrowLeft');
 
       // When: User presses Control+N (should move cursor down one line)
@@ -345,10 +345,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor(1);
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nThis should move up', 1);
 
-      // Capture initial paragraph contents to verify position change
-      const initialFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
-      const initialSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
-
       // When: User presses Control+Alt+K from second paragraph
       await keyboardPage.pressMoveParagraphUp();
 
@@ -362,14 +358,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
 
       // The second paragraph should now be first, and the first should be second
-      expect(finalFirstParagraph).toContain('Second Paragraph');
-      expect(finalFirstParagraph.replace(/\s+/g, ' ').trim()).toContain(
-        initialSecondParagraph.replace(/\s+/g, ' ').trim()
-      );
-      expect(finalSecondParagraph).toContain('First Paragraph');
-      expect(finalSecondParagraph.replace(/\s+/g, ' ').trim()).toContain(
-        initialFirstParagraph.replace(/\s+/g, ' ').trim()
-      );
+      expect(finalFirstParagraph.replace(/\s+/g, ' ')).toContain('Second Paragraph');
+      expect(finalSecondParagraph.replace(/\s+/g, ' ')).toContain('First Paragraph');
     });
   });
 

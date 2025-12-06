@@ -11,6 +11,7 @@
  */
 
 import { Locator, Page } from '@playwright/test';
+import { E2E_TEST_FOLDER } from 'e2e/utils';
 import { BasePage } from './base-page';
 
 export class FolderRenamePage extends BasePage {
@@ -62,7 +63,15 @@ export class FolderRenamePage extends BasePage {
     const folderNode = await this.getFolderNode(folderName);
 
     // Wait for the folder to be visible and hover over the entire .node container
-    await folderNode.waitFor({ state: 'visible', timeout: 10 * 1000 });
+    try {
+      await folderNode.waitFor({ state: 'visible', timeout: 2 * 1000 });
+    } catch {
+      // Occasionally the E2E_TEST_FOLDER opened in beforeEach ends up being collapsed again,
+      // so this check was added to handle that intermittent state.
+      this.page.locator(`text=${E2E_TEST_FOLDER}`).click();
+      await folderNode.waitFor({ state: 'visible', timeout: 2 * 1000 });
+    }
+
     await folderNode.hover({ force: true });
 
     // Wait for hover effects to take place by checking for interactive elements
