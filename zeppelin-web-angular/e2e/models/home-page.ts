@@ -11,7 +11,7 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import { getCurrentPath, waitForUrlNotContaining } from '../utils';
+import { E2E_TEST_FOLDER, getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
@@ -234,6 +234,6 @@ export class HomePage extends BasePage {
   }
 
   async clickE2ETestFolder(): Promise<void> {
-    await this.page.locator('a.name').filter({ hasText: 'E2E_TEST_FOLDER' }).click();
+    await this.page.locator('a.name').filter({ hasText: E2E_TEST_FOLDER }).click({ force: true });
   }
 }

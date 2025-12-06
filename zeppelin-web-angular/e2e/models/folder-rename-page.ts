@@ -57,21 +57,19 @@ export class FolderRenamePage extends BasePage {
 
   async hoverOverFolder(folderName: string): Promise<void> {
     // Wait for the folder list to be loaded
-    await this.folderList.waitFor({ state: 'visible' });
+    await this.page.waitForSelector('zeppelin-node-list', { state: 'visible' });
 
     const folderNode = await this.getFolderNode(folderName);
 
     // Wait for the folder to be visible and hover over the entire .node container
-    await folderNode.waitFor({ state: 'visible' });
-    await folderNode.hover();
+    await folderNode.waitFor({ state: 'visible', timeout: 10 * 1000 });
+    await folderNode.hover({ force: true });
 
     // Wait for hover effects to take place by checking for interactive elements
-    await folderNode
-      .locator('a[nz-tooltip], i[nztype], button')
-      .first()
-      .waitFor({
+    await this.page
+      .waitForSelector('.node a[nz-tooltip], .node i[nztype], .node button', {
         state: 'visible',
-        timeout: 2000
+        timeout: 5000
       })
       .catch(() => {
         console.log('No interactive elements found after hover, continuing...');

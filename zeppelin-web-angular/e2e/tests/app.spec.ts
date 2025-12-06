@@ -12,7 +12,6 @@
 
 import { expect, test } from '@playwright/test';
 import { BasePage } from '../models/base-page';
-import { LoginTestUtil } from '../models/login-page.util';
 import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES, performLoginIfRequired } from '../utils';
 
 test.describe('Zeppelin App Component', () => {

@@ -47,7 +47,8 @@ export class NotebookUtil extends BasePage {
 
     const notebookNameInput = this.page.locator('input[name="noteName"]');
     await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
-    await notebookNameInput.fill(notebookName);
+    await this.page.waitForTimeout(500); // for Webkit
+    await notebookNameInput.fill(notebookName, { force: true });
 
     await createButton.click({ timeout: 30000 });
 

@@ -39,6 +39,7 @@ test.describe.serial('Folder Rename', () => {
     // Create a test notebook with folder structure
     testFolderName = `TestFolder_${Date.now()}`;
     await createTestNotebook(page, testFolderName);
+    await page.goto('/#/');
     await folderRenameUtil.clickE2ETestFolder();
   });
 
@@ -89,10 +90,11 @@ test.describe.serial('Folder Rename', () => {
     await folderRenameUtil.verifyDeleteConfirmationAppears();
   });
 
-  test('Given folder can be renamed, When opening context menu multiple times, Then menu should consistently appear', async () => {
+  test('Given folder can be renamed, When opening context menu multiple times, Then menu should consistently appear', async ({
+    page
+  }) => {
     await folderRenameUtil.openContextMenuOnHoverAndVerifyOptions(testFolderName);
-    await folderRenamePage.page.keyboard.press('Escape');
-    await folderRenamePage.page.waitForTimeout(500);
+    await page.locator('h1', { hasText: 'Welcome to Zeppelin!' }).hover();
     await folderRenameUtil.openContextMenuOnHoverAndVerifyOptions(testFolderName);
   });
 
