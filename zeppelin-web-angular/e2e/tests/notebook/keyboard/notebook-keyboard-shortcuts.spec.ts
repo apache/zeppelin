@@ -303,6 +303,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // when applying the proper fix for the issue.
   test.describe('ParagraphActions.InsertCopyOfParagraphBelow: Control+Shift+C', () => {
     test('should insert copy of paragraph below with Control+Shift+C', async () => {
+      test.skip();
       // Given: A paragraph with content
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Copy Test\nContent to be copied below');

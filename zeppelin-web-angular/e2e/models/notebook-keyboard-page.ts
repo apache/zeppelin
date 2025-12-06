@@ -137,6 +137,10 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.keyboard.press('Escape');
   }
 
+  async pressSelectAll(): Promise<void> {
+    await this.page.keyboard.press('ControlOrMeta+A');
+  }
+
   // Execute keyboard shortcut
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
     const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
@@ -430,19 +434,19 @@ export class NotebookKeyboardPage extends BasePage {
 
     if (browserName === 'firefox') {
       // Firefox-specific: more aggressive clearing
-      await this.page.keyboard.press('Control+a');
+      await this.pressSelectAll();
       await this.page.keyboard.press('Delete');
       await this.page.waitForTimeout(100);
 
       // Verify content is cleared, try again if needed
       const currentValue = await editorInput.inputValue();
       if (currentValue && currentValue.trim().length > 0) {
-        await this.page.keyboard.press('Control+a');
+        await this.pressSelectAll();
         await this.page.keyboard.press('Backspace');
         await this.page.waitForTimeout(100);
       }
     } else {
-      await this.page.keyboard.press('Control+a');
+      await this.pressSelectAll();
       await this.page.keyboard.press('Delete');
     }
 

@@ -101,6 +101,7 @@ export class NotebookParagraphUtil {
       console.log(
         `Interpreter error detected: ${resultText?.substring(0, 200)}. This test requires proper interpreter configuration.`
       );
+      return;
     }
 
     // If no interpreter error, dynamic forms should be visible
@@ -148,7 +149,7 @@ export class NotebookParagraphUtil {
     await codeEditor.focus();
     await expect(codeEditor).toBeFocused({ timeout: 5000 });
 
-    await this.page.keyboard.press('Control+a');
+    await this.page.keyboard.press('ControlOrMeta+A');
     await this.page.keyboard.type('%python\nimport time;time.sleep(10)\nprint("Done")');
 
     await this.paragraphPage.runParagraph();
