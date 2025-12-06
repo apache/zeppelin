@@ -60,18 +60,15 @@ export class FolderRenamePage extends BasePage {
     await this.page.waitForSelector('zeppelin-node-list', { state: 'visible' });
 
     const folderNode = await this.getFolderNode(folderName);
+    await folderNode.scrollIntoViewIfNeeded();
 
-    // Wait for the folder to be visible and hover over the entire .node container
-    try {
-      await folderNode.isVisible();
-    } catch {
-      // Occasionally the E2E_TEST_FOLDER opened in beforeEach ends up being collapsed again,
-      // so this check was added to handle that intermittent state.
+    // Ensure folder node is visible (expand if needed)
+    if (!(await folderNode.isVisible())) {
       this.page.locator(`text=${E2E_TEST_FOLDER}`).click();
-      await folderNode.isVisible();
+      await folderNode.waitFor({ state: 'visible' });
     }
 
-    await folderNode.hover({ force: true });
+    await folderNode.hover();
 
     // Wait for hover effects to take place by checking for interactive elements
     await this.page
@@ -90,6 +87,7 @@ export class FolderRenamePage extends BasePage {
 
     const folderNode = await this.getFolderNode(folderName);
 
+    await folderNode.scrollIntoViewIfNeeded();
     await folderNode.hover();
 
     const deleteIcon = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
