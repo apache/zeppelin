@@ -22,6 +22,8 @@ const globalTeardown = async () => {
   LoginTestUtil.resetCache();
   console.log('Test cache cleared');
 
+  // CI: Uses ZEPPELIN_E2E_TEST_NOTEBOOK_DIR which gets cleaned up by workflow
+  // Local: Uses API-based cleanup to avoid server restart required for directory changes
   if (!process.env.CI) {
     console.log('Running cleanup script: npx tsx e2e/cleanup-util.ts');
 
