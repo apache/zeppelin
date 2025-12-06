@@ -120,6 +120,17 @@
       }
     },
     {
+      "files": ["*.js"],
+      "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+      },
+      "env": {
+        "node": true,
+        "es6": true
+      }
+    },
+    {
       "files": ["*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended"],
       "rules": {}
