@@ -17,18 +17,20 @@ export const E2E_TEST_FOLDER = 'E2E_TEST_FOLDER';
 export class BasePage {
   readonly page: Page;
   readonly loadingScreen: Locator;
+  readonly e2eTestFolder: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.loadingScreen = page.locator('.spin-text');
+    this.loadingScreen = page.locator('section.spin');
+    this.e2eTestFolder = page.locator(`text=${E2E_TEST_FOLDER}`);
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    try {
-      await this.loadingScreen.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      console.log('Loading screen not found');
-    }
+    await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+  }
+
+  async clickE2ETestFolder(): Promise<void> {
+    await this.e2eTestFolder.click();
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 }
