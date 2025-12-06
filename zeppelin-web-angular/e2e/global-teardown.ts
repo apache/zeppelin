@@ -10,13 +10,35 @@
  * limitations under the License.
  */
 
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { LoginTestUtil } from './models/login-page.util';
 
-async function globalTeardown() {
-  console.log('🧹 Global Teardown: Cleaning up test environment...');
+const execAsync = promisify(exec);
+
+const globalTeardown = async () => {
+  console.log('Global Teardown: Cleaning up test environment...');
 
   LoginTestUtil.resetCache();
-  console.log('✅ Test cache cleared');
-}
+  console.log('Test cache cleared');
+
+  if (!process.env.CI) {
+    console.log('Running cleanup script: npx tsx e2e/cleanup-util.ts');
+
+    try {
+      // The reason for calling it this way instead of using the function directly
+      // is to maintain compatibility between ESM and CommonJS modules.
+      const { stdout, stderr } = await execAsync('npx tsx e2e/cleanup-util.ts');
+      if (stdout) {
+        console.log(stdout);
+      }
+      if (stderr) {
+        console.error(stderr);
+      }
+    } catch (error) {
+      console.error('Cleanup script failed:', error);
+    }
+  }
+};
 
 export default globalTeardown;

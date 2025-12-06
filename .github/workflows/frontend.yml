@@ -24,6 +24,7 @@ env:
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
   INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb'
+  ZEPPELIN_E2E_TEST_NOTEBOOK_DIR: '/tmp/zeppelin-e2e-notebooks'
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -65,6 +66,7 @@ jobs:
     strategy:
       matrix:
         mode: [anonymous, auth]
+        python: [ 3.9 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -93,8 +95,17 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
+      - name: Setup conda environment with python ${{ matrix.python }}
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_only
+          python-version: ${{ matrix.python }}
+          auto-activate-base: false
+          use-mamba: true
+          channels: conda-forge,defaults
+          channel-priority: strict
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web-angular ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl python,rlang,zeppelin-jupyter-interpreter,zeppelin-web-angular ${MAVEN_ARGS}
       - name: Setup Zeppelin Server (Shiro.ini)
         run: |
           export ZEPPELIN_CONF_DIR=./conf
@@ -102,6 +113,19 @@ jobs:
             cp conf/shiro.ini.template conf/shiro.ini
             sed -i 's/user1 = password2, role1, role2/user1 = password2, role1, role2, admin/' conf/shiro.ini
           fi
+      - name: Setup Zeppelin Configuration (Disable Git)
+        run: |
+          # Copy zeppelin-site.xml template
+          cp conf/zeppelin-site.xml.template conf/zeppelin-site.xml
+          # Replace GitNotebookRepo with VFSNotebookRepo to avoid Git issues in E2E tests
+          sed -i 's/org.apache.zeppelin.notebook.repo.GitNotebookRepo/org.apache.zeppelin.notebook.repo.VFSNotebookRepo/g' conf/zeppelin-site.xml
+          echo "--- Notebook storage configuration ---"
+          grep -A 2 "zeppelin.notebook.storage" conf/zeppelin-site.xml | head -6
+          echo "---------------------------------------"
+      - name: Setup Test Notebook Directory
+        run: |
+          mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+          echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
       - name: Upload Playwright Report
@@ -110,10 +134,20 @@ jobs:
         with:
           name: playwright-report-${{ matrix.mode }}
           path: zeppelin-web-angular/playwright-report/
-          retention-days: 30
+          retention-days: 3
       - name: Print Zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
+      - name: Cleanup Test Notebook Directory
+        if: always()
+        run: |
+          if [ -d "$ZEPPELIN_E2E_TEST_NOTEBOOK_DIR" ]; then
+            echo "Cleaning up test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
+            rm -rf $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+            echo "Test notebook directory cleaned up"
+          else
+            echo "No test notebook directory to clean up"
+          fi
 
   test-selenium-with-spark-module-for-spark-3-5:
     runs-on: ubuntu-24.04
