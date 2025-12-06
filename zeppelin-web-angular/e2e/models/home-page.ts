@@ -11,7 +11,7 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import { E2E_TEST_FOLDER, getCurrentPath, waitForUrlNotContaining } from '../utils';
+import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
@@ -62,7 +62,6 @@ export class HomePage extends BasePage {
       emptyAll: Locator;
     };
   };
-  readonly e2eTestFolder: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -115,7 +114,6 @@ export class HomePage extends BasePage {
         emptyAll: page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')
       }
     };
-    this.e2eTestFolder = page.locator(`text=${E2E_TEST_FOLDER}`);
   }
 
   async navigateToHome(): Promise<void> {
@@ -233,9 +231,5 @@ export class HomePage extends BasePage {
 
   async isMoreInfoGridVisible(): Promise<boolean> {
     return this.moreInfoGrid.isVisible();
-  }
-
-  async clickE2ETestFolder(): Promise<void> {
-    await this.e2eTestFolder.click();
   }
 }

@@ -203,7 +203,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
 
       // Position cursor at beginning of first line
-      await keyboardPage.pressKey('ControlOrMeta+A');
+      await keyboardPage.pressSelectAll();
       await keyboardPage.pressKey('ArrowLeft');
 
       // When: User presses Control+N (should move cursor down one line)

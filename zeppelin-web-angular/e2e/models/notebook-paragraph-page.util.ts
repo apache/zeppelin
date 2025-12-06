@@ -12,14 +12,16 @@
 
 import { expect, Page } from '@playwright/test';
 import { NotebookParagraphPage } from './notebook-paragraph-page';
+import { NotebookKeyboardPage } from './notebook-keyboard-page';
 
 export class NotebookParagraphUtil {
   private page: Page;
   private paragraphPage: NotebookParagraphPage;
-
+  private notebookKeyboardPage: NotebookKeyboardPage;
   constructor(page: Page) {
     this.page = page;
     this.paragraphPage = new NotebookParagraphPage(page);
+    this.notebookKeyboardPage = new NotebookKeyboardPage(page);
   }
 
   async verifyParagraphContainerStructure(): Promise<void> {
@@ -149,7 +151,7 @@ export class NotebookParagraphUtil {
     await codeEditor.focus();
     await expect(codeEditor).toBeFocused({ timeout: 5000 });
 
-    await this.page.keyboard.press('ControlOrMeta+A');
+    await this.notebookKeyboardPage.pressSelectAll();
     await this.page.keyboard.type('%python\nimport time;time.sleep(10)\nprint("Done")');
 
     await this.paragraphPage.runParagraph();

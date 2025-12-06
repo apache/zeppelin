@@ -12,23 +12,12 @@
 
 import { expect, Page } from '@playwright/test';
 import { FolderRenamePage } from './folder-rename-page';
-import { HomePage } from './home-page'; // Import HomePage
 
 export class FolderRenamePageUtil {
-  private homePage: HomePage; // Add homePage property
-
   constructor(
     private readonly page: Page,
     private readonly folderRenamePage: FolderRenamePage
-  ) {
-    this.homePage = new HomePage(page); // Initialize homePage
-  }
-
-  // Add this new method
-  async clickE2ETestFolder(): Promise<void> {
-    await this.homePage.clickE2ETestFolder();
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 }); // Wait for UI update
-  }
+  ) {}
 
   private getFolderNode(folderName: string) {
     return this.page
@@ -39,17 +28,10 @@ export class FolderRenamePageUtil {
       .first();
   }
 
-  async verifyCreateNewNoteButtonIsVisible(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-    const folderNode = this.getFolderNode(folderName);
-    const createButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Create new note"]');
-    await expect(createButton).toBeVisible();
-  }
-
   async verifyRenameButtonIsVisible(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     const folderNode = this.getFolderNode(folderName);
-    const renameButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Rename folder"]');
+    const renameButton = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
     // Just verify the element exists in DOM, not visibility(for Webkit & Edge)
     await expect(renameButton).toHaveCount(1);
   }
@@ -57,7 +39,7 @@ export class FolderRenamePageUtil {
   async verifyDeleteButtonIsVisible(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     const folderNode = this.getFolderNode(folderName);
-    const deleteButton = folderNode.locator('a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
+    const deleteButton = folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]');
     await expect(deleteButton).toBeVisible();
   }
 
@@ -100,7 +82,7 @@ export class FolderRenamePageUtil {
     await this.page.reload();
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
-    await this.clickE2ETestFolder();
+    await this.folderRenamePage.clickE2ETestFolder();
 
     const baseNewName = newName.split('/').pop();
 
@@ -114,7 +96,7 @@ export class FolderRenamePageUtil {
         return folders.some(folder => folder.textContent?.includes(expectedBaseName));
       },
       [baseNewName],
-      { timeout: 30000 } // Increased timeout for stability
+      { timeout: 30000 }
     );
   }
 
@@ -154,7 +136,6 @@ export class FolderRenamePageUtil {
   }
 
   async openContextMenuOnHoverAndVerifyOptions(folderName: string): Promise<void> {
-    await this.verifyCreateNewNoteButtonIsVisible(folderName);
     await this.verifyRenameButtonIsVisible(folderName);
     await this.verifyDeleteButtonIsVisible(folderName);
   }

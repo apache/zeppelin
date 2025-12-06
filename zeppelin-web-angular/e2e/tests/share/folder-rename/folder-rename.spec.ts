@@ -40,7 +40,7 @@ test.describe.serial('Folder Rename', () => {
     testFolderName = `TestFolder_${Date.now()}`;
     await createTestNotebook(page, testFolderName);
     await page.goto('/#/');
-    await folderRenameUtil.clickE2ETestFolder();
+    await folderRenamePage.clickE2ETestFolder();
   });
 
   test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear', async () => {
@@ -115,7 +115,7 @@ test.describe.serial('Folder Rename', () => {
     await page.waitForTimeout(2000);
 
     // After reload, click E2E_TEST_FOLDER again, as requested by the user
-    await folderRenameUtil.clickE2ETestFolder();
+    await folderRenamePage.clickE2ETestFolder();
 
     // Check current state after rename attempt
     const newFolderVisible = await folderRenamePage.isFolderVisible(renamedFolderName);

@@ -105,12 +105,8 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.keyboard.type(text);
   }
 
-  async pressKey(key: string, modifiers?: string[]): Promise<void> {
-    if (modifiers && modifiers.length > 0) {
-      await this.page.keyboard.press(`${modifiers.join('+')}+${key}`);
-    } else {
-      await this.page.keyboard.press(key);
-    }
+  async pressKey(key: string): Promise<void> {
+    await this.page.keyboard.press(key);
   }
 
   async pressControlEnter(): Promise<void> {
@@ -138,7 +134,12 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async pressSelectAll(): Promise<void> {
-    await this.page.keyboard.press('ControlOrMeta+A');
+    const isWebkit = this.page.context().browser()?.browserType().name() === 'webkit';
+    if (isWebkit) {
+      await this.page.keyboard.press('Meta+A');
+    } else {
+      await this.page.keyboard.press('ControlOrMeta+A');
+    }
   }
 
   // Execute keyboard shortcut
