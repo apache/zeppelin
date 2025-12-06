@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { NOTEBOOK_PATTERNS } from '../utils';
 import { NotebookUtil } from './notebook.util';
 import { PublishedParagraphPage } from './published-paragraph-page';
 
@@ -126,7 +127,7 @@ export class PublishedParagraphTestUtil {
 
     // Extract noteId from URL
     const url = this.page.url();
-    const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+    const noteIdMatch = url.match(NOTEBOOK_PATTERNS.URL_EXTRACT_NOTEBOOK_ID_REGEX);
     if (!noteIdMatch) {
       throw new Error(`Failed to extract notebook ID from URL: ${url}`);
     }

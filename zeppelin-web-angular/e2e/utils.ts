@@ -99,27 +99,32 @@ export const PAGES = {
   }
 } as const;
 
-export function addPageAnnotation(pageName: string, testInfo: TestInfo) {
+export const NOTEBOOK_PATTERNS = {
+  URL_REGEX: /\/notebook\/[^\/\?]+/,
+  URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/
+} as const;
+
+export const addPageAnnotation = (pageName: string, testInfo: TestInfo) => {
   testInfo.annotations.push({
     type: 'page',
     description: pageName
   });
-}
+};
 
-export function addPageAnnotationBeforeEach(pageName: string) {
+export const addPageAnnotationBeforeEach = (pageName: string) => {
   test.beforeEach(async ({}, testInfo) => {
     addPageAnnotation(pageName, testInfo);
   });
-}
+};
 
 interface PageStructureType {
   [key: string]: string | PageStructureType;
 }
 
-export function flattenPageComponents(pages: PageStructureType): string[] {
+export const flattenPageComponents = (pages: PageStructureType): string[] => {
   const result: string[] = [];
 
-  function flatten(obj: PageStructureType) {
+  const flatten = (obj: PageStructureType) => {
     for (const value of Object.values(obj)) {
       if (typeof value === 'string') {
         result.push(value);
@@ -127,36 +132,34 @@ export function flattenPageComponents(pages: PageStructureType): string[] {
         flatten(value);
       }
     }
-  }
+  };
 
   flatten(pages);
   return result.sort();
-}
+};
 
-export function getCoverageTransformPaths(): string[] {
-  return flattenPageComponents(PAGES);
-}
+export const getCoverageTransformPaths = (): string[] => flattenPageComponents(PAGES);
 
-export async function waitForUrlNotContaining(page: Page, fragment: string) {
+export const waitForUrlNotContaining = async (page: Page, fragment: string) => {
   await page.waitForURL(url => !url.toString().includes(fragment));
-}
+};
 
-export function getCurrentPath(page: Page): string {
+export const getCurrentPath = (page: Page): string => {
   const url = new URL(page.url());
   return url.hash || url.pathname;
-}
+};
 
-export async function getBasicPageMetadata(page: Page): Promise<{
+export const getBasicPageMetadata = async (
+  page: Page
+): Promise<{
   title: string;
   path: string;
-}> {
-  return {
-    title: await page.title(),
-    path: getCurrentPath(page)
-  };
-}
+}> => ({
+  title: await page.title(),
+  path: getCurrentPath(page)
+});
 
-export async function performLoginIfRequired(page: Page): Promise<boolean> {
+export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
   if (!isShiroEnabled) {
     return false;
@@ -196,9 +199,9 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
   }
 
   return false;
-}
+};
 
-export async function waitForZeppelinReady(page: Page): Promise<void> {
+export const waitForZeppelinReady = async (page: Page): Promise<void> => {
   try {
     // Enhanced wait for network idle with longer timeout for CI environments
     await page.waitForLoadState('domcontentloaded', { timeout: 45000 });
@@ -255,18 +258,17 @@ export async function waitForZeppelinReady(page: Page): Promise<void> {
   } catch (error) {
     throw new Error(`Zeppelin loading failed: ${String(error)}`);
   }
-}
+};
 
-export async function waitForNotebookLinks(page: Page, timeout: number = 30000): Promise<boolean> {
-  try {
-    await page.waitForSelector('a[href*="#/notebook/"]', { timeout });
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
+export const waitForNotebookLinks = async (page: Page, timeout: number = 30000) => {
+  await page.waitForSelector('a[href*="#/notebook/"]', { timeout });
+};
 
-export async function navigateToNotebookWithFallback(page: Page, noteId: string, notebookName?: string): Promise<void> {
+export const navigateToNotebookWithFallback = async (
+  page: Page,
+  noteId: string,
+  notebookName?: string
+): Promise<void> => {
   let navigationSuccessful = false;
 
   try {
@@ -277,41 +279,33 @@ export async function navigateToNotebookWithFallback(page: Page, noteId: string,
     console.log('Direct navigation failed, trying fallback strategies...');
 
     // Strategy 2: Wait for loading completion and check URL
-    try {
-      await page.waitForFunction(
-        () => {
-          const loadingText = document.body.textContent || '';
-          return !loadingText.includes('Getting Ticket Data');
-        },
-        { timeout: 15000 }
-      );
+    await page.waitForFunction(
+      () => {
+        const loadingText = document.body.textContent || '';
+        return !loadingText.includes('Getting Ticket Data');
+      },
+      { timeout: 15000 }
+    );
 
-      const currentUrl = page.url();
-      if (currentUrl.includes('/notebook/')) {
-        navigationSuccessful = true;
-      }
-    } catch (loadingError) {
-      console.log('Loading wait failed, trying home page fallback...');
+    const currentUrl = page.url();
+    if (currentUrl.includes('/notebook/')) {
+      navigationSuccessful = true;
     }
 
     // Strategy 3: Navigate through home page if notebook name is provided
     if (!navigationSuccessful && notebookName) {
-      try {
-        await page.goto('/#/');
-        await page.waitForLoadState('networkidle', { timeout: 15000 });
-        await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+      await page.goto('/#/');
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
-        // The link text in the UI is the base name of the note, not the full path.
-        const baseName = notebookName.split('/').pop();
-        const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseName! });
-        // Use the click action's built-in wait.
-        await notebookLink.click({ timeout: 10000 });
+      // The link text in the UI is the base name of the note, not the full path.
+      const baseName = notebookName.split('/').pop();
+      const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseName! });
+      // Use the click action's built-in wait.
+      await notebookLink.click({ timeout: 10000 });
 
-        await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
-        navigationSuccessful = true;
-      } catch (fallbackError) {
-        throw new Error(`All navigation strategies failed. Final error: ${fallbackError}`);
-      }
+      await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 20000 });
+      navigationSuccessful = true;
     }
   }
 
@@ -321,20 +315,20 @@ export async function navigateToNotebookWithFallback(page: Page, noteId: string,
 
   // Wait for notebook to be ready
   await waitForZeppelinReady(page);
-}
+};
 
-async function extractNoteIdFromUrl(page: Page): Promise<string | null> {
+const extractNoteIdFromUrl = async (page: Page): Promise<string | null> => {
   const url = page.url();
-  const match = url.match(/\/notebook\/([^\/\?]+)/);
+  const match = url.match(NOTEBOOK_PATTERNS.URL_EXTRACT_NOTEBOOK_ID_REGEX);
   return match ? match[1] : null;
-}
+};
 
-async function waitForNotebookNavigation(page: Page): Promise<string | null> {
-  await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 30000 });
+const waitForNotebookNavigation = async (page: Page): Promise<string | null> => {
+  await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 30000 });
   return await extractNoteIdFromUrl(page);
-}
+};
 
-async function navigateViaHomePageFallback(page: Page, baseNotebookName: string): Promise<string> {
+const navigateViaHomePageFallback = async (page: Page, baseNotebookName: string): Promise<string> => {
   await page.goto('/#/');
   await page.waitForLoadState('networkidle', { timeout: 15000 });
   await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
@@ -357,7 +351,7 @@ async function navigateViaHomePageFallback(page: Page, baseNotebookName: string)
   }
 
   await notebookLink.click({ timeout: 15000 });
-  await page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+  await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 20000 });
 
   const noteId = await extractNoteIdFromUrl(page);
   if (!noteId) {
@@ -365,9 +359,9 @@ async function navigateViaHomePageFallback(page: Page, baseNotebookName: string)
   }
 
   return noteId;
-}
+};
 
-async function extractFirstParagraphId(page: Page): Promise<string> {
+const extractFirstParagraphId = async (page: Page): Promise<string> => {
   await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
 
   const paragraphContainer = page.locator('zeppelin-notebook-paragraph').first();
@@ -383,12 +377,12 @@ async function extractFirstParagraphId(page: Page): Promise<string> {
   }
 
   return paragraphId;
-}
+};
 
-export async function createTestNotebook(
+export const createTestNotebook = async (
   page: Page,
   folderPath?: string
-): Promise<{ noteId: string; paragraphId: string }> {
+): Promise<{ noteId: string; paragraphId: string }> => {
   const notebookUtil = new NotebookUtil(page);
   const baseNotebookName = `/TestNotebook_${Date.now()}`;
   const notebookName = folderPath
@@ -436,4 +430,4 @@ export async function createTestNotebook(
     const currentUrl = page.url();
     throw new Error(`Failed to create test notebook: ${errorMessage}. Current URL: ${currentUrl}`);
   }
-}
+};
