@@ -66,6 +66,11 @@ export class FolderRenamePage extends BasePage {
       })
     });
 
+    // Ensure folder node is visible (expand if needed)
+    if (!(await node.first().isVisible())) {
+      this.clickE2ETestFolder();
+    }
+
     await expect(node.first()).toBeVisible();
     return node.first();
   }
