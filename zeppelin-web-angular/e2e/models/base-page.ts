@@ -32,7 +32,8 @@ export class BasePage {
   }
 
   async clickE2ETestFolder(): Promise<void> {
-    await this.e2eTestFolder.click();
+    await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
+    await this.e2eTestFolder.click({ timeout: 30000 });
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 }
