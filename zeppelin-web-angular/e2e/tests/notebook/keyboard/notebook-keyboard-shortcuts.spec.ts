@@ -671,9 +671,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     });
   });
 
-  // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.FindInCode: Control+Alt+F', () => {
-    test.skip();
     test('should open find in code with Control+Alt+F', async () => {
       // Given: A paragraph with content
       await keyboardPage.focusCodeEditor();

@@ -560,7 +560,9 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async isSearchDialogVisible(): Promise<boolean> {
-    const searchDialog = this.page.locator('.search-widget, .find-widget, [role="dialog"]:has-text("Find")');
+    const searchDialog = this.page.locator(
+      '.dropdown-menu.search-code, .search-widget, .find-widget, [role="dialog"]:has-text("Find")'
+    );
     return await searchDialog.isVisible();
   }
 
