@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export class FolderRenamePage extends BasePage {
@@ -33,26 +33,41 @@ export class FolderRenamePage extends BasePage {
 
   private async getFolderNode(folderName: string): Promise<Locator> {
     const nameParts = folderName.split('/');
+
+    // 1) Multi-level folder
     if (nameParts.length > 1) {
       const parentName = nameParts[0];
       const childName = nameParts.slice(1).join('/');
-      const parentNode = this.page.locator('a.name').filter({ hasText: new RegExp(parentName, 'i') });
+
+      const parentNode = this.page.locator('a.name').filter({
+        hasText: new RegExp(parentName, 'i')
+      });
+
+      await expect(parentNode.first()).toBeVisible();
       await parentNode.first().click();
-      await this.page.waitForTimeout(1000); // Wait for folder to expand
-      return this.page
-        .locator('.node')
-        .filter({
-          has: this.page.locator('.folder .name').filter({ hasText: new RegExp(childName, 'i') })
+
+      // Wait for expand animation to complete
+      await this.page.waitForSelector('.node', { state: 'visible' });
+
+      const childNode = this.page.locator('.node').filter({
+        has: this.page.locator('.folder .name').filter({
+          hasText: new RegExp(childName, 'i')
         })
-        .first();
-    } else {
-      return this.page
-        .locator('.node')
-        .filter({
-          has: this.page.locator('.folder .name', { hasText: new RegExp(folderName, 'i') })
-        })
-        .first();
+      });
+
+      await expect(childNode.first()).toBeVisible();
+      return childNode.first();
     }
+
+    // 2) Single-level folder
+    const node = this.page.locator('.node').filter({
+      has: this.page.locator('.folder .name').filter({
+        hasText: new RegExp(folderName, 'i')
+      })
+    });
+
+    await expect(node.first()).toBeVisible();
+    return node.first();
   }
 
   async hoverOverFolder(folderName: string): Promise<void> {

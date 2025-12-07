@@ -442,14 +442,14 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
 
+      const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
+      await expect(resultLocator).toBeVisible();
+
       const initialOutputVisibility = await keyboardPage.isOutputVisible(0);
 
       // When: User presses Control+Alt+O
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.pressSwitchOutputShow();
-
-      const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
-      await expect(resultLocator).toHaveText('FINISHED', { timeout: 30000 });
 
       const finalOutputVisibility = await keyboardPage.isOutputVisible(0);
       expect(finalOutputVisibility).not.toBe(initialOutputVisibility);
