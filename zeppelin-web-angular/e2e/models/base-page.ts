@@ -22,7 +22,9 @@ export class BasePage {
   constructor(page: Page) {
     this.page = page;
     this.loadingScreen = page.locator('section.spin');
-    this.e2eTestFolder = page.locator(`text=${E2E_TEST_FOLDER}`);
+    this.e2eTestFolder = page.locator('a.name', {
+      hasText: E2E_TEST_FOLDER
+    });
   }
 
   async waitForPageLoad(): Promise<void> {
