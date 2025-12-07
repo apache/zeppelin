@@ -34,10 +34,10 @@ export class NotebookReposPage extends BasePage {
     await this.page.waitForURL('**/#/notebook-repos', { timeout: 60000 });
     await waitForZeppelinReady(this.page);
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
-    await this.page.waitForSelector('zeppelin-notebook-repo-item, zeppelin-page-header[title="Notebook Repository"]', {
-      state: 'visible',
-      timeout: 20000
-    });
+    await Promise.race([
+      this.page.waitForSelector('zeppelin-page-header[title="Notebook Repository"]', { state: 'visible' }),
+      this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
+    ]);
   }
 
   async getRepositoryItemCount(): Promise<number> {
