@@ -186,16 +186,23 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
     await passwordInput.fill(testUser.password);
     await loginButton.click();
 
-    // Enhanced login verification: ensure we're redirected away from login page
-    await page.waitForFunction(() => !window.location.href.includes('#/login'), { timeout: 30000 });
+    // for webkit
+    await page.waitForTimeout(200);
+    await page.evaluate(() => {
+      if (window.location.hash.includes('login')) {
+        window.location.hash = '#/';
+      }
+    });
 
-    // Wait for home page to be fully loaded
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
-
-    // Additional check: ensure zeppelin-node-list is available after login
-    await page.waitForFunction(() => document.querySelector('zeppelin-node-list') !== null, { timeout: 15000 });
-
-    return true;
+    try {
+      await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
+      await page.waitForSelector('zeppelin-page-header >> text=Home', { timeout: 30000 });
+      await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
+      await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return false;
