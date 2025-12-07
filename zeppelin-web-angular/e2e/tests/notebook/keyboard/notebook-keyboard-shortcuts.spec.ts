@@ -448,8 +448,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor(0);
       await keyboardPage.pressSwitchOutputShow();
 
-      // Then: Output visibility should toggle
-      await keyboardPage.page.waitForTimeout(1000);
+      const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
+      await expect(resultLocator).toHaveText('FINISHED', { timeout: 30000 });
+
       const finalOutputVisibility = await keyboardPage.isOutputVisible(0);
       expect(finalOutputVisibility).not.toBe(initialOutputVisibility);
     });

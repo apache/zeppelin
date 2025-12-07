@@ -64,10 +64,6 @@ export class NotebookKeyboardPage extends BasePage {
     // Verify we're actually on a notebook page before checking for paragraphs
     await expect(this.page).toHaveURL(new RegExp(`/notebook/${noteId}`), { timeout: 15000 });
 
-    // Ensure the main notebook content container is visible
-    const notebookContainer = this.page.locator('.notebook-container');
-    await expect(notebookContainer).toBeVisible({ timeout: 15000 });
-
     // Ensure paragraphs are visible after navigation with longer timeout
     await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
   }

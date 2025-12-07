@@ -11,7 +11,7 @@
  */
 
 import { Locator, Page } from '@playwright/test';
-import { BasePage, E2E_TEST_FOLDER } from './base-page';
+import { BasePage } from './base-page';
 
 export class FolderRenamePage extends BasePage {
   readonly folderList: Locator;
@@ -63,7 +63,7 @@ export class FolderRenamePage extends BasePage {
 
     // Ensure folder node is visible (expand if needed)
     if (!(await folderNode.isVisible())) {
-      this.page.locator(`text=${E2E_TEST_FOLDER}`).click();
+      this.clickE2ETestFolder();
       await folderNode.waitFor({ state: 'visible' });
     }
 
@@ -89,7 +89,7 @@ export class FolderRenamePage extends BasePage {
 
     // Ensure folder node is visible (expand if needed)
     if (!(await folderNode.isVisible())) {
-      this.page.locator(`text=${E2E_TEST_FOLDER}`).click();
+      this.clickE2ETestFolder();
       await folderNode.waitFor({ state: 'visible' });
     }
 

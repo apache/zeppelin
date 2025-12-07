@@ -112,9 +112,6 @@ export class HomePageUtil {
     // Wait for notebook list to load with timeout
     await this.page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
     await expect(this.homePage.notebookList).toBeVisible();
-
-    // Additional wait for content to load
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 
   async verifyNotebookRefreshFunctionality(): Promise<void> {
