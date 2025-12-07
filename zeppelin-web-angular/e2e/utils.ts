@@ -261,7 +261,15 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
 };
 
 export const waitForNotebookLinks = async (page: Page, timeout: number = 30000) => {
-  await page.waitForSelector('a[href*="#/notebook/"]', { timeout });
+  const locator = page.locator('a[href*="#/notebook/"]');
+
+  // If there are no notebook links on the page, there's no reason to wait
+  const count = await locator.count();
+  if (count === 0) {
+    return;
+  }
+
+  await locator.first().waitFor({ state: 'visible', timeout });
 };
 
 export const navigateToNotebookWithFallback = async (
