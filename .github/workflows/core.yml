@@ -34,68 +34,14 @@ permissions:
 
 jobs:
   # ============================================
-  # Job 1: Prepare Docker image
+  # Job 1: Prepare Docker image (reusable workflow)
   # ============================================
   prepare-python-r-env:
-    runs-on: ubuntu-24.04
+    uses: ./.github/workflows/build-docker-images.yml
     permissions:
       contents: read
       packages: write
-    outputs:
-      image-name: ${{ steps.image.outputs.name }}
-      pom-hash: ${{ steps.hash.outputs.pom }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Calculate pom.xml hash
-        id: hash
-        run: |
-          echo "pom=${{ hashFiles('**/pom.xml') }}" >> $GITHUB_OUTPUT
-
-      - name: Generate image name with hash
-        id: image
-        run: |
-          # Include both environment file AND Dockerfile in hash calculation
-          COMBINED_HASH=$(cat testing/env_python_3.9_with_R.yml .github/docker/python-r-env.Dockerfile | sha256sum | cut -d' ' -f1 | cut -c1-12)
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${COMBINED_HASH}"
-
-          echo "name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
-
-      - name: Check if image exists
-        id: check
-        run: |
-          if docker manifest inspect ${{ steps.image.outputs.name }} >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set up Docker Buildx
-        if: steps.check.outputs.exists != 'true'
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        if: steps.check.outputs.exists != 'true'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push if needed
-        if: steps.check.outputs.exists != 'true'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .github/docker/python-r-env.Dockerfile
-          push: true
-          tags: |
-            ${{ steps.image.outputs.name }}
-            ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+    secrets: inherit
 
   # ============================================
   # Job 2: Run tests using prepared image
@@ -103,7 +49,7 @@ jobs:
   # test on core-modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server),
   # some interpreters are included, because zeppelin-server test depends on them: spark, shell & markdown
   core-modules:
-    needs: prepare-python-r-env  # Wait for image to be ready
+    needs: prepare-python-r-env
     runs-on: ubuntu-24.04
     container:
       image: ${{ needs.prepare-python-r-env.outputs.image-name }}
@@ -114,7 +60,7 @@ jobs:
     # Use bash shell to ensure conda environment PATH is properly loaded
     defaults:
       run:
-        shell: bash {0}    # login shell 없이 먼저 시도
+        shell: bash {0}
 
     steps:
       - name: Checkout
@@ -128,17 +74,17 @@ jobs:
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
             ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ needs.prepare-python-r-env.outputs.pom-hash }}
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
 
       - name: Verify environment
         run: |
-          echo "🐍 Python version:"
+          echo "Python version:"
           python --version
-          echo "📦 Conda info:"
+          echo "Conda info:"
           conda info
-          echo "📊 R version:"
+          echo "R version:"
           R --version
 
       - name: install application with some interpreter
@@ -244,9 +190,6 @@ jobs:
         run: |
           ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
 
-  # ============================================
-  # Other jobs can reuse the same image
-  # ============================================
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:
     runs-on: ubuntu-24.04
