@@ -12,6 +12,9 @@ on:
       image-name:
         description: 'The full image name with tag'
         value: ${{ jobs.build-python-r-env.outputs.image-name }}
+      image-exists:
+        description: 'Whether the image already exists in GHCR'
+        value: ${{ jobs.build-python-r-env.outputs.image-exists }}
 
 jobs:
   build-python-r-env:
@@ -21,6 +24,7 @@ jobs:
       packages: write  # Required for GHCR push
     outputs:
       image-name: ${{ steps.hash.outputs.image-name }}
+      image-exists: ${{ steps.check.outputs.exists }}
 
     steps:
       - name: Checkout
@@ -105,6 +109,21 @@ jobs:
           docker tag ${{ steps.hash.outputs.image-name }} ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
           docker push ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
 
+      # Step 3: Save image as artifact for downstream jobs (only if built locally and not pushed)
+      - name: Save Docker image as artifact
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push != 'true'
+        run: |
+          docker save ${{ steps.hash.outputs.image-name }} | gzip > /tmp/docker-image.tar.gz
+          echo "Image saved to artifact (size: $(du -h /tmp/docker-image.tar.gz | cut -f1))"
+
+      - name: Upload Docker image artifact
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/docker-image.tar.gz
+          retention-days: 1
+
       - name: Image ready
         run: |
           if [[ "${{ steps.check.outputs.exists }}" == "true" ]]; then
@@ -112,5 +131,5 @@ jobs:
           elif [[ "${{ steps.push-check.outputs.can-push }}" == "true" ]]; then
             echo "Image built and pushed to GHCR: ${{ steps.hash.outputs.image-name }}"
           else
-            echo "Image built locally (not pushed - fork PR has read-only permissions)"
+            echo "Image built locally and saved as artifact (fork PR has read-only permissions)"
           fi

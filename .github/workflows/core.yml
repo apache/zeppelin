@@ -51,20 +51,35 @@ jobs:
   core-modules:
     needs: prepare-python-r-env
     runs-on: ubuntu-24.04
-    container:
-      image: ${{ needs.prepare-python-r-env.outputs.image-name }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    # Use bash shell to ensure conda environment PATH is properly loaded
-    defaults:
-      run:
-        shell: bash {0}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Try to download artifact (only exists for fork PRs with new image)
+      - name: Download Docker image artifact
+        id: download-artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp
+        continue-on-error: true
+
+      # Load image from artifact if downloaded
+      - name: Load Docker image from artifact
+        if: steps.download-artifact.outcome == 'success'
+        run: |
+          echo "Loading image from artifact..."
+          gunzip -c /tmp/docker-image.tar.gz | docker load
+          echo "Image loaded successfully"
+
+      # Pull image from GHCR if artifact not available (image exists in registry)
+      - name: Pull Docker image from GHCR
+        if: steps.download-artifact.outcome != 'success'
+        run: |
+          echo "Pulling image from GHCR..."
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull ${{ needs.prepare-python-r-env.outputs.image-name }}
 
       - name: Cache local Maven repository
         uses: actions/cache@v4
@@ -80,21 +95,49 @@ jobs:
 
       - name: Verify environment
         run: |
-          echo "Python version:"
-          python --version
-          echo "Conda info:"
-          conda info
-          echo "R version:"
-          R --version
+          docker run --rm \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            bash -c '
+              echo "Python version:" && python --version && \
+              echo "Conda info:" && conda info && \
+              echo "R version:" && R --version
+            '
 
       - name: install application with some interpreter
-        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/root/.m2 \
+            -v ~/.cache:/root/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
 
       - name: install and test plugins
-        run: ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/root/.m2 \
+            -v ~/.cache:/root/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
 
       - name: run tests
-        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/root/.m2 \
+            -v ~/.cache:/root/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            -e SPARK_PRINT_LAUNCH_COMMAND="${SPARK_PRINT_LAUNCH_COMMAND}" \
+            -e SPARK_LOCAL_IP="${SPARK_LOCAL_IP}" \
+            -e ZEPPELIN_LOCAL_IP="${ZEPPELIN_LOCAL_IP}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:
