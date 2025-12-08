@@ -115,13 +115,8 @@ jobs:
           fi
       - name: Setup Zeppelin Configuration (Disable Git)
         run: |
-          # Copy zeppelin-site.xml template
-          cp conf/zeppelin-site.xml.template conf/zeppelin-site.xml
-          # Replace GitNotebookRepo with VFSNotebookRepo to avoid Git issues in E2E tests
-          sed -i 's/org.apache.zeppelin.notebook.repo.GitNotebookRepo/org.apache.zeppelin.notebook.repo.VFSNotebookRepo/g' conf/zeppelin-site.xml
-          echo "--- Notebook storage configuration ---"
-          grep -A 2 "zeppelin.notebook.storage" conf/zeppelin-site.xml | head -6
-          echo "---------------------------------------"
+          echo "Setting ZEPPELIN_NOTEBOOK_STORAGE environment variable"
+          echo "ZEPPELIN_NOTEBOOK_STORAGE=org.apache.zeppelin.notebook.repo.VFSNotebookRepo" >> $GITHUB_ENV
       - name: Setup Test Notebook Directory
         run: |
           # NOTE: Must match zeppelin.notebook.dir defined in pom.xml
