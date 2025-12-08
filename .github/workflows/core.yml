@@ -107,8 +107,8 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            -v ~/.m2:/root/.m2 \
-            -v ~/.cache:/root/.cache \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
             -w /workspace \
             -e MAVEN_OPTS="${MAVEN_OPTS}" \
             ${{ needs.prepare-python-r-env.outputs.image-name }} \
@@ -118,8 +118,8 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            -v ~/.m2:/root/.m2 \
-            -v ~/.cache:/root/.cache \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
             -w /workspace \
             -e MAVEN_OPTS="${MAVEN_OPTS}" \
             ${{ needs.prepare-python-r-env.outputs.image-name }} \
@@ -129,8 +129,8 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            -v ~/.m2:/root/.m2 \
-            -v ~/.cache:/root/.cache \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
             -w /workspace \
             -e MAVEN_OPTS="${MAVEN_OPTS}" \
             -e SPARK_PRINT_LAUNCH_COMMAND="${SPARK_PRINT_LAUNCH_COMMAND}" \
