@@ -40,9 +40,7 @@ export class BasePage {
     const isAlreadyOpen = await openSwitcher.isVisible();
 
     if (!isAlreadyOpen) {
-      const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
-      await switcher.waitFor({ state: 'visible' });
-      await switcher.click();
+      await this.e2eTestFolder.click();
 
       // Wait for the switcher to change to open state
       await openSwitcher.waitFor({ state: 'visible', timeout: 10000 });
