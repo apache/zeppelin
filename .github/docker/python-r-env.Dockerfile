@@ -30,17 +30,21 @@ ENV PATH=/opt/conda/envs/python_3_with_R/bin:$PATH \
 # Install R IRkernel
 RUN /opt/conda/envs/python_3_with_R/bin/R -e "IRkernel::installspec(user = TRUE)"
 
-# Install Java 11 for Maven and MongoDB dependencies
+# Install Java 11, Node.js 16, and other dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         wget \
         gnupg \
         git \
-        curl && \
+        curl \
+        ca-certificates && \
+    # Install Adoptium Temurin JDK 11
     wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /usr/share/keyrings/adoptium.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
+    # Install Node.js 16.x (required for zeppelin-web frontend build)
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get update && \
-    apt-get install -y --no-install-recommends temurin-11-jdk && \
+    apt-get install -y --no-install-recommends temurin-11-jdk nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
