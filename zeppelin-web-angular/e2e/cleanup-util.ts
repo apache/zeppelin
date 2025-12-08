@@ -10,16 +10,14 @@
  * limitations under the License.
  */
 
-import { E2E_TEST_FOLDER } from './models/base-page';
+import { BASE_URL, E2E_TEST_FOLDER } from './utils';
 
 export const cleanupTestNotebooks = async () => {
   try {
     console.log('Cleaning up test folder via API...');
 
-    const baseURL = 'http://localhost:4200';
-
     // Get all notebooks and folders
-    const response = await fetch(`${baseURL}/api/notebook`);
+    const response = await fetch(`${BASE_URL}/api/notebook`);
     const data = await response.json();
     if (!data.body || !Array.isArray(data.body)) {
       console.log('No notebooks found or invalid response format');
@@ -42,7 +40,7 @@ export const cleanupTestNotebooks = async () => {
         try {
           console.log(`Deleting test folder: ${testFolder.id} (${testFolder.path})`);
 
-          const deleteResponse = await fetch(`${baseURL}/api/notebook/${testFolder.id}`, {
+          const deleteResponse = await fetch(`${BASE_URL}/api/notebook/${testFolder.id}`, {
             method: 'DELETE'
           });
 
@@ -65,7 +63,7 @@ export const cleanupTestNotebooks = async () => {
     if (error instanceof Error && error.message.includes('ECONNREFUSED')) {
       console.error('Failed to connect to local server. Please start the frontend server first:');
       console.error('  npm start');
-      console.error('  or make sure http://localhost:4200 is running');
+      console.error(`  or make sure ${BASE_URL} is running`);
     } else {
       console.warn('Failed to cleanup test folder:', error);
     }

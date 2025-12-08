@@ -13,7 +13,6 @@
 import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
 import { NotebookUtil } from './models/notebook.util';
-import { E2E_TEST_FOLDER } from './models/base-page';
 
 export const PAGES = {
   // Main App
@@ -103,6 +102,9 @@ export const NOTEBOOK_PATTERNS = {
   URL_REGEX: /\/notebook\/[^\/\?]+/,
   URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/
 } as const;
+
+export const E2E_TEST_FOLDER = 'E2E_TEST_FOLDER';
+export const BASE_URL = 'http://localhost:4200';
 
 export const addPageAnnotation = (pageName: string, testInfo: TestInfo) => {
   testInfo.annotations.push({

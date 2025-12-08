@@ -11,8 +11,7 @@
  */
 
 import { Locator, Page } from '@playwright/test';
-
-export const E2E_TEST_FOLDER = 'E2E_TEST_FOLDER';
+import { E2E_TEST_FOLDER } from 'e2e/utils';
 
 export class BasePage {
   readonly page: Page;
