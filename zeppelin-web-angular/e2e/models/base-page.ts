@@ -33,7 +33,20 @@ export class BasePage {
 
   async clickE2ETestFolder(): Promise<void> {
     await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
-    await this.e2eTestFolder.click({ timeout: 30000 });
+
+    // Check if already open
+    const openSwitcher = this.e2eTestFolder.locator('.ant-tree-switcher_open');
+    const isAlreadyOpen = await openSwitcher.isVisible();
+
+    if (!isAlreadyOpen) {
+      const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
+      await switcher.waitFor({ state: 'visible' });
+      await switcher.click();
+
+      // Wait for the switcher to change to open state
+      await openSwitcher.waitFor({ state: 'visible', timeout: 10000 });
+    }
+
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 }
