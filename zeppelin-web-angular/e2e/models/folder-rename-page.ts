@@ -66,12 +66,13 @@ export class FolderRenamePage extends BasePage {
       })
     });
 
-    // Ensure folder node is visible (expand if needed)
-    if (!(await node.first().isVisible())) {
-      this.clickE2ETestFolder();
+    try {
+      await expect(node.first()).toBeVisible();
+    } catch {
+      await this.clickE2ETestFolder();
+      await expect(node.first()).toBeVisible();
     }
 
-    await expect(node.first()).toBeVisible();
     return node.first();
   }
 
@@ -81,24 +82,13 @@ export class FolderRenamePage extends BasePage {
 
     const folderNode = await this.getFolderNode(folderName);
 
-    // Ensure folder node is visible (expand if needed)
-    if (!(await folderNode.isVisible())) {
-      this.clickE2ETestFolder();
-      await folderNode.waitFor({ state: 'visible' });
+    // Hover over the entire folder node to trigger operation buttons
+    try {
+      await folderNode.hover();
+    } catch {
+      await this.clickE2ETestFolder();
+      await folderNode.hover();
     }
-
-    await folderNode.isVisible();
-    await folderNode.hover();
-
-    // Wait for hover effects to take place by checking for interactive elements
-    await this.page
-      .waitForSelector('.node a[nz-tooltip], .node i[nztype], .node button', {
-        state: 'visible',
-        timeout: 5000
-      })
-      .catch(() => {
-        console.log('No interactive elements found after hover, continuing...');
-      });
   }
 
   async clickDeleteIcon(folderName: string): Promise<void> {
@@ -107,14 +97,13 @@ export class FolderRenamePage extends BasePage {
 
     const folderNode = await this.getFolderNode(folderName);
 
-    // Ensure folder node is visible (expand if needed)
-    if (!(await folderNode.isVisible())) {
-      this.clickE2ETestFolder();
-      await folderNode.waitFor({ state: 'visible' });
+    // Hover over the entire folder node to trigger operation buttons
+    try {
+      await folderNode.hover();
+    } catch {
+      await this.clickE2ETestFolder();
+      await folderNode.hover();
     }
-
-    await folderNode.isVisible();
-    await folderNode.hover();
 
     const deleteIcon = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
     await deleteIcon.click();

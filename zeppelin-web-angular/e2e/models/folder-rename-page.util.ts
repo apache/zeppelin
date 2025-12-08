@@ -124,7 +124,12 @@ export class FolderRenamePageUtil {
 
     // Verify the original folder still exists and was not renamed or deleted.
     const originalFolderLocator = this.page.locator('.folder .name', { hasText: folderName });
-    await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
+    try {
+      await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
+    } catch {
+      await this.folderRenamePage.clickE2ETestFolder();
+      await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
+    }
   }
 
   async verifyDeleteIconIsDisplayed(folderName: string): Promise<void> {
