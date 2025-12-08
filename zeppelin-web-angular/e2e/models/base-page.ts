@@ -11,7 +11,9 @@
  */
 
 import { Locator, Page } from '@playwright/test';
-import { E2E_TEST_FOLDER } from '../constants';
+
+export const E2E_TEST_FOLDER = 'E2E_TEST_FOLDER';
+export const BASE_URL = 'http://localhost:4200';
 
 export class BasePage {
   readonly page: Page;

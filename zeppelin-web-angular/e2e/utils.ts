@@ -12,8 +12,13 @@
 
 import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
+import { E2E_TEST_FOLDER } from './models/base-page';
 import { NotebookUtil } from './models/notebook.util';
-import { E2E_TEST_FOLDER, NOTEBOOK_PATTERNS } from './constants';
+
+export const NOTEBOOK_PATTERNS = {
+  URL_REGEX: /\/notebook\/[^\/\?]+/,
+  URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/
+} as const;
 
 export const PAGES = {
   // Main App
