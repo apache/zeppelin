@@ -124,6 +124,7 @@ jobs:
           echo "---------------------------------------"
       - name: Setup Test Notebook Directory
         run: |
+          # NOTE: Must match zeppelin.notebook.dir defined in pom.xml
           mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
