@@ -10,7 +10,16 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+import { Typography } from 'antd';
+
+export interface TextRendererProps {
+  text: string;
+}
+
+export const TextRenderer = ({ text }: TextRendererProps) => {
+  return (
+    <Typography.Text style={{ whiteSpace: 'pre-wrap' }}>
+      {text}
+    </Typography.Text>
+  );
 };

@@ -20,7 +20,8 @@ test.describe('Home Page Note Operations', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+    const noteListLocator = page.locator('zeppelin-node-list');
+    await expect(noteListLocator).toBeVisible({ timeout: 15000 });
   });
 
   test.describe('Given note operations are available', () => {

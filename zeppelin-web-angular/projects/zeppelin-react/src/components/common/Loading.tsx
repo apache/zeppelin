@@ -10,7 +10,15 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+import { Spin, Typography } from 'antd';
+
+export const Loading = () => {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <Spin size="large" />
+      <Typography.Title level={4} style={{ marginTop: 16 }}>
+        Loading paragraph data...
+      </Typography.Title>
+    </div>
+  );
 };

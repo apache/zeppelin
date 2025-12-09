@@ -10,7 +10,6 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
-};
+export { HTMLRenderer } from './HTMLRenderer';
+export { TextRenderer } from './TextRenderer';
+export { ImageRenderer } from './ImageRenderer';

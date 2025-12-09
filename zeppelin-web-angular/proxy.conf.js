@@ -16,14 +16,18 @@ dotenv.config();
 
 const proxyConfig = [
   {
-    context: ['/'],
+    // Changed from ['/'] to ['/api', '/app'] to avoid proxying React microfrontend routes
+    // Module Federation serves React app at /assets/react/, which should not be proxied
+    context: ['/api', '/app'],
     target: 'http://127.0.0.1:8080',
     secure: false,
     changeOrigin: true
   },
   {
     context: '/ws',
-    target: 'ws://127.0.0.1:8080',
+    // Changed from 'ws://127.0.0.1:8080' to 'http://127.0.0.1:8080'
+    // http-proxy-middleware automatically upgrades to WebSocket protocol when ws: true
+    target: 'http://127.0.0.1:8080',
     secure: false,
     ws: true,
     changeOrigin: true

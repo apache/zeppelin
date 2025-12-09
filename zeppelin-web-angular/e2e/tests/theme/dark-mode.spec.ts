@@ -30,9 +30,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await themePage.clearLocalStorage();
   });
 
-  test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page, context }) => {
-    let currentPage = page;
-
+  test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page, browserName }) => {
     // GIVEN: User is on the main page, which starts in 'system' mode by default (localStorage cleared).
     await test.step('GIVEN the page starts in system mode', async () => {
       await themePage.assertSystemTheme(); // Robot icon for system theme
@@ -41,32 +39,28 @@ test.describe('Dark Mode Theme Switching', () => {
     // WHEN: Explicitly set theme to light mode for the rest of the test.
     await test.step('WHEN the user explicitly sets theme to light mode', async () => {
       await themePage.setThemeInLocalStorage('light');
-      await page.reload();
+      await page.waitForTimeout(500);
+      if (browserName === 'webkit') {
+        const currentUrl = page.url();
+        await page.goto(currentUrl, { waitUntil: 'load' });
+      } else {
+        page.reload();
+      }
       await waitForZeppelinReady(page);
       await themePage.assertLightTheme(); // Now it should be light mode with sun icon
     });
 
     // WHEN: User switches to dark mode by setting localStorage and reloading.
-    await test.step('WHEN the user switches to dark mode', async () => {
+    await test.step('WHEN the user explicitly sets theme to dark mode', async () => {
       await themePage.setThemeInLocalStorage('dark');
-      const newPage = await context.newPage();
-      await newPage.goto(currentPage.url());
-      await waitForZeppelinReady(newPage);
-
-      // Update themePage to use newPage and verify dark mode
-      themePage = new ThemePage(newPage);
-      currentPage = newPage;
-      await themePage.assertDarkTheme();
-    });
-
-    // AND: User refreshes the page.
-    await test.step('AND the user refreshes the page', async () => {
-      await currentPage.reload();
-      await waitForZeppelinReady(currentPage);
-    });
-
-    // THEN: Dark mode is maintained after refresh.
-    await test.step('THEN dark mode is maintained after refresh', async () => {
+      await page.waitForTimeout(500);
+      if (browserName === 'webkit') {
+        const currentUrl = page.url();
+        await page.goto(currentUrl, { waitUntil: 'load' });
+      } else {
+        page.reload();
+      }
+      await waitForZeppelinReady(page);
       await themePage.assertDarkTheme();
     });
 

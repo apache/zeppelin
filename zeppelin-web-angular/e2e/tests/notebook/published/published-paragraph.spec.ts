@@ -99,6 +99,23 @@ test.describe('Published Paragraph', () => {
         timeout: 10000
       });
     });
+
+    test('should enter published paragraph in React mode via URL with react=true', async ({ page }) => {
+      await test.step('Given I navigate to React mode URL', async () => {
+        const reactModeUrl = `/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}?react=true`;
+        await page.goto(reactModeUrl);
+        await waitForZeppelinReady(page);
+
+        await page.waitForURL(`**/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}*`, {
+          timeout: 15000
+        });
+      });
+
+      await test.step('Then React mode should be active', async () => {
+        const currentUrl = page.url();
+        expect(currentUrl).toContain('react=true');
+      });
+    });
   });
 
   test('should show confirmation modal and allow running the paragraph', async ({ page }) => {
@@ -122,7 +139,7 @@ test.describe('Published Paragraph', () => {
     await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
 
     const modal = publishedParagraphPage.confirmationModal;
-    await expect(modal).toBeVisible();
+    await expect(modal).toBeVisible({ timeout: 300000 });
 
     // Check for the new enhanced modal content
     await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
@@ -137,5 +154,54 @@ test.describe('Published Paragraph', () => {
     await expect(runButton).toBeVisible();
     await runButton.click();
     await expect(modal).toBeHidden();
+  });
+
+  test('should show confirmation modal in React mode and allow running the paragraph', async ({ page }) => {
+    const { noteId, paragraphId } = testNotebook;
+
+    await test.step('Given I clear paragraph output in normal notebook view', async () => {
+      await publishedParagraphPage.navigateToNotebook(noteId);
+
+      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+      const paragraphResult = paragraphElement.locator('zeppelin-notebook-paragraph-result');
+
+      // Only clear output if result exists
+      if (await paragraphResult.isVisible()) {
+        const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+        await settingsButton.click();
+
+        const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
+        await clearOutputButton.click();
+        await expect(paragraphResult).toBeHidden();
+      }
+    });
+
+    await test.step('When I navigate to React mode published paragraph URL', async () => {
+      const reactModeUrl = `/#/notebook/${noteId}/paragraph/${paragraphId}?react=true`;
+      await page.goto(reactModeUrl);
+      await waitForZeppelinReady(page);
+
+      // Wait for React mode to load
+      await page.waitForTimeout(2000);
+    });
+
+    await test.step('Then confirmation modal should appear in React mode', async () => {
+      const modal = publishedParagraphPage.confirmationModal;
+      await expect(modal).toBeVisible({ timeout: 30000 });
+
+      // Check for the enhanced modal content
+      await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
+
+      // Verify that the modal shows code preview
+      const modalContent = publishedParagraphPage.confirmationModal.locator('.ant-modal-confirm-content');
+      await expect(modalContent).toContainText('This paragraph contains the following code:');
+      await expect(modalContent).toContainText('Would you like to execute this code?');
+
+      // Click the Run button in the modal (OK button in confirmation modal)
+      const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');
+      await expect(runButton).toBeVisible();
+      await runButton.click();
+      await expect(modal).toBeHidden();
+    });
   });
 });

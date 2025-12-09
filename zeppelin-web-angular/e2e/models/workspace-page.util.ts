@@ -25,8 +25,8 @@ export class WorkspaceTestUtil {
 
   async navigateAndWaitForLoad(): Promise<void> {
     await this.workspacePage.navigateToWorkspace();
-    await waitForZeppelinReady(this.page);
     await performLoginIfRequired(this.page);
+    await waitForZeppelinReady(this.page);
   }
 
   async verifyWorkspaceLayout(): Promise<void> {
