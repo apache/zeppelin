@@ -40,7 +40,7 @@ export class BasePage {
     const isAlreadyOpen = await openSwitcher.isVisible();
 
     if (!isAlreadyOpen) {
-      await this.e2eTestFolder.click();
+      await this.e2eTestFolder.click({ force: true });
 
       // Wait for the switcher to change to open state
       await openSwitcher.waitFor({ state: 'visible', timeout: 10000 });
