@@ -63,6 +63,9 @@ jobs:
 
   run-playwright-e2e-tests:
     runs-on: ubuntu-24.04
+    env:
+      # Use VFS storage instead of Git to avoid Git-related issues in CI
+      ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
     strategy:
       matrix:
         mode: [anonymous, auth]
@@ -113,10 +116,6 @@ jobs:
             cp conf/shiro.ini.template conf/shiro.ini
             sed -i 's/user1 = password2, role1, role2/user1 = password2, role1, role2, admin/' conf/shiro.ini
           fi
-      - name: Setup Zeppelin Configuration (Disable Git)
-        run: |
-          echo "Setting ZEPPELIN_NOTEBOOK_STORAGE environment variable"
-          echo "ZEPPELIN_NOTEBOOK_STORAGE=org.apache.zeppelin.notebook.repo.VFSNotebookRepo" >> $GITHUB_ENV
       - name: Setup Test Notebook Directory
         run: |
           # NOTE: Must match zeppelin.notebook.dir defined in pom.xml
