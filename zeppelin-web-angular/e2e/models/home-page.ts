@@ -20,9 +20,6 @@ export class HomePage extends BasePage {
   readonly helpSection: Locator;
   readonly communitySection: Locator;
   readonly createNewNoteButton: Locator;
-  readonly importNoteButton: Locator;
-  readonly searchInput: Locator;
-  readonly filterInput: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
   readonly welcomeSection: Locator;
@@ -31,7 +28,6 @@ export class HomePage extends BasePage {
   readonly helpCommunityColumn: Locator;
   readonly welcomeDescription: Locator;
   readonly refreshNoteButton: Locator;
-  readonly refreshIcon: Locator;
   readonly notebookList: Locator;
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
@@ -70,9 +66,6 @@ export class HomePage extends BasePage {
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
     this.createNewNoteButton = page.locator('text=Create new Note');
-    this.importNoteButton = page.locator('text=Import Note');
-    this.searchInput = page.locator('textbox', { hasText: 'Search' });
-    this.filterInput = page.locator('input[placeholder*="Filter"]');
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
     this.welcomeSection = page.locator('.welcome');
@@ -81,7 +74,6 @@ export class HomePage extends BasePage {
     this.helpCommunityColumn = page.locator('[nz-col]').last();
     this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
     this.refreshNoteButton = page.locator('a.refresh-note');
-    this.refreshIcon = page.locator('a.refresh-note i[nz-icon]');
     this.notebookList = page.locator('zeppelin-node-list');
     this.notebookHeading = this.notebookColumn.locator('h3');
     this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
@@ -150,16 +142,8 @@ export class HomePage extends BasePage {
     await this.zeppelinLogo.click();
   }
 
-  async getCurrentURL(): Promise<string> {
-    return this.page.url();
-  }
-
   getCurrentPath(): string {
     return getCurrentPath(this.page);
-  }
-
-  async getPageTitle(): Promise<string> {
-    return this.page.title();
   }
 
   async getWelcomeHeadingText(): Promise<string> {
@@ -192,46 +176,7 @@ export class HomePage extends BasePage {
     await this.nodeList.filterInput.fill(searchTerm);
   }
 
-  async isRefreshIconSpinning(): Promise<boolean> {
-    const spinAttribute = await this.refreshIcon.getAttribute('nzSpin');
-    return spinAttribute === 'true' || spinAttribute === '';
-  }
-
-  async waitForRefreshToComplete(): Promise<void> {
-    await this.page.waitForFunction(
-      () => {
-        const icon = document.querySelector('a.refresh-note i[nz-icon]');
-        return icon && !icon.hasAttribute('nzSpin');
-      },
-      { timeout: 10000 }
-    );
-  }
-
   async getDocumentationLinkHref(): Promise<string | null> {
     return this.externalLinks.documentation.getAttribute('href');
-  }
-
-  async areExternalLinksVisible(): Promise<boolean> {
-    const links = [
-      this.externalLinks.documentation,
-      this.externalLinks.mailingList,
-      this.externalLinks.issuesTracking,
-      this.externalLinks.github
-    ];
-
-    for (const link of links) {
-      if (!(await link.isVisible())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  async isWelcomeSectionVisible(): Promise<boolean> {
-    return this.welcomeSection.isVisible();
-  }
-
-  async isMoreInfoGridVisible(): Promise<boolean> {
-    return this.moreInfoGrid.isVisible();
   }
 }

@@ -18,7 +18,7 @@ import { addPageAnnotationBeforeEach, PAGES } from '../../utils';
 test.describe('Login Page', () => {
   addPageAnnotationBeforeEach(PAGES.PAGES.LOGIN);
   let loginPage: LoginPage;
-  let testCredentials: Record<string, any>;
+  let testCredentials: Awaited<ReturnType<(typeof LoginTestUtil)['getTestCredentials']>>;
 
   test.beforeAll(async () => {
     const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
