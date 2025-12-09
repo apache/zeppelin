@@ -27,7 +27,7 @@ export const cleanupTestNotebooks = async () => {
     // Find the test folder
     const testFolders = data.body.filter(
       (item: { path: string }) =>
-        item.path && item.path.split(E2E_TEST_FOLDER)[0] === '/' && !item.path.includes(`~Trash`)
+        item.path && item.path.split('/')[1] === E2E_TEST_FOLDER && !item.path.includes(`~Trash`)
     );
 
     if (testFolders.length === 0) {
