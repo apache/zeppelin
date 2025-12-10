@@ -41,11 +41,21 @@ export class BasePage {
       // Wait for any loading to complete before interaction
       await this.page.waitForLoadState('networkidle', { timeout: 10000 });
 
-      // Use force click to bypass potential overlay issues
+      // Click without waiting for completion, then verify the result
       await this.e2eTestFolder.click({
         force: true,
-        timeout: 30000
+        timeout: 5000 // Short timeout for the click action itself
       });
+
+      // Wait for the folder to expand by checking for child nodes
+      await this.page
+        .waitForSelector('.node', {
+          state: 'visible',
+          timeout: 15000
+        })
+        .catch(() => {
+          console.log('Folder expansion timeout - continuing anyway');
+        });
     }
 
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
