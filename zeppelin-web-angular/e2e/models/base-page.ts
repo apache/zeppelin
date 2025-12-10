@@ -38,8 +38,14 @@ export class BasePage {
 
     const isVisible = await openSwitcher.isVisible();
     if (!isVisible) {
-      await this.e2eTestFolder.click({ trial: true });
-      await this.e2eTestFolder.click();
+      // Wait for any loading to complete before interaction
+      await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+
+      // Use force click to bypass potential overlay issues
+      await this.e2eTestFolder.click({
+        force: true,
+        timeout: 30000
+      });
     }
 
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
