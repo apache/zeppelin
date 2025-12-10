@@ -42,10 +42,14 @@ export class BasePage {
       await this.page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Click without waiting for completion, then verify the result
-      await this.e2eTestFolder.click({
-        force: true,
-        timeout: 5000 // Short timeout for the click action itself
-      });
+      await this.e2eTestFolder
+        .click({
+          force: true,
+          timeout: 5000 // Short timeout for the click action itself
+        })
+        .catch(() => {
+          console.log('Click action timeout - continuing anyway');
+        });
 
       // Wait for the folder to expand by checking for child nodes
       await this.page
