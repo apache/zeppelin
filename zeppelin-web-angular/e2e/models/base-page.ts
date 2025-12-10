@@ -23,7 +23,7 @@ export class BasePage {
   constructor(page: Page) {
     this.page = page;
     this.loadingScreen = page.locator('section.spin');
-    this.e2eTestFolder = page.locator(`text=${E2E_TEST_FOLDER}`);
+    this.e2eTestFolder = page.locator(`a.name:has-text("${E2E_TEST_FOLDER}")`);
   }
 
   async waitForPageLoad(): Promise<void> {
@@ -35,10 +35,11 @@ export class BasePage {
 
     // Check if already open
     const openSwitcher = this.e2eTestFolder.locator('.ant-tree-switcher_open');
-    await openSwitcher.isVisible();
 
-    await this.e2eTestFolder.click({ force: true });
-    await openSwitcher.waitFor({ state: 'visible', timeout: 10000 });
+    const isVisible = await openSwitcher.isVisible();
+    if (!isVisible) {
+      await this.e2eTestFolder.click({ force: true });
+    }
 
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
