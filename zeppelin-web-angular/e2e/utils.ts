@@ -199,6 +199,7 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
       await page.waitForSelector('zeppelin-page-header >> text=Home', { timeout: 30000 });
       await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
       await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
+      await waitForZeppelinReady(page);
       return true;
     } catch {
       return false;
