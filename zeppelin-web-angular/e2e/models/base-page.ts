@@ -31,42 +31,63 @@ export class BasePage {
   }
 
   async clickE2ETestFolder(): Promise<void> {
-    await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
-
-    // Check if already open
-    const openSwitcher = this.e2eTestFolder.locator('.ant-tree-switcher_open');
-
-    const isVisible = await openSwitcher.isVisible();
-    if (!isVisible) {
-      // Wait for any loading to complete before interaction
-      await this.page.waitForLoadState('networkidle', { timeout: 10000 });
-
-      // Click the folder to expand it
-      try {
-        await this.e2eTestFolder.click({
-          force: true,
-          timeout: 5000
-        });
-      } catch (error) {
-        console.log('Click action failed, trying alternative approach:', error);
-        // Alternative: try clicking the switcher directly if it exists
-        const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
-        if (await switcher.isVisible()) {
-          await switcher.click({ timeout: 5000 });
-        }
-      }
-
-      // Wait for the folder to expand by checking for child nodes
-      await this.page
-        .waitForSelector('.node', {
-          state: 'visible',
-          timeout: 15000
-        })
-        .catch(() => {
-          console.log('Folder expansion timeout - continuing anyway');
-        });
+    // Check if page is closed before any operation
+    if (this.page.isClosed()) {
+      console.log('Page is closed, cannot click E2E test folder');
+      return;
     }
 
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+    try {
+      await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
+
+      // Check if already open
+      const openSwitcher = this.e2eTestFolder.locator('.ant-tree-switcher_open');
+
+      // Add page closed check before isVisible
+
+      const isVisible = await openSwitcher.isVisible({ timeout: 2000 });
+      if (!isVisible) {
+        // Wait for any loading to complete before interaction
+        await this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+          console.log('Network idle timeout - continuing anyway');
+        });
+
+        // Click the folder to expand it
+        try {
+          await this.e2eTestFolder.click({
+            force: true,
+            timeout: 5000
+          });
+        } catch (error) {
+          console.log('Click action failed, trying alternative approach:', error);
+          // Alternative: try clicking the switcher directly if it exists
+          const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
+          if (await switcher.isVisible({ timeout: 2000 })) {
+            await switcher.click({ timeout: 5000 });
+          }
+        }
+
+        // Wait for the folder to expand by checking for child nodes
+        await this.page
+          .waitForSelector('.node', {
+            state: 'visible',
+            timeout: 15000
+          })
+          .catch(() => {
+            console.log('Folder expansion timeout - continuing anyway');
+          });
+      }
+
+      await this.page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {
+        console.log('Final network idle timeout - continuing anyway');
+      });
+    } catch (error) {
+      if (this.page.isClosed()) {
+        console.log('Page closed during E2E folder click operation');
+        return;
+      }
+      console.log('Error during E2E folder click:', error);
+      throw error;
+    }
   }
 }
