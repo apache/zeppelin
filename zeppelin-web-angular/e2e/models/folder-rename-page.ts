@@ -32,6 +32,9 @@ export class FolderRenamePage extends BasePage {
   }
 
   private async getFolderNode(folderName: string): Promise<Locator> {
+    // First, ensure E2E test folder is expanded
+    await this.clickE2ETestFolder();
+
     const nameParts = folderName.split('/');
 
     // 1) Multi-level folder
@@ -43,7 +46,7 @@ export class FolderRenamePage extends BasePage {
         hasText: new RegExp(parentName, 'i')
       });
 
-      await expect(parentNode.first()).toBeVisible();
+      await expect(parentNode.first()).toBeVisible({ timeout: 10000 });
       await parentNode.first().click();
 
       // Wait for expand animation to complete
@@ -55,24 +58,32 @@ export class FolderRenamePage extends BasePage {
         })
       });
 
-      await expect(childNode.first()).toBeVisible();
+      await expect(childNode.first()).toBeVisible({ timeout: 10000 });
       return childNode.first();
     }
 
-    // 2) Single-level folder
-    const node = this.page.locator('.node').filter({
+    // 2) Single-level folder - look for the folder anywhere in the tree
+    let node = this.page.locator('.node').filter({
       has: this.page.locator('.folder .name').filter({
         hasText: new RegExp(folderName, 'i')
       })
     });
 
-    try {
-      await expect(node.first()).toBeVisible();
-    } catch {
-      await this.clickE2ETestFolder();
-      await expect(node.first()).toBeVisible();
+    // Wait a bit for the tree to expand after clicking E2E folder
+    await this.page.waitForTimeout(1000);
+
+    // If not found, try a broader search
+    if ((await node.count()) === 0) {
+      node = this.page
+        .locator('.folder .name')
+        .filter({
+          hasText: new RegExp(folderName, 'i')
+        })
+        .locator('xpath=ancestor::*[contains(@class, "node")]')
+        .first();
     }
 
+    await expect(node.first()).toBeVisible({ timeout: 15000 });
     return node.first();
   }
 
