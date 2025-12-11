@@ -41,15 +41,20 @@ export class BasePage {
       // Wait for any loading to complete before interaction
       await this.page.waitForLoadState('networkidle', { timeout: 10000 });
 
-      // Click without waiting for completion, then verify the result
-      await this.e2eTestFolder
-        .click({
+      // Click the folder to expand it
+      try {
+        await this.e2eTestFolder.click({
           force: true,
-          timeout: 5000 // Short timeout for the click action itself
-        })
-        .catch(() => {
-          console.log('Click action timeout - continuing anyway');
+          timeout: 5000
         });
+      } catch (error) {
+        console.log('Click action failed, trying alternative approach:', error);
+        // Alternative: try clicking the switcher directly if it exists
+        const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
+        if (await switcher.isVisible()) {
+          await switcher.click({ timeout: 5000 });
+        }
+      }
 
       // Wait for the folder to expand by checking for child nodes
       await this.page
