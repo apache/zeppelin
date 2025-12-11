@@ -31,7 +31,6 @@ export class BasePage {
   }
 
   async clickE2ETestFolder(): Promise<void> {
-    // Check if page is closed before any operation
     if (this.page.isClosed()) {
       console.log('Page is closed, cannot click E2E test folder');
       return;
@@ -40,46 +39,54 @@ export class BasePage {
     try {
       await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
 
-      // Check if already open
+      // Check if already expanded
       const openSwitcher = this.e2eTestFolder.locator('.ant-tree-switcher_open');
+      const isAlreadyOpen = await openSwitcher.isVisible({ timeout: 2000 });
 
-      // Add page closed check before isVisible
+      if (!isAlreadyOpen) {
+        // Try multiple click strategies
+        const clickStrategies = [
+          // Strategy 1: Simple click
+          async () => await this.e2eTestFolder.click({ timeout: 5000 }),
 
-      const isVisible = await openSwitcher.isVisible({ timeout: 2000 });
-      if (!isVisible) {
-        // Wait for any loading to complete before interaction
-        await this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
-          console.log('Network idle timeout - continuing anyway');
-        });
+          // Strategy 2: Force click
+          async () => await this.e2eTestFolder.click({ force: true, timeout: 5000 }),
 
-        // Click the folder to expand it
-        try {
-          await this.e2eTestFolder.click({
-            force: true,
-            timeout: 5000
-          });
-        } catch (error) {
-          console.log('Click action failed, trying alternative approach:', error);
-          // Alternative: try clicking the switcher directly if it exists
-          const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
-          if (await switcher.isVisible({ timeout: 2000 })) {
+          // Strategy 3: Click switcher directly
+          async () => {
+            const switcher = this.e2eTestFolder.locator('.ant-tree-switcher');
             await switcher.click({ timeout: 5000 });
+          },
+
+          // Strategy 4: JavaScript click
+          async () => await this.e2eTestFolder.evaluate(el => (el as HTMLElement).click()),
+
+          // Strategy 5: Dispatch click event
+          async () => await this.e2eTestFolder.dispatchEvent('click')
+        ];
+
+        let success = false;
+        for (let i = 0; i < clickStrategies.length && !success; i++) {
+          try {
+            console.log(`Trying click strategy ${i + 1}`);
+            await clickStrategies[i]();
+
+            // Check if folder expanded
+            await this.page.waitForSelector('.node', { state: 'visible', timeout: 3000 });
+            success = true;
+            console.log(`Click strategy ${i + 1} succeeded`);
+          } catch (error) {
+            console.log(`Click strategy ${i + 1} failed:`, error);
           }
         }
 
-        // Wait for the folder to expand by checking for child nodes
-        await this.page
-          .waitForSelector('.node', {
-            state: 'visible',
-            timeout: 15000
-          })
-          .catch(() => {
-            console.log('Folder expansion timeout - continuing anyway');
-          });
+        if (!success) {
+          throw new Error('All click strategies failed');
+        }
       }
 
-      await this.page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {
-        console.log('Final network idle timeout - continuing anyway');
+      await this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+        console.log('Network idle timeout - continuing anyway');
       });
     } catch (error) {
       if (this.page.isClosed()) {
