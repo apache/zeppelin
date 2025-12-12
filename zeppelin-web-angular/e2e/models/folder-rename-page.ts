@@ -62,26 +62,16 @@ export class FolderRenamePage extends BasePage {
       return childNode.first();
     }
 
-    // 2) Single-level folder - look for the folder anywhere in the tree
-    let node = this.page.locator('.node').filter({
-      has: this.page.locator('.folder .name').filter({
-        hasText: new RegExp(folderName, 'i')
-      })
-    });
-
-    // Wait a bit for the tree to expand after clicking E2E folder
+    // 2) Single-level folder - simplified approach based on actual DOM structure
     await this.page.waitForTimeout(1000);
 
-    // If not found, try a broader search
-    if ((await node.count()) === 0) {
-      node = this.page
-        .locator('.folder .name')
-        .filter({
-          hasText: new RegExp(folderName, 'i')
-        })
-        .locator('xpath=ancestor::*[contains(@class, "node")]')
-        .first();
-    }
+    // Find the folder by text content in the folder name anchor
+    const folderNameAnchor = this.page.locator('.folder a.name').filter({
+      hasText: new RegExp(folderName, 'i')
+    });
+
+    // Get the parent .node element (which contains both .folder and .operation)
+    const node = folderNameAnchor.locator('../../..'); // Navigate up: a.name -> .folder -> .node
 
     await expect(node.first()).toBeVisible({ timeout: 15000 });
     return node.first();
