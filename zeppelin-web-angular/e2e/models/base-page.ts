@@ -33,14 +33,7 @@ export class BasePage {
   async clickE2ETestFolder(): Promise<void> {
     await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
 
-    // Check if folder is already expanded by looking for expanded state in tree
-    const folderIcon = this.e2eTestFolder.locator('i[nz-icon]');
-    const iconType = await folderIcon.getAttribute('nzType');
-
-    // If folder is closed (folder icon), click to open it
-    if (iconType === 'folder') {
-      await this.e2eTestFolder.click({ force: true });
-    }
+    await this.e2eTestFolder.click({ force: true });
 
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }

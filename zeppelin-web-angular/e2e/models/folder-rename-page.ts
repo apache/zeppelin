@@ -31,50 +31,15 @@ export class FolderRenamePage extends BasePage {
     this.deleteConfirmation = page.locator('.ant-popover').filter({ hasText: 'This folder will be moved to trash.' });
   }
 
-  private async getFolderNode(folderName: string): Promise<Locator> {
-    // First, ensure E2E test folder is expanded
-    await this.clickE2ETestFolder();
-
-    const nameParts = folderName.split('/');
-
-    // 1) Multi-level folder
-    if (nameParts.length > 1) {
-      const parentName = nameParts[0];
-      const childName = nameParts.slice(1).join('/');
-
-      const parentNode = this.page.locator('a.name').filter({
-        hasText: new RegExp(parentName, 'i')
-      });
-
-      await expect(parentNode.first()).toBeVisible({ timeout: 10000 });
-      await parentNode.first().click();
-
-      // Wait for expand animation to complete
-      await this.page.waitForSelector('.node', { state: 'visible' });
-
-      const childNode = this.page.locator('.node').filter({
-        has: this.page.locator('.folder .name').filter({
-          hasText: new RegExp(childName, 'i')
+  private getFolderNode(folderName: string): Locator {
+    return this.page
+      .locator('.folder')
+      .filter({
+        has: this.page.locator('a.name', {
+          hasText: new RegExp(`^\\s*${folderName}\\s*$`, 'i')
         })
-      });
-
-      await expect(childNode.first()).toBeVisible({ timeout: 10000 });
-      return childNode.first();
-    }
-
-    // 2) Single-level folder - simplified approach based on actual DOM structure
-    await this.page.waitForTimeout(1000);
-
-    // Find the folder by text content in the folder name anchor
-    const folderNameAnchor = this.page.locator('.folder a.name').filter({
-      hasText: new RegExp(folderName, 'i')
-    });
-
-    // Get the parent .node element (which contains both .folder and .operation)
-    const node = folderNameAnchor.locator('../../..'); // Navigate up: a.name -> .folder -> .node
-
-    await expect(node.first()).toBeVisible({ timeout: 15000 });
-    return node.first();
+      })
+      .first();
   }
 
   async hoverOverFolder(folderName: string): Promise<void> {
@@ -106,22 +71,26 @@ export class FolderRenamePage extends BasePage {
       await folderNode.hover();
     }
 
-    const deleteIcon = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Move folder to Trash"]');
-    await deleteIcon.click();
+    // Wait for operation buttons to appear and try multiple selector patterns
+    const deleteIcon = folderNode.locator(
+      '.operation a[nztooltiptitle*="Move folder to Trash"], .operation a[nztooltiptitle*="Trash"]'
+    );
+    await expect(deleteIcon).toBeVisible({ timeout: 5000 });
+    await deleteIcon.click({ force: true });
   }
 
   async clickRenameMenuItem(folderName: string): Promise<void> {
-    // Ensure the specific folder is hovered first
-    await this.hoverOverFolder(folderName);
-
     const folderNode = await this.getFolderNode(folderName);
+    const nameLink = folderNode.locator('a.name');
 
-    await folderNode.hover({ force: true });
+    await nameLink.scrollIntoViewIfNeeded();
+    await nameLink.hover({ force: true });
 
-    const renameIcon = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
-    await renameIcon.click();
+    const renameIcon = folderNode.locator('.operation a[nztooltiptitle="Rename folder"]');
 
-    // Wait for modal to appear by checking for its presence
+    await expect(renameIcon).toBeVisible({ timeout: 3000 });
+    await renameIcon.click({ force: true });
+
     await this.renameModal.waitFor({ state: 'visible', timeout: 3000 });
   }
 
