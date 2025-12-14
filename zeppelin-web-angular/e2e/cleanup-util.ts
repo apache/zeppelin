@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { BASE_URL, E2E_TEST_FOLDER } from './utils';
+import { BASE_URL, E2E_TEST_FOLDER } from './models/base-page';
 
 export const cleanupTestNotebooks = async () => {
   try {
