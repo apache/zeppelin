@@ -82,8 +82,6 @@ export class FolderRenamePageUtil {
     await this.page.reload();
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
 
-    await this.folderRenamePage.clickE2ETestFolder();
-
     const baseNewName = newName.split('/').pop();
 
     // Ensure the folder list is stable and contains the new folder after reload
@@ -131,12 +129,7 @@ export class FolderRenamePageUtil {
 
     // Verify the original folder still exists and was not renamed or deleted.
     const originalFolderLocator = this.page.locator('.folder .name', { hasText: folderName });
-    try {
-      await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
-    } catch {
-      await this.folderRenamePage.clickE2ETestFolder();
-      await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
-    }
+    await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
   }
 
   async verifyDeleteIconIsDisplayed(folderName: string): Promise<void> {

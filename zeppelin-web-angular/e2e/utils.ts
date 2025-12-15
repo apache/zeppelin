@@ -401,9 +401,7 @@ export const createTestNotebook = async (
 ): Promise<{ noteId: string; paragraphId: string }> => {
   const notebookUtil = new NotebookUtil(page);
   const baseNotebookName = `/TestNotebook_${Date.now()}`;
-  const notebookName = folderPath
-    ? `${E2E_TEST_FOLDER}/${folderPath}/${baseNotebookName}`
-    : `${E2E_TEST_FOLDER}/${baseNotebookName}`;
+  const notebookName = folderPath ? `${folderPath}/${baseNotebookName}` : `${E2E_TEST_FOLDER}/${baseNotebookName}`;
 
   try {
     // Create notebook

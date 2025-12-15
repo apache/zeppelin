@@ -48,13 +48,7 @@ export class FolderRenamePage extends BasePage {
 
     const folderNode = await this.getFolderNode(folderName);
 
-    // Hover over the entire folder node to trigger operation buttons
-    try {
-      await folderNode.hover();
-    } catch {
-      await this.clickE2ETestFolder();
-      await folderNode.hover();
-    }
+    await folderNode.hover();
   }
 
   async clickDeleteIcon(folderName: string): Promise<void> {
@@ -63,13 +57,7 @@ export class FolderRenamePage extends BasePage {
 
     const folderNode = await this.getFolderNode(folderName);
 
-    // Hover over the entire folder node to trigger operation buttons
-    try {
-      await folderNode.hover();
-    } catch {
-      await this.clickE2ETestFolder();
-      await folderNode.hover();
-    }
+    await folderNode.hover();
 
     // Wait for operation buttons to appear and try multiple selector patterns
     const deleteIcon = folderNode.locator(

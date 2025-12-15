@@ -24,11 +24,18 @@ export const cleanupTestNotebooks = async () => {
       return;
     }
 
-    // Find the test folder
-    const testFolders = data.body.filter(
-      (item: { path: string }) =>
-        item.path && item.path.split('/')[1] === E2E_TEST_FOLDER && !item.path.includes(`~Trash`)
-    );
+    // Find the test folders (E2E_TEST_FOLDER, TestFolder_, and TestFolderRenamed_ patterns)
+    const testFolders = data.body.filter((item: { path: string }) => {
+      if (!item.path || item.path.includes(`~Trash`)) {
+        return false;
+      }
+      const folderName = item.path.split('/')[1];
+      return (
+        folderName === E2E_TEST_FOLDER ||
+        folderName?.startsWith('TestFolder_') ||
+        folderName?.startsWith('TestFolderRenamed_')
+      );
+    });
 
     if (testFolders.length === 0) {
       console.log('No test folder found to clean up');
