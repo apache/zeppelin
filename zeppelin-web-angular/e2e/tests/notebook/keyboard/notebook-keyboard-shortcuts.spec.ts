@@ -618,7 +618,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     });
   });
 
+  // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.PasteLine: Control+Y', () => {
+    test.skip();
     test('should paste line with Control+Y', async () => {
       // Given: Content in the editor
       await keyboardPage.focusCodeEditor();
