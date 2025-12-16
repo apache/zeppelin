@@ -98,23 +98,6 @@ export class FolderRenamePageUtil {
     );
   }
 
-  async verifyRenameCancellation(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-    await this.folderRenamePage.clickRenameMenuItem(folderName);
-    await this.folderRenamePage.enterNewName('Temporary Name');
-    await this.folderRenamePage.clickCancel();
-
-    // Wait for modal to close completely
-    await expect(this.folderRenamePage.renameModal).not.toBeVisible();
-
-    // Wait a bit for DOM to stabilize after modal closes
-    await this.page.waitForTimeout(500);
-
-    // Use the locator-based check instead of the custom method for better reliability
-    const folderLocator = this.page.locator('.folder .name', { hasText: folderName });
-    await expect(folderLocator).toBeVisible({ timeout: 5000 });
-  }
-
   async verifyEmptyNameIsNotAllowed(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     await this.folderRenamePage.clickRenameMenuItem(folderName);

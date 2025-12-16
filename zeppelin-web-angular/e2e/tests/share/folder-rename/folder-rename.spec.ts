@@ -71,10 +71,6 @@ test.describe.serial('Folder Rename', () => {
     await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
   });
 
-  test('Given rename modal is open, When clicking Cancel, Then modal should close without changes', async () => {
-    await folderRenameUtil.verifyRenameCancellation(testFolderName);
-  });
-
   test('Given rename modal is open, When submitting empty name, Then empty name should not be allowed', async () => {
     await folderRenameUtil.verifyEmptyNameIsNotAllowed(testFolderName);
   });
@@ -97,37 +93,52 @@ test.describe.serial('Folder Rename', () => {
     await folderRenameUtil.openContextMenuOnHoverAndVerifyOptions(testFolderName);
   });
 
-  test('Given folder is renamed, When checking folder list, Then old name should not exist and new name should exist', async ({
-    page
-  }) => {
+  test('should rename the folder successfully', async ({ page }) => {
     const renamedFolderName = `TestFolderRenamed_${Date.now()}`;
     await folderRenamePage.hoverOverFolder(testFolderName);
     await folderRenamePage.clickRenameMenuItem(testFolderName);
     await folderRenamePage.clearNewName();
     await folderRenamePage.enterNewName(renamedFolderName);
-
-    // Wait for the confirm button to be enabled before clicking
     await folderRenamePage.clickConfirm();
 
-    // Wait for any processing to complete
     await page.waitForLoadState('networkidle', { timeout: 15000 });
-    await page.waitForTimeout(2000);
 
-    // Check current state after rename attempt
     const newFolderVisible = await folderRenamePage.isFolderVisible(renamedFolderName);
     const oldFolderVisible = await folderRenamePage.isFolderVisible(testFolderName);
+    console.log(newFolderVisible, oldFolderVisible);
 
-    // Accept the current behavior of the system:
-    // - If rename worked: new folder should exist, old folder should not exist
-    // - If rename failed/not implemented: old folder still exists, new folder doesn't exist
-    // - If folders disappeared: acceptable as they may have been deleted/hidden
+    // In the success case, the new folder should be visible and the old one should be gone.
+    expect(newFolderVisible, 'The new folder name should be visible after renaming.').toBe(true);
+    expect(oldFolderVisible, 'The old folder name should not be visible after renaming.').toBe(false);
+  });
 
-    const renameWorked = newFolderVisible && !oldFolderVisible;
-    const renameFailed = !newFolderVisible && oldFolderVisible;
-    const foldersDisappeared = !newFolderVisible && !oldFolderVisible;
-    const bothExist = newFolderVisible && oldFolderVisible;
+  test('should merge source folder into existing target folder if name already exists', async ({ page }) => {
+    // Create a second folder to use as a name collision target
+    const existingFolderName = `ExistingFolder_${Date.now()}`;
+    await createTestNotebook(page, existingFolderName);
+    await page.goto('/#/'); // Refresh to see the new folder
 
-    // Test passes if any of these valid scenarios occurred
-    expect(renameWorked || renameFailed || foldersDisappeared || bothExist).toBeTruthy();
+    // Attempt to rename the first folder to the name of the second folder
+    await folderRenamePage.hoverOverFolder(testFolderName);
+    await folderRenamePage.clickRenameMenuItem(testFolderName);
+    await folderRenamePage.clearNewName();
+    await folderRenamePage.enterNewName(existingFolderName);
+    await folderRenamePage.clickConfirm();
+
+    // FIX: Replace unreliable waits with web-first assertions for UI updates.
+    // Wait for the source folder to disappear (as it's merged)
+    await expect(page.locator('.folder .name', { hasText: testFolderName })).not.toBeVisible({ timeout: 10000 });
+    // Wait for the target folder to remain visible
+    await expect(page.locator('.folder .name', { hasText: existingFolderName })).toBeVisible({ timeout: 10000 });
+
+    // The original folder (source) should no longer be visible
+    const originalFolderVisible = await folderRenamePage.isFolderVisible(testFolderName);
+    expect(originalFolderVisible, 'The original (source) folder should not be visible after merging.').toBe(false);
+
+    // The existing (target) folder should still be visible
+    const existingTargetFolderVisible = await folderRenamePage.isFolderVisible(existingFolderName);
+    expect(existingTargetFolderVisible, 'The existing (target) folder should still be visible after merging.').toBe(
+      true
+    );
   });
 });

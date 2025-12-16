@@ -116,13 +116,11 @@ export class FolderRenamePage extends BasePage {
   }
 
   async isFolderVisible(folderName: string): Promise<boolean> {
-    // Use a more direct approach with count check
-    const folderCount = await this.page
-      .locator('.node .folder .name')
-      .filter({
-        hasText: new RegExp(`^${folderName}$`, 'i')
-      })
-      .count();
+    // Use a more precise locator and robust regex to reliably find the folder.
+    const folderLocator = this.page.locator('a.name', {
+      hasText: new RegExp(`^\\s*${folderName}\\s*$`, 'i')
+    });
+    const folderCount = await folderLocator.count();
     return folderCount > 0;
   }
 }
