@@ -99,7 +99,7 @@ test.describe('Published Paragraph', () => {
       });
     });
 
-    test('should load specific paragraph in published mode with correct URL and component structure', async ({
+    test('should display published paragraph component and preserve URL context after modal interaction', async ({
       page
     }) => {
       const { noteId, paragraphId } = testNotebook;
@@ -132,17 +132,17 @@ test.describe('Published Paragraph', () => {
       // Then: Published container should remain attached and page should be in published mode
       await expect(publishedContainer).toBeAttached({ timeout: 10000 });
 
-      // Verify page structure indicates we're in published mode (not edit mode)
+      // Verify we're in published mode by checking for the published component
       const isPublishedMode = await page.evaluate(() => document.querySelector('zeppelin-publish-paragraph') !== null);
       expect(isPublishedMode).toBe(true);
 
-      // Verify the specific paragraph is being displayed (not the entire notebook)
+      // Verify only the specific paragraph is displayed, not the entire notebook
       const notebookContainer = page.locator('zeppelin-notebook');
       const paragraphContainer = page.locator('zeppelin-publish-paragraph');
 
-      // In published paragraph mode, we should see the published component, not the full notebook
+      // Published component should be present
       await expect(paragraphContainer).toBeAttached();
-      // The full notebook editing interface should not be present
+      // Full notebook editing interface should not be visible
       const isFullNotebookMode = await notebookContainer.isVisible().catch(() => false);
       expect(isFullNotebookMode).toBe(false);
     });
@@ -159,28 +159,8 @@ test.describe('Published Paragraph', () => {
       const codeEditor = page.locator('zeppelin-notebook-paragraph-code-editor');
       const controlPanel = page.locator('zeppelin-notebook-paragraph-control');
 
-      const isCodeEditorVisible = await codeEditor.isVisible();
-      const isControlPanelVisible = await controlPanel.isVisible();
-
-      if (isCodeEditorVisible) {
-        await expect(codeEditor).toBeHidden();
-      }
-      if (isControlPanelVisible) {
-        await expect(controlPanel).toBeHidden();
-      }
-    });
-
-    test('should display dynamic forms in published mode', async ({ page }) => {
-      const { noteId, paragraphId } = testNotebook;
-
-      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
-
-      // Dynamic forms should be visible and functional in published mode
-      const isDynamicFormsVisible = await page.locator('zeppelin-notebook-paragraph-dynamic-forms').isVisible();
-      if (isDynamicFormsVisible) {
-        await expect(page.locator('zeppelin-notebook-paragraph-dynamic-forms')).toBeVisible();
-      }
+      await expect(codeEditor).toBeHidden();
+      await expect(controlPanel).toBeHidden();
     });
   });
 

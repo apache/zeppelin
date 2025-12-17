@@ -31,7 +31,7 @@ export class NotebookPageUtil extends BasePage {
     expect(containerClass).toContain('notebook-container');
   }
 
-  async verifyActionBarPresence(): Promise<void> {
+  async verifyActionBarComponent(): Promise<void> {
     // Wait for the notebook container to be fully loaded first
     await expect(this.notebookPage.notebookContainer).toBeVisible();
 
@@ -39,7 +39,7 @@ export class NotebookPageUtil extends BasePage {
     await expect(this.notebookPage.actionBar).toBeVisible({ timeout: 15000 });
   }
 
-  async verifySidebarFunctionality(): Promise<void> {
+  async verifyResizableSidebarWithConstraints(): Promise<void> {
     // Wait for the notebook container to be fully loaded first
     await expect(this.notebookPage.notebookContainer).toBeVisible();
 
@@ -51,13 +51,7 @@ export class NotebookPageUtil extends BasePage {
     expect(width).toBeLessThanOrEqual(800);
   }
 
-  async verifyExtensionAreaIfVisible(): Promise<void> {
-    await expect(this.notebookPage.extensionArea).toBeVisible();
-  }
-
-  // ===== LAYOUT VERIFICATION METHODS =====
-
-  async verifyGridLayoutForParagraphs(): Promise<void> {
+  async verifyParagraphContainerGridLayout(): Promise<void> {
     await expect(this.notebookPage.paragraphInner).toBeVisible();
 
     const paragraphInner = this.notebookPage.paragraphInner;
@@ -67,21 +61,7 @@ export class NotebookPageUtil extends BasePage {
     await expect(paragraphInner).toHaveAttribute('nz-row');
   }
 
-  // ===== ADDITIONAL VERIFICATION METHODS FOR TESTS =====
-
-  async verifyActionBarComponent(): Promise<void> {
-    await this.verifyActionBarPresence();
-  }
-
-  async verifyResizableSidebarWithConstraints(): Promise<void> {
-    await this.verifySidebarFunctionality();
-  }
-
-  async verifyParagraphContainerGridLayout(): Promise<void> {
-    await this.verifyGridLayoutForParagraphs();
-  }
-
   async verifyExtensionAreaWhenActivated(): Promise<void> {
-    await this.verifyExtensionAreaIfVisible();
+    await expect(this.notebookPage.extensionArea).toBeVisible();
   }
 }

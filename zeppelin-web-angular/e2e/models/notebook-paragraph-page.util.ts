@@ -58,13 +58,15 @@ export class NotebookParagraphUtil {
     expect(isRunEnabled).toBe(true);
   }
 
-  async verifyCodeEditorFunctionality(): Promise<void> {
-    await this.paragraphPage.isCodeEditorVisible();
+  async verifyCodeEditorVisibility(): Promise<void> {
+    const isVisible = await this.paragraphPage.isCodeEditorVisible();
+    expect(isVisible).toBe(true);
     await expect(this.paragraphPage.codeEditor).toBeVisible();
   }
 
   async verifyResultDisplaySystem(): Promise<void> {
-    await this.paragraphPage.hasResult();
+    const hasResult = await this.paragraphPage.hasResult();
+    expect(hasResult).toBe(true);
     await expect(this.paragraphPage.resultDisplay).toBeVisible();
   }
 

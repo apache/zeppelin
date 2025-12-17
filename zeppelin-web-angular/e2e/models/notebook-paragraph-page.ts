@@ -67,10 +67,6 @@ export class NotebookParagraphPage extends BasePage {
     await this.settingsDropdown.click();
   }
 
-  async isRunning(): Promise<boolean> {
-    return await this.progressIndicator.isVisible();
-  }
-
   async hasResult(): Promise<boolean> {
     return await this.resultDisplay.isVisible();
   }
@@ -79,19 +75,11 @@ export class NotebookParagraphPage extends BasePage {
     return await this.codeEditor.isVisible();
   }
 
-  async isDynamicFormsVisible(): Promise<boolean> {
-    return await this.dynamicForms.isVisible();
-  }
-
   async getFooterText(): Promise<string> {
     return (await this.footerInfo.textContent()) || '';
   }
 
   async isRunButtonEnabled(): Promise<boolean> {
     return await this.runButton.isEnabled();
-  }
-
-  async isStopButtonVisible(): Promise<boolean> {
-    return await this.stopButton.isVisible();
   }
 }

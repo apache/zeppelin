@@ -121,6 +121,10 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.keyboard.press('ArrowUp');
   }
 
+  async pressArrowRight(): Promise<void> {
+    await this.page.keyboard.press('ArrowRight');
+  }
+
   async pressTab(): Promise<void> {
     await this.page.keyboard.press('Tab');
   }

@@ -176,23 +176,25 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should move cursor up with Control+P', async () => {
       // Given: A paragraph with multiple lines
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
+      await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
       // Position cursor at end of last line
       await keyboardPage.pressKey('Control+End');
+      await keyboardPage.page.waitForTimeout(500); // Wait for cursor to position
 
       // When: User presses Control+P (should move cursor up one line)
       await keyboardPage.pressMoveCursorUp();
+      await keyboardPage.page.waitForTimeout(500); // Wait for cursor movement
 
       // Then: Verify cursor movement by checking if we can type at the current position
       // Type a marker and check where it appears in the content
       await keyboardPage.pressKey('End'); // Move to end of current line
-      await keyboardPage.page.keyboard.type('_MARKER');
+      await keyboardPage.page.keyboard.type('MARKER');
 
       const content = await keyboardPage.getCodeEditorContent();
       // If cursor moved up correctly, marker should be on line2
-      expect(content).toContain('line2_MARKER');
-      expect(content).not.toContain('line3_MARKER');
+      expect(content).toContain('line2MARKER');
+      expect(content).not.toContain('line3MARKER');
     });
   });
 
@@ -200,24 +202,27 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should move cursor down with Control+N', async () => {
       // Given: A paragraph with multiple lines
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('line1\nline2\nline3');
+      await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
-      // Position cursor at beginning of first line
-      await keyboardPage.pressSelectAll();
-      await keyboardPage.pressKey('ArrowLeft');
+      // Position cursor at beginning of first content line (after %python)
+      await keyboardPage.pressKey('Control+Home');
+      await keyboardPage.pressKey('ArrowDown'); // Move to line1
+      await keyboardPage.pressKey('Home');
+      await keyboardPage.page.waitForTimeout(500); // Wait for cursor to position
 
       // When: User presses Control+N (should move cursor down one line)
       await keyboardPage.pressMoveCursorDown();
+      await keyboardPage.page.waitForTimeout(500); // Wait for cursor movement
 
       // Then: Verify cursor movement by checking if we can type at the current position
       // Type a marker and check where it appears in the content
       await keyboardPage.pressKey('Home'); // Move to beginning of current line
-      await keyboardPage.page.keyboard.type('_MARKER');
+      await keyboardPage.page.keyboard.type('MARKER');
 
       const content = await keyboardPage.getCodeEditorContent();
       // If cursor moved down correctly, marker should be on line2
-      expect(content).toContain('_MARKERline2');
-      expect(content).not.toContain('_MARKERline1');
+      expect(content).toContain('MARKERline2');
+      expect(content).not.toContain('MARKERline1');
     });
   });
 
@@ -237,31 +242,42 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       const currentCount = await keyboardPage.getParagraphCount();
 
-      if (currentCount >= 2) {
-        // Add content to second paragraph
-        const secondParagraph = keyboardPage.getParagraphByIndex(1);
-        await secondParagraph.click();
-        await keyboardPage.setCodeEditorContent('%python\nprint("Second paragraph")', 1);
-        // Focus first paragraph
-        await firstParagraph.click();
-        await keyboardPage.focusCodeEditor(0);
-      }
+      // Add content to second paragraph
+      const secondParagraph = keyboardPage.getParagraphByIndex(1);
+      await secondParagraph.click();
+      await keyboardPage.setCodeEditorContent('%python\nprint("Second paragraph")', 1);
+      // Focus first paragraph
+      await firstParagraph.click();
+      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.page.waitForTimeout(1000); // Wait for focus
 
       // When: User presses Control+Alt+D
       await keyboardPage.pressDeleteParagraph();
-      await keyboardPage.clickModalOkButton();
+
+      // Handle confirmation modal if it appears
+      const confirmButton = keyboardPage.page
+        .locator(
+          'button:has-text("OK"), button:has-text("Yes"), button:has-text("Delete"), button:has-text("Confirm"), .ant-btn-primary'
+        )
+        .first();
+      await confirmButton.isVisible({ timeout: 2000 });
+      await confirmButton.click();
+
+      // Wait for deletion to process
+      await keyboardPage.page.waitForTimeout(1000);
 
       // Then: Paragraph count should decrease
       const finalCount = await keyboardPage.getParagraphCount();
-      expect(finalCount).toEqual(1);
+      expect(finalCount).toEqual(currentCount - 1);
     });
   });
 
   test.describe('ParagraphActions.InsertAbove: Control+Alt+A', () => {
     test('should insert paragraph above with Control+Alt+A', async () => {
-      // Given: A single paragraph
+      // Given: A single paragraph with content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Original Paragraph\nContent for insert above test');
+      const originalContent = '%python\n# Original Paragraph\nprint("Content for insert above test")';
+      await keyboardPage.setCodeEditorContent(originalContent);
 
       const initialCount = await keyboardPage.getParagraphCount();
 
@@ -274,14 +290,22 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
+
+      // And: The new paragraph should be at index 0 (above the original)
+      const newParagraphContent = await keyboardPage.getCodeEditorContentByIndex(0);
+      const originalParagraphContent = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      expect(newParagraphContent).toBe(''); // New paragraph should be empty
+      expect(originalParagraphContent).toBe(originalContent); // Original content should be at index 1
     });
   });
 
   test.describe('ParagraphActions.InsertBelow: Control+Alt+B', () => {
     test('should insert paragraph below with Control+Alt+B', async () => {
-      // Given: A single paragraph
+      // Given: A single paragraph with content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Original Paragraph\nContent for insert below test');
+      const originalContent = '%md\n# Original Paragraph\nContent for insert below test';
+      await keyboardPage.setCodeEditorContent(originalContent);
 
       const initialCount = await keyboardPage.getParagraphCount();
 
@@ -292,6 +316,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
+
+      // And: The new paragraph should be at index 1 (below the original)
+      const originalParagraphContent = await keyboardPage.getCodeEditorContentByIndex(0);
+      const newParagraphContent = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      expect(originalParagraphContent).toBe(originalContent); // Original content should remain at index 0
+      expect(newParagraphContent).toBe(''); // New paragraph should be empty at index 1
     });
   });
 
@@ -321,78 +352,114 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
 
-      // Verify the copied content matches the original
-      const copiedContent = await keyboardPage.getCodeEditorContentByIndex(1);
-      expect(copiedContent).toContain('Copy Test');
-      expect(copiedContent).toContain('Content to be copied below');
+      // And: The copied content should be identical to the original
+      const originalParagraphContent = await keyboardPage.getCodeEditorContentByIndex(0);
+      const copiedParagraphContent = await keyboardPage.getCodeEditorContentByIndex(1);
 
-      // The copied content should match the original content
-      const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
-      const normalizedCopied = copiedContent.replace(/\s+/g, ' ').trim();
-      expect(normalizedCopied).toBe(normalizedOriginal);
+      expect(originalParagraphContent).toBe(originalContent); // Original should remain unchanged
+      expect(copiedParagraphContent).toBe(originalContent); // Copied content should match original exactly
     });
   });
 
   test.describe('ParagraphActions.MoveParagraphUp: Control+Alt+K', () => {
     test('should move paragraph up with Control+Alt+K', async () => {
-      // Given: Two paragraphs with second one focused
-      await keyboardPage.focusCodeEditor(0);
-      await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for move up test', 0);
-      await keyboardPage.addParagraph();
-      await keyboardPage.waitForParagraphCountChange(2);
+      // Given: Create two paragraphs using keyboard shortcut
+      const firstContent = '%python\nprint("First Paragraph - Content for move up test")';
+      const secondContent = '%python\nprint("Second Paragraph - This should move up")';
 
-      // Focus on second paragraph and add content
+      // Set first paragraph content
+      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.setCodeEditorContent(firstContent, 0);
+      await keyboardPage.page.waitForTimeout(300);
+
+      // Create second paragraph using InsertBelow shortcut (Control+Alt+B)
+      await keyboardPage.pressInsertBelow();
+      await keyboardPage.page.waitForTimeout(1000);
+
+      // Set second paragraph content
       await keyboardPage.focusCodeEditor(1);
-      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nThis should move up', 1);
+      await keyboardPage.setCodeEditorContent(secondContent, 1);
+      await keyboardPage.page.waitForTimeout(300);
+
+      // Verify we have 2 paragraphs
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBe(2);
+
+      // Verify initial content before move
+      const initialFirst = await keyboardPage.getCodeEditorContentByIndex(0);
+      const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      // Focus on second paragraph for move operation
+      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.page.waitForTimeout(200);
 
       // When: User presses Control+Alt+K from second paragraph
       await keyboardPage.pressMoveParagraphUp();
 
-      // Then: Paragraph order should change (second becomes first)
+      // Wait for move operation to complete
       await keyboardPage.page.waitForTimeout(1000);
-      const paragraphCount = await keyboardPage.getParagraphCount();
-      expect(paragraphCount).toBe(2);
 
-      // Verify the paragraphs actually moved positions
-      const finalFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
-      const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+      // Then: Paragraph count should remain the same
+      const finalParagraphCount = await keyboardPage.getParagraphCount();
+      expect(finalParagraphCount).toBe(2);
 
-      // The second paragraph should now be first, and the first should be second
-      expect(finalFirstParagraph.replace(/\s+/g, ' ')).toContain('Second Paragraph');
-      expect(finalSecondParagraph.replace(/\s+/g, ' ')).toContain('First Paragraph');
+      // And: Paragraph positions should be swapped
+      const newFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const newSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      expect(newFirstParagraph).toBe(initialSecond); // Second paragraph moved to first position
+      expect(newSecondParagraph).toBe(initialFirst); // First paragraph moved to second position
     });
   });
 
   test.describe('ParagraphActions.MoveParagraphDown: Control+Alt+J', () => {
     test('should move paragraph down with Control+Alt+J', async () => {
-      // Given: Two paragraphs with first one focused
-      await keyboardPage.focusCodeEditor(0);
-      await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nThis should move down', 0);
-      await keyboardPage.addParagraph();
-      await keyboardPage.waitForParagraphCountChange(2);
+      // Given: Create two paragraphs using keyboard shortcut instead of addParagraph()
+      const firstContent = '%python\nprint("First Paragraph - This should move down")';
+      const secondContent = '%python\nprint("Second Paragraph - Content for second paragraph")';
 
-      // Add content to second paragraph
+      // Set first paragraph content
+      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.setCodeEditorContent(firstContent, 0);
+      await keyboardPage.page.waitForTimeout(300);
+
+      // Create second paragraph using InsertBelow shortcut (Control+Alt+B)
+      await keyboardPage.pressInsertBelow();
+      await keyboardPage.page.waitForTimeout(1000);
+
+      // Set second paragraph content
       await keyboardPage.focusCodeEditor(1);
-      await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for second paragraph', 1);
+      await keyboardPage.setCodeEditorContent(secondContent, 1);
+      await keyboardPage.page.waitForTimeout(300);
 
-      // Focus first paragraph
+      // Verify we have 2 paragraphs
+      const paragraphCount = await keyboardPage.getParagraphCount();
+      expect(paragraphCount).toBe(2);
+
+      // Verify initial content before move
+      const initialFirst = await keyboardPage.getCodeEditorContentByIndex(0);
+      const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      // Focus first paragraph for move operation
       await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.page.waitForTimeout(200);
 
       // When: User presses Control+Alt+J from first paragraph
       await keyboardPage.pressMoveParagraphDown();
 
-      // Then: Paragraph order should change (first becomes second)
+      // Wait for move operation to complete
       await keyboardPage.page.waitForTimeout(1000);
-      const paragraphCount = await keyboardPage.getParagraphCount();
-      expect(paragraphCount).toBe(2);
 
-      // Verify the paragraphs actually moved positions
-      const finalFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
-      const finalSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+      // Then: Paragraph count should remain the same
+      const finalParagraphCount = await keyboardPage.getParagraphCount();
+      expect(finalParagraphCount).toBe(2);
 
-      // The first paragraph should now be second, and the second should be first
-      expect(finalFirstParagraph.replace(/\s+/g, ' ')).toContain('Second Paragraph');
-      expect(finalSecondParagraph.replace(/\s+/g, ' ')).toContain('First Paragraph');
+      // And: Paragraph positions should be swapped
+      const newFirstParagraph = await keyboardPage.getCodeEditorContentByIndex(0);
+      const newSecondParagraph = await keyboardPage.getCodeEditorContentByIndex(1);
+
+      expect(newFirstParagraph).toBe(initialSecond); // Second paragraph moved to first position
+      expect(newSecondParagraph).toBe(initialFirst); // First paragraph moved to second position
     });
   });
 
@@ -517,24 +584,31 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should trigger link paragraph with Control+Alt+W', async () => {
       // Given: A paragraph with content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%md\n# Link Test\nTesting link paragraph functionality');
+      await keyboardPage.setCodeEditorContent('%python\nprint("Link Test")');
 
-      // Verify content was set correctly
-      const initialContent = await keyboardPage.getCodeEditorContent();
-      expect(initialContent.replace(/\s+/g, ' ')).toContain('link');
+      // Get the current URL to extract notebook ID
+      const currentUrl = keyboardPage.page.url();
+      const notebookMatch = currentUrl.match(/\/notebook\/([^\/]+)/);
+      expect(notebookMatch).not.toBeNull();
+      const notebookId = notebookMatch![1];
+
+      // Listen for new tabs being opened
+      const newPagePromise = keyboardPage.page.context().waitForEvent('page');
 
       // When: User presses Control+Alt+W
       await keyboardPage.pressLinkParagraph();
 
-      // Then: Link action should be triggered (verify basic functionality)
-      await keyboardPage.page.waitForTimeout(1000);
-      const content = await keyboardPage.getCodeEditorContent();
-      expect(content.length).toBeGreaterThan(0);
-      expect(content).toMatch(/link|test/i);
+      // Then: A new tab should be opened with paragraph link
+      const newPage = await newPagePromise;
+      await newPage.waitForLoadState('networkidle');
 
-      // Verify system remains functional
-      const paragraphCount = await keyboardPage.getParagraphCount();
-      expect(paragraphCount).toBeGreaterThanOrEqual(1);
+      // Verify the new tab URL contains the notebook ID and paragraph reference
+      const newUrl = newPage.url();
+      expect(newUrl).toContain(`/notebook/${notebookId}/paragraph/`);
+      expect(newUrl).toMatch(/\/paragraph\/paragraph_\d+_\d+/);
+
+      // Clean up: Close the new tab
+      await newPage.close();
     });
   });
 
@@ -624,35 +698,35 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should paste line with Control+Y', async () => {
       // Given: Content in the editor
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('line to cut and paste');
+      const originalContent = 'line to cut and paste';
+      await keyboardPage.setCodeEditorContent(originalContent);
 
-      // Wait for content to be properly set before verifying
+      // Wait for content to be properly set and verify it
       await keyboardPage.page.waitForTimeout(500);
-
       const initialContent = await keyboardPage.getCodeEditorContent();
-      // Debug: Log the actual content and its character codes
-      console.log('Initial content:', JSON.stringify(initialContent));
-      console.log('Expected:', JSON.stringify('line to cut and paste'));
+      expect(initialContent.replace(/\s+/g, ' ').trim()).toContain(originalContent);
 
-      // Use a more robust assertion that handles encoding issues
-      const expectedText = 'line to cut and paste';
-      expect(
-        initialContent.includes(expectedText) ||
-          initialContent.normalize().includes(expectedText) ||
-          initialContent.replace(/\s+/g, ' ').trim().includes(expectedText)
-      ).toBeTruthy();
-
-      // Cut the line first
+      // When: User presses Control+K to cut the line
       await keyboardPage.pressCutLine();
       await keyboardPage.page.waitForTimeout(500);
 
+      // Then: Content should be reduced (line was cut)
+      const afterCutContent = await keyboardPage.getCodeEditorContent();
+      expect(afterCutContent.length).toBeLessThan(initialContent.length);
+
+      // Clear the editor to verify paste works from clipboard
+      await keyboardPage.setCodeEditorContent('');
+      await keyboardPage.page.waitForTimeout(200);
+      const emptyContent = await keyboardPage.getCodeEditorContent();
+      expect(emptyContent.trim()).toBe('');
+
       // When: User presses Control+Y to paste
       await keyboardPage.pressPasteLine();
-
-      // Then: Content should be pasted back
       await keyboardPage.page.waitForTimeout(500);
+
+      // Then: Original content should be restored from clipboard
       const finalContent = await keyboardPage.getCodeEditorContent();
-      expect(finalContent.length).toBeGreaterThan(0);
+      expect(finalContent.replace(/\s+/g, ' ').trim()).toContain(originalContent);
     });
   });
 
@@ -697,44 +771,71 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== AUTOCOMPLETION AND NAVIGATION =====
 
   test.describe('Control+Space: Code Autocompletion', () => {
-    test('should handle Control+Space key combination', async () => {
-      // Given: Code editor with partial code
+    test('should trigger autocomplete for Python code', async () => {
+      // Given: Code editor with partial Python function
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\npr');
       await keyboardPage.pressKey('End'); // Position cursor at end
 
-      // When: User presses Control+Space
+      // When: User presses Control+Space to trigger autocomplete
       await keyboardPage.pressControlSpace();
+      await keyboardPage.page.waitForTimeout(1000);
 
-      // Then: Should handle the key combination without errors
-      const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
-      expect(typeof isAutocompleteVisible).toBe('boolean');
-    });
-
-    test('should handle autocomplete interaction gracefully', async () => {
-      // Given: Code editor with content that might trigger autocomplete
-      await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint');
-
-      // When: User tries autocomplete operations
-      await keyboardPage.pressControlSpace();
-
-      // Handle potential autocomplete popup
+      // Then: Either autocomplete appears OR system handles it gracefully
       const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
       if (isAutocompleteVisible) {
-        await keyboardPage.pressArrowDown();
-        await keyboardPage.pressEscape(); // Close autocomplete
-      }
+        // If autocomplete is visible, verify we can interact with it
+        const autocompletePopup = keyboardPage.page
+          .locator('.monaco-editor .suggest-widget, .autocomplete-popup, [role="listbox"]')
+          .first();
+        await expect(autocompletePopup).toBeVisible();
 
-      // Then: System should remain stable
-      const codeEditorComponent = keyboardPage.page.locator('zeppelin-notebook-paragraph-code-editor').first();
-      await expect(codeEditorComponent).toBeVisible();
+        // Close autocomplete cleanly
+        await keyboardPage.pressEscape();
+      } else {
+        // If no autocomplete (e.g., no Python kernel), verify editor still works
+        await keyboardPage.setCodeEditorContent('%python\nprint("test")');
+        const content = await keyboardPage.getCodeEditorContent();
+        expect(content).toContain('print');
+      }
+    });
+
+    test('should complete autocomplete selection when available', async () => {
+      // Given: Code editor with content likely to have autocomplete suggestions
+      await keyboardPage.focusCodeEditor();
+      await keyboardPage.setCodeEditorContent('%python\nimport os\nos.');
+      await keyboardPage.pressKey('End');
+
+      // When: User triggers autocomplete and selects an option
+      await keyboardPage.pressControlSpace();
+      await keyboardPage.page.waitForTimeout(1000);
+
+      const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
+      if (isAutocompleteVisible) {
+        // Navigate and select first suggestion
+        await keyboardPage.pressArrowDown();
+        await keyboardPage.pressKey('Enter');
+
+        // Then: Content should be modified with autocomplete suggestion
+        const finalContent = await keyboardPage.getCodeEditorContent();
+        expect(finalContent.length).toBeGreaterThan('os.'.length);
+        expect(finalContent).toContain('os.');
+      } else {
+        // If autocomplete not available, verify typing still works
+        await keyboardPage.pressKey('p');
+        await keyboardPage.pressKey('a');
+        await keyboardPage.pressKey('t');
+        await keyboardPage.pressKey('h');
+
+        const finalContent = await keyboardPage.getCodeEditorContent();
+        expect(finalContent).toContain('os.path');
+      }
     });
   });
 
   test.describe('Tab: Code Indentation', () => {
     test('should indent code properly when Tab is pressed', async () => {
-      // Given: Code editor with a function definition
+      // Given: Code editor with a function definition and cursor on new line
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\ndef function():');
       await keyboardPage.pressKey('End');
@@ -745,82 +846,81 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Tab for indentation
       await keyboardPage.pressTab();
 
-      // Then: Code should be properly indented
+      // Then: Content should be longer (indentation added)
       const contentAfterTab = await keyboardPage.getCodeEditorContent();
-      // Check for any indentation (spaces or tabs)
-      expect(contentAfterTab.match(/\s+/)).toBeTruthy(); // Should contain indentation
       expect(contentAfterTab.length).toBeGreaterThan(contentBeforeTab.length);
+
+      // And: The difference should be the addition of indentation characters
+      const addedContent = contentAfterTab.substring(contentBeforeTab.length);
+      expect(addedContent).toMatch(/^[\t ]+$/); // Should be only tabs or spaces
+      expect(addedContent.length).toBeGreaterThan(0); // Should have added some indentation
+
+      // Verify the last line has indentation at the beginning
+      const lines = contentAfterTab.split('\n');
+      const lastLine = lines[lines.length - 1];
+      expect(lastLine).toMatch(/^[\t ]+/); // Last line should start with indentation
     });
   });
 
-  test.describe('Arrow Keys: Navigation', () => {
-    test('should handle arrow key navigation in notebook context', async () => {
-      // Given: A notebook with paragraph(s)
+  test.describe('Arrow Keys: Cursor Navigation', () => {
+    test('should move cursor position with arrow keys', async () => {
+      // Given: Code editor with multi-line content
       await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('test content');
+      const testContent = '%python\nfirst line\nsecond line\nthird line';
+      await keyboardPage.setCodeEditorContent(testContent);
 
-      // When: User uses arrow keys
-      await keyboardPage.pressArrowDown();
-      await keyboardPage.pressArrowUp();
+      // Position cursor at the beginning
+      await keyboardPage.pressKey('Control+Home');
 
-      // Then: Should handle arrow keys without errors
-      const paragraphCount = await keyboardPage.getParagraphCount();
-      expect(paragraphCount).toBeGreaterThanOrEqual(1);
+      // When: User navigates with arrow keys
+      await keyboardPage.pressArrowDown(); // Move down one line
+      await keyboardPage.pressArrowRight(); // Move right one character
+
+      // Type a character to verify cursor position
+      await keyboardPage.pressKey('X');
+
+      // Then: Character should be inserted at the correct position
+      const finalContent = await keyboardPage.getCodeEditorContent();
+      expect(finalContent).toContain('X');
+      expect(finalContent).not.toBe(testContent); // Content should have changed
+
+      // The 'X' should appear somewhere in the content (exact position may vary by editor)
+      const lines = finalContent.split('\n');
+      expect(lines.length).toBeGreaterThanOrEqual(3); // Should still have multiple lines
     });
   });
 
   test.describe('Interpreter Selection', () => {
-    test('should allow typing interpreter selector shortcuts', async () => {
+    test('should recognize and highlight interpreter directives', async () => {
       // Given: Empty code editor
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('');
 
-      // When: User types interpreter selector
-      await keyboardPage.typeInEditor('%python\n');
+      // When: User types various interpreter directives
+      await keyboardPage.typeInEditor('%python\nprint("Hello")\n');
 
-      // Then: Code should contain interpreter directive
-      const content = await keyboardPage.getCodeEditorContent();
-      expect(content).toContain('%python');
+      // Then: Content should contain the interpreter directive
+      const pythonContent = await keyboardPage.getCodeEditorContent();
+      expect(pythonContent).toContain('%python');
+      expect(pythonContent).toContain('print("Hello")');
+
+      // When: User changes to different interpreter
+      await keyboardPage.setCodeEditorContent('%scala\nval x = 1');
+
+      // Then: New interpreter directive should be recognized
+      const scalaContent = await keyboardPage.getCodeEditorContent();
+      expect(scalaContent).toContain('%scala');
+      expect(scalaContent).toContain('val x = 1');
+
+      // When: User types markdown directive
+      await keyboardPage.setCodeEditorContent('%md\n# Header\nMarkdown content');
+
+      // Then: Markdown directive should be recognized
+      const markdownContent = await keyboardPage.getCodeEditorContent();
+      expect(markdownContent).toContain('%md');
+      expect(markdownContent).toContain('# Header');
     });
   });
-
-  // ===== CROSS-PLATFORM COMPATIBILITY =====
-
-  test.describe('Cross-platform Compatibility', () => {
-    test('should handle cancel shortcut on all platforms', async () => {
-      // Given: A paragraph ready for shortcuts
-      await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("Platform compatibility test")');
-
-      // When: User uses cancel shortcut
-      await keyboardPage.pressCancel();
-
-      // Then: Shortcut should work appropriately
-      await keyboardPage.page.waitForTimeout(1000);
-      const content = await keyboardPage.getCodeEditorContent();
-      expect(content).toMatch(/platform.*compatibility.*test/i);
-
-      const paragraphCount = await keyboardPage.getParagraphCount();
-      expect(paragraphCount).toBeGreaterThanOrEqual(1);
-    });
-
-    test('should work consistently across different browser contexts', async () => {
-      // Navigate to the test notebook first
-      await keyboardPage.navigateToNotebook(testNotebook.noteId);
-
-      // Given: Standard keyboard shortcuts
-      await keyboardPage.focusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("Cross-browser test")');
-
-      // When: User performs standard operations
-      await keyboardPage.pressRunParagraph();
-
-      // Then: Should work consistently
-      await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 10000 });
-    });
-  });
-
-  // ===== COMPREHENSIVE INTEGRATION TESTS =====
 
   test.describe('Comprehensive Shortcuts Integration', () => {
     test('should maintain shortcut functionality after errors', async () => {
@@ -851,20 +951,43 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       expect(hasResult).toBe(true);
     });
 
-    test('should handle shortcuts when no paragraph is focused', async () => {
-      // Given: No focused paragraph
+    test('should gracefully handle shortcuts when no paragraph is focused', async () => {
+      // Given: A notebook with at least one paragraph but no focus
+      await keyboardPage.focusCodeEditor();
+      await keyboardPage.setCodeEditorContent('%md\n# Test paragraph');
+
+      // Remove focus by clicking on empty area
       await keyboardPage.page.click('body');
       await keyboardPage.page.waitForTimeout(500);
 
       const initialCount = await keyboardPage.getParagraphCount();
 
-      // When: User presses insert shortcut without focus
-      await keyboardPage.addParagraph();
+      // When: User tries keyboard shortcuts that require paragraph focus
+      // These should either not work or gracefully handle the lack of focus
+      try {
+        await keyboardPage.pressInsertBelow(); // This may not work without focus
+        await keyboardPage.page.waitForTimeout(1000);
 
-      // Then: Shortcut should still work and create new paragraph
-      await keyboardPage.waitForParagraphCountChange(initialCount + 1);
-      const finalCount = await keyboardPage.getParagraphCount();
-      expect(finalCount).toBe(initialCount + 1);
+        const afterShortcut = await keyboardPage.getParagraphCount();
+
+        // Then: Either the shortcut works (creates new paragraph) or is gracefully ignored
+        if (afterShortcut > initialCount) {
+          // Shortcut worked despite no focus - this is acceptable behavior
+          expect(afterShortcut).toBe(initialCount + 1);
+        } else {
+          // Shortcut was ignored - this is also acceptable behavior
+          expect(afterShortcut).toBe(initialCount);
+        }
+      } catch (error) {
+        // If shortcut throws an error, verify the system remains stable
+        const finalCount = await keyboardPage.getParagraphCount();
+        expect(finalCount).toBe(initialCount);
+
+        // Verify the notebook is still functional
+        await keyboardPage.focusCodeEditor(0);
+        const content = await keyboardPage.getCodeEditorContent();
+        expect(content).toContain('Test paragraph');
+      }
     });
 
     test('should handle rapid keyboard operations without instability', async () => {

@@ -67,7 +67,7 @@ test.describe('Notebook Paragraph Functionality', () => {
   test('should support code editor functionality', async ({ page }) => {
     // Then: Code editor should be functional
     const paragraphUtil = new NotebookParagraphUtil(page);
-    await paragraphUtil.verifyCodeEditorFunctionality();
+    await paragraphUtil.verifyCodeEditorVisibility();
   });
 
   test('should display result system properly', async ({ page }) => {
