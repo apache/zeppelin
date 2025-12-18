@@ -434,42 +434,68 @@ export class NotebookKeyboardPage extends BasePage {
     await editorInput.focus();
 
     if (browserName === 'firefox') {
-      // Firefox-specific: enhanced clearing to prevent content duplication
-      console.log('Firefox detected: using enhanced content clearing strategy');
+      // Firefox-specific: Use Monaco Editor API for reliable clearing
+      console.log('Firefox detected: using Monaco Editor API clearing strategy');
 
-      // Triple select-all and clear for Firefox
-      for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.evaluate(() => {
+        const monacoEditor = document.querySelector('.monaco-editor');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (monacoEditor && (window as any).monaco) {
+          // Monaco Editor doesn't have getEditors() method
+          // Try to get the editor instance from the DOM element
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const editorDomNode = monacoEditor as any;
+          if (editorDomNode && editorDomNode._monacoEditor) {
+            const editor = editorDomNode._monacoEditor;
+            editor.setValue('');
+            const model = editor.getModel();
+            if (model) {
+              model.setValue('');
+            }
+          }
+        }
+      });
+
+      await this.page.waitForTimeout(200);
+
+      // Fallback: aggressive keyboard clearing
+      await this.pressSelectAll();
+      await this.page.keyboard.press('Delete');
+      await this.page.waitForTimeout(150);
+
+      // Final verification and clear
+      const currentValue = await editorInput.inputValue();
+      if (currentValue && currentValue.trim().length > 0) {
         await this.pressSelectAll();
-        await this.page.keyboard.press('Delete');
+        await this.page.keyboard.press('Backspace');
         await this.page.waitForTimeout(150);
-
-        // Verify content is actually cleared
-        const currentValue = await editorInput.inputValue();
-        if (!currentValue || currentValue.trim().length === 0) {
-          console.log(`Firefox clearing successful on attempt ${attempt + 1}`);
-          break;
-        }
-        console.log(
-          `Firefox clearing attempt ${attempt + 1} failed, content still present: ${currentValue.slice(0, 50)}...`
-        );
-
-        if (attempt === 2) {
-          // Final attempt with Backspace instead of Delete
-          await this.pressSelectAll();
-          await this.page.keyboard.press('Backspace');
-          await this.page.waitForTimeout(150);
-        }
       }
 
-      // Force-fill content with verification
-      await editorInput.fill(content, { force: true });
+      // Set content using Monaco API if available, otherwise fallback to fill
+      await this.page.evaluate(contentToSet => {
+        const monacoEditor = document.querySelector('.monaco-editor');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (monacoEditor && (window as any).monaco) {
+          // Monaco Editor doesn't have getEditors() method
+          // Try to get the editor instance from the DOM element
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const editorDomNode = monacoEditor as any;
+          if (editorDomNode && editorDomNode._monacoEditor) {
+            const editor = editorDomNode._monacoEditor;
+            editor.setValue(contentToSet);
+            return;
+          }
+        }
+
+        // Fallback to textarea
+        const textarea = monacoEditor?.querySelector('textarea');
+        if (textarea) {
+          textarea.value = contentToSet;
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }, content);
+
       await this.page.waitForTimeout(300);
-
-      // Verify the content was set correctly
-      const finalValue = await editorInput.inputValue();
-      if (finalValue !== content) {
-        console.warn(`Firefox content verification failed. Expected: ${content}, Got: ${finalValue}`);
-      }
     } else {
       // Standard clearing for other browsers
       await this.pressSelectAll();

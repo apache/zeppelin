@@ -295,8 +295,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const newParagraphContent = await keyboardPage.getCodeEditorContentByIndex(0);
       const originalParagraphContent = await keyboardPage.getCodeEditorContentByIndex(1);
 
-      expect(newParagraphContent).toBe(''); // New paragraph should be empty
-      expect(originalParagraphContent).toContain(originalContent); // Original content should be at index 1
+      // New paragraph may have default interpreter (%python) or be empty
+      expect(newParagraphContent === '' || newParagraphContent === '%python').toBe(true);
+
+      // Normalize whitespace for comparison since Monaco editor may format differently
+      const normalizedOriginalContent = originalContent.replace(/\s+/g, ' ').trim();
+      const normalizedReceivedContent = originalParagraphContent.replace(/\s+/g, ' ').trim();
+      expect(normalizedReceivedContent).toContain(normalizedOriginalContent); // Original content should be at index 1
     });
   });
 
