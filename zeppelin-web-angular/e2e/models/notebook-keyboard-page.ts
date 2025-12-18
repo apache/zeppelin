@@ -434,24 +434,49 @@ export class NotebookKeyboardPage extends BasePage {
     await editorInput.focus();
 
     if (browserName === 'firefox') {
-      // Firefox-specific: more aggressive clearing
-      await this.pressSelectAll();
-      await this.page.keyboard.press('Delete');
-      await this.page.waitForTimeout(100);
+      // Firefox-specific: enhanced clearing to prevent content duplication
+      console.log('Firefox detected: using enhanced content clearing strategy');
 
-      // Verify content is cleared, try again if needed
-      const currentValue = await editorInput.inputValue();
-      if (currentValue && currentValue.trim().length > 0) {
+      // Triple select-all and clear for Firefox
+      for (let attempt = 0; attempt < 3; attempt++) {
         await this.pressSelectAll();
-        await this.page.keyboard.press('Backspace');
-        await this.page.waitForTimeout(100);
+        await this.page.keyboard.press('Delete');
+        await this.page.waitForTimeout(150);
+
+        // Verify content is actually cleared
+        const currentValue = await editorInput.inputValue();
+        if (!currentValue || currentValue.trim().length === 0) {
+          console.log(`Firefox clearing successful on attempt ${attempt + 1}`);
+          break;
+        }
+        console.log(
+          `Firefox clearing attempt ${attempt + 1} failed, content still present: ${currentValue.slice(0, 50)}...`
+        );
+
+        if (attempt === 2) {
+          // Final attempt with Backspace instead of Delete
+          await this.pressSelectAll();
+          await this.page.keyboard.press('Backspace');
+          await this.page.waitForTimeout(150);
+        }
+      }
+
+      // Force-fill content with verification
+      await editorInput.fill(content, { force: true });
+      await this.page.waitForTimeout(300);
+
+      // Verify the content was set correctly
+      const finalValue = await editorInput.inputValue();
+      if (finalValue !== content) {
+        console.warn(`Firefox content verification failed. Expected: ${content}, Got: ${finalValue}`);
       }
     } else {
+      // Standard clearing for other browsers
       await this.pressSelectAll();
       await this.page.keyboard.press('Delete');
+      await editorInput.fill(content, { force: true });
     }
 
-    await editorInput.fill(content, { force: true });
     await this.page.waitForTimeout(200);
   }
 
