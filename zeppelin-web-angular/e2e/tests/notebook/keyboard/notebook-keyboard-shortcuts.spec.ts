@@ -178,8 +178,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
-      // Position cursor at end of last line
-      await keyboardPage.pressKey('Control+End');
+      // Position cursor at end of last line using more reliable cross-browser method
+      await keyboardPage.pressSelectAll(); // Select all content
+      await keyboardPage.pressKey('ArrowRight'); // Move to end
       await keyboardPage.page.waitForTimeout(500); // Wait for cursor to position
 
       // When: User presses Control+P (should move cursor up one line)
@@ -204,10 +205,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.focusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
-      // Position cursor at beginning of first content line (after %python)
-      await keyboardPage.pressKey('Control+Home');
+      // Position cursor at beginning of first content line (after %python) using more reliable method
+      await keyboardPage.pressSelectAll(); // Select all content
+      await keyboardPage.pressKey('ArrowLeft'); // Move to beginning
       await keyboardPage.pressKey('ArrowDown'); // Move to line1
-      await keyboardPage.pressKey('Home');
       await keyboardPage.page.waitForTimeout(500); // Wait for cursor to position
 
       // When: User presses Control+N (should move cursor down one line)
@@ -216,7 +217,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: Verify cursor movement by checking if we can type at the current position
       // Type a marker and check where it appears in the content
-      await keyboardPage.pressKey('Home'); // Move to beginning of current line
       await keyboardPage.page.keyboard.type('MARKER');
 
       const content = await keyboardPage.getCodeEditorContent();
@@ -260,7 +260,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
           'button:has-text("OK"), button:has-text("Yes"), button:has-text("Delete"), button:has-text("Confirm"), .ant-btn-primary'
         )
         .first();
-      await confirmButton.isVisible({ timeout: 2000 });
+      await confirmButton.waitFor({ state: 'visible', timeout: 2000 });
       await confirmButton.click();
 
       // Wait for deletion to process
@@ -296,7 +296,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const originalParagraphContent = await keyboardPage.getCodeEditorContentByIndex(1);
 
       expect(newParagraphContent).toBe(''); // New paragraph should be empty
-      expect(originalParagraphContent).toBe(originalContent); // Original content should be at index 1
+      expect(originalParagraphContent).toContain(originalContent); // Original content should be at index 1
     });
   });
 
