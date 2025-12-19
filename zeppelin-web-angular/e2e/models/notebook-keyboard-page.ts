@@ -212,7 +212,7 @@ export class NotebookKeyboardPage extends BasePage {
 
   // Insert paragraph below - control.alt.b (or control.alt.∫ for macOS)
   async pressInsertBelow(): Promise<void> {
-    await this.addParagraph();
+    await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.InsertBelow]);
   }
 
   async addParagraph(): Promise<void> {
@@ -434,66 +434,18 @@ export class NotebookKeyboardPage extends BasePage {
     await editorInput.focus();
 
     if (browserName === 'firefox') {
-      // Firefox-specific: Use Monaco Editor API for reliable clearing
-      console.log('Firefox detected: using Monaco Editor API clearing strategy');
+      // Clear by backspacing existing content length
+      const currentContent = await editorInput.inputValue();
+      const contentLength = currentContent.length;
 
-      await this.page.evaluate(() => {
-        const monacoEditor = document.querySelector('.monaco-editor');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (monacoEditor && (window as any).monaco) {
-          // Monaco Editor doesn't have getEditors() method
-          // Try to get the editor instance from the DOM element
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const editorDomNode = monacoEditor as any;
-          if (editorDomNode && editorDomNode._monacoEditor) {
-            const editor = editorDomNode._monacoEditor;
-            editor.setValue('');
-            const model = editor.getModel();
-            if (model) {
-              model.setValue('');
-            }
-          }
-        }
-      });
-
-      await this.page.waitForTimeout(200);
-
-      // Fallback: aggressive keyboard clearing
-      await this.pressSelectAll();
-      await this.page.keyboard.press('Delete');
-      await this.page.waitForTimeout(150);
-
-      // Final verification and clear
-      const currentValue = await editorInput.inputValue();
-      if (currentValue && currentValue.trim().length > 0) {
-        await this.pressSelectAll();
+      // Position cursor at end and backspace all content
+      await this.page.keyboard.press('End');
+      for (let i = 0; i < contentLength; i++) {
         await this.page.keyboard.press('Backspace');
-        await this.page.waitForTimeout(150);
       }
+      await this.page.waitForTimeout(100);
 
-      // Set content using Monaco API if available, otherwise fallback to fill
-      await this.page.evaluate(contentToSet => {
-        const monacoEditor = document.querySelector('.monaco-editor');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (monacoEditor && (window as any).monaco) {
-          // Monaco Editor doesn't have getEditors() method
-          // Try to get the editor instance from the DOM element
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const editorDomNode = monacoEditor as any;
-          if (editorDomNode && editorDomNode._monacoEditor) {
-            const editor = editorDomNode._monacoEditor;
-            editor.setValue(contentToSet);
-            return;
-          }
-        }
-
-        // Fallback to textarea
-        const textarea = monacoEditor?.querySelector('textarea');
-        if (textarea) {
-          textarea.value = contentToSet;
-          textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      }, content);
+      await this.page.keyboard.type(content);
 
       await this.page.waitForTimeout(300);
     } else {
