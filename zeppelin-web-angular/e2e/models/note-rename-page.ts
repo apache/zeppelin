@@ -20,8 +20,8 @@ export class NoteRenamePage extends BasePage {
   constructor(page: Page) {
     super(page);
     // Note title in elastic input component
-    this.noteTitle = page.locator('.elastic p');
-    this.noteTitleInput = page.locator('.elastic input');
+    this.noteTitle = page.getByRole('heading').locator('p');
+    this.noteTitleInput = page.getByRole('heading').locator('input');
   }
 
   async ensureEditMode(): Promise<void> {
