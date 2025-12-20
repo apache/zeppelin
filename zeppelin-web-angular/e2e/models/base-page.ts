@@ -17,24 +17,14 @@ export const BASE_URL = 'http://localhost:4200';
 
 export class BasePage {
   readonly page: Page;
-  readonly loadingScreen: Locator;
   readonly e2eTestFolder: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.loadingScreen = page.locator('section.spin');
     this.e2eTestFolder = page.locator(`[data-testid="folder-${E2E_TEST_FOLDER}"]`);
   }
 
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
-  }
-
-  async clickE2ETestFolder(): Promise<void> {
-    await this.e2eTestFolder.waitFor({ state: 'visible', timeout: 30000 });
-
-    await this.e2eTestFolder.click({ force: true });
-
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
   }
 }

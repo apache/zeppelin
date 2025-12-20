@@ -20,8 +20,6 @@ export class HomePage extends BasePage {
   readonly helpSection: Locator;
   readonly communitySection: Locator;
   readonly createNewNoteButton: Locator;
-  readonly importNoteButton: Locator;
-  readonly searchInput: Locator;
   readonly filterInput: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
@@ -31,7 +29,6 @@ export class HomePage extends BasePage {
   readonly helpCommunityColumn: Locator;
   readonly welcomeDescription: Locator;
   readonly refreshNoteButton: Locator;
-  readonly refreshIcon: Locator;
   readonly notebookList: Locator;
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
@@ -70,8 +67,6 @@ export class HomePage extends BasePage {
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
     this.createNewNoteButton = page.getByText('Create new Note', { exact: true }).first();
-    this.importNoteButton = page.locator('text=Import Note');
-    this.searchInput = page.locator('textbox', { hasText: 'Search' });
     this.filterInput = page.locator('input[placeholder*="Filter"]');
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
@@ -81,7 +76,6 @@ export class HomePage extends BasePage {
     this.helpCommunityColumn = page.locator('[nz-col]').last();
     this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
     this.refreshNoteButton = page.locator('a.refresh-note');
-    this.refreshIcon = page.locator('a.refresh-note i[nz-icon]');
     this.notebookList = page.locator('zeppelin-node-list');
     this.notebookHeading = this.notebookColumn.locator('h3');
     this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
@@ -153,16 +147,8 @@ export class HomePage extends BasePage {
     await this.zeppelinLogo.click();
   }
 
-  async getCurrentURL(): Promise<string> {
-    return this.page.url();
-  }
-
   getCurrentPath(): string {
     return getCurrentPath(this.page);
-  }
-
-  async getPageTitle(): Promise<string> {
-    return this.page.title();
   }
 
   async getWelcomeHeadingText(): Promise<string> {
@@ -223,13 +209,5 @@ export class HomePage extends BasePage {
       }
     }
     return true;
-  }
-
-  async isWelcomeSectionVisible(): Promise<boolean> {
-    return this.welcomeSection.isVisible();
-  }
-
-  async isMoreInfoGridVisible(): Promise<boolean> {
-    return this.moreInfoGrid.isVisible();
   }
 }

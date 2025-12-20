@@ -11,17 +11,19 @@
  */
 
 import { expect, Page } from '@playwright/test';
-import { NOTEBOOK_PATTERNS } from '../utils';
+import { NOTEBOOK_PATTERNS, navigateToNotebookWithFallback } from '../utils';
 import { NotebookUtil } from './notebook.util';
 import { PublishedParagraphPage } from './published-paragraph-page';
 
 export class PublishedParagraphTestUtil {
   private page: Page;
   private publishedParagraphPage: PublishedParagraphPage;
+  private notebookUtil: NotebookUtil;
 
   constructor(page: Page) {
     this.page = page;
     this.publishedParagraphPage = new PublishedParagraphPage(page);
+    this.notebookUtil = new NotebookUtil(page);
   }
 
   async testConfirmationModalForNoResultParagraph({
