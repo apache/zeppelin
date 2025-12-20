@@ -39,24 +39,24 @@ export class PublishedParagraphPage extends BasePage {
   }
 
   async navigateToPublishedParagraph(noteId: string, paragraphId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-    await this.waitForPageLoad();
+    await this.navigateToRoute(`/notebook/${noteId}/paragraph/${paragraphId}`);
   }
 
   async getErrorModalContent(): Promise<string> {
-    return (await this.errorModalContent.textContent()) || '';
+    return await this.getElementText(this.errorModalContent);
   }
 
   async clickErrorModalOk(): Promise<void> {
-    await this.errorModalOkButton.click();
-  }
-
-  async getCurrentUrl(): Promise<string> {
-    return this.page.url();
+    await this.errorModalOkButton.click({ timeout: 15000 });
   }
 
   async isOnHomePage(): Promise<boolean> {
-    const url = await this.getCurrentUrl();
-    return url.includes('/#/') && !url.includes('/notebook/');
+    const welcomeHeading = this.page.locator('h1', { hasText: 'Welcome to Zeppelin!' });
+    try {
+      await welcomeHeading.waitFor({ state: 'visible', timeout: 5000 });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

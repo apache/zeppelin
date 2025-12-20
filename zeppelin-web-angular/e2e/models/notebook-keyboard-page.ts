@@ -16,6 +16,8 @@ import { ShortcutsMap } from '../../src/app/key-binding/shortcuts-map';
 import { ParagraphActions } from '../../src/app/key-binding/paragraph-actions';
 import { BasePage } from './base-page';
 
+const PARAGRAPH_RESULT_SELECTOR = '[data-testid="paragraph-result"]';
+
 export class NotebookKeyboardPage extends BasePage {
   readonly codeEditor: Locator;
   readonly paragraphContainer: Locator;
@@ -33,6 +35,10 @@ export class NotebookKeyboardPage extends BasePage {
   readonly settingsButton: Locator;
   readonly clearOutputOption: Locator;
   readonly deleteButton: Locator;
+  readonly addParagraphComponent: Locator;
+  readonly searchDialog: Locator;
+  readonly modal: Locator;
+  readonly okButtons: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -40,7 +46,7 @@ export class NotebookKeyboardPage extends BasePage {
     this.paragraphContainer = page.locator('zeppelin-notebook-paragraph');
     this.firstParagraph = this.paragraphContainer.first();
     this.runButton = page.locator('button[title="Run this paragraph"], button:has-text("Run")');
-    this.paragraphResult = page.locator('[data-testid="paragraph-result"]');
+    this.paragraphResult = page.locator(PARAGRAPH_RESULT_SELECTOR);
     this.newParagraphButton = page.locator('button:has-text("Add Paragraph"), .new-paragraph-button');
     this.interpreterSelector = page.locator('.interpreter-selector');
     this.interpreterDropdown = page.locator('nz-select[ng-reflect-nz-placeholder="Interpreter"]');
@@ -52,6 +58,14 @@ export class NotebookKeyboardPage extends BasePage {
     this.settingsButton = page.locator('a[nz-dropdown]');
     this.clearOutputOption = page.locator('li.list-item:has-text("Clear output")');
     this.deleteButton = page.locator('button:has-text("Delete"), .delete-paragraph-button');
+    this.addParagraphComponent = page.locator('zeppelin-notebook-add-paragraph').last();
+    this.searchDialog = page.locator(
+      '.dropdown-menu.search-code, .search-widget, .find-widget, [role="dialog"]:has-text("Find")'
+    );
+    this.modal = page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
+    this.okButtons = page.locator(
+      'button:has-text("OK"), button:has-text("Ok"), button:has-text("Okay"), button:has-text("Confirm")'
+    );
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {
@@ -89,7 +103,7 @@ export class NotebookKeyboardPage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
 
     const browserName = this.page.context().browser()?.browserType().name();
-    if (browserName === 'firefox') {
+    if (browserName === 'firefox' || browserName === 'chromium') {
       // Additional wait for Firefox to ensure editor is fully ready
       await this.page.waitForTimeout(200);
     }
@@ -142,34 +156,6 @@ export class NotebookKeyboardPage extends BasePage {
     }
   }
 
-  // Execute keyboard shortcut
-  private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
-    const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
-
-    for (const s of shortcutsToTry) {
-      try {
-        const formatted = this.formatKey(s);
-        await this.page.keyboard.press(formatted);
-        return;
-      } catch {
-        continue;
-      }
-    }
-  }
-
-  private formatKey(shortcut: string): string {
-    return shortcut
-      .toLowerCase()
-      .replace(/\./g, '+')
-      .replace(/control/g, 'Control')
-      .replace(/shift/g, 'Shift')
-      .replace(/alt/g, 'Alt')
-      .replace(/arrowup/g, 'ArrowUp')
-      .replace(/arrowdown/g, 'ArrowDown')
-      .replace(/enter/g, 'Enter')
-      .replace(/\+([a-z])$/, (_, c) => `+${c.toUpperCase()}`);
-  }
-
   // Run paragraph - shift.enter
   async pressRunParagraph(): Promise<void> {
     await this.executePlatformShortcut(ShortcutsMap[ParagraphActions.Run]);
@@ -219,10 +205,8 @@ export class NotebookKeyboardPage extends BasePage {
     const currentCount = await this.getParagraphCount();
     console.log(`[addParagraph] Paragraph count before: ${currentCount}`);
 
-    // Hover over the 'add paragraph' component itself, then click the inner link.
-    const addParagraphComponent = this.page.locator('zeppelin-notebook-add-paragraph').last();
-    await addParagraphComponent.hover();
-    await addParagraphComponent.locator('a.inner').click();
+    await this.addParagraphComponent.hover();
+    await this.addParagraphComponent.locator('a.inner').click();
     console.log(`[addParagraph] "Add Paragraph" button clicked`);
 
     // Wait for paragraph count to increase
@@ -392,7 +376,7 @@ export class NotebookKeyboardPage extends BasePage {
     }
 
     // Fallback to DOM-based approaches
-    const selectors = ['textarea', '.monaco-editor .view-lines', '.CodeMirror-line', '.ace_line'];
+    const selectors = ['.monaco-editor .view-lines', '.CodeMirror-line', '.ace_line', 'textarea'];
 
     for (const selector of selectors) {
       const element = this.page.locator(selector).first();
@@ -494,7 +478,7 @@ export class NotebookKeyboardPage extends BasePage {
 
   async isOutputVisible(paragraphIndex: number = 0): Promise<boolean> {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const output = paragraph.locator('[data-testid="paragraph-result"]');
+    const output = paragraph.locator(PARAGRAPH_RESULT_SELECTOR);
     return await output.isVisible();
   }
 
@@ -519,7 +503,6 @@ export class NotebookKeyboardPage extends BasePage {
     return boundingBox?.width || 0;
   }
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   async getCodeEditorContentByIndex(paragraphIndex: number): Promise<string> {
     const paragraph = this.getParagraphByIndex(paragraphIndex);
 
@@ -567,58 +550,39 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async isSearchDialogVisible(): Promise<boolean> {
-    const searchDialog = this.page.locator(
-      '.dropdown-menu.search-code, .search-widget, .find-widget, [role="dialog"]:has-text("Find")'
-    );
-    return await searchDialog.isVisible();
+    return await this.searchDialog.isVisible();
   }
 
   async clickModalOkButton(timeout: number = 30000): Promise<void> {
-    // Wait for any modal to appear
-    const modal = this.page.locator('.ant-modal, .modal-dialog, .ant-modal-confirm');
-    await modal.waitFor({ state: 'visible', timeout });
+    await this.modal.waitFor({ state: 'visible', timeout });
 
-    // Define all acceptable OK button labels
-    const okButtons = this.page.locator(
-      'button:has-text("OK"), button:has-text("Ok"), button:has-text("Okay"), button:has-text("Confirm")'
-    );
-
-    // Count how many OK-like buttons exist
-    const count = await okButtons.count();
+    const count = await this.okButtons.count();
     if (count === 0) {
       console.log('⚠️ No OK buttons found.');
       return;
     }
 
-    // Click each visible OK button in sequence
     for (let i = 0; i < count; i++) {
-      const button = okButtons.nth(i);
+      const button = this.okButtons.nth(i);
       await button.waitFor({ state: 'visible', timeout });
       await button.click({ delay: 100 });
-      // Wait for modal to actually close
-      await modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
+      await this.modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
         console.log('Modal did not close within expected time, continuing...');
       });
     }
 
-    // Wait for all modals to be closed
-    await this.page
-      .locator('.ant-modal, .modal-dialog, .ant-modal-confirm')
-      .waitFor({
-        state: 'detached',
-        timeout: 2000
-      })
-      .catch(() => {
-        console.log('Some modals may still be present, continuing...');
-      });
+    await this.modal.waitFor({ state: 'detached', timeout: 2000 }).catch(() => {
+      console.log('Some modals may still be present, continuing...');
+    });
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   private async waitForExecutionStart(paragraphIndex: number): Promise<void> {
     const started = await this.page
       .waitForFunction(
-        index => {
+        // waitForFunction executes in browser context, not Node.js context.
+        // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ([index, selector]: any[]) => {
           const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
           const targetParagraph = paragraphs[index];
           if (!targetParagraph) {
@@ -626,18 +590,18 @@ export class NotebookKeyboardPage extends BasePage {
           }
 
           const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
-          const hasResult = targetParagraph.querySelector('[data-testid="paragraph-result"]');
+          const hasResult = targetParagraph.querySelector(selector);
 
           return hasRunning || hasResult;
         },
-        paragraphIndex,
+        [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
         { timeout: 8000 }
       )
       .catch(() => false);
 
     if (!started) {
       const paragraph = this.getParagraphByIndex(paragraphIndex);
-      const existingResult = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
+      const existingResult = await paragraph.locator(PARAGRAPH_RESULT_SELECTOR).isVisible();
       if (!existingResult) {
         console.log(`Warning: Could not detect execution start for paragraph ${paragraphIndex}`);
       }
@@ -665,24 +629,27 @@ export class NotebookKeyboardPage extends BasePage {
 
     const resultVisible = await this.page
       .waitForFunction(
-        index => {
+        // waitForFunction executes in browser context, not Node.js context.
+        // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ([index, selector]: any[]) => {
           const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph');
           const targetParagraph = paragraphs[index];
           if (!targetParagraph) {
             return false;
           }
 
-          const result = targetParagraph.querySelector('[data-testid="paragraph-result"]');
+          const result = targetParagraph.querySelector(selector);
           return result && getComputedStyle(result).display !== 'none';
         },
-        paragraphIndex,
+        [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
         { timeout: Math.min(timeout / 2, 15000) }
       )
       .catch(() => false);
 
     if (!resultVisible) {
       const paragraph = this.getParagraphByIndex(paragraphIndex);
-      const resultExists = await paragraph.locator('[data-testid="paragraph-result"]').isVisible();
+      const resultExists = await paragraph.locator(PARAGRAPH_RESULT_SELECTOR).isVisible();
       if (!resultExists) {
         console.log(`Warning: No result found for paragraph ${paragraphIndex} after execution`);
       }
@@ -690,10 +657,9 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private async focusEditorElement(paragraph: Locator, paragraphIndex: number): Promise<void> {
-    // Add check for page.isClosed() at the beginning
     if (this.page.isClosed()) {
       console.warn(`Attempted to focus editor in paragraph ${paragraphIndex} but page is closed.`);
-      return; // Exit early if the page is already closed
+      return;
     }
 
     const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
@@ -702,12 +668,8 @@ export class NotebookKeyboardPage extends BasePage {
       console.warn(`Editor not visible in paragraph ${paragraphIndex}`);
     });
 
-    // Use a unified approach: click the editor container to focus it.
-    // This is more reliable than targeting internal, potentially hidden elements like the textarea.
-    // Using { force: true } helps bypass overlays that might obscure the editor.
     await editor.click({ force: true, trial: true }).catch(async () => {
       console.warn(`Failed to click editor in paragraph ${paragraphIndex}, trying to focus textarea directly`);
-      // As a fallback, try focusing the textarea if direct click fails
       const textArea = editor.locator('textarea').first();
       if ((await textArea.count()) > 0) {
         await textArea.focus({ timeout: 1000 });
@@ -727,5 +689,32 @@ export class NotebookKeyboardPage extends BasePage {
     } else {
       await expect(editor).toHaveClass(/focused|focus|active/, { timeout: 30000 });
     }
+  }
+
+  private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
+    const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
+
+    for (const s of shortcutsToTry) {
+      try {
+        const formatted = this.formatKey(s);
+        await this.page.keyboard.press(formatted);
+        return;
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  private formatKey(shortcut: string): string {
+    return shortcut
+      .toLowerCase()
+      .replace(/\./g, '+')
+      .replace(/control/g, 'Control')
+      .replace(/shift/g, 'Shift')
+      .replace(/alt/g, 'Alt')
+      .replace(/arrowup/g, 'ArrowUp')
+      .replace(/arrowdown/g, 'ArrowDown')
+      .replace(/enter/g, 'Enter')
+      .replace(/\+([a-z])$/, (_, c) => `+${c.toUpperCase()}`);
   }
 }

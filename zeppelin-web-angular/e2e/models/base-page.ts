@@ -17,14 +17,50 @@ export const BASE_URL = 'http://localhost:4200';
 
 export class BasePage {
   readonly page: Page;
-  readonly e2eTestFolder: Locator;
+
+  readonly zeppelinNodeList: Locator;
+  readonly zeppelinWorkspace: Locator;
+  readonly zeppelinPageHeader: Locator;
+  readonly zeppelinHeader: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.e2eTestFolder = page.locator(`[data-testid="folder-${E2E_TEST_FOLDER}"]`);
+    this.zeppelinNodeList = page.locator('zeppelin-node-list');
+    this.zeppelinWorkspace = page.locator('zeppelin-workspace');
+    this.zeppelinPageHeader = page.locator('zeppelin-page-header');
+    this.zeppelinHeader = page.locator('zeppelin-header');
   }
 
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+  }
+
+  async navigateToRoute(
+    route: string,
+    options?: { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }
+  ): Promise<void> {
+    await this.page.goto(`/#${route}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+      ...options
+    });
+    await this.waitForPageLoad();
+  }
+
+  async navigateToHome(): Promise<void> {
+    await this.navigateToRoute('/');
+  }
+
+  getCurrentPath(): string {
+    const url = new URL(this.page.url());
+    return url.hash || url.pathname;
+  }
+
+  async waitForUrlNotContaining(fragment: string): Promise<void> {
+    await this.page.waitForURL(url => !url.toString().includes(fragment));
+  }
+
+  async getElementText(locator: Locator): Promise<string> {
+    return (await locator.textContent()) || '';
   }
 }

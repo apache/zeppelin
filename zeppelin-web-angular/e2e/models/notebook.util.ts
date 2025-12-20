@@ -38,20 +38,7 @@ export class NotebookUtil extends BasePage {
       { timeout: 30000 }
     );
 
-    await expect(this.homePage.notebookList).toBeVisible({ timeout: 90000 });
-    await expect(this.homePage.createNewNoteButton).toBeVisible({ timeout: 45000 });
-    await this.homePage.createNewNoteButton.click({ timeout: 45000, force: true });
-    // Click the 'Create' button in the modal
-    const createButton = this.page.locator('button', { hasText: 'Create' });
-    await expect(createButton).toBeVisible({ timeout: 30000 });
-
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 30000 });
-    await this.page.waitForTimeout(500); // for Webkit
-    await notebookNameInput.fill(notebookName, { force: true });
-
-    await createButton.click({ timeout: 30000 });
-
-    await this.waitForPageLoad();
+    await expect(this.homePage.zeppelinNodeList).toBeVisible({ timeout: 90000 });
+    await this.homePage.createNote(notebookName);
   }
 }

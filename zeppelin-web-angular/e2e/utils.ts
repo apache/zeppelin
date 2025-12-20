@@ -17,7 +17,8 @@ import { NotebookUtil } from './models/notebook.util';
 
 export const NOTEBOOK_PATTERNS = {
   URL_REGEX: /\/notebook\/[^\/\?]+/,
-  URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/
+  URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/,
+  LINK_SELECTOR: 'a[href*="/notebook/"]'
 } as const;
 
 export const PAGES = {
@@ -159,6 +160,7 @@ export const getBasicPageMetadata = async (
   path: getCurrentPath(page)
 });
 
+import { LoginPage } from './models/login-page';
 export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
   if (!isShiroEnabled) {
@@ -178,13 +180,8 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
 
   const isLoginVisible = await page.locator('zeppelin-login').isVisible();
   if (isLoginVisible) {
-    const userNameInput = page.getByRole('textbox', { name: 'User Name' });
-    const passwordInput = page.getByRole('textbox', { name: 'Password' });
-    const loginButton = page.getByRole('button', { name: 'Login' });
-
-    await userNameInput.fill(testUser.username);
-    await passwordInput.fill(testUser.password);
-    await loginButton.click();
+    const loginPage = new LoginPage(page);
+    await loginPage.login(testUser.username, testUser.password);
 
     // for webkit
     await page.waitForTimeout(200);
@@ -196,7 +193,6 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
 
     try {
       await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
-      await page.waitForSelector('zeppelin-page-header >> text=Home', { timeout: 30000 });
       await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
       await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
       await waitForZeppelinReady(page);
@@ -269,7 +265,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
 };
 
 export const waitForNotebookLinks = async (page: Page, timeout: number = 30000) => {
-  const locator = page.locator('a[href*="#/notebook/"]');
+  const locator = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR);
 
   // If there are no notebook links on the page, there's no reason to wait
   const count = await locator.count();
@@ -316,7 +312,7 @@ export const navigateToNotebookWithFallback = async (
 
       // The link text in the UI is the base name of the note, not the full path.
       const baseName = notebookName.split('/').pop();
-      const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseName! });
+      const notebookLink = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).filter({ hasText: baseName! });
       // Use the click action's built-in wait.
       await notebookLink.click({ timeout: 10000 });
 
@@ -349,16 +345,16 @@ const navigateViaHomePageFallback = async (page: Page, baseNotebookName: string)
   await page.waitForLoadState('networkidle', { timeout: 15000 });
   await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
-  await page.waitForFunction(() => document.querySelectorAll('a[href*="/notebook/"]').length > 0, {
+  await page.waitForFunction(() => document.querySelectorAll(NOTEBOOK_PATTERNS.LINK_SELECTOR).length > 0, {
     timeout: 15000
   });
   await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
 
-  const notebookLink = page.locator(`a[href*="/notebook/"]`).filter({ hasText: baseNotebookName });
+  const notebookLink = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).filter({ hasText: baseNotebookName });
 
   const browserName = page.context().browser()?.browserType().name();
   if (browserName === 'firefox') {
-    await page.waitForSelector(`a[href*="/notebook/"]:has-text("${baseNotebookName}")`, {
+    await page.waitForSelector(`${NOTEBOOK_PATTERNS.LINK_SELECTOR}:has-text("${baseNotebookName}")`, {
       state: 'visible',
       timeout: 90000
     });
@@ -400,7 +396,7 @@ export const createTestNotebook = async (
   folderPath?: string
 ): Promise<{ noteId: string; paragraphId: string }> => {
   const notebookUtil = new NotebookUtil(page);
-  const baseNotebookName = `/TestNotebook_${Date.now()}`;
+  const baseNotebookName = `TestNotebook_${Date.now()}`;
   const notebookName = folderPath ? `${folderPath}/${baseNotebookName}` : `${E2E_TEST_FOLDER}/${baseNotebookName}`;
 
   try {

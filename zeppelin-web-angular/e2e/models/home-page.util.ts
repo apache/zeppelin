@@ -13,13 +13,13 @@
 import { expect, Page } from '@playwright/test';
 import { getBasicPageMetadata } from '../utils';
 import { HomePage } from './home-page';
+import { BasePage } from './base-page';
 
-export class HomePageUtil {
+export class HomePageUtil extends BasePage {
   private homePage: HomePage;
-  private page: Page;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.homePage = new HomePage(page);
   }
 
@@ -31,7 +31,7 @@ export class HomePageUtil {
   }> {
     await this.homePage.navigateToLogin();
 
-    const currentPath = this.homePage.getCurrentPath();
+    const currentPath = this.getCurrentPath();
     const isLoginUrlMaintained = currentPath.includes('#/login');
     const isHomeContentDisplayed = await this.homePage.isHomeContentDisplayed();
     const isAnonymousUser = await this.homePage.isAnonymousUser();
@@ -63,12 +63,12 @@ export class HomePageUtil {
     pathAfterClick: string;
     homeContentMaintained: boolean;
   }> {
-    const pathBeforeClick = this.homePage.getCurrentPath();
+    const pathBeforeClick = this.getCurrentPath();
 
     await this.homePage.clickZeppelinLogo();
-    await this.homePage.waitForPageLoad();
+    await this.waitForPageLoad();
 
-    const pathAfterClick = this.homePage.getCurrentPath();
+    const pathAfterClick = this.getCurrentPath();
     const homeContentMaintained = await this.homePage.isHomeContentDisplayed();
 
     return {
@@ -99,7 +99,7 @@ export class HomePageUtil {
     const headingText = await this.homePage.getWelcomeHeadingText();
     expect(headingText.trim()).toBe('Welcome to Zeppelin!');
 
-    const welcomeText = await this.homePage.welcomeDescription.textContent();
+    const welcomeText = await this.getElementText(this.homePage.welcomeDescription);
     expect(welcomeText).toContain('web-based notebook');
     expect(welcomeText).toContain('interactive data analytics');
   }
@@ -109,20 +109,17 @@ export class HomePageUtil {
     await expect(this.homePage.notebookHeading).toBeVisible();
     await expect(this.homePage.refreshNoteButton).toBeVisible();
 
-    // Wait for notebook list to load with timeout
     await this.page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
-    await expect(this.homePage.notebookList).toBeVisible();
+    await expect(this.zeppelinNodeList).toBeVisible();
   }
 
   async verifyNotebookRefreshFunctionality(): Promise<void> {
     await this.homePage.clickRefreshNotes();
 
-    // Wait for refresh operation to complete
     await this.homePage.waitForRefreshToComplete();
 
-    // Ensure the notebook list is still visible after refresh
-    await expect(this.homePage.notebookList).toBeVisible();
-    const isStillVisible = await this.homePage.isNotebookListVisible();
+    await expect(this.zeppelinNodeList).toBeVisible();
+    const isStillVisible = await this.zeppelinNodeList.isVisible();
     expect(isStillVisible).toBe(true);
   }
 
@@ -142,7 +139,6 @@ export class HomePageUtil {
     issuesTrackingHref: string | null;
     githubHref: string | null;
   }> {
-    // Get the parent links that contain the text
     const docLink = this.page.locator('a').filter({ hasText: 'Zeppelin documentation' });
     const mailLink = this.page.locator('a').filter({ hasText: 'Mailing list' });
     const issuesLink = this.page.locator('a').filter({ hasText: 'Issues tracking' });

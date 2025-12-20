@@ -30,7 +30,7 @@ test.describe.serial('Folder Rename', () => {
 
   test.beforeEach(async ({ page }) => {
     folderRenamePage = new FolderRenamePage(page);
-    folderRenameUtil = new FolderRenamePageUtil(page, folderRenamePage);
+    folderRenameUtil = new FolderRenamePageUtil(folderRenamePage);
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);

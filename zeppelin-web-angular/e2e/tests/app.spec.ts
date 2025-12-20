@@ -58,7 +58,7 @@ test.describe('Zeppelin App Component', () => {
   test('should display workspace after loading', async ({ page }) => {
     await waitForZeppelinReady(page);
     // After the `beforeEach` hook, which handles login, the workspace should be visible.
-    await expect(page.locator('zeppelin-workspace')).toBeVisible();
+    await expect(basePage.zeppelinWorkspace).toBeVisible();
   });
 
   test('should handle navigation events correctly', async ({ page }) => {

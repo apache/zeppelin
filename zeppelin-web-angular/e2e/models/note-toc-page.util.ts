@@ -14,7 +14,11 @@ import { expect } from '@playwright/test';
 import { NoteTocPage } from './note-toc-page';
 
 export class NoteTocPageUtil {
-  constructor(private readonly noteTocPage: NoteTocPage) {}
+  private noteTocPage: NoteTocPage;
+
+  constructor(noteTocPage: NoteTocPage) {
+    this.noteTocPage = noteTocPage;
+  }
 
   async verifyTocPanelOpens(): Promise<void> {
     await this.noteTocPage.clickTocToggle();

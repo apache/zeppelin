@@ -81,7 +81,7 @@ test.describe('Dark Mode Theme Switching', () => {
 
     await test.step('GIVEN: No localStorage, System preference is Light', async () => {
       await page.emulateMedia({ colorScheme: 'light' });
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       // When no explicit theme is set, it defaults to 'system' mode
       // Even in system mode with light preference, the icon should be robot
@@ -92,7 +92,7 @@ test.describe('Dark Mode Theme Switching', () => {
 
     await test.step('GIVEN: No localStorage, System preference is Dark (initial system state)', async () => {
       await themePage.setThemeInLocalStorage('system');
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       await themePage.assertSystemTheme(); // Robot icon for system theme
     });
@@ -100,7 +100,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step("GIVEN: localStorage is 'dark', System preference is Light", async () => {
       await themePage.setThemeInLocalStorage('dark');
       await page.emulateMedia({ colorScheme: 'light' });
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       await themePage.assertDarkTheme(); // localStorage should override system
     });
@@ -108,7 +108,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step("GIVEN: localStorage is 'system', THEN: Emulate system preference change to Light", async () => {
       await themePage.setThemeInLocalStorage('system');
       await page.emulateMedia({ colorScheme: 'light' });
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       await expect(themePage.rootElement).toHaveClass(/light/);
       await expect(themePage.rootElement).toHaveAttribute('data-theme', 'light');
@@ -118,7 +118,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step("GIVEN: localStorage is 'system', THEN: Emulate system preference change to Dark", async () => {
       await themePage.setThemeInLocalStorage('system');
       await page.emulateMedia({ colorScheme: 'dark' });
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       await expect(themePage.rootElement).toHaveClass(/dark/);
       await expect(themePage.rootElement).toHaveAttribute('data-theme', 'dark');

@@ -24,7 +24,7 @@ export class DarkModePage extends BasePage {
   }
 
   async toggleTheme() {
-    await this.themeToggleButton.click();
+    await this.themeToggleButton.click({ timeout: 15000 });
   }
 
   async assertDarkTheme() {

@@ -186,12 +186,14 @@ export class PublishedParagraphTestUtil {
           await this.page.waitForLoadState('networkidle', { timeout: 15000 });
         } else {
           // Final fallback: try to find in the home page
-          await this.page.goto('/');
+          await this.page.goto('/#/');
           await this.page.waitForLoadState('networkidle', { timeout: 15000 });
           await this.page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
           // Try to find any test notebook (not necessarily the exact one)
-          const testNotebookLinks = this.page.locator(`a[href*="/notebook/"]`).filter({ hasText: /Test Notebook/ });
+          const testNotebookLinks = this.page
+            .locator(NOTEBOOK_PATTERNS.LINK_SELECTOR)
+            .filter({ hasText: /Test Notebook/ });
           const linkCount = await testNotebookLinks.count();
 
           if (linkCount > 0) {
@@ -237,7 +239,7 @@ export class PublishedParagraphTestUtil {
     }
 
     // Navigate back to home with enhanced waiting
-    await this.page.goto('/');
+    await this.page.goto('/#/');
     await this.page.waitForLoadState('networkidle', { timeout: 30000 });
 
     // Wait for the loading indicator to disappear and home page to be ready
@@ -263,7 +265,7 @@ export class PublishedParagraphTestUtil {
   async deleteTestNotebook(noteId: string): Promise<void> {
     try {
       // Navigate to home page
-      await this.page.goto('/');
+      await this.page.goto('/#/');
       await this.page.waitForLoadState('networkidle');
 
       // Find the notebook in the tree by noteId and get its parent tree node

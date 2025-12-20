@@ -11,7 +11,6 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
@@ -20,7 +19,6 @@ export class HomePage extends BasePage {
   readonly helpSection: Locator;
   readonly communitySection: Locator;
   readonly createNewNoteButton: Locator;
-  readonly filterInput: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
   readonly welcomeSection: Locator;
@@ -29,10 +27,12 @@ export class HomePage extends BasePage {
   readonly helpCommunityColumn: Locator;
   readonly welcomeDescription: Locator;
   readonly refreshNoteButton: Locator;
-  readonly notebookList: Locator;
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
   readonly communityHeading: Locator;
+  readonly createNoteModal: Locator;
+  readonly createNoteButton: Locator;
+  readonly notebookNameInput: Locator;
   readonly externalLinks: {
     documentation: Locator;
     mailingList: Locator;
@@ -67,7 +67,6 @@ export class HomePage extends BasePage {
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
     this.createNewNoteButton = page.getByText('Create new Note', { exact: true }).first();
-    this.filterInput = page.locator('input[placeholder*="Filter"]');
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
     this.welcomeSection = page.locator('.welcome');
@@ -76,10 +75,12 @@ export class HomePage extends BasePage {
     this.helpCommunityColumn = page.locator('[nz-col]').last();
     this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
     this.refreshNoteButton = page.locator('a.refresh-note');
-    this.notebookList = page.locator('zeppelin-node-list');
     this.notebookHeading = this.notebookColumn.locator('h3');
     this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
     this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
+    this.createNoteModal = page.locator('div.ant-modal-content');
+    this.createNoteButton = this.createNoteModal.locator('button', { hasText: 'Create' });
+    this.notebookNameInput = this.createNoteModal.locator('input[name="noteName"]');
 
     this.externalLinks = {
       documentation: page.locator('a[href*="zeppelin.apache.org/docs"]'),
@@ -110,45 +111,22 @@ export class HomePage extends BasePage {
     };
   }
 
-  async navigateToHome(): Promise<void> {
-    await this.page.goto('/#/', {
-      waitUntil: 'load',
-      timeout: 60000
-    });
-    await this.waitForPageLoad();
-  }
-
   async navigateToLogin(): Promise<void> {
-    await this.page.goto('/#/login');
-    await this.waitForPageLoad();
+    await this.navigateToRoute('/login');
     // Wait for potential redirect to complete by checking URL change
-    await waitForUrlNotContaining(this.page, '#/login');
+    await this.waitForUrlNotContaining('#/login');
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
-    try {
-      await expect(this.welcomeHeading).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.welcomeHeading.isVisible();
   }
 
   async isAnonymousUser(): Promise<boolean> {
-    try {
-      await expect(this.anonymousUserIndicator).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.anonymousUserIndicator.isVisible();
   }
 
   async clickZeppelinLogo(): Promise<void> {
-    await this.zeppelinLogo.click();
-  }
-
-  getCurrentPath(): string {
-    return getCurrentPath(this.page);
+    await this.zeppelinLogo.click({ timeout: 15000 });
   }
 
   async getWelcomeHeadingText(): Promise<string> {
@@ -162,23 +140,57 @@ export class HomePage extends BasePage {
   }
 
   async clickRefreshNotes(): Promise<void> {
-    await this.refreshNoteButton.click();
+    await this.refreshNoteButton.click({ timeout: 15000 });
   }
 
   async isNotebookListVisible(): Promise<boolean> {
-    return this.notebookList.isVisible();
+    return this.zeppelinNodeList.isVisible();
   }
 
   async clickCreateNewNote(): Promise<void> {
-    await this.nodeList.createNewNoteLink.click();
+    await this.nodeList.createNewNoteLink.click({ timeout: 15000 });
+    await this.createNoteModal.waitFor({ state: 'visible' });
+  }
+
+  async createNote(notebookName: string): Promise<void> {
+    await this.clickCreateNewNote();
+
+    // Wait for the modal form to be fully rendered with proper labels
+    await this.page.waitForSelector('nz-form-label', { timeout: 10000 });
+
+    await this.page.waitForFunction(
+      () => {
+        const labels = Array.from(document.querySelectorAll('nz-form-label'));
+        return labels.some(
+          label => label.textContent?.includes('Note Name') || label.textContent?.includes('Clone Note')
+        );
+      },
+      { timeout: 10000 }
+    );
+
+    // Wait for the input field to be ready and enabled
+    await expect(this.notebookNameInput).toBeVisible({ timeout: 10000 });
+    await expect(this.notebookNameInput).toBeEnabled({ timeout: 5000 });
+
+    // Clear any existing content and fill notebook name
+    await this.notebookNameInput.clear();
+    await this.notebookNameInput.fill(notebookName);
+
+    // Verify the input was filled correctly
+    await expect(this.notebookNameInput).toHaveValue(notebookName);
+
+    // Click the 'Create' button in the modal
+    await expect(this.createNoteButton).toBeEnabled({ timeout: 5000 });
+    await this.createNoteButton.click({ timeout: 15000 });
+    await this.waitForPageLoad();
   }
 
   async clickImportNote(): Promise<void> {
-    await this.nodeList.importNoteLink.click();
+    await this.nodeList.importNoteLink.click({ timeout: 15000 });
   }
 
   async filterNotes(searchTerm: string): Promise<void> {
-    await this.nodeList.filterInput.fill(searchTerm);
+    await this.nodeList.filterInput.fill(searchTerm, { timeout: 15000 });
   }
 
   async waitForRefreshToComplete(): Promise<void> {

@@ -11,10 +11,9 @@
  */
 
 import { expect, Page } from '@playwright/test';
-import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 import { WorkspacePage } from './workspace-page';
 
-export class WorkspaceTestUtil {
+export class WorkspaceUtil {
   private page: Page;
   private workspacePage: WorkspacePage;
 
@@ -23,29 +22,12 @@ export class WorkspaceTestUtil {
     this.workspacePage = new WorkspacePage(page);
   }
 
-  async navigateAndWaitForLoad(): Promise<void> {
-    await this.workspacePage.navigateToWorkspace();
-    await waitForZeppelinReady(this.page);
-    await performLoginIfRequired(this.page);
-  }
-
-  async verifyWorkspaceLayout(): Promise<void> {
-    await expect(this.workspacePage.workspaceComponent).toBeVisible();
-    await expect(this.workspacePage.routerOutlet).toBeAttached();
-  }
-
   async verifyHeaderVisibility(shouldBeVisible: boolean): Promise<void> {
     if (shouldBeVisible) {
-      await expect(this.workspacePage.header).toBeVisible();
+      await expect(this.workspacePage.zeppelinHeader).toBeVisible();
     } else {
-      await expect(this.workspacePage.header).toBeHidden();
+      await expect(this.workspacePage.zeppelinHeader).toBeHidden();
     }
-  }
-
-  async verifyWorkspaceContainer(): Promise<void> {
-    await expect(this.workspacePage.workspaceComponent).toBeVisible();
-    const contentElements = await this.page.locator('.content').count();
-    expect(contentElements).toBeGreaterThan(0);
   }
 
   async verifyRouterOutletActivation(): Promise<void> {

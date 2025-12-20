@@ -30,7 +30,7 @@ test.describe('Note Rename', () => {
 
   test.beforeEach(async ({ page }) => {
     noteRenamePage = new NoteRenamePage(page);
-    noteRenameUtil = new NoteRenamePageUtil(page, noteRenamePage);
+    noteRenameUtil = new NoteRenamePageUtil(noteRenamePage);
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);

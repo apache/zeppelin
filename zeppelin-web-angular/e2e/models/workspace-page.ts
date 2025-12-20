@@ -14,19 +14,10 @@ import { Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export class WorkspacePage extends BasePage {
-  readonly workspaceComponent: Locator;
-  readonly header: Locator;
   readonly routerOutlet: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.workspaceComponent = page.locator('zeppelin-workspace');
-    this.header = page.locator('zeppelin-header');
     this.routerOutlet = page.locator('zeppelin-workspace router-outlet');
-  }
-
-  async navigateToWorkspace(): Promise<void> {
-    await this.page.goto('/');
-    await this.waitForPageLoad();
   }
 }

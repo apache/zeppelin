@@ -47,8 +47,7 @@ export class FolderRenamePage extends BasePage {
     await this.page.waitForSelector('zeppelin-node-list', { state: 'visible' });
 
     const folderNode = await this.getFolderNode(folderName);
-
-    await folderNode.hover();
+    await folderNode.hover({ force: true });
   }
 
   async clickDeleteIcon(folderName: string): Promise<void> {
@@ -91,6 +90,8 @@ export class FolderRenamePage extends BasePage {
   }
 
   async clickConfirm(): Promise<void> {
+    // Wait for button to be enabled before clicking
+    await expect(this.confirmButton).toBeEnabled({ timeout: 5000 });
     await this.confirmButton.click();
 
     // Wait for validation or submission to process by monitoring modal state

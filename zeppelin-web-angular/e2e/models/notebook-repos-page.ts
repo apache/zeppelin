@@ -15,27 +15,22 @@ import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 
 export class NotebookReposPage extends BasePage {
-  readonly pageHeader: Locator;
   readonly pageDescription: Locator;
   readonly repositoryItems: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.pageHeader = page.locator('zeppelin-page-header[title="Notebook Repository"]');
     this.pageDescription = page.locator("text=Manage your Notebook Repositories' settings.");
     this.repositoryItems = page.locator('zeppelin-notebook-repo-item');
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/#/notebook-repos', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000
-    });
+    await this.navigateToRoute('/notebook-repos', { timeout: 60000 });
     await this.page.waitForURL('**/#/notebook-repos', { timeout: 60000 });
     await waitForZeppelinReady(this.page);
     await this.page.waitForLoadState('networkidle', { timeout: 15000 });
     await Promise.race([
-      this.page.waitForSelector('zeppelin-page-header[title="Notebook Repository"]', { state: 'visible' }),
+      this.zeppelinPageHeader.filter({ hasText: 'Notebook Repository' }).waitFor({ state: 'visible' }),
       this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
     ]);
   }
@@ -45,8 +40,7 @@ export class NotebookReposPage extends BasePage {
   }
 }
 
-export class NotebookRepoItemPage {
-  readonly page: Page;
+export class NotebookRepoItemPage extends BasePage {
   readonly repositoryCard: Locator;
   readonly repositoryName: Locator;
   readonly editButton: Locator;
@@ -56,7 +50,7 @@ export class NotebookRepoItemPage {
   readonly settingRows: Locator;
 
   constructor(page: Page, repoName: string) {
-    this.page = page;
+    super(page);
     this.repositoryCard = page.locator('nz-card').filter({ hasText: repoName });
     this.repositoryName = this.repositoryCard.locator('.ant-card-head-title');
     this.editButton = this.repositoryCard.locator('button:has-text("Edit")');
@@ -67,15 +61,15 @@ export class NotebookRepoItemPage {
   }
 
   async clickEdit(): Promise<void> {
-    await this.editButton.click();
+    await this.editButton.click({ timeout: 15000 });
   }
 
   async clickSave(): Promise<void> {
-    await this.saveButton.click();
+    await this.saveButton.click({ timeout: 15000 });
   }
 
   async clickCancel(): Promise<void> {
-    await this.cancelButton.click();
+    await this.cancelButton.click({ timeout: 15000 });
   }
 
   async isEditMode(): Promise<boolean> {
@@ -102,8 +96,8 @@ export class NotebookRepoItemPage {
   async selectSettingDropdown(settingName: string, optionValue: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
     const select = row.locator('nz-select');
-    await select.click();
-    await this.page.locator(`nz-option[nzvalue="${optionValue}"]`).click();
+    await select.click({ timeout: 15000 });
+    await this.page.locator(`nz-option[nzvalue="${optionValue}"]`).click({ timeout: 15000 });
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {

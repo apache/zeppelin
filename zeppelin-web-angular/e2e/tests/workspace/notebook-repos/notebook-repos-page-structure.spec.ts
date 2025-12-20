@@ -31,7 +31,7 @@ test.describe('Notebook Repository Page - Structure', () => {
   });
 
   test('should display page header with correct title and description', async () => {
-    await expect(notebookReposPage.pageHeader).toBeVisible();
+    await expect(notebookReposPage.zeppelinPageHeader).toBeVisible();
     await expect(notebookReposPage.pageDescription).toBeVisible();
   });
 

@@ -10,17 +10,17 @@
  * limitations under the License.
  */
 
-import { expect, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { NoteRenamePage } from './note-rename-page';
 
 export class NoteRenamePageUtil {
-  constructor(
-    private readonly page: Page,
-    private readonly noteRenamePage: NoteRenamePage
-  ) {}
+  private noteRenamePage: NoteRenamePage;
+
+  constructor(noteRenamePage: NoteRenamePage) {
+    this.noteRenamePage = noteRenamePage;
+  }
 
   async verifyTitleIsDisplayed(): Promise<void> {
-    // Wait for the elastic input component to be loaded
     await expect(this.noteRenamePage.noteTitle).toBeVisible();
   }
 
@@ -39,7 +39,7 @@ export class NoteRenamePageUtil {
     await this.noteRenamePage.clearTitle();
     await this.noteRenamePage.enterTitle(newTitle);
     await this.noteRenamePage.pressEnter();
-    await this.page.waitForTimeout(500);
+    await this.noteRenamePage.page.waitForTimeout(500);
     await this.verifyTitleText(newTitle);
   }
 
@@ -48,7 +48,7 @@ export class NoteRenamePageUtil {
     await this.noteRenamePage.clearTitle();
     await this.noteRenamePage.enterTitle(newTitle);
     await this.noteRenamePage.blur();
-    await this.page.waitForTimeout(500);
+    await this.noteRenamePage.page.waitForTimeout(500);
     await this.verifyTitleText(newTitle);
   }
 
@@ -57,7 +57,7 @@ export class NoteRenamePageUtil {
     await this.noteRenamePage.clearTitle();
     await this.noteRenamePage.enterTitle('Temporary Title');
     await this.noteRenamePage.pressEscape();
-    await this.page.waitForTimeout(500);
+    await this.noteRenamePage.page.waitForTimeout(500);
     await this.verifyTitleText(originalTitle);
   }
 
@@ -66,7 +66,7 @@ export class NoteRenamePageUtil {
     await this.noteRenamePage.clickTitle();
     await this.noteRenamePage.clearTitle();
     await this.noteRenamePage.pressEnter();
-    await this.page.waitForTimeout(500);
+    await this.noteRenamePage.page.waitForTimeout(500);
     await this.verifyTitleText(originalTitle);
   }
 }
