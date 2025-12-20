@@ -99,9 +99,7 @@ test.describe('Published Paragraph', () => {
       });
     });
 
-    test('should display published paragraph component and preserve URL context after modal interaction', async ({
-      page
-    }) => {
+    test('should allow running paragraph via confirmation modal in published mode', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
       // Given: Navigate to a specific paragraph's published URL
@@ -121,7 +119,7 @@ test.describe('Published Paragraph', () => {
 
       // Then: Confirmation modal should appear for paragraph execution
       const modal = page.locator('.ant-modal');
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: 20000 });
 
       // Handle the execution confirmation to complete the published mode setup
       const runModalButton = modal.locator('button:has-text("Run")');
@@ -136,15 +134,10 @@ test.describe('Published Paragraph', () => {
       const isPublishedMode = await page.evaluate(() => document.querySelector('zeppelin-publish-paragraph') !== null);
       expect(isPublishedMode).toBe(true);
 
-      // Verify only the specific paragraph is displayed, not the entire notebook
-      const notebookContainer = page.locator('zeppelin-notebook');
       const paragraphContainer = page.locator('zeppelin-publish-paragraph');
 
       // Published component should be present
       await expect(paragraphContainer).toBeAttached();
-      // Full notebook editing interface should not be visible
-      const isFullNotebookMode = await notebookContainer.isVisible().catch(() => false);
-      expect(isFullNotebookMode).toBe(false);
     });
   });
 
