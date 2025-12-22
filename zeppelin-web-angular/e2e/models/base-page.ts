@@ -18,25 +18,23 @@ export const BASE_URL = 'http://localhost:4200';
 export class BasePage {
   readonly page: Page;
 
-  // Common Zeppelin component locators
   readonly zeppelinNodeList: Locator;
   readonly zeppelinWorkspace: Locator;
-  readonly zeppelinHeader: Locator;
   readonly zeppelinPageHeader: Locator;
+  readonly zeppelinHeader: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.zeppelinNodeList = page.locator('zeppelin-node-list');
     this.zeppelinWorkspace = page.locator('zeppelin-workspace');
-    this.zeppelinHeader = page.locator('zeppelin-header');
     this.zeppelinPageHeader = page.locator('zeppelin-page-header');
+    this.zeppelinHeader = page.locator('zeppelin-header');
   }
 
   async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 15000 });
   }
 
-  // Common navigation patterns
   async navigateToRoute(
     route: string,
     options?: { timeout?: number; waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }
@@ -60,27 +58,6 @@ export class BasePage {
 
   async waitForUrlNotContaining(fragment: string): Promise<void> {
     await this.page.waitForURL(url => !url.toString().includes(fragment));
-  }
-
-  // Common form interaction patterns
-  async fillInput(locator: Locator, value: string, options?: { timeout?: number; force?: boolean }): Promise<void> {
-    await locator.fill(value, { timeout: 15000, ...options });
-  }
-
-  async clickElement(locator: Locator, options?: { timeout?: number; force?: boolean }): Promise<void> {
-    await locator.click({ timeout: 15000, ...options });
-  }
-
-  async getInputValue(locator: Locator): Promise<string> {
-    return await locator.inputValue();
-  }
-
-  async isElementVisible(locator: Locator): Promise<boolean> {
-    return await locator.isVisible();
-  }
-
-  async isElementEnabled(locator: Locator): Promise<boolean> {
-    return await locator.isEnabled();
   }
 
   async getElementText(locator: Locator): Promise<string> {
