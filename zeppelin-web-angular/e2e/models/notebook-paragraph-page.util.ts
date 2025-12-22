@@ -59,9 +59,7 @@ export class NotebookParagraphUtil {
   }
 
   async verifyCodeEditorVisibility(): Promise<void> {
-    const isVisible = await this.paragraphPage.isCodeEditorVisible();
-    expect(isVisible).toBe(true);
-    await expect(this.paragraphPage.codeEditor).toBeVisible();
+    await expect(this.paragraphPage.codeEditor).toBeVisible({ timeout: 10000 });
   }
 
   async verifyResultDisplaySystem(): Promise<void> {

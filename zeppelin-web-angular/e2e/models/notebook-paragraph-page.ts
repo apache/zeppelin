@@ -71,10 +71,6 @@ export class NotebookParagraphPage extends BasePage {
     return await this.resultDisplay.isVisible();
   }
 
-  async isCodeEditorVisible(): Promise<boolean> {
-    return await this.codeEditor.isVisible();
-  }
-
   async getFooterText(): Promise<string> {
     return (await this.footerInfo.textContent()) || '';
   }
