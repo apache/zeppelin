@@ -1,0 +1,271 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Default values for zeppelin.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- String to partially override release name.
+nameOverride: ""
+
+# -- String to fully override release name.
+fullnameOverride: ""
+
+global:
+  image:
+    # -- Global image registry.
+    registry: docker.io
+    # -- Global image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Global image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+server:
+  image:
+    # -- Zeppelin server image registry.
+    # @default -- If not set, `global.image.registry` will be used.
+    registry: ""
+    # -- Zeppelin server image repository.
+    repository: apache/zeppelin
+    # -- Zeppelin image tag.
+    # @default -- If not set, the chart appVersion will be used.
+    tag: ""
+    # -- Zeppelin server image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Zeppelin server image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+  # -- Zeppelin configurations.
+  # For detailed information, please refer: https://zeppelin.apache.org/docs/latest/setup/operation/configuration.html.
+  conf: {}
+
+  # -- Extra labels for Zeppelin server pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for Zeppelin server pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Volumes for Zeppelin server pods.
+  volumes: []
+
+  # -- Node selector for Zeppelin server pods.
+  nodeSelector: {}
+
+  # -- Affinity for Zeppelin server pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for Zeppelin server pods.
+  tolerations: []
+
+  # -- Priority class for Zeppelin server pods.
+  priorityClassName: ""
+
+  # -- Security context for Zeppelin server pods.
+  podSecurityContext: {}
+
+  # -- Environment variables for Zeppelin server containers.
+  env:
+  - name: ZEPPELIN_HOME
+    value: /opt/zeppelin
+  - name: SPARK_HOME
+    value: /opt/spark
+  - name: SERVICE_DOMAIN
+    value: local.zeppelin-project.org:8080
+  - name: ZEPPELIN_PORT
+    value: "8080"
+  - name: ZEPPELIN_SERVER_RPC_PORTRANGE
+    value: 12320:12320
+  - name: ZEPPELIN_K8S_TEMPLATE_DIR
+    value: /opt/zeppelin/k8s
+
+  # -- Environment variable sources for Zeppelin server containers.
+  envFrom: []
+
+  # -- Volume mounts for Zeppelin server containers.
+  volumeMounts: []
+
+  # -- Resource requests and limits for Zeppelin server containers.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for Zeppelin server containers.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 0
+
+  serviceAccount:
+    # -- Specifies whether a service account should be created for the Zeppelin server.
+    create: true
+    # -- Optional name for the Zeppelin server service account.
+    name: ""
+    # -- Extra annotations for the Zeppelin server service account.
+    annotations: {}
+
+  service:
+    # -- Service type for Zeppelin server.
+    type: ClusterIP
+    # -- Service port for Zeppelin server.
+    port: 8080
+
+  ingress:
+    # -- Enable ingress for Zeppelin server.
+    enable: false
+    # -- Ingress class name for Zeppelin server ingress.
+    className: ""
+    # -- Annotations for the Zeppelin server ingress.
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    # -- Hosts for Zeppelin server ingress.
+    hosts:
+    - host: local.zeppelin-project.org
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+    # -- TLS configuration for Zeppelin server ingress.
+    tls: []
+    # - secretName: zeppelin-server-tls
+    #   hosts:
+    #   - local.zeppelin-project.org
+
+interpreter:
+  image:
+    # -- Zeppelin interpreter image registry.
+    # @default -- If not set, `global.image.registry` will be used.
+    registry: ""
+    # -- Zeppelin interpreter image repository.
+    repository: apache/zeppelin-interpreter
+    # -- Zeppelin interpreter image tag.
+    # @default -- If not set, the chart appVersion will be used.
+    tag: ""
+    # -- Zeppelin interpreter image pull policy.
+    pullPolicy: IfNotPresent
+    # -- Zeppelin interpreter image pull secrets for private image registry.
+    pullSecrets: []
+    # - name: <secret-name>
+
+  spark:
+    image:
+      # -- Spark image registry.
+      # @default -- If not set, `global.image.registry` will be used.
+      registry: ""
+      # -- Spark image repository.
+      repository: spark
+      # -- Spark image tag.
+      tag: 3.5.3
+    
+    # -- Spark configurations.
+    conf:
+      spark.kubernetes.driver.podTemplateFile: file:///opt/spark/conf/driver-pod-template.yaml
+      spark.kubernetes.executor.podTemplateFile: file:///opt/spark/conf/executor-pod-template.yaml
+
+    # -- Extra labels for Spark pods.
+    labels: {}
+
+    # -- Extra annotations for Spark pods.
+    annotations: {}
+
+    # -- Volumes for Spark pods.
+    volumes: []
+
+    # -- Environment variables for Spark containers.
+    env: []
+
+    # -- Environment variable sources for Spark containers.
+    envFrom: []
+
+    # -- Volume mounts for Spark containers.
+    volumeMounts: []
+
+  # -- Extra labels for Zeppelin interpreter pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for Zeppelin interpreter pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Volumes for Zeppelin interpreter pods.
+  volumes: []
+
+  # -- Node selector for Zeppelin interpreter pods.
+  nodeSelector: {}
+
+  # -- Affinity for Zeppelin interpreter pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for Zeppelin interpreter pods.
+  tolerations: []
+
+  # -- Priority class for Zeppelin interpreter pods.
+  priorityClassName: ""
+
+  # -- Security context for Zeppelin interpreter pods.
+  podSecurityContext: {}
+
+  # -- Environment variables for Zeppelin interpreter containers.
+  env:
+  - name: ZEPPELIN_HOME
+    value: /opt/zeppelin
+  - name: SPARK_HOME
+    value: /opt/spark
+  - name: SPARK_CONF_DIR
+    value: /opt/spark/conf
+
+  # -- Environment variable sources for Zeppelin interpreter containers.
+  envFrom: []
+
+  # -- Volume mounts for Zeppelin interpreter containers.
+  volumeMounts: []
+
+  # -- Resource requests and limits for Zeppelin interpreter containers.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for Zeppelin interpreter containers.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 0
+
+  serviceAccount:
+    serviceAccount:
+    # -- Specifies whether a service account should be created for the Zeppelin interpreter.
+    create: true
+    # -- Optional name for the Zeppelin interpreter service account.
+    name: ""
+    # -- Extra annotations for the Zeppelin interpreter service account.
+    annotations: {}
