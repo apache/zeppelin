@@ -356,6 +356,7 @@ public class ZeppelinServer implements AutoCloseable {
         if (sharedServiceLocator != null) {
           if (!zConf.isRecoveryEnabled()) {
             sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+            sharedServiceLocator.shutdown();
           }
           sharedServiceLocator.getService(Notebook.class).close();
         }
