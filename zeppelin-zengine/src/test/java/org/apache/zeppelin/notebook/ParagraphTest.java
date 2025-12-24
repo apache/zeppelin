@@ -221,10 +221,10 @@ class ParagraphTest extends AbstractInterpreterTest {
     final Paragraph paragraph = new Paragraph(note, null);
     final String paragraphId = paragraph.getId();
 
-    final AngularObject<String> nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
+    final AngularObject nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
             paragraphId);
 
-    final AngularObject<Integer> ageAO = AngularObjectBuilder.build("age", 34, noteId, null);
+    final AngularObject ageAO = AngularObjectBuilder.build("age", 34, noteId, null);
 
     when(note.getId()).thenReturn(noteId);
     when(registry.get("name", noteId, paragraphId)).thenReturn(nameAO);

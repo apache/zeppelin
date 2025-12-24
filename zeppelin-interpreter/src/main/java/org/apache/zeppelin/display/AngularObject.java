@@ -35,12 +35,12 @@ import java.util.concurrent.ExecutorService;
  *
  * @param <T>
  */
-public class AngularObject<T> implements JsonSerializable {
+public class AngularObject implements JsonSerializable {
   private static final Logger LOGGER = LoggerFactory.getLogger(AngularObject.class);
   private static final Gson GSON = new Gson();
 
   private String name;
-  private T object;
+  private Object object;
 
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers = new LinkedList<>();
@@ -66,7 +66,7 @@ public class AngularObject<T> implements JsonSerializable {
    * @param paragraphId paragraphId belongs to. can be null
    * @param listener event listener
    */
-  public AngularObject(String name, T o, String noteId, String paragraphId,
+  public AngularObject(String name, Object o, String noteId, String paragraphId,
       AngularObjectListener listener) {
     this.name = name;
     this.noteId = noteId;
@@ -127,7 +127,7 @@ public class AngularObject<T> implements JsonSerializable {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    AngularObject<?> that = (AngularObject<?>) o;
+    AngularObject that = (AngularObject) o;
     return Objects.equals(name, that.name) &&
             Objects.equals(noteId, that.noteId) &&
             Objects.equals(paragraphId, that.paragraphId);
@@ -160,7 +160,7 @@ public class AngularObject<T> implements JsonSerializable {
    * Set value
    * @param o reference to new user provided object
    */
-  public void set(T o) {
+  public void set(Object o) {
     set(o, true);
   }
 
@@ -170,15 +170,14 @@ public class AngularObject<T> implements JsonSerializable {
    * @param emit false on skip firing event for listener. note that it does not skip invoke
    *             watcher.watch() in any case
    */
-  public void set(T o, boolean emit) {
-    final T before = object;
-    final T after = o;
+  public void set(Object o, boolean emit) {
+    final Object before = object;
+    final Object after = o;
     object = o;
     if (emit) {
       emit();
     }
     LOGGER.debug("Update angular object: {} with value: {}", name, o);
-    final Logger LOGGER = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<>();
     synchronized (watchers) {
       ws.addAll(watchers);
@@ -186,16 +185,14 @@ public class AngularObject<T> implements JsonSerializable {
 
     ExecutorService executor = ExecutorFactory.singleton().createOrGet("angularObjectWatcher", 50);
     for (final AngularObjectWatcher w : ws) {
-      executor.submit(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            w.watch(before, after);
-          } catch (Exception e) {
-            LOGGER.error("Exception on watch", e);
-          }
+      Runnable task = () -> {
+        try {
+          w.watch(before, after);
+        } catch (Exception e) {
+          LOGGER.error("Exception on watch", e);
         }
-      });
+      };
+      executor.submit(task);
     }
   }
 
@@ -262,7 +259,7 @@ public class AngularObject<T> implements JsonSerializable {
     return GSON.toJson(this);
   }
 
-  public static AngularObject<?> fromJson(String json) {
+  public static AngularObject fromJson(String json) {
     return GSON.fromJson(json, AngularObject.class);
   }
 }
