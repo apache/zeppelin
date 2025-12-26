@@ -5,7 +5,6 @@
 
 set -e
 
-# Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -30,7 +29,6 @@ ZEPPELIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 echo "Script location: $SCRIPT_DIR"
 echo "Zeppelin root: $ZEPPELIN_ROOT"
 
-# Change to Zeppelin root directory
 cd "$ZEPPELIN_ROOT"
 
 # Verify interpreter directory exists
@@ -79,13 +77,13 @@ if [ -f "$JSON_SOURCE" ]; then
     cp -f "$JSON_SOURCE" "$JSON_DEST"
     echo -e "${GREEN}✓ JSON copied successfully${NC}"
 else
-    echo -e "${YELLOW}x No interpreter-setting.json found (skipping)${NC}"
+    echo -e "${YELLOW}⚠ No interpreter-setting.json found (skipping)${NC}"
 fi
 
 # Check if Zeppelin server is built
 echo -e "\n${YELLOW}Checking if Zeppelin server is built...${NC}"
 if ! ls zeppelin-server/target/zeppelin-server-*.jar 1> /dev/null 2>&1; then
-    echo -e "${YELLOW}x Zeppelin server JAR not found. Building Zeppelin server...${NC}"
+    echo -e "${YELLOW}⚠ Zeppelin server JAR not found. Building Zeppelin server...${NC}"
     echo ""
 
     # Build Zeppelin server
@@ -115,7 +113,7 @@ if [ -f "conf/interpreter.json" ]; then
     rm -rf conf/interpreter.json
     echo -e "${GREEN}✓ interpreter.json removed${NC}"
 else
-    echo -e "${YELLOW}x interpreter.json not found (already clean)${NC}"
+    echo -e "${YELLOW}⚠ interpreter.json not found (already clean)${NC}"
 fi
 
 # Step 6: Clean local repository
@@ -124,7 +122,7 @@ if [ -d "local-repo" ]; then
     rm -rf local-repo/*
     echo -e "${GREEN}✓ local-repo cleaned${NC}"
 else
-    echo -e "${YELLOW}x local-repo not found (skipping)${NC}"
+    echo -e "${YELLOW}⚠ local-repo not found (skipping)${NC}"
 fi
 
 # Step 7: Start Zeppelin
@@ -135,7 +133,19 @@ echo -e "\n${YELLOW}Step 7: Starting Zeppelin...${NC}"
 sleep 5
 
 # Check if Zeppelin is running
-ZEPPELIN_PID=$(cat run/zeppelin-*.pid 2>/dev/null || echo "")
+IDENT="$(whoami)"
+HOST="$(hostname)"
+PID_FILE="run/zeppelin-${IDENT}-${HOST}.pid"
+if [ -f "$PID_FILE" ]; then
+    ZEPPELIN_PID="$(cat "$PID_FILE" 2>/dev/null || echo "")"
+else
+    LAST_PID_FILE="$(ls -1t run/zeppelin-*.pid 2>/dev/null | head -n1 || echo "")"
+    if [ -n "$LAST_PID_FILE" ]; then
+        ZEPPELIN_PID="$(cat "$LAST_PID_FILE" 2>/dev/null || echo "")"
+    else
+        ZEPPELIN_PID=""
+    fi
+fi
 
 if [ -n "$ZEPPELIN_PID" ] && ps -p "$ZEPPELIN_PID" > /dev/null 2>&1; then
     echo -e "${GREEN}✓ Zeppelin started successfully (PID: $ZEPPELIN_PID)${NC}"
