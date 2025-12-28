@@ -19,7 +19,8 @@
     "e2e:debug": "playwright test --debug",
     "e2e:report": "playwright show-report",
     "e2e:ci": "export CI=true && playwright test",
-    "e2e:codegen": "playwright codegen http://localhost:4200"
+    "e2e:codegen": "playwright codegen http://localhost:4200",
+    "e2e:cleanup": "npx tsx e2e/cleanup-util.ts"
   },
   "engines": {
     "node": ">=18.0.0 <19.0.0"

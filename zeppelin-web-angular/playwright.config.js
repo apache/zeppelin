@@ -10,18 +10,18 @@
  * limitations under the License.
  */
 
-import { defineConfig, devices } from '@playwright/test';
+const { defineConfig, devices } = require('@playwright/test');
 
 // https://playwright.dev/docs/test-configuration
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './e2e',
   globalSetup: require.resolve('./e2e/global-setup'),
   globalTeardown: require.resolve('./e2e/global-teardown'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 4,
-  timeout: 120000,
+  retries: 1,
+  workers: 10,
+  timeout: 300000,
   expect: {
     timeout: 60000
   },
@@ -34,16 +34,22 @@ export default defineConfig({
     baseURL: process.env.CI ? 'http://localhost:8080' : 'http://localhost:4200',
     trace: 'on-first-retry', // https://playwright.dev/docs/trace-viewer
     screenshot: process.env.CI ? 'off' : 'only-on-failure',
-    video: process.env.CI ? 'off' : 'retain-on-failure'
+    video: process.env.CI ? 'off' : 'retain-on-failure',
+    launchOptions: {
+      args: ['--disable-dev-shm-usage']
+    },
+    headless: true,
+    actionTimeout: 60000,
+    navigationTimeout: 180000
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'], permissions: ['clipboard-read', 'clipboard-write'] }
     },
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' }
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', permissions: ['clipboard-read', 'clipboard-write'] }
     },
     {
       name: 'firefox',
@@ -60,7 +66,7 @@ export default defineConfig({
     },
     {
       name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+      use: { ...devices['Desktop Edge'], channel: 'msedge', permissions: ['clipboard-read', 'clipboard-write'] }
     }
   ],
   webServer: process.env.CI
