@@ -191,7 +191,7 @@ jobs:
       - name: Setup conda environment with python 3.9 and R
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: python_only
+          activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
           python-version: 3.9
           channels: conda-forge,defaults
