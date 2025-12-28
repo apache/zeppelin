@@ -36,7 +36,7 @@
       (click)="activeNote(node.origin.id)"
     >
       <span class="folder" *ngSwitchCase="'folder'">
-        <a class="name" (click)="toggleFolder(node)">
+        <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
           <i nz-icon [nzType]="node.isExpanded ? 'folder-open' : 'folder'" nzTheme="fill"></i>
           {{ node.title }}
         </a>
@@ -122,7 +122,7 @@
         </span>
       </span>
       <span class="folder" *ngSwitchCase="'trash'">
-        <a class="name" (click)="toggleFolder(node)">
+        <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
           <i nz-icon nzType="delete" nzTheme="fill"></i>
           {{ node.title }}
         </a>

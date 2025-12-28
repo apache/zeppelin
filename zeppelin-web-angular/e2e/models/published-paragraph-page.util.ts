@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { NOTEBOOK_PATTERNS, navigateToNotebookWithFallback } from '../utils';
 import { NotebookUtil } from './notebook.util';
 import { PublishedParagraphPage } from './published-paragraph-page';
 
@@ -25,52 +26,64 @@ export class PublishedParagraphTestUtil {
     this.notebookUtil = new NotebookUtil(page);
   }
 
+  async testConfirmationModalForNoResultParagraph({
+    noteId,
+    paragraphId
+  }: {
+    noteId: string;
+    paragraphId: string;
+  }): Promise<void> {
+    await this.publishedParagraphPage.navigateToNotebook(noteId);
+
+    const paragraphElement = this.page.locator('zeppelin-notebook-paragraph').first();
+
+    const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+    await settingsButton.click();
+
+    const clearOutputButton = this.page.locator('li.list-item:has-text("Clear output")');
+    await clearOutputButton.click();
+    await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
+
+    await this.publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+    const modal = this.publishedParagraphPage.confirmationModal;
+    await expect(modal).toBeVisible();
+
+    // Check for the new enhanced modal content
+    const modalTitle = this.page.locator('.ant-modal-confirm-title, .ant-modal-title');
+    await expect(modalTitle).toContainText('Run Paragraph?');
+
+    // Check that code preview is shown
+    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body').first();
+    await expect(modalContent).toContainText('This paragraph contains the following code:');
+    await expect(modalContent).toContainText('Would you like to execute this code?');
+
+    // Verify that the code preview area exists
+    const codePreview = modalContent.locator('pre, code, .code-preview, .highlight, [class*="code"]').first();
+    await expect(codePreview).toBeVisible();
+
+    // Check for Run and Cancel buttons
+    const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
+    const cancelButton = this.page.locator('.ant-modal button:has-text("Cancel"), .ant-btn:has-text("Cancel")');
+    await expect(runButton).toBeVisible();
+    await expect(cancelButton).toBeVisible();
+
+    // Click the Run button in the modal
+    await runButton.click();
+    await expect(modal).toBeHidden();
+  }
+
   async verifyNonExistentParagraphError(validNoteId: string, invalidParagraphId: string): Promise<void> {
     await this.publishedParagraphPage.navigateToPublishedParagraph(validNoteId, invalidParagraphId);
 
-    // Try different possible error modal texts
-    const possibleModals = [
-      this.page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }),
-      this.page.locator('.ant-modal', { hasText: 'not found' }),
-      this.page.locator('.ant-modal', { hasText: 'Error' }),
-      this.page.locator('.ant-modal').filter({ hasText: /not found|error|paragraph/i })
-    ];
+    // Expect a specific error modal - fail fast if not found
+    const errorModal = this.page.locator('.ant-modal', { hasText: /Paragraph Not Found|not found|Error/i });
+    await expect(errorModal).toBeVisible({ timeout: 10000 });
 
-    let modal;
-    for (const possibleModal of possibleModals) {
-      const count = await possibleModal.count();
-
-      for (let i = 0; i < count; i++) {
-        const m = possibleModal.nth(i);
-
-        if (await m.isVisible()) {
-          modal = m;
-          break;
-        }
-      }
-
-      if (modal) {
-        break;
-      }
-    }
-
-    if (!modal) {
-      // If no modal is found, check if we're redirected to home
-      await expect(this.page).toHaveURL(/\/#\/$/, { timeout: 10000 });
-      return;
-    }
-
-    await expect(modal).toBeVisible({ timeout: 10000 });
-
-    // Try to get content and check if available
-    try {
-      const content = await this.publishedParagraphPage.getErrorModalContent();
-      if (content && content.includes(invalidParagraphId)) {
-        expect(content).toContain(invalidParagraphId);
-      }
-    } catch {
-      throw Error('Content check failed, continue with OK button click');
-    }
+    // Verify modal content includes the invalid paragraph ID
+    const content = await this.publishedParagraphPage.getErrorModalContent();
+    expect(content).toBeDefined();
+    expect(content).toContain(invalidParagraphId);
 
     await this.publishedParagraphPage.clickErrorModalOk();
 
@@ -124,22 +137,100 @@ export class PublishedParagraphTestUtil {
     // Use existing NotebookUtil to create notebook
     await this.notebookUtil.createNotebook(notebookName);
 
+    // Wait for navigation to notebook page - try direct wait first, then fallback
+    let noteId = '';
+    try {
+      await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 30000 });
+    } catch (error) {
+      // Extract noteId if available, then use fallback navigation
+      const currentUrl = this.page.url();
+      let tempNoteId = '';
+
+      if (currentUrl.includes('/notebook/')) {
+        const match = currentUrl.match(/\/notebook\/([^\/\?]+)/);
+        tempNoteId = match ? match[1] : '';
+      }
+
+      if (tempNoteId) {
+        // Use the reusable fallback navigation function
+        await navigateToNotebookWithFallback(this.page, tempNoteId, notebookName);
+      } else {
+        // Manual fallback if no noteId found - try to find notebook via API first
+        const foundNoteId = await this.page.evaluate(async targetName => {
+          try {
+            const response = await fetch('/api/notebook');
+            const data = await response.json();
+            if (data.body && Array.isArray(data.body)) {
+              // Find the most recently created notebook with matching name pattern
+              const testNotebooks = data.body.filter(
+                (nb: { path?: string }) => nb.path && nb.path.includes(targetName)
+              );
+              if (testNotebooks.length > 0) {
+                // Sort by creation time and get the latest
+                testNotebooks.sort(
+                  (a: { dateUpdated?: string }, b: { dateUpdated?: string }) =>
+                    new Date(b.dateUpdated || 0).getTime() - new Date(a.dateUpdated || 0).getTime()
+                );
+                return testNotebooks[0].id;
+              }
+            }
+          } catch (apiError) {
+            console.log('API call failed:', apiError);
+          }
+          return null;
+        }, notebookName);
+
+        if (foundNoteId) {
+          console.log(`Found notebook ID via API: ${foundNoteId}`);
+          await this.page.goto(`/#/notebook/${foundNoteId}`);
+          await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+        } else {
+          // Final fallback: try to find in the home page
+          await this.page.goto('/#/');
+          await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+          await this.page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+          // Try to find any test notebook (not necessarily the exact one)
+          const testNotebookLinks = this.page
+            .locator(NOTEBOOK_PATTERNS.LINK_SELECTOR)
+            .filter({ hasText: /Test Notebook/ });
+          const linkCount = await testNotebookLinks.count();
+
+          if (linkCount > 0) {
+            console.log(`Found ${linkCount} test notebooks, using the first one`);
+            await testNotebookLinks.first().click();
+            await this.page.waitForURL(/\/notebook\/[^\/\?]+/, { timeout: 20000 });
+          } else {
+            throw new Error(`No test notebooks found in the home page`);
+          }
+        }
+      }
+    }
+
     // Extract noteId from URL
     const url = this.page.url();
-    const noteIdMatch = url.match(/\/notebook\/([^\/\?]+)/);
+    const noteIdMatch = url.match(NOTEBOOK_PATTERNS.URL_EXTRACT_NOTEBOOK_ID_REGEX);
     if (!noteIdMatch) {
       throw new Error(`Failed to extract notebook ID from URL: ${url}`);
     }
-    const noteId = noteIdMatch[1];
+    noteId = noteIdMatch[1];
 
-    // Get first paragraph ID
-    await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for notebook page to be fully loaded
+    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+
+    // Wait for paragraph elements to be available
+    await this.page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 15000 });
+
+    // Get first paragraph ID with enhanced error handling
     const paragraphContainer = this.page.locator('zeppelin-notebook-paragraph').first();
     const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+
+    // Wait for dropdown to be clickable
+    await dropdownTrigger.waitFor({ state: 'visible', timeout: 10000 });
     await dropdownTrigger.click();
 
     const paragraphLink = this.page.locator('li.paragraph-id a').first();
-    await paragraphLink.waitFor({ state: 'attached', timeout: 5000 });
+    await paragraphLink.waitFor({ state: 'attached', timeout: 10000 });
 
     const paragraphId = await paragraphLink.textContent();
 
@@ -147,10 +238,26 @@ export class PublishedParagraphTestUtil {
       throw new Error(`Failed to find a valid paragraph ID. Found: ${paragraphId}`);
     }
 
-    // Navigate back to home
-    await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
-    await this.page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
+    // Navigate back to home with enhanced waiting
+    await this.page.goto('/#/');
+    await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+
+    // Wait for the loading indicator to disappear and home page to be ready
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const loadingText = document.body.textContent || '';
+          const hasWelcome = loadingText.includes('Welcome to Zeppelin');
+          const noLoadingTicket = !loadingText.includes('Getting Ticket Data');
+          return hasWelcome && noLoadingTicket;
+        },
+        { timeout: 20000 }
+      );
+    } catch {
+      // Fallback: just check that we're on the home page and node list is available
+      await this.page.waitForURL(/\/#\/$/, { timeout: 5000 });
+      await this.page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
+    }
 
     return { noteId, paragraphId };
   }
@@ -158,7 +265,7 @@ export class PublishedParagraphTestUtil {
   async deleteTestNotebook(noteId: string): Promise<void> {
     try {
       // Navigate to home page
-      await this.page.goto('/');
+      await this.page.goto('/#/');
       await this.page.waitForLoadState('networkidle');
 
       // Find the notebook in the tree by noteId and get its parent tree node
@@ -169,8 +276,9 @@ export class PublishedParagraphTestUtil {
         const treeNode = notebookLink.locator('xpath=ancestor::nz-tree-node[1]');
         await treeNode.hover();
 
-        // Wait a bit for hover effects
-        await this.page.waitForTimeout(1000);
+        // Wait for delete button to become visible after hover
+        const deleteButtonLocator = treeNode.locator('i[nztype="delete"], i.anticon-delete');
+        await expect(deleteButtonLocator).toBeVisible({ timeout: 5000 });
 
         // Try multiple selectors for the delete button
         const deleteButtonSelectors = [

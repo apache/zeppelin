@@ -12,18 +12,18 @@
 
 import { expect, Page } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from './notebook-repos-page';
+import { BasePage } from './base-page';
 
-export class NotebookReposPageUtil {
+export class NotebookReposPageUtil extends BasePage {
   private notebookReposPage: NotebookReposPage;
-  private page: Page;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.notebookReposPage = new NotebookReposPage(page);
   }
 
   async verifyPageStructure(): Promise<void> {
-    await expect(this.notebookReposPage.pageHeader).toBeVisible();
+    await expect(this.notebookReposPage.zeppelinPageHeader).toBeVisible();
     await expect(this.notebookReposPage.pageDescription).toBeVisible();
   }
 
@@ -49,10 +49,11 @@ export class NotebookReposPageUtil {
   }
 }
 
-export class NotebookRepoItemUtil {
+export class NotebookRepoItemUtil extends BasePage {
   private repoItemPage: NotebookRepoItemPage;
 
   constructor(page: Page, repoName: string) {
+    super(page);
     this.repoItemPage = new NotebookRepoItemPage(page, repoName);
   }
 

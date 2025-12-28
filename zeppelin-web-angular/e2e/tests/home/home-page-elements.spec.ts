@@ -116,7 +116,7 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the notebook list component', async () => {
-        await expect(homePage.notebookList).toBeVisible();
+        await expect(homePage.zeppelinNodeList).toBeVisible();
         const isVisible = await homePage.isNotebookListVisible();
         expect(isVisible).toBe(true);
       });

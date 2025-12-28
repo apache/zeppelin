@@ -10,58 +10,57 @@
  * limitations under the License.
  */
 
-import { test } from '@playwright/test';
-import { WorkspaceTestUtil } from '../../models/workspace-page.util';
-import { addPageAnnotationBeforeEach, PAGES } from '../../utils';
+import { expect, test } from '@playwright/test';
+import { WorkspacePage } from 'e2e/models/workspace-page';
+import { WorkspaceUtil } from '../../models/workspace-page.util';
+import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.MAIN);
 
 test.describe('Workspace Main Component', () => {
-  let workspaceUtil: WorkspaceTestUtil;
+  let workspaceUtil: WorkspaceUtil;
+  let workspacePage: WorkspacePage;
 
   test.beforeEach(async ({ page }) => {
-    workspaceUtil = new WorkspaceTestUtil(page);
+    await page.goto('/#/');
+    await waitForZeppelinReady(page);
+    await performLoginIfRequired(page);
+
+    workspacePage = new WorkspacePage(page);
+    workspaceUtil = new WorkspaceUtil(page);
   });
 
   test.describe('Given user accesses workspace container', () => {
-    test('When workspace loads Then should display main container structure', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
+    test('When workspace loads Then should display main container structure', async ({ page }) => {
+      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
+      await expect(workspacePage.routerOutlet).toBeAttached();
 
-      await workspaceUtil.verifyWorkspaceLayout();
-      await workspaceUtil.verifyWorkspaceContainer();
+      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
+      const contentElements = await page.locator('.content').count();
+      expect(contentElements).toBeGreaterThan(0);
     });
 
     test('When workspace loads Then should display header component', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
-
       await workspaceUtil.verifyHeaderVisibility(true);
     });
 
     test('When workspace loads Then should activate router outlet', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
-
       await workspaceUtil.verifyRouterOutletActivation();
     });
 
     test('When component activates Then should trigger onActivate event', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
-
       await workspaceUtil.waitForComponentActivation();
     });
   });
 
   test.describe('Given workspace header visibility', () => {
     test('When not in publish mode Then should show header', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
-
       await workspaceUtil.verifyHeaderVisibility(true);
     });
   });
 
   test.describe('Given router outlet functionality', () => {
     test('When navigating to workspace Then should load child components', async () => {
-      await workspaceUtil.navigateAndWaitForLoad();
-
       await workspaceUtil.verifyRouterOutletActivation();
       await workspaceUtil.waitForComponentActivation();
     });

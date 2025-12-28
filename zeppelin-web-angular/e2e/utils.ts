@@ -12,6 +12,14 @@
 
 import { test, Page, TestInfo } from '@playwright/test';
 import { LoginTestUtil } from './models/login-page.util';
+import { E2E_TEST_FOLDER } from './models/base-page';
+import { NotebookUtil } from './models/notebook.util';
+
+export const NOTEBOOK_PATTERNS = {
+  URL_REGEX: /\/notebook\/[^\/\?]+/,
+  URL_EXTRACT_NOTEBOOK_ID_REGEX: /\/notebook\/([^\/\?]+)/,
+  LINK_SELECTOR: 'a[href*="/notebook/"]'
+} as const;
 
 export const PAGES = {
   // Main App
@@ -97,27 +105,27 @@ export const PAGES = {
   }
 } as const;
 
-export function addPageAnnotation(pageName: string, testInfo: TestInfo) {
+export const addPageAnnotation = (pageName: string, testInfo: TestInfo) => {
   testInfo.annotations.push({
     type: 'page',
     description: pageName
   });
-}
+};
 
-export function addPageAnnotationBeforeEach(pageName: string) {
+export const addPageAnnotationBeforeEach = (pageName: string) => {
   test.beforeEach(async ({}, testInfo) => {
     addPageAnnotation(pageName, testInfo);
   });
-}
+};
 
 interface PageStructureType {
   [key: string]: string | PageStructureType;
 }
 
-export function flattenPageComponents(pages: PageStructureType): string[] {
+export const flattenPageComponents = (pages: PageStructureType): string[] => {
   const result: string[] = [];
 
-  function flatten(obj: PageStructureType) {
+  const flatten = (obj: PageStructureType) => {
     for (const value of Object.values(obj)) {
       if (typeof value === 'string') {
         result.push(value);
@@ -125,36 +133,35 @@ export function flattenPageComponents(pages: PageStructureType): string[] {
         flatten(value);
       }
     }
-  }
+  };
 
   flatten(pages);
   return result.sort();
-}
+};
 
-export function getCoverageTransformPaths(): string[] {
-  return flattenPageComponents(PAGES);
-}
+export const getCoverageTransformPaths = (): string[] => flattenPageComponents(PAGES);
 
-export async function waitForUrlNotContaining(page: Page, fragment: string) {
+export const waitForUrlNotContaining = async (page: Page, fragment: string) => {
   await page.waitForURL(url => !url.toString().includes(fragment));
-}
+};
 
-export function getCurrentPath(page: Page): string {
+export const getCurrentPath = (page: Page): string => {
   const url = new URL(page.url());
   return url.hash || url.pathname;
-}
+};
 
-export async function getBasicPageMetadata(page: Page): Promise<{
+export const getBasicPageMetadata = async (
+  page: Page
+): Promise<{
   title: string;
   path: string;
-}> {
-  return {
-    title: await page.title(),
-    path: getCurrentPath(page)
-  };
-}
+}> => ({
+  title: await page.title(),
+  path: getCurrentPath(page)
+});
 
-export async function performLoginIfRequired(page: Page): Promise<boolean> {
+import { LoginPage } from './models/login-page';
+export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
   if (!isShiroEnabled) {
     return false;
@@ -173,37 +180,264 @@ export async function performLoginIfRequired(page: Page): Promise<boolean> {
 
   const isLoginVisible = await page.locator('zeppelin-login').isVisible();
   if (isLoginVisible) {
-    const userNameInput = page.getByRole('textbox', { name: 'User Name' });
-    const passwordInput = page.getByRole('textbox', { name: 'Password' });
-    const loginButton = page.getByRole('button', { name: 'Login' });
+    const loginPage = new LoginPage(page);
+    await loginPage.login(testUser.username, testUser.password);
 
-    await userNameInput.fill(testUser.username);
-    await passwordInput.fill(testUser.password);
-    await loginButton.click();
+    // for webkit
+    await page.waitForTimeout(200);
+    await page.evaluate(() => {
+      if (window.location.hash.includes('login')) {
+        window.location.hash = '#/';
+      }
+    });
 
-    await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 5000 });
-    return true;
+    try {
+      await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
+      await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
+      await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
+      await waitForZeppelinReady(page);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return false;
-}
+};
 
-export async function waitForZeppelinReady(page: Page): Promise<void> {
+export const waitForZeppelinReady = async (page: Page): Promise<void> => {
   try {
-    await page.waitForLoadState('networkidle', { timeout: 30000 });
+    // Enhanced wait for network idle with longer timeout for CI environments
+    await page.waitForLoadState('domcontentloaded', { timeout: 45000 });
+
+    // Check if we're on login page and authentication is required
+    const isOnLoginPage = page.url().includes('#/login');
+    if (isOnLoginPage) {
+      console.log('On login page - checking if authentication is enabled');
+
+      // If we're on login dlpage, this is expected when authentication is required
+      // Just wait for login elements to be ready instead of waiting for app content
+      await page.waitForFunction(
+        () => {
+          const hasAngular = document.querySelector('[ng-version]') !== null;
+          const hasLoginElements =
+            document.querySelector('zeppelin-login') !== null ||
+            document.querySelector('input[placeholder*="User"], input[placeholder*="user"], input[type="text"]') !==
+              null;
+          return hasAngular && hasLoginElements;
+        },
+        { timeout: 30000 }
+      );
+      console.log('Login page is ready');
+      return;
+    }
+
+    // Wait for Angular and Zeppelin to be ready with more robust checks
     await page.waitForFunction(
       () => {
+        // Check for Angular framework
         const hasAngular = document.querySelector('[ng-version]') !== null;
+
+        // Check for Zeppelin-specific content
         const hasZeppelinContent =
           document.body.textContent?.includes('Zeppelin') ||
           document.body.textContent?.includes('Notebook') ||
           document.body.textContent?.includes('Welcome');
+
+        // Check for Zeppelin root element
         const hasZeppelinRoot = document.querySelector('zeppelin-root') !== null;
-        return hasAngular && (hasZeppelinContent || hasZeppelinRoot);
+
+        // Check for basic UI elements that indicate the app is ready
+        const hasBasicUI =
+          document.querySelector('button, input, .ant-btn') !== null ||
+          document.querySelector('[class*="zeppelin"]') !== null;
+
+        return hasAngular && (hasZeppelinContent || hasZeppelinRoot || hasBasicUI);
       },
-      { timeout: 60 * 1000 }
+      { timeout: 90000 }
     );
+
+    // Additional stability check - wait for DOM to be stable
+    await page.waitForLoadState('domcontentloaded');
   } catch (error) {
-    throw error instanceof Error ? error : new Error(`Zeppelin loading failed: ${String(error)}`);
+    throw new Error(`Zeppelin loading failed: ${String(error)}`);
   }
-}
+};
+
+export const waitForNotebookLinks = async (page: Page, timeout: number = 30000) => {
+  const locator = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR);
+
+  // If there are no notebook links on the page, there's no reason to wait
+  const count = await locator.count();
+  if (count === 0) {
+    return;
+  }
+
+  await locator.first().waitFor({ state: 'visible', timeout });
+};
+
+export const navigateToNotebookWithFallback = async (
+  page: Page,
+  noteId: string,
+  notebookName?: string
+): Promise<void> => {
+  let navigationSuccessful = false;
+
+  try {
+    // Strategy 1: Direct navigation
+    await page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle', timeout: 30000 });
+    navigationSuccessful = true;
+  } catch (error) {
+    console.log('Direct navigation failed, trying fallback strategies...');
+
+    // Strategy 2: Wait for loading completion and check URL
+    await page.waitForFunction(
+      () => {
+        const loadingText = document.body.textContent || '';
+        return !loadingText.includes('Getting Ticket Data');
+      },
+      { timeout: 15000 }
+    );
+
+    const currentUrl = page.url();
+    if (currentUrl.includes('/notebook/')) {
+      navigationSuccessful = true;
+    }
+
+    // Strategy 3: Navigate through home page if notebook name is provided
+    if (!navigationSuccessful && notebookName) {
+      await page.goto('/#/');
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+      // The link text in the UI is the base name of the note, not the full path.
+      const baseName = notebookName.split('/').pop();
+      const notebookLink = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).filter({ hasText: baseName! });
+      // Use the click action's built-in wait.
+      await notebookLink.click({ timeout: 10000 });
+
+      await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 20000 });
+      navigationSuccessful = true;
+    }
+  }
+
+  if (!navigationSuccessful) {
+    throw new Error(`Failed to navigate to notebook ${noteId}`);
+  }
+
+  // Wait for notebook to be ready
+  await waitForZeppelinReady(page);
+};
+
+const extractNoteIdFromUrl = async (page: Page): Promise<string | null> => {
+  const url = page.url();
+  const match = url.match(NOTEBOOK_PATTERNS.URL_EXTRACT_NOTEBOOK_ID_REGEX);
+  return match ? match[1] : null;
+};
+
+const waitForNotebookNavigation = async (page: Page): Promise<string | null> => {
+  await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 30000 });
+  return await extractNoteIdFromUrl(page);
+};
+
+const navigateViaHomePageFallback = async (page: Page, baseNotebookName: string): Promise<string> => {
+  await page.goto('/#/');
+  await page.waitForLoadState('networkidle', { timeout: 15000 });
+  await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+
+  await page.waitForFunction(() => document.querySelectorAll(NOTEBOOK_PATTERNS.LINK_SELECTOR).length > 0, {
+    timeout: 15000
+  });
+  await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+
+  const notebookLink = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).filter({ hasText: baseNotebookName });
+
+  const browserName = page.context().browser()?.browserType().name();
+  if (browserName === 'firefox') {
+    await page.waitForSelector(`${NOTEBOOK_PATTERNS.LINK_SELECTOR}:has-text("${baseNotebookName}")`, {
+      state: 'visible',
+      timeout: 90000
+    });
+  } else {
+    await notebookLink.waitFor({ state: 'visible', timeout: 60000 });
+  }
+
+  await notebookLink.click({ timeout: 15000 });
+  await page.waitForURL(NOTEBOOK_PATTERNS.URL_REGEX, { timeout: 20000 });
+
+  const noteId = await extractNoteIdFromUrl(page);
+  if (!noteId) {
+    throw new Error('Failed to extract notebook ID after home page navigation');
+  }
+
+  return noteId;
+};
+
+const extractFirstParagraphId = async (page: Page): Promise<string> => {
+  await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 20000 });
+
+  const paragraphContainer = page.locator('zeppelin-notebook-paragraph').first();
+  const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');
+  await dropdownTrigger.click();
+
+  const paragraphLink = page.locator('li.paragraph-id a').first();
+  await paragraphLink.waitFor({ state: 'attached', timeout: 15000 });
+
+  const paragraphId = await paragraphLink.textContent();
+  if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
+    throw new Error(`Invalid paragraph ID found: ${paragraphId}`);
+  }
+
+  return paragraphId;
+};
+
+export const createTestNotebook = async (
+  page: Page,
+  folderPath?: string
+): Promise<{ noteId: string; paragraphId: string }> => {
+  const notebookUtil = new NotebookUtil(page);
+  const baseNotebookName = `TestNotebook_${Date.now()}`;
+  const notebookName = folderPath ? `${folderPath}/${baseNotebookName}` : `${E2E_TEST_FOLDER}/${baseNotebookName}`;
+
+  try {
+    // Create notebook
+    await notebookUtil.createNotebook(notebookName);
+
+    let noteId: string | null = null;
+
+    // Try direct navigation first
+    noteId = await waitForNotebookNavigation(page);
+
+    if (!noteId) {
+      console.log('Direct navigation failed, trying fallback strategies...');
+
+      // Check if we're already on a notebook page
+      noteId = await extractNoteIdFromUrl(page);
+
+      if (noteId) {
+        // Use existing fallback navigation
+        await navigateToNotebookWithFallback(page, noteId, notebookName);
+      } else {
+        // Navigate via home page as last resort
+        noteId = await navigateViaHomePageFallback(page, baseNotebookName);
+      }
+    }
+
+    if (!noteId) {
+      throw new Error(`Failed to extract notebook ID from URL: ${page.url()}`);
+    }
+
+    // Extract paragraph ID
+    const paragraphId = await extractFirstParagraphId(page);
+
+    // Navigate back to home
+    await page.goto('/#/');
+    await waitForZeppelinReady(page);
+
+    return { noteId, paragraphId };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const currentUrl = page.url();
+    throw new Error(`Failed to create test notebook: ${errorMessage}. Current URL: ${currentUrl}`);
+  }
+};
