@@ -89,6 +89,7 @@ public class MiniZeppelinServer implements AutoCloseable {
     zConf = ZeppelinConfiguration.load(zeppelinConfiguration);
     zConf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(),
         zeppelinHome.getAbsoluteFile().toString());
+    zConf.setProperty(ConfVars.ZEPPELIN_EVENTBUS_ENABLED.getVarName(), "true");
     Optional<File> webWar = getWebWar();
     Optional<File> webAngularWar = getWebAngularWar();
     if (webWar.isPresent()) {
