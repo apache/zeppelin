@@ -26,4 +26,4 @@ requests==2.32.5
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 typing-extensions==4.14.1
-urllib3==2.5.0
+urllib3==2.6.0
