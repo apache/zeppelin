@@ -74,7 +74,6 @@ test.describe('Home Page - Layout and Grid', () => {
 
       await test.step('When I resize to tablet view', async () => {
         await page.setViewportSize({ width: 768, height: 1024 });
-        await page.waitForTimeout(500);
       });
 
       await test.step('Then the grid should still be visible and functional', async () => {
@@ -85,7 +84,6 @@ test.describe('Home Page - Layout and Grid', () => {
 
       await test.step('When I resize to mobile view', async () => {
         await page.setViewportSize({ width: 375, height: 667 });
-        await page.waitForTimeout(500);
       });
 
       await test.step('Then the grid should adapt to mobile layout', async () => {

@@ -22,7 +22,7 @@ test.describe('Notebook Repository Item - Settings', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -48,10 +48,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should show input controls for INPUT type settings in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
@@ -70,10 +66,6 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should show dropdown controls for DROPDOWN type settings in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
@@ -91,14 +83,9 @@ test.describe('Notebook Repository Item - Settings', () => {
 
   test('should update input value in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 
-    let foundInput = false;
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
       const settingName = (await row.locator('td').first().textContent()) || '';
@@ -109,23 +96,12 @@ test.describe('Notebook Repository Item - Settings', () => {
         await repoItemPage.fillSettingInput(settingName, testValue);
         const inputValue = await repoItemPage.getSettingInputValue(settingName);
         expect(inputValue).toBe(testValue);
-        foundInput = true;
         break;
       }
-    }
-
-    if (!foundInput) {
-      test.skip();
     }
   });
 
   test('should display setting name and value in display mode', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     const firstRow = repoItemPage.settingRows.first();
     const nameCell = firstRow.locator('td').first();
     const valueCell = firstRow.locator('td').nth(1);

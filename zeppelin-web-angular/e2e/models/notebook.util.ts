@@ -11,6 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -24,21 +25,20 @@ export class NotebookUtil extends BasePage {
 
   async createNotebook(notebookName: string): Promise<void> {
     await this.homePage.navigateToHome();
-    await this.homePage.createNewNoteButton.click();
 
-    // Wait for the modal to appear and fill the notebook name
-    const notebookNameInput = this.page.locator('input[name="noteName"]');
-    await expect(notebookNameInput).toBeVisible({ timeout: 10000 });
+    // Perform login if required
+    await performLoginIfRequired(this.page);
 
-    // Fill notebook name
-    await notebookNameInput.fill(notebookName);
+    // Wait for Zeppelin to be fully ready
+    await waitForZeppelinReady(this.page);
 
-    // Click the 'Create' button in the modal
-    const createButton = this.page.locator('button', { hasText: 'Create' });
-    await createButton.click();
+    // Wait for URL to not contain 'login' and for the notebook list to appear
+    await this.page.waitForFunction(
+      () => !window.location.href.includes('#/login') && document.querySelector('zeppelin-node-list') !== null,
+      { timeout: 30000 }
+    );
 
-    // Wait for the notebook to be created and navigate to it
-    await this.page.waitForURL(url => url.toString().includes('/notebook/'), { timeout: 30000 });
-    await this.waitForPageLoad();
+    await expect(this.homePage.zeppelinNodeList).toBeVisible({ timeout: 90000 });
+    await this.homePage.createNote(notebookName);
   }
 }

@@ -21,7 +21,7 @@ test.describe('Home Page Notebook Actions', () => {
 
   test.beforeEach(async ({ page }) => {
     homeUtil = new HomePageUtil(page);
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });
@@ -36,27 +36,24 @@ test.describe('Home Page Notebook Actions', () => {
     });
 
     test('When filter is used Then should filter notebook list', async () => {
+      // Note (ZEPPELIN-6386):
+      // The Notebook search filter in the New UI is currently too slow,
+      // so this test is temporarily skipped. The skip will be removed
+      // once the performance issue is resolved.
+      test.skip();
       await homeUtil.testFilterFunctionality('test');
     });
   });
 
   test.describe('Given create new note action', () => {
     test('When create new note is clicked Then should open note creation modal', async () => {
-      try {
-        await homeUtil.verifyCreateNewNoteWorkflow();
-      } catch (error) {
-        console.log('Note creation modal might not appear immediately');
-      }
+      await homeUtil.verifyCreateNewNoteWorkflow();
     });
   });
 
   test.describe('Given import note action', () => {
     test('When import note is clicked Then should open import modal', async () => {
-      try {
-        await homeUtil.verifyImportNoteWorkflow();
-      } catch (error) {
-        console.log('Import modal might not appear immediately');
-      }
+      await homeUtil.verifyImportNoteWorkflow();
     });
   });
 
