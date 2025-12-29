@@ -47,9 +47,8 @@ export class PublishedParagraphPage extends BasePage {
   }
 
   async isOnHomePage(): Promise<boolean> {
-    const welcomeHeading = this.page.locator('h1', { hasText: 'Welcome to Zeppelin!' });
     try {
-      await welcomeHeading.waitFor({ state: 'visible', timeout: 5000 });
+      await this.welcomeTitle.waitFor({ state: 'visible', timeout: 5000 });
       return true;
     } catch (e) {
       return false;

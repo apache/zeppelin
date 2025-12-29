@@ -32,12 +32,6 @@ export class NotebookReposPageUtil extends BasePage {
     expect(count).toBeGreaterThan(0);
   }
 
-  async verifyAllRepositoriesRendered(): Promise<number> {
-    const count = await this.notebookReposPage.getRepositoryItemCount();
-    expect(count).toBeGreaterThan(0);
-    return count;
-  }
-
   async getRepositoryItem(repoName: string): Promise<NotebookRepoItemPage> {
     return new NotebookRepoItemPage(this.page, repoName);
   }

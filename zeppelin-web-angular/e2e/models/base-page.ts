@@ -33,6 +33,8 @@ export class BasePage {
 
   readonly deleteIcon: Locator;
 
+  readonly welcomeTitle: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.zeppelinNodeList = page.locator('zeppelin-node-list');
@@ -49,6 +51,8 @@ export class BasePage {
     this.runButton = page.locator('button:has-text("Run")');
 
     this.deleteIcon = page.locator('i[nztype="delete"], i.anticon-delete');
+
+    this.welcomeTitle = page.getByRole('heading', { name: 'Welcome to Zeppelin!' });
   }
 
   async waitForPageLoad(): Promise<void> {

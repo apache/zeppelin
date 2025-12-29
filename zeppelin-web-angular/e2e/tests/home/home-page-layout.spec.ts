@@ -17,7 +17,10 @@ import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinRea
 test.describe('Home Page - Layout and Grid', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
+  let homePage: HomePage;
+
   test.beforeEach(async ({ page }) => {
+    homePage = new HomePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
@@ -26,7 +29,6 @@ test.describe('Home Page - Layout and Grid', () => {
   test.describe('Responsive Grid Layout', () => {
     test('should display responsive grid structure', async ({ page }) => {
       await test.step('Given I am on the home page', async () => {
-        const homePage = new HomePage(page);
         await homePage.navigateToHome();
       });
 
@@ -35,9 +37,7 @@ test.describe('Home Page - Layout and Grid', () => {
       });
     });
 
-    test('should have proper column distribution', async ({ page }) => {
-      const homePage = new HomePage(page);
-
+    test('should have proper column distribution', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -66,8 +66,6 @@ test.describe('Home Page - Layout and Grid', () => {
     });
 
     test('should maintain layout structure across different viewport sizes', async ({ page }) => {
-      const homePage = new HomePage(page);
-
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -102,8 +100,6 @@ test.describe('Home Page - Layout and Grid', () => {
 
   test.describe('Content Organization', () => {
     test('should organize content in logical sections', async ({ page }) => {
-      const homePage = new HomePage(page);
-
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });

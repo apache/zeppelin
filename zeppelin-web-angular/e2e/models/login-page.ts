@@ -17,7 +17,6 @@ export class LoginPage extends BasePage {
   readonly userNameInput: Locator;
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
-  readonly welcomeTitle: Locator;
   readonly formContainer: Locator;
   readonly errorMessage: Locator;
 
@@ -26,7 +25,6 @@ export class LoginPage extends BasePage {
     this.userNameInput = page.getByRole('textbox', { name: 'User Name' });
     this.passwordInput = page.getByRole('textbox', { name: 'Password' });
     this.loginButton = page.getByRole('button', { name: 'Login' });
-    this.welcomeTitle = page.getByRole('heading', { name: 'Welcome to Zeppelin!' });
     this.formContainer = page.locator('form[nz-form]');
     this.errorMessage = page.locator("text=The username and password that you entered don't match.").first();
   }

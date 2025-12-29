@@ -12,21 +12,18 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage } from '../../../models/notebook-repos-page';
-import { NotebookReposPageUtil } from '../../../models/notebook-repos-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Page - Structure', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS);
 
   let notebookReposPage: NotebookReposPage;
-  let notebookReposUtil: NotebookReposPageUtil;
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
-    notebookReposUtil = new NotebookReposPageUtil(page);
     await notebookReposPage.navigate();
   });
 
@@ -41,6 +38,7 @@ test.describe('Notebook Repository Page - Structure', () => {
   });
 
   test('should display all repository items', async () => {
-    await notebookReposUtil.verifyAllRepositoriesRendered();
+    const count = await notebookReposPage.getRepositoryItemCount();
+    expect(count).toBeGreaterThan(0);
   });
 });

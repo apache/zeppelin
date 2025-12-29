@@ -11,10 +11,12 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { HomePageUtil } from '../../models/home-page.util';
+import { BasePage } from '../../models/base-page';
+import { HomePage } from '../../models/home-page';
 import { LoginTestUtil } from '../../models/login-page.util';
 import {
   addPageAnnotationBeforeEach,
+  getBasicPageMetadata,
   getCurrentPath,
   waitForUrlNotContaining,
   waitForZeppelinReady,
@@ -24,7 +26,8 @@ import {
 test.describe('Anonymous User Login Redirect', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
-  let homePageUtil: HomePageUtil;
+  let homePage: HomePage;
+  let basePage: BasePage;
 
   test.beforeAll(async () => {
     const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
@@ -34,7 +37,8 @@ test.describe('Anonymous User Login Redirect', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    homePageUtil = new HomePageUtil(page);
+    homePage = new HomePage(page);
+    basePage = new BasePage(page);
   });
 
   test.describe('Given an anonymous user is already logged in', () => {
@@ -43,14 +47,21 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
     });
 
-    test('When accessing login page directly, Then should redirect to home with proper URL change', async () => {
-      const redirectResult = await homePageUtil.verifyAnonymousUserRedirectFromLogin();
+    test('When accessing login page directly, Then should redirect to home with proper URL change', async ({
+      page
+    }) => {
+      await homePage.navigateToLogin();
 
-      expect(redirectResult.isLoginUrlMaintained).toBe(false);
-      expect(redirectResult.isHomeContentDisplayed).toBe(true);
-      expect(redirectResult.isAnonymousUser).toBe(true);
-      expect(redirectResult.currentPath).toContain('#/');
-      expect(redirectResult.currentPath).not.toContain('#/login');
+      const currentPath = getCurrentPath(page);
+      const isLoginUrlMaintained = currentPath.includes('#/login');
+      const isHomeContentDisplayed = await homePage.isHomeContentDisplayed();
+      const isAnonymousUser = await homePage.isAnonymousUser();
+
+      expect(isLoginUrlMaintained).toBe(false);
+      expect(isHomeContentDisplayed).toBe(true);
+      expect(isAnonymousUser).toBe(true);
+      expect(currentPath).toContain('#/');
+      expect(currentPath).not.toContain('#/login');
     });
 
     test('When accessing login page directly, Then should display all home page elements correctly', async ({
@@ -60,7 +71,10 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      await homePageUtil.verifyHomePageElements();
+      await expect(homePage.welcomeTitle).toBeVisible();
+      await expect(homePage.notebookSection).toBeVisible();
+      await expect(homePage.helpSection).toBeVisible();
+      await expect(homePage.communitySection).toBeVisible();
     });
 
     test('When clicking Zeppelin logo after redirect, Then should maintain home URL and content', async ({ page }) => {
@@ -68,12 +82,16 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      const navigationResult = await homePageUtil.testNavigationConsistency();
+      const pathBeforeClick = getCurrentPath(page);
+      await homePage.clickZeppelinLogo();
+      await basePage.waitForPageLoad();
+      const pathAfterClick = getCurrentPath(page);
+      const homeContentMaintained = await homePage.isHomeContentDisplayed();
 
-      expect(navigationResult.pathBeforeClick).toContain('#/');
-      expect(navigationResult.pathBeforeClick).not.toContain('#/login');
-      expect(navigationResult.pathAfterClick).toContain('#/');
-      expect(navigationResult.homeContentMaintained).toBe(true);
+      expect(pathBeforeClick).toContain('#/');
+      expect(pathBeforeClick).not.toContain('#/login');
+      expect(pathAfterClick).toContain('#/');
+      expect(homeContentMaintained).toBe(true);
     });
 
     test('When accessing login page, Then should redirect and maintain anonymous user state', async ({ page }) => {
@@ -81,12 +99,13 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      const metadata = await homePageUtil.getHomePageMetadata();
+      const basicMetadata = await getBasicPageMetadata(page);
+      const isAnonymous = await homePage.isAnonymousUser();
 
-      expect(metadata.title).toContain('Zeppelin');
-      expect(metadata.path).toContain('#/');
-      expect(metadata.path).not.toContain('#/login');
-      expect(metadata.isAnonymous).toBe(true);
+      expect(basicMetadata.title).toContain('Zeppelin');
+      expect(basicMetadata.path).toContain('#/');
+      expect(basicMetadata.path).not.toContain('#/login');
+      expect(isAnonymous).toBe(true);
     });
 
     test('When accessing login page, Then should display welcome heading and main sections', async ({ page }) => {
@@ -94,7 +113,7 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      await expect(page.locator('h1', { hasText: 'Welcome to Zeppelin!' })).toBeVisible();
+      await expect(basePage.welcomeTitle).toBeVisible();
       await expect(page.locator('text=Notebook').first()).toBeVisible();
       await expect(page.locator('text=Help').first()).toBeVisible();
       await expect(page.locator('text=Community').first()).toBeVisible();
@@ -146,21 +165,24 @@ test.describe('Anonymous User Login Redirect', () => {
       await page.goto('/#/');
       await waitForZeppelinReady(page);
 
-      const homeMetadata = await homePageUtil.getHomePageMetadata();
+      const homeMetadata = await getBasicPageMetadata(page);
+      const isHomeAnonymous = await homePage.isAnonymousUser();
       expect(homeMetadata.path).toContain('#/');
-      expect(homeMetadata.isAnonymous).toBe(true);
+      expect(isHomeAnonymous).toBe(true);
 
       await page.goto('/#/login');
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
-      const loginMetadata = await homePageUtil.getHomePageMetadata();
+      const loginMetadata = await getBasicPageMetadata(page);
+      const isLoginAnonymous = await homePage.isAnonymousUser();
       expect(loginMetadata.path).toContain('#/');
       expect(loginMetadata.path).not.toContain('#/login');
-      expect(loginMetadata.isAnonymous).toBe(true);
+      expect(isLoginAnonymous).toBe(true);
 
-      const isHomeContentDisplayed = await homePageUtil.verifyAnonymousUserRedirectFromLogin();
-      expect(isHomeContentDisplayed.isHomeContentDisplayed).toBe(true);
+      await homePage.navigateToLogin();
+      const isHomeContentDisplayed = await homePage.isHomeContentDisplayed();
+      expect(isHomeContentDisplayed).toBe(true);
     });
 
     test('When multiple page loads occur on login URL, Then should consistently redirect to home', async ({ page }) => {
@@ -169,7 +191,7 @@ test.describe('Anonymous User Login Redirect', () => {
         await waitForZeppelinReady(page);
         await waitForUrlNotContaining(page, '#/login');
 
-        await expect(page.locator('h1', { hasText: 'Welcome to Zeppelin!' })).toBeVisible();
+        await expect(basePage.welcomeTitle).toBeVisible();
         await expect(page.locator('text=anonymous')).toBeVisible();
 
         const path = getCurrentPath(page);

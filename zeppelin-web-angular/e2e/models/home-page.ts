@@ -14,7 +14,6 @@ import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
-  readonly welcomeHeading: Locator;
   readonly notebookSection: Locator;
   readonly helpSection: Locator;
   readonly communitySection: Locator;
@@ -61,7 +60,6 @@ export class HomePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.welcomeHeading = page.locator('h1', { hasText: 'Welcome to Zeppelin!' });
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
@@ -116,7 +114,7 @@ export class HomePage extends BasePage {
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
-    return this.welcomeHeading.isVisible();
+    return this.welcomeTitle.isVisible();
   }
 
   async isAnonymousUser(): Promise<boolean> {
@@ -128,7 +126,7 @@ export class HomePage extends BasePage {
   }
 
   async getWelcomeHeadingText(): Promise<string> {
-    const text = await this.welcomeHeading.textContent();
+    const text = await this.welcomeTitle.textContent();
     return text || '';
   }
 
