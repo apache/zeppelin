@@ -18,7 +18,6 @@ export class HomePage extends BasePage {
   readonly notebookSection: Locator;
   readonly helpSection: Locator;
   readonly communitySection: Locator;
-  readonly createNewNoteButton: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
   readonly welcomeSection: Locator;
@@ -66,7 +65,6 @@ export class HomePage extends BasePage {
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
-    this.createNewNoteButton = page.getByText('Create new Note', { exact: true }).first();
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
     this.welcomeSection = page.locator('.welcome');
@@ -158,26 +156,10 @@ export class HomePage extends BasePage {
     // Wait for the modal form to be fully rendered with proper labels
     await this.page.waitForSelector('nz-form-label', { timeout: 10000 });
 
-    await this.page.waitForFunction(
-      () => {
-        const labels = Array.from(document.querySelectorAll('nz-form-label'));
-        return labels.some(
-          label => label.textContent?.includes('Note Name') || label.textContent?.includes('Clone Note')
-        );
-      },
-      { timeout: 10000 }
-    );
+    await this.waitForFormLabels(['Note Name', 'Clone Note']);
 
-    // Wait for the input field to be ready and enabled
-    await expect(this.notebookNameInput).toBeVisible({ timeout: 10000 });
-    await expect(this.notebookNameInput).toBeEnabled({ timeout: 5000 });
-
-    // Clear any existing content and fill notebook name
-    await this.notebookNameInput.clear();
-    await this.notebookNameInput.fill(notebookName);
-
-    // Verify the input was filled correctly
-    await expect(this.notebookNameInput).toHaveValue(notebookName);
+    // Fill and verify the notebook name input
+    await this.fillAndVerifyInput(this.notebookNameInput, notebookName);
 
     // Click the 'Create' button in the modal
     await expect(this.createNoteButton).toBeEnabled({ timeout: 5000 });
@@ -194,32 +176,10 @@ export class HomePage extends BasePage {
   }
 
   async waitForRefreshToComplete(): Promise<void> {
-    await this.page.waitForFunction(
-      () => {
-        const icon = document.querySelector('a.refresh-note i[nz-icon]');
-        return icon && !icon.hasAttribute('nzSpin');
-      },
-      { timeout: 10000 }
-    );
+    await this.waitForElementAttribute('a.refresh-note i[nz-icon]', 'nzSpin', false);
   }
 
   async getDocumentationLinkHref(): Promise<string | null> {
     return this.externalLinks.documentation.getAttribute('href');
-  }
-
-  async areExternalLinksVisible(): Promise<boolean> {
-    const links = [
-      this.externalLinks.documentation,
-      this.externalLinks.mailingList,
-      this.externalLinks.issuesTracking,
-      this.externalLinks.github
-    ];
-
-    for (const link of links) {
-      if (!(await link.isVisible())) {
-        return false;
-      }
-    }
-    return true;
   }
 }

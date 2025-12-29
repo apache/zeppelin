@@ -16,10 +16,10 @@ import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinRea
 
 test.describe('Dark Mode Theme Switching', () => {
   addPageAnnotationBeforeEach(PAGES.SHARE.THEME_TOGGLE);
-  let themePage: DarkModePage;
+  let darkModePage: DarkModePage;
 
   test.beforeEach(async ({ page }) => {
-    themePage = new DarkModePage(page);
+    darkModePage = new DarkModePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 
@@ -27,18 +27,18 @@ test.describe('Dark Mode Theme Switching', () => {
     await performLoginIfRequired(page);
 
     // Ensure a clean localStorage for each test
-    await themePage.clearLocalStorage();
+    await darkModePage.clearLocalStorage();
   });
 
   test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page, browserName }) => {
     // GIVEN: User is on the main page, which starts in 'system' mode by default (localStorage cleared).
     await test.step('GIVEN the page starts in system mode', async () => {
-      await themePage.assertSystemTheme(); // Robot icon for system theme
+      await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
 
     // WHEN: Explicitly set theme to light mode for the rest of the test.
     await test.step('WHEN the user explicitly sets theme to light mode', async () => {
-      await themePage.setThemeInLocalStorage('light');
+      await darkModePage.setThemeInLocalStorage('light');
       await page.waitForTimeout(500);
       if (browserName === 'webkit') {
         const currentUrl = page.url();
@@ -47,12 +47,12 @@ test.describe('Dark Mode Theme Switching', () => {
         page.reload();
       }
       await waitForZeppelinReady(page);
-      await themePage.assertLightTheme(); // Now it should be light mode with sun icon
+      await darkModePage.assertLightTheme(); // Now it should be light mode with sun icon
     });
 
     // WHEN: User switches to dark mode by setting localStorage and reloading.
     await test.step('WHEN the user explicitly sets theme to dark mode', async () => {
-      await themePage.setThemeInLocalStorage('dark');
+      await darkModePage.setThemeInLocalStorage('dark');
       await page.waitForTimeout(500);
       if (browserName === 'webkit') {
         const currentUrl = page.url();
@@ -61,23 +61,23 @@ test.describe('Dark Mode Theme Switching', () => {
         page.reload();
       }
       await waitForZeppelinReady(page);
-      await themePage.assertDarkTheme();
+      await darkModePage.assertDarkTheme();
     });
 
     // AND: User clicks the toggle again to switch back to light mode.
     await test.step('AND the user clicks the toggle to switch back to light mode', async () => {
-      await themePage.toggleTheme();
+      await darkModePage.toggleTheme();
     });
 
     // THEN: The theme switches to system mode.
     await test.step('THEN the theme switches to system mode', async () => {
-      await themePage.assertSystemTheme();
+      await darkModePage.assertSystemTheme();
     });
   });
 
   test('Scenario: System Theme and Local Storage Interaction', async ({ page }) => {
     // Ensure localStorage is clear for each sub-scenario
-    await themePage.clearLocalStorage();
+    await darkModePage.clearLocalStorage();
 
     await test.step('GIVEN: No localStorage, System preference is Light', async () => {
       await page.emulateMedia({ colorScheme: 'light' });
@@ -85,44 +85,44 @@ test.describe('Dark Mode Theme Switching', () => {
       await waitForZeppelinReady(page);
       // When no explicit theme is set, it defaults to 'system' mode
       // Even in system mode with light preference, the icon should be robot
-      await expect(themePage.rootElement).toHaveClass(/light/);
-      await expect(themePage.rootElement).toHaveAttribute('data-theme', 'light');
-      await themePage.assertSystemTheme(); // Should show robot icon
+      await expect(darkModePage.rootElement).toHaveClass(/light/);
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light');
+      await darkModePage.assertSystemTheme(); // Should show robot icon
     });
 
     await test.step('GIVEN: No localStorage, System preference is Dark (initial system state)', async () => {
-      await themePage.setThemeInLocalStorage('system');
+      await darkModePage.setThemeInLocalStorage('system');
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await themePage.assertSystemTheme(); // Robot icon for system theme
+      await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
 
     await test.step("GIVEN: localStorage is 'dark', System preference is Light", async () => {
-      await themePage.setThemeInLocalStorage('dark');
+      await darkModePage.setThemeInLocalStorage('dark');
       await page.emulateMedia({ colorScheme: 'light' });
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await themePage.assertDarkTheme(); // localStorage should override system
+      await darkModePage.assertDarkTheme(); // localStorage should override system
     });
 
     await test.step("GIVEN: localStorage is 'system', THEN: Emulate system preference change to Light", async () => {
-      await themePage.setThemeInLocalStorage('system');
+      await darkModePage.setThemeInLocalStorage('system');
       await page.emulateMedia({ colorScheme: 'light' });
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await expect(themePage.rootElement).toHaveClass(/light/);
-      await expect(themePage.rootElement).toHaveAttribute('data-theme', 'light');
-      await themePage.assertSystemTheme(); // Robot icon for system theme
+      await expect(darkModePage.rootElement).toHaveClass(/light/);
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light');
+      await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
 
     await test.step("GIVEN: localStorage is 'system', THEN: Emulate system preference change to Dark", async () => {
-      await themePage.setThemeInLocalStorage('system');
+      await darkModePage.setThemeInLocalStorage('system');
       await page.emulateMedia({ colorScheme: 'dark' });
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await expect(themePage.rootElement).toHaveClass(/dark/);
-      await expect(themePage.rootElement).toHaveAttribute('data-theme', 'dark');
-      await themePage.assertSystemTheme(); // Robot icon for system theme
+      await expect(darkModePage.rootElement).toHaveClass(/dark/);
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'dark');
+      await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
   });
 });

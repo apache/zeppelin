@@ -36,10 +36,9 @@ test.describe('Published Paragraph', () => {
     await performLoginIfRequired(page);
     await waitForNotebookLinks(page);
 
-    const cancelButton = page.locator('.ant-modal-root button', { hasText: 'Cancel' });
-    if ((await cancelButton.count()) > 0) {
-      await cancelButton.click();
-      await cancelButton.waitFor({ state: 'detached', timeout: 5000 });
+    if ((await publishedParagraphPage.cancelButton.count()) > 0) {
+      await publishedParagraphPage.cancelButton.click();
+      await publishedParagraphPage.cancelButton.waitFor({ state: 'detached', timeout: 5000 });
     }
 
     testUtil = new PublishedParagraphTestUtil(page);
@@ -76,8 +75,7 @@ test.describe('Published Paragraph', () => {
       const isModalVisible = await modal.isVisible();
 
       if (isModalVisible) {
-        const okButton = page.locator('button:has-text("OK"), button:has-text("확인"), [role="button"]:has-text("OK")');
-        await okButton.click();
+        await publishedParagraphPage.okButton.click();
 
         await expect(page).toHaveURL(/\/#\/$/, { timeout: 10000 });
       } else {
@@ -122,9 +120,8 @@ test.describe('Published Paragraph', () => {
       await expect(modal).toBeVisible({ timeout: 20000 });
 
       // Handle the execution confirmation to complete the published mode setup
-      const runModalButton = modal.locator('button:has-text("Run")');
-      await expect(runModalButton).toBeVisible();
-      await runModalButton.click();
+      await expect(publishedParagraphPage.runButton).toBeVisible();
+      await publishedParagraphPage.runButton.click();
       await expect(modal).not.toBeVisible({ timeout: 10000 });
 
       // Then: Published container should remain attached and page should be in published mode
@@ -187,9 +184,8 @@ test.describe('Published Paragraph', () => {
       await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
 
       // Verify that the modal shows code preview
-      const modalContent = publishedParagraphPage.confirmationModal.locator('.ant-modal-confirm-content');
-      await expect(modalContent).toContainText('This paragraph contains the following code:');
-      await expect(modalContent).toContainText('Would you like to execute this code?');
+      await expect(publishedParagraphPage.modalBody).toContainText('This paragraph contains the following code:');
+      await expect(publishedParagraphPage.modalBody).toContainText('Would you like to execute this code?');
 
       // Click the Run button in the modal (OK button in confirmation modal)
       const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');

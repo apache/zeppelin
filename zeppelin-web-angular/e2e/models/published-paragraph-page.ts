@@ -20,8 +20,6 @@ export class PublishedParagraphPage extends BasePage {
   readonly errorModalContent: Locator;
   readonly errorModalOkButton: Locator;
   readonly confirmationModal: Locator;
-  readonly modalTitle: Locator;
-  readonly runButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -30,8 +28,6 @@ export class PublishedParagraphPage extends BasePage {
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
     this.confirmationModal = page.locator('div.ant-modal-confirm').last();
-    this.modalTitle = this.confirmationModal.locator('.ant-modal-confirm-title');
-    this.runButton = this.confirmationModal.locator('button', { hasText: 'Run' });
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {

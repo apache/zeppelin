@@ -12,16 +12,16 @@
 
 import { expect, Page } from '@playwright/test';
 import { NOTEBOOK_PATTERNS, navigateToNotebookWithFallback } from '../utils';
+import { BasePage } from './base-page';
 import { NotebookUtil } from './notebook.util';
 import { PublishedParagraphPage } from './published-paragraph-page';
 
-export class PublishedParagraphTestUtil {
-  private page: Page;
+export class PublishedParagraphTestUtil extends BasePage {
   private publishedParagraphPage: PublishedParagraphPage;
   private notebookUtil: NotebookUtil;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.publishedParagraphPage = new PublishedParagraphPage(page);
     this.notebookUtil = new NotebookUtil(page);
   }
@@ -50,26 +50,22 @@ export class PublishedParagraphTestUtil {
     await expect(modal).toBeVisible();
 
     // Check for the new enhanced modal content
-    const modalTitle = this.page.locator('.ant-modal-confirm-title, .ant-modal-title');
-    await expect(modalTitle).toContainText('Run Paragraph?');
+    await expect(this.modalTitle).toContainText('Run Paragraph?');
 
     // Check that code preview is shown
-    const modalContent = this.page.locator('.ant-modal-confirm-content, .ant-modal-body').first();
-    await expect(modalContent).toContainText('This paragraph contains the following code:');
-    await expect(modalContent).toContainText('Would you like to execute this code?');
+    await expect(this.modalBody.first()).toContainText('This paragraph contains the following code:');
+    await expect(this.modalBody.first()).toContainText('Would you like to execute this code?');
 
     // Verify that the code preview area exists
-    const codePreview = modalContent.locator('pre, code, .code-preview, .highlight, [class*="code"]').first();
+    const codePreview = this.modalBody.locator('pre, code, .code-preview, .highlight, [class*="code"]').first();
     await expect(codePreview).toBeVisible();
 
     // Check for Run and Cancel buttons
-    const runButton = this.page.locator('.ant-modal button:has-text("Run"), .ant-btn:has-text("Run")');
-    const cancelButton = this.page.locator('.ant-modal button:has-text("Cancel"), .ant-btn:has-text("Cancel")');
-    await expect(runButton).toBeVisible();
-    await expect(cancelButton).toBeVisible();
+    await expect(this.runButton).toBeVisible();
+    await expect(this.cancelButton).toBeVisible();
 
     // Click the Run button in the modal
-    await runButton.click();
+    await this.runButton.click();
     await expect(modal).toBeHidden();
   }
 
@@ -288,55 +284,28 @@ export class PublishedParagraphTestUtil {
           'i.anticon-delete'
         ];
 
-        let deleteClicked = false;
-        for (const selector of deleteButtonSelectors) {
-          const deleteButton = treeNode.locator(selector);
-          try {
-            if (await deleteButton.isVisible({ timeout: 2000 })) {
-              await deleteButton.click({ timeout: 5000 });
-              deleteClicked = true;
-              break;
-            }
-          } catch (e) {
-            // Continue to next selector
-            continue;
-          }
-        }
+        const deleteClicked = await this.clickFirstVisibleElement(deleteButtonSelectors, { parent: treeNode });
 
         if (!deleteClicked) {
           console.warn(`Delete button not found for notebook ${noteId}`);
           return;
         }
 
-        // Confirm deletion in popconfirm with timeout
-        try {
-          const confirmButton = this.page.locator('button:has-text("OK")');
-          await confirmButton.click({ timeout: 5000 });
+        // Confirm deletion in popconfirm
+        const confirmButtonSelectors = [
+          'button:has-text("OK")',
+          '.ant-popover button:has-text("OK")',
+          '.ant-popconfirm button:has-text("OK")',
+          'button.ant-btn-primary:has-text("OK")'
+        ];
 
-          // Wait for the notebook to be removed with timeout
-          await expect(treeNode).toBeHidden({ timeout: 10000 });
-        } catch (e) {
-          // If confirmation fails, try alternative OK button selectors
-          const altConfirmButtons = [
-            '.ant-popover button:has-text("OK")',
-            '.ant-popconfirm button:has-text("OK")',
-            'button.ant-btn-primary:has-text("OK")'
-          ];
+        await this.clickFirstVisibleElement(confirmButtonSelectors, {
+          visibilityTimeout: 1000,
+          clickTimeout: 3000
+        });
 
-          for (const selector of altConfirmButtons) {
-            try {
-              const button = this.page.locator(selector);
-              if (await button.isVisible({ timeout: 1000 })) {
-                await button.click({ timeout: 3000 });
-                await expect(treeNode).toBeHidden({ timeout: 10000 });
-                break;
-              }
-            } catch (altError) {
-              // Continue to next selector
-              continue;
-            }
-          }
-        }
+        // Wait for the notebook to be removed
+        await expect(treeNode).toBeHidden({ timeout: 10000 });
       }
     } catch (error) {
       console.warn(`Failed to delete test notebook ${noteId}:`, error);

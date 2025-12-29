@@ -11,14 +11,14 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import { BasePage } from './base-page';
 import { WorkspacePage } from './workspace-page';
 
-export class WorkspaceUtil {
-  private page: Page;
+export class WorkspaceUtil extends BasePage {
   private workspacePage: WorkspacePage;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.workspacePage = new WorkspacePage(page);
   }
 
@@ -32,15 +32,7 @@ export class WorkspaceUtil {
 
   async verifyRouterOutletActivation(): Promise<void> {
     await expect(this.workspacePage.routerOutlet).toBeAttached();
-
-    await this.page.waitForFunction(
-      () => {
-        const workspace = document.querySelector('zeppelin-workspace');
-        const outlet = workspace?.querySelector('router-outlet');
-        return outlet && outlet.nextElementSibling !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.waitForRouterOutletChild();
   }
 
   async waitForComponentActivation(): Promise<void> {

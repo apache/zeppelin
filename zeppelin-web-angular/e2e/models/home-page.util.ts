@@ -45,17 +45,21 @@ export class HomePageUtil extends BasePage {
   }
 
   async verifyHomePageElements(): Promise<void> {
-    await expect(this.homePage.welcomeHeading).toBeVisible();
-    await expect(this.homePage.notebookSection).toBeVisible();
-    await expect(this.homePage.helpSection).toBeVisible();
-    await expect(this.homePage.communitySection).toBeVisible();
+    await this.verifyMultipleElementsVisible([
+      this.homePage.welcomeHeading,
+      this.homePage.notebookSection,
+      this.homePage.helpSection,
+      this.homePage.communitySection
+    ]);
   }
 
   async verifyExternalLinks(): Promise<void> {
-    await expect(this.homePage.externalLinks.documentation).toBeVisible();
-    await expect(this.homePage.externalLinks.mailingList).toBeVisible();
-    await expect(this.homePage.externalLinks.issuesTracking).toBeVisible();
-    await expect(this.homePage.externalLinks.github).toBeVisible();
+    await this.verifyMultipleElementsVisible([
+      this.homePage.externalLinks.documentation,
+      this.homePage.externalLinks.mailingList,
+      this.homePage.externalLinks.issuesTracking,
+      this.homePage.externalLinks.github
+    ]);
   }
 
   async testNavigationConsistency(): Promise<{
@@ -175,14 +179,12 @@ export class HomePageUtil extends BasePage {
 
   async verifyCreateNewNoteWorkflow(): Promise<void> {
     await this.homePage.clickCreateNewNote();
-
-    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-create') !== null, { timeout: 10000 });
+    await this.waitForComponentAppears('zeppelin-note-create');
   }
 
   async verifyImportNoteWorkflow(): Promise<void> {
     await this.homePage.clickImportNote();
-
-    await this.page.waitForFunction(() => document.querySelector('zeppelin-note-import') !== null, { timeout: 10000 });
+    await this.waitForComponentAppears('zeppelin-note-import');
   }
 
   async testFilterFunctionality(filterTerm: string): Promise<void> {
