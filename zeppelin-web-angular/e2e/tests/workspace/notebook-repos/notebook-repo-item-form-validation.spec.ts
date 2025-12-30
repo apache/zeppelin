@@ -22,7 +22,7 @@ test.describe('Notebook Repository Item - Form Validation', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -34,58 +34,32 @@ test.describe('Notebook Repository Item - Form Validation', () => {
   });
 
   test('should disable save button when form is invalid', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     await repoItemPage.clickEdit();
 
     const firstRow = repoItemPage.settingRows.first();
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
-    const isInputVisible = await repoItemPage.isInputVisible(settingName);
-    if (isInputVisible) {
-      await repoItemPage.fillSettingInput(settingName, '');
+    await repoItemPage.fillSettingInput(settingName, '');
 
-      const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
-      expect(isSaveEnabled).toBe(false);
-    } else {
-      test.skip();
-    }
+    const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
+    expect(isSaveEnabled).toBe(false);
   });
 
   test('should enable save button when form is valid', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     await repoItemPage.clickEdit();
 
     const firstRow = repoItemPage.settingRows.first();
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
-    const isInputVisible = await repoItemPage.isInputVisible(settingName);
-    if (isInputVisible) {
-      const originalValue = await repoItemPage.getSettingInputValue(settingName);
-      await repoItemPage.fillSettingInput(settingName, originalValue || 'valid-value');
+    const originalValue = await repoItemPage.getSettingInputValue(settingName);
+    await repoItemPage.fillSettingInput(settingName, originalValue || 'valid-value');
 
-      const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
-      expect(isSaveEnabled).toBe(true);
-    } else {
-      test.skip();
-    }
+    const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
+    expect(isSaveEnabled).toBe(true);
   });
 
   test('should validate required fields on form controls', async () => {
     const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
 
     await repoItemPage.clickEdit();
 

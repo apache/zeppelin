@@ -11,18 +11,12 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
-import { getCurrentPath, waitForUrlNotContaining } from '../utils';
 import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
-  readonly welcomeHeading: Locator;
   readonly notebookSection: Locator;
   readonly helpSection: Locator;
   readonly communitySection: Locator;
-  readonly createNewNoteButton: Locator;
-  readonly importNoteButton: Locator;
-  readonly searchInput: Locator;
-  readonly filterInput: Locator;
   readonly zeppelinLogo: Locator;
   readonly anonymousUserIndicator: Locator;
   readonly welcomeSection: Locator;
@@ -31,11 +25,12 @@ export class HomePage extends BasePage {
   readonly helpCommunityColumn: Locator;
   readonly welcomeDescription: Locator;
   readonly refreshNoteButton: Locator;
-  readonly refreshIcon: Locator;
-  readonly notebookList: Locator;
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
   readonly communityHeading: Locator;
+  readonly createNoteModal: Locator;
+  readonly createNoteButton: Locator;
+  readonly notebookNameInput: Locator;
   readonly externalLinks: {
     documentation: Locator;
     mailingList: Locator;
@@ -52,27 +47,13 @@ export class HomePage extends BasePage {
       clearOutput: Locator;
       moveToTrash: Locator;
     };
-    folderActions: {
-      createNote: Locator;
-      renameFolder: Locator;
-      moveToTrash: Locator;
-    };
-    trashActions: {
-      restoreAll: Locator;
-      emptyAll: Locator;
-    };
   };
 
   constructor(page: Page) {
     super(page);
-    this.welcomeHeading = page.locator('h1', { hasText: 'Welcome to Zeppelin!' });
     this.notebookSection = page.locator('text=Notebook').first();
     this.helpSection = page.locator('text=Help').first();
     this.communitySection = page.locator('text=Community').first();
-    this.createNewNoteButton = page.locator('text=Create new Note');
-    this.importNoteButton = page.locator('text=Import Note');
-    this.searchInput = page.locator('textbox', { hasText: 'Search' });
-    this.filterInput = page.locator('input[placeholder*="Filter"]');
     this.zeppelinLogo = page.locator('text=Zeppelin').first();
     this.anonymousUserIndicator = page.locator('text=anonymous');
     this.welcomeSection = page.locator('.welcome');
@@ -81,11 +62,12 @@ export class HomePage extends BasePage {
     this.helpCommunityColumn = page.locator('[nz-col]').last();
     this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
     this.refreshNoteButton = page.locator('a.refresh-note');
-    this.refreshIcon = page.locator('a.refresh-note i[nz-icon]');
-    this.notebookList = page.locator('zeppelin-node-list');
     this.notebookHeading = this.notebookColumn.locator('h3');
     this.helpHeading = page.locator('h3').filter({ hasText: 'Help' });
     this.communityHeading = page.locator('h3').filter({ hasText: 'Community' });
+    this.createNoteModal = page.locator('div.ant-modal-content');
+    this.createNoteButton = this.createNoteModal.locator('button', { hasText: 'Create' });
+    this.notebookNameInput = this.createNoteModal.locator('input[name="noteName"]');
 
     this.externalLinks = {
       documentation: page.locator('a[href*="zeppelin.apache.org/docs"]'),
@@ -103,67 +85,30 @@ export class HomePage extends BasePage {
         renameNote: page.locator('.file .operation a[nztooltiptitle*="Rename note"]'),
         clearOutput: page.locator('.file .operation a[nztooltiptitle*="Clear output"]'),
         moveToTrash: page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]')
-      },
-      folderActions: {
-        createNote: page.locator('.folder .operation a[nztooltiptitle*="Create new note"]'),
-        renameFolder: page.locator('.folder .operation a[nztooltiptitle*="Rename folder"]'),
-        moveToTrash: page.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')
-      },
-      trashActions: {
-        restoreAll: page.locator('.folder .operation a[nztooltiptitle*="Restore all"]'),
-        emptyAll: page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')
       }
     };
   }
 
-  async navigateToHome(): Promise<void> {
-    await this.page.goto('/', { waitUntil: 'load' });
-    await this.waitForPageLoad();
-  }
-
   async navigateToLogin(): Promise<void> {
-    await this.page.goto('/#/login', { waitUntil: 'load' });
-    await this.waitForPageLoad();
+    await this.navigateToRoute('/login');
     // Wait for potential redirect to complete by checking URL change
-    await waitForUrlNotContaining(this.page, '#/login');
+    await this.waitForUrlNotContaining('#/login');
   }
 
   async isHomeContentDisplayed(): Promise<boolean> {
-    try {
-      await expect(this.welcomeHeading).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.welcomeTitle.isVisible();
   }
 
   async isAnonymousUser(): Promise<boolean> {
-    try {
-      await expect(this.anonymousUserIndicator).toBeVisible();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.anonymousUserIndicator.isVisible();
   }
 
   async clickZeppelinLogo(): Promise<void> {
-    await this.zeppelinLogo.click();
-  }
-
-  async getCurrentURL(): Promise<string> {
-    return this.page.url();
-  }
-
-  getCurrentPath(): string {
-    return getCurrentPath(this.page);
-  }
-
-  async getPageTitle(): Promise<string> {
-    return this.page.title();
+    await this.zeppelinLogo.click({ timeout: 15000 });
   }
 
   async getWelcomeHeadingText(): Promise<string> {
-    const text = await this.welcomeHeading.textContent();
+    const text = await this.welcomeTitle.textContent();
     return text || '';
   }
 
@@ -173,65 +118,48 @@ export class HomePage extends BasePage {
   }
 
   async clickRefreshNotes(): Promise<void> {
-    await this.refreshNoteButton.click();
+    await this.refreshNoteButton.click({ timeout: 15000 });
   }
 
   async isNotebookListVisible(): Promise<boolean> {
-    return this.notebookList.isVisible();
+    return this.zeppelinNodeList.isVisible();
   }
 
   async clickCreateNewNote(): Promise<void> {
-    await this.nodeList.createNewNoteLink.click();
+    await this.nodeList.createNewNoteLink.click({ timeout: 15000 });
+    await this.createNoteModal.waitFor({ state: 'visible' });
+  }
+
+  async createNote(notebookName: string): Promise<void> {
+    await this.clickCreateNewNote();
+
+    // Wait for the modal form to be fully rendered with proper labels
+    await this.page.waitForSelector('nz-form-label', { timeout: 10000 });
+
+    await this.waitForFormLabels(['Note Name', 'Clone Note']);
+
+    // Fill and verify the notebook name input
+    await this.fillAndVerifyInput(this.notebookNameInput, notebookName);
+
+    // Click the 'Create' button in the modal
+    await expect(this.createNoteButton).toBeEnabled({ timeout: 5000 });
+    await this.createNoteButton.click({ timeout: 15000 });
+    await this.waitForPageLoad();
   }
 
   async clickImportNote(): Promise<void> {
-    await this.nodeList.importNoteLink.click();
+    await this.nodeList.importNoteLink.click({ timeout: 15000 });
   }
 
   async filterNotes(searchTerm: string): Promise<void> {
-    await this.nodeList.filterInput.fill(searchTerm);
-  }
-
-  async isRefreshIconSpinning(): Promise<boolean> {
-    const spinAttribute = await this.refreshIcon.getAttribute('nzSpin');
-    return spinAttribute === 'true' || spinAttribute === '';
+    await this.nodeList.filterInput.fill(searchTerm, { timeout: 15000 });
   }
 
   async waitForRefreshToComplete(): Promise<void> {
-    await this.page.waitForFunction(
-      () => {
-        const icon = document.querySelector('a.refresh-note i[nz-icon]');
-        return icon && !icon.hasAttribute('nzSpin');
-      },
-      { timeout: 10000 }
-    );
+    await this.waitForElementAttribute('a.refresh-note i[nz-icon]', 'nzSpin', false);
   }
 
   async getDocumentationLinkHref(): Promise<string | null> {
     return this.externalLinks.documentation.getAttribute('href');
-  }
-
-  async areExternalLinksVisible(): Promise<boolean> {
-    const links = [
-      this.externalLinks.documentation,
-      this.externalLinks.mailingList,
-      this.externalLinks.issuesTracking,
-      this.externalLinks.github
-    ];
-
-    for (const link of links) {
-      if (!(await link.isVisible())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  async isWelcomeSectionVisible(): Promise<boolean> {
-    return this.welcomeSection.isVisible();
-  }
-
-  async isMoreInfoGridVisible(): Promise<boolean> {
-    return this.moreInfoGrid.isVisible();
   }
 }

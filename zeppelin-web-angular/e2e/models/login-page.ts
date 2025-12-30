@@ -17,37 +17,33 @@ export class LoginPage extends BasePage {
   readonly userNameInput: Locator;
   readonly passwordInput: Locator;
   readonly loginButton: Locator;
-  readonly welcomeTitle: Locator;
   readonly formContainer: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     super(page);
     this.userNameInput = page.getByRole('textbox', { name: 'User Name' });
     this.passwordInput = page.getByRole('textbox', { name: 'Password' });
     this.loginButton = page.getByRole('button', { name: 'Login' });
-    this.welcomeTitle = page.getByRole('heading', { name: 'Welcome to Zeppelin!' });
     this.formContainer = page.locator('form[nz-form]');
+    this.errorMessage = page.locator("text=The username and password that you entered don't match.").first();
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/#/login');
-    await this.waitForPageLoad();
+    await this.navigateToRoute('/login');
   }
 
   async login(username: string, password: string): Promise<void> {
-    await this.userNameInput.fill(username);
-    await this.passwordInput.fill(password);
-    await this.loginButton.click();
+    await this.userNameInput.fill(username, { timeout: 15000 });
+    await this.passwordInput.fill(password, { timeout: 15000 });
+    await this.loginButton.click({ timeout: 15000 });
   }
 
   async waitForErrorMessage(): Promise<void> {
-    await this.page.waitForSelector("text=The username and password that you entered don't match.", { timeout: 5000 });
+    await this.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   async getErrorMessageText(): Promise<string> {
-    return (
-      (await this.page.locator("text=The username and password that you entered don't match.").first().textContent()) ||
-      ''
-    );
+    return this.getElementText(this.errorMessage);
   }
 }

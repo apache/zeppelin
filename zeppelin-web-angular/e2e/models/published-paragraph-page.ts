@@ -11,58 +11,45 @@
  */
 
 import { Locator, Page } from '@playwright/test';
+import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class PublishedParagraphPage extends BasePage {
-  readonly publishedParagraphContainer: Locator;
-  readonly dynamicForms: Locator;
   readonly paragraphResult: Locator;
-  readonly errorModal: Locator;
-  readonly errorModalTitle: Locator;
   readonly errorModalContent: Locator;
   readonly errorModalOkButton: Locator;
   readonly confirmationModal: Locator;
-  readonly modalTitle: Locator;
-  readonly runButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.publishedParagraphContainer = page.locator('zeppelin-publish-paragraph');
-    this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms');
     this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
-    this.errorModal = page.locator('.ant-modal').last();
-    this.errorModalTitle = page.locator('.ant-modal-title');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
     this.confirmationModal = page.locator('div.ant-modal-confirm').last();
-    this.modalTitle = this.confirmationModal.locator('.ant-modal-confirm-title');
-    this.runButton = this.confirmationModal.locator('button', { hasText: 'Run' });
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}`);
-    await this.waitForPageLoad();
+    await navigateToNotebookWithFallback(this.page, noteId);
   }
 
   async navigateToPublishedParagraph(noteId: string, paragraphId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-    await this.waitForPageLoad();
+    await this.navigateToRoute(`/notebook/${noteId}/paragraph/${paragraphId}`);
   }
 
   async getErrorModalContent(): Promise<string> {
-    return (await this.errorModalContent.textContent()) || '';
+    return await this.getElementText(this.errorModalContent);
   }
 
   async clickErrorModalOk(): Promise<void> {
-    await this.errorModalOkButton.click();
-  }
-
-  async getCurrentUrl(): Promise<string> {
-    return this.page.url();
+    await this.errorModalOkButton.click({ timeout: 15000 });
   }
 
   async isOnHomePage(): Promise<boolean> {
-    const url = await this.getCurrentUrl();
-    return url.includes('/#/') && !url.includes('/notebook/');
+    try {
+      await this.welcomeTitle.waitFor({ state: 'visible', timeout: 5000 });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

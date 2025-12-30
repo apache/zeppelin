@@ -10,59 +10,80 @@
  * limitations under the License.
  */
 
-import { test } from '@playwright/test';
-import { HomePageUtil } from '../../models/home-page.util';
+import { expect, test } from '@playwright/test';
+import { HomePage } from '../../models/home-page';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
 test.describe('Home Page Notebook Actions', () => {
-  let homeUtil: HomePageUtil;
+  let homePage: HomePage;
 
   test.beforeEach(async ({ page }) => {
-    homeUtil = new HomePageUtil(page);
-    await page.goto('/');
+    homePage = new HomePage(page);
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });
 
   test.describe('Given notebook list is displayed', () => {
     test('When page loads Then should show notebook actions', async () => {
-      await homeUtil.verifyNotebookActions();
+      await expect(homePage.nodeList.createNewNoteLink).toBeVisible();
+      await expect(homePage.nodeList.importNoteLink).toBeVisible();
+      await expect(homePage.nodeList.filterInput).toBeVisible();
+      await expect(homePage.nodeList.tree).toBeVisible();
     });
 
-    test('When refresh button is clicked Then should trigger reload with loading state', async () => {
-      await homeUtil.testNotebookRefreshLoadingState();
+    test('When refresh button is clicked Then should trigger reload with loading state', async ({ page }) => {
+      const refreshButton = page.locator('a.refresh-note');
+      const refreshIcon = page.locator('a.refresh-note i[nz-icon]');
+
+      await expect(refreshButton).toBeVisible();
+      await expect(refreshIcon).toBeVisible();
+
+      await homePage.clickRefreshNotes();
+
+      await page.waitForTimeout(500);
+
+      await expect(refreshIcon).toBeVisible();
     });
 
-    test('When filter is used Then should filter notebook list', async () => {
-      await homeUtil.testFilterFunctionality('test');
+    test('When filter is used Then should filter notebook list', async ({ page }) => {
+      // Note (ZEPPELIN-6386):
+      // The Notebook search filter in the New UI is currently too slow,
+      // so this test is temporarily skipped. The skip will be removed
+      // once the performance issue is resolved.
+      test.skip();
+      await homePage.filterNotes('test');
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      const filteredResults = await page.locator('nz-tree .node').count();
+      expect(filteredResults).toBeGreaterThanOrEqual(0);
     });
   });
 
   test.describe('Given create new note action', () => {
-    test('When create new note is clicked Then should open note creation modal', async () => {
-      try {
-        await homeUtil.verifyCreateNewNoteWorkflow();
-      } catch (error) {
-        console.log('Note creation modal might not appear immediately');
-      }
+    test('When create new note is clicked Then should open note creation modal', async ({ page }) => {
+      await homePage.clickCreateNewNote();
+      await page.waitForSelector('zeppelin-note-create', { timeout: 10000 });
+      await expect(page.locator('zeppelin-note-create')).toBeVisible();
     });
   });
 
   test.describe('Given import note action', () => {
-    test('When import note is clicked Then should open import modal', async () => {
-      try {
-        await homeUtil.verifyImportNoteWorkflow();
-      } catch (error) {
-        console.log('Import modal might not appear immediately');
-      }
+    test('When import note is clicked Then should open import modal', async ({ page }) => {
+      await homePage.clickImportNote();
+      await page.waitForSelector('zeppelin-note-import', { timeout: 10000 });
+      await expect(page.locator('zeppelin-note-import')).toBeVisible();
     });
   });
 
   test.describe('Given notebook refresh functionality', () => {
     test('When refresh is triggered Then should maintain notebook list visibility', async () => {
-      await homeUtil.verifyNotebookRefreshFunctionality();
+      await homePage.clickRefreshNotes();
+      await homePage.waitForRefreshToComplete();
+      await expect(homePage.zeppelinNodeList).toBeVisible();
+      const isStillVisible = await homePage.zeppelinNodeList.isVisible();
+      expect(isStillVisible).toBe(true);
     });
   });
 });

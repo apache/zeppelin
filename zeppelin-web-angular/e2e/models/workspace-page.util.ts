@@ -11,54 +11,28 @@
  */
 
 import { expect, Page } from '@playwright/test';
-import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
+import { BasePage } from './base-page';
 import { WorkspacePage } from './workspace-page';
 
-export class WorkspaceTestUtil {
-  private page: Page;
+export class WorkspaceUtil extends BasePage {
   private workspacePage: WorkspacePage;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.workspacePage = new WorkspacePage(page);
-  }
-
-  async navigateAndWaitForLoad(): Promise<void> {
-    await this.workspacePage.navigateToWorkspace();
-    await waitForZeppelinReady(this.page);
-    await performLoginIfRequired(this.page);
-  }
-
-  async verifyWorkspaceLayout(): Promise<void> {
-    await expect(this.workspacePage.workspaceComponent).toBeVisible();
-    await expect(this.workspacePage.routerOutlet).toBeAttached();
   }
 
   async verifyHeaderVisibility(shouldBeVisible: boolean): Promise<void> {
     if (shouldBeVisible) {
-      await expect(this.workspacePage.header).toBeVisible();
+      await expect(this.workspacePage.zeppelinHeader).toBeVisible();
     } else {
-      await expect(this.workspacePage.header).toBeHidden();
+      await expect(this.workspacePage.zeppelinHeader).toBeHidden();
     }
-  }
-
-  async verifyWorkspaceContainer(): Promise<void> {
-    await expect(this.workspacePage.workspaceComponent).toBeVisible();
-    const contentElements = await this.page.locator('.content').count();
-    expect(contentElements).toBeGreaterThan(0);
   }
 
   async verifyRouterOutletActivation(): Promise<void> {
     await expect(this.workspacePage.routerOutlet).toBeAttached();
-
-    await this.page.waitForFunction(
-      () => {
-        const workspace = document.querySelector('zeppelin-workspace');
-        const outlet = workspace?.querySelector('router-outlet');
-        return outlet && outlet.nextElementSibling !== null;
-      },
-      { timeout: 10000 }
-    );
+    await this.waitForRouterOutletChild();
   }
 
   async waitForComponentActivation(): Promise<void> {
