@@ -31,8 +31,6 @@ export class BasePage {
   readonly cancelButton: Locator;
   readonly runButton: Locator;
 
-  readonly deleteIcon: Locator;
-
   readonly welcomeTitle: Locator;
 
   constructor(page: Page) {
@@ -49,8 +47,6 @@ export class BasePage {
     this.okButton = page.locator('button:has-text("OK")');
     this.cancelButton = page.locator('button:has-text("Cancel")');
     this.runButton = page.locator('button:has-text("Run")');
-
-    this.deleteIcon = page.locator('i[nztype="delete"], i.anticon-delete');
 
     this.welcomeTitle = page.getByRole('heading', { name: 'Welcome to Zeppelin!' });
   }
@@ -149,18 +145,6 @@ export class BasePage {
       },
       { timeout }
     );
-  }
-
-  async verifyMultipleElementsVisible(locators: Locator[], options?: { timeout?: number }): Promise<void> {
-    const { timeout } = options || {};
-    for (const locator of locators) {
-      await expect(locator).toBeVisible(timeout ? { timeout } : undefined);
-    }
-  }
-
-  async waitForComponentAppears(selector: string, options?: { timeout?: number }): Promise<void> {
-    const { timeout = 10000 } = options || {};
-    await this.page.waitForFunction(sel => document.querySelector(sel) !== null, selector, { timeout });
   }
 
   async fillAndVerifyInput(

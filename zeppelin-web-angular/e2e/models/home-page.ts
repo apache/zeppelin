@@ -47,15 +47,6 @@ export class HomePage extends BasePage {
       clearOutput: Locator;
       moveToTrash: Locator;
     };
-    folderActions: {
-      createNote: Locator;
-      renameFolder: Locator;
-      moveToTrash: Locator;
-    };
-    trashActions: {
-      restoreAll: Locator;
-      emptyAll: Locator;
-    };
   };
 
   constructor(page: Page) {
@@ -94,15 +85,6 @@ export class HomePage extends BasePage {
         renameNote: page.locator('.file .operation a[nztooltiptitle*="Rename note"]'),
         clearOutput: page.locator('.file .operation a[nztooltiptitle*="Clear output"]'),
         moveToTrash: page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]')
-      },
-      folderActions: {
-        createNote: page.locator('.folder .operation a[nztooltiptitle*="Create new note"]'),
-        renameFolder: page.locator('.folder .operation a[nztooltiptitle*="Rename folder"]'),
-        moveToTrash: page.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')
-      },
-      trashActions: {
-        restoreAll: page.locator('.folder .operation a[nztooltiptitle*="Restore all"]'),
-        emptyAll: page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')
       }
     };
   }

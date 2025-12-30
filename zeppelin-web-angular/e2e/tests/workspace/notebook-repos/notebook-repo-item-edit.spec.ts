@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
-import { NotebookRepoItemUtil } from '../../../models/notebook-repos-page.util';
+import { NotebookRepoItemUtil } from '../../../models/notebook-repo-item.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Item - Edit Mode', () => {

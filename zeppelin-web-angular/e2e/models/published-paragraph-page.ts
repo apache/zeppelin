@@ -15,7 +15,6 @@ import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class PublishedParagraphPage extends BasePage {
-  readonly dynamicForms: Locator;
   readonly paragraphResult: Locator;
   readonly errorModalContent: Locator;
   readonly errorModalOkButton: Locator;
@@ -23,7 +22,6 @@ export class PublishedParagraphPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms');
     this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
