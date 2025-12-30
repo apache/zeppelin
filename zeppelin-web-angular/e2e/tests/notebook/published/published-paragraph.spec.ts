@@ -59,11 +59,25 @@ test.describe('Published Paragraph', () => {
       expect(modalContent?.toLowerCase()).toContain('not found');
     });
 
-    test('should show error modal when paragraph does not exist in valid notebook', async () => {
+    test('should show error modal when paragraph does not exist in valid notebook', async ({ page }) => {
       const validNoteId = testNotebook.noteId;
       const nonExistentParagraphId = testUtil.generateNonExistentIds().paragraphId;
 
-      await testUtil.verifyNonExistentParagraphError(validNoteId, nonExistentParagraphId);
+      await testUtil.navigateToPublishedParagraph(validNoteId, nonExistentParagraphId);
+
+      // Expect a specific error modal
+      const errorModal = page.locator('.ant-modal', { hasText: /Paragraph Not Found|not found|Error/i });
+      await expect(errorModal).toBeVisible({ timeout: 10000 });
+
+      // Verify modal content includes the invalid paragraph ID
+      const content = await testUtil.getErrorModalContent();
+      expect(content).toBeDefined();
+      expect(content).toContain(nonExistentParagraphId);
+
+      await testUtil.clickErrorModalOk();
+
+      // Wait for redirect to home page
+      await expect(page).toHaveURL(/\/#\/$/, { timeout: 10000 });
     });
 
     test('should redirect to home page after error modal dismissal', async ({ page }) => {
@@ -85,8 +99,41 @@ test.describe('Published Paragraph', () => {
   });
 
   test.describe('Navigation and URL Patterns', () => {
-    test('should enter published paragraph by clicking link', async () => {
-      await testUtil.verifyClickLinkThisParagraphBehavior(testNotebook.noteId, testNotebook.paragraphId);
+    test('should enter published paragraph by clicking link', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
+
+      // Navigate to the normal notebook view
+      await page.goto(`/#/notebook/${noteId}`);
+      await page.waitForLoadState('networkidle');
+
+      // Find the first paragraph
+      let paragraphElement = page.locator(`zeppelin-notebook-paragraph[data-testid="${paragraphId}"]`);
+      if ((await paragraphElement.count()) === 0) {
+        paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+      }
+
+      await expect(paragraphElement).toBeVisible({ timeout: 10000 });
+
+      // Click the settings button to open the dropdown
+      const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+      await settingsButton.click();
+
+      // Click "Link this paragraph" in the dropdown menu
+      const linkParagraphButton = page.locator('li.list-item:has-text("Link this paragraph")');
+      await expect(linkParagraphButton).toBeVisible();
+
+      // Handle the new page/tab that opens
+      const [newPage] = await Promise.all([page.waitForEvent('popup'), linkParagraphButton.click()]);
+      await newPage.waitForLoadState();
+
+      // Verify the new page URL shows published paragraph
+      await expect(newPage).toHaveURL(new RegExp(`/notebook/${noteId}/paragraph/${paragraphId}`), { timeout: 10000 });
+
+      const codeEditor = newPage.locator('zeppelin-notebook-paragraph-code-editor');
+      await expect(codeEditor).toBeHidden();
+
+      const controlPanel = newPage.locator('zeppelin-notebook-paragraph-control');
+      await expect(controlPanel).toBeHidden();
     });
 
     test('should enter published paragraph by direct URL navigation', async ({ page }) => {
@@ -198,11 +245,46 @@ test.describe('Published Paragraph', () => {
       await expect(modal).toBeHidden();
     });
 
-    test('should show confirmation modal for paragraphs without results', async () => {
+    test('should show confirmation modal for paragraphs without results', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
-      // Test confirmation modal for paragraph without results
-      await testUtil.testConfirmationModalForNoResultParagraph({ noteId, paragraphId });
+      await publishedParagraphPage.navigateToNotebook(noteId);
+
+      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+      const settingsButton = paragraphElement.locator('a[nz-dropdown]');
+      await settingsButton.click();
+
+      const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
+      await clearOutputButton.click();
+      await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
+
+      await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+
+      const modal = publishedParagraphPage.confirmationModal;
+      await expect(modal).toBeVisible();
+
+      // Check for the enhanced modal content
+      await expect(publishedParagraphPage.modalTitle).toContainText('Run Paragraph?');
+
+      // Check that code preview is shown
+      await expect(publishedParagraphPage.modalBody.first()).toContainText(
+        'This paragraph contains the following code:'
+      );
+      await expect(publishedParagraphPage.modalBody.first()).toContainText('Would you like to execute this code?');
+
+      // Verify that the code preview area exists
+      const codePreview = publishedParagraphPage.modalBody
+        .locator('pre, code, .code-preview, .highlight, [class*="code"]')
+        .first();
+      await expect(codePreview).toBeVisible();
+
+      // Check for Run and Cancel buttons
+      await expect(publishedParagraphPage.runButton).toBeVisible();
+      await expect(publishedParagraphPage.cancelButton).toBeVisible();
+
+      // Click the Run button in the modal
+      await publishedParagraphPage.runButton.click();
+      await expect(modal).toBeHidden();
     });
   });
 });
