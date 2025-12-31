@@ -38,6 +38,7 @@
         <module>flink1.15-shims</module>
         <module>flink1.16-shims</module>
         <module>flink1.17-shims</module>
+        <module>flink1.18-shims</module>
     </modules>
 
     <properties>
@@ -46,6 +47,7 @@
         <flink1.15.version>1.15.1</flink1.15.version>
         <flink1.16.version>1.16.0</flink1.16.version>
         <flink1.17.version>1.17.1</flink1.17.version>
+        <flink1.18.version>1.18.1</flink1.18.version>
 
         <flink.scala.version>2.12.7</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
