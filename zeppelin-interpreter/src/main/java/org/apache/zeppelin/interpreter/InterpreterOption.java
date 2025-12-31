@@ -73,7 +73,7 @@ public class InterpreterOption {
   }
 
   public List<String> getOwners() {
-    if (null != owners && zConf.isUsernameForceLowerCase()) {
+    if (null != owners && zConf != null && zConf.isUsernameForceLowerCase()) {
       List<String> lowerCaseUsers = new ArrayList<>();
       for (String owner : owners) {
         lowerCaseUsers.add(owner.toLowerCase());
