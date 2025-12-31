@@ -18,25 +18,18 @@
 
 package org.apache.zeppelin.flink
 
-import java.io.{File, IOException}
-import java.net.{URL, URLClassLoader}
-import java.nio.file.Files
-import java.util.Properties
-import java.util.concurrent.TimeUnit
-import java.util.jar.JarFile
-
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.flink.api.common.JobExecutionResult
+import org.apache.flink.api.java.{ExecutionEnvironmentFactory, ExecutionEnvironment => JExecutionEnvironment}
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.client.program.ClusterClient
 import org.apache.flink.configuration._
 import org.apache.flink.core.execution.{JobClient, JobListener}
-import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironmentFactory, StreamExecutionEnvironment => JStreamExecutionEnvironment}
-import org.apache.flink.api.java.{ExecutionEnvironmentFactory, ExecutionEnvironment => JExecutionEnvironment}
 import org.apache.flink.runtime.jobgraph.SavepointConfigOptions
 import org.apache.flink.runtime.util.EnvironmentInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.environment.{StreamExecutionEnvironmentFactory, StreamExecutionEnvironment => JStreamExecutionEnvironment}
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.api.{EnvironmentSettings, TableConfig, TableEnvironment}
@@ -46,19 +39,24 @@ import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
 import org.apache.zeppelin.conf.ZeppelinConfiguration
 import org.apache.zeppelin.dep.DependencyResolver
-import org.apache.zeppelin.flink.internal.FlinkShell
-import org.apache.zeppelin.flink.internal.FlinkShell._
 import org.apache.zeppelin.flink.internal.FlinkILoop
+import org.apache.zeppelin.flink.internal.FlinkShell._
 import org.apache.zeppelin.interpreter.Interpreter.FormType
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterHookRegistry, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.io.{File, IOException}
+import java.net.{URL, URLClassLoader}
+import java.nio.file.Files
+import java.util.Properties
+import java.util.concurrent.TimeUnit
+import java.util.jar.JarFile
 import scala.collection.JavaConversions
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, Results, SimpleReader}
+import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, SimpleReader}
 
 /**
  * It instantiate flink scala shell and create env, senv, btenv, stenv.
@@ -211,8 +209,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       Some(ensureYarnConfig(config)
         .copy(name = Some(appName))))
 
-    val slotNum =  Integer.parseInt(properties.getProperty("taskmanager.numberOfTaskSlots",
-     properties.getProperty("flink.tm.slot", "1")))
+    val slotNum = Integer.parseInt(properties.getProperty("taskmanager.numberOfTaskSlots",
+      properties.getProperty("flink.tm.slot", "1")))
     config = config.copy(yarnConfig =
       Some(ensureYarnConfig(config)
         .copy(slots = Some(slotNum))))
@@ -426,39 +424,103 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   }
 
   private def createTableEnvs(): Unit = {
-    val originalClassLoader = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
-      val tableConfig = new TableConfig
-      tableConfig.getConfiguration.addAll(configuration)
+    if (flinkVersion.getMajorVersion == 1 && flinkVersion.getMinorVersion <= 17) {
+      val originalClassLoader = Thread.currentThread().getContextClassLoader
+      try {
+        LOGGER.warn("Executing Table envs for 117")
+        Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
+        val tableConfig = new TableConfig
+        tableConfig.getConfiguration.addAll(configuration)
 
-      this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
-        this.benv, this.senv, tableConfig, this.userJars.map(new URL(_)).asJava)
+        this.tblEnvFactory = new TableEnvFactory(this.flinkVersion, this.flinkShims,
+          this.benv, this.senv, tableConfig, this.userJars.map(new URL(_)).asJava)
 
-      // blink planner
-      val btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
-        .asInstanceOf[EnvironmentSettings.Builder]
-        .inBatchMode()
-        .build()
-      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
-      flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
-      this.java_btenv = this.btenv
+        // blink planner
+        val btEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+          .asInstanceOf[EnvironmentSettings.Builder]
+          .inBatchMode()
+          .build()
+        this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
+        flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
+        this.java_btenv = this.btenv
 
-      val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
-        .asInstanceOf[EnvironmentSettings.Builder]
-        .inStreamingMode()
-        .build()
-      this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
-      flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
-      this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
+        val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+          .asInstanceOf[EnvironmentSettings.Builder]
+          .inStreamingMode()
+          .build()
+        this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
+        flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
+        this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
 
-      if (!flinkVersion.isAfterFlink114()) {
-        // flink planner is not supported after flink 1.14
-        this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
-        this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
+        if (!flinkVersion.isAfterFlink114()) {
+          // flink planner is not supported after flink 1.14
+          this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
+          this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
+        }
+      } finally {
+        Thread.currentThread().setContextClassLoader(originalClassLoader)
       }
-    } finally {
-      Thread.currentThread().setContextClassLoader(originalClassLoader)
+    }
+    else {
+      val originalCl = Thread.currentThread().getContextClassLoader
+      try {
+        val shellCl = getFlinkScalaShellLoader
+        Thread.currentThread().setContextClassLoader(shellCl)
+        // Create settings (no Blink planner in 1.20; this is the unified planner)
+        val btSettings = EnvironmentSettings.newInstance()
+          .inBatchMode()
+          .build()
+
+        val stSettings = EnvironmentSettings.newInstance()
+          .inStreamingMode()
+          .build()
+
+        // --- Batch TableEnvironment (unified, not Blink/Java/Scala-specific) ---
+        // NOTE: TableConfig ctor is deprecated/removed; configure AFTER creation.
+        val btEnv = org.apache.flink.table.api.TableEnvironment.create(btSettings)
+        btEnv.getConfig.getConfiguration.addAll(configuration)
+        this.btenv = btEnv
+        this.java_btenv = btEnv // single impl for both Java/Scala APIs
+        flinkILoop.bind("btenv",
+          classOf[org.apache.flink.table.api.TableEnvironment].getCanonicalName,
+          btEnv,
+          List("@transient"))
+
+        // --- Streaming TableEnvironment (Scala & Java bridges) ---
+        // Scala bridge
+        val stEnv =
+          org.apache.flink.table.api.bridge.scala.StreamTableEnvironment.create(this.senv, stSettings)
+        stEnv.getConfig.getConfiguration.addAll(configuration)
+        this.stenv = stEnv
+        flinkILoop.bind("stenv",
+          classOf[org.apache.flink.table.api.bridge.scala.StreamTableEnvironment].getCanonicalName,
+          stEnv,
+          List("@transient"))
+
+
+        // Java StreamExecutionEnvironment from the Scala one
+        val jStreamEnv: org.apache.flink.streaming.api.environment.StreamExecutionEnvironment =
+          this.senv.getJavaEnv // in Scala this accessor is available as `javaEnv`
+
+        // Java bridge
+        this.java_stenv =
+          org.apache.flink.table.api.bridge.java.StreamTableEnvironment.create(jStreamEnv, stSettings)
+
+
+
+        // --- (Optional) If you previously injected user jars via a custom loader,
+        // consider also setting PipelineOptions.JARS so jobs carry them when submitted:
+        // import org.apache.flink.configuration.PipelineOptions
+        // configuration.set(PipelineOptions.JARS, this.userJars.asJava)
+        // If you do this, set it BEFORE creating the envs so it takes effect.
+
+        // No Flink planner (pre-1.14) fallback in 1.20+
+        this.btenv_2 = null
+        this.java_btenv_2 = null
+
+      } finally {
+        Thread.currentThread().setContextClassLoader(originalCl)
+      }
     }
   }
 
@@ -519,7 +581,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
           // -6 because of .class
           var className = je.getName.substring(0, je.getName.length - 6)
           className = className.replace('/', '.')
-          if (udfPackages.isEmpty || udfPackages.exists( p => className.startsWith(p))) {
+          if (udfPackages.isEmpty || udfPackages.exists(p => className.startsWith(p))) {
             val c = cl.loadClass(className)
             val udf = c.newInstance()
             if (udf.isInstanceOf[ScalarFunction]) {
@@ -539,7 +601,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
             }
           }
         } catch {
-          case e : Throwable =>
+          case e: Throwable =>
             LOGGER.info("Fail to inspect udf class: " + je.getName, e)
         }
       }
@@ -592,18 +654,60 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
    * This is just a workaround to make table api work in multiple threads.
    */
   def createPlannerAgain(): Unit = {
-    val originalClassLoader = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
-      val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
-        .asInstanceOf[EnvironmentSettings.Builder]
-        .inStreamingMode()
-        .build()
-      this.tblEnvFactory.createStreamPlanner(stEnvSetting)
-    } finally {
-      Thread.currentThread().setContextClassLoader(originalClassLoader)
+    if (flinkVersion.getMajorVersion == 1 && flinkVersion.getMinorVersion <= 17) {
+      val originalClassLoader = Thread.currentThread().getContextClassLoader
+      try {
+        Thread.currentThread().setContextClassLoader(getFlinkScalaShellLoader)
+        val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
+          .asInstanceOf[EnvironmentSettings.Builder]
+          .inStreamingMode()
+          .build()
+        this.tblEnvFactory.createStreamPlanner(stEnvSetting)
+      } finally {
+        Thread.currentThread().setContextClassLoader(originalClassLoader)
+      }
+    } else {
+      val originalCl = Thread.currentThread().getContextClassLoader
+      try {
+        val shellCl = getFlinkScalaShellLoader
+        Thread.currentThread().setContextClassLoader(shellCl)
+
+        val stSettings = org.apache.flink.table.api.EnvironmentSettings
+          .newInstance()
+          .inStreamingMode()
+          .build()
+
+        // Recreate Scala StreamTableEnvironment
+        val newScalaStEnv =
+          org.apache.flink.table.api.bridge.scala.StreamTableEnvironment.create(this.senv, stSettings)
+        newScalaStEnv.getConfig.getConfiguration.addAll(configuration)
+        this.stenv = newScalaStEnv
+        flinkILoop.bind(
+          "stenv",
+          classOf[org.apache.flink.table.api.bridge.scala.StreamTableEnvironment].getCanonicalName,
+          newScalaStEnv,
+          List("@transient")
+        )
+
+        // Recreate Java StreamTableEnvironment (from the Scala env’s Java backing env)
+        val jEnv: org.apache.flink.streaming.api.environment.StreamExecutionEnvironment = this.senv.getJavaEnv
+        val newJavaStEnv =
+          org.apache.flink.table.api.bridge.java.StreamTableEnvironment.create(jEnv, stSettings)
+        newJavaStEnv.getConfig.getConfiguration.addAll(configuration)
+        this.java_stenv = newJavaStEnv
+
+        // If you also need a (batch) TableEnvironment, rebuild it similarly:
+        // val btSettings = EnvironmentSettings.newInstance().inBatchMode().build()
+        // this.btenv = org.apache.flink.table.api.TableEnvironment.create(btSettings)
+        // this.btenv.getConfig.getConfiguration.addAll(configuration)
+        // this.java_btenv = this.btenv
+
+      } finally {
+        Thread.currentThread().setContextClassLoader(originalCl)
+      }
     }
   }
+
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
     val originalStdOut = System.out
@@ -671,7 +775,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     // flink 1.12 use copied version of configuration, so in order to update configuration we have to
     // get the internal configuration of StreamExecutionEnvironment.
     val internalConfiguration = getConfigurationOfStreamExecutionEnv()
-    if (!StringUtils.isBlank(savepointPath) && resumeFromSavepoint){
+    if (!StringUtils.isBlank(savepointPath) && resumeFromSavepoint) {
       LOGGER.info("Resume job from savepoint , savepointPath = {}", savepointPath)
       internalConfiguration.setString(SavepointConfigOptions.SAVEPOINT_PATH.key(), savepointPath);
       return
@@ -913,7 +1017,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     }
   }
 
-  def getUserJars:java.util.List[String] = JavaConversions.seqAsJavaList(userJars)
+  def getUserJars: java.util.List[String] = JavaConversions.seqAsJavaList(userJars)
 
   def completion(buf: String, cursor: Int, context: InterpreterContext): java.util.List[InterpreterCompletion]
 

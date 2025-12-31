@@ -69,7 +69,10 @@ public abstract class FlinkShims {
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 17) {
       LOGGER.info("Initializing shims for Flink 1.17");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink117Shims");
-    } else {
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 20) {
+      LOGGER.info("Initializing shims for Flink 1.20");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink120Shims");
+    }else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
 
