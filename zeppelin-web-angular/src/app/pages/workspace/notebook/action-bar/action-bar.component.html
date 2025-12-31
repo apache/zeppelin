@@ -11,7 +11,7 @@
   -->
 
 <div class="bar" [class.simple]="looknfeel !== 'default'">
-  <div class="title">
+  <div class="title" role="heading" aria-level="1">
     <zeppelin-elastic-input
       nz-tooltip
       [nzTooltipTitle]="note.path"
@@ -182,6 +182,7 @@
       <button
         nz-button
         nz-dropdown
+        [(nzVisible)]="isSearchMenuVisible"
         [nzDropdownMenu]="searchMenu"
         nzTrigger="click"
         nz-tooltip
