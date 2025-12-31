@@ -47,20 +47,20 @@
 // ---
 
 // Background color for `<body>`
-@body-background: #fff;
+@body-background: #141414;
 // Base background color for most components
-@component-background: #fff;
+@component-background: #1f1f1f;
 @font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
   'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 @code-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-@text-color: fade(@black, 65%);
-@text-color-secondary: fade(@black, 45%);
+@text-color: fade(@white, 85%);
+@text-color-secondary: fade(@white, 65%);
 @text-color-warning: @gold-7;
 @text-color-danger: @red-7;
-@text-color-inverse: @white;
-@icon-color: inherit;
-@icon-color-hover: fade(@black, 75%);
-@heading-color: fade(#000, 85%);
+@text-color-inverse: @black;
+@icon-color: fade(@white, 65%);
+@icon-color-hover: fade(@white, 85%);
+@heading-color: fade(@white, 95%);
 @heading-color-dark: fade(@white, 100%);
 @text-color-dark: fade(@white, 85%);
 @text-color-secondary-dark: fade(@white, 65%);
@@ -119,9 +119,9 @@
 @ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
 
 // Border color
-@border-color-base: hsv(0, 0, 85%); // base border outline a component
-@border-color-split: hsv(0, 0, 91%); // split border inside a component
-@border-color-inverse: @white;
+@border-color-base: #434343; // base border outline a component
+@border-color-split: #303030; // split border inside a component
+@border-color-inverse: @black;
 @border-width-base: 1px; // width of the border for a component
 @border-style-base: solid; // style of a components border
 
@@ -130,16 +130,16 @@
 @outline-width: 2px;
 @outline-color: @primary-color;
 
-@background-color-light: hsv(0, 0, 98%); // background of header and selected item
-@background-color-base: hsv(0, 0, 96%); // Default grey background color
+@background-color-light: #262626; // background of header and selected item
+@background-color-base: #1f1f1f; // Default grey background color
 
 // Disabled states
-@disabled-color: fade(#000, 25%);
+@disabled-color: fade(@white, 25%);
 @disabled-bg: @background-color-base;
-@disabled-color-dark: fade(#fff, 35%);
+@disabled-color-dark: fade(@white, 35%);
 
 // Shadow
-@shadow-color: rgba(0, 0, 0, 0.15);
+@shadow-color: rgba(0, 0, 0, 0.45);
 @shadow-color-inverse: @component-background;
 @box-shadow-base: @shadow-1-down;
 @shadow-1-up: 0 -2px 8px @shadow-color;
@@ -158,11 +158,11 @@
 @btn-primary-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
 @btn-text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
 
-@btn-primary-color: #fff;
+@btn-primary-color: @white;
 @btn-primary-bg: @primary-color;
 
 @btn-default-color: @text-color;
-@btn-default-bg: #fff;
+@btn-default-bg: @component-background;
 @btn-default-border: @border-color-base;
 
 @btn-danger-color: @error-color;
@@ -196,7 +196,7 @@
 // Checkbox
 @checkbox-size: 16px;
 @checkbox-color: @primary-color;
-@checkbox-check-color: #fff;
+@checkbox-check-color: @white;
 @checkbox-border-width: @border-width-base;
 
 // Descriptions
@@ -253,7 +253,7 @@
 @grid-gutter-width: 0;
 
 // Layout
-@layout-body-background: #f0f2f5;
+@layout-body-background: @body-background;
 @layout-header-background: #001529;
 @layout-footer-background: @layout-body-background;
 @layout-header-height: 64px;
@@ -262,16 +262,16 @@
 @layout-sider-background: @layout-header-background;
 @layout-trigger-height: 48px;
 @layout-trigger-background: #002140;
-@layout-trigger-color: #fff;
+@layout-trigger-color: @white;
 @layout-zero-trigger-width: 36px;
 @layout-zero-trigger-height: 42px;
 // Layout light theme
-@layout-sider-background-light: #fff;
-@layout-trigger-background-light: #fff;
+@layout-sider-background-light: @white;
+@layout-trigger-background-light: @white;
 @layout-trigger-color-light: @text-color;
 
 // z-index list, order by `z-index`
-@zindex-table-fixed: auto;
+@zindex-table-fixed: 2;
 @zindex-affix: 10;
 @zindex-back-top: 10;
 @zindex-badge: 10;
@@ -312,11 +312,11 @@
 @input-padding-vertical-base: 4px;
 @input-padding-vertical-sm: 1px;
 @input-padding-vertical-lg: 6px;
-@input-placeholder-color: hsv(0, 0, 75%);
+@input-placeholder-color: fade(@white, 45%);
 @input-color: @text-color;
 @input-border-color: @border-color-base;
-@input-bg: #fff;
-@input-number-handler-active-bg: #f4f4f4;
+@input-bg: @component-background;
+@input-number-handler-active-bg: @background-color-light;
 @input-number-handler-hover-bg: @primary-5;
 @input-number-handler-bg: @component-background;
 @input-number-handler-border-color: @border-color-base;
@@ -342,7 +342,7 @@
 // Tooltip max width
 @tooltip-max-width: 250px;
 // Tooltip text color
-@tooltip-color: #fff;
+@tooltip-color: @white;
 // Tooltip background color
 @tooltip-bg: rgba(0, 0, 0, 0.75);
 // Tooltip arrow width
@@ -355,7 +355,7 @@
 // Popover
 // ---
 // Popover body background color
-@popover-bg: #fff;
+@popover-bg: @component-background;
 // Popover text color
 @popover-color: @text-color;
 // Popover maximum width
@@ -376,7 +376,7 @@
 @modal-header-bg: @component-background;
 @modal-footer-bg: transparent;
 @modal-footer-border-color-split: @border-color-split;
-@modal-mask-bg: fade(@black, 45%);
+@modal-mask-bg: fade(@black, 65%);
 
 // Progress
 // --
@@ -411,9 +411,9 @@
 // dark theme
 @menu-dark-color: @text-color-secondary-dark;
 @menu-dark-bg: @layout-header-background;
-@menu-dark-arrow-color: #fff;
+@menu-dark-arrow-color: @white;
 @menu-dark-submenu-bg: #000c17;
-@menu-dark-highlight-color: #fff;
+@menu-dark-highlight-color: @white;
 @menu-dark-item-active-bg: @primary-color;
 @menu-dark-selected-item-icon-color: @white;
 @menu-dark-selected-item-text-color: @white;
@@ -427,17 +427,18 @@
 
 // Table
 // --
-@table-header-bg: @background-color-light;
+@table-header-bg: @background-color-base;
 @table-header-color: @heading-color;
 @table-header-sort-bg: @background-color-base;
-@table-body-sort-bg: rgba(0, 0, 0, 0.01);
+@table-header-icon-color: fade(@white, 45%);
+@table-body-sort-bg: rgba(255, 255, 255, 0.01);
 @table-row-hover-bg: @primary-1;
-@table-selected-row-bg: #fafafa;
-@table-expanded-row-bg: #fbfbfb;
+@table-selected-row-bg: @background-color-base;
+@table-expanded-row-bg: @background-color-base;
 @table-padding-vertical: 16px;
 @table-padding-horizontal: 16px;
 @table-border-radius-base: @border-radius-base;
-@table-footer-bg: @background-color-light;
+@table-footer-bg: @background-color-base;
 @table-footer-color: @heading-color;
 
 // Tag
@@ -480,9 +481,9 @@
 @card-inner-head-padding: 12px;
 @card-padding-base: 24px;
 @card-actions-background: @background-color-light;
-@card-skeleton-bg: #cfd8dc;
+@card-skeleton-bg: #434343;
 @card-background: @component-background;
-@card-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+@card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 @card-radius: @border-radius-sm;
 
 // Comment
@@ -490,9 +491,9 @@
 @comment-padding-base: 16px 0;
 @comment-nest-indent: 44px;
 @comment-author-name-color: @text-color-secondary;
-@comment-author-time-color: #ccc;
+@comment-author-time-color: @text-color-secondary;
 @comment-action-color: @text-color-secondary;
-@comment-action-hover-color: #595959;
+@comment-action-hover-color: @text-color;
 
 // Tabs
 // ---
@@ -517,7 +518,7 @@
 
 // BackTop
 // ---
-@back-top-color: #fff;
+@back-top-color: @white;
 @back-top-bg: @text-color-secondary;
 @back-top-hover-bg: @text-color;
 
@@ -529,8 +530,8 @@
 @avatar-font-size-base: 18px;
 @avatar-font-size-lg: 24px;
 @avatar-font-size-sm: 14px;
-@avatar-bg: #ccc;
-@avatar-color: #fff;
+@avatar-bg: @text-color-secondary;
+@avatar-color: @white;
 @avatar-border-radius: @border-radius-base;
 
 // Switch
@@ -555,7 +556,7 @@
 @page-header-padding: 24px;
 @page-header-padding-vertical: 16px;	@page-header-padding-vertical: 16px;
 @page-header-padding-breadcrumb: 12px;
-@page-header-back-color: #000;
+@page-header-back-color: @black;
 
 // Breadcrumb
 // ---
@@ -589,9 +590,9 @@
 // ---
 @tree-title-height: 24px;
 @tree-child-padding: 18px;
-@tree-directory-selected-color: #fff;
+@tree-directory-selected-color: @white;
 @tree-directory-selected-bg: @primary-color;
-@tree-node-hover-bg: @item-hover-bg;
+@tree-node-hover-bg: @black;
 @tree-node-selected-bg: @primary-2;
 
 // Collapse
@@ -603,7 +604,7 @@
 
 // Skeleton
 // ---
-@skeleton-color: #f2f2f2;
+@skeleton-color: #434343;
 
 // Transfer
 // ---

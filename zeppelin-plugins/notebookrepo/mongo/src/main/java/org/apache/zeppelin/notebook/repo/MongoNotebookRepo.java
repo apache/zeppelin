@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.AggregateIterable;
@@ -45,16 +46,15 @@ import com.mongodb.client.model.Updates;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Backend for storing Notebook on MongoDB.
  */
-public class MongoNotebookRepo implements NotebookRepo {
+public class MongoNotebookRepo extends AbstractNotebookRepo {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MongoNotebookRepo.class);
-
-  private ZeppelinConfiguration conf;
+  private static final Logger LOGGER = LoggerFactory.getLogger(MongoNotebookRepo.class);
 
   private MongoClient client;
 
@@ -72,15 +72,15 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration zConf) throws IOException {
-    this.conf = zConf;
-    client = new MongoClient(new MongoClientURI(conf.getMongoUri()));
-    db = client.getDatabase(conf.getMongoDatabase());
-    notes = db.getCollection(conf.getMongoCollection());
-    folderName = conf.getMongoFolder();
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    client = new MongoClient(new MongoClientURI(zConf.getMongoUri()));
+    db = client.getDatabase(zConf.getMongoDatabase());
+    notes = db.getCollection(zConf.getMongoCollection());
+    folderName = zConf.getMongoFolder();
     folders = db.getCollection(folderName);
 
-    if (conf.getMongoAutoimport()) {
+    if (zConf.getMongoAutoimport()) {
       // import local notes into MongoDB
       insertFileSystemNotes();
     }
@@ -92,23 +92,22 @@ public class MongoNotebookRepo implements NotebookRepo {
    * If a note already exists in MongoDB, skip it.
    */
   private void insertFileSystemNotes() throws IOException {
-    NotebookRepo vfsRepo = new VFSNotebookRepo();
-    vfsRepo.init(this.conf);
-    Map<String, NoteInfo> infos = vfsRepo.list(null);
+    try (NotebookRepo vfsRepo = new VFSNotebookRepo()) {
+      vfsRepo.init(zConf, noteParser);
+      Map<String, NoteInfo> infos = vfsRepo.list(null);
 
-    try (AutoLock autoLock = lock.lockForWrite()) {
-      for (NoteInfo info : infos.values()) {
-        Note note = vfsRepo.get(info.getId(), info.getPath(), null);
-        saveOrIgnore(note, null);
+      try (AutoLock autoLock = lock.lockForWrite()) {
+        for (NoteInfo info : infos.values()) {
+          Note note = vfsRepo.get(info.getId(), info.getPath(), null);
+          saveOrIgnore(note, null);
+        }
       }
     }
-
-    vfsRepo.close();
   }
 
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    LOG.debug("list repo.");
+    LOGGER.debug("list repo.");
     Map<String, NoteInfo> infos = new HashMap<>();
 
     Document match = new Document("$match", new Document(Fields.IS_DIR, false));
@@ -145,7 +144,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    LOG.debug("get note, noteId: {}, notePath:{}", noteId, notePath);
+    LOGGER.debug("get note, noteId: {}, notePath:{}", noteId, notePath);
 
     return getNote(noteId, notePath);
   }
@@ -161,7 +160,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    LOG.debug("save note, note: {}", note);
+    LOGGER.debug("save note, note: {}", note);
     String[] pathArray = toPathArray(note.getPath(), false);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
@@ -179,7 +178,7 @@ public class MongoNotebookRepo implements NotebookRepo {
       saveNoteOrIgnore(note);
       saveNotePathOrIgnore(note.getId(), note.getName(), pId);
     } catch (Exception e) {
-      LOG.warn("ignore error when insert note '{}': {}", note, e.getMessage());
+      LOGGER.warn("ignore error when insert note '{}': {}", note, e.getMessage());
     }
   }
 
@@ -221,7 +220,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   @Override
   public void move(String noteId, String notePath, String newNotePath,
                    AuthenticationInfo subject) throws IOException {
-    LOG.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
+    LOGGER.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
         noteId, notePath, newNotePath);
     if (StringUtils.equals(notePath, newNotePath)) {
       return;
@@ -248,7 +247,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   @Override
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException {
-    LOG.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
+    LOGGER.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
     if (StringUtils.equals(folderPath, newFolderPath)) {
       return;
     }
@@ -275,7 +274,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   @Override
   public void remove(String noteId, String notePath,
                      AuthenticationInfo subject) throws IOException {
-    LOG.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
+    LOGGER.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
       folders.deleteOne(eq(Fields.ID, noteId));
@@ -298,7 +297,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
-    LOG.debug("remove folder, folderPath: {}", folderPath);
+    LOGGER.debug("remove folder, folderPath: {}", folderPath);
     String[] pathArray = toPathArray(folderPath, true);
 
     try (AutoLock autoLock = lock.lockForWrite()) {
@@ -335,13 +334,13 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
     return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
   }
 
   /**
@@ -436,7 +435,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    return Note.fromJson(noteId, json);
+    return noteParser.fromJson(noteId, json);
   }
 
   /**

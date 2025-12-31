@@ -23,7 +23,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -36,6 +36,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter-shaded</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -45,11 +46,7 @@
       <scope>provided</scope>
       <exclusions>
         <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.atomix</groupId>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
@@ -62,7 +59,12 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
     </dependency>
 
     <dependency>
@@ -76,8 +78,8 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -96,7 +98,7 @@
           <artifactId>maven-enforcer-plugin</artifactId>
           <executions>
             <execution>
-              <id>enforce</id>
+              <id>enforce-dependency-convergence</id>
               <phase>none</phase>
             </execution>
           </executions>
@@ -107,6 +109,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
             <filters>
               <filter>
                 <artifact>*:*</artifact>

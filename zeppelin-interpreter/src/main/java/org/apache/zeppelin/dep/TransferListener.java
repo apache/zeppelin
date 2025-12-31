@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * Simple listener that show deps downloading progress.
  */
 public class TransferListener extends AbstractTransferListener {
-  private Logger logger = LoggerFactory.getLogger(TransferListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransferListener.class);
 
   private Map<TransferResource, Long> downloads = new ConcurrentHashMap<>();
 
@@ -46,7 +46,7 @@ public class TransferListener extends AbstractTransferListener {
     String message =
         event.getRequestType() == TransferEvent.RequestType.PUT ? "Uploading" : "Downloading";
 
-    logger.info(message + ": " + event.getResource().getRepositoryUrl()
+    LOGGER.info(message + ": " + event.getResource().getRepositoryUrl()
                 + event.getResource().getResourceName());
   }
 
@@ -69,7 +69,7 @@ public class TransferListener extends AbstractTransferListener {
     pad(buffer, pad);
     buffer.append('\r');
 
-    logger.info(buffer.toString());
+    LOGGER.info(buffer.toString());
   }
 
   private String getStatus(long complete, long total) {
@@ -112,7 +112,7 @@ public class TransferListener extends AbstractTransferListener {
         throughput = " at " + format.format(kbPerSec) + " KB/sec";
       }
 
-      logger.info(type + ": " + resource.getRepositoryUrl() + resource.getResourceName() + " ("
+      LOGGER.info(type + ": " + resource.getRepositoryUrl() + resource.getResourceName() + " ("
           + len + throughput + ")");
     }
   }
@@ -120,7 +120,7 @@ public class TransferListener extends AbstractTransferListener {
   @Override
   public void transferFailed(TransferEvent event) {
     transferCompleted(event);
-    logger.warn("Unsuccessful transfer", event.getException());
+    LOGGER.warn("Unsuccessful transfer", event.getException());
   }
 
   private void transferCompleted(TransferEvent event) {
@@ -128,12 +128,12 @@ public class TransferListener extends AbstractTransferListener {
     StringBuilder buffer = new StringBuilder(64);
     pad(buffer, lastLength);
     buffer.append('\r');
-    logger.info(buffer.toString());
+    LOGGER.info(buffer.toString());
   }
 
   @Override
   public void transferCorrupted(TransferEvent event) {
-    logger.error("Corrupted transfer", event.getException());
+    LOGGER.error("Corrupted transfer", event.getException());
   }
 
   private long toKB(long bytes) {

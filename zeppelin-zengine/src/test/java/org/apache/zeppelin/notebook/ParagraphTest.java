@@ -18,24 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -59,17 +41,35 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ParagraphTest extends AbstractInterpreterTest {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class ParagraphTest extends AbstractInterpreterTest {
 
   @Test
-  public void scriptBodyWithReplName() {
+  void scriptBodyWithReplName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test (1234567");
@@ -82,7 +82,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void scriptBodyWithoutReplName() {
+  void scriptBodyWithoutReplName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("1234567");
@@ -91,7 +91,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replNameAndNoBody() {
+  void replNameAndNoBody() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test");
@@ -100,7 +100,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replSingleCharName() {
+  void replSingleCharName() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%r a");
@@ -109,7 +109,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testParagraphProperties() {
+  void testParagraphProperties() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test(p1=v1,p2=v2) a");
@@ -134,21 +134,19 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals(0, paragraph.getLocalProperties().size());
   }
 
-  @Rule
-  public ExpectedException expectedEx = ExpectedException.none();
-
   @Test
-  public void testInvalidProperties() {
-    expectedEx.expect(RuntimeException.class);
-    expectedEx.expectMessage("Invalid paragraph properties format");
-
+  void testInvalidProperties() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
-    paragraph.setText("%test(p1=v1=v2) a");
+    assertThrows(RuntimeException.class,
+            () -> {
+              paragraph.setText("%test(p1=v1=v2) a");
+            },
+            "Invalid paragraph properties format");
   }
 
   @Test
-  public void replInvalid() {
+  void replInvalid() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("foo %r");
@@ -165,7 +163,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void replNameEndsWithWhitespace() {
+  void replNameEndsWithWhitespace() {
     Note note = createNote();
     Paragraph paragraph = new Paragraph(note, null);
     paragraph.setText("%test\r\n###Hello");
@@ -206,7 +204,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void should_extract_variable_from_angular_object_registry() throws Exception {
+  void should_extract_variable_from_angular_object_registry() throws Exception {
     //Given
     final String noteId = "noteId";
 
@@ -245,7 +243,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void returnDefaultParagraphWithNewUser() {
+  void returnDefaultParagraphWithNewUser() {
     Paragraph p = new Paragraph("para_1", null, null);
     String defaultValue = "Default Value";
     p.setResult(new InterpreterResult(Code.SUCCESS, defaultValue));
@@ -254,11 +252,12 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals(defaultValue, newUserParagraph.getReturn().message().get(0).getData());
   }
 
-  @Ignore
-  public void returnUnchangedResultsWithDifferentUser() throws Throwable {
+  @Disabled
+  @Test
+  void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
-    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null));
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);
@@ -321,7 +320,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testCursorPosition() {
+  void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
     List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
@@ -351,11 +350,8 @@ public class ParagraphTest extends AbstractInterpreterTest {
     }
   }
 
-  //(TODO zjffdu) temporary disable it.
-  //https://github.com/apache/zeppelin/pull/3416
-  @Ignore
   @Test
-  public void credentialReplacement() throws Throwable {
+  void credentialReplacement() throws Throwable {
     Note mockNote = mock(Note.class);
     Credentials creds = mock(Credentials.class);
     when(mockNote.getCredentials()).thenReturn(creds);
@@ -363,17 +359,22 @@ public class ParagraphTest extends AbstractInterpreterTest {
     UserCredentials uc = mock(UserCredentials.class);
     when(creds.getUserCredentials(anyString())).thenReturn(uc);
     UsernamePassword up = new UsernamePassword("user", "pwd");
-    when(uc.getUsernamePassword("ent")).thenReturn(up );
+    when(uc.getUsernamePassword("ent")).thenReturn(up);
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);
     doReturn(mockInterpreter).when(spyParagraph).getBindedInterpreter();
+
+    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
+    when(mockInterpreterSetting.isUserAuthorized(anyList())).thenReturn(true);
 
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
     when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
     when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
     when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
+    when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreter.getFormType()).thenReturn(FormType.NONE);
 
     ParagraphJobListener mockJobListener = mock(ParagraphJobListener.class);
@@ -386,23 +387,23 @@ public class ParagraphTest extends AbstractInterpreterTest {
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
     spyParagraph.setAuthenticationInfo(user1);
 
-    spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
+    spyParagraph.setText("val x = \"usr={ent.user}&pass={ent.password}\"");
 
     // Credentials should only be injected when it is enabled for an interpreter or when specified in a local property
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.jobRun();
-    verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
+    verify(mockInterpreter).interpret(eq("val x = \"usr={ent.user}&pass={ent.password}\""), any(InterpreterContext.class));
 
     when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
-    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
+    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "false");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
     // Check if local property override works
-    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.getLocalProperties().put(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
-    verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
+    verify(mockInterpreter, times(2)).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
   }
 }

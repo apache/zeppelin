@@ -10,31 +10,20 @@
   ~ limitations under the License.
   -->
 
-<nz-card class="repo-item"
-         [class.edit]="editMode"
-         [nzTitle]="repo.name"
-         [nzExtra]="extraTemplate">
+<nz-card class="repo-item" [class.edit]="editMode" [nzTitle]="repo.name" [nzExtra]="extraTemplate">
   <ng-template #extraTemplate>
     <div class="extra-wrap" *ngIf="!editMode">
-      <button nz-button
-              nzSize="small"
-              (click)="triggerEditMode()">
+      <button nz-button nzSize="small" (click)="triggerEditMode()">
         <i nz-icon nzType="edit"></i>
         Edit
       </button>
     </div>
     <div class="extra-wrap" *ngIf="editMode">
-      <button nz-button
-              nzType="primary"
-              nzSize="small"
-              [disabled]="!settingFormArray.valid"
-              (click)="save()">
+      <button nz-button nzType="primary" nzSize="small" [disabled]="!settingFormArray.valid" (click)="save()">
         <i nz-icon nzType="save" nzTheme="outline"></i>
         Save
       </button>
-      <button nz-button
-              nzSize="small"
-              (click)="cancel()">
+      <button nz-button nzSize="small" (click)="cancel()">
         <i nz-icon nzType="close" nzTheme="outline"></i>
         Cancel
       </button>
@@ -44,36 +33,28 @@
   <form nz-form>
     <nz-table nzTemplateMode nzSize="small">
       <thead>
-      <tr>
-        <th>Name</th>
-        <th>Value</th>
-      </tr>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let setting of repo.settings; index as i">
-        <td>{{setting.name}}</td>
-        <ng-container *ngIf="!editMode">
-          <td>{{setting.selected}}</td>
-        </ng-container>
-        <ng-container *ngIf="editMode">
-          <td>
-            <input *ngIf="setting.type === 'INPUT'"
-                   nzSize="small"
-                   nz-input
-                   [formControl]="settingFormArray.controls[i]">
+        <tr *ngFor="let setting of repo.settings; index as i">
+          <td>{{ setting.name }}</td>
+          <ng-container *ngIf="!editMode">
+            <td>{{ setting.selected }}</td>
+          </ng-container>
+          <ng-container *ngIf="editMode">
+            <td>
+              <input *ngIf="setting.type === 'INPUT'" nzSize="small" nz-input [formControl]="getSettingControl(i)" />
 
-            <nz-select *ngIf="setting.type === 'DROPDOWN'" [formControl]="settingFormArray.controls[i]">
-              <nz-option
-                *ngFor="let option of setting.value"
-                [nzLabel]="option"
-                [nzValue]="option">
-              </nz-option>
-            </nz-select>
-          </td>
-        </ng-container>
-      </tr>
+              <nz-select *ngIf="setting.type === 'DROPDOWN'" [formControl]="getSettingControl(i)">
+                <nz-option *ngFor="let option of setting.value" [nzLabel]="option" [nzValue]="option"></nz-option>
+              </nz-select>
+            </td>
+          </ng-container>
+        </tr>
       </tbody>
     </nz-table>
   </form>
-
 </nz-card>

@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -70,9 +70,9 @@ import org.slf4j.LoggerFactory;
  */
 public class HeliumBundleFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(HeliumBundleFactory.class);
-  private static final String NODE_VERSION = "v6.9.1";
-  private static final String NPM_VERSION = "3.10.8";
-  private static final String YARN_VERSION = "v0.21.3";
+  private static final String NODE_VERSION = "v16.16.0";
+  private static final String NPM_VERSION = "8.11.0";
+  private static final String YARN_VERSION = "v1.22.0";
   private static final String NPM_PACKAGE_NAME = "npm";
   protected static final String HELIUM_LOCAL_REPO = "helium-bundle";
   private static final String HELIUM_BUNDLES_DIR = "bundles";
@@ -83,7 +83,7 @@ public class HeliumBundleFactory {
   private static final String PACKAGE_JSON = "package.json";
   private static final String HELIUM_BUNDLE_CACHE = "helium.bundle.cache.js";
   private static final String HELIUM_BUNDLE = "helium.bundle.js";
-  private static final String HELIUM_BUNDLES_VAR = "heliumBundles";
+  private static final String HELIUM_BUNDLES_VAR = "window._heliumBundles";
   private static final int FETCH_RETRY_COUNT = 2;
   private static final int FETCH_RETRY_FACTOR_COUNT = 1;
   private static final int FETCH_RETRY_MIN_TIMEOUT = 5000; // Milliseconds
@@ -106,15 +106,15 @@ public class HeliumBundleFactory {
   private ByteArrayOutputStream out  = new ByteArrayOutputStream();
 
   @Inject
-  public HeliumBundleFactory(ZeppelinConfiguration conf) {
+  public HeliumBundleFactory(ZeppelinConfiguration zConf) {
     this.heliumLocalRepoDirectory =
-        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+        new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
     this.yarnCacheDir = new File(heliumLocalRepoDirectory, YARN_CACHE_DIR);
-    this.defaultNodeInstallerUrl = conf.getHeliumNodeInstallerUrl();
-    this.defaultNpmInstallerUrl = conf.getHeliumNpmInstallerUrl();
-    this.defaultYarnInstallerUrl = conf.getHeliumYarnInstallerUrl();
+    this.defaultNodeInstallerUrl = zConf.getHeliumNodeInstallerUrl();
+    this.defaultNpmInstallerUrl = zConf.getHeliumNpmInstallerUrl();
+    this.defaultYarnInstallerUrl = zConf.getHeliumYarnInstallerUrl();
     this.nodeInstallationDirectory = this.heliumLocalRepoDirectory;
 
     this.frontEndPluginFactory =
@@ -122,17 +122,17 @@ public class HeliumBundleFactory {
 
     this.gson = new Gson();
 
-    File zeppelinWebPath = new File(conf.getAbsoluteDir("zeppelin-web"));
+    File zeppelinWebPath = new File(zConf.getAbsoluteDir("zeppelin-web"));
     if (!zeppelinWebPath.isDirectory()) {
       this.tabledataModulePath =
-          new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-tabledata"));
-      this.visualizationModulePath = new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-vis"));
-      this.spellModulePath = new File(conf.getAbsoluteDir("lib/node_modules/zeppelin-spell"));
+          new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-tabledata"));
+      this.visualizationModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-vis"));
+      this.spellModulePath = new File(zConf.getAbsoluteDir("lib/node_modules/zeppelin-spell"));
     } else {
-      this.tabledataModulePath = new File(conf.getAbsoluteDir("zeppelin-web/src/app/tabledata"));
+      this.tabledataModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/tabledata"));
       this.visualizationModulePath =
-          new File(conf.getAbsoluteDir("zeppelin-web/src/app/visualization"));
-      this.spellModulePath = new File(conf.getAbsoluteDir("zeppelin-web/src/app/spell"));
+          new File(zConf.getAbsoluteDir("zeppelin-web/src/app/visualization"));
+      this.spellModulePath = new File(zConf.getAbsoluteDir("zeppelin-web/src/app/spell"));
     }
   }
 
@@ -288,15 +288,17 @@ public class HeliumBundleFactory {
       // if online package
       String version = nameAndVersion[1];
       File tgz = new File(heliumLocalRepoDirectory, pkg.getName() + "-" + version + ".tgz");
-      tgz.delete();
+      FileUtils.deleteQuietly(tgz);
 
       // wget, extract and move dir to `bundles/${pkg.getName()}`, and remove tgz
       npmCommand(fpf, "pack " + pkg.getArtifact());
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
       List<String> entries = unTgz(tgz, heliumBundleDirectory);
-      for (String entry: entries) LOGGER.debug("Extracted " + entry);
-      tgz.delete();
+      for (String entry : entries) {
+        LOGGER.debug("Extracted {}", entry);
+      }
+      FileUtils.deleteQuietly(tgz);
       FileUtils.copyDirectory(extracted, bundleDir);
       FileUtils.deleteDirectory(extracted);
     }
@@ -356,12 +358,12 @@ public class HeliumBundleFactory {
         .append(className)
         .append(" from \"../" + mainFileName + "\"\n");
 
-    loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
-    loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
-    loadJsRegister.append("name: \"" + pkg.getName() + "\",\n");
-    loadJsRegister.append("icon: " + gson.toJson(pkg.getIcon()) + ",\n");
-    loadJsRegister.append("type: \"" + pkg.getType() + "\",\n");
-    loadJsRegister.append("class: " + className + "\n");
+    loadJsRegister.append(HELIUM_BUNDLES_VAR).append(".push({\n");
+    loadJsRegister.append("id: \"").append(moduleNameVersion[0]).append("\",\n");
+    loadJsRegister.append("name: \"").append(pkg.getName()).append("\",\n");
+    loadJsRegister.append("icon: ").append(gson.toJson(pkg.getIcon())).append(",\n");
+    loadJsRegister.append("type: \"").append(pkg.getType()).append("\",\n");
+    loadJsRegister.append("class: ").append(className).append("\n");
     loadJsRegister.append("})\n");
 
     File srcDir = getHeliumPackageSourceDirectory(pkg.getName());
@@ -587,7 +589,8 @@ public class HeliumBundleFactory {
 
         if (!webpackRunDetected) {
           String trimed = line.trim();
-          if (trimed.contains("webpack") && trimed.endsWith("--json")) {
+          if (trimed.contains("webpack")
+              && trimed.endsWith("--json --registry=https://registry.npmjs.org/")) {
             webpackRunDetected = true;
           }
           continue;

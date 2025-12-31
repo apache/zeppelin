@@ -24,7 +24,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-zengine</artifactId>
@@ -34,12 +34,13 @@
 
   <properties>
     <!--library versions-->
+    <guava.version>32.0.0-jre</guava.version>
     <lucene.version>8.7.0</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
-    <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
-    <commons.vfs2.version>2.6.0</commons.vfs2.version>
+    <commons.vfs2.version>2.10.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
+    <eirslett.version>1.6</eirslett.version>
   </properties>
 
   <dependencies>
@@ -53,6 +54,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -72,6 +79,11 @@
     </dependency>
 
     <dependency>
+        <groupId>jakarta.inject</groupId>
+        <artifactId>jakarta.inject-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -88,7 +100,7 @@
 
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
+      <artifactId>bcpkix-jdk18on</artifactId>
     </dependency>
 
     <dependency>
@@ -121,7 +133,7 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-client</artifactId>
+      <artifactId>websocket-jetty-client</artifactId>
       <version>${jetty.version}</version>
     </dependency>
 
@@ -142,6 +154,12 @@
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-healthchecks</artifactId>
         <version>${dropwizard.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
 
     <dependency>
@@ -176,7 +194,7 @@
     <dependency>
       <groupId>com.github.eirslett</groupId>
       <artifactId>frontend-plugin-core</artifactId>
-      <version>${frontend.maven.plugin.version}</version>
+      <version>${eirslett.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -194,10 +212,7 @@
       <artifactId>commons-vfs2</artifactId>
       <version>${commons.vfs2.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
+        <!-- use hadoop-client-runtime to mount hadoop filesystems -->
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-hdfs-client</artifactId>
@@ -217,14 +232,19 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -244,8 +264,15 @@
 
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-server</artifactId>
+      <artifactId>websocket-jetty-server</artifactId>
       <version>${jetty.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-test</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -260,6 +287,10 @@
       <version>${commons.compress.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -294,61 +325,6 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>hadoop2</id>
-
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
-      <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
-
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
-          <scope>test</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
 </project>

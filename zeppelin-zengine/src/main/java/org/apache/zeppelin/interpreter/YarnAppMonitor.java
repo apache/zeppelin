@@ -25,7 +25,7 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
-import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
+import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,6 @@ public class YarnAppMonitor {
   private static final Logger LOGGER = LoggerFactory.getLogger(YarnAppMonitor.class);
   private static YarnAppMonitor instance;
 
-  private ZeppelinConfiguration conf;
   private ScheduledExecutorService executor;
   private YarnClient yarnClient;
   private ConcurrentHashMap<ApplicationId, RemoteInterpreterManagedProcess> apps;
@@ -58,7 +57,6 @@ public class YarnAppMonitor {
 
   private YarnAppMonitor() {
     try {
-      this.conf = ZeppelinConfiguration.create();
       this.yarnClient = YarnClient.createYarnClient();
       YarnConfiguration yarnConf = new YarnConfiguration();
       // disable timeline service as we only query yarn app here.
@@ -67,7 +65,7 @@ public class YarnAppMonitor {
       yarnConf.set("yarn.timeline-service.enabled", "false");
       yarnClient.init(yarnConf);
       yarnClient.start();
-      this.executor = Executors.newSingleThreadScheduledExecutor(new SchedulerThreadFactory("YarnAppsMonitor-Thread"));
+      this.executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("YarnAppsMonitor-Thread"));
       this.apps = new ConcurrentHashMap<>();
       this.executor.scheduleAtFixedRate(() -> {
                 try {
@@ -82,11 +80,11 @@ public class YarnAppMonitor {
                       String yarnDiagnostics = appReport.getDiagnostics();
                       interpreterManagedProcess.processStopped("Yarn diagnostics: " + yarnDiagnostics);
                       iter.remove();
-                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId ,
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId,
                               appReport.getYarnApplicationState());
                     } else if (appReport.getYarnApplicationState() == YarnApplicationState.FINISHED) {
                       iter.remove();
-                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is ", appId,
+                      LOGGER.info("Remove {} from YarnAppMonitor, because its state is {}", appId,
                               appReport.getYarnApplicationState());
                     }
                   }
@@ -94,8 +92,10 @@ public class YarnAppMonitor {
                   LOGGER.warn("Fail to check yarn app status", e);
                 }
               },
-              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
-              conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
+          ZeppelinConfiguration
+              .getStaticInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
+          ZeppelinConfiguration
+              .getStaticInt(ConfVars.ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS),
               TimeUnit.SECONDS);
 
       LOGGER.info("YarnAppMonitor is started");

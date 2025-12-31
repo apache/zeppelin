@@ -240,10 +240,10 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           `<div style="color:gray">${getHeliumTypeText(type)}</div>` +
           '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
           '<div style="font-size: 14px;">Description</div>' +
-          `<div style="color:gray">${description}</div>` +
+          `<div style="color:gray">${_.escape(description)}</div>` +
           '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
           '<div style="font-size: 14px;">License</div>' +
-          `<div style="color:gray">${license}</div>`,
+          `<div style="color:gray">${_.escape(license)}</div>`,
         callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');
@@ -374,7 +374,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   };
 
   $scope.getDescriptionText = function(pkgSearchResult) {
-    return $sce.trustAsHtml(pkgSearchResult.pkg.description);
+    return pkgSearchResult.pkg.description;
   };
 
   init();

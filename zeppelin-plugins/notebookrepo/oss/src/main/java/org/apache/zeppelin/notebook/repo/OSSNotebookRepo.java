@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.repo.storage.OSSOperator;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -35,7 +36,8 @@ import java.util.*;
 /**
  * NotebookRepo for Aliyun OSS (https://cn.aliyun.com/product/oss)
  */
-public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
+public class OSSNotebookRepo extends AbstractNotebookRepo
+    implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(OSSNotebookRepo.class);
 
   private String bucketName;
@@ -49,15 +51,16 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    String endpoint = conf.getOSSEndpoint();
-    bucketName = conf.getOSSBucketName();
-    rootFolder = conf.getNotebookDir();
-    maxVersionNumber = conf.getOSSNoteMaxVersionNum();
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    String endpoint = zConf.getOSSEndpoint();
+    bucketName = zConf.getOSSBucketName();
+    rootFolder = zConf.getNotebookDir();
+    maxVersionNumber = zConf.getOSSNoteMaxVersionNum();
     // rootFolder is part of OSS key
     rootFolder = formatPath(rootFolder);
-    String accessKeyId = conf.getOSSAccessKeyId();
-    String accessKeySecret = conf.getOSSAccessKeySecret();
+    String accessKeyId = zConf.getOSSAccessKeyId();
+    String accessKeySecret = zConf.getOSSAccessKeySecret();
     this.ossOperator = new OSSOperator(endpoint, accessKeyId, accessKeySecret);
   }
 
@@ -100,7 +103,7 @@ public class OSSNotebookRepo implements NotebookRepoWithVersionControl {
 
   public Note getByOSSPath(String noteId, String ossPath) throws IOException {
     String noteText = ossOperator.getTextObject(bucketName, ossPath);
-    return Note.fromJson(noteId, noteText);
+    return noteParser.fromJson(noteId, noteText);
   }
 
 

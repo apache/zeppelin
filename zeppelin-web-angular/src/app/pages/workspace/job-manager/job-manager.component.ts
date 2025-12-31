@@ -10,13 +10,13 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { JobsItem, JobStatus, ListNoteJobs, ListUpdateNoteJobs, OP } from '@zeppelin/sdk';
+import { JobsItem, JobManagerDisabled, JobStatus, ListNoteJobs, ListUpdateNoteJobs, OP } from '@zeppelin/sdk';
 import { JobManagerService, MessageService } from '@zeppelin/services';
 
 enum JobDateSortKeys {
@@ -36,22 +36,22 @@ interface FilterForm {
   styleUrls: ['./job-manager.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class JobManagerComponent extends MessageListenersManager implements OnInit, OnDestroy {
+export class JobManagerComponent extends MessageListenersManager implements OnDestroy {
   form: FormGroup;
-  jobStatusKeys = Object.keys(JobStatus).map(k => JobStatus[k]);
-  sortKeys = Object.keys(JobDateSortKeys).map(k => JobDateSortKeys[k]);
+  jobStatusKeys: JobStatus[] = Object.values(JobStatus);
+  sortKeys: JobDateSortKeys[] = Object.values(JobDateSortKeys);
   interpreters: string[] = [];
   filteredJobs: JobsItem[] = [];
   filterString: string = '';
   jobs: JobsItem[] = [];
-  loading = true;
+  status: 'loading' | 'success' | 'disabled' = 'loading';
 
   @MessageListener(OP.LIST_NOTE_JOBS)
   setJobs(data: ListNoteJobs) {
     this.jobs = data.noteJobs.jobs.filter(j => typeof j.interpreter !== 'undefined');
     const interpreters = this.jobs.map(job => job.interpreter);
     this.interpreters = Array.from(new Set(interpreters));
-    this.loading = false;
+    this.status = 'success';
     this.filterJobs();
   }
 
@@ -72,6 +72,12 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
     this.filterJobs();
   }
 
+  @MessageListener(OP.JOB_MANAGER_DISABLED)
+  onJobManagerDisabled(_data: JobManagerDisabled) {
+    this.status = 'disabled';
+    this.cdr.markForCheck();
+  }
+
   filterJobs() {
     const filterData = this.form.getRawValue() as FilterForm;
     this.filterString = filterData.noteName;
@@ -89,7 +95,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
     this.cdr.markForCheck();
   }
 
-  onStart(noteId: string): void {
+  onStartJob(noteId: string): void {
     this.nzModalService.confirm({
       nzTitle: 'Job Dialog',
       nzContent: 'Run all paragraphs?',
@@ -99,7 +105,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
     });
   }
 
-  onStop(noteId: string): void {
+  onStopJob(noteId: string): void {
     this.nzModalService.confirm({
       nzTitle: 'Job Dialog',
       nzContent: 'Stop all paragraphs?',
@@ -117,9 +123,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
     private nzModalService: NzModalService
   ) {
     super(messageService);
-  }
 
-  ngOnInit() {
     this.form = this.fb.group({
       noteName: [''],
       interpreter: ['*'],

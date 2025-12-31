@@ -19,10 +19,10 @@ import warnings
 
 from py4j.java_gateway import java_import
 from pyspark.conf import SparkConf
-from pyspark.context import SparkContext
+from pyspark import SparkContext
 
 # for back compatibility
-from pyspark.sql import SQLContext, Row
+from pyspark.sql import SQLContext
 
 intp = gateway.entry_point
 

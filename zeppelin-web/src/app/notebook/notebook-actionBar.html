@@ -53,6 +53,14 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-click="toggleAllNumbering()"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" uib-tooltip="Toggle paragraph numbering"
+              ng-disabled="revisionView">
+        <i class="fa fa-list-ol"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
               ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
@@ -117,7 +125,7 @@ limitations under the License.
       </button>
     </span>
 
-    <span class="labelBtn btn-group" role="group" ng-if="isRevisionSupported()" >
+    <span class="labelBtn btn-group" role="group" ng-if="isRevisionSupported" >
       <div class="btn-group" role="group">
         <button type="button"
                 class="btn btn-default btn-xs dropdown-toggle"

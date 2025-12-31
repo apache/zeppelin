@@ -26,7 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.inject.Inject;
+import java.util.regex.Pattern;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -34,6 +35,8 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import javax.sql.DataSource;
+
+import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
@@ -64,17 +67,22 @@ public class ShiroAuthenticationService implements AuthenticationService {
 
   private static final String INI_REALM = "org.apache.shiro.realm.text.IniRealm";
   private static final String LDAP_REALM = "org.apache.zeppelin.realm.LdapRealm";
-  private static final String LDAP_GROUP_REALM = "org.apache.zeppelin.realm.LdapGroupRealm";
   private static final String ACTIVE_DIRECTORY_GROUP_REALM = "org.apache.zeppelin.realm.ActiveDirectoryGroupRealm";
   private static final String JDBC_REALM = "org.apache.shiro.realm.jdbc.JdbcRealm";
 
-  private final ZeppelinConfiguration conf;
+  private static final Pattern VALID_SQL_NAME_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9_]+$");
+
+  private static boolean isValidSqlIdentifier(String name) {
+    return name != null && VALID_SQL_NAME_IDENTIFIER_PATTERN.matcher(name).matches();
+  }
+
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public ShiroAuthenticationService(ZeppelinConfiguration conf) throws Exception {
+  public ShiroAuthenticationService(ZeppelinConfiguration zConf) throws Exception {
     LOGGER.info("ShiroAuthenticationService is initialized");
-    this.conf = conf;
-    if (conf.getShiroPath().length() > 0) {
+    this.zConf = zConf;
+    if (zConf.getShiroPath().length() > 0) {
       try {
         Collection<Realm> realms =
             ((DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
@@ -111,7 +119,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
     String principal;
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
-      if (conf.isUsernameForceLowerCase()) {
+      if (zConf.isUsernameForceLowerCase()) {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Converting principal name {} to lower case: {}", principal, principal.toLowerCase());
         }
@@ -166,15 +174,14 @@ public class ShiroAuthenticationService implements AuthenticationService {
           LOGGER.debug("RealmClass.getName: {}", realClassName);
           if (INI_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((IniRealm) realm));
-          } else if (LDAP_GROUP_REALM.equals(realClassName)) {
-            usersList.addAll(getUserList((DefaultLdapRealm) realm, searchText, numUsersToFetch));
           } else if (LDAP_REALM.equals(realClassName)) {
             usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
           } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(realClassName)) {
-            usersList.addAll(
-                getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
+            usersList.addAll(getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
           } else if (JDBC_REALM.equals(realClassName)) {
-            usersList.addAll(getUserList((JdbcRealm) realm));
+            usersList.addAll(getUserList((JdbcRealm) realm, searchText, numUsersToFetch));
+          } else if (realm instanceof DefaultLdapRealm) {
+            usersList.addAll(getUserList((DefaultLdapRealm) realm, searchText, numUsersToFetch));
           }
         }
       }
@@ -401,7 +408,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
   }
 
   /** Function to extract users from JDBCs. */
-  private List<String> getUserList(JdbcRealm obj) {
+  private List<String> getUserList(JdbcRealm obj, String searchText, int numUsersToFetch) {
     List<String> userlist = new ArrayList<>();
     Connection con = null;
     PreparedStatement ps = null;
@@ -415,26 +422,39 @@ public class ShiroAuthenticationService implements AuthenticationService {
     try {
       dataSource = (DataSource) FieldUtils.readField(obj, "dataSource", true);
       authQuery = (String) FieldUtils.readField(obj, "authenticationQuery", true);
-      LOGGER.info(authQuery);
+      LOGGER.debug("authenticationQuery={}", authQuery);
       String authQueryLowerCase = authQuery.toLowerCase();
       retval = authQueryLowerCase.split("from", 2);
       if (retval.length >= 2) {
         retval = retval[1].split("with|where", 2);
-        tablename = retval[0];
+        tablename = retval[0].strip();
         retval = retval[1].split("where", 2);
         if (retval.length >= 2) {
           retval = retval[1].split("=", 2);
         } else {
           retval = retval[0].split("=", 2);
         }
-        username = retval[0];
+        username = retval[0].strip();
       }
 
       if (StringUtils.isBlank(username) || StringUtils.isBlank(tablename)) {
         return userlist;
       }
+      if (!isValidSqlIdentifier(username)) {
+        throw new IllegalArgumentException(
+          "Invalid column name in authenticationQuery to build userlist query: "
+            + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
+            + ", name identifier: [" + username + "]");
+      }
+      if (!isValidSqlIdentifier(tablename)) {
+        throw new IllegalArgumentException(
+          "Invalid table name in authenticationQuery to build userlist query: "
+            + authQuery + ", allowed pattern: " + VALID_SQL_NAME_IDENTIFIER_PATTERN
+            + ", name identifier: [" + tablename + "]");
+      }
 
-      userquery = String.format("SELECT %s FROM %s", username, tablename);
+      userquery = String.format("SELECT %s FROM %s WHERE %s LIKE ?", username, tablename, username);
+      LOGGER.info("Built query for user list. userquery={}", userquery);
     } catch (IllegalAccessException e) {
       LOGGER.error("Error while accessing dataSource for JDBC Realm", e);
       return new ArrayList<>();
@@ -443,9 +463,10 @@ public class ShiroAuthenticationService implements AuthenticationService {
     try {
       con = dataSource.getConnection();
       ps = con.prepareStatement(userquery);
+      ps.setString(1, "%" + searchText + "%");
       rs = ps.executeQuery();
-      while (rs.next()) {
-        userlist.add(rs.getString(1).trim());
+      while (rs.next() && userlist.size() < numUsersToFetch) {
+        userlist.add(rs.getString(1));
       }
     } catch (Exception e) {
       LOGGER.error("Error retrieving User list from JDBC Realm", e);

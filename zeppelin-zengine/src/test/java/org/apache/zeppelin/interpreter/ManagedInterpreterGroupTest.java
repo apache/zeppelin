@@ -17,24 +17,27 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class ManagedInterpreterGroupTest {
+class ManagedInterpreterGroupTest {
 
   private InterpreterSetting interpreterSetting;
+  private ZeppelinConfiguration zConf;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException, RepositoryException {
+    zConf = ZeppelinConfiguration.load();
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -50,12 +53,14 @@ public class ManagedInterpreterGroupTest {
         .setGroup("test")
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
+        .setConf(zConf)
         .create();
   }
 
   @Test
-  public void testInterpreterGroup() {
-    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup("group_1", interpreterSetting);
+  void testInterpreterGroup() {
+    ManagedInterpreterGroup interpreterGroup =
+        new ManagedInterpreterGroup("group_1", interpreterSetting, zConf);
     assertEquals(0, interpreterGroup.getSessionNum());
 
     // create session_1

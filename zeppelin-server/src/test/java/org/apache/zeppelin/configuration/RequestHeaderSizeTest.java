@@ -25,40 +25,49 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class RequestHeaderSizeTest extends AbstractTestRestApi {
+class RequestHeaderSizeTest extends AbstractTestRestApi {
   private static final int REQUEST_HEADER_MAX_SIZE = 20000;
 
-  @Before
-  public void startZeppelin() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE
-            .getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
-    startUp(RequestHeaderSizeTest.class.getSimpleName());
+  private static MiniZeppelinServer zep;
+
+  @BeforeAll
+  static void init() throws Exception {
+    zep = new MiniZeppelinServer(RequestHeaderSizeTest.class.getSimpleName());
+    zep.getZeppelinConfiguration().setProperty(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE
+        .getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
+    zep.start();
   }
 
-  @After
-  public void stopZeppelin() throws Exception {
-    shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zep.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    zConf = zep.getZeppelinConfiguration();
   }
 
   @Test
-  public void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
+  void increased_request_header_size_do_not_cause_431_when_request_size_is_over_8K()
       throws Exception {
     CloseableHttpClient client = HttpClients.createDefault();
-    HttpGet httpGet = new HttpGet(getUrlToTest() + "/version");
+    HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + "/version");
     String headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE - 2000);
     httpGet.setHeader("not_too_large_header", headerValue);
     CloseableHttpResponse response = client.execute(httpGet);
     assertThat(response.getStatusLine().getStatusCode(), is(HttpStatus.SC_OK));
     response.close();
 
-    httpGet = new HttpGet(getUrlToTest() + "/version");
+    httpGet = new HttpGet(getUrlToTest(zConf) + "/version");
     headerValue = RandomStringUtils.randomAlphanumeric(REQUEST_HEADER_MAX_SIZE + 2000);
     httpGet.setHeader("too_large_header", headerValue);
     response = client.execute(httpGet);

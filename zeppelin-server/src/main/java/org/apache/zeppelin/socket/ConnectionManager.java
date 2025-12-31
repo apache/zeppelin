@@ -40,14 +40,14 @@ import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,7 +69,7 @@ public class ConnectionManager {
 
   final Queue<NotebookSocket> connectedSockets = Metrics.gaugeCollectionSize("zeppelin_connected_sockets", Tags.empty(), new ConcurrentLinkedQueue<>());
   // noteId -> connection
-  final Map<String, List<NotebookSocket>> noteSocketMap = Metrics.gaugeMapSize("zeppelin_note_sockets", Tags.empty(), new HashMap<>());
+  final Map<String, Set<NotebookSocket>> noteSocketMap = Metrics.gaugeMapSize("zeppelin_note_sockets", Tags.empty(), new HashMap<>());
   // user -> connection
   final Map<String, Queue<NotebookSocket>> userSocketMap = Metrics.gaugeMapSize("zeppelin_user_sockets", Tags.empty(), new HashMap<>());
 
@@ -82,16 +82,14 @@ public class ConnectionManager {
   final Queue<NotebookSocket> watcherSockets = new ConcurrentLinkedQueue<>();
 
   private final HashSet<String> collaborativeModeList = Metrics.gaugeCollectionSize("zeppelin_collaborative_modes", Tags.empty(),new HashSet<>());
-  private final Boolean collaborativeModeEnable = ZeppelinConfiguration
-      .create()
-      .isZeppelinNotebookCollaborativeModeEnable();
-
 
   private final AuthorizationService authorizationService;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public ConnectionManager(AuthorizationService authorizationService) {
+  public ConnectionManager(AuthorizationService authorizationService, ZeppelinConfiguration zConf) {
     this.authorizationService = authorizationService;
+    this.zConf = zConf;
   }
 
   public void addConnection(NotebookSocket conn) {
@@ -107,11 +105,9 @@ public class ConnectionManager {
     synchronized (noteSocketMap) {
       // make sure a socket relates only an single note.
       removeConnectionFromAllNote(socket);
-      List<NotebookSocket> socketList = noteSocketMap.computeIfAbsent(noteId, k -> new LinkedList<>());
-      if (!socketList.contains(socket)) {
-        socketList.add(socket);
-      }
-      checkCollaborativeStatus(noteId, socketList);
+      Set<NotebookSocket> sockets = noteSocketMap.computeIfAbsent(noteId, k -> new HashSet<>());
+      sockets.add(socket);
+      checkCollaborativeStatus(noteId, sockets);
     }
   }
 
@@ -124,11 +120,33 @@ public class ConnectionManager {
   public void removeNoteConnection(String noteId, NotebookSocket socket) {
     LOGGER.debug("Remove connection {} from note: {}", socket, noteId);
     synchronized (noteSocketMap) {
-      List<NotebookSocket> socketList = noteSocketMap.getOrDefault(noteId, Collections.emptyList());
-      if (!socketList.isEmpty()) {
-        socketList.remove(socket);
+      Set<NotebookSocket> sockets = noteSocketMap.getOrDefault(noteId, Collections.emptySet());
+      removeNoteConnection(noteId, sockets, socket);
+      // Remove empty socket collection from map
+      if (sockets.isEmpty()) {
+        noteSocketMap.remove(noteId);
       }
-      checkCollaborativeStatus(noteId, socketList);
+    }
+  }
+
+  private void removeNoteConnection(String noteId, Set<NotebookSocket> sockets,
+    NotebookSocket socket) {
+    sockets.remove(socket);
+    checkCollaborativeStatus(noteId, sockets);
+  }
+
+  public void removeConnectionFromAllNote(NotebookSocket socket) {
+    LOGGER.debug("Remove connection {} from all notes", socket);
+    synchronized (noteSocketMap) {
+      Iterator<Entry<String, Set<NotebookSocket>>> iterator = noteSocketMap.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Entry<String, Set<NotebookSocket>> noteSocketMapEntry = iterator.next();
+        removeNoteConnection(noteSocketMapEntry.getKey(), noteSocketMapEntry.getValue(), socket);
+        // Remove empty socket collection from map
+        if (noteSocketMapEntry.getValue().isEmpty()) {
+          iterator.remove();
+        }
+      }
     }
   }
 
@@ -147,16 +165,28 @@ public class ConnectionManager {
   public void removeUserConnection(String user, NotebookSocket conn) {
     LOGGER.debug("Remove user connection {} for user: {}", conn, user);
     if (userSocketMap.containsKey(user)) {
-      userSocketMap.get(user).remove(conn);
+      Queue<NotebookSocket> connections = userSocketMap.get(user);
+      connections.remove(conn);
+      if (connections.isEmpty()) {
+        userSocketMap.remove(user);
+      }
     } else {
       LOGGER.warn("Closing connection that is absent in user connections");
+    }
+  }
+
+  public void removeWatcherConnection(NotebookSocket conn) {
+    synchronized (watcherSockets) {
+      if (watcherSockets.remove(conn)) {
+        LOGGER.debug("Removed watcher connection: {}", conn);
+      }
     }
   }
 
   public String getAssociatedNoteId(NotebookSocket socket) {
     String associatedNoteId = null;
     synchronized (noteSocketMap) {
-      for (Entry<String, List<NotebookSocket>> noteSocketMapEntry : noteSocketMap.entrySet()) {
+      for (Entry<String, Set<NotebookSocket>> noteSocketMapEntry : noteSocketMap.entrySet()) {
         if (noteSocketMapEntry.getValue().contains(socket)) {
           associatedNoteId = noteSocketMapEntry.getKey();
         }
@@ -166,17 +196,8 @@ public class ConnectionManager {
     return associatedNoteId;
   }
 
-  public void removeConnectionFromAllNote(NotebookSocket socket) {
-    synchronized (noteSocketMap) {
-      Set<String> noteIds = noteSocketMap.keySet();
-      for (String noteId : noteIds) {
-        removeNoteConnection(noteId, socket);
-      }
-    }
-  }
-
-  private void checkCollaborativeStatus(String noteId, List<NotebookSocket> socketList) {
-    if (!collaborativeModeEnable.booleanValue()) {
+  private void checkCollaborativeStatus(String noteId, Set<NotebookSocket> socketList) {
+    if (!zConf.isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     boolean collaborativeStatusNew = socketList.size() > 1;
@@ -219,11 +240,11 @@ public class ConnectionManager {
     List<NotebookSocket> socketsToBroadcast;
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.isEmpty()) {
+      Set<NotebookSocket> sockets = noteSocketMap.get(noteId);
+      if (sockets == null || sockets.isEmpty()) {
         return;
       }
-      socketsToBroadcast = new ArrayList<>(socketLists);
+      socketsToBroadcast = new ArrayList<>(sockets);
     }
     LOGGER.debug("SEND >> {}", m);
     for (NotebookSocket conn : socketsToBroadcast) {
@@ -256,11 +277,11 @@ public class ConnectionManager {
     List<NotebookSocket> socketsToBroadcast;
     synchronized (noteSocketMap) {
       broadcastToWatchers(noteId, StringUtils.EMPTY, m);
-      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.isEmpty()) {
+      Set<NotebookSocket> socketSet = noteSocketMap.get(noteId);
+      if (socketSet == null || socketSet.isEmpty()) {
         return;
       }
-      socketsToBroadcast = new ArrayList<>(socketLists);
+      socketsToBroadcast = new ArrayList<>(socketSet);
     }
 
     LOGGER.debug("SEND >> {}", m);

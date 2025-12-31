@@ -21,8 +21,8 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -33,13 +33,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-public class AppendOutputRunnerTest {
+class AppendOutputRunnerTest {
 
   private static final int NUM_EVENTS = 10000;
   private static final int NUM_CLUBBED_EVENTS = 100;
@@ -51,7 +55,7 @@ public class AppendOutputRunnerTest {
    */
   private volatile static int numInvocations = 0;
 
-  @After
+  @AfterEach
   public void afterEach() {
     if (future != null) {
       future.cancel(true);
@@ -59,7 +63,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testSingleEvent() throws InterruptedException {
+  void testSingleEvent() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     String[][] buffer = {{"note", "para", "data\n"}};
 
@@ -85,7 +89,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testMultipleEventsOfDifferentParagraphs() throws InterruptedException {
+  void testMultipleEventsOfDifferentParagraphs() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     String note1 = "note1";
     String note2 = "note2";
@@ -107,7 +111,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testClubbedData() throws InterruptedException {
+  void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     future = service.scheduleWithFixedDelay(runner, 0,
@@ -126,7 +130,7 @@ public class AppendOutputRunnerTest {
   }
 
   @Test
-  public void testWarnLoggerForLargeData() throws InterruptedException {
+  void testWarnLoggerForLargeData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     String data = "data\n";

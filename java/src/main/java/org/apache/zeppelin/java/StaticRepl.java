@@ -19,6 +19,7 @@ package org.apache.zeppelin.java;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,21 +39,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * StaticRepl for compling the java code in memory
+ * StaticRepl for compiling the java code in memory
  */
 public class StaticRepl {
-  static Logger logger = LoggerFactory.getLogger(StaticRepl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    if (compiler == null) {
+      throw new Exception(
+          "Java compiler not available. Make sure Zeppelin is running on JDK (not JRE).");
+    }
 
-    // Java parasing
+    // Java parsing
     JavaProjectBuilder builder = new JavaProjectBuilder();
     JavaSource src = builder.addSource(new StringReader(code));
 
@@ -61,26 +64,25 @@ public class StaticRepl {
     String mainClassName = null;
 
     // Searching for class containing Main method
-    for (int i = 0; i < classes.size(); i++) {
+    for (JavaClass javaClass : classes) {
       boolean hasMain = false;
 
-      for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
-        if (classes.get(i).getMethods().get(j).getName().equals("main") && classes.get(i)
-            .getMethods().get(j).isStatic()) {
-          mainClassName = classes.get(i).getName();
+      for (JavaMethod method : javaClass.getMethods()) {
+        if (method.getName().equals("main") && method.isStatic()) {
+          mainClassName = javaClass.getName();
           hasMain = true;
           break;
         }
       }
-      if (hasMain == true) {
+      if (hasMain) {
         break;
       }
 
     }
 
-    // if there isn't Main method, will retuen error
+    // if there isn't Main method, will return error
     if (mainClassName == null) {
-      logger.error("Exception for Main method", "There isn't any class "
+      LOGGER.error("Exception for Main method", "There isn't any class "
           + "containing static main method.");
       throw new Exception("There isn't any class containing static main method.");
     }
@@ -88,8 +90,8 @@ public class StaticRepl {
     // replace name of class containing Main method with generated name
     code = code.replace(mainClassName, generatedClassName);
 
-    JavaFileObject file = new JavaSourceFromString(generatedClassName, code.toString());
-    Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+    JavaFileObject file = new JavaSourceFromString(generatedClassName, code);
+    Iterable<? extends JavaFileObject> compilationUnits = List.of(file);
 
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
@@ -104,6 +106,7 @@ public class StaticRepl {
     System.setOut(newOut);
     System.setErr(newErr);
 
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
     // executing the compilation process
@@ -111,7 +114,7 @@ public class StaticRepl {
 
     // if success is false will get error
     if (!success) {
-      for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+      for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
         if (diagnostic.getLineNumber() == -1) {
           continue;
         }
@@ -123,7 +126,7 @@ public class StaticRepl {
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-      logger.error("Exception in Interpreter while compilation", baosErr.toString());
+      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
       throw new Exception(baosErr.toString());
     } else {
       try {
@@ -146,8 +149,8 @@ public class StaticRepl {
         return baosOut.toString();
 
       } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-          | InvocationTargetException e) {
-        logger.error("Exception in Interpreter while execution", e);
+               | InvocationTargetException e) {
+        LOGGER.error("Exception in Interpreter while execution", e);
         System.err.println(e);
         e.printStackTrace(newErr);
         throw new Exception(baosErr.toString(), e);
@@ -167,6 +170,7 @@ public class StaticRepl {
 }
 
 class JavaSourceFromString extends SimpleJavaFileObject {
+
   final String code;
 
   JavaSourceFromString(String name, String code) {

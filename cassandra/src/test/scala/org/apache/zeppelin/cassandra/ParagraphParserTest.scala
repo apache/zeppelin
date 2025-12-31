@@ -19,19 +19,16 @@ package org.apache.zeppelin.cassandra
 import com.datastax.oss.driver.api.core.{ConsistencyLevel, CqlSession}
 import com.datastax.oss.driver.api.core.cql.{BatchType, PreparedStatement}
 import org.apache.zeppelin.interpreter.InterpreterException
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
+import org.mockito.Mockito
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should.Matchers._
 import org.apache.zeppelin.cassandra.ParagraphParser._
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 
-import scala.Option
+class ParagraphParserTest extends AnyFlatSpec with BeforeAndAfterEach {
 
-class ParagraphParserTest extends FlatSpec
-  with BeforeAndAfterEach
-  with Matchers
-  with MockitoSugar {
-
-  val session: CqlSession = mock[CqlSession]
+  val session: CqlSession = Mockito.mock[CqlSession](classOf[CqlSession])
   val preparedStatements:collection.mutable.Map[String,PreparedStatement] = collection.mutable.Map()
   val parser: ParagraphParser = new ParagraphParser()
 

@@ -19,7 +19,7 @@ package org.apache.zeppelin.server;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.utilities.ImmediateErrorHandler;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.LinkedList;
 import java.util.List;
 

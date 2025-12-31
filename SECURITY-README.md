@@ -13,23 +13,35 @@ limitations under the License.
 -->
 
 # Shiro Authentication
-To connect to Zeppelin, users will be asked to enter their credentials. Once logged, a user has access to all notes including other users notes.
-This a a first step toward full security as implemented by this pull request (https://github.com/apache/zeppelin/pull/53).
 
-Please check [Shiro authentication in Apache Zeppelin](https://zeppelin.apache.org/docs/snapshot/security/shiroauthentication.html) in our official website for more detailed information(e.g. How to setup the security, How to configure user groups and permissions, and etc).
+To connect to Zeppelin, users will be asked to enter their credentials. Once logged in, a user has access to all notes, including other users' notes.
+This marks the first step toward full security, as introduced in this [pull request](https://github.com/apache/zeppelin/pull/53).
 
-# Implementation notes
+Please check the [Shiro authentication documentation for Apache Zeppelin](https://zeppelin.apache.org/docs/0.12.0/setup/security/shiro_authentication.html) available on our official website for more detailed information (e.g., how to set up security, how to configure user groups and permissions, etc.).
+
+# Implementation Notes
+
 ## Vocabulary
-username, owner and principal are used interchangeably to designate the currently authenticated user
-## What are we securing ?
-Zeppelin is basically a web application that spawn remote interpreters to run commands and return HTML fragments to be displayed on the user browser.
-The scope of this PR is to require credentials to access Zeppelin. To achieve this, we use Apache Shiro. 
-## HTTP Endpoint security
-Apache Shiro sits as a servlet filter between the browser and the exposed services and handles the required authentication without any programming required. (See Apache Shiro for more info).
-## Websocket security
-Securing the HTTP endpoints is not enough, since Zeppelin also communicates with the browser through websockets. To secure this channel, we take the following approach:
-  1. The browser on startup requests a ticket through HTTP
-  2. The Apache Shiro Servlet filter handles the user auth
-  3. Once the user is authenticated, a ticket is assigned to this user and the ticket is returned to the browser
 
-All websockets communications require the username and ticket  to be submitted by the browser. Upon receiving a websocket message, the server checks that the ticket received is the one assigned to the username through the HTTP request (step 3 above).
+The terms *username*, *owner*, and *principal* are used interchangeably to refer to the currently authenticated user.
+
+## What Are We Securing?
+
+Zeppelin is essentially a web application that spawns remote interpreters to run commands and return HTML fragments to be displayed in the user's browser.
+To protect user data and access, Zeppelin requires users to log in before using the application. Authentication is handled using Apache Shiro.
+
+## HTTP Endpoint Security
+
+Apache Shiro acts as a servlet filter between the browser and the exposed services.  
+It handles authentication without requiring additional programming. (See [Apache Shiro](https://shiro.apache.org) for more information.)
+
+## WebSocket Security
+
+Securing HTTP endpoints alone is not sufficient, since Zeppelin also communicates with the browser via WebSockets. To secure this channel, we take the following approach:
+
+1. On startup, the browser requests a ticket via HTTP.
+2. The Apache Shiro servlet filter authenticates the user.
+3. Once authenticated, a ticket is assigned to the user and returned to the browser.
+
+Every WebSocket message must include both the username and the ticket.
+When receiving a WebSocket message, the server checks that the ticket matches what was assigned to the username via the HTTP request (step 3 above).

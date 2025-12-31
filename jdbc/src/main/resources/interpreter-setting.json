@@ -150,6 +150,27 @@
         "defaultValue": true,
         "description": "Set application tag for applications started by hive engines",
         "type": "checkbox"
+      },
+      "zeppelin.jdbc.kyuubi.timeout.threshold": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.kyuubi.timeout.threshold",
+        "defaultValue": "60000",
+        "description": "Timeout for kyuubi job timeout",
+        "type": "number"
+      },
+      "zeppelin.jdbc.kyuubi.monitor.query_interval": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.kyuubi.monitor.query_interval",
+        "defaultValue": "1000",
+        "description": "Query interval for kyuubi statement",
+        "type": "number"
+      },
+      "zeppelin.jdbc.kyuubi.jobUrl.template": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.kyuubi.jobUrl.template",
+        "defaultValue": "",
+        "description": "The Kyuubi engine URL pattern, supports {{applicationId}} as placeholder",
+        "type": "string"
       }
     },
     "editor": {

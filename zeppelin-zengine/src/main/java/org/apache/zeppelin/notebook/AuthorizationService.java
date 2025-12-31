@@ -17,64 +17,59 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.cluster.ClusterManagerServer;
-import org.apache.zeppelin.cluster.event.ClusterEvent;
-import org.apache.zeppelin.cluster.event.ClusterEventListener;
-import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is responsible for maintain notes authorization info. And provide api for
  * setting and querying note authorization info.
  */
-public class AuthorizationService implements ClusterEventListener {
+public class AuthorizationService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
   private static final Set<String> EMPTY_SET = new HashSet<>();
 
-  private ZeppelinConfiguration conf;
-  private ConfigStorage configStorage;
+  private final ZeppelinConfiguration zConf;
+  private final ConfigStorage configStorage;
 
   // contains roles for each user (username --> roles)
-  private Map<String, Set<String>> userRoles = new HashMap<>();
+  private Map<String, Set<String>> userRoles = new ConcurrentHashMap<>();
 
   // cached note permission info. (noteId --> NoteAuth)
-  private Map<String, NoteAuth> notesAuth = new HashMap<>();
+  private Map<String, NoteAuth> notesAuth = new ConcurrentHashMap<>();
 
   @Inject
-  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration conf) {
+  public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration zConf,
+      ConfigStorage storage) {
     LOGGER.info("Injected AuthorizationService: {}", this);
-    this.conf = conf;
+    this.zConf = zConf;
+    this.configStorage = storage;
     try {
-      this.configStorage = ConfigStorage.getInstance(conf);
       // init notesAuth by reading notebook-authorization.json
       NotebookAuthorizationInfoSaving authorizationInfoSaving = configStorage.loadNotebookAuthorization();
       if (authorizationInfoSaving != null) {
         for (Map.Entry<String, Map<String, Set<String>>> entry : authorizationInfoSaving.getAuthInfo().entrySet()) {
           String noteId = entry.getKey();
           Map<String, Set<String>> permissions = entry.getValue();
-          notesAuth.put(noteId, new NoteAuth(noteId, permissions, conf));
+          notesAuth.put(noteId, new NoteAuth(noteId, permissions, zConf));
         }
       }
 
       // initialize NoteAuth for the notes without permission set explicitly.
       for (String noteId : noteManager.getNotesInfo().keySet()) {
         if (!notesAuth.containsKey(noteId)) {
-          notesAuth.put(noteId, new NoteAuth(noteId, conf));
+          notesAuth.put(noteId, new NoteAuth(noteId, zConf));
         }
       }
     } catch (IOException e) {
@@ -90,12 +85,7 @@ public class AuthorizationService implements ClusterEventListener {
    * @throws IOException
    */
   public void createNoteAuth(String noteId, AuthenticationInfo subject) {
-    NoteAuth noteAuth = new NoteAuth(noteId, subject, conf);
-    this.notesAuth.put(noteId, noteAuth);
-  }
-
-  public void cloneNoteMeta(String noteId, String sourceNoteId, AuthenticationInfo subject) {
-    NoteAuth noteAuth = new NoteAuth(noteId, subject, conf);
+    NoteAuth noteAuth = new NoteAuth(noteId, subject, zConf);
     this.notesAuth.put(noteId, noteAuth);
   }
 
@@ -104,7 +94,7 @@ public class AuthorizationService implements ClusterEventListener {
    *
    * @throws IOException
    */
-  public void saveNoteAuth() throws IOException {
+  public synchronized void saveNoteAuth() throws IOException {
     configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
   }
 
@@ -154,9 +144,6 @@ public class AuthorizationService implements ClusterEventListener {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
     noteAuth.setOwners(entities);
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.SET_OWNERS_PERMISSIONS, noteId, null, entities);
-    }
   }
 
   public void setReaders(String noteId, Set<String> entities, boolean broadcast) throws IOException {
@@ -166,9 +153,6 @@ public class AuthorizationService implements ClusterEventListener {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
     noteAuth.setReaders(entities);
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.SET_READERS_PERMISSIONS, noteId, null, entities);
-    }
   }
 
   public void setRunners(String noteId, Set<String> entities, boolean broadcast) throws IOException {
@@ -178,9 +162,6 @@ public class AuthorizationService implements ClusterEventListener {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
     noteAuth.setRunners(entities);
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.SET_RUNNERS_PERMISSIONS, noteId, null, entities);
-    }
   }
 
   public void setWriters(String noteId, Set<String> entities, boolean broadcast) throws IOException {
@@ -190,9 +171,6 @@ public class AuthorizationService implements ClusterEventListener {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
     noteAuth.setWriters(entities);
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.SET_WRITERS_PERMISSIONS, noteId, null, entities);
-    }
   }
 
   public void setRoles(String user, Set<String> roles, boolean broadcast) {
@@ -202,9 +180,6 @@ public class AuthorizationService implements ClusterEventListener {
     }
     roles = normalizeUsers(roles);
     userRoles.put(user, roles);
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.SET_ROLES, null, user, roles);
-    }
   }
 
   public void clearPermission(String noteId, boolean broadcast) throws IOException {
@@ -217,9 +192,6 @@ public class AuthorizationService implements ClusterEventListener {
     noteAuth.setWriters(new HashSet<>());
     noteAuth.setOwners(new HashSet<>());
 
-    if (broadcast) {
-      broadcastClusterEvent(ClusterEvent.CLEAR_PERMISSION, noteId, null, null);
-    }
   }
 
   public Set<String> getOwners(String noteId) {
@@ -288,7 +260,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   private boolean isAdmin(Set<String> entities) {
-    String adminRole = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
+    String adminRole = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
     if (StringUtils.isBlank(adminRole)) {
       return false;
     }
@@ -303,7 +275,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean isOwner(Set<String> userAndRoles, String noteId) {
-    if (conf.isAnonymousAllowed()) {
+    if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is owner");
       return true;
     }
@@ -315,7 +287,7 @@ public class AuthorizationService implements ClusterEventListener {
 
   //TODO(zjffdu) merge this hasWritePermission with isWriter ?
   public boolean hasWritePermission(Set<String> userAndRoles, String noteId) {
-    if (conf.isAnonymousAllowed()) {
+    if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is writer");
       return true;
     }
@@ -326,7 +298,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean hasReadPermission(Set<String> userAndRoles, String noteId) {
-    if (conf.isAnonymousAllowed()) {
+    if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
     }
@@ -337,7 +309,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean hasRunPermission(Set<String> userAndRoles, String noteId) {
-    if (conf.isAnonymousAllowed()) {
+    if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
     }
@@ -348,69 +320,7 @@ public class AuthorizationService implements ClusterEventListener {
   }
 
   public boolean isPublic() {
-    return conf.isNotebookPublic();
+    return zConf.isNotebookPublic();
   }
 
-  @Override
-  public void onClusterEvent(String msg) {
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("onClusterEvent : {}", msg);
-    }
-
-    ClusterMessage message = ClusterMessage.deserializeMessage(msg);
-
-    String noteId = message.get("noteId");
-    String user = message.get("user");
-    String jsonSet = message.get("set");
-    Gson gson = new Gson();
-    Set<String> set  = gson.fromJson(jsonSet, new TypeToken<Set<String>>() {
-    }.getType());
-
-    try {
-      switch (message.clusterEvent) {
-        case SET_READERS_PERMISSIONS:
-          setReaders(noteId, set, false);
-          break;
-        case SET_WRITERS_PERMISSIONS:
-          setWriters(noteId, set, false);
-          break;
-        case SET_OWNERS_PERMISSIONS:
-          setOwners(noteId, set, false);
-          break;
-        case SET_RUNNERS_PERMISSIONS:
-          setRunners(noteId, set, false);
-          break;
-        case SET_ROLES:
-          setRoles(user, set, false);
-          break;
-        case CLEAR_PERMISSION:
-          clearPermission(noteId, false);
-          break;
-        default:
-          LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
-          break;
-      }
-    } catch (IOException e) {
-      LOGGER.warn("Fail to broadcast msg", e);
-    }
-  }
-
-  // broadcast cluster event
-  private void broadcastClusterEvent(ClusterEvent event, String noteId,
-                                     String user, Set<String> set) {
-    if (!conf.isClusterMode()) {
-      return;
-    }
-    ClusterMessage message = new ClusterMessage(event);
-    message.put("noteId", noteId);
-    message.put("user", user);
-
-    Gson gson = new Gson();
-    String json = gson.toJson(set, new TypeToken<Set<String>>() {
-    }.getType());
-    message.put("set", json);
-    String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
-        ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, msg);
-  }
 }

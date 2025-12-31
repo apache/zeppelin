@@ -17,25 +17,25 @@
 
 package org.apache.zeppelin.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class FIFOSchedulerTest {
+class FIFOSchedulerTest {
 
-  private SchedulerFactory schedulerSvc;
+  private static SchedulerFactory schedulerSvc;
 
-  @Before
-  public void setUp() {
+  @BeforeAll
+  static void setUp() {
     schedulerSvc = SchedulerFactory.singleton();
   }
 
   @Test
-  public void testRun() throws InterruptedException {
-    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
+  void testRun() throws InterruptedException {
+    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("testRun");
 
     Job<?> job1 = new SleepingJob("job1", null, 500);
     Job<?> job2 = new SleepingJob("job2", null, 500);
@@ -55,8 +55,8 @@ public class FIFOSchedulerTest {
   }
 
   @Test
-  public void testAbort() throws InterruptedException {
-    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
+  void testAbort() throws InterruptedException {
+    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("testAbort");
 
     Job<?> job1 = new SleepingJob("job1", null, 500);
     Job<?> job2 = new SleepingJob("job2", null, 500);

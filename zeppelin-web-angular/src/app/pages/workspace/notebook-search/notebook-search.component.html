@@ -10,8 +10,14 @@
   ~ limitations under the License.
   -->
 <div class="main">
-  <zeppelin-notebook-search-result-item *ngFor="let item of results"
-                                        [result]="item">
-  </zeppelin-notebook-search-result-item>
-</div>
+  <zeppelin-notebook-search-result-item
+    *ngFor="let item of results"
+    [result]="item"
+  ></zeppelin-notebook-search-result-item>
 
+  <div *ngIf="hasNoResults" class="search-no-result-found">
+    <i nz-icon nzType="search" nzTheme="outline"></i>
+    We couldn't find any notebook matching
+    <strong>'{{ searchTerm }}'</strong>
+  </div>
+</div>

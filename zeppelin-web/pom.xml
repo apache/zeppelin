@@ -23,7 +23,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-web</artifactId>
@@ -39,7 +39,50 @@
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <node.version>v16.20.2</node.version>
+    <npm.version>8.19.4</npm.version>
+    <!-- the scope of the Hadoop dependencies is the same as for the other Zeppelin components -->
+    <hadoop.deps.scope>test</hadoop.deps.scope>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-interpreter</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-shell</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-angular</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-markdown</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-python</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
@@ -63,7 +106,7 @@
         <executions>
 
           <execution>
-            <id>install node</id>
+            <id>install node and npm</id>
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
@@ -80,7 +123,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install --no-lockfile</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
 
@@ -189,9 +232,6 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>bower_components</directory>
-            </fileset>
-            <fileset>
               <directory>node</directory>
             </fileset>
             <fileset>
@@ -203,6 +243,16 @@
 
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-dependency-convergence</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
@@ -231,6 +281,30 @@
         <web.e2e.disabled>false</web.e2e.disabled>
         <web.e2e.enabled>true</web.e2e.enabled>
       </properties>
+    </profile>
+    <!-- Include some test dependencies depending on the spark-scala profile -->
+    <profile>
+      <id>spark-scala-2.13</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.13</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>spark-scala-2.12</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.12</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 

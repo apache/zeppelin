@@ -17,12 +17,16 @@ import { take } from 'rxjs/operators';
 const loadedExternalScripts = new Set<string>();
 
 @Directive({
-  selector: '[zeppelinRunScripts]'
+  selector: '[zeppelin-run-scripts]'
 })
 export class RunScriptsDirective implements OnChanges {
-  @Input() scriptsContent: string | SafeHtml;
+  @Input() scriptsContent!: string | SafeHtml;
 
-  constructor(private elementRef: ElementRef<HTMLElement>, private ngZone: NgZone, private renderer: Renderer2) {}
+  constructor(
+    private elementRef: ElementRef<HTMLElement>,
+    private ngZone: NgZone,
+    private renderer: Renderer2
+  ) {}
 
   runScripts(): void {
     if (!this.scriptsContent.toString()) {
@@ -32,9 +36,8 @@ export class RunScriptsDirective implements OnChanges {
       this.ngZone.runOutsideAngular(() => {
         const scripts = this.elementRef.nativeElement.getElementsByTagName('script');
         const externalScripts = [];
-        const localScripts = [];
-        for (let i = 0; i < scripts.length; i++) {
-          const script = scripts[i];
+        const localScripts: HTMLScriptElement[] = [];
+        for (const script of Array.from(scripts)) {
           if (script.text) {
             localScripts.push(script);
           } else if (script.src) {

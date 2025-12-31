@@ -18,21 +18,22 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SessionConfInterpreterTest {
+class SessionConfInterpreterTest {
 
   @Test
-  public void testUserSessionConfInterpreter() throws InterpreterException {
+  void testUserSessionConfInterpreter() throws InterpreterException {
 
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
@@ -45,7 +46,8 @@ public class SessionConfInterpreterTest {
         properties, "session_1", "group_1", mockInterpreterSetting);
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(properties, "session_1", "clasName", "user1");
+        new RemoteInterpreter(properties, "session_1", "clasName", "user1",
+            ZeppelinConfiguration.load());
     List<Interpreter> interpreters = new ArrayList<>();
     interpreters.add(confInterpreter);
     interpreters.add(remoteInterpreter);

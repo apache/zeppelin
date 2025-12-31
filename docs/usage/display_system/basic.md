@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Basic Display System in Apache Zeppelin"
-description: "There are 3 basic display systems in Apache Zeppelin. By default, Zeppelin prints interpreter responce as a plain text using text display system. With %html directive, Zeppelin treats your output as HTML. You can also simply use %table display system to leverage Zeppelin's built in visualization."
+description: "There are several display systems available in Apache Zeppelin. By default, Zeppelin prints interpreter response as a plain text using %text display system. However, display systems for showing HTML, tables, markdown or even graph visualizations are also available."
 group: usage/display_system
 ---
 <!--
@@ -38,6 +38,10 @@ You can explicitly say you're using `text` display system.
 With `%html` directive, Zeppelin treats your output as HTML
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/display_html.png" />
+
+## Markdown
+
+You can render your output as markdown with the `%markdown` directive.
 
 ### Mathematical expressions
 HTML display system automatically formats mathematical expression using [MathJax](https://www.mathjax.org/). You can use
@@ -104,7 +108,7 @@ The new NETWORK visualization is based on json with the following params:
     * "label": the main type of the edge;
     * "data": the data attached to the edge;
 * "labels": a map (K, V) where K is the node label and V is the color of the node;
-* "directed": (true/false, default false) wich tells if is directed graph or not;
+* "directed": (true/false, default false) which tells if is directed graph or not;
 * "types": a *distinct* list of the edge types of the graph
 
 If you click on a node or edge on the bottom of the paragraph you find a list of entity properties

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * Provide reading comparing capability of livy version.
  */
 public class LivyVersion {
-  private static final Logger logger = LoggerFactory.getLogger(LivyVersion.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivyVersion.class);
 
   protected static final LivyVersion LIVY_0_2_0 = LivyVersion.fromVersionString("0.2.0");
   protected static final LivyVersion LIVY_0_3_0 = LivyVersion.fromVersionString("0.3.0");
@@ -52,7 +52,7 @@ public class LivyVersion {
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(String.format("%d%02d%02d", major, minor, patch));
     } catch (Exception e) {
-      logger.error("Can not recognize Livy version " + versionString +
+      LOGGER.error("Can not recognize Livy version " + versionString +
           ". Assume it's a future release", e);
 
       // assume it is future release

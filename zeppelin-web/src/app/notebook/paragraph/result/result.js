@@ -23,18 +23,22 @@ export default class Result {
   checkAndReplaceCarriageReturn() {
     const str = this.data.replace(/\r\n/g, '\n');
     if (/\r/.test(str)) {
-      let newGenerated = '';
-      let strArr = str.split('\n');
-      for (let str of strArr) {
-        if (/\r/.test(str)) {
-          let splitCR = str.split('\r');
-          newGenerated += splitCR[splitCR.length - 1] + '\n';
-        } else {
-          newGenerated += str + '\n';
+      const generatedLines = str.split('\n').map((line) => {
+        if (!/\r/.test(line)) {
+          return line;
         }
-      }
-      // remove last "\n" character
-      return newGenerated.slice(0, -1);
+        const parts = line.split('\r');
+        let currentLine = parts[0];
+        for (let i = 1; i < parts.length; i++) {
+          const part = parts[i];
+          const partLength = part.length;
+          // apply terminal-like output. carriage return has the effect of moving output cursor to the front.
+          const overwritten = part + currentLine.substring(partLength);
+          currentLine = overwritten;
+        }
+        return currentLine;
+      });
+      return generatedLines.join('\n');
     } else {
       return str;
     }

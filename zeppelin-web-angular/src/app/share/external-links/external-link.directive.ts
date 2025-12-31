@@ -10,15 +10,16 @@
  * limitations under the License.
  */
 
-import { Directive, HostBinding, Input, ElementRef } from '@angular/core';
+import { Directive, ElementRef, HostBinding, Input, OnChanges } from '@angular/core';
 
 @Directive({
-  selector: 'a[href]',
+  // eslint-disable-next-line
+  selector: 'a[href]'
 })
-export class ExternalLinkDirective {
-  @HostBinding('attr.rel') relAttr = null;
-  @HostBinding('attr.target') targetAttr = null;
-  @Input() href: string;
+export class ExternalLinkDirective implements OnChanges {
+  @HostBinding('attr.rel') relAttr: HTMLAnchorElement['rel'] | null = null;
+  @HostBinding('attr.target') targetAttr: HTMLAnchorElement['target'] | null = null;
+  @Input() href?: string;
 
   constructor(private elementRef: ElementRef) {}
 

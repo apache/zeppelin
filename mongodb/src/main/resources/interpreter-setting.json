@@ -7,7 +7,7 @@
       "mongo.shell.path": {
         "envName": "MONGO_SHELL_PATH",
         "propertyName": "mongo.shell.path",
-        "defaultValue": "mongo",
+        "defaultValue": "mongosh",
         "description": "MongoDB shell local path",
         "type": "string"
       },

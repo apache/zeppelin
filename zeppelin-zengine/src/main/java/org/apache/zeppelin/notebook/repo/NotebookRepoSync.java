@@ -21,15 +21,15 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.OldNoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,9 +38,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+
 /**
  * Notebook repository sync with remote storage
  */
+@Singleton
 public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int MAX_REPO_NUM = 2;
@@ -52,20 +56,17 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
+  private final PluginManager pluginManager;
 
-  /**
-   * @param conf
-   */
-  @SuppressWarnings("static-access")
   @Inject
-  public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
-    init(conf);
+  public NotebookRepoSync(PluginManager pluginManager) {
+    this.pluginManager = pluginManager;
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
-    String allStorageClassNames = conf.getNotebookStorageClass().trim();
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    oneWaySync = zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
+    String allStorageClassNames = zConf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = DEFAULT_STORAGE;
       LOGGER.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}",
@@ -79,21 +80,21 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
     // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
-      NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
-      notebookRepo.init(conf);
+      NotebookRepo notebookRepo =
+          pluginManager.loadNotebookRepo(storageClassNames[i].trim());
+      notebookRepo.init(zConf, noteParser);
       repos.add(notebookRepo);
     }
 
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
       LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
-      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(DEFAULT_STORAGE);
-      defaultNotebookRepo.init(conf);
+      NotebookRepo defaultNotebookRepo = pluginManager.loadNotebookRepo(DEFAULT_STORAGE);
+      defaultNotebookRepo.init(zConf, noteParser);
       repos.add(defaultNotebookRepo);
     }
-
     // sync for anonymous mode on start
-    if (getRepoCount() > 1 && conf.isAnonymousAllowed()) {
+    if (getRepoCount() > 1 && zConf.isAnonymousAllowed()) {
       try {
         sync(AuthenticationInfo.ANONYMOUS);
       } catch (IOException e) {
@@ -104,7 +105,6 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   public List<NotebookRepoWithSettings> getNotebookRepos(AuthenticationInfo subject) {
     List<NotebookRepoWithSettings> reposSetting = new ArrayList<>();
-
     NotebookRepoWithSettings repoWithSettings;
     for (NotebookRepo repo : repos) {
       repoWithSettings = NotebookRepoWithSettings
@@ -152,12 +152,14 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
    * Get Note from the first repository
    */
   @Override
-  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
     return getRepo(0).get(noteId, notePath, subject);
   }
 
   /* Get Note from specific repo (for tests) */
-  Note get(int repoIndex, String noteId, String noteName, AuthenticationInfo subject) throws IOException {
+  Note get(int repoIndex, String noteId, String noteName, AuthenticationInfo subject)
+      throws IOException {
     return getRepo(repoIndex).get(noteId, noteName, subject);
   }
 
@@ -228,7 +230,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
    *
    * @throws IOException
    */
-  void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
+  void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject)
+      throws IOException {
     LOGGER.info("Sync started");
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
@@ -282,7 +285,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       NotebookRepo remoteRepo) {
     for (NoteInfo noteInfo : notesInfo) {
       try {
-        remoteRepo.save(localRepo.get(noteInfo.getId(), noteInfo.getPath(), subject), subject);
+        remoteRepo.save(localRepo.get(noteInfo.getId(), noteInfo.getPath(), subject),
+            subject);
       } catch (IOException e) {
         LOGGER.error("Failed to push note to storage, moving onto next one", e);
       }
@@ -544,6 +548,16 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       }
     }
     return revisionNote;
+  }
+
+  @Override
+  public NoteParser getNoteParser() {
+    try {
+      return getRepo(0).getNoteParser();
+    } catch (IOException e) {
+      LOGGER.error("Error getting first repo", e);
+    }
+    return null;
   }
 
 }

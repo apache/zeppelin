@@ -10,6 +10,10 @@
 /interpreter/*
 !/interpreter/lib
 
+# metals
+.bloop
+.metals
+
 # interpreter temp files
 derby.log
 spark/metastore_db
@@ -30,7 +34,6 @@ conf/keystore
 conf/truststore
 conf/interpreter.json
 conf/notebook-authorization.json
-conf/shiro.ini
 conf/credentials.json
 conf/helium.json
 
@@ -47,6 +50,7 @@ zeppelin-web/npm-debug.log
 zeppelin-web/yarn-error.log
 zeppelin-web/bower_components
 zeppelin-web/yarn.lock
+zeppelin-web-angular/tslint-rules/*.js
 **nbproject/
 **node/
 
@@ -67,6 +71,7 @@ zeppelin-web/yarn.lock
 /warehouse/
 /notebook/
 /local-repo/
+/notebook_*/
 
 **/sessions/
 **/data/
@@ -96,6 +101,12 @@ Thumbs.db
 # intelliJ IDEA project files
 .idea/
 *.iml
+
+# Jetbrains Fleet project files
+.fleet/
+
+# vscode project files
+.vscode/
 
 # maven target files
 target/
@@ -129,3 +140,12 @@ tramp
 
 # jEnv file
 .java-version
+
+# pyenv file
+.python-version
+
+# python venv
+.venv
+
+# dotenv files
+.env

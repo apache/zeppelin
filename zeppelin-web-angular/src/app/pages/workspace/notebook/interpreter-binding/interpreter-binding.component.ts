@@ -26,7 +26,7 @@ import { InterpreterService, MessageService } from '@zeppelin/services';
 })
 export class NotebookInterpreterBindingComponent {
   private restarting = false;
-  @Input() noteId: string;
+  @Input() noteId!: string;
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
   @Input() activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
   @Output() readonly activatedExtensionChange = new EventEmitter<
@@ -42,7 +42,7 @@ export class NotebookInterpreterBindingComponent {
         new Promise(resolve => {
           this.restarting = true;
           this.interpreterService.restartInterpreter(interpreter.id, this.noteId).subscribe(
-            data => {
+            _data => {
               this.restarting = false;
               this.cdr.markForCheck();
               resolve();

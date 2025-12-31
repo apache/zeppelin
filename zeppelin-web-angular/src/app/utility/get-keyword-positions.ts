@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { computeLineStartsMap, getLineAndCharacterFromPosition } from '@zeppelin/utility/line-map';
+import { computeLineStartsMap, getLineAndCharacterFromPosition } from './line-map';
 
 export interface KeywordPosition {
   line: number;
@@ -19,7 +19,7 @@ export interface KeywordPosition {
 }
 
 export function getKeywordPositions(keywords: string[], str: string): KeywordPosition[] {
-  const highlightPositions = [];
+  const highlightPositions: KeywordPosition[] = [];
   const lineMap = computeLineStartsMap(str);
 
   keywords.forEach((keyword: string) => {

@@ -23,29 +23,29 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer.InterpretJob;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-@RunWith(MockitoJUnitRunner.class)
-public class JobTest {
+class JobTest {
 
-  @Mock private JobListener mockJobListener;
-  @Mock private Interpreter mockInterpreter;
-  @Mock private InterpreterContext mockInterpreterContext;
+  private JobListener mockJobListener;
+  private Interpreter mockInterpreter;
+  private InterpreterContext mockInterpreterContext;
   private InterpretJob spyInterpretJob;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
+    mockJobListener = mock(JobListener.class);
+    mockInterpreter = mock(Interpreter.class);
+    mockInterpreterContext = mock(InterpreterContext.class);
     InterpretJob interpretJob =
         new InterpretJob(
             "jobid",
@@ -58,7 +58,7 @@ public class JobTest {
   }
 
   @Test
-  public void testNormalCase() throws Throwable {
+  void testNormalCase() throws Throwable {
 
     InterpreterResult successInterpreterResult =
         new InterpreterResult(Code.SUCCESS, "success result");
@@ -70,7 +70,7 @@ public class JobTest {
   }
 
   @Test
-  public void testErrorCase() throws Throwable {
+  void testErrorCase() throws Throwable {
     String failedMessage = "failed message";
     InterpreterException interpreterException = new InterpreterException(failedMessage);
     doThrow(interpreterException).when(spyInterpretJob).jobRun();

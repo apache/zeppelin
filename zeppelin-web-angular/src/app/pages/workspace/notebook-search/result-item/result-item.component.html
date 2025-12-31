@@ -12,11 +12,11 @@
 
 <nz-card [nzTitle]="titleTemplateRef">
   <ng-template #titleTemplateRef>
-    <a [routerLink]="routerLink" [queryParams]="queryParams">{{displayName}}</a>
+    <a [routerLink]="routerLink" [queryParams]="queryParams">{{ displayName }}</a>
   </ng-template>
   <zeppelin-code-editor
     [style.height.px]="height"
     [nzEditorOption]="editorOption"
-    (nzEditorInitialized)="initializedEditor($event)">
-  </zeppelin-code-editor>
+    (nzEditorInitialized)="initializedEditor($event)"
+  ></zeppelin-code-editor>
 </nz-card>

@@ -10,8 +10,6 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-
 import { NzAffixModule } from 'ng-zorro-antd/affix';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzAnchorModule } from 'ng-zorro-antd/anchor';
@@ -28,7 +26,9 @@ import { NzCascaderModule } from 'ng-zorro-antd/cascader';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzCommentModule } from 'ng-zorro-antd/comment';
-import { NzNoAnimationModule, NzTransButtonModule, NzWaveModule } from 'ng-zorro-antd/core';
+import { NzNoAnimationModule } from 'ng-zorro-antd/core/no-animation';
+import { NzTransButtonModule } from 'ng-zorro-antd/core/trans-button';
+import { NzWaveModule } from 'ng-zorro-antd/core/wave';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
@@ -74,6 +74,7 @@ import { NzTreeModule } from 'ng-zorro-antd/tree';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
+import { NgModule } from './ngmodule.decorator';
 
 @NgModule({
   exports: [

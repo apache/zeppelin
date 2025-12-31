@@ -46,16 +46,20 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
   else
     ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-[0-9]*.war")
-    export ZEPPELIN_WAR
+    if [[ -n "${ZEPPELIN_WAR}" ]]; then
+      export ZEPPELIN_WAR
+    fi
   fi
 fi
 
 if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
-  if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
+  if [[ -d "${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin" ]]; then
     export ZEPPELIN_ANGULAR_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist/zeppelin"
   else
     ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
-    export ZEPPELIN_ANGULAR_WAR
+    if [[ -n "${ZEPPELIN_ANGULAR_WAR}" ]]; then
+      export ZEPPELIN_ANGULAR_WAR
+    fi
   fi
 fi
 
@@ -72,12 +76,9 @@ function check_java_version() {
     java_ver_output=$("${JAVA:-java}" -version 2>&1)
     jvmver=$(echo "$java_ver_output" | grep '[openjdk|java] version' | awk -F'"' 'NR==1 {print $2}' | cut -d\- -f1)
     JVM_VERSION=$(echo "$jvmver"|sed -e 's|^\([0-9][0-9]*\)\..*$|\1|')
-    if [ "$JVM_VERSION" = "1" ]; then
-        JVM_VERSION=$(echo "$jvmver"|sed -e 's|^1\.\([0-9][0-9]*\)\..*$|\1|')
-    fi
 
-    if [ "$JVM_VERSION" -lt 8 ] || { [ "$JVM_VERSION" -eq 8 ] && [ "${jvmver#*_}" -lt 151 ]; } ; then
-        echo "Apache Zeppelin requires either Java 8 update 151 or newer"
+    if [ "$JVM_VERSION" -lt 11 ]; then
+        echo "Apache Zeppelin requires either Java 11 or newer"
         exit 1;
     fi
 }
@@ -121,6 +122,7 @@ function addJarInDirForIntp() {
 ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
 
 function getZeppelinVersion(){
+    check_java_version
     if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
       ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
     fi
@@ -170,6 +172,14 @@ else
   ZEPPELIN_RUNNER=java
 fi
 export ZEPPELIN_RUNNER
+
+if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
+  # if for some reason the shell doesn't have $USER defined
+  # (e.g., ssh'd in to execute a command)
+  # let's get the effective username and use that
+  USER=${USER:-$(id -nu)}
+  export ZEPPELIN_IDENT_STRING="${USER}"
+fi
 
 if [[ -z "$ZEPPELIN_INTERPRETER_REMOTE_RUNNER" ]]; then
   export ZEPPELIN_INTERPRETER_REMOTE_RUNNER="bin/interpreter.sh"

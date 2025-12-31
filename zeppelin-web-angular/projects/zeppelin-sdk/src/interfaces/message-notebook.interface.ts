@@ -23,6 +23,7 @@ interface Name {
 export type GetNode = ID;
 export type MoveNoteToTrash = ID;
 export type MoveFolderToTrash = ID;
+export type ReloadNote = ID;
 export type RestoreNote = ID;
 export type RestoreFolder = ID;
 export type DeleteNote = ID;
@@ -32,7 +33,7 @@ export type FolderRename = ID & Name;
 export type PersonalizedMode = 'true' | 'false';
 
 export interface NoteRename extends Name, ID {
-  relative: boolean;
+  relative?: boolean;
 }
 
 export interface SendNote {
@@ -61,23 +62,27 @@ export interface Note {
   };
 }
 
+export interface ImportNote {
+  note: Exclude<Required<Note>['note'], 'path'>;
+}
+
 export interface NoteAngularObjects {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteInfo {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteParams {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 export interface NoteForms {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -145,6 +150,14 @@ export interface NoteRunningStatus {
   status: boolean;
 }
 
+export interface NewNoteReceived {
+  note: Required<Note>['note'];
+}
+
+export interface ImportNoteReceived {
+  note: Required<Note>['note'];
+}
+
 export interface ParagraphAdded {
   index: number;
   paragraph: ParagraphItem;
@@ -189,7 +202,7 @@ export interface NoteUpdate extends Name, ID {
 }
 
 export interface NewNote extends Name {
-  defaultInterpreterGroup: string;
+  defaultInterpreterGroup?: string;
 }
 
 export interface NotesInfo {

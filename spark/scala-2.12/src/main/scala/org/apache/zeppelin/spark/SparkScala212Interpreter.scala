@@ -22,10 +22,9 @@ import org.apache.spark.repl.SparkILoop
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterException, InterpreterGroup, InterpreterResult}
-import org.apache.zeppelin.kotlin.KotlinInterpreter
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.io.{BufferedReader, File, PrintStream}
+import java.io.{BufferedReader, File}
 import java.net.URLClassLoader
 import java.nio.file.Paths
 import java.util.Properties
@@ -153,17 +152,6 @@ class SparkScala212Interpreter(conf: SparkConf,
     sparkILoop.classLoader
   }
 
-  // Used by KotlinSparkInterpreter
-  override def delegateInterpret(interpreter: KotlinInterpreter,
-                        code: String,
-                        context: InterpreterContext): InterpreterResult = {
-    val out = context.out
-    val newOut = if (out != null) new PrintStream(out) else null
-    Console.withOut(newOut) {
-      interpreter.interpret(code, context)
-    }
-  }
-
   def interpret(code: String): InterpreterResult =
     interpret(code, InterpreterContext.get())
 
@@ -210,9 +198,9 @@ class SparkScala212Interpreter(conf: SparkConf,
   }
 
   override def createZeppelinContext(): Unit = {
-    val sparkShims = SparkShims.getInstance(sc.version, properties, sparkSession)
-    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
-    z = new SparkZeppelinContext(sc, sparkShims,
+    val sparkUtils = new SparkUtils(properties, sparkSession)
+    sparkUtils.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
+    z = new SparkZeppelinContext(sc, sparkUtils,
       interpreterGroup.getInterpreterHookRegistry,
       properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
     bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))

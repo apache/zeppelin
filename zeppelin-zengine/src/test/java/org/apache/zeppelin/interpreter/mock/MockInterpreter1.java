@@ -33,83 +33,83 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockInterpreter1 extends Interpreter {
 
-	private static AtomicInteger IdGenerator = new AtomicInteger();
+  private static AtomicInteger IdGenerator = new AtomicInteger();
 
-	private int object_id;
-	private String pid;
-	Map<String, Object> vars = new HashMap<>();
+  private int object_id;
+  private String pid;
+  Map<String, Object> vars = new HashMap<>();
 
-	public MockInterpreter1(Properties property) {
-		super(property);
-		this.object_id = IdGenerator.getAndIncrement();
-		this.pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-	}
+  public MockInterpreter1(Properties property) {
+    super(property);
+    this.object_id = IdGenerator.getAndIncrement();
+    this.pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+  }
 
-	boolean open;
-
-
-	@Override
-	public void open() {
-		open = true;
-	}
-
-	@Override
-	public void close() {
-		open = false;
-	}
+  boolean open;
 
 
-	public boolean isOpen() {
-		return open;
-	}
+  @Override
+  public void open() {
+    open = true;
+  }
 
-	@Override
-	public InterpreterResult interpret(String st, InterpreterContext context) {
-		InterpreterResult result;
-		st = st.trim();
-		if ("getId".equals(st)) {
-			// get unique id of this interpreter instance
-			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.object_id + "-" + this.pid);
-		} else if (st.startsWith("sleep")) {
-			try {
-				Thread.sleep(Integer.parseInt(st.split(" ")[1]));
-			} catch (InterruptedException e) {
-				// nothing to do
-			}
-			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
-		} else {
-			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
-		}
+  @Override
+  public void close() {
+    open = false;
+  }
 
-		if (context.getResourcePool() != null) {
-			context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
-		}
 
-		return result;
-	}
+  public boolean isOpen() {
+    return open;
+  }
 
-	@Override
-	public void cancel(InterpreterContext context) {
-	}
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    InterpreterResult result;
+    st = st.trim();
+    if ("getId".equals(st)) {
+      // get unique id of this interpreter instance
+      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.object_id + "-" + this.pid);
+    } else if (st.startsWith("sleep")) {
+      try {
+        Thread.sleep(Integer.parseInt(st.split(" ")[1]));
+      } catch (InterruptedException e) {
+        // nothing to do
+      }
+      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+    } else {
+      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+    }
 
-	@Override
-	public FormType getFormType() {
-		return FormType.SIMPLE;
-	}
+    if (context.getResourcePool() != null) {
+      context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
+    }
 
-	@Override
-	public int getProgress(InterpreterContext context) {
-		return 0;
-	}
+    return result;
+  }
 
-	@Override
-	public Scheduler getScheduler() {
-		return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
-	}
+  @Override
+  public void cancel(InterpreterContext context) {
+  }
 
-	@Override
-	public List<InterpreterCompletion> completion(String buf, int cursor,
-			InterpreterContext interpreterContext) {
-		return null;
-	}
+  @Override
+  public FormType getFormType() {
+    return FormType.SIMPLE;
+  }
+
+  @Override
+  public int getProgress(InterpreterContext context) {
+    return 0;
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
+  }
+
+  @Override
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
+    return null;
+  }
 }

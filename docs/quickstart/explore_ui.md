@@ -19,9 +19,36 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Explore Apache Zeppelin UI
+# Explore Apache Zeppelin UI (Classic UI)
 
 <div id="toc"></div>
+
+## How to Enable and Switch to the Classic UI
+
+Starting from Zeppelin 0.12.0, this UI has become optional. To use this UI, please build with the following profile:
+
+```
+-Pweb-classic
+```
+
+Afterward, you can switch to the classic UI via the `Swtich to Classic UI` button in the settings menu of the new UI app.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/switch_to_classic_ui.png" width="130" />
+
+
+### Configuring the default UI
+
+Zeppelin allows you to configure the default, especially for users who prefer the classic UI.
+
+To set the default UI to classic, add the following property to the `zeppelin-site.xml` file:
+
+```xml
+<property>
+  <name>zeppelin.default.ui</name>
+  <value>classic</value>
+  <description>Default UI for Zeppelin. Options: classic or new. Default configuration is 'new'</description>
+</property>
+```
 
 ## Main home
 
@@ -57,7 +84,7 @@ The `Notebook` menu proposes almost the same features as the note management sec
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/notebook_menu.png" width="170px" />
 
 ### Settings
-This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentification, see [Shiro Authentication](../setup/security/shiro_authentication.html).
+This menu gives you access to settings and displays information about Zeppelin. User name is set to `anonymous` if you use default shiro configuration. If you want to set up authentication, see [Shiro Authentication](../setup/security/shiro_authentication.html).
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/ui-img/settings_menu.png" width="170px" />
 
@@ -151,7 +178,7 @@ In the middle of the toolbar you can find the command buttons:
 
 On the right of the note tool bar you can find configuration icons:
 
-* display all the keyboard shorcuts
+* display all the keyboard shortcuts
 * configure the interpreters binding to the current note
 * configure the note permissions
 * switch the node display mode between `default`, `simple` and `report`

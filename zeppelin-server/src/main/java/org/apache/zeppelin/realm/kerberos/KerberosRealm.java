@@ -45,11 +45,15 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KeyTab;
-import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,7 +86,7 @@ import java.util.regex.Pattern;
  *
  */
 public class KerberosRealm extends AuthorizingRealm {
-  public static final Logger LOG = LoggerFactory.getLogger(KerberosRealm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KerberosRealm.class);
 
   // Configs to set in shiro.ini
   private String principal = null;
@@ -245,13 +249,13 @@ public class KerberosRealm extends AuthorizingRealm {
       serverSubject.getPrivateCredentials().add(keytabInstance);
       for (String spnegoPrincipal : spnegoPrincipals) {
         Principal krbPrincipal = new KerberosPrincipal(spnegoPrincipal);
-        LOG.info("Using keytab {}, for principal {}",
+        LOGGER.info("Using keytab {}, for principal {}",
             keytab, krbPrincipal);
         serverSubject.getPrincipals().add(krbPrincipal);
       }
 
       if (nameRules == null || nameRules.trim().length() == 0) {
-        LOG.warn("No auth_to_local rules defined, DEFAULT will be used.");
+        LOGGER.warn("No auth_to_local rules defined, DEFAULT will be used.");
         nameRules = "DEFAULT";
       }
 
@@ -261,7 +265,7 @@ public class KerberosRealm extends AuthorizingRealm {
         try {
           gssManager = Subject.doAs(serverSubject,
                   (PrivilegedExceptionAction<GSSManager>) GSSManager::getInstance);
-          LOG.trace("SPNEGO gssManager initialized.");
+          LOGGER.trace("SPNEGO gssManager initialized.");
         } catch (PrivilegedActionException ex) {
           throw ex.getException();
         }
@@ -301,18 +305,18 @@ public class KerberosRealm extends AuthorizingRealm {
       try {
         provider = new FileSignerSecretProvider();
         provider.init(config, null, tokenValidity);
-        LOG.info("File based secret signer initialized.");
+        LOGGER.info("File based secret signer initialized.");
       } catch (Exception e) {
-        LOG.info("Unable to initialize FileSignerSecretProvider, " +
+        LOGGER.info("Unable to initialize FileSignerSecretProvider, " +
             "falling back to use random secrets.");
         provider = new RandomSignerSecretProvider();
         provider.init(config, null, tokenValidity);
-        LOG.info("Random secret signer initialized.");
+        LOGGER.info("Random secret signer initialized.");
       }
     } else if ("random".equals(secretProvider)) {
       provider = new RandomSignerSecretProvider();
       provider.init(config, null, tokenValidity);
-      LOG.info("Random secret signer initialized.");
+      LOGGER.info("Random secret signer initialized.");
     } else {
       throw new RuntimeException(
           "Custom secret signer not implemented yet. Use 'file' or 'random'.");
@@ -360,7 +364,7 @@ public class KerberosRealm extends AuthorizingRealm {
       hadoopGroups.refresh();
       final List<String> groupList = hadoopGroups.getGroups(mappedPrincipalName);
 
-      LOG.debug(String.format("group found %s, %s",
+      LOGGER.debug(String.format("group found %s, %s",
             mappedPrincipalName, groupList.toString()));
 
       groups = new HashSet<>(groupList);
@@ -368,10 +372,10 @@ public class KerberosRealm extends AuthorizingRealm {
     } catch (final IOException e) {
       if (e.toString().contains("No groups found for user")) {
         /* no groups found move on */
-        LOG.info(String.format("No groups found for user %s", mappedPrincipalName));
+        LOGGER.info(String.format("No groups found for user %s", mappedPrincipalName));
       } else {
         /* Log the error and return empty group */
-        LOG.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
+        LOGGER.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
         throw new AuthorizationException(e);
       }
       groups = new HashSet<>();
@@ -425,15 +429,15 @@ public class KerberosRealm extends AuthorizingRealm {
       AuthenticationToken token;
       try {
         token = getToken(httpRequest);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Got token {} from httpRequest {}", token,
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Got token {} from httpRequest {}", token,
               getRequestURL(httpRequest));
           if (null != token) {
-            LOG.debug("token.isExpired() = " + token.isExpired());
+            LOGGER.debug("token.isExpired() = " + token.isExpired());
           }
         }
       } catch (AuthenticationException ex) {
-        LOG.warn("AuthenticationToken ignored: " + ex.getMessage());
+        LOGGER.warn("AuthenticationToken ignored: " + ex.getMessage());
         if (!ex.getMessage().equals("Empty token")) {
           // will be sent back in a 401 unless filter authenticates
           authenticationEx = ex;
@@ -442,8 +446,8 @@ public class KerberosRealm extends AuthorizingRealm {
       }
       if (managementOperation(token, httpRequest, httpResponse)) {
         if (token == null || token.isExpired()) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Request [{}] triggering authentication. handler: {}",
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Request [{}] triggering authentication. handler: {}",
                 getRequestURL(httpRequest), this.getClass());
           }
           token = authenticate(httpRequest, httpResponse);
@@ -462,8 +466,8 @@ public class KerberosRealm extends AuthorizingRealm {
         }
         if (token != null) {
           unauthorizedResponse = false;
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Request [{}] user [{}] authenticated",
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Request [{}] user [{}] authenticated",
                 getRequestURL(httpRequest), token.getUserName());
           }
           final AuthenticationToken authToken = token;
@@ -509,8 +513,8 @@ public class KerberosRealm extends AuthorizingRealm {
           doFilter(filterChain, httpRequest, httpResponse);
         }
       } else {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("managementOperation returned false for request {}."
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("managementOperation returned false for request {}."
               + " token: {}", getRequestURL(httpRequest), token);
         }
         unauthorizedResponse = false;
@@ -519,10 +523,10 @@ public class KerberosRealm extends AuthorizingRealm {
       // exception from the filter itself is fatal
       errCode = HttpServletResponse.SC_FORBIDDEN;
       authenticationEx = ex;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Authentication exception: " + ex.getMessage(), ex);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Authentication exception: " + ex.getMessage(), ex);
       } else {
-        LOG.warn("Authentication exception: " + ex.getMessage());
+        LOGGER.warn("Authentication exception: " + ex.getMessage());
       }
     }
     if (unauthorizedResponse) {
@@ -569,9 +573,9 @@ public class KerberosRealm extends AuthorizingRealm {
       response.setHeader(KerberosAuthenticator.WWW_AUTHENTICATE, KerberosAuthenticator.NEGOTIATE);
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if (authorization == null) {
-        LOG.trace("SPNEGO starting for url: {}", request.getRequestURL());
+        LOGGER.trace("SPNEGO starting for url: {}", request.getRequestURL());
       } else {
-        LOG.warn("'" + KerberosAuthenticator.AUTHORIZATION +
+        LOGGER.warn("'" + KerberosAuthenticator.AUTHORIZATION +
             "' does not start with '" +
             KerberosAuthenticator.NEGOTIATE + "' :  {}", authorization);
       }
@@ -612,7 +616,7 @@ public class KerberosRealm extends AuthorizingRealm {
     GSSCredential gssCreds = null;
     AuthenticationToken token = null;
     try {
-      LOG.trace("SPNEGO initiated with server principal [{}]", serverPrincipal);
+      LOGGER.trace("SPNEGO initiated with server principal [{}]", serverPrincipal);
       gssCreds = this.gssManager.createCredential(
           this.gssManager.createName(serverPrincipal,
               KerberosUtil.NT_GSS_KRB5_PRINCIPAL_OID),
@@ -630,14 +634,14 @@ public class KerberosRealm extends AuthorizingRealm {
       }
       if (!gssContext.isEstablished()) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        LOG.trace("SPNEGO in progress");
+        LOGGER.trace("SPNEGO in progress");
       } else {
         String clientPrincipal = gssContext.getSrcName().toString();
         KerberosName kerberosName = new KerberosName(clientPrincipal);
         String userName = kerberosName.getShortName();
         token = new AuthenticationToken(userName, clientPrincipal, TYPE);
         response.setStatus(HttpServletResponse.SC_OK);
-        LOG.trace("SPNEGO completed for client principal [{}]",
+        LOGGER.trace("SPNEGO completed for client principal [{}]",
             clientPrincipal);
       }
     } finally {
@@ -737,12 +741,12 @@ public class KerberosRealm extends AuthorizingRealm {
    * @throws org.apache.shiro.authc.AuthenticationException
    */
   public static KerberosToken getKerberosTokenFromCookies(
-      Map<String, javax.ws.rs.core.Cookie> cookies)
+      Map<String, jakarta.ws.rs.core.Cookie> cookies)
       throws org.apache.shiro.authc.AuthenticationException {
     KerberosToken kerberosToken = null;
     String tokenStr = null;
     if (cookies != null) {
-      for (javax.ws.rs.core.Cookie cookie : cookies.values()) {
+      for (jakarta.ws.rs.core.Cookie cookie : cookies.values()) {
         if (cookie.getName().equals(KerberosAuthenticator.AUTHORIZATION)) {
           tokenStr = cookie.getValue();
           if (tokenStr.isEmpty()) {

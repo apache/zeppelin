@@ -17,10 +17,11 @@
 package org.apache.zeppelin.helium;
 
 import static org.apache.zeppelin.helium.HeliumBundleFactory.HELIUM_LOCAL_REPO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.eirslett.maven.plugins.frontend.lib.InstallationException;
 import com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException;
@@ -32,47 +33,39 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class HeliumBundleFactoryTest {
+class HeliumBundleFactoryTest {
   private HeliumBundleFactory hbf;
   private File nodeInstallationDir;
-  private String zeppelinHomePath;
 
-  @Before
+  @BeforeEach
   public void setUp() throws InstallationException, TaskRunnerException, IOException {
-    zeppelinHomePath = System.getProperty(ConfVars.ZEPPELIN_HOME.getVarName());
-    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "../");
-
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(),
+        new File("../").getAbsolutePath().toString());
     nodeInstallationDir =
-        new File(conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
+        new File(zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), HELIUM_LOCAL_REPO);
 
-    hbf = new HeliumBundleFactory(conf);
+    hbf = new HeliumBundleFactory(zConf);
     hbf.installNodeAndNpm();
     hbf.copyFrameworkModulesToInstallPath(true);
   }
 
-  @After
-  public void tearDown() throws IOException {
-    if (null != zeppelinHomePath) {
-      System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHomePath);
-    }
-  }
+
 
   @Test
-  public void testInstallNpm() throws InstallationException {
+  void testInstallNpm() throws InstallationException {
     assertTrue(new File(nodeInstallationDir, "/node/npm").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/node").isFile());
     assertTrue(new File(nodeInstallationDir, "/node/yarn/dist/bin/yarn").isFile());
   }
 
   @Test
-  public void downloadPackage() throws TaskRunnerException {
+  void downloadPackage() throws TaskRunnerException {
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "lodash",
             "lodash",
@@ -87,9 +80,9 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void bundlePackage() throws IOException, TaskRunnerException {
+  void bundlePackage() throws IOException, TaskRunnerException {
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",
@@ -108,13 +101,13 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void bundleLocalPackage() throws IOException, TaskRunnerException {
+  void bundleLocalPackage() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
     String localPkg = resDir + "/../../../src/test/resources/helium/vis1";
 
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "vis1",
             "vis1",
@@ -135,7 +128,7 @@ public class HeliumBundleFactoryTest {
     String localPkg = resDir + "/../../../src/test/resources/helium/vis2";
 
     HeliumPackage pkg =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "vis2",
             "vis2",
@@ -156,12 +149,12 @@ public class HeliumBundleFactoryTest {
   }
 
   @Test
-  public void switchVersion() throws IOException, TaskRunnerException {
+  void switchVersion() throws IOException, TaskRunnerException {
     URL res = Resources.getResource("helium/webpack.config.js");
     String resDir = new File(res.getFile()).getParent();
 
     HeliumPackage pkgV1 =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",
@@ -172,7 +165,7 @@ public class HeliumBundleFactoryTest {
             "icon");
 
     HeliumPackage pkgV2 =
-        new HeliumPackage(
+        newHeliumPackage(
             HeliumType.VISUALIZATION,
             "zeppelin-bubblechart",
             "zeppelin-bubblechart",

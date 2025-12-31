@@ -53,7 +53,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.JobWithProgressPoller;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -105,12 +104,12 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     super(generateId(), null);
   }
 
-  public Paragraph(String paragraphId, Note note, JobListener listener) {
+  public Paragraph(String paragraphId, Note note, ParagraphJobListener listener) {
     super(paragraphId, generateId(), listener);
     this.note = note;
   }
 
-  public Paragraph(Note note, JobListener listener) {
+  public Paragraph(Note note, ParagraphJobListener listener) {
     super(generateId(), listener);
     this.note = note;
   }
@@ -786,11 +785,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   @Override
   public String toJson() {
-    return Note.getGSON().toJson(this);
+    return note.getNoteParser().toJson(this);
   }
 
-  public static Paragraph fromJson(String json) {
-    return Note.getGSON().fromJson(json, Paragraph.class);
+  public Paragraph fromJson(String json) {
+    return note.getNoteParser().fromJson(json);
   }
 
   public void updateOutputBuffer(int index, InterpreterResult.Type type, String output) {

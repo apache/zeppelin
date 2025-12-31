@@ -72,6 +72,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NEW_NOTE') {
       $location.path('/notebook/' + data.note.id);
+    } else if (op === 'IMPORT_NOTE') {
+      $rootScope.$broadcast('noteImported', data.note);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'NOTE_RUNNING_STATUS') {
@@ -80,6 +82,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       $rootScope.$emit('jobmanager:set-jobs', data.noteJobs);
     } else if (op === 'LIST_UPDATE_NOTE_JOBS') {
       $rootScope.$emit('jobmanager:update-jobs', data.noteRunningJobs);
+    } else if (op === 'JOB_MANAGER_DISABLED') {
+      $rootScope.$broadcast('jobManagerDisabled', data.errorMessage);
     } else if (op === 'AUTH_INFO') {
       let btn = [];
       if ($rootScope.ticket.roles === '[]') {

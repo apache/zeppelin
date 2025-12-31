@@ -28,7 +28,7 @@ export class VisualizationComponentPortal<T extends Visualization, C> {
 
   createInjector() {
     const userInjector = this.viewContainerRef && this.viewContainerRef.injector;
-    // tslint:disable-next-line
+    // eslint-disable-next-line
     const injectionTokens = new WeakMap<any, any>([[VISUALIZATION, this.visualization]]);
     return new PortalInjector(userInjector, injectionTokens);
   }

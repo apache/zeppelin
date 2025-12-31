@@ -17,8 +17,8 @@
 
 package org.apache.zeppelin.rest;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
@@ -42,18 +42,20 @@ import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.constraints.NotNull;
+
 import org.eclipse.aether.repository.RemoteRepository;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -259,8 +261,7 @@ public class InterpreterRestApi extends AbstractRestApi {
   public Response addRepository(String message) {
     try {
       Repository request = Repository.fromJson(message);
-      interpreterSettingManager.addRepository(request.getId(), request.getUrl(),
-          request.isSnapshot(), request.getAuthentication(), request.getProxy());
+      interpreterSettingManager.addRepository(request);
       LOGGER.info("New repository {} added", request.getId());
     } catch (Exception e) {
       LOGGER.error("Exception in InterpreterRestApi while adding repository ", e);

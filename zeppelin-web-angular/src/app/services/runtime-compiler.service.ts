@@ -10,28 +10,18 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Compiler,
-  Component,
-  Injectable,
-  NgModule,
-  NgModuleFactory,
-  NO_ERRORS_SCHEMA,
-  Type
-} from '@angular/core';
+import { Compiler, Component, Injectable, NgModule, NgModuleFactory, Type } from '@angular/core';
 
-import { CompileDirectiveMetadata, HtmlParser, TemplateParser } from '@angular/compiler';
 import { RuntimeDynamicModuleModule } from '@zeppelin/core';
 import { NgZService } from './ng-z.service';
 
 export class DynamicTemplate {
   constructor(
     public readonly template: string,
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public readonly component: Type<any>,
-    // tslint:disable-next-line:no-any
-    public readonly moduleFactory?: NgModuleFactory<any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public readonly moduleFactory: NgModuleFactory<any>
   ) {}
 }
 
@@ -45,16 +35,16 @@ export class DynamicTemplateError {
 export class RuntimeCompilerService {
   public async createAndCompileTemplate(paragraphId: string, template: string): Promise<DynamicTemplate> {
     const ngZService = this.ngZService;
-    const dynamicComponent = Component({ template: template, selector: `dynamic-${paragraphId}` })(
+    const dynamicComponent = Component({ template, selector: `dynamic-${paragraphId}` })(
       class DynamicTemplateComponent {
         z = {
-          set: (key: string, value, id: string) => ngZService.setContextValue(key, value, id),
+          set: (key: string, value: unknown, id: string) => ngZService.setContextValue(key, value, id),
           unset: (key: string, id: string) => ngZService.unsetContextValue(key, id),
           run: (id: string) => ngZService.runParagraph(id)
         };
 
         constructor() {
-          ngZService.bindParagraph(paragraphId, this);
+          ngZService.bindParagraph(paragraphId, this as Record<string, unknown>);
           Object.freeze(this.z);
         }
       }
@@ -62,7 +52,6 @@ export class RuntimeCompilerService {
     const dynamicModule = NgModule({
       declarations: [dynamicComponent],
       exports: [dynamicComponent],
-      entryComponents: [dynamicComponent],
       imports: [RuntimeDynamicModuleModule]
     })(class DynamicModule {});
 
@@ -75,5 +64,8 @@ export class RuntimeCompilerService {
     }
   }
 
-  constructor(private compiler: Compiler, private ngZService: NgZService) {}
+  constructor(
+    private compiler: Compiler,
+    private ngZService: NgZService
+  ) {}
 }

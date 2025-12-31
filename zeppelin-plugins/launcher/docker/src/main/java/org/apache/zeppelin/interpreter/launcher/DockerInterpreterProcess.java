@@ -24,12 +24,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -37,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.spotify.docker.client.DefaultDockerClient;
@@ -56,6 +54,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.launcher.utils.TarFileEntry;
 import org.apache.zeppelin.interpreter.launcher.utils.TarUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -67,7 +66,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB;
 
 public class DockerInterpreterProcess extends RemoteInterpreterProcess {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterProcess.class);
 
   private String dockerIntpServicePort = "0";
 
@@ -94,21 +93,21 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   @VisibleForTesting
   boolean uploadLocalLibToContainter = true;
 
-  private ZeppelinConfiguration zconf;
+  private ZeppelinConfiguration zConf;
 
   private String zeppelinHome;
+  private final String containerZeppelinHome;
 
   @VisibleForTesting
-  final String CONTAINER_SPARK_HOME;
+  final String containerSparkHome;
 
   @VisibleForTesting
-  final String DOCKER_HOST;
+  final String dockerHost;
 
-  private String containerId;
-  final String CONTAINER_UPLOAD_TAR_DIR = "/tmp/zeppelin-tar";
+  private static final String CONTAINER_UPLOAD_TAR_DIR = "/tmp/zeppelin-tar";
 
   public DockerInterpreterProcess(
-      ZeppelinConfiguration zconf,
+      ZeppelinConfiguration zConf,
       String containerImage,
       String interpreterGroupId,
       String interpreterGroupName,
@@ -127,27 +126,22 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterGroupName = interpreterGroupName;
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
-    this.envs = new HashMap(envs);
+    this.envs = new HashMap<>(envs);
 
-    this.zconf = zconf;
+    this.zConf = zConf;
     this.containerName = interpreterGroupId.toLowerCase();
 
-    String sparkHome = System.getenv("CONTAINER_SPARK_HOME");
-    CONTAINER_SPARK_HOME = (sparkHome == null) ?  "/spark" : sparkHome;
-
-    String uploadLocalLib = System.getenv("UPLOAD_LOCAL_LIB_TO_CONTAINTER");
-    if (null != uploadLocalLib && StringUtils.equals(uploadLocalLib, "false")) {
-      uploadLocalLibToContainter = false;
-    }
+    containerZeppelinHome = zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_HOME);
+    containerSparkHome = zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME);
+    uploadLocalLibToContainter = zConf.getBoolean(
+        ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER);
 
     try {
       this.zeppelinHome = getZeppelinHome();
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
-    String defDockerHost = "http://0.0.0.0:2375";
-    String dockerHost = System.getenv("DOCKER_HOST");
-    DOCKER_HOST = (dockerHost == null) ?  defDockerHost : dockerHost;
+    dockerHost = zConf.getString(ConfVars.ZEPPELIN_DOCKER_HOST);
   }
 
   @Override
@@ -162,7 +156,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public void start(String userName) throws IOException {
-    docker = DefaultDockerClient.builder().uri(URI.create(DOCKER_HOST)).build();
+    docker = DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
 
     removeExistContainer(containerName);
 
@@ -198,7 +192,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // check if the interpreter process exit script
     // if interpreter process exit, then container need exit
     StringBuilder sbStartCmd = new StringBuilder();
-    sbStartCmd.append("sleep 10; ");
+    sbStartCmd.append("sleep 20; ");
     sbStartCmd.append("process=RemoteInterpreterServer; ");
     sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
     sbStartCmd.append("while [ ! -z \"$RUNNING_PIDS\" ]; ");
@@ -229,7 +223,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       final ContainerCreation containerCreation
           = docker.createContainer(containerConfig, containerName);
-      this.containerId = containerCreation.id();
+      String containerId = containerCreation.id();
 
       // Start container
       docker.startContainer(containerId);
@@ -238,30 +232,36 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       execInContainer(containerId, dockerCommand, false);
     } catch (DockerException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw new IOException(e.getMessage());
+      throw new IOException(e);
     } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw new IOException(e.getMessage());
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+      throw new IOException("Docker preparations were interrupted.", e);
     }
 
     long startTime = System.currentTimeMillis();
-
+    long timeoutTime = startTime + getConnectTimeout();
     // wait until interpreter send dockerStarted message through thrift rpc
     synchronized (dockerStarted) {
-      if (!dockerStarted.get()) {
+      LOGGER.info("Waiting for interpreter container to be ready");
+      while (!dockerStarted.get() && !Thread.currentThread().isInterrupted()) {
+        long timeToTimeout = timeoutTime - System.currentTimeMillis();
+        if (timeToTimeout <= 0) {
+          LOGGER.info("Interpreter docker creation is time out in {} seconds",
+              getConnectTimeout() / 1000);
+          stop();
+          throw new IOException(
+              "Launching zeppelin interpreter on docker is time out, kill it now");
+        }
         try {
-          dockerStarted.wait(getConnectTimeout());
+          dockerStarted.wait(timeToTimeout);
         } catch (InterruptedException e) {
-          LOGGER.error("Remote interpreter is not accessible");
-          throw new IOException(e.getMessage());
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
+          stop();
+          throw new IOException("Remote interpreter is not accessible", e);
         }
       }
-    }
-
-    if (!dockerStarted.get()) {
-      LOGGER.info("Interpreter docker creation is time out in {} seconds",
-          getConnectTimeout() / 1000);
     }
 
     // waits for interpreter thrift rpc server ready
@@ -273,6 +273,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
           LOGGER.error(e.getMessage(), e);
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
         }
       }
     }
@@ -285,16 +287,16 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     LOGGER.info("Interpreter container created {}:{}", containerHost, containerPort);
     synchronized (dockerStarted) {
       dockerStarted.set(true);
-      dockerStarted.notify();
+      dockerStarted.notifyAll();
     }
   }
 
   @VisibleForTesting
-  Properties getTemplateBindings() throws IOException {
+  Properties getTemplateBindings() {
     Properties dockerProperties = new Properties();
 
     // docker template properties
-    dockerProperties.put("CONTAINER_ZEPPELIN_HOME", zeppelinHome);
+    dockerProperties.put("CONTAINER_ZEPPELIN_HOME", containerZeppelinHome);
     dockerProperties.put("zeppelin.interpreter.container.image", containerImage);
     dockerProperties.put("zeppelin.interpreter.group.id", interpreterGroupId);
     dockerProperties.put("zeppelin.interpreter.group.name", interpreterGroupName);
@@ -312,19 +314,21 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @VisibleForTesting
-  List<String> getListEnvs() throws SocketException, UnknownHostException {
+  List<String> getListEnvs() {
     // environment variables
-    envs.put("ZEPPELIN_HOME", zeppelinHome);
-    envs.put("ZEPPELIN_CONF_DIR", zeppelinHome + "/conf");
+    envs.put("ZEPPELIN_HOME", containerZeppelinHome);
+    envs.put("ZEPPELIN_CONF_DIR", containerZeppelinHome + "/conf");
     envs.put("ZEPPELIN_FORCE_STOP", "true");
-    envs.put("SPARK_HOME", this.CONTAINER_SPARK_HOME);
+    envs.put("SPARK_HOME", this.containerSparkHome);
+
+    // remove JAVA_HOME from envs to avoid misconfiguration in container
+    envs.remove("JAVA_HOME");
+
+    // remove PATH from envs to avoid misconfiguration in container
+    envs.remove("PATH");
 
     // set container time zone
-    String dockerTimeZone = System.getenv("DOCKER_TIME_ZONE");
-    if (StringUtils.isBlank(dockerTimeZone)) {
-      dockerTimeZone = TimeZone.getDefault().getID();
-    }
-    envs.put("TZ", dockerTimeZone);
+    envs.put("TZ", zConf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
 
     List<String> listEnv = new ArrayList<>();
     for (Map.Entry<String, String> entry : this.envs.entrySet()) {
@@ -344,7 +348,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           return null;
         });
       } catch (Exception e) {
-        LOGGER.warn("ignore the exception when shutting down", e);
+        LOGGER.warn("Ignore the exception when shutting down", e);
       }
     }
     try {
@@ -353,7 +357,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // Remove container
       docker.removeContainer(containerName);
-    } catch (DockerException | InterruptedException e) {
+    } catch (InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
     }
 
@@ -379,18 +387,26 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
         }
       }
 
-      if (isExist == true) {
+      if (isExist) {
         LOGGER.info("kill exist container {}", containerName);
         docker.killContainer(containerName);
       }
-    } catch (DockerException | InterruptedException e) {
+    } catch (InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
     } finally {
       try {
-        if (isExist == true) {
+        if (isExist) {
           docker.removeContainer(containerName);
         }
-      } catch (DockerException | InterruptedException e) {
+      } catch (InterruptedException e) {
+        LOGGER.error(e.getMessage(), e);
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
+      } catch (DockerException e) {
         LOGGER.error(e.getMessage(), e);
       }
     }
@@ -407,6 +423,12 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public boolean isAlive() {
+    //TODO(ZEPPELIN-5876): Implement it more accurately
+    return isRunning();
+  }
+
+  @Override
   public boolean isRunning() {
     if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
       return true;
@@ -419,9 +441,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     return null;
   }
 
-  // upload configure file to submarine interpreter container
+  // upload keytab and configuration file to interpreter container:
   // keytab file & zeppelin-site.xml & krb5.conf
-  // The submarine configures the mount file into the container through `localization`
   // NOTE: The path to the file uploaded to the container,
   // Can not be repeated, otherwise it will lead to failure.
   private void copyRunFileToContainer(String containerId)
@@ -429,18 +450,20 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     HashMap<String, String> copyFiles = new HashMap<>();
 
     // Rebuild directory
-    rmInContainer(containerId, zeppelinHome);
-    mkdirInContainer(containerId, zeppelinHome);
+    rmInContainer(containerId, containerZeppelinHome);
+    mkdirInContainer(containerId, containerZeppelinHome);
 
 
     // 1) zeppelin-site.xml is uploaded to `${CONTAINER_ZEPPELIN_HOME}` directory in the container
     String confPath = "/conf";
     String zeplConfPath = getPathByHome(zeppelinHome, confPath);
-    mkdirInContainer(containerId, zeplConfPath);
-    copyFiles.put(zeplConfPath + "/zeppelin-site.xml", zeplConfPath + "/zeppelin-site.xml");
-    copyFiles.put(zeplConfPath + "/log4j.properties", zeplConfPath + "/log4j.properties");
+    mkdirInContainer(containerId, containerZeppelinHome);
+    String containerZeplConfPath = containerZeppelinHome + confPath;
+    copyFiles.put(
+        zeplConfPath + "/zeppelin-site.xml", containerZeplConfPath + "/zeppelin-site.xml");
+    copyFiles.put(zeplConfPath + "/log4j.properties", containerZeplConfPath + "/log4j.properties");
     copyFiles.put(zeplConfPath + "/log4j_yarn_cluster.properties",
-        zeplConfPath + "/log4j_yarn_cluster.properties");
+        containerZeplConfPath + "/log4j_yarn_cluster.properties");
 
     // 2) upload krb5.conf to container
     String krb5conf = "/etc/krb5.conf";
@@ -463,26 +486,21 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       intpKeytab = properties.getProperty("spark.yarn.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.3) submarine interpreter properties keytab file
-      intpKeytab = properties.getProperty("submarine.hadoop.keytab", "");
-    }
-    if (StringUtils.isBlank(intpKeytab)) {
-      // 3.4) livy interpreter properties keytab file
+      // 3.3) livy interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.livy.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.5) jdbc interpreter properties keytab file
+      // 3.4) jdbc interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.jdbc.keytab.location", "");
     }
-    if (!StringUtils.isBlank(intpKeytab) && !copyFiles.containsKey(intpKeytab)) {
+    if (!StringUtils.isBlank(intpKeytab)) {
       LOGGER.info("intpKeytab : {}", intpKeytab);
-      copyFiles.put(intpKeytab, intpKeytab);
+      copyFiles.putIfAbsent(intpKeytab, intpKeytab);
     }
-    // 3.6) zeppelin server keytab file
-    String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
-    if (!StringUtils.isBlank(zeppelinServerKeytab)
-        && !copyFiles.containsKey(zeppelinServerKeytab)) {
-      copyFiles.put(zeppelinServerKeytab, zeppelinServerKeytab);
+    // 3.5) zeppelin server keytab file
+    String zeppelinServerKeytab = zConf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+    if (!StringUtils.isBlank(zeppelinServerKeytab)) {
+      copyFiles.putIfAbsent(zeppelinServerKeytab, zeppelinServerKeytab);
     }
 
     // 4) hadoop conf dir
@@ -494,10 +512,10 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // 5) spark conf dir
     if (envs.containsKey("SPARK_CONF_DIR")) {
       String sparkConfDir = envs.get("SPARK_CONF_DIR");
-      rmInContainer(containerId, CONTAINER_SPARK_HOME + "/conf");
-      mkdirInContainer(containerId, CONTAINER_SPARK_HOME + "/conf");
-      copyFiles.put(sparkConfDir, CONTAINER_SPARK_HOME + "/conf");
-      envs.put("SPARK_CONF_DIR", CONTAINER_SPARK_HOME + "/conf");
+      rmInContainer(containerId, containerSparkHome + "/conf");
+      mkdirInContainer(containerId, containerSparkHome + "/conf");
+      copyFiles.put(sparkConfDir, containerSparkHome + "/conf");
+      envs.put("SPARK_CONF_DIR", containerSparkHome + "/conf");
     }
 
     if (uploadLocalLibToContainter){
@@ -505,27 +523,31 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       //    directory in the container
       String binPath = "/bin";
       String zeplBinPath = getPathByHome(zeppelinHome, binPath);
-      mkdirInContainer(containerId, zeplBinPath);
-      docker.copyToContainer(new File(zeplBinPath).toPath(), containerId, zeplBinPath);
+      String containerZeplBinPath = containerZeppelinHome + binPath;
+      mkdirInContainer(containerId, containerZeplBinPath);
+      docker.copyToContainer(new File(zeplBinPath).toPath(), containerId, containerZeplBinPath);
 
       // 7) ${ZEPPELIN_HOME}/interpreter/spark is uploaded to `${CONTAINER_ZEPPELIN_HOME}`
       //    directory in the container
       String intpGrpPath = "/interpreter/" + interpreterGroupName;
       String intpGrpAllPath = getPathByHome(zeppelinHome, intpGrpPath);
-      mkdirInContainer(containerId, intpGrpAllPath);
-      docker.copyToContainer(new File(intpGrpAllPath).toPath(), containerId, intpGrpAllPath);
+      String containerIntpGrpPath = containerZeppelinHome + intpGrpPath;
+      mkdirInContainer(containerId, containerIntpGrpPath);
+      docker.copyToContainer(new File(intpGrpAllPath).toPath(), containerId, containerIntpGrpPath);
 
       // 8) ${ZEPPELIN_HOME}/lib/interpreter/zeppelin-interpreter-shaded-<version>.jar
       //    is uploaded to `${CONTAINER_ZEPPELIN_HOME}` directory in the container
       String intpPath = "/interpreter";
       String intpAllPath = getPathByHome(zeppelinHome, intpPath);
+      String containerIntpAllPath = containerZeppelinHome + intpPath;
       Collection<File> listFiles = FileUtils.listFiles(new File(intpAllPath),
           FileFilterUtils.suffixFileFilter("jar"), null);
       for (File jarfile : listFiles) {
         String jarfilePath = jarfile.getAbsolutePath();
-        if (!StringUtils.isBlank(jarfilePath)
-            && !copyFiles.containsKey(jarfilePath)) {
-          copyFiles.put(jarfilePath, jarfilePath);
+        String jarfileName = jarfile.getName();
+        String containerJarfilePath = containerIntpAllPath + "/" + jarfileName;
+        if (!StringUtils.isBlank(jarfilePath)) {
+          copyFiles.putIfAbsent(jarfilePath, containerJarfilePath);
         }
       }
     }
@@ -542,19 +564,15 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     String tarFile = file2Tar(copyFiles);
 
     // copy tar to ZEPPELIN_CONTAINER_DIR, auto unzip
-    InputStream inputStream = new FileInputStream(tarFile);
-    try {
+    try (InputStream inputStream = new FileInputStream(tarFile)) {
       docker.copyToContainer(inputStream, containerId, CONTAINER_UPLOAD_TAR_DIR);
-    } finally {
-      inputStream.close();
     }
 
     // copy all files in CONTAINER_UPLOAD_TAR_DIR to the root directory
     cpdirInContainer(containerId, CONTAINER_UPLOAD_TAR_DIR + "/*", "/");
 
     // delete tar file in the local
-    File fileTar = new File(tarFile);
-    fileTar.delete();
+    Files.delete(Paths.get(tarFile));
   }
 
   private void mkdirInContainer(String containerId, String path)
@@ -578,7 +596,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private void execInContainer(String containerId, String execCommand, boolean logout)
       throws DockerException, InterruptedException {
 
-    LOGGER.info("exec container commmand: " + execCommand);
+    LOGGER.info("exec container commmand: {}", execCommand);
 
     final String[] command = {"sh", "-c", execCommand};
     final ExecCreation execCreation = docker.execCreate(
@@ -617,15 +635,10 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   private String getZeppelinHome() throws IOException {
-    String zeppelinHome = zconf.getZeppelinHome();
-    if (System.getenv("ZEPPELIN_HOME") != null) {
-      zeppelinHome = System.getenv("ZEPPELIN_HOME");
-    }
-
     // check zeppelinHome is exist
-    File fileZeppelinHome = new File(zeppelinHome);
+    File fileZeppelinHome = new File(zConf.getZeppelinHome());
     if (fileZeppelinHome.exists() && fileZeppelinHome.isDirectory()) {
-      return zeppelinHome;
+      return zConf.getZeppelinHome();
     }
 
     throw new IOException("Can't find zeppelin home path!");

@@ -43,6 +43,7 @@ public class InstallInterpreter {
   private final File interpreterBaseDir;
   private final List<AvailableInterpreterInfo> availableInterpreters;
   private final String localRepoDir;
+  private final ZeppelinConfiguration zConf;
   private URL proxyUrl;
   private String proxyUser;
   private String proxyPassword;
@@ -53,11 +54,13 @@ public class InstallInterpreter {
    * @param interpreterBaseDir interpreter directory for installing binaries
    * @throws IOException
    */
-  public InstallInterpreter(File interpreterListFile, File interpreterBaseDir, String localRepoDir)
+  public InstallInterpreter(File interpreterListFile, File interpreterBaseDir, String localRepoDir,
+      ZeppelinConfiguration zConf)
       throws IOException {
     this.interpreterListFile = interpreterListFile;
     this.interpreterBaseDir = interpreterBaseDir;
     this.localRepoDir = localRepoDir;
+    this.zConf = zConf;
     availableInterpreters = new LinkedList<>();
     readAvailableInterpreters();
   }
@@ -143,7 +146,7 @@ public class InstallInterpreter {
     throw new RuntimeException("Can't find interpreter '" + name + "'");
   }
 
-  public void install(String [] names, String [] artifacts) {
+  public void install(String[] names, String[] artifacts) {
     if (names.length != artifacts.length) {
       throw new RuntimeException("Length of given names and artifacts are different");
     }
@@ -159,7 +162,8 @@ public class InstallInterpreter {
       Authentication auth = new AuthenticationBuilder().addUsername(proxyUser).addPassword(proxyPassword).build();
       proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
     }
-    DependencyResolver depResolver = new DependencyResolver(localRepoDir, proxy);
+    DependencyResolver depResolver =
+        new DependencyResolver(localRepoDir, proxy, zConf);
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
@@ -212,11 +216,12 @@ public class InstallInterpreter {
       return;
     }
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     InstallInterpreter installer = new InstallInterpreter(
-        new File(conf.getInterpreterListPath()),
-        new File(conf.getInterpreterDir()),
-        conf.getInterpreterLocalRepoPath());
+        new File(zConf.getInterpreterListPath()),
+        new File(zConf.getInterpreterDir()),
+        zConf.getInterpreterLocalRepoPath(),
+        zConf);
 
     String names = null;
     String artifacts = null;

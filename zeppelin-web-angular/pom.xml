@@ -18,7 +18,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-web-angular</artifactId>
@@ -39,11 +39,21 @@
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <node.version>v18.20.8</node.version>
+    <npm.version>8.19.4</npm.version>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -80,7 +90,7 @@
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
-              <arguments>install --no-lockfile</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
 
@@ -96,29 +106,87 @@
           </execution>
 
           <execution>
-            <id>npm test</id>
+            <id>npm lint</id>
             <goals>
               <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
-              <skip>${web.e2e.disabled}</skip>
-              <arguments>run test</arguments>
+              <arguments>run lint</arguments>
             </configuration>
           </execution>
 
-            <execution>
-              <id>npm e2e</id>
-              <goals>
-                <goal>npm</goal>
-              </goals>
-              <phase>integration-test</phase>
-              <configuration>
-                <skip>${web.e2e.disabled}</skip>
-                <arguments>run e2e</arguments>
-              </configuration>
-            </execution>
+          <execution>
+            <id>npm e2e</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <arguments>run e2e</arguments>
+            </configuration>
+          </execution>
 
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <warSourceDirectory>dist\zeppelin</warSourceDirectory>
+          <webXml>dist\zeppelin\WEB-INF\web.xml</webXml>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+
+          <execution>
+            <id>start-zeppelin</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <!--
+                  NOTE: ZEPPELIN_E2E_TEST_NOTEBOOK_DIR must match zeppelin.notebook.dir.
+                  Cleanup logic relies on both pointing to the same directory.
+                -->
+                <condition property="zeppelin.notebook.dir" value="${env.ZEPPELIN_E2E_TEST_NOTEBOOK_DIR}">
+                  <isset property="env.ZEPPELIN_E2E_TEST_NOTEBOOK_DIR" />
+                </condition>
+              <property name="zeppelin.notebook.dir" value="/tmp/zeppelin-e2e-notebooks" />
+              <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                <arg value="start" />
+                <env key="ZEPPELIN_NOTEBOOK_DIR" value="${zeppelin.notebook.dir}" />
+                <env key="PATH" value="${env.PATH}" />
+              </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>stop-zeppelin</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <target unless="skipTests">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                  <arg value="stop" />
+                  <env key="PATH" value="${env.PATH}" />
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
 
@@ -165,5 +233,15 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>web-e2e</id>
+      <properties>
+        <web.e2e.disabled>false</web.e2e.disabled>
+        <web.e2e.enabled>true</web.e2e.enabled>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

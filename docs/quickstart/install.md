@@ -35,14 +35,16 @@ Apache Zeppelin officially supports and is tested on the following environments:
     <th>Value</th>
   </tr>
   <tr>
-    <td>OpenJDK or Oracle JDK</td>
-    <td>1.8 (151+) <br /> (set <code>JAVA_HOME</code>)</td>
+    <td>Java</td>
+    <td>JDK 11<br /> (set <code>JAVA_HOME</code>)</td>
   </tr>
   <tr>
     <td>OS</td>
-    <td>Mac OSX <br/> Ubuntu 18.04 <br/> Ubuntu 20.04</td>
+    <td>Mac OSX <br/> Ubuntu 24.04</td>
   </tr>
 </table>
+
+Since Zeppelin is written in Java it should run on any Linux distribution with above mentioned JDK.
 
 ### Downloading Binary Package
 
@@ -101,7 +103,7 @@ docker run -u $(id -u) -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/no
 `-u $(id -u)` is to make sure you have the permission to write logs and notebooks. 
 
 For many interpreters, they require other dependencies, e.g. Spark interpreter requires Spark binary distribution
-and Flink interpreter requires Flink binary distribution. You can also mount them via docker volumn. e.g.
+and Flink interpreter requires Flink binary distribution. You can also mount them via docker volume. e.g.
 
 ```bash
 docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/notebook:/notebook \

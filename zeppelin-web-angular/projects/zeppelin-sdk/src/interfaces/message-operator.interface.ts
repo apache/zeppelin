@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-// tslint:disable:no-redundant-jsdoc
+/* eslint-disable jsdoc/no-types */
 /**
  * Representation of event type.
  */
@@ -196,6 +196,13 @@ export enum OP {
   RELOAD_NOTES_FROM_REPO = 'RELOAD_NOTES_FROM_REPO',
 
   /**
+   * [c-s]
+   * reload note
+   * @param id note id
+   */
+  RELOAD_NOTE = 'RELOAD_NOTE',
+
+  /**
    * [s-c]
    * list of note infos
    * @param notes serialized List<NoteInfo> object
@@ -354,16 +361,21 @@ export enum OP {
   UNSUBSCRIBE_UPDATE_NOTE_JOBS = 'UNSUBSCRIBE_UPDATE_NOTE_JOBS',
 
   /**
+   * [s-c]
+   * send when job manager is disabled
+   */
+  JOB_MANAGER_DISABLED = 'JOB_MANAGER_DISABLED',
+
+  /**
    * [c-s]
    * get interpreter bindings
    */
   GET_INTERPRETER_BINDINGS = 'GET_INTERPRETER_BINDINGS',
 
-
   /**
-  * [c-s]
-  * @param selectedSettingIds
-  */
+   * [c-s]
+   * @param selectedSettingIds
+   */
   SAVE_INTERPRETER_BINDINGS = 'SAVE_INTERPRETER_BINDINGS',
 
   /**

@@ -23,47 +23,54 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.gaul.s3proxy.junit.S3ProxyRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.gaul.s3proxy.junit.S3ProxyExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class S3NotebookRepoTest {
+class S3NotebookRepoTest {
 
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private S3NotebookRepo notebookRepo;
 
-  @Rule
-  public S3ProxyRule s3Proxy = S3ProxyRule.builder()
-          .withCredentials("access", "secret")
-          .build();
+  private ZeppelinConfiguration zConf;
+  private NoteParser noteParser;
+
+  @RegisterExtension
+  static S3ProxyExtension s3Proxy = S3ProxyExtension.builder()
+    .withCredentials("access", "secret")
+    .build();
 
 
-  @Before
-  public void setUp() throws IOException {
+  @BeforeEach
+  void setUp() throws IOException {
     String bucket = "test-bucket";
     notebookRepo = new S3NotebookRepo();
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(),
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT.getVarName(),
             s3Proxy.getUri().toString());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET.getVarName(),
             bucket);
     System.setProperty("aws.accessKeyId", s3Proxy.getAccessKey());
     System.setProperty("aws.secretKey", s3Proxy.getSecretKey());
 
-    notebookRepo.init(conf);
+    notebookRepo.init(zConf, noteParser);
 
     // create bucket for notebook
     AmazonS3 s3Client = AmazonS3ClientBuilder
@@ -79,25 +86,27 @@ public class S3NotebookRepoTest {
     s3Client.createBucket(bucket);
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     if (notebookRepo != null) {
       notebookRepo.close();
     }
   }
 
   @Test
-  public void testAwsSTSLibraryOnClassPath() throws ClassNotFoundException {
-    Class.forName("com.amazonaws.auth.STSSessionCredentialsProvider", false, getClass().getClassLoader());
+  void testAwsSTSLibraryOnClassPath() throws ClassNotFoundException {
+    assertNotNull(Class.forName("com.amazonaws.auth.STSSessionCredentialsProvider", false, getClass().getClassLoader()));
   }
 
   @Test
-  public void testNotebookRepo() throws IOException {
+  void testNotebookRepo() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
     // create Note note1
     Note note1 = new Note();
+    note1.setZeppelinConfiguration(zConf);
+    note1.setNoteParser(noteParser);
     note1.setPath("/spark/note_1");
     notebookRepo.save(note1, anonymous);
 
@@ -119,6 +128,8 @@ public class S3NotebookRepoTest {
 
     // create another Note note2
     Note note2 = new Note();
+    note2.setZeppelinConfiguration(zConf);
+    note2.setNoteParser(noteParser);
     note2.setPath("/spark/note_2");
     notebookRepo.save(note2, anonymous);
 

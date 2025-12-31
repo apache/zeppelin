@@ -25,7 +25,7 @@
   <parent>
     <artifactId>zengine-plugins-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../../../zeppelin-plugins</relativePath>
   </parent>
 
@@ -55,21 +55,17 @@
       <artifactId>docker-client</artifactId>
       <classifier>shaded</classifier>
       <version>8.15.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcpkix-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>${commons.compress.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>${powermock.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>${powermock.version}</version>
     </dependency>
   </dependencies>
 
@@ -78,16 +74,13 @@
       <testResource>
         <directory>${project.basedir}/src/test/resources</directory>
       </testResource>
-      <testResource>
-        <directory>${project.basedir}/src/main/resources</directory>
-      </testResource>
     </testResources>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <phase>none</phase>
           </execution>
         </executions>
@@ -98,9 +91,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-        </configuration>
       </plugin>
     </plugins>
     <resources>

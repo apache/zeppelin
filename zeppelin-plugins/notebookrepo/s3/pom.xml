@@ -24,7 +24,7 @@
     <parent>
         <artifactId>zengine-plugins-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.11.0-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
         <relativePath>../../../zeppelin-plugins</relativePath>
     </parent>
 
@@ -38,24 +38,6 @@
         <plugin.name>NotebookRepo/S3NotebookRepo</plugin.name>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Fix enforcer plugin,
-                 since aws-java-sdk-s3 ships with multiple artifact versions of
-                 com.fasterxml.jackson.core:jackson-databind. -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-cbor</artifactId>
-                <version>2.12.6</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-databind</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -90,7 +72,7 @@
         <dependency>
             <groupId>org.gaul</groupId>
             <artifactId>s3proxy</artifactId>
-            <version>1.7.1</version>
+            <version>2.0.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -106,28 +88,8 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.dataformat</groupId>
-                    <artifactId>jackson-dataformat-xml</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.errorprone</groupId>
@@ -137,10 +99,17 @@
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

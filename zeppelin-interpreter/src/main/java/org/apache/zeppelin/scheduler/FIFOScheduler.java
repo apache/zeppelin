@@ -33,11 +33,11 @@ public class FIFOScheduler extends AbstractScheduler {
   FIFOScheduler(String name) {
     super(name);
     this.executor = Executors.newSingleThreadExecutor(
-        new SchedulerThreadFactory("FIFOScheduler-" + name + "-Worker-"));
+        new NamedThreadFactory("FIFOScheduler-" + name + "-Worker"));
   }
 
   @Override
-  public void runJobInScheduler(final Job job) {
+  public void runJobInScheduler(final Job<?> job) {
     // run job in the SingleThreadExecutor since this is FIFO.
     executor.execute(() -> runJob(job));
   }

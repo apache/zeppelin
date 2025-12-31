@@ -15,9 +15,12 @@ import { Observable } from 'rxjs';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
+  DynamicFormParams,
+  ImportNote,
   Message,
   MessageReceiveDataTypeMap,
   MessageSendDataTypeMap,
+  Note,
   NoteConfig,
   ParagraphConfig,
   ParagraphParams,
@@ -43,9 +46,7 @@ export class MessageService extends Message implements OnDestroy {
     super();
   }
 
-  interceptReceived(
-    data: WebSocketMessage<keyof MessageReceiveDataTypeMap>
-  ): WebSocketMessage<keyof MessageReceiveDataTypeMap> {
+  interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     return this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
   }
 
@@ -61,20 +62,20 @@ export class MessageService extends Message implements OnDestroy {
     return super.closed();
   }
 
-  sent(): Observable<WebSocketMessage<keyof MessageSendDataTypeMap>> {
+  sent(): Observable<WebSocketMessage<MessageSendDataTypeMap>> {
     return super.sent();
   }
 
-  received(): Observable<WebSocketMessage<keyof MessageReceiveDataTypeMap>> {
+  received(): Observable<WebSocketMessage<MessageReceiveDataTypeMap>> {
     return super.received();
   }
 
   send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
-    super.send(...args);
+    super.send<K>(...args);
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
-    return super.receive(op);
+    return super.receive<K>(op);
   }
 
   opened(): Observable<Event> {
@@ -89,7 +90,7 @@ export class MessageService extends Message implements OnDestroy {
     super.getHomeNote();
   }
 
-  newNote(noteName: string, defaultInterpreterGroup: string): void {
+  newNote(noteName: string, defaultInterpreterGroup?: string): void {
     super.newNote(noteName, defaultInterpreterGroup);
   }
 
@@ -101,7 +102,7 @@ export class MessageService extends Message implements OnDestroy {
     super.restoreNote(noteId);
   }
 
-  deleteNote(noteId): void {
+  deleteNote(noteId: string): void {
     super.deleteNote(noteId);
   }
 
@@ -125,7 +126,7 @@ export class MessageService extends Message implements OnDestroy {
     super.emptyTrash();
   }
 
-  cloneNote(noteIdToClone, newNoteName): void {
+  cloneNote(noteIdToClone: string, newNoteName: string): void {
     super.cloneNote(noteIdToClone, newNoteName);
   }
 
@@ -135,6 +136,10 @@ export class MessageService extends Message implements OnDestroy {
 
   reloadAllNotesFromRepo(): void {
     super.reloadAllNotesFromRepo();
+  }
+
+  reloadNote(noteId: string): void {
+    super.reloadNote(noteId);
   }
 
   getNote(noteId: string): void {
@@ -167,7 +172,7 @@ export class MessageService extends Message implements OnDestroy {
 
   copyParagraph(
     newIndex: number,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -185,7 +190,7 @@ export class MessageService extends Message implements OnDestroy {
     super.angularObjectUpdate(noteId, paragraphId, name, value, interpreterGroupId);
   }
 
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   angularObjectClientBind(noteId: string, name: string, value: any, paragraphId: string): void {
     super.angularObjectClientBind(noteId, name, value, paragraphId);
   }
@@ -194,21 +199,21 @@ export class MessageService extends Message implements OnDestroy {
     super.angularObjectClientUnbind(noteId, name, paragraphId);
   }
 
-  cancelParagraph(paragraphId): void {
+  cancelParagraph(paragraphId: string): void {
     super.cancelParagraph(paragraphId);
   }
 
   paragraphExecutedBySpell(
-    paragraphId,
-    paragraphTitle,
-    paragraphText,
-    paragraphResultsMsg,
-    paragraphStatus,
-    paragraphErrorMessage,
-    paragraphConfig,
-    paragraphParams,
-    paragraphDateStarted,
-    paragraphDateFinished
+    paragraphId: string,
+    paragraphTitle: string,
+    paragraphText: string,
+    paragraphResultsMsg: Array<{ data: string; type: string }>,
+    paragraphStatus: string,
+    paragraphErrorMessage: string,
+    paragraphConfig: ParagraphConfig,
+    paragraphParams: DynamicFormParams,
+    paragraphDateStarted: string,
+    paragraphDateFinished: string
   ): void {
     super.paragraphExecutedBySpell(
       paragraphId,
@@ -226,7 +231,7 @@ export class MessageService extends Message implements OnDestroy {
 
   runParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
@@ -256,7 +261,7 @@ export class MessageService extends Message implements OnDestroy {
 
   commitParagraph(
     paragraphId: string,
-    paragraphTitle: string,
+    paragraphTitle: string | undefined,
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
@@ -269,7 +274,7 @@ export class MessageService extends Message implements OnDestroy {
     super.patchParagraph(paragraphId, noteId, patch);
   }
 
-  importNote(note: SendNote): void {
+  importNote(note: ImportNote['note']): void {
     super.importNote(note);
   }
 
@@ -309,7 +314,7 @@ export class MessageService extends Message implements OnDestroy {
     super.getInterpreterBindings(noteId);
   }
 
-  saveInterpreterBindings(noteId, selectedSettingIds): void {
+  saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
     super.saveInterpreterBindings(noteId, selectedSettingIds);
   }
 
@@ -325,7 +330,7 @@ export class MessageService extends Message implements OnDestroy {
     super.saveNoteForms(note);
   }
 
-  removeNoteForms(note, formName): void {
+  removeNoteForms(note: Required<Note>['note'], formName: string): void {
     super.removeNoteForms(note, formName);
   }
 }

@@ -27,7 +27,7 @@ export class BaseRest {
    * @param str`
    * @param values
    */
-  restUrl(str: TemplateStringsArray | string, ...values): string {
+  restUrl(str: TemplateStringsArray | string, ...values: unknown[]): string {
     let output = this.baseUrlService.getRestApiBase();
 
     if (typeof str === 'string') {

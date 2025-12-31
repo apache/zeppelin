@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 
-import { MessageService } from '@zeppelin/services/message.service';
+import { MessageService } from '@zeppelin/services';
 
 @Component({
   selector: 'zeppelin-note-rename',
@@ -23,15 +23,18 @@ import { MessageService } from '@zeppelin/services/message.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NoteRenameComponent implements OnInit {
-  @Input() newName: string;
-  @Input() id: string;
+  @Input() newName!: string;
+  @Input() id!: string;
 
   rename() {
     this.messageService.noteRename(this.id, this.newName);
     this.nzModalRef.destroy();
   }
 
-  constructor(private messageService: MessageService, private nzModalRef: NzModalRef) {}
+  constructor(
+    private messageService: MessageService,
+    private nzModalRef: NzModalRef
+  ) {}
 
   ngOnInit() {}
 }

@@ -23,15 +23,17 @@ import { TableData, Visualization } from '@zeppelin/visualization';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VisualizationPivotSettingComponent implements OnInit {
-  @Input() visualization: Visualization;
+  @Input() visualization!: Visualization;
 
-  tableData: TableData;
-  config: GraphConfig;
-  columns = [];
+  config!: GraphConfig;
+  columns: Array<{ name: string; index: number; aggr: string }> = [];
   aggregates = ['sum', 'count', 'avg', 'min', 'max'];
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   drop(event: CdkDragDrop<any[]>) {
+    if (!this.visualization.configChange$) {
+      throw new Error('Visualization configChange$ is not defined');
+    }
     if (event.container.id === 'columns-list') {
       return;
     }
@@ -53,14 +55,20 @@ export class VisualizationPivotSettingComponent implements OnInit {
     this.visualization.configChange$.next(this.config);
   }
 
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   removeFieldAt(data: any[], index: number): void {
+    if (!this.visualization.configChange$) {
+      throw new Error('Visualization configChange$ is not defined');
+    }
     data.splice(index, 1);
     this.visualization.configChange$.next(this.config);
     this.cdr.markForCheck();
   }
 
   changeAggregate(aggregates: string, index: number): void {
+    if (!this.visualization.configChange$) {
+      throw new Error('configChange$ is not defined');
+    }
     this.config.values[index].aggr = aggregates;
     this.visualization.configChange$.next(this.config);
     this.cdr.markForCheck();
@@ -71,9 +79,9 @@ export class VisualizationPivotSettingComponent implements OnInit {
   }
 
   init() {
-    this.tableData = this.visualization.getTransformation().getTableData() as TableData;
+    const tableData = this.visualization.getTransformation().getTableData() as TableData;
     this.config = this.visualization.getConfig();
-    this.columns = this.tableData.columns.map((name, index) => ({
+    this.columns = tableData.columns.map((name, index) => ({
       name,
       index,
       aggr: 'sum'

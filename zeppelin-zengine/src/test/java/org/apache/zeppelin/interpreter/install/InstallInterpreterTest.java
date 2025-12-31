@@ -2,16 +2,17 @@ package org.apache.zeppelin.interpreter.install;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -29,15 +30,16 @@ import static org.junit.Assert.assertTrue;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class InstallInterpreterTest {
+class InstallInterpreterTest {
   private File tmpDir;
   private InstallInterpreter installer;
   private File interpreterBaseDir;
+  private ZeppelinConfiguration zConf;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-    new File(tmpDir, "conf").mkdirs();
+    tmpDir = Files.createTempDirectory("InstallInterpreterTest").toFile();
+    zConf = ZeppelinConfiguration.load();
     interpreterBaseDir = new File(tmpDir, "interpreter");
     File localRepoDir = new File(tmpDir, "local-repo");
     interpreterBaseDir.mkdir();
@@ -55,23 +57,23 @@ public class InstallInterpreterTest {
 
     FileUtils.writeStringToFile(new File(tmpDir, "conf/interpreter-list"), interpreterList, StandardCharsets.UTF_8);
 
-    installer = new InstallInterpreter(interpreterListFile, interpreterBaseDir, localRepoDir
-        .getAbsolutePath());
+    installer = new InstallInterpreter(interpreterListFile, interpreterBaseDir,
+        localRepoDir.getAbsolutePath(), zConf);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
 
 
   @Test
-  public void testList() {
+  void testList() {
     assertEquals(2, installer.list().size());
   }
 
   @Test
-  public void install() {
+  void install() {
     assertEquals(0, interpreterBaseDir.listFiles().length);
 
     installer.install("intp1");
@@ -79,7 +81,7 @@ public class InstallInterpreterTest {
   }
 
   @Test
-  public void installAll() {
+  void installAll() {
     installer.installAll();
     assertTrue(new File(interpreterBaseDir, "intp1").isDirectory());
     assertTrue(new File(interpreterBaseDir, "intp2").isDirectory());

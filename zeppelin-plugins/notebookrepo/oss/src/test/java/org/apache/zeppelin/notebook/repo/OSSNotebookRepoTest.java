@@ -18,25 +18,28 @@
 package org.apache.zeppelin.notebook.repo;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.storage.RemoteStorageOperator;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-public class OSSNotebookRepoTest {
+class OSSNotebookRepoTest {
 
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private OSSNotebookRepo notebookRepo;
@@ -44,10 +47,13 @@ public class OSSNotebookRepoTest {
   private String bucket;
   private static int OSS_VERSION_MAX = 30;
 
+  private ZeppelinConfiguration zConf;
+  private NoteParser noteParser;
 
-
-  @Before
-  public void setUp() throws IOException {
+  @BeforeEach
+  void setUp() throws IOException {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
     bucket = "zeppelin-test-bucket";
     String endpoint = "yourEndpoint";
     String accessKeyId = "yourAccessKeyId";
@@ -55,23 +61,24 @@ public class OSSNotebookRepoTest {
     ossOperator = new MockStorageOperator();
     ossOperator.createBucket(bucket);
     notebookRepo = new OSSNotebookRepo();
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ENDPOINT.getVarName(),
+
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ENDPOINT.getVarName(),
             endpoint);
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_BUCKET.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_BUCKET.getVarName(),
             bucket);
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYID.getVarName(),
             accessKeyId);
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET.getVarName(),
+    zConf.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_ACCESSKEYSECRET.getVarName(),
             accessKeySecret);
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_OSS_VERSION_MAX.getVarName(),
             OSS_VERSION_MAX + "");
-    notebookRepo.init(conf);
+    notebookRepo.init(zConf, noteParser);
     notebookRepo.setOssOperator(ossOperator);
   }
 
-  @After
-  public void tearDown() throws InterruptedException, IOException {
+  @AfterEach
+  void tearDown() throws InterruptedException, IOException {
     ossOperator.deleteDir(bucket, "");
     ossOperator.deleteBucket(bucket);
     // The delete operations on OSS Service above has a delay.
@@ -85,12 +92,14 @@ public class OSSNotebookRepoTest {
   }
 
   @Test
-  public void testNotebookRepo() throws IOException {
+  void testNotebookRepo() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
     // create Note note1
     Note note1 = new Note();
+    note1.setZeppelinConfiguration(zConf);
+    note1.setNoteParser(noteParser);
     note1.setPath("/spark/note_1");
     notebookRepo.save(note1, anonymous);
 
@@ -118,11 +127,13 @@ public class OSSNotebookRepoTest {
       notebookRepo.get("invalid_id", "/invalid_path", anonymous);
       fail("Should fail to get non-existed note1");
     } catch (IOException e) {
-      assertEquals(e.getMessage(), "Note or its revision not found");
+      assertEquals("Note or its revision not found", e.getMessage());
     }
 
     // create another Note note2
     Note note2 = new Note();
+    note2.setZeppelinConfiguration(zConf);
+    note2.setNoteParser(noteParser);
     note2.setPath("/spark/note_2");
     notebookRepo.save(note2, anonymous);
 
@@ -161,12 +172,14 @@ public class OSSNotebookRepoTest {
 
 
   @Test
-  public void testNotebookRepoWithVersionControl() throws IOException {
+  void testNotebookRepoWithVersionControl() throws IOException {
     Map<String, NoteInfo> notesInfo = notebookRepo.list(anonymous);
     assertEquals(0, notesInfo.size());
 
     // create Note note1
     Note note1 = new Note();
+    note1.setZeppelinConfiguration(zConf);
+    note1.setNoteParser(noteParser);
     note1.setPath("/version_control/note_1");
 
     List<NotebookRepoWithVersionControl.Revision> revisionList = new ArrayList<>();
@@ -198,7 +211,7 @@ public class OSSNotebookRepoTest {
         notebookRepo.get(note1.getId(), note1.getPath(), revisionList.get(i - 1).id, anonymous);
         fail("Should fail to get non-existed note1");
       } catch (IOException e) {
-        assertEquals(e.getMessage(), "Note or its revision not found");
+        assertEquals("Note or its revision not found", e.getMessage());
       }
     }
 

@@ -42,7 +42,6 @@ done
 
 RELEASE_VERSION="$1"
 GIT_TAG="$2"
-SCALA_VERSION="2.11"
 
 function make_source_package() {
   # create source package
@@ -73,8 +72,8 @@ function make_binary_release() {
   fi
 
   # re-create package with proper dir name with binary license
-  cd zeppelin-distribution/target/zeppelin-*
-  mv zeppelin-* "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
+  cd zeppelin-distribution/target/zeppelin-${RELEASE_VERSION}-bin
+  mv zeppelin-${RELEASE_VERSION}-bin "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}"
   cat ../../src/bin_license/LICENSE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/LICENSE"
   cat ../../src/bin_license/NOTICE >> "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/NOTICE"
   cp ../../src/bin_license/licenses/* "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}/licenses/"
@@ -98,9 +97,9 @@ function make_binary_release() {
 git_clone
 make_source_package
 
-make_binary_release netinst "-Pweb-angular -Phadoop-2.6 -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb -am"
+make_binary_release netinst "-Pweb-classic -pl !hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb,!shell -am"
 
-make_binary_release all "-Pweb-angular -Phadoop-2.6"
+make_binary_release all "-Pweb-classic -pl !shell"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

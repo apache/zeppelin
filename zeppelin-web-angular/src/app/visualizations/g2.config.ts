@@ -124,6 +124,6 @@ const zeppelinTheme = {
 
 export function setTheme() {
   const theme = G2.Util.deepMix(G2.Global, zeppelinTheme);
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (G2.Global as any).setTheme(theme);
 }

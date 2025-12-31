@@ -10,11 +10,16 @@
  * limitations under the License.
  */
 
-import { MixMessageDataTypeMap } from './message-data-type-map.interface';
+import { MessageDataTypeMap } from './message-data-type-map.interface';
 
-export interface WebSocketMessage<K extends keyof MixMessageDataTypeMap> {
-  op: K;
-  data?: MixMessageDataTypeMap[K];
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+
+export interface WebSocketMessage<
+  T extends Partial<Record<keyof MessageDataTypeMap, unknown>>,
+  Op extends KeysOfUnion<T> = KeysOfUnion<T>
+> {
+  op: Op;
+  data?: T[Op];
   ticket?: string; // default 'anonymous'
   principal?: string; // default 'anonymous'
   roles?: string; // default '[]'

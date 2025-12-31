@@ -22,7 +22,9 @@ package org.apache.zeppelin.notebook.repo;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
@@ -30,16 +32,16 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Iterator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -48,51 +50,42 @@ import static org.mockito.Mockito.mock;
  * 1. The first repository is considered as a remote that mimics a remote GitHub directory
  * 2. The second repository is considered as the local notebook repository
  */
-public class GitHubNotebookRepoTest {
-  private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepoTest.class);
-
+class GitHubNotebookRepoTest {
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
   private static final String TEST_NOTE_PATH = "/my_project/my_note1";
 
   private File remoteZeppelinDir;
   private File localZeppelinDir;
-  private String localNotebooksDir;
-  private String remoteNotebooksDir;
-  private ZeppelinConfiguration conf;
+  private File localNotebooksDir;
+  private File remoteNotebooksDir;
+  private ZeppelinConfiguration zConf;
   private GitHubNotebookRepo gitHubNotebookRepo;
   private RevCommit firstCommitRevision;
   private Git remoteGit;
+  private NoteParser noteParser;
 
-  @Before
-  public void setUp() throws Exception {
-    conf = ZeppelinConfiguration.create();
-
-    String remoteRepositoryPath = System.getProperty("java.io.tmpdir") + "/ZeppelinTestRemote_" +
-            System.currentTimeMillis();
-    String localRepositoryPath = System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" +
-            System.currentTimeMillis();
+  @BeforeEach
+  void setUp() throws Exception {
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
 
     // Create a fake remote notebook Git repository locally in another directory
-    remoteZeppelinDir = new File(remoteRepositoryPath);
-    remoteZeppelinDir.mkdirs();
-
+    remoteZeppelinDir =
+        Files.createTempDirectory(this.getClass().getSimpleName() + "remote").toFile();
     // Create a local repository for notebooks
-    localZeppelinDir = new File(localRepositoryPath);
-    localZeppelinDir.mkdirs();
+    localZeppelinDir =
+        Files.createTempDirectory(this.getClass().getSimpleName() + "local").toFile();
 
     // Notebooks directory (for both the remote and local directories)
-    localNotebooksDir = String.join(File.separator, localRepositoryPath, "notebook");
-    remoteNotebooksDir = String.join(File.separator, remoteRepositoryPath, "notebook");
-
-    File notebookDir = new File(localNotebooksDir);
-    notebookDir.mkdirs();
+    localNotebooksDir = new File(localZeppelinDir, "notebook");
+    remoteNotebooksDir = new File(remoteZeppelinDir, "notebook");
 
     FileUtils.copyDirectory(
         new File(GitHubNotebookRepoTest.class.getResource("/notebook").getFile()),
-        new File(remoteNotebooksDir));
+        remoteNotebooksDir);
 
     // Create the fake remote Git repository
-    Repository remoteRepository = new FileRepository(String.join(File.separator, remoteNotebooksDir, ".git"));
+    Repository remoteRepository = new FileRepository(new File(remoteNotebooksDir, ".git"));
     remoteRepository.create();
 
     remoteGit = new Git(remoteRepository);
@@ -100,43 +93,43 @@ public class GitHubNotebookRepoTest {
     firstCommitRevision = remoteGit.commit().setMessage("First commit from remote repository").call();
 
     // Set the Git and Git configurations
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), remoteZeppelinDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+        remoteZeppelinDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        localNotebooksDir.getAbsolutePath());
 
     // Set the GitHub configurations
-    System.setProperty(
+    zConf.setProperty(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
             "org.apache.zeppelin.notebook.repo.GitHubNotebookRepo");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL.getVarName(),
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL.getVarName(),
             remoteNotebooksDir + File.separator + ".git");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME.getVarName(), "token");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN.getVarName(),
+    zConf.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME.getVarName(), "token");
+    zConf.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN.getVarName(),
             "access-token");
 
     // Create the Notebook repository (configured for the local repository)
     gitHubNotebookRepo = new GitHubNotebookRepo();
-    gitHubNotebookRepo.init(conf);
+    gitHubNotebookRepo.init(zConf, noteParser);
   }
 
-  @After
-  public void tearDown() throws Exception {
+  @AfterEach
+  void tearDown() throws Exception {
     // Cleanup the temporary folders uses as Git repositories
-    File[] temporaryFolders = { remoteZeppelinDir, localZeppelinDir };
-
-    for(File temporaryFolder : temporaryFolders) {
-      if (!FileUtils.deleteQuietly(temporaryFolder))
-        LOG.error("Failed to delete {} ", temporaryFolder.getName());
-    }
+    FileUtils.deleteDirectory(localZeppelinDir);
+    FileUtils.deleteDirectory(remoteZeppelinDir);
   }
 
   @Test
   /**
    * Test the case when the Notebook repository is created, it pulls the latest changes from the remote repository
    */
-  public void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
+  void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
     NotebookRepoWithVersionControl.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).get(0);
 
-    assert(this.firstCommitRevision.getName().equals(firstHistoryRevision.id));
+    assertEquals(this.firstCommitRevision.getName(), firstHistoryRevision.id);
   }
 
   @Test
@@ -144,7 +137,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the check-pointing (add new files and commit) it also pulls the latest changes from the
    * remote repository
    */
-  public void pullChangesFromRemoteRepositoryOnCheckpointing() throws GitAPIException, IOException {
+  void pullChangesFromRemoteRepositoryOnCheckpointing() throws GitAPIException, IOException {
     // Create a new commit in the remote repository
     RevCommit secondCommitRevision = remoteGit.commit().setMessage("Second commit from remote repository").call();
 
@@ -175,7 +168,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the check-pointing (add new files and commit) it pushes the local commits to the remote
    * repository
    */
-  public void pushLocalChangesToRemoteRepositoryOnCheckpointing() throws IOException, GitAPIException {
+  void pushLocalChangesToRemoteRepositoryOnCheckpointing() throws IOException, GitAPIException {
     // Add a new paragraph to the local repository
     addParagraphToNotebook();
 

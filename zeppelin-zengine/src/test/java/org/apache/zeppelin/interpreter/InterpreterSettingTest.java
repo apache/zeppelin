@@ -21,8 +21,8 @@ import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +30,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InterpreterSettingTest extends AbstractInterpreterTest{
+class InterpreterSettingTest extends AbstractInterpreterTest{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingTest.class);
 
@@ -48,7 +48,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
 
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     interpreterSettingManager = mock(InterpreterSettingManager.class);
@@ -59,7 +59,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testCreateInterpreters() {
+  void testCreateInterpreters() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -78,6 +78,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -95,7 +96,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testSharedMode() {
+  void testSharedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -112,6 +113,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create default interpreter for user1 and note1
@@ -135,7 +137,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserScopedMode() {
+  void testPerUserScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -152,6 +154,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -175,7 +178,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerNoteScopedMode() {
+  void testPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -192,6 +195,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -215,7 +219,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedMode() {
+  void testPerUserIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -232,6 +236,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -256,7 +261,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerNoteIsolatedMode() {
+  void testPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -273,6 +278,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -297,7 +303,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedPerNoteScopedMode() {
+  void testPerUserIsolatedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
@@ -315,6 +321,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -353,7 +360,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserIsolatedPerNoteIsolatedMode() {
+  void testPerUserIsolatedPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
@@ -371,6 +378,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -415,7 +423,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testPerUserScopedPerNoteScopedMode() {
+  void testPerUserScopedPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
@@ -433,6 +441,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
         .setInterpreterInfos(interpreterInfos)
         .setOption(interpreterOption)
         .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
         .create();
 
     // create interpreter for user1 and note1
@@ -474,7 +483,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testInterpreterJsonSerializable() {
+  void testInterpreterJsonSerializable() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
     InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
@@ -496,16 +505,16 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
     String json = InterpreterSetting.toJson(interpreterSetting);
 
     InterpreterSetting checkIntpSetting = InterpreterSetting.fromJson(json);
-    assertEquals(checkIntpSetting.getId(), "id");
-    assertEquals(checkIntpSetting.getName(), "id");
-    assertEquals(checkIntpSetting.getGroup(), "group");
+    assertEquals("id", checkIntpSetting.getId());
+    assertEquals("id", checkIntpSetting.getName());
+    assertEquals("group", checkIntpSetting.getGroup());
     assertTrue(checkIntpSetting.getOption().perUserShared());
     assertNotNull(checkIntpSetting.getInterpreterInfo("echo"));
     assertNotNull(checkIntpSetting.getInterpreterInfo("double_echo"));
   }
 
   @Test
-  public void testIsUserAuthorized() {
+  void testIsUserAuthorized() {
       List<String> userAndRoles = new ArrayList<>();
       userAndRoles.add("User1");
       userAndRoles.add("Role1");
@@ -525,6 +534,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
+          .setConf(zConf)
           .create();
       assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -539,6 +549,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
           .setName("id")
           .setGroup("group")
           .setOption(interpreterOption)
+          .setConf(zConf)
           .create();
       assertFalse(interpreterSetting.isUserAuthorized(userAndRoles));
 
@@ -557,7 +568,7 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
   }
 
   @Test
-  public void testLoadDependency() throws InterruptedException {
+  void testLoadDependency() throws InterruptedException {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setUserPermission(true);
     InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
@@ -566,7 +577,8 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
             .setGroup("group")
             .setOption(interpreterOption)
             .setIntepreterSettingManager(interpreterSettingManager)
-            .setDependencyResolver(new DependencyResolver("/tmp"))
+            .setDependencyResolver(new DependencyResolver("/tmp", zConf))
+            .setConf(zConf)
             .create();
 
     // set invalid dependency
@@ -578,8 +590,9 @@ public class InterpreterSettingTest extends AbstractInterpreterTest{
       Thread.sleep(1000);
       LOGGER.warn("Downloading dependency");
     }
-    assertTrue(interpreterSetting.getErrorReason(),
-            interpreterSetting.getErrorReason().contains("Cannot fetch dependencies"));
+    assertTrue(
+            interpreterSetting.getErrorReason().contains("Cannot fetch dependencies"),
+            interpreterSetting.getErrorReason());
 
     // clean dependency
     interpreterSetting.setDependencies(new ArrayList<>());

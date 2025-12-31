@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { NotebookRepo } from '@zeppelin/interfaces';
+import { NotebookRepo, NotebookRepoPutData } from '@zeppelin/interfaces';
 import { NotebookRepoService } from '@zeppelin/services';
 
 @Component({
@@ -22,7 +22,10 @@ import { NotebookRepoService } from '@zeppelin/services';
 export class NotebookReposComponent implements OnInit {
   repositories: NotebookRepo[] = [];
 
-  constructor(private notebookRepoService: NotebookRepoService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private notebookRepoService: NotebookRepoService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.getRepos();
@@ -36,7 +39,7 @@ export class NotebookReposComponent implements OnInit {
   }
 
   updateRepoSetting(repo: NotebookRepo) {
-    const data = {
+    const data: NotebookRepoPutData = {
       name: repo.className,
       settings: {}
     };

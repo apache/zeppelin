@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
@@ -192,10 +192,12 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     boolean valid = false;
     try {
       Date expires = jwtToken.getJWTClaimsSet().getExpirationTime();
-      if (expires == null || new Date().before(expires)) {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("SSO token expiration date has been " + "successfully validated");
-        }
+      if (expires == null) {
+        LOGGER.warn("JWT token has no expiration time - rejecting token for security");
+        return false;
+      }
+      if (new Date().before(expires)) {
+        LOGGER.debug("SSO token expiration date has been successfully validated");
         valid = true;
       } else {
         LOGGER.warn("SSO expiration date validation failed.");

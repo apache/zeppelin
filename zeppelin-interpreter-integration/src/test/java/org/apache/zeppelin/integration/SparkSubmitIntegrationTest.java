@@ -25,6 +25,9 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.test.DownloadUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -33,77 +36,73 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.integration.DownloadUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class SparkSubmitIntegrationTest {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkSubmitIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
-  private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
 
   private static String sparkHome;
+  private static MiniZeppelinServer zepServer;
 
-  @BeforeClass
-  public static void setUp() throws IOException {
-    String sparkVersion = "2.4.7";
-    String hadoopVersion = "2.7";
-    LOGGER.info("Testing Spark Version: " + sparkVersion);
-    LOGGER.info("Testing Hadoop Version: " + hadoopVersion);
-    sparkHome = DownloadUtils.downloadSpark(sparkVersion, hadoopVersion);
-
+  @BeforeAll
+  static void init() throws Exception {
+    LOGGER.info("Testing Spark Version: " + DownloadUtils.DEFAULT_SPARK_VERSION);
+    LOGGER.info("Testing Hadoop Version: " + DownloadUtils.DEFAULT_SPARK_HADOOP_VERSION);
+    sparkHome = DownloadUtils.downloadSpark();
     hadoopCluster = new MiniHadoopCluster();
     hadoopCluster.start();
 
-    zeppelin = new MiniZeppelin();
-    zeppelin.start(SparkIntegrationTest.class);
-    interpreterFactory = zeppelin.getInterpreterFactory();
-    interpreterSettingManager = zeppelin.getInterpreterSettingManager();
-
-    InterpreterSetting sparkSubmitInterpreterSetting =
-            interpreterSettingManager.getInterpreterSettingByName("spark-submit");
+    zepServer = new MiniZeppelinServer(SparkSubmitIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.addInterpreter("spark-submit");
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
+    interpreterSettingManager = zepServer.getService(InterpreterSettingManager.class);
+    interpreterFactory = zepServer.getService(InterpreterFactory.class);
+    InterpreterSetting sparkSubmitInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark-submit");
     sparkSubmitInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkSubmitInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     sparkSubmitInterpreterSetting.setProperty("YARN_CONF_DIR", hadoopCluster.getConfigPath());
   }
 
-  @AfterClass
-  public static void tearDown() throws IOException {
-    if (zeppelin != null) {
-      zeppelin.stop();
-    }
+  @AfterAll
+  public static void tearDown() throws Exception {
+    zepServer.destroy();
     if (hadoopCluster != null) {
       hadoopCluster.stop();
     }
   }
 
   @Test
-  public void testLocalMode() throws InterpreterException, YarnException {
+  void testLocalMode() throws InterpreterException, YarnException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
 
       InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
       InterpreterResult interpreterResult =
-              sparkSubmitInterpreter.interpret("--master yarn-cluster --class org.apache.spark.examples.SparkPi " +
-              sparkHome + "/examples/jars/spark-examples_2.11-2.4.7.jar", context);
-      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+              sparkSubmitInterpreter.interpret("--master local --class org.apache.spark.examples.SparkPi --deploy-mode client " +
+              sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       // no yarn application launched
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.RUNNING));
@@ -115,7 +114,7 @@ public class SparkSubmitIntegrationTest {
   }
 
   @Test
-  public void testYarnMode() throws InterpreterException, YarnException {
+  void testYarnMode() throws InterpreterException, YarnException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
@@ -123,11 +122,11 @@ public class SparkSubmitIntegrationTest {
       InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
       String yarnAppName = "yarn_example";
       InterpreterResult interpreterResult =
-              sparkSubmitInterpreter.interpret("--master yarn-cluster --class org.apache.spark.examples.SparkPi " +
+              sparkSubmitInterpreter.interpret("--master yarn --deploy-mode cluster --class org.apache.spark.examples.SparkPi " +
                       "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                       "--conf spark.executor.memory=512m " +
-                      sparkHome + "/examples/jars/spark-examples_2.11-2.4.7.jar", context);
-      assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+                      sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(), interpreterResult.toString());
 
       GetApplicationsRequest request = GetApplicationsRequest.newInstance(EnumSet.of(YarnApplicationState.FINISHED));
       GetApplicationsResponse response = hadoopCluster.getYarnCluster().getResourceManager().getClientRMService().getApplications(request);
@@ -143,7 +142,7 @@ public class SparkSubmitIntegrationTest {
   }
 
   @Test
-  public void testCancelSparkYarnApp() throws InterpreterException, YarnException, TimeoutException, InterruptedException {
+  void testCancelSparkYarnApp() throws InterpreterException, YarnException, TimeoutException, InterruptedException {
     try {
       // test SparkSubmitInterpreterSetting
       Interpreter sparkSubmitInterpreter = interpreterFactory.getInterpreter("spark-submit", new ExecutionContext("user1", "note1", "test"));
@@ -156,12 +155,12 @@ public class SparkSubmitIntegrationTest {
           try {
             String yarnAppName = "yarn_cancel_example";
             InterpreterResult interpreterResult =
-                    sparkSubmitInterpreter.interpret("--master yarn-cluster --class org.apache.spark.examples.SparkPi " +
+                    sparkSubmitInterpreter.interpret("--master yarn  --deploy-mode cluster --class org.apache.spark.examples.SparkPi " +
                             "--conf spark.app.name=" + yarnAppName + " --conf spark.driver.memory=512m " +
                             "--conf spark.executor.memory=512m " +
-                            sparkHome + "/examples/jars/spark-examples_2.11-2.4.7.jar", context);
-            assertEquals(interpreterResult.toString(), InterpreterResult.Code.INCOMPLETE, interpreterResult.code());
-            assertTrue(interpreterResult.toString(), interpreterResult.toString().contains("Paragraph received a SIGTERM"));
+                            sparkHome + "/examples/jars/spark-examples_2.12-" + DownloadUtils.DEFAULT_SPARK_VERSION + ".jar", context);
+            assertEquals(InterpreterResult.Code.INCOMPLETE, interpreterResult.code(), interpreterResult.toString());
+            assertTrue(interpreterResult.toString().contains("Paragraph received a SIGTERM"), interpreterResult.toString());
           } catch (InterpreterException e) {
             waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
           }

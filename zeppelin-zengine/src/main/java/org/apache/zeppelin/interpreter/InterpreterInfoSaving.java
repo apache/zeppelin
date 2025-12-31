@@ -19,20 +19,13 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.eclipse.aether.repository.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.aether.repository.RemoteRepository;
+import org.apache.zeppelin.dep.Repository;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -54,13 +47,11 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterInfoSaving.class);
 
-  // Authentication is an interface so that we need to create an InterfaceAdapter for that.
   private static final Gson GSON =  new GsonBuilder().setPrettyPrinting()
-          .registerTypeAdapter(Authentication.class, new InterfaceAdapter<Authentication>())
           .create();
 
   public Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
-  public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
+  public List<Repository> interpreterRepositories = new ArrayList<>();
 
   public static InterpreterInfoSaving loadFromFile(Path file) throws IOException {
     LOGGER.info("Load interpreter setting from file: {}", file);
@@ -71,9 +62,10 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
-          interpreterSetting.convertPermissionsFromUsersToOwners(
-                  jsonObject.getAsJsonObject("interpreterSettings")
-                          .getAsJsonObject(interpreterSetting.getId()));
+          JsonObject interpreterSettingJson = jsonObject.getAsJsonObject("interpreterSettings")
+              .getAsJsonObject(interpreterSetting.getId());
+          List<String> users = InterpreterSetting.extractUsersFromJsonString(interpreterSettingJson.toString());
+          interpreterSetting.convertPermissionsFromUsersToOwners(users);
         }
       }
     }
@@ -101,43 +93,21 @@ public class InterpreterInfoSaving implements JsonSerializable {
   }
 
   public static InterpreterInfoSaving fromJson(String json) {
-    return GSON.fromJson(json, InterpreterInfoSaving.class);
-  }
-
-  static class InterfaceAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
-    @Override
-    public JsonElement serialize(T object, Type interfaceType, JsonSerializationContext context) {
-      final JsonObject wrapper = new JsonObject();
-      wrapper.addProperty("type", object.getClass().getName());
-      wrapper.add("data", context.serialize(object));
-      return wrapper;
-    }
-
-    @Override
-    public T deserialize(JsonElement elem,
-                         Type interfaceType,
-                         JsonDeserializationContext context) throws JsonParseException {
-      final JsonObject wrapper = (JsonObject) elem;
-      final JsonElement typeName = get(wrapper, "type");
-      final JsonElement data = get(wrapper, "data");
-      final Type actualType = typeForName(typeName);
-      return context.deserialize(data, actualType);
-    }
-
-    private Type typeForName(final JsonElement typeElem) {
-      try {
-        return Class.forName(typeElem.getAsString());
-      } catch (ClassNotFoundException e) {
-        throw new JsonParseException(e);
+    InterpreterInfoSaving interpreterInfoSaving = GSON.fromJson(json, InterpreterInfoSaving.class);
+    if (interpreterInfoSaving.interpreterSettings != null) {
+      for (Map.Entry<String, InterpreterSetting> entry : interpreterInfoSaving.interpreterSettings.entrySet()) {
+        String key = entry.getKey();
+        InterpreterSetting setting = entry.getValue();
+        String id = setting == null ? null : setting.getId();
+        if (!key.equals(id)) {
+          LOGGER.error("Invalid interpreterSettings: key '{}' does not match inner id '{}'.", key, id);
+          throw new IllegalArgumentException(
+              "interpreterSettings key '" + key + "' does not match inner id '" + id + "'");
+        }
       }
     }
-
-    private JsonElement get(final JsonObject wrapper, String memberName) {
-      final JsonElement elem = wrapper.get(memberName);
-      if (elem == null)
-        throw new JsonParseException("no '" + memberName +
-                "' member found in what was expected to be an interface wrapper");
-      return elem;
-    }
+    return interpreterInfoSaving;
   }
+
+  // kept for backward compatibility: no custom serializers are needed currently
 }

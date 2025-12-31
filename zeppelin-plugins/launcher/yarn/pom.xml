@@ -25,7 +25,7 @@
   <parent>
     <artifactId>zengine-plugins-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../../../zeppelin-plugins</relativePath>
   </parent>
 
@@ -37,6 +37,20 @@
   <properties>
     <plugin.name>Launcher/YarnInterpreterLauncher</plugin.name>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <testResources>
@@ -52,20 +66,13 @@
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <phase>none</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
       </plugin>
     </plugins>
     <resources>
@@ -77,59 +84,4 @@
       </resource>
     </resources>
   </build>
-
-  <profiles>
-    <profile>
-      <id>hadoop2</id>
-
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <scope>provided</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-client</artifactId>
-          <scope>provided</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
-      <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-client</artifactId>
-          <scope>provided</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-client-runtime</artifactId>
-          <scope>provided</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-
 </project>

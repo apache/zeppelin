@@ -35,17 +35,12 @@ public abstract class InterpreterLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterLauncher.class);
   private static final String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
 
-  protected ZeppelinConfiguration zConf;
-  protected Properties properties;
-  protected RecoveryStorage recoveryStorage;
+  protected final ZeppelinConfiguration zConf;
+  protected final RecoveryStorage recoveryStorage;
 
-  public InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+  protected InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     this.zConf = zConf;
     this.recoveryStorage = recoveryStorage;
-  }
-
-  public void setProperties(Properties props) {
-    this.properties = props;
   }
 
   /**
@@ -53,9 +48,10 @@ public abstract class InterpreterLauncher {
    * that in zeppelin-site.xml
    * @return
    */
-  protected int getConnectTimeout() {
+  protected int getConnectTimeout(InterpreterLaunchContext context) {
     int connectTimeout =
             (int) zConf.getTime(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    Properties properties = context.getProperties();
     if (properties != null && properties.containsKey(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
       connectTimeout = Integer.parseInt(properties.getProperty(
@@ -64,8 +60,8 @@ public abstract class InterpreterLauncher {
     return connectTimeout;
   }
 
-  protected int getConnectPoolSize() {
-    return Integer.parseInt(properties.getProperty(
+  protected int getConnectPoolSize(InterpreterLaunchContext context) {
+    return Integer.parseInt(context.getProperties().getProperty(
             ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
             ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue() + ""));
   }

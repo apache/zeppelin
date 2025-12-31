@@ -19,9 +19,8 @@ import { filter, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
-import { MessageService, TicketService } from '@zeppelin/services';
-import { NotebookSearchService } from '@zeppelin/services/notebook-search.service';
-import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
+import { MessageService, NotebookService, TicketService } from '@zeppelin/services';
+import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.component';
 
 @Component({
   selector: 'zeppelin-header',
@@ -34,6 +33,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   connectStatus = 'error';
   noteListVisible = false;
   queryStr: string | null = null;
+  classicUiHref: string;
 
   about() {
     this.nzModalService.create({
@@ -49,6 +49,9 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   }
 
   onSearch() {
+    if (this.queryStr === null) {
+      return;
+    }
     this.queryStr = this.queryStr.trim();
     if (this.queryStr) {
       this.router.navigate(['/search', this.queryStr]);
@@ -62,13 +65,14 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
 
   constructor(
     public ticketService: TicketService,
-    private nzModalService: NzModalService,
     public messageService: MessageService,
+    private nzModalService: NzModalService,
     private router: Router,
-    private notebookSearchService: NotebookSearchService,
+    private notebookService: NotebookService,
     private cdr: ChangeDetectorRef
   ) {
     super(messageService);
+    this.classicUiHref = this.resolveClassicUiHref();
   }
 
   ngOnInit() {
@@ -87,7 +91,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
         this.cdr.markForCheck();
       });
 
-    this.notebookSearchService
+    this.notebookService
       .queried()
       .pipe(takeUntil(this.destroy$))
       .subscribe(queryStr => (this.queryStr = queryStr));
@@ -97,5 +101,13 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     this.destroy$.next();
     this.destroy$.complete();
     super.ngOnDestroy();
+  }
+
+  private resolveClassicUiHref() {
+    if (location.pathname === '/') {
+      return '/classic';
+    } else {
+      return '/';
+    }
   }
 }

@@ -18,16 +18,16 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class InterpreterFactoryTest extends AbstractInterpreterTest {
+class InterpreterFactoryTest extends AbstractInterpreterTest {
 
   @Test
-  public void testGetFactory() throws InterpreterException {
+  void testGetFactory() throws InterpreterException {
 
     assertTrue(interpreterFactory.getInterpreter("", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("", new ExecutionContext("user1", "note1", "test"));
@@ -52,7 +52,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUnknownRepl1() {
+  void testUnknownRepl1() {
     try {
       interpreterFactory.getInterpreter("test.unknown_repl", new ExecutionContext("user1", "note1", "test"));
       fail("should fail due to no such interpreter");
@@ -62,7 +62,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUnknownRepl2() {
+  void testUnknownRepl2() {
     try {
       interpreterFactory.getInterpreter("unknown_repl", new ExecutionContext("user1", "note1", "test"));
       fail("should fail due to no such interpreter");

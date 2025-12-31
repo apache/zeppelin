@@ -43,13 +43,13 @@ export interface ParagraphEditorSetting {
   isOutputHidden?: boolean;
   completionKey?: EditorCompletionKey;
   completionSupport?: boolean;
-  params?: DynamicFormParams;
-  forms?: DynamicForms;
+  params: DynamicFormParams;
+  forms: DynamicForms;
 }
 
 // TODO(hsuanxyz)
 export interface ParagraphParams {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -80,7 +80,7 @@ export interface ParagraphResults {
   code?: string;
   msg?: ParagraphIResultsMsgItem[];
 
-  [index: number]: {};
+  [index: number]: Record<string, unknown>;
 }
 
 export enum DatasetType {
@@ -126,7 +126,7 @@ export interface ParagraphItem {
   config: ParagraphConfig;
   settings: ParagraphEditorSetting;
   results?: ParagraphResults;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   apps: any[];
   progressUpdateIntervalMs: number;
   jobName: string;
@@ -139,11 +139,12 @@ export interface ParagraphItem {
   status: string;
   title?: string;
   focus?: boolean;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
+  // TODO(hsuanxyz): define proper type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aborted: any;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
-  lineNumbers: any;
-  // tslint:disable-next-line no-any TODO(hsuanxyz)
+  lineNumbers: boolean;
+  // TODO(hsuanxyz): define proper type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fontSize: any;
 }
 
@@ -164,7 +165,7 @@ export interface CopyParagraph {
 }
 
 export interface RunParagraph extends SendParagraph {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -206,8 +207,7 @@ export interface AngularObjectUpdate {
   interpreterGroupId: string;
   angularObject: {
     name: string;
-    // tslint:disable-next-line:no-any
-    object: any;
+    object: unknown;
     noteId: string;
     paragraphId: string;
   };
@@ -274,6 +274,25 @@ export interface ParagraphRemoved {
   id: string;
 }
 
+export interface ParagraphExecutedBySpell {
+  id: string;
+  title: string;
+  paragraph: string;
+  results: {
+    code: string;
+    msg: Array<{
+      type: string;
+      serializedData: string;
+    }>;
+  };
+  status: string;
+  errorMessage: string;
+  config: ParagraphConfig;
+  params: DynamicFormParams;
+  dateStarted: string;
+  dateFinished: string;
+}
+
 export type VisualizationMode =
   | 'table'
   | 'lineChart'
@@ -291,7 +310,7 @@ export class GraphConfig {
   keys: GraphConfigKeysItem[] = [];
   groups: GraphConfigGroupsItem[] = [];
   values: GraphConfigValuesItem[] = [];
-  commonSetting: GraphConfigCommonSetting;
+  commonSetting: GraphConfigCommonSetting = {};
 }
 
 export interface Progress {
@@ -324,7 +343,7 @@ interface VisualizationTable {
 interface TableGridState {
   columns: ColumnsItem[];
   scrollFocus: ScrollFocus;
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   selection: any[];
   grouping: Grouping;
   treeView: TreeView;
@@ -341,35 +360,35 @@ interface ColumnsItem {
 }
 
 interface Sort {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface FiltersItem {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface ScrollFocus {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface Grouping {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   grouping: any[];
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   aggregations: any[];
   rowExpandedStates: RowExpandedStates;
 }
 
 interface RowExpandedStates {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
 interface TreeView {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }
 
@@ -399,7 +418,7 @@ interface TableOptionValue {
 export type XLabelStatus = 'default' | 'rotate' | 'hide';
 
 export class XAxisSetting {
-  rotate = { degree: '-45' };
+  rotate: { degree?: string } = { degree: '-45' };
   xLabelStatus: XLabelStatus = 'default';
 }
 
@@ -468,6 +487,6 @@ interface GraphConfigValuesItem {
 }
 
 interface GraphConfigCommonSetting {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   [key: string]: any;
 }

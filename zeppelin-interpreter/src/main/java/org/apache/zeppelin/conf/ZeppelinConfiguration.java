@@ -17,19 +17,21 @@
 
 package org.apache.zeppelin.conf;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+import java.util.TimeZone;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -66,8 +68,6 @@ public class ZeppelinConfiguration {
 
   private Boolean anonymousAllowed;
 
-  private static ZeppelinConfiguration conf;
-
   private static final EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
   private static final SystemConfiguration sysConfig = new SystemConfiguration();
 
@@ -77,6 +77,11 @@ public class ZeppelinConfiguration {
     LOCAL,
     K8S,
     DOCKER
+  }
+
+  public enum DEFAULT_UI {
+    NEW,
+    CLASSIC
   }
 
   // private constructor, so that it is singleton.
@@ -117,37 +122,25 @@ public class ZeppelinConfiguration {
     }
   }
 
-  public static ZeppelinConfiguration create() {
-    if (conf != null) {
-      return conf;
-    }
-    return ZeppelinConfiguration.create(null);
+  public static ZeppelinConfiguration load() {
+    return ZeppelinConfiguration.load(null);
   }
   /**
    * Load from via filename.
    */
-  public static synchronized ZeppelinConfiguration create(@Nullable String filename) {
-    if (conf != null) {
-      return conf;
-    }
-
-    conf = new ZeppelinConfiguration(filename);
-
-
-    LOGGER.info("Server Host: {}", conf.getServerAddress());
-    if (conf.useSsl()) {
-      LOGGER.info("Server SSL Port: {}", conf.getServerSslPort());
-    } else {
-      LOGGER.info("Server Port: {}", conf.getServerPort());
-    }
-    LOGGER.info("Context Path: {}", conf.getServerContextPath());
-    LOGGER.info("Zeppelin Version: {}", Util.getVersion());
-
-    return conf;
+  public static ZeppelinConfiguration load(@Nullable String filename) {
+    return new ZeppelinConfiguration(filename);
   }
 
-  public static void reset() {
-    conf = null;
+  public void printShortInfo() {
+    LOGGER.info("Server Host: {}", getServerAddress());
+    if (useSsl()) {
+      LOGGER.info("Server SSL Port: {}", getServerSslPort());
+    } else {
+      LOGGER.info("Server Port: {}", getServerPort());
+    }
+    LOGGER.info("Context Path: {}", getServerContextPath());
+    LOGGER.info("Zeppelin Version: {}", Util.getVersion());
   }
 
   public void setProperty(String name, String value) {
@@ -212,42 +205,67 @@ public class ZeppelinConfiguration {
     return getString(c.name(), c.getVarName(), c.getStringValue());
   }
 
-  public String getString(String envName, String propertyName, String defaultValue) {
+  public static String getStaticString(ConfVars c) {
+    return getStaticString(c.name(), c.getVarName()).orElse(c.getStringValue());
+  }
+
+  public static Optional<String> getStaticString(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getString(envName);
+      return Optional.of(envConfig.getString(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getString(propertyName);
+      return Optional.of(sysConfig.getString(propertyName));
     }
-    return getStringValue(propertyName, defaultValue);
+    return Optional.empty();
+  }
+  public String getString(String envName, String propertyName, String defaultValue) {
+    return getStaticString(envName, propertyName)
+        .orElseGet(() -> getStringValue(propertyName, defaultValue));
   }
 
   public int getInt(ConfVars c) {
     return getInt(c.name(), c.getVarName(), c.getIntValue());
   }
 
-  public int getInt(String envName, String propertyName, int defaultValue) {
+  public static int getStaticInt(ConfVars c) {
+    return getStaticInt(c.name(), c.getVarName()).orElse(c.getIntValue());
+  }
+
+  public static OptionalInt getStaticInt(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getInt(envName);
+      return OptionalInt.of(envConfig.getInt(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getInt(propertyName);
+      return OptionalInt.of(sysConfig.getInt(propertyName));
     }
-    return getIntValue(propertyName, defaultValue);
+    return OptionalInt.empty();
+  }
+
+  public int getInt(String envName, String propertyName, int defaultValue) {
+    return getStaticInt(envName, propertyName)
+        .orElseGet(() -> getIntValue(propertyName, defaultValue));
   }
 
   public long getLong(ConfVars c) {
     return getLong(c.name(), c.getVarName(), c.getLongValue());
   }
 
-  public long getLong(String envName, String propertyName, long defaultValue) {
+  public static long getStaticLong(ConfVars c) {
+    return getStaticLong(c.name(), c.getVarName()).orElse(c.getLongValue());
+  }
+
+  public static OptionalLong getStaticLong(String envName, String propertyName) {
     if (envConfig.containsKey(envName)) {
-      return envConfig.getLong(envName);
+      return OptionalLong.of(envConfig.getLong(envName));
     }
     if (sysConfig.containsKey(propertyName)) {
-      return sysConfig.getLong(propertyName);
+      return OptionalLong.of(sysConfig.getLong(propertyName));
     }
-    return getLongValue(propertyName, defaultValue);
+    return OptionalLong.empty();
+  }
+  public long getLong(String envName, String propertyName, long defaultValue) {
+    return getStaticLong(envName, propertyName)
+        .orElseGet(() -> getLongValue(propertyName, defaultValue));
   }
 
   /**
@@ -312,13 +330,20 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_ADDR);
   }
 
-  @VisibleForTesting
   public void setServerPort(int port) {
     properties.put(ConfVars.ZEPPELIN_PORT.getVarName(), String.valueOf(port));
   }
 
   public int getServerPort() {
     return getInt(ConfVars.ZEPPELIN_PORT);
+  }
+
+  public OptionalInt getZeppelinServerRpcPort() {
+    String zeppelinServerRpcPort = getString(ConfVars.ZEPPELIN_SERVER_RPC_PORT);
+    if (StringUtils.isBlank(zeppelinServerRpcPort)) {
+      return OptionalInt.empty();
+    }
+    return OptionalInt.of(Integer.parseInt(zeppelinServerRpcPort));
   }
 
   public String getServerContextPath() {
@@ -596,6 +621,10 @@ public class ZeppelinConfiguration {
     return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
   }
 
+  public boolean isAuthenticationEnabled() {
+    return !StringUtils.isBlank(getShiroPath());
+  }
+
   public String getInterpreterRemoteRunnerPath() {
     return getAbsoluteDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }
@@ -770,7 +799,7 @@ public class ZeppelinConfiguration {
   }
 
   public boolean isZeppelinNotebookCronEnable() {
-    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE);
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE) && isAuthenticationEnabled();
   }
 
   public String getZeppelinNotebookCronFolders() {
@@ -781,7 +810,7 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML);
   }
 
-  public Boolean isZeppelinNotebookCollaborativeModeEnable() {
+  public boolean isZeppelinNotebookCollaborativeModeEnable() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE);
   }
 
@@ -813,26 +842,6 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
 
-  public String getClusterAddress() {
-    return getString(ConfVars.ZEPPELIN_CLUSTER_ADDR);
-  }
-
-  public void setClusterAddress(String clusterAddr) {
-    properties.put(ConfVars.ZEPPELIN_CLUSTER_ADDR.getVarName(), clusterAddr);
-  }
-
-  public boolean isClusterMode() {
-    return !StringUtils.isEmpty(getString(ConfVars.ZEPPELIN_CLUSTER_ADDR));
-  }
-
-  public int getClusterHeartbeatInterval() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL);
-  }
-
-  public int getClusterHeartbeatTimeout() {
-    return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT);
-  }
-
   public RUN_MODE getRunMode() {
     String mode = getString(ConfVars.ZEPPELIN_RUN_MODE);
     if ("auto".equalsIgnoreCase(mode)) { // auto detect
@@ -846,7 +855,6 @@ public class ZeppelinConfiguration {
     }
   }
 
-  @VisibleForTesting
   public void setRunMode(RUN_MODE runMode) {
     properties.put(ConfVars.ZEPPELIN_RUN_MODE.getVarName(), runMode.name());
   }
@@ -885,6 +893,10 @@ public class ZeppelinConfiguration {
 
   public boolean isPrometheusMetricEnabled() {
     return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
+  }
+
+  public DEFAULT_UI getDefaultUi() {
+    return DEFAULT_UI.valueOf(getString(ConfVars.ZEPPELIN_DEFAULT_UI).toUpperCase());
   }
 
   /**
@@ -944,9 +956,12 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
+    ZEPPELIN_SERVER_RPC_PORT("zeppelin.server.rpc.port", null),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
-    ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist"),
+    ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist/zeppelin"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
+    // "new" or "classic"
+    ZEPPELIN_DEFAULT_UI("zeppelin.default.ui", "new"),
     ZEPPELIN_JMX_ENABLE("zeppelin.jmx.enable", false),
     ZEPPELIN_JMX_PORT("zeppelin.jmx.port", 9996),
 
@@ -1072,10 +1087,6 @@ public class ZeppelinConfiguration {
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
 
-    ZEPPELIN_CLUSTER_ADDR("zeppelin.cluster.addr", ""),
-    ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
-    ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
-
     ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | Docker
 
     ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
@@ -1086,7 +1097,14 @@ public class ZeppelinConfiguration {
     ZEPPELIN_K8S_SERVICE_NAME("zeppelin.k8s.service.name", "zeppelin-server"),
     ZEPPELIN_K8S_TIMEOUT_DURING_PENDING("zeppelin.k8s.timeout.during.pending", true),
 
+    // Used by K8s and Docker plugin
     ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
+    ZEPPELIN_DOCKER_CONTAINER_HOME("zeppelin.docker.container.home", "/opt/zeppelin"),
+
+    ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME("zeppelin.docker.container.spark.home", "/opt/spark"),
+    ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER("zeppelin.docker.upload.local.lib.to.container", true),
+    ZEPPELIN_DOCKER_HOST("zeppelin.docker.host", "http://0.0.0.0:2375"),
+    ZEPPELIN_DOCKER_TIME_ZONE("zeppelin.docker.time.zone", TimeZone.getDefault().getID()),
 
     ZEPPELIN_METRIC_ENABLE_PROMETHEUS("zeppelin.metric.enable.prometheus", false),
 

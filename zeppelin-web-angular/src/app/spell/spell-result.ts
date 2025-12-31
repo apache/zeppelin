@@ -11,7 +11,7 @@
  */
 
 export class SpellResult {
-  static extractMagic(allParagraphText) {
+  static extractMagic(allParagraphText: string): string | null {
     const pattern = /^\s*%(\S+)\s*/g;
     try {
       const match = pattern.exec(allParagraphText);
@@ -22,6 +22,6 @@ export class SpellResult {
       // failed to parse, ignore
     }
 
-    return undefined;
+    return null;
   }
 }

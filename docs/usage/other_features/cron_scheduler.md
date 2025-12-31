@@ -47,13 +47,13 @@ You can set the cron executing user by filling in this form and press the enter 
 
 ### After execution stop the interpreter
 
-When this checkbox is set to "on", the interpreters which are binded to the notebook are stopped automatically after the cron execution. This feature is useful if you want to release the interpreter resources after the cron execution.
+When this checkbox is set to "on", the interpreters which are bound to the notebook are stopped automatically after the cron execution. This feature is useful if you want to release the interpreter resources after the cron execution.
 
 > **Note**: A cron execution is skipped if one of the paragraphs is in a state of `RUNNING` or `PENDING` no matter whether it is executed automatically (i.e. by the cron scheduler) or manually by a user opening this notebook.
 
 ### Enable cron
 
-Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` to enable Cron feature.
+Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` and you have to set up [Shiro Authentication](../../setup/security/shiro_authentication.html) also to enable Cron feature.
 
 ### Run cron selectively on folders
 

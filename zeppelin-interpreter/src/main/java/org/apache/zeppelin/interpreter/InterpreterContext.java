@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.common.collect.Maps;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
@@ -124,7 +123,7 @@ public class InterpreterContext {
 
     public Builder setConfig(Map<String, Object> config) {
       if (config != null) {
-        context.config = Maps.newHashMap(config);
+        context.config = new HashMap<>(config);
       }
       return this;
     }
@@ -295,7 +294,7 @@ public class InterpreterContext {
     if (progressMap != null) {
       n = Math.max(n, 0);
       n = Math.min(n, 100);
-      progressMap.put(paragraphId, new Integer(n));
+      progressMap.put(paragraphId, Integer.valueOf(n));
     }
   }
 }

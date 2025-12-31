@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM apache/zeppelin:0.8.0
-MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
+FROM apache/zeppelin:0.11.2-SNAPSHOT
+LABEL maintainer="Apache Zeppelin Community <dev@zeppelin.apache.org>"
 
-ENV SPARK_VERSION=2.3.3
-ENV HADOOP_VERSION=2.7
+ARG SPARK_VERSION=3.5.1
+ARG SPARK_BIN_NAME=hadoop3
+
+USER root
 
 # support Kerberos certification
 RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -yq krb5-user libpam-krb5 && apt-get clean
@@ -25,10 +27,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -
 RUN apt-get update && apt-get install -y curl unzip wget grep sed vim tzdata && apt-get clean
 
 # auto upload zeppelin interpreter lib
-RUN rm -rf /zeppelin
+RUN rm -rf /opt/zeppelin
 
 RUN rm -rf /spark
-RUN wget https://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-RUN tar zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-RUN mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark
-RUN rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+RUN wget -O spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz "https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz?action=download"
+RUN tar zxvf spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz
+RUN mv spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME} /opt/spark
+RUN rm spark-${SPARK_VERSION}-bin-${SPARK_BIN_NAME}.tgz

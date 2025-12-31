@@ -24,19 +24,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -59,6 +59,7 @@ import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
@@ -219,6 +220,26 @@ public class NotebookRestApi extends AbstractRestApi {
     if (paragraph == null) {
       throw new ParagraphNotFoundException(paragraphId);
     }
+  }
+
+  private void checkIfJobManagerIsEnabled() {
+    try {
+      jobManagerService.checkIfJobManagerIsEnabled();
+    } catch (JobManagerForbiddenException e) {
+      throw new ForbiddenException(e.getMessage());
+    }
+  }
+
+  /**
+   * Get notebook capabilities.
+   */
+  @GET
+  @Path("capabilities")
+  @ZeppelinApi
+  public Response getNotebookCapabilities() {
+      Map<String, Object> capabilities = Map.of("isRevisionSupported", notebook.isRevisionSupported());
+
+      return new JsonResponse<>(Status.OK, "", capabilities).build();
   }
 
   /**
@@ -487,7 +508,7 @@ public class NotebookRestApi extends AbstractRestApi {
       defaultInterpreterGroup = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
     String noteId = notebookService.createNote(
-            request.getName(),
+            request.getNotePath(),
             defaultInterpreterGroup,
             request.getAddingEmptyParagraph(),
             getServiceContext(),
@@ -550,7 +571,7 @@ public class NotebookRestApi extends AbstractRestApi {
     String newNoteName = null;
     String revisionId = null;
     if (request != null) {
-      newNoteName = request.getName();
+      newNoteName = request.getNotePath();
       revisionId = request.getRevisionId();
     }
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
@@ -1147,6 +1168,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getJobListforNote() throws IOException, IllegalArgumentException {
     LOGGER.info("Get note jobs for job manager");
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
             .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
     Map<String, Object> response = new HashMap<>();
@@ -1170,6 +1192,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
       throws IOException, IllegalArgumentException {
     LOGGER.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
+    checkIfJobManagerIsEnabled();
     List<JobManagerService.NoteJobInfo> noteJobs =
             jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
                     new RestServiceCallback<>());

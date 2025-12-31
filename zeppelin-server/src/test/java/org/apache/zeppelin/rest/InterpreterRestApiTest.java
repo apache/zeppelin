@@ -24,19 +24,21 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,47 +47,55 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Zeppelin interpreter rest api tests.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class InterpreterRestApiTest extends AbstractTestRestApi {
+@TestMethodOrder(MethodOrderer.MethodName.class)
+class InterpreterRestApiTest extends AbstractTestRestApi {
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterRestApiTest.class);
   private Gson gson = new Gson();
   private AuthenticationInfo anonymous;
+  private static MiniZeppelinServer zepServer;
+  private Notebook notebook;
 
-  @BeforeClass
-  public static void init() throws Exception {
-    AbstractTestRestApi.startUp(InterpreterRestApiTest.class.getSimpleName());
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(InterpreterRestApiTest.class.getSimpleName());
+    zepServer.copyBinDir();
+    zepServer.addInterpreter("md");
+    zepServer.start();
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
+    zConf = zepServer.getZeppelinConfiguration();
+    notebook = zepServer.getService(Notebook.class);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
   @Test
-  public void getAvailableInterpreters() throws IOException {
+  void getAvailableInterpreters() throws IOException {
     // when
     CloseableHttpResponse get = httpGet("/interpreter");
     JsonObject body = getBodyFieldFromResponse(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8));
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
+    assertEquals(notebook.getInterpreterSettingManager()
                     .getInterpreterSettingTemplates().size(), body.entrySet().size());
     get.close();
   }
 
   @Test
-  public void getSettings() throws IOException {
+  void getSettings() throws IOException {
     // when
     CloseableHttpResponse get = httpGet("/interpreter/setting");
     // then
@@ -97,7 +107,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetNonExistInterpreterSetting() throws IOException {
+  void testGetNonExistInterpreterSetting() throws IOException {
     // when
     String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";
     CloseableHttpResponse get = httpGet("/interpreter/setting/" + nonExistInterpreterSettingId);
@@ -108,7 +118,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSettingsCRUD() throws IOException {
+  void testSettingsCRUD() throws IOException {
     // when: call create setting API
     String rawRequest = "{\"name\":\"md3\",\"group\":\"md\"," +
             "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
@@ -119,7 +129,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSettingCRUD create response\n" + postResponse);
+    LOGGER.info("testSettingCRUD create response\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
@@ -129,7 +139,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // when: call read setting API
     CloseableHttpResponse get = httpGet("/interpreter/setting/" + newSettingId);
     String getResponse = EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSettingCRUD get response\n" + getResponse);
+    LOGGER.info("testSettingCRUD get response\n" + getResponse);
     InterpreterSetting previouslyCreated = convertResponseToInterpreterSetting(getResponse);
     // then : read Setting API
     assertThat("Test get method:", get, isAllowed());
@@ -143,21 +153,21 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     jsonObject.addProperty("type", "textarea");
     jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
     CloseableHttpResponse put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest.toString());
-    LOG.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD update response\n" + EntityUtils.toString(put.getEntity(), StandardCharsets.UTF_8));
     // then: call update setting API
     assertThat("test update method:", put, isAllowed());
     put.close();
 
     // when: call delete setting API
     CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSettingCRUD delete response\n" +  EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD delete response\n" +  EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.close();
   }
 
   @Test
-  public void testCreatedInterpreterDependencies() throws IOException {
+  void testCreatedInterpreterDependencies() throws IOException {
     // when: Create 2 interpreter settings `md1` and `md2` which have different dep.
     String md1Name = "md1";
     String md2Name = "md2";
@@ -226,16 +236,16 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSettingsCreateWithEmptyJson() throws IOException {
+  void testSettingsCreateWithEmptyJson() throws IOException {
     // Call Create Setting REST API
     CloseableHttpResponse post = httpPost("/interpreter/setting/", "");
-    LOG.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSettingCRUD create response\n" + EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method:", post, isBadRequest());
     post.close();
   }
 
   @Test
-  public void testSettingsCreateWithInvalidName() throws IOException {
+  void testSettingsCreateWithInvalidName() throws IOException {
     String reqBody = "{"
         + "\"name\": \"mdName\","
         + "\"group\": \"md\","
@@ -261,7 +271,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     JsonObject jsonRequest = gson.fromJson(StringUtils.replace(reqBody, "mdName", "mdValidName"), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post = httpPost("/interpreter/setting/", jsonRequest.toString());
     String postResponse = EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8);
-    LOG.info("testSetting with valid name\n" + postResponse);
+    LOGGER.info("testSetting with valid name\n" + postResponse);
     InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
     String newSettingId = created.getId();
     // then : call create setting API
@@ -270,7 +280,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when: call delete setting API
     CloseableHttpResponse delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSetting delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting delete response\n" + EntityUtils.toString(delete.getEntity(), StandardCharsets.UTF_8));
     // then: call delete setting API
     assertThat("Test delete method:", delete, isAllowed());
     delete.close();
@@ -278,26 +288,26 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     JsonObject jsonRequest2 = gson.fromJson(StringUtils.replace(reqBody, "mdName", "name space"), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post2 = httpPost("/interpreter/setting/", jsonRequest2.toString());
-    LOG.info("testSetting with name with space\n" + EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting with name with space\n" + EntityUtils.toString(post2.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with space:", post2, isNotFound());
     post2.close();
 
     JsonObject jsonRequest3 = gson.fromJson(StringUtils.replace(reqBody, "mdName", ""), JsonElement.class).getAsJsonObject();
     CloseableHttpResponse post3 = httpPost("/interpreter/setting/", jsonRequest3.toString());
-    LOG.info("testSetting with empty name\n" + EntityUtils.toString(post3.getEntity(), StandardCharsets.UTF_8));
+    LOGGER.info("testSetting with empty name\n" + EntityUtils.toString(post3.getEntity(), StandardCharsets.UTF_8));
     assertThat("test create method with empty name:", post3, isNotFound());
     post3.close();
 
   }
 
   @Test
-  public void testInterpreterRestart() throws IOException, InterruptedException {
+  void testInterpreterRestart() throws IOException, InterruptedException {
     String noteId = null;
     try {
       // when: create new note
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      noteId = notebook.createNote("note1", anonymous);
 
-      String pId = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      String pId = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           Map<String, Object> config = p.getConfig();
@@ -311,21 +321,21 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
           return p.getId();
         });
 
-      Status status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      Status status = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(pId);
           return p.getStatus();
         });
       while (status != Status.FINISHED) {
          Thread.sleep(100);
-         status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+         status = notebook.processNote(noteId,
            note -> {
              Paragraph p = note.getParagraph(pId);
               return p.getStatus();
            });
       }
 
-      List<InterpreterSetting> settings = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      List<InterpreterSetting> settings = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(pId);
           assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
@@ -344,7 +354,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       }
 
       // when: run markdown paragraph, again
-      String p2Id = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      String p2Id = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           Map<String, Object> config = p.getConfig();
@@ -358,14 +368,14 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
           return p.getId();
         });
 
-      status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      status = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(p2Id);
           return p.getStatus();
         });
       while (status != Status.FINISHED) {
         Thread.sleep(100);
-        status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+        status = notebook.processNote(noteId,
           note -> {
             Paragraph p = note.getParagraph(p2Id);
             return p.getStatus();
@@ -373,7 +383,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       }
 
       // then
-      status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      status = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(p2Id);
           assertEquals(p.getReturn().message().get(0).getData(),
@@ -382,18 +392,18 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
         });
     } finally {
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
-  public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
+  void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     String noteId = null;
     try {
       // when: create new note
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
-      String pId = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      noteId = notebook.createNote("note2", anonymous);
+      String pId = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
           Map<String, Object> config = p.getConfig();
@@ -406,20 +416,20 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
           return p.getId();
         });
 
-      Status status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      Status status = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(pId);
           return p.getStatus();
         });
       while (status != Status.FINISHED) {
         Thread.sleep(100);
-        status = TestUtils.getInstance(Notebook.class).processNote(noteId,
+        status = notebook.processNote(noteId,
           note -> {
             Paragraph p = note.getParagraph(pId);
             return p.getStatus();
           });
       }
-      List<InterpreterSetting> settings = TestUtils.getInstance(Notebook.class).processNote(noteId,
+      List<InterpreterSetting> settings = notebook.processNote(noteId,
         note -> {
           Paragraph p = note.getParagraph(pId);
           assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
@@ -457,20 +467,20 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     } finally {
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
+        notebook.removeNote(noteId, anonymous);
       }
     }
   }
 
   @Test
-  public void testListRepository() throws IOException {
+  void testListRepository() throws IOException {
     CloseableHttpResponse get = httpGet("/interpreter/repository");
     assertThat(get, isAllowed());
     get.close();
   }
 
   @Test
-  public void testAddDeleteRepository() throws IOException {
+  void testAddDeleteRepository() throws IOException {
     // Call create repository API
     String repoId = "securecentral";
     String jsonRequest = "{\"id\":\"" + repoId +

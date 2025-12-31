@@ -30,19 +30,19 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ElasticInputComponent implements OnChanges {
-  @Input() value: string;
+  @Input() value?: string;
   @Input() readonly = false;
   @Input() min = false;
   @Input() defaultTitle = 'Untitled';
   @Output() readonly valueUpdate = new EventEmitter<string>();
-  @ViewChild('inputElement', { read: ElementRef, static: false }) inputElement: ElementRef;
-  @ViewChild('pElement', { read: ElementRef, static: false }) pElement: ElementRef;
-  @ViewChild('elasticElement', { read: ElementRef, static: true }) elasticElement: ElementRef;
+  @ViewChild('inputElement', { read: ElementRef, static: false }) inputElement!: ElementRef;
+  @ViewChild('pElement', { read: ElementRef, static: false }) pElement!: ElementRef;
+  @ViewChild('elasticElement', { read: ElementRef, static: true }) elasticElement!: ElementRef;
   showEditor = false;
-  editValue: string;
+  editValue: string = '';
 
   cancelEdit() {
-    this.editValue = this.value;
+    this.editValue = this.value ?? '';
     this.showEditor = false;
   }
 
@@ -82,7 +82,7 @@ export class ElasticInputComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.value) {
       this.showEditor = false;
-      this.editValue = this.value;
+      this.editValue = this.value ?? '';
       this.renderer.removeStyle(this.elasticElement.nativeElement, 'width');
     }
   }

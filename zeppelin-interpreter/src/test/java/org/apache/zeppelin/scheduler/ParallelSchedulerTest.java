@@ -17,24 +17,25 @@
 
 package org.apache.zeppelin.scheduler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 public class ParallelSchedulerTest {
 
   private static SchedulerFactory schedulerSvc;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUp() {
     schedulerSvc = SchedulerFactory.singleton();
   }
 
   @Test
-  public void testRun() throws InterruptedException {
-    Scheduler s = schedulerSvc.createOrGetParallelScheduler("test", 2);
+  void testRun() throws InterruptedException {
+    Scheduler s = schedulerSvc.createOrGetParallelScheduler("testRun", 2);
 
     Job<?> job1 = new SleepingJob("job1", null, 500);
     Job<?> job2 = new SleepingJob("job2", null, 500);

@@ -16,56 +16,63 @@
  */
 package org.apache.zeppelin.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.helium.HeliumRegistry;
 import org.apache.zeppelin.helium.HeliumType;
 
-public class HeliumRestApiTest extends AbstractTestRestApi {
+class HeliumRestApiTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
+  private static MiniZeppelinServer zepServer;
   private static Helium helium;
 
-  @BeforeClass
-  public static void init() throws Exception {
-    AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
-    helium = TestUtils.getInstance(Helium.class);
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(HeliumRestApi.class.getSimpleName());
+    zepServer.start();
+    helium = zepServer.getService(Helium.class);
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @BeforeEach
+  void setup() {
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
-  @Before
-  public void setUp() throws IOException {
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setUp() throws IOException {
     HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
     helium.clear();
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name1",
         "desc1",
@@ -75,7 +82,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
         "",
         ""));
 
-    registry.add(new HeliumPackage(
+    registry.add(newHeliumPackage(
         HeliumType.APPLICATION,
         "name2",
         "desc2",
@@ -88,13 +95,13 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     helium.addRegistry(registry);
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     helium.clear();
   }
 
   @Test
-  public void testGetAllPackageInfo() throws IOException {
+  void testGetAllPackageInfo() throws IOException {
     CloseableHttpResponse get = httpGet("/helium/package");
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
@@ -108,7 +115,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetAllEnabledPackageInfo() throws IOException {
+  void testGetAllEnabledPackageInfo() throws IOException {
     // No enabled packages initially
     CloseableHttpResponse get1 = httpGet("/helium/enabledPackage");
     assertThat(get1, isAllowed());
@@ -134,7 +141,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetSinglePackageInfo() throws IOException {
+  void testGetSinglePackageInfo() throws IOException {
     String packageName = "name1";
     CloseableHttpResponse get = httpGet("/helium/package/" + packageName);
     assertThat(get, isAllowed());
@@ -149,7 +156,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetAllPackageConfigs() throws IOException {
+  void testGetAllPackageConfigs() throws IOException {
     CloseableHttpResponse get = httpGet("/helium/config/");
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
@@ -161,7 +168,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetPackageConfig() throws IOException {
+  void testGetPackageConfig() throws IOException {
     String packageName = "name1";
     String artifact = "artifact1";
     CloseableHttpResponse get = httpGet("/helium/config/" + packageName + "/" + artifact);
@@ -174,7 +181,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testEnableDisablePackage() throws IOException {
+  void testEnableDisablePackage() throws IOException {
     String packageName = "name1";
     CloseableHttpResponse post1 = httpPost("/helium/enable/" + packageName, "");
     assertThat(post1, isAllowed());
@@ -200,7 +207,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testVisualizationPackageOrder() throws IOException {
+  void testVisualizationPackageOrder() throws IOException {
     CloseableHttpResponse get1 = httpGet("/helium/order/visualization");
     assertThat(get1, isAllowed());
     Map<String, Object> resp1 = gson.fromJson(EntityUtils.toString(get1.getEntity(), StandardCharsets.UTF_8),

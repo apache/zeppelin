@@ -24,18 +24,18 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.zeppelin.interpreter.InterpreterOption.ISOLATED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unittest for DistributedResourcePool
  */
-public class DistributedResourcePoolTest extends AbstractInterpreterTest {
+class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
   private RemoteInterpreter intp1;
   private RemoteInterpreter intp2;
@@ -46,7 +46,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     note1Id = notebook.createNote("/note_1", AuthenticationInfo.ANONYMOUS);
@@ -67,13 +67,13 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Override
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     interpreterSettingManager.close();
   }
 
   @Test
-  public void testRemoteDistributedResourcePool() throws InterpreterException {
+  void testRemoteDistributedResourcePool() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 value1", context);
@@ -93,7 +93,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testDistributedResourcePool() {
+  void testDistributedResourcePool() {
     final LocalResourcePool pool2 = new LocalResourcePool("pool2");
     final LocalResourcePool pool3 = new LocalResourcePool("pool3");
 
@@ -155,7 +155,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourcePoolUtils() throws InterpreterException {
+  void testResourcePoolUtils() throws InterpreterException {
     Gson gson = new Gson();
 
     // when create some resources
@@ -193,7 +193,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testResourceInvokeMethod() throws InterpreterException {
+  void testResourceInvokeMethod() throws InterpreterException {
     Gson gson = new Gson();
     InterpreterResult ret;
     intp1.interpret("put key1 hey", context);

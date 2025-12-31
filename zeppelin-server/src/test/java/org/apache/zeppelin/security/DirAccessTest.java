@@ -16,54 +16,65 @@
  */
 package org.apache.zeppelin.security;
 
-import org.junit.Test;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
 
-public class DirAccessTest extends AbstractTestRestApi {
-  @Test
-  public void testDirAccessForbidden() throws Exception {
-    synchronized (this) {
-      try {
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
-                .getVarName(), "false");
-        AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
-        CloseableHttpResponse getMethod = getHttpClient().execute(new HttpGet(getUrlToTest() + "/app/"));
-        LOG.info("Invoke getMethod - " + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
+class DirAccessTest extends AbstractTestRestApi {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DirAccessTest.class);
 
-        assertEquals(HttpStatus.SC_FORBIDDEN, getMethod.getStatusLine().getStatusCode());
-      } finally {
-        AbstractTestRestApi.shutDown();
-      }
+  private MiniZeppelinServer zepServer;
+
+  @Test
+  void testDirAccessForbidden() throws Exception {
+    try {
+      zepServer = new MiniZeppelinServer(DirAccessTest.class.getSimpleName());
+      zConf = zepServer.getZeppelinConfiguration();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+          .getVarName(), "false");
+      zepServer.start();
+      CloseableHttpResponse getMethod =
+          getHttpClient().execute(new HttpGet(getUrlToTest() + "/app"));
+      LOGGER.info("Invoke getMethod - "
+          + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
+      LOGGER.info("server port {}", zConf.getServerPort());
+      assertEquals(HttpStatus.SC_FORBIDDEN, getMethod.getStatusLine().getStatusCode());
+    } finally {
+      zepServer.destroy();
     }
   }
 
   @Test
-  public void testDirAccessOk() throws Exception {
-    synchronized (this) {
-      try {
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+  void testDirAccessOk() throws Exception {
+    try {
+      zepServer = new MiniZeppelinServer(DirAccessTest.class.getSimpleName());
+      zConf = zepServer.getZeppelinConfiguration();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
                 .getVarName(), "true");
-        AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
-        CloseableHttpResponse getMethod = getHttpClient().execute(new HttpGet(getUrlToTest() + "/app/"));
-        LOG.info("Invoke getMethod - " + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
-        assertEquals(HttpStatus.SC_OK, getMethod.getStatusLine().getStatusCode());
-      } finally {
-        AbstractTestRestApi.shutDown();
-      }
+      zepServer.start();
+      CloseableHttpResponse getMethod =
+          getHttpClient().execute(new HttpGet(getUrlToTest() + "/app"));
+      LOGGER.info("Invoke getMethod - "
+          + EntityUtils.toString(getMethod.getEntity(), StandardCharsets.UTF_8));
+      assertEquals(HttpStatus.SC_OK, getMethod.getStatusLine().getStatusCode());
+    } finally {
+      zepServer.destroy();
     }
   }
 
-  protected static String getUrlToTest() {
-    String url = "http://localhost:8080";
+  protected String getUrlToTest() {
+    String url = "http://localhost:" + zConf.getServerPort() + "/classic";
     if (System.getProperty("url") != null) {
       url = System.getProperty("url");
     }

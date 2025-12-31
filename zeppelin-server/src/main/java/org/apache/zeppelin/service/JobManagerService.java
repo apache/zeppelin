@@ -17,7 +17,8 @@
 
 package org.apache.zeppelin.service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
+import java.util.Collections;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
@@ -26,6 +27,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service class for JobManager Page
@@ -45,23 +46,37 @@ public class JobManagerService {
 
   private final Notebook notebook;
   private final AuthorizationService authorizationService;
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
   public JobManagerService(Notebook notebook,
                            AuthorizationService authorizationService,
-                           ZeppelinConfiguration conf) {
+                           ZeppelinConfiguration zConf) {
     this.notebook = notebook;
     this.authorizationService = authorizationService;
-    this.conf = conf;
+    this.zConf = zConf;
+  }
+
+  public void checkIfJobManagerIsEnabled() throws JobManagerForbiddenException {
+    if (!zConf.isJobManagerEnabled()) {
+      throw new JobManagerForbiddenException();
+    }
+  }
+
+  private boolean isJobManagerDisabled(ServiceContext context, ServiceCallback<?> callback) throws IOException {
+    if (!zConf.isJobManagerEnabled()) {
+      callback.onFailure(new JobManagerForbiddenException(), context);
+      return true;
+    }
+    return false;
   }
 
   public List<NoteJobInfo> getNoteJobInfo(String noteId,
                                           ServiceContext context,
                                           ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
-    if (!conf.isJobManagerEnabled()) {
-      return new ArrayList<>();
+    if (isJobManagerDisabled(context, callback)) {
+      return Collections.emptyList();
     }
 
     return notebook.processNote(noteId,
@@ -84,8 +99,8 @@ public class JobManagerService {
                                                     ServiceContext context,
                                                     ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
-    if (!conf.isJobManagerEnabled()) {
-      return new ArrayList<>();
+    if (isJobManagerDisabled(context, callback)) {
+      return Collections.emptyList();
     }
 
     List<NoteJobInfo> notesJobInfo = new LinkedList<>();
@@ -104,7 +119,7 @@ public class JobManagerService {
   public void removeNoteJobInfo(String noteId,
                                 ServiceContext context,
                                 ServiceCallback<List<NoteJobInfo>> callback) throws IOException {
-    if (!conf.isJobManagerEnabled()) {
+    if (isJobManagerDisabled(context, callback)) {
       return;
     }
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();

@@ -16,8 +16,9 @@
  */
 package org.apache.zeppelin.helium;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.apache.zeppelin.helium.HeliumPackage.newHeliumPackage;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -37,12 +38,12 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
+class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
   private NotebookRepo notebookRepo;
   private Notebook notebook;
@@ -50,7 +51,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   private AuthenticationInfo anonymous;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
 
@@ -63,10 +64,10 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
     notebookRepo = mock(NotebookRepo.class);
     notebook =
         new Notebook(
-            conf,
+            zConf,
             authorizationService,
             notebookRepo,
-            new NoteManager(notebookRepo, ZeppelinConfiguration.create()),
+            new NoteManager(notebookRepo, ZeppelinConfiguration.load()),
             interpreterFactory,
             interpreterSettingManager,
             new Credentials());
@@ -79,18 +80,18 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   }
 
   @Override
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     super.tearDown();
   }
 
 
   @Test
-  @Ignore
-  public void testLoadRunUnloadApplication()
+  @Disabled
+  void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -136,10 +137,10 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   }
 
   @Test
-  @Ignore
-  public void testUnloadOnParagraphRemove() throws IOException {
+  @Disabled
+  void testUnloadOnParagraphRemove() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -179,10 +180,10 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
 
   @Test
-  @Ignore
-  public void testUnloadOnInterpreterUnbind() throws IOException {
+  @Disabled
+  void testUnloadOnInterpreterUnbind() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",
@@ -219,8 +220,8 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   }
 
   @Test
-  @Ignore
-  public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
+  @Disabled
+  void testInterpreterUnbindOfNullReplParagraph() throws IOException {
     // create note
     String note1Id = notebook.createNote("note1", anonymous);
     Note note1 = notebook.processNote(note1Id,
@@ -246,10 +247,10 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
 
   @Test
-  @Ignore
-  public void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
+  @Disabled
+  void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
+    HeliumPackage pkg1 = newHeliumPackage(HeliumType.APPLICATION,
         "name1",
         "desc1",
         "",

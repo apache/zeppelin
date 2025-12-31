@@ -23,7 +23,7 @@
     <parent>
         <artifactId>zeppelin-interpreter-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.11.0-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
         <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
     </parent>
 
@@ -34,14 +34,11 @@
 
     <properties>
         <interpreter.name>r</interpreter.name>
-        <spark.version>2.4.5</spark.version>
+        <spark.version>3.5.3</spark.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
-        <spark.src.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
-        </spark.src.download.url>
         <spark.bin.download.url>
-            https://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+            https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
         </spark.bin.download.url>
         <interpreter.jar.name>zeppelin-interpreter-r</interpreter.jar.name>
     </properties>
@@ -91,18 +88,22 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
         </dependency>
 
@@ -114,16 +115,12 @@
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop.version}</version>
-            <scope>compile</scope>
+            <artifactId>hadoop-client-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>${hadoop.version}</version>
-            <scope>compile</scope>
+            <artifactId>hadoop-client-runtime</artifactId>
         </dependency>
 
         <dependency>
@@ -132,7 +129,6 @@
             <version>1.4.9</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -158,6 +154,7 @@
                             <url>${spark.bin.download.url}</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}</outputDirectory>
+                            <outputFileName>${spark.archive}-bin-without-hadoop.tgz</outputFileName>
                         </configuration>
                     </execution>
                 </executions>
@@ -204,6 +201,7 @@
                     <artifactSet>
                         <excludes>
                             <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
+                            <exclude>log4j:log4j</exclude>
                         </excludes>
                     </artifactSet>
                     <outputFile>${project.build.directory}/../../interpreter/r/${interpreter.jar.name}-${project.version}.jar</outputFile>

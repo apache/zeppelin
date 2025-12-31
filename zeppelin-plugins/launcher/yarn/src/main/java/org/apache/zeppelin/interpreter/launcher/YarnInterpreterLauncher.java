@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class YarnInterpreterLauncher extends InterpreterLauncher {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
 
   public YarnInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
@@ -41,14 +41,14 @@ public class YarnInterpreterLauncher extends InterpreterLauncher {
   @Override
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
-    this.properties = context.getProperties();
 
     return new YarnRemoteInterpreterProcess(
             context,
-            properties,
+            context.getProperties(),
             buildEnvFromProperties(context),
-            getConnectTimeout(),
-            getConnectPoolSize());
+            getConnectTimeout(context),
+            getConnectPoolSize(context),
+            zConf);
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {

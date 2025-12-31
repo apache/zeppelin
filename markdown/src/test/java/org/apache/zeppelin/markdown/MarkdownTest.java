@@ -17,19 +17,20 @@
 
 package org.apache.zeppelin.markdown;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-public class MarkdownTest {
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class MarkdownTest {
 
   Markdown md;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     Properties props = new Properties();
     props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_MARKDOWN4J);
@@ -37,13 +38,13 @@ public class MarkdownTest {
     md.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     md.close();
   }
 
   @Test
-  public void sanitizeInput() {
+  void sanitizeInput() {
     String input = "This is "
         + "<script>alert(1);</script> "
         + "<div onclick='alert(2)'>this is div</div> "

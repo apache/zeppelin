@@ -24,7 +24,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -40,10 +40,6 @@
     <!-- must match with maven version -->
     <sisu.plexus.version>0.3.4</sisu.plexus.version>
     <jline.version>2.14.3</jline.version>
-    <atomix.version>3.0.0-rc4</atomix.version>
-
-    <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencies>
@@ -51,30 +47,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-common</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.atomix</groupId>
-      <artifactId>atomix</artifactId>
-      <version>${atomix.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>io.atomix</groupId>
-      <artifactId>atomix-raft</artifactId>
-      <version>${atomix.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.atomix</groupId>
-      <artifactId>atomix-primary-backup</artifactId>
-      <version>${atomix.version}</version>
     </dependency>
 
     <dependency>
@@ -100,6 +72,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-configuration2</artifactId>
       <exclusions>
@@ -114,7 +91,7 @@
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.9.4</version>
+      <version>1.11.0</version>
         <exclusions>
         <!-- using jcl-over-slf4j instead -->
         <exclusion>
@@ -141,7 +118,12 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-reload4j</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
     </dependency>
 
     <dependency>
@@ -205,19 +187,47 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <useNativeGit>false</useNativeGit>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+        </configuration>
+      </plugin>
+    </plugins>
+
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -225,59 +235,4 @@
       </resource>
     </resources>
   </build>
-
-  <profiles>
-    <profile>
-      <id>hadoop2</id>
-
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-        </dependency>
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
-      <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client-api</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
-      </properties>
-
-      <dependencies>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
-          <scope>test</scope>
-        </dependency>
-
-      </dependencies>
-    </profile>
-  </profiles>
-
 </project>

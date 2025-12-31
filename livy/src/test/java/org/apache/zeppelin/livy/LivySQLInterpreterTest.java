@@ -17,25 +17,25 @@
 
 package org.apache.zeppelin.livy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 /**
  * Unit test for LivySQLInterpreter.
  */
-public class LivySQLInterpreterTest {
+class LivySQLInterpreterTest {
 
   private LivySparkSQLInterpreter sqlInterpreter;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  public void beforeEach() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.livy.url", "http://localhost:8998");
     properties.setProperty("zeppelin.livy.session.create_timeout", "120");
@@ -45,14 +45,14 @@ public class LivySQLInterpreterTest {
   }
 
   @Test
-  public void testHttpHeaders() {
+  void testHttpHeaders() {
     assertEquals(1, sqlInterpreter.getCustomHeaders().size());
     assertTrue(sqlInterpreter.getCustomHeaders().get("HEADER_1").startsWith("VALUE_1_"));
     assertNotEquals("VALUE_1_${HOME}", sqlInterpreter.getCustomHeaders().get("HEADER_1"));
   }
 
   @Test
-  public void testParseSQLOutput() {
+  void testParseSQLOutput() {
     // Empty sql output
     //    +---+---+
     //    |  a|  b|
@@ -173,10 +173,15 @@ public class LivySQLInterpreterTest {
   }
 
   @Test
-  public void parseSQLJsonOutput() {
+  void parseSQLJsonOutput() {
+
+    //  Empty output
+    List<String> rows = sqlInterpreter.parseSQLJsonOutput("\n");
+    assertEquals(0, rows.size());
+
     //  Empty sql output
     //  id name
-    List<String> rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tname\n");
     assertEquals(1, rows.size());
     assertEquals("id\tname", rows.get(0));
 
@@ -274,5 +279,12 @@ public class LivySQLInterpreterTest {
     assertEquals("1\t1a", rows.get(1));
     assertEquals("2\tみんく", rows.get(2));
     assertEquals("3\t3a", rows.get(3));
+
+
+    rows = sqlInterpreter.parseSQLJsonOutput("\nid\tarray\tname\n"
+            + "{\"id\":1,\"array\":[\"1a\",\"2a\"],\"name\":\"1b\"}\n");
+    assertEquals(2, rows.size());
+    assertEquals("id\tarray\tname", rows.get(0));
+    assertEquals("1\t[\"1a\",\"2a\"]\t1b", rows.get(1));
   }
 }

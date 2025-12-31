@@ -18,17 +18,18 @@
 package org.apache.zeppelin.display;
 
 import org.apache.thrift.TException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
-public class AngularObjectRegistryTest {
+class AngularObjectRegistryTest {
 
   @Test
-  public void testBasic() throws TException {
+  void testBasic() throws TException {
     final AtomicInteger onAdd = new AtomicInteger(0);
     final AtomicInteger onUpdate = new AtomicInteger(0);
     final AtomicInteger onRemove = new AtomicInteger(0);
@@ -77,7 +78,7 @@ public class AngularObjectRegistryTest {
   }
 
   @Test
-  public void testGetDependOnScope() throws TException {
+  void testGetDependOnScope() throws TException {
     AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
     AngularObject ao1 = registry.add("name1", "o1", "noteId1", "paragraphId1");
     AngularObject ao2 = registry.add("name2", "o2", "noteId1", "paragraphId1");
@@ -96,7 +97,7 @@ public class AngularObjectRegistryTest {
   }
 
   @Test
-  public void testGetAllDependOnScope() throws TException {
+  void testGetAllDependOnScope() throws TException {
     AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
     AngularObject ao1 = registry.add("name1", "o", "noteId1", "paragraphId1");
     AngularObject ao2 = registry.add("name2", "o", "noteId1", "paragraphId1");

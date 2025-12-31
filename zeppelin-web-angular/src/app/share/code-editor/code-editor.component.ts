@@ -17,6 +17,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   NgZone,
   OnDestroy,
@@ -28,13 +29,14 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { combineLatest, fromEvent, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map, takeUntil } from 'rxjs/operators';
 
-import { warn, InputBoolean } from 'ng-zorro-antd/core';
+import { warn } from 'ng-zorro-antd/core/logger';
+import { InputBoolean } from 'ng-zorro-antd/core/util';
+import { editor } from 'monaco-editor';
 
 import { CodeEditorService } from './code-editor.service';
 import { DiffEditorOptions, EditorOptions, JoinedEditorOptions, NzEditorMode } from './nz-code-editor.definitions';
 
 // Import types from monaco editor.
-import { editor } from 'monaco-editor';
 import IEditor = editor.IEditor;
 import IDiffEditor = editor.IDiffEditor;
 import ITextModel = editor.ITextModel;
@@ -45,9 +47,6 @@ import ITextModel = editor.ITextModel;
   selector: 'zeppelin-code-editor',
   exportAs: 'CodeEditor',
   templateUrl: './code-editor.component.html',
-  host: {
-    '[class.ant-code-editor]': 'true'
-  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -57,11 +56,12 @@ import ITextModel = editor.ITextModel;
   ]
 })
 export class CodeEditorComponent implements OnDestroy, AfterViewInit {
+  @HostBinding('class.ant-code-editor') antCodeEditor = true;
   @Input() nzEditorMode: NzEditorMode = 'normal';
   @Input() nzOriginalText = '';
   @Input() @InputBoolean() nzLoading = false;
   @Input() @InputBoolean() nzFullControl = false;
-  @Input() nzToolkit: TemplateRef<void>;
+  @Input() nzToolkit?: TemplateRef<void>;
 
   @Input() set nzEditorOption(value: JoinedEditorOptions) {
     this.editorOption$.next(value);
@@ -75,11 +75,15 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private resize$ = new Subject<void>();
   private editorOption$ = new BehaviorSubject<JoinedEditorOptions>({});
-  private editorInstance: IEditor | IDiffEditor;
+  private editorInstance?: IEditor | IDiffEditor;
   private value = '';
   private modelSet = false;
 
-  constructor(private nzCodeEditorService: CodeEditorService, private ngZone: NgZone, elementRef: ElementRef) {
+  constructor(
+    private nzCodeEditorService: CodeEditorService,
+    private ngZone: NgZone,
+    elementRef: ElementRef
+  ) {
     this.el = elementRef.nativeElement;
   }
 
@@ -104,12 +108,12 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
     this.setValue();
   }
 
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   registerOnChange(fn: (value: string) => void): any {
     this.onChange = fn;
   }
 
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   registerOnTouched(fn: any): void {
     this.onTouch = fn;
   }
@@ -162,10 +166,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   private registerResizeChange(): void {
     this.ngZone.runOutsideAngular(() => {
       fromEvent(window, 'resize')
-        .pipe(
-          debounceTime(300),
-          takeUntil(this.destroy$)
-        )
+        .pipe(debounceTime(300), takeUntil(this.destroy$))
         .subscribe(() => {
           this.layout();
         });
@@ -182,7 +183,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
           debounceTime(50)
         )
         .subscribe(() => {
-          this.editorInstance.layout();
+          this.editorInstance?.layout();
         });
     });
   }
@@ -222,9 +223,11 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   private setValueEmitter(): void {
-    const model = (this.nzEditorMode === 'normal'
-      ? (this.editorInstance as IEditor).getModel()
-      : (this.editorInstance as IDiffEditor).getModel()!.modified) as ITextModel;
+    const model = (
+      this.nzEditorMode === 'normal'
+        ? (this.editorInstance as IEditor).getModel()
+        : (this.editorInstance as IDiffEditor).getModel()!.modified
+    ) as ITextModel;
 
     model.onDidChangeContent(() => {
       this.emitValue(model.getValue());

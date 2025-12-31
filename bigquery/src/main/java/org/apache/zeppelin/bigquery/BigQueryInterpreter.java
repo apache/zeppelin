@@ -37,6 +37,7 @@ import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.common.base.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
  * 
  */
 public class BigQueryInterpreter extends Interpreter {
-  private static Logger logger = LoggerFactory.getLogger(BigQueryInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryInterpreter.class);
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static Bigquery service = null;
@@ -90,6 +91,7 @@ public class BigQueryInterpreter extends Interpreter {
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
+  static final String REGION = "zeppelin.bigquery.region";
 
   private static String jobId = null;
   private static String projectId = null;
@@ -99,10 +101,10 @@ public class BigQueryInterpreter extends Interpreter {
 
   private static final Function<CharSequence, String> sequenceToStringTransformer =
       new Function<CharSequence, String>() {
-      public String apply(CharSequence seq) {
-        return seq.toString();
-      }
-    };
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
 
   public BigQueryInterpreter(Properties property) {
     super(property);
@@ -117,9 +119,9 @@ public class BigQueryInterpreter extends Interpreter {
           try {
             service = createAuthorizedClient();
             exceptionOnConnect = null;
-            logger.info("Opened BigQuery SQL Connection");
+            LOGGER.info("Opened BigQuery SQL Connection");
           } catch (IOException e) {
-            logger.error("Cannot open connection", e);
+            LOGGER.error("Cannot open connection", e);
             exceptionOnConnect = e;   
             close();
           }
@@ -227,6 +229,7 @@ public class BigQueryInterpreter extends Interpreter {
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
     String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
+    String region = getProperty(REGION, null);
     Boolean useLegacySql;
     switch (sqlDialect) {
       case "standardsql":
@@ -241,9 +244,9 @@ public class BigQueryInterpreter extends Interpreter {
     }
     Iterator<GetQueryResultsResponse> pages;
     try {
-      pages = run(sql, projId, wTime, maxRows, useLegacySql);
+      pages = run(sql, projId, wTime, maxRows, useLegacySql, region);
     } catch (IOException ex) {
-      logger.error(ex.getMessage());
+      LOGGER.error(ex.getMessage());
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     }
     try {
@@ -258,10 +261,11 @@ public class BigQueryInterpreter extends Interpreter {
 
   //Function to run the SQL on bigQuery service
   public static Iterator<GetQueryResultsResponse> run(final String queryString,
-      final String projId, final long wTime, final long maxRows, Boolean useLegacySql)
-          throws IOException {
+      final String projId, final long wTime, final long maxRows,
+      Boolean useLegacySql, final String region)
+        throws IOException {
     try {
-      logger.info("Use legacy sql: {}", useLegacySql);
+      LOGGER.info("Use legacy sql: {}", useLegacySql);
       QueryResponse query;
       query = service
           .jobs()
@@ -275,6 +279,9 @@ public class BigQueryInterpreter extends Interpreter {
       GetQueryResults getRequest = service.jobs().getQueryResults(
           projectId,
           jobId);
+      if (StringUtils.isNotBlank(region)) {
+        getRequest = getRequest.setLocation(region);
+      }
       return getPages(getRequest);
     } catch (IOException ex) {
       throw ex;
@@ -283,14 +290,14 @@ public class BigQueryInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    logger.info("Close bqsql connection!");
+    LOGGER.info("Close bqsql connection!");
 
     service = null;
   }
 
   @Override
   public InterpreterResult interpret(String sql, InterpreterContext contextInterpreter) {
-    logger.info("Run SQL command '{}'", sql);
+    LOGGER.info("Run SQL command '{}'", sql);
     return executeSql(sql);
   }
 
@@ -312,19 +319,19 @@ public class BigQueryInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    logger.info("Trying to Cancel current query statement.");
+    LOGGER.info("Trying to Cancel current query statement.");
 
     if (service != null && jobId != null && projectId != null) {
       try {
         Bigquery.Jobs.Cancel request = service.jobs().cancel(projectId, jobId);
         JobCancelResponse response = request.execute();
         jobId = null;
-        logger.info("Query Execution cancelled");
+        LOGGER.info("Query Execution cancelled");
       } catch (IOException ex) {
-        logger.error("Could not cancel the SQL execution");
+        LOGGER.error("Could not cancel the SQL execution");
       }
     } else {
-      logger.info("Query Execution was already cancelled");
+      LOGGER.info("Query Execution was already cancelled");
     }
   }
 

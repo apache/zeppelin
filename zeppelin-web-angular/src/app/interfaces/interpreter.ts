@@ -36,7 +36,7 @@ export interface CreateInterpreterRepositoryForm {
   password: string;
   proxyProtocol: string;
   proxyHost: string;
-  proxyPort: string;
+  proxyPort: string | null;
   proxyLogin: string;
   proxyPassword: string;
 }
@@ -47,7 +47,7 @@ export interface InterpreterRepository {
   url: string;
   releasePolicy: ReleasePolicy;
   snapshotPolicy: SnapshotPolicy;
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   mirroredRepositories: any[];
   repositoryManager: boolean;
 }
@@ -96,7 +96,7 @@ interface Option {
   port: number;
   isExistingProcess: boolean;
   setPermission: boolean;
-  // tslint:disable-next-line:no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   owners: any[];
   isUserImpersonate: boolean;
   perNote?: string;

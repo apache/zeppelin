@@ -20,7 +20,7 @@ package org.apache.zeppelin.rest;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import javax.ws.rs.WebApplicationException;
+import jakarta.ws.rs.WebApplicationException;
 
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.ServiceContext;
@@ -55,6 +55,8 @@ public class AbstractRestApi {
       super.onFailure(ex, context);
       if (ex instanceof WebApplicationException) {
         throw (WebApplicationException) ex;
+      } else if (ex instanceof IOException) {
+        throw (IOException) ex;
       } else {
         throw new IOException(ex);
       }

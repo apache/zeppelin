@@ -28,24 +28,24 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
+class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
 
   private File recoveryDir = null;
   private String note1Id;
   private String note2Id;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
         FileSystemRecoveryStorage.class.getName());
@@ -58,7 +58,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
   }
 
   @Override
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     super.tearDown();
     FileUtils.deleteDirectory(recoveryDir);
@@ -66,7 +66,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testSingleInterpreterProcess() throws InterpreterException, IOException {
+  void testSingleInterpreterProcess() throws InterpreterException, IOException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -85,7 +85,7 @@ public class FileSystemRecoveryStorageTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testMultipleInterpreterProcess() throws InterpreterException, IOException {
+  void testMultipleInterpreterProcess() throws InterpreterException, IOException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 

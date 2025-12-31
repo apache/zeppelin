@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * TODO(zjffdu) Add removing conda env
  */
 public class PythonCondaInterpreter extends Interpreter {
-  private static Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonCondaInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
   public static final String CONDA_PYTHON_PATH = "/bin/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
@@ -162,7 +162,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   private void restartPythonProcess() throws InterpreterException {
-    logger.debug("Restarting PythonInterpreter");
+    LOGGER.debug("Restarting PythonInterpreter");
     PythonInterpreter pythonInterpreter =
         getInterpreterInTheSameSessionByClassName(PythonInterpreter.class, false);
     pythonInterpreter.close();
@@ -247,7 +247,7 @@ public class PythonCondaInterpreter extends Interpreter {
       out.setType(InterpreterResult.Type.HTML);
       out.writeResource("output_templates/conda_usage.html");
     } catch (IOException e) {
-      logger.error("Can't print usage", e);
+      LOGGER.error("Can't print usage", e);
     }
   }
 
@@ -383,7 +383,7 @@ public class PythonCondaInterpreter extends Interpreter {
 
   public static String runCommand(List<String> commands)
       throws IOException, InterruptedException {
-    logger.info("Starting shell commands: " + StringUtils.join(commands, " "));
+    LOGGER.info("Starting shell commands: " + StringUtils.join(commands, " "));
     Process process = Runtime.getRuntime().exec(commands.toArray(new String[0]));
     StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
     StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());
@@ -392,7 +392,7 @@ public class PythonCondaInterpreter extends Interpreter {
     if (process.waitFor() != 0) {
       throw new IOException("Fail to run shell commands: " + StringUtils.join(commands, " "));
     }
-    logger.info("Complete shell commands: " + StringUtils.join(commands, " "));
+    LOGGER.info("Complete shell commands: " + StringUtils.join(commands, " "));
     return outputGobbler.getOutput();
   }
 
@@ -415,7 +415,7 @@ public class PythonCondaInterpreter extends Interpreter {
           output.append(line + "\n");
           // logging per 5 seconds
           if ((System.currentTimeMillis() - startTime) > 5000) {
-            logger.info(line);
+            LOGGER.info(line);
             startTime = System.currentTimeMillis();
           }
         }

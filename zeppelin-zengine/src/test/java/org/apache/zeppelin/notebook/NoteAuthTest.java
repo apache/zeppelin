@@ -19,9 +19,10 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,12 +31,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class NoteAuthTest {
-  private ZeppelinConfiguration conf = mock(ZeppelinConfiguration.class);
+class NoteAuthTest {
+  private ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
 
   @Test
-  public void testAnonymous() {
-    NoteAuth auth = new NoteAuth("note1", conf);
+  void testAnonymous() {
+    NoteAuth auth = new NoteAuth("note1", zConf);
     assertEquals(0, auth.getOwners().size());
     assertEquals(0, auth.getReaders().size());
     assertEquals(0, auth.getRunners().size());
@@ -43,11 +44,11 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testPublicNotes() {
+  void testPublicNotes() {
 
-    when(conf.isNotebookPublic()).thenReturn(true);
+    when(zConf.isNotebookPublic()).thenReturn(true);
 
-    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), conf);
+    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), zConf);
     assertEquals("note1", auth.getNoteId());
     assertEquals(1, auth.getOwners().size());
     assertTrue(auth.getOwners().contains("TestUser"));
@@ -67,11 +68,11 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testNoPublicNotes() {
+  void testNoPublicNotes() {
 
-    when(conf.isNotebookPublic()).thenReturn(false);
+    when(zConf.isNotebookPublic()).thenReturn(false);
 
-    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), conf);
+    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), zConf);
     assertEquals(1, auth.getOwners().size());
     assertTrue(auth.getOwners().contains("TestUser"));
 
@@ -95,12 +96,12 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testFoceLowerCaseUsers() {
+  void testFoceLowerCaseUsers() {
 
-    when(conf.isNotebookPublic()).thenReturn(false);
-    when(conf.isUsernameForceLowerCase()).thenReturn(true);
+    when(zConf.isNotebookPublic()).thenReturn(false);
+    when(zConf.isUsernameForceLowerCase()).thenReturn(true);
 
-    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), conf);
+    NoteAuth auth = new NoteAuth("note1", new AuthenticationInfo("TestUser"), zConf);
     assertEquals(1, auth.getOwners().size());
     assertTrue(auth.getOwners().contains("testuser"));
 
@@ -115,10 +116,10 @@ public class NoteAuthTest {
   }
 
   @Test
-  public void testMapConstructor() {
-    when(conf.isNotebookPublic()).thenReturn(false);
+  void testMapConstructor() {
+    when(zConf.isNotebookPublic()).thenReturn(false);
 
-    NoteAuth auth = new NoteAuth("note1", getTestMap("TestUser", "TestGroup"), conf);
+    NoteAuth auth = new NoteAuth("note1", getTestMap("TestUser", "TestGroup"), zConf);
     assertEquals(2, auth.getOwners().size());
     assertTrue(auth.getOwners().contains("TestUser"));
     assertTrue(auth.getOwners().contains("TestGroup"));

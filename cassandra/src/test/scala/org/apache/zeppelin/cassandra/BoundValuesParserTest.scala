@@ -16,11 +16,11 @@
  */
 package org.apache.zeppelin.cassandra
 
-import org.scalatest.{Matchers, BeforeAndAfterEach, FlatSpec}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.flatspec._
+import org.scalatest.matchers.should.Matchers._
 
-class BoundValuesParserTest extends FlatSpec
-with BeforeAndAfterEach
-with Matchers {
+class BoundValuesParserTest extends AnyFlatSpec with BeforeAndAfterEach {
 
   val parser = new BoundValuesParser
 

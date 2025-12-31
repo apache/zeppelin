@@ -26,7 +26,11 @@ export class AreaChartVisualization extends G2VisualizationBase {
     this.viewContainerRef
   );
 
-  constructor(config: GraphConfig, private portalOutlet: CdkPortalOutlet, private viewContainerRef: ViewContainerRef) {
+  constructor(
+    private portalOutlet: CdkPortalOutlet,
+    private viewContainerRef: ViewContainerRef,
+    config: GraphConfig
+  ) {
     super(config);
   }
 }

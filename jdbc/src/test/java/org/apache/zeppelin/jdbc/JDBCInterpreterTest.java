@@ -30,8 +30,8 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -58,12 +58,11 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -93,7 +92,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     return p;
   }
 
-  @Before
+  @Override
+  @BeforeEach
   public void setUp() throws Exception {
     Class.forName("org.h2.Driver");
     Connection connection = DriverManager.getConnection(getJdbcConnection());
@@ -101,6 +101,11 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     statement.execute(
         "DROP TABLE IF EXISTS test_table; " +
         "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+    statement.execute(
+        "CREATE USER IF NOT EXISTS dbuser PASSWORD 'dbpassword';" +
+        "CREATE USER IF NOT EXISTS user1Id PASSWORD 'user1Pw';" +
+        "CREATE USER IF NOT EXISTS user2Id PASSWORD 'user2Pw';"
+    );
 
     PreparedStatement insertStatement = connection.prepareStatement(
             "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
@@ -113,9 +118,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
         .build();
   }
 
-
   @Test
-  public void testForParsePropertyKey() {
+  void testForParsePropertyKey() {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
     Map<String, String> localProperties = new HashMap<>();
     InterpreterContext interpreterContext = InterpreterContext.builder()
@@ -138,8 +142,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("hive", t.getDBPrefix(interpreterContext));
   }
 
+  /**
+   * DBprefix like %jdbc(db=mysql) or %jdbc(mysql) is not supported anymore
+   * JDBC Interpreter would try to use default config.
+   */
   @Test
-  public void testForMapPrefix() throws IOException, InterpreterException {
+  void testDBPrefixProhibited() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -156,16 +164,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterContext context = InterpreterContext.builder()
         .setAuthenticationInfo(new AuthenticationInfo("testUser"))
         .setLocalProperties(localProperties)
+        .setParagraphId("paragraphId")
+        .setInterpreterOut(new InterpreterOutput())
         .build();
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
 
-    // if prefix not found return ERROR and Prefix not found.
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
+    // The result should be the same as that run with default config
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
+            resultMessages.get(0).getData());
   }
 
   @Test
-  public void testDefaultProperties() {
+  void testDefaultProperties() {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(getJDBCTestProperties());
 
     assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
@@ -176,7 +188,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectQuery() throws IOException, InterpreterException {
+  void testSelectQuery() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -207,7 +219,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectWithRefresh() throws IOException, InterruptedException, TimeoutException {
+  void testSelectWithRefresh() throws IOException, InterruptedException, TimeoutException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -239,7 +251,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidSelectWithRefresh() throws IOException, InterpreterException {
+  void testInvalidSelectWithRefresh() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -255,12 +267,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertTrue(interpreterResult.toString(), interpreterResult.message()
-            .get(0).getData().contains("Table \"INVALID_TABLE\" not found;"));
+    assertTrue(interpreterResult.message()
+            .get(0).getData().contains("Table \"INVALID_TABLE\" not found;"),
+            interpreterResult.toString());
   }
 
   @Test
-  public void testColumnAliasQuery() throws IOException, InterpreterException {
+  void testColumnAliasQuery() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -275,14 +288,14 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(interpreterResult.toString(),
-            InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code(),
+            interpreterResult.toString());
     assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
     assertEquals("SOME_OTHER_NAME\na_name\n", resultMessages.get(0).getData());
   }
 
   @Test
-  public void testSplitSqlQuery() {
+  void testSplitSqlQuery() {
     String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
         "select * from test_table;" +
         "select * from test_table WHERE ID = \";'\";" +
@@ -313,7 +326,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testQueryWithEscapedCharacters() throws IOException,
+  void testQueryWithEscapedCharacters() throws IOException,
           InterpreterException {
     String sqlQuery = "select '\\n', ';';" +
         "select replace('A\\;B', '\\', 'text');" +
@@ -346,7 +359,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectMultipleQueries() throws IOException, InterpreterException {
+  void testSelectMultipleQueries() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -375,7 +388,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testDefaultSplitQuries() throws IOException, InterpreterException {
+  void testDefaultSplitQuries() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -403,7 +416,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSelectQueryWithNull() throws IOException, InterpreterException {
+  void testSelectQueryWithNull() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -426,7 +439,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
 
   @Test
-  public void testSelectQueryMaxResult() throws IOException, InterpreterException {
+  void testSelectQueryMaxResult() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1");
     properties.setProperty("common.max_retry", "3");
@@ -451,7 +464,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void concurrentSettingTest() {
+  void concurrentSettingTest() {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.jdbc.concurrent.use", "true");
     properties.setProperty("zeppelin.jdbc.concurrent.max_connection", "10");
@@ -474,7 +487,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testAutoCompletion() throws IOException, InterpreterException {
+  void testAutoCompletion() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
@@ -531,10 +544,10 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testMultiTenant_1() throws IOException, InterpreterException {
+  void testMultiTenant_1() throws IOException, InterpreterException {
     // user1 %jdbc  select from default db
     // user2 %jdbc  select from default db
-    // user2 %jdbc  select from from hive db
+
     Properties properties = getDBProperty("default", "dbuser", "dbpassword");
     properties.putAll(getDBProperty("hive", "", ""));
 
@@ -552,8 +565,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbc.interpret("", context);
 
     JDBCUserConfigurations user1JDBC1Conf = jdbc.getJDBCConfiguration("user1");
-    assertEquals("dbuser", user1JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("dbpassword", user1JDBC1Conf.getPropertyMap("default").get("password"));
+    assertEquals("dbuser", user1JDBC1Conf.getProperty().get("user"));
+    assertEquals("dbpassword", user1JDBC1Conf.getProperty().get("password"));
 
     // user2 run default
     context = InterpreterContext.builder()
@@ -564,29 +577,15 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbc.interpret("", context);
 
     JDBCUserConfigurations user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
-    assertEquals("dbuser", user2JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("dbpassword", user2JDBC1Conf.getPropertyMap("default").get("password"));
+    assertEquals("dbuser", user2JDBC1Conf.getProperty().get("user"));
+    assertEquals("dbpassword", user2JDBC1Conf.getProperty().get("password"));
 
-    // user2 run hive
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "hive");
-    context = InterpreterContext.builder()
-            .setAuthenticationInfo(user2Credential)
-            .setInterpreterOut(new InterpreterOutput())
-            .setLocalProperties(localProperties)
-            .setReplName("jdbc")
-            .build();
-    jdbc.interpret("", context);
-
-    user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
-    assertEquals("user2Id", user2JDBC1Conf.getPropertyMap("hive").get("user"));
-    assertEquals("user2Pw", user2JDBC1Conf.getPropertyMap("hive").get("password"));
 
     jdbc.close();
   }
 
   @Test
-  public void testMultiTenant_2() throws IOException, InterpreterException {
+  void testMultiTenant_2() throws IOException, InterpreterException {
     // user1 %hive  select from default db
     // user2 %hive  select from default db
     Properties properties = getDBProperty("default", "", "");
@@ -604,8 +603,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbc.interpret("", context);
 
     JDBCUserConfigurations user1JDBC1Conf = jdbc.getJDBCConfiguration("user1");
-    assertEquals("user1Id", user1JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("user1Pw", user1JDBC1Conf.getPropertyMap("default").get("password"));
+    assertEquals("user1Id", user1JDBC1Conf.getProperty().get("user"));
+    assertEquals("user1Pw", user1JDBC1Conf.getProperty().get("password"));
 
     // user2 run default
     context = InterpreterContext.builder()
@@ -616,14 +615,14 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     jdbc.interpret("", context);
 
     JDBCUserConfigurations user2JDBC1Conf = jdbc.getJDBCConfiguration("user2");
-    assertEquals("user2Id", user2JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("user2Pw", user2JDBC1Conf.getPropertyMap("default").get("password"));
+    assertEquals("user2Id", user2JDBC1Conf.getProperty().get("user"));
+    assertEquals("user2Pw", user2JDBC1Conf.getProperty().get("password"));
 
     jdbc.close();
   }
 
   @Test
-  public void testPrecode() throws IOException, InterpreterException {
+  void testPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -653,7 +652,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testIncorrectPrecode() throws IOException, InterpreterException {
+  void testIncorrectPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -673,48 +672,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
   }
 
-  @Test
-  public void testPrecodeWithAnotherPrefix() throws IOException,
-          InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("anotherPrefix.driver", "org.h2.Driver");
-    properties.setProperty("anotherPrefix.url", getJdbcConnection());
-    properties.setProperty("anotherPrefix.user", "");
-    properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "anotherPrefix"),
-            "create table test_precode_2 (id int); insert into test_precode_2 values (2);");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "anotherPrefix");
-    InterpreterContext context = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setInterpreterOut(new InterpreterOutput())
-        .setLocalProperties(localProperties)
-        .build();
-    jdbcInterpreter.executePrecode(context);
-
-    String sqlQuery = "select * from test_precode_2";
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
-
-    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-
-    assertEquals(3, resultMessages.size());
-    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-    assertEquals("Query executed successfully. Affected rows : 0\n\n",
-            resultMessages.get(0).getData());
-    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(1).getType());
-    assertEquals("Query executed successfully. Affected rows : 1\n",
-            resultMessages.get(1).getData());
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(2).getType());
-    assertEquals("ID\n2\n", resultMessages.get(2).getData());
-  }
 
   @Test
-  public void testStatementPrecode() throws IOException, InterpreterException {
+  void testStatementPrecode() throws IOException, InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -735,7 +695,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testIncorrectStatementPrecode() throws IOException,
+  void testIncorrectStatementPrecode() throws IOException,
           InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
@@ -752,43 +712,12 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
-    assertTrue(interpreterResult.toString(),
-            interpreterResult.message().get(0).getData().contains("Syntax error"));
+    assertTrue(interpreterResult.message().get(0).getData().contains("Syntax error"),
+            interpreterResult.toString());
   }
 
   @Test
-  public void testStatementPrecodeWithAnotherPrefix() throws IOException,
-          InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("anotherPrefix.driver", "org.h2.Driver");
-    properties.setProperty("anotherPrefix.url", getJdbcConnection());
-    properties.setProperty("anotherPrefix.user", "");
-    properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"),
-            "set @v='statementAnotherPrefix'");
-    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "anotherPrefix");
-    InterpreterContext context = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setInterpreterOut(new InterpreterOutput())
-        .setLocalProperties(localProperties)
-        .build();
-
-    String sqlQuery = "select @v";
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
-    assertEquals("@V\nstatementAnotherPrefix\n", resultMessages.get(0).getData());
-  }
-
-  @Test
-  public void testSplitSqlQueryWithComments() throws IOException,
+  void testSplitSqlQueryWithComments() throws IOException,
           InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
@@ -816,6 +745,88 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(3, resultMessages.size());
+  }
+
+  @Test
+  void testValidateConnectionUrlAllowLoadLocalInFile() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("allowLoadLocalInfile=true");
+    testBannedMySQLQueryParamWithValidParam("allowLoadLocalInfile=true");
+  }
+
+  @Test
+  void testValidateConnectionUrlAllowLoadLocal() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("allowLoadLocal=true");
+  }
+
+  @Test
+  void testValidateConnectionUrlSocketFactory() throws IOException, InterpreterException {
+    // it easier to unit test with H2 but this is really a Postgres issue
+    testBannedH2QueryParam("socketFactory=com.example.MySocketFactory");
+  }
+
+  @Test
+  void testValidateConnectionUrlEncoded() throws IOException, InterpreterException {
+    testBannedMySQLQueryParam("%61llowLoadLocalInfile=true");
+    // also test encoded param with %2561 (%25 is the encoded form of %)
+    testBannedMySQLQueryParam("%2561llowLoadLocalInfile=true");
+  }
+
+  @Test
+  void testValidateConnectionH2UrlWithInit() throws IOException, InterpreterException {
+    testBannedH2QueryParam("INIT=RUNSCRIPT FROM 'http://localhost/init.sql'");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://(host=myhost,port=1111,allowLoadLocalInfile=true)/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps2() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://[(host=myhost,port=1111,allowLoadLocalInfile=true),(host=myhost2)]/db");
+  }
+
+  @Test
+  void testValidateConnectionMySQLProps3() throws IOException, InterpreterException {
+    testBannedURL("com.mysql.cj.jdbc.Driver",
+        "jdbc:mysql://address=(host=172.18.0.1)(port=3309)" +
+            "(%2561llowLoadLocalInfile=true),localhost:3306/test");
+  }
+
+  @Test
+  void testValidateConnectionMySQLWeirdPassword() throws IOException, InterpreterException {
+    // we strongly discourage putting passwords in the URL
+    assertDoesNotThrow(() -> JDBCInterpreter.validateConnectionUrl
+        ("jdbc:mysql://localhost:3306/test?user=xyz&password=(allowLoadLocalInfile)"));
+  }
+
+  private void testBannedH2QueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", getJdbcConnection() + ";" + param);
+  }
+
+  private void testBannedMySQLQueryParam(String param) throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?" + param);
+  }
+
+  private void testBannedMySQLQueryParamWithValidParam(String param)
+      throws IOException, InterpreterException {
+    testBannedURL("org.h2.Driver", "jdbc:mysql://localhost/test?paranoid=true&" + param);
+  }
+
+  private void testBannedURL(String driver, String url) throws IOException, InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", driver);
+    properties.setProperty("default.url", url);
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+    jdbcInterpreter.open();
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret("SELECT 1", context);
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Connection URL contains improper configuration",
+        interpreterResult.message().get(0).getData());
   }
 
   private InterpreterContext getInterpreterContext() {

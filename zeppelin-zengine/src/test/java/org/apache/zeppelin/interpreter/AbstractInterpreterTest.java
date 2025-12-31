@@ -24,23 +24,24 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.search.LuceneSearch;
-import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * This class will load configuration files under
@@ -51,18 +52,21 @@ import static org.mockito.Mockito.when;
  *
  */
 public abstract class AbstractInterpreterTest {
-  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractInterpreterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractInterpreterTest.class);
 
   protected InterpreterSettingManager interpreterSettingManager;
   protected InterpreterFactory interpreterFactory;
+  protected NoteParser noteParser;
   protected Notebook notebook;
   protected File zeppelinHome;
   protected File interpreterDir;
   protected File confDir;
   protected File notebookDir;
-  protected ZeppelinConfiguration conf;
+  protected ZeppelinConfiguration zConf;
+  protected ConfigStorage storage;
+  protected PluginManager pluginManager;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // copy the resources files to a temp folder
     zeppelinHome = new File("..");
@@ -72,32 +76,49 @@ public abstract class AbstractInterpreterTest {
     notebookDir = new File(zeppelinHome, "notebook_" + getClass().getSimpleName());
     FileUtils.deleteDirectory(notebookDir);
 
+    // Create test directories
     interpreterDir.mkdirs();
     confDir.mkdirs();
     notebookDir.mkdirs();
+    // Clean-up the test directories on exit
+    FileUtils.forceDeleteOnExit(interpreterDir);
+    FileUtils.forceDeleteOnExit(confDir);
+    FileUtils.forceDeleteOnExit(notebookDir);
 
     FileUtils.copyDirectory(new File("src/test/resources/interpreter"), interpreterDir);
     FileUtils.copyDirectory(new File("src/test/resources/conf"), confDir);
 
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(), interpreterDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(), "test");
+    zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+        zeppelinHome.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+        confDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(),
+        interpreterDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        notebookDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+        "test");
 
-    conf = ZeppelinConfiguration.create();
+
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
-    NoteManager noteManager = new NoteManager(notebookRepo, conf);
-    AuthorizationService authorizationService = new AuthorizationService(noteManager, conf);
-    interpreterSettingManager = new InterpreterSettingManager(conf,
-        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
+    NoteManager noteManager = new NoteManager(notebookRepo, zConf);
+    noteParser = new GsonNoteParser(zConf);
+    storage = ConfigStorage.createConfigStorage(zConf);
+    pluginManager = new PluginManager(zConf);
+    AuthorizationService authorizationService =
+        new AuthorizationService(noteManager, zConf, storage);
+
+    interpreterSettingManager = new InterpreterSettingManager(zConf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
+        mock(ApplicationEventListener.class), storage, pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
-    Credentials credentials = new Credentials(conf);
-    notebook = new Notebook(conf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
+    Credentials credentials = new Credentials(zConf, storage);
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
     interpreterSettingManager.setNotebook(notebook);
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     if (interpreterSettingManager != null) {
       interpreterSettingManager.close();
@@ -117,7 +138,8 @@ public abstract class AbstractInterpreterTest {
   }
 
   protected Note createNote() {
-    return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null);
+    return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null,
+            zConf, noteParser);
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

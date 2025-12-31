@@ -33,11 +33,6 @@ import java.util.Properties;
  */
 class Utils {
   private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
-  private static String DEPRECATED_MESSAGE =
-          "%html <font color=\"red\">Spark lower than 2.2 is deprecated, " +
-          "if you don't want to see this message, please set " +
-          "zeppelin.spark.deprecateMsg.show to false.</font>";
-
 
   public static String buildJobGroupId(InterpreterContext context) {
     String uName = "anonymous";
@@ -63,18 +58,10 @@ class Utils {
   }
 
   public static void printDeprecateMessage(SparkVersion sparkVersion,
-                                            InterpreterContext context,
-                                            Properties properties) throws InterpreterException {
+                                           InterpreterContext context,
+                                           Properties properties) throws InterpreterException {
     context.out.clear();
-    if (sparkVersion.olderThan(SparkVersion.SPARK_2_2_0)
-            && Boolean.parseBoolean(
-                    properties.getProperty("zeppelin.spark.deprecatedMsg.show", "true"))) {
-      try {
-        context.out.write(DEPRECATED_MESSAGE);
-        context.out.write("%text ");
-      } catch (IOException e) {
-        throw new InterpreterException(e);
-      }
-    }
+    // print deprecated message only when zeppelin.spark.deprecatedMsg.show is true and
+    // sparkVersion meets the certain requirements
   }
 }

@@ -22,22 +22,23 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.common.SessionInfo;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.exception.SessionNoteFoundException;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.SessionManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 /**
@@ -53,8 +54,10 @@ public class SessionRestApi {
   private final SessionManagerService sessionManagerService;
 
   @Inject
-  public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager) {
-    this.sessionManagerService = new SessionManagerService(notebook, interpreterSettingManager);
+  public SessionRestApi(Notebook notebook, InterpreterSettingManager interpreterSettingManager,
+      ZeppelinConfiguration zConf) {
+    this.sessionManagerService =
+        new SessionManagerService(notebook, interpreterSettingManager, zConf);
   }
 
   /**

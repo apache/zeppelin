@@ -19,7 +19,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzAddOnModule } from 'ng-zorro-antd/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -38,31 +37,32 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzTreeModule } from 'ng-zorro-antd/tree';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
 
-import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
-import { CodeEditorModule } from '@zeppelin/share/code-editor';
-import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
-import { HeaderComponent } from '@zeppelin/share/header/header.component';
-import { MathJaxDirective } from '@zeppelin/share/math-jax/math-jax.directive';
-import { NodeListComponent } from '@zeppelin/share/node-list/node-list.component';
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
-import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
-import { NoteRenameComponent } from '@zeppelin/share/note-rename/note-rename.component';
-import { NoteTocComponent } from '@zeppelin/share/note-toc/note-toc.component';
-import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.component';
-import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
-import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
-import { ExternalLinkDirective } from "@zeppelin/share/external-links/external-link.directive";
-import { SpinComponent } from '@zeppelin/share/spin/spin.component';
-import { Ng1MigrationComponent } from './ng1-migration/ng1-migration.component';
+import { AboutZeppelinComponent } from './about-zeppelin/about-zeppelin.component';
+import { CodeEditorModule } from './code-editor/code-editor.module';
+import { ExternalLinkDirective } from './external-links/external-link.directive';
+import { FolderRenameComponent } from './folder-rename/folder-rename.component';
+import { HeaderComponent } from './header/header.component';
+import { MathJaxDirective } from './math-jax/math-jax.directive';
+import { NodeListComponent } from './node-list/node-list.component';
+import { NoteCreateComponent } from './note-create/note-create.component';
+import { NoteImportComponent } from './note-import/note-import.component';
+import { NoteRenameComponent } from './note-rename/note-rename.component';
+import { NoteTocComponent } from './note-toc/note-toc.component';
+import { PageHeaderComponent } from './page-header/page-header.component';
+import { HumanizeBytesPipe } from './pipes';
 import { ResizeHandleComponent } from './resize-handle';
+import { RunScriptsDirective } from './run-scripts/run-scripts.directive';
+import { ShortcutComponent } from './shortcut/shortcut.component';
+import { SpinComponent } from './spin/spin.component';
+import { ThemeToggleComponent } from './theme-toggle/theme-toggle.component';
 
 const MODAL_LIST = [
   AboutZeppelinComponent,
   NoteImportComponent,
   NoteCreateComponent,
+  ShortcutComponent,
   NoteRenameComponent,
-  FolderRenameComponent,
-  Ng1MigrationComponent
+  FolderRenameComponent
 ];
 const EXPORT_LIST = [
   HeaderComponent,
@@ -70,19 +70,18 @@ const EXPORT_LIST = [
   NoteTocComponent,
   PageHeaderComponent,
   SpinComponent,
+  ThemeToggleComponent,
   ResizeHandleComponent
 ];
 const PIPES = [HumanizeBytesPipe];
 
 @NgModule({
   declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective],
-  entryComponents: [MODAL_LIST],
   exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, ExternalLinkDirective, CodeEditorModule],
   imports: [
     FormsModule,
     CommonModule,
     NzMenuModule,
-    NzAddOnModule,
     NzIconModule,
     NzInputModule,
     NzDropDownModule,

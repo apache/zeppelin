@@ -18,6 +18,7 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.client.ClientConfig;
 import org.apache.zeppelin.client.NoteResult;
 import org.apache.zeppelin.client.ParagraphResult;
@@ -29,56 +30,71 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.common.SessionInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
+class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinClientIntegrationTest.class);
   private static Notebook notebook;
 
   private static ClientConfig clientConfig;
   private static ZeppelinClient zeppelinClient;
+  private static MiniZeppelinServer zepServer;
 
-  @BeforeClass
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
-
-    AbstractTestRestApi.startUp(ZeppelinClientIntegrationTest.class.getSimpleName());
-    notebook = TestUtils.getInstance(Notebook.class);
-
-    clientConfig = new ClientConfig("http://localhost:8080");
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ZeppelinClientIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("sh");
+    zepServer.copyBinDir();
+    zepServer.copyLogProperties();
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
+    zepServer.start();
+    clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     zeppelinClient = new ZeppelinClient(clientConfig);
+    notebook = zepServer.getService(Notebook.class);
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @Test
-  public void testZeppelinVersion() throws Exception {
+  void testZeppelinVersion() throws Exception {
     String version = zeppelinClient.getVersion();
-    LOG.info("Zeppelin version: " + version);
+    LOGGER.info("Zeppelin version: " + version);
+    assertNotNull(version);
   }
 
   @Test
-  public void testImportNote() throws Exception {
-    String noteContent = IOUtils.toString(ZeppelinClientIntegrationTest.class.getResource("/Test_Note.zpln"));
+  void testImportNote() throws Exception {
+    String noteContent = IOUtils.toString(ZeppelinClientIntegrationTest.class.getResource("/Test_Note.zpln"), StandardCharsets.UTF_8);
     String noteId = zeppelinClient.importNote("/imported_notes/note_1", noteContent);
-    assertNotNull("Import note failed because returned noteId is null", noteId);
+    assertNotNull(noteId, "Import note failed because returned noteId is null");
 
     NoteResult noteResult = zeppelinClient.queryNoteResult(noteId);
     assertFalse(noteResult.isRunning());
@@ -93,7 +109,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
       fail("Should fail to import note to the same notePath");
     } catch (Exception e) {
       e.printStackTrace();
-      assertTrue(e.getMessage(), e.getMessage().contains("Note '/imported_notes/note_1' existed"));
+      assertTrue(e.getMessage().contains("Note '/imported_notes/note_1' existed"), e.getMessage());
     }
 
     // import invalid noteContent
@@ -102,12 +118,12 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
       fail("Should fail to import note with invalid note content");
     } catch (Exception e) {
       e.printStackTrace();
-      assertTrue(e.getMessage(), e.getMessage().contains("Invalid JSON"));
+      assertTrue(e.getMessage().contains("Invalid JSON"), e.getMessage());
     }
   }
 
   @Test
-  public void testNoteOperation() throws Exception {
+  void testNoteOperation() throws Exception {
     String noteId = zeppelinClient.createNote("/project_1/note1");
     notebook.processNote(noteId,
       note -> {
@@ -120,7 +136,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
       zeppelinClient.createNote("/project_1/note1");
       fail("Should fail to create duplicated note");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("existed"));
+      assertTrue(e.getMessage().contains("existed"), e.getMessage());
     }
 
     // query NoteResult
@@ -135,7 +151,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
       zeppelinClient.queryNoteResult("unknown-noteId");
       fail("Should fail to query non-existed note");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such note"));
+      assertTrue(e.getMessage().contains("No such note"), e.getMessage());
     }
 
     zeppelinClient.deleteNote(noteId);
@@ -145,12 +161,12 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
       zeppelinClient.deleteNote(noteId);
       fail("Should fail to delete non-existed note");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such note"));
+      assertTrue(e.getMessage().contains("No such note"), e.getMessage());
     }
   }
 
   @Test
-  public void testCloneNote() throws Exception {
+  void testCloneNote() throws Exception {
     String noteId = zeppelinClient.createNote("/clone_note_test/note1");
     notebook.processNote(noteId,
       note1 -> {
@@ -175,7 +191,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRenameNote() throws Exception {
+  void testRenameNote() throws Exception {
     String noteId = zeppelinClient.createNote("/rename_note_test/note1");
     notebook.processNote(noteId,
       note1 -> {
@@ -202,7 +218,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testExecuteParagraph() throws Exception {
+  void testExecuteParagraph() throws Exception {
     // run paragraph succeed
     String noteId = zeppelinClient.createNote("/test/note_1");
     String paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello world'");
@@ -217,7 +233,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh(form=simple) echo 'hello ${name=abc}'");
     paragraphResult = zeppelinClient.executeParagraph(noteId, paragraphId);
     assertEquals(paragraphId, paragraphResult.getParagraphId());
-    assertEquals(paragraphResult.toString(), Status.FINISHED, paragraphResult.getStatus());
+    assertEquals(Status.FINISHED, paragraphResult.getStatus(), paragraphResult.toString());
     assertEquals(1, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
     assertEquals("hello abc\n", paragraphResult.getResults().get(0).getData());
@@ -239,9 +255,10 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals(Status.ERROR, paragraphResult.getStatus());
     assertEquals(2, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
-    assertTrue(paragraphResult.getResults().get(0).getData(), paragraphResult.getResults().get(0).getData().contains("command not found"));
+    // depends on JVM language
+    // assertTrue(paragraphResult.getResults().get(0).getData().contains("command not found"), paragraphResult.getResults().get(0).getData());
     assertEquals("TEXT", paragraphResult.getResults().get(1).getType());
-    assertTrue(paragraphResult.getResults().get(1).getData(), paragraphResult.getResults().get(1).getData().contains("ExitValue"));
+    assertTrue(paragraphResult.getResults().get(1).getData().contains("ExitValue"), paragraphResult.getResults().get(1).getData());
 
     // run non-existed interpreter
     paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%non_existed hello");
@@ -250,19 +267,19 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals(Status.ERROR, paragraphResult.getStatus());
     assertEquals(1, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
-    assertTrue(paragraphResult.getResults().get(0).getData(), paragraphResult.getResults().get(0).getData().contains("Interpreter non_existed not found"));
+    assertTrue(paragraphResult.getResults().get(0).getData().contains("Interpreter non_existed not found"), paragraphResult.getResults().get(0).getData());
 
     // run non-existed paragraph
     try {
       zeppelinClient.executeParagraph(noteId, "invalid_paragraph_id");
       fail("Should fail to run non-existed paragraph");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such paragraph"));
+      assertTrue(e.getMessage().contains("No such paragraph"), e.getMessage());
     }
   }
 
   @Test
-  public void testSubmitParagraph() throws Exception {
+  void testSubmitParagraph() throws Exception {
     String noteId = zeppelinClient.createNote("/test/note_2");
     String paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello world'");
     zeppelinClient.submitParagraph(noteId, paragraphId);
@@ -278,7 +295,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     zeppelinClient.submitParagraph(noteId, paragraphId);
     paragraphResult = zeppelinClient.waitUtilParagraphFinish(noteId, paragraphId, 10 * 1000);
     assertEquals(paragraphId, paragraphResult.getParagraphId());
-    assertEquals(paragraphResult.toString(), Status.FINISHED, paragraphResult.getStatus());
+    assertEquals(Status.FINISHED, paragraphResult.getStatus(), paragraphResult.toString());
     assertEquals(1, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
     assertEquals("hello abc\n", paragraphResult.getResults().get(0).getData());
@@ -303,9 +320,10 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals(Status.ERROR, paragraphResult.getStatus());
     assertEquals(2, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
-    assertTrue(paragraphResult.getResults().get(0).getData(), paragraphResult.getResults().get(0).getData().contains("command not found"));
+    // depends on JVM language
+    // assertTrue(paragraphResult.getResults().get(0).getData().contains("command not found"), paragraphResult.getResults().get(0).getData());
     assertEquals("TEXT", paragraphResult.getResults().get(1).getType());
-    assertTrue(paragraphResult.getResults().get(1).getData(), paragraphResult.getResults().get(1).getData().contains("ExitValue"));
+    assertTrue(paragraphResult.getResults().get(1).getData().contains("ExitValue"), paragraphResult.getResults().get(1).getData());
 
     // run non-existed interpreter
     paragraphId = zeppelinClient.addParagraph(noteId, "run sh", "%non_existed hello");
@@ -315,24 +333,24 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     assertEquals(Status.ERROR, paragraphResult.getStatus());
     assertEquals(1, paragraphResult.getResults().size());
     assertEquals("TEXT", paragraphResult.getResults().get(0).getType());
-    assertTrue(paragraphResult.getResults().get(0).getData(), paragraphResult.getResults().get(0).getData().contains("Interpreter non_existed not found"));
+    assertTrue(paragraphResult.getResults().get(0).getData().contains("Interpreter non_existed not found"), paragraphResult.getResults().get(0).getData());
 
     // run non-existed paragraph
     try {
       zeppelinClient.submitParagraph(noteId, "invalid_paragraph_id");
       fail("Should fail to run non-existed paragraph");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such paragraph"));
+      assertTrue(e.getMessage().contains("No such paragraph"), e.getMessage());
     }
   }
 
   @Test
-  public void testExecuteNote() throws Exception {
+  void testExecuteNote() throws Exception {
     try {
       zeppelinClient.executeNote("unknown_id");
       fail("Should fail to submit non-existed note");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such note"));
+      assertTrue(e.getMessage().contains("No such note"), e.getMessage());
     }
     String noteId = zeppelinClient.createNote("/test/note_3");
     String p0Id = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello world'");
@@ -386,9 +404,10 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     ParagraphResult p1 = noteResult.getParagraphResultList().get(1);
     assertEquals(Status.ERROR, p1.getStatus());
     assertEquals("TEXT", p1.getResults().get(0).getType());
-    assertTrue(p1.getResults().get(0).getData(), p1.getResults().get(0).getData().contains("command not found"));
+    // depends on JVM language
+    //assertTrue(p1.getResults().get(0).getData().contains("command not found"), p1.getResults().get(0).getData());
     assertEquals("TEXT", p1.getResults().get(1).getType());
-    assertTrue(p1.getResults().get(1).getData(), p1.getResults().get(1).getData().contains("ExitValue"));
+    assertTrue(p1.getResults().get(1).getData().contains("ExitValue"), p1.getResults().get(1).getData());
 
     // p2 will be skipped because p1 fails.
     ParagraphResult p2 = noteResult.getParagraphResultList().get(2);
@@ -397,12 +416,12 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSubmitNote() throws Exception {
+  void testSubmitNote() throws Exception {
     try {
       zeppelinClient.submitNote("unknown_id");
       fail("Should fail to submit non-existed note");
     } catch (Exception e) {
-      assertTrue(e.getMessage(), e.getMessage().contains("No such note"));
+      assertTrue(e.getMessage().contains("No such note"), e.getMessage());
     }
     String noteId = zeppelinClient.createNote("/test/note_4");
     String p0Id = zeppelinClient.addParagraph(noteId, "run sh", "%sh echo 'hello world'");
@@ -460,9 +479,10 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     ParagraphResult p1 = noteResult.getParagraphResultList().get(1);
     assertEquals(Status.ERROR, p1.getStatus());
     assertEquals("TEXT", p1.getResults().get(0).getType());
-    assertTrue(p1.getResults().get(0).getData(), p1.getResults().get(0).getData().contains("command not found"));
+    // depends on JVM language
+    // assertTrue(p1.getResults().get(0).getData().contains("command not found"), p1.getResults().get(0).getData());
     assertEquals("TEXT", p1.getResults().get(1).getType());
-    assertTrue(p1.getResults().get(1).getData(), p1.getResults().get(1).getData().contains("ExitValue"));
+    assertTrue(p1.getResults().get(1).getData().contains("ExitValue"), p1.getResults().get(1).getData());
 
     // p2 will be skipped because p1 fails.
     ParagraphResult p2 = noteResult.getParagraphResultList().get(2);
@@ -471,7 +491,7 @@ public class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testSession() throws Exception {
+  void testSession() throws Exception {
     SessionInfo sessionInfo = zeppelinClient.getSession("invalid_session");
     assertNull(sessionInfo);
 

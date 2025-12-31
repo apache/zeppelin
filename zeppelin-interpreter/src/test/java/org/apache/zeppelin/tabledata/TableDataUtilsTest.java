@@ -17,16 +17,16 @@
 
 package org.apache.zeppelin.tabledata;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
-public class TableDataUtilsTest {
+import org.junit.jupiter.api.Test;
+
+class TableDataUtilsTest {
 
   @Test
-  public void testColumn() {
+  void testColumn() {
     assertEquals("hello world", TableDataUtils.normalizeColumn("hello\tworld"));
     assertEquals("hello world", TableDataUtils.normalizeColumn("hello\nworld"));
     assertEquals("hello world", TableDataUtils.normalizeColumn("hello\r\nworld"));
@@ -36,7 +36,7 @@ public class TableDataUtilsTest {
   }
 
   @Test
-  public void testColumns() {
+  void testColumns() {
     assertEquals(Arrays.asList("hello world", "hello world"),
             TableDataUtils.normalizeColumns(new Object[]{"hello\tworld", "hello\nworld"}));
 

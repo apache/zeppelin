@@ -36,11 +36,10 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class AppendOutputRunner implements Runnable {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(AppendOutputRunner.class);
-  public static final Long BUFFER_TIME_MS = new Long(100);
-  private static final Long SAFE_PROCESSING_TIME = new Long(10);
-  private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AppendOutputRunner.class);
+  public static final Long BUFFER_TIME_MS = Long.valueOf(100);
+  private static final Long SAFE_PROCESSING_TIME = Long.valueOf(10);
+  private static final Long SAFE_PROCESSING_STRING_SIZE = Long.valueOf(100000);
 
   private final BlockingQueue<AppendOutputBuffer> queue = new LinkedBlockingQueue<>();
   private final RemoteInterpreterProcessListener listener;
@@ -91,7 +90,7 @@ public class AppendOutputRunner implements Runnable {
       LOGGER.debug("Processing time for append-output took {} milliseconds", processingTime);
     }
 
-    Long sizeProcessed = new Long(0);
+    Long sizeProcessed = Long.valueOf(0);
     for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
       String stringBufferKey = stringBufferMapEntry.getKey();
       StringBuilder buffer = stringBufferMapEntry.getValue();

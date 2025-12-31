@@ -17,9 +17,9 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -60,18 +60,10 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     super();
   }
 
-  @VisibleForTesting
-  public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
-    this();
-    init(conf);
-  }
-
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    //TODO(zjffdu), it is weird that I can not call super.init directly here, as it would cause
-    //AbstractMethodError
-    this.conf = conf;
-    setNotebookDirectory(conf.getNotebookDir());
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    setNotebookDirectory(zConf.getNotebookDir());
 
     LOGGER.info("Opening a git repo at '{}'", this.rootNotebookFolder);
     Repository localRepo = new FileRepository(String.join(File.separator, this.rootNotebookFolder, ".git"));
@@ -90,9 +82,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     super.move(noteId, notePath, newNotePath, subject);
     String noteFileName = buildNoteFileName(noteId, notePath);
     String newNoteFileName = buildNoteFileName(noteId, newNotePath);
-    git.rm().addFilepattern(noteFileName);
-    git.add().addFilepattern(newNoteFileName);
     try {
+      git.rm().addFilepattern(noteFileName).call();
+      git.add().addFilepattern(newNoteFileName).call();
       git.commit().setMessage("Move note " + noteId + " from " + noteFileName + " to " +
           newNoteFileName).call();
     } catch (GitAPIException e) {
@@ -104,10 +96,34 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException {
     super.move(folderPath, newFolderPath, subject);
-    git.rm().addFilepattern(folderPath.substring(1));
-    git.add().addFilepattern(newFolderPath.substring(1));
     try {
+      git.rm().addFilepattern(folderPath.substring(1)).call();
+      git.add().addFilepattern(newFolderPath.substring(1)).call();
       git.commit().setMessage("Move folder " + folderPath + " to " + newFolderPath).call();
+    } catch (GitAPIException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
+    super.remove(noteId, notePath, subject);
+    String noteFileName = buildNoteFileName(noteId, notePath);
+    try {
+      git.rm().addFilepattern(noteFileName).call();
+      git.commit().setMessage("Remove note: " + noteId + ", notePath: " + notePath).call();
+    } catch (GitAPIException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    super.remove(folderPath, subject);
+    try {
+      git.rm().addFilepattern(folderPath.substring(1)).call();
+      git.commit().setMessage("Remove folder: " + folderPath).call();
     } catch (GitAPIException e) {
       throw new IOException(e);
     }
@@ -238,4 +254,3 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
 }
-

@@ -24,7 +24,7 @@
     <parent>
         <artifactId>zengine-plugins-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.11.0-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
         <relativePath>../../../zeppelin-plugins</relativePath>
     </parent>
 
@@ -35,7 +35,7 @@
 
     <properties>
         <plugin.name>Launcher/K8sStandardInterpreterLauncher</plugin.name>
-        <kubernetes.client.version>5.3.2</kubernetes.client.version>
+        <kubernetes.client.version>6.13.4</kubernetes.client.version>
         <jinjava.version>2.5.4</jinjava.version>
     </properties>
 
@@ -52,26 +52,17 @@
             <artifactId>jinjava</artifactId>
             <version>${jinjava.version}</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Test libraries -->
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-server-mock</artifactId>
             <version>${kubernetes.client.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -82,7 +73,7 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>enforce</id>
+                        <id>enforce-dependency-convergence</id>
                         <phase>none</phase>
                     </execution>
                 </executions>

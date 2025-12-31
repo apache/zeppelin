@@ -17,28 +17,27 @@
 
 package org.apache.zeppelin.shell;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ShellInterpreterTest {
+class ShellInterpreterTest {
 
   private ShellInterpreter shell;
   private InterpreterContext context;
   private InterpreterResult result;
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty("shell.command.timeout.millisecs", "5000");
@@ -50,12 +49,12 @@ public class ShellInterpreterTest {
     shell.open();
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
   }
 
   @Test
-  public void test() throws InterpreterException {
+  void test() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("dir", context);
     } else {
@@ -69,7 +68,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testInvalidCommand() throws InterpreterException {
+  void testInvalidCommand() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("invalid_command\ndir", context);
     } else {
@@ -80,7 +79,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testShellTimeout() throws InterpreterException {
+  void testShellTimeout() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("timeout 8", context);
     } else {
@@ -92,7 +91,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testShellTimeout2() throws InterpreterException {
+  void testShellTimeout2() throws InterpreterException {
     context = InterpreterContext.builder()
             .setParagraphId("paragraphId")
             .setInterpreterOut(new InterpreterOutput())

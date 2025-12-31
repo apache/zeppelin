@@ -12,12 +12,16 @@
 
 <div class="setting-bar" *ngIf="result.type === datasetType.TABLE && !published">
   <div class="visualization-selector">
-    <nz-radio-group [(ngModel)]="config?.graph.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
-      <label *ngFor="let item of visualizations"
-             nz-radio-button
-             [nz-tooltip]="item.name"
-             [nzValue]="item.id">
-        <i nz-icon [nzType]="item.icon"></i>
+    <nz-radio-group [ngModel]="config?.graph?.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
+      <label
+        class="viz-icon"
+        *ngFor="let item of visualizations"
+        nz-radio-button
+        [nz-tooltip]="item.name"
+        [nzValue]="item.id"
+      >
+        <i *ngIf="!item.isClassic" nz-icon [nzType]="item.icon"></i>
+        <span *ngIf="item.isClassic" [innerHTML]="item.icon"></span>
       </label>
     </nz-radio-group>
   </div>
@@ -26,11 +30,17 @@
     <button nz-button (click)="exportFile('csv')">
       <i nz-icon nzType="download" nz-tooltip="Download Data as CSV"></i>
     </button>
-    <button class="export-dropdown-icon-btn" nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight">
+    <button
+      class="export-dropdown-icon-btn"
+      nz-button
+      nz-dropdown
+      [nzDropdownMenu]="exportMenu"
+      nzPlacement="bottomRight"
+    >
       <i nz-icon nzType="down"></i>
     </button>
   </nz-button-group>
-  <nz-dropdown-menu  #exportMenu="nzDropdownMenu">
+  <nz-dropdown-menu #exportMenu="nzDropdownMenu">
     <ul nz-menu>
       <li nz-menu-item (click)="exportFile('csv')">CSV</li>
       <li nz-menu-item (click)="exportFile('tsv')">TSV</li>
@@ -42,33 +52,58 @@
     <i
       nz-icon
       nzType="caret-down"
-      [nzRotate]="config?.graph.optionOpen ? 180 : 0"
+      [nzRotate]="config?.graph?.optionOpen ? 180 : 0"
       class="setting-icon"
       nz-dropdown
     ></i>
   </a>
 </div>
-<div nz-resizable
-     nzPreview
-     (nzResizeEnd)="onResize($event)"
-     [nzGridColumnCount]="12"
-     [nzMinColumn]="1">
+<div nz-resizable nzPreview (nzResizeEnd)="onResize($event)" [nzGridColumnCount]="12" [nzMinColumn]="1">
   <nz-resize-handle nzDirection="bottomRight" *ngIf="!published">
     <zeppelin-resize-handle></zeppelin-resize-handle>
   </nz-resize-handle>
   <ng-template cdkPortalOutlet></ng-template>
+  <!-- Transformation setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+    [id]="'trsetting' + id + '_' + config?.graph?.mode"
+    class="transformation-setting"
+  ></div>
+  <!-- Visualization setting container for classic visualizations -->
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+    [id]="'vizsetting' + id + '_' + config?.graph?.mode"
+    class="visualization-setting"
+  ></div>
+  <div
+    *ngIf="getCurrentVisualization()?.isClassic"
+    [id]="'p' + id + '_' + config?.graph?.mode"
+    class="classic-visualization-container"
+  ></div>
   <ng-container [ngSwitch]="result?.type">
-    <div *ngSwitchCase="datasetType.HTML"
-         class="inner-html"
-         zeppelinMathJax
-         zeppelinRunScripts
-         [scriptsContent]="innerHTML"
-         [innerHTML]="innerHTML"></div>
+    <div
+      *ngSwitchCase="datasetType.HTML"
+      class="inner-html"
+      zeppelin-math-jax
+      zeppelin-run-scripts
+      [scriptsContent]="innerHTML"
+      [innerHTML]="innerHTML"
+    ></div>
     <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre [innerHTML]="plainText"></pre></div>
-    <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img"></div>
+    <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img" /></div>
   </ng-container>
-  <div *ngIf="frontEndError" class="text-plain"><pre>{{frontEndError}}</pre></div>
+  <div *ngIf="frontEndError" class="text-plain">
+    <pre>{{ frontEndError }}</pre>
+  </div>
   <div *ngIf="angularComponent">
-    <ng-container *ngComponentOutlet="angularComponent.component;ngModuleFactory: angularComponent.moduleFactory;injector: injector"></ng-container>
+    <ng-container
+      *ngComponentOutlet="
+        angularComponent.component;
+        ngModuleFactory: angularComponent.moduleFactory;
+        injector: injector
+      "
+    ></ng-container>
   </div>
 </div>

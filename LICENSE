@@ -176,32 +176,6 @@
 
    END OF TERMS AND CONDITIONS
 
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-
 ============================================================================
    APACHE ZEPPELIN SUBCOMPONENTS:
 
@@ -222,6 +196,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 
     (OFT 1.1) Font Awesome v4.2.0 (http://fortawesome.github.io/Font-Awesome/) - http://scripts.sil.org/OFL
     (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
+    (OFL 1.1) Open Sans Font (see licenses/LICENSE-openSans-font)
     (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
 
 ========================================================================
@@ -239,6 +214,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) @antv/G2 3.5 (https://github.com/antvis/g2) - https://github.com/antvis/g2/blob/master/LICENSE
     (The MIT License) Lodash (https://lodash.com) - https://github.com/lodash/lodash/blob/master/LICENSE
     (The MIT License) Monaco Editor (https://github.com/microsoft/monaco-editor) - https://github.com/microsoft/monaco-editor/blob/master/LICENSE.md
+    (The MIT License) jQuery 1.10.2 (https://jquery.com/) - https://github.com/jquery/jquery/blob/main/LICENSE.txt
 
 ========================================================================
 MIT-style licenses
@@ -265,9 +241,9 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) Google Cloud Client Library for Java (https://github.com/GoogleCloudPlatform/google-cloud-java)
     (Apache 2.0) concurrentunit (https://github.com/jhalterman/concurrentunit)
     (Apache 2.0) Embedded MongoDB (https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo)
-    (Apache 2.0) Kotlin (https://github.com/JetBrains/kotlin)
     (Apache 2.0) s3proxy (https://github.com/gaul/s3proxy)
     (Apache 2.0) kubernetes-client (https://github.com/fabric8io/kubernetes-client)
+    (Apache 2.0) Material Symbols Outlined (https://fonts.google.com/icons)
 
 ========================================================================
 BSD 3-Clause licenses

@@ -24,7 +24,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-interpreter-shaded</artifactId>
@@ -33,15 +33,14 @@
   <description>Zeppelin Interpreter Shaded</description>
 
   <properties>
-    <!--plugin versions-->
-    <shaded.dependency.prefix>org.apache.zeppelin.shaded</shaded.dependency.prefix>
+    <shaded.dependency.prefix>shaded.org.apache.zeppelin</shaded.dependency.prefix>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
-      <version>0.11.0-SNAPSHOT</version>
+      <version>0.13.0-SNAPSHOT</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
@@ -55,11 +54,10 @@
           <artifactSet>
             <excludes>
               <!-- Leave slf4j unshaded so downstream users can configure logging. -->
-              <exclude>org.slf4j:slf4j-api</exclude>
-              <exclude>org.slf4j:slf4j-log4j12</exclude>
-              <exclude>org.slf4j:jcl-over-slf4j</exclude>
+              <exclude>org.slf4j:*</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
+              <exclude>ch.qos.reload4j:reload4j</exclude>
             </excludes>
           </artifactSet>
           <filters>
@@ -118,6 +116,11 @@
                 <exclude>org/w3c/dom/**/*</exclude>
                 <exclude>org/xml/sax/*</exclude>
                 <exclude>org/xml/sax/**/*</exclude>
+
+                <!-- ZEPPELIN-5875 To avoid changing class name improperly between configuration and code
+                  `org/apache/zeppelin/shaded/org.apache.zeppelin.shaded.org.eclipse.sisu.space.SisuIndexAPT6`
+                  -->
+                <exclude>org/eclipse/sisu/**</exclude>
               </excludes>
             </relocation>
             <relocation>

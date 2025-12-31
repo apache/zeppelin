@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin, BehaviorSubject, Subject } from 'rxjs';
@@ -27,12 +27,12 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class TicketService {
-  configuration: ConfigurationsInfo['configurations'];
+  configuration?: ConfigurationsInfo['configurations'];
   ticket = new ITicketWrapped();
   originTicket = new ITicket();
   ticket$ = new Subject<ITicketWrapped>();
   logout$ = new BehaviorSubject<boolean>(false);
-  version: string;
+  version?: string;
 
   setConfiguration(conf: ConfigurationsInfo) {
     this.configuration = conf.configurations;
@@ -58,11 +58,15 @@ export class TicketService {
     let screenUsername = ticket.principal;
     if (ticket.principal.indexOf('#Pac4j') === 0) {
       const re = ', name=(.*?),';
-      screenUsername = ticket.principal.match(re)[1];
+      screenUsername = ticket.principal.match(re)![1];
     }
     this.originTicket = ticket;
     this.ticket = { ...ticket, screenUsername, ...{ init: true } };
     this.ticket$.next(this.ticket);
+  }
+
+  isAuthenticated() {
+    return this.getTicket();
   }
 
   clearTicket() {
@@ -78,24 +82,40 @@ export class TicketService {
       this.logout$.next(false);
       this.router.navigate(['/login']).then();
     };
-    return this.httpClient
-      .post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {})
-      .pipe(tap(() => nextAction(), () => nextAction()));
-  }
-
-  login(userName: string, password: string) {
-    const payload = new HttpParams().set('userName', userName).set('password', password);
-    return this.httpClient.post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, payload).pipe(
+    return this.httpClient.post(`${this.baseUrlService.getRestApiBase()}/login/logout`, {}).pipe(
       tap(
-        data => {
-          this.nzMessageService.success('Login Success');
-          this.setTicket(data);
-        },
-        () => {
-          this.nzMessageService.warning("The username and password that you entered don't match.");
-        }
+        () => nextAction(),
+        () => nextAction()
       )
     );
+  }
+
+  // Note: We intentionally avoid using HttpParams here due to Angular issue #11058.
+  // See: https://github.com/angular/angular/issues/11058
+  // HttpParameterCodec incorrectly encodes special characters like '+' and '=',
+  // which can cause issues in application/x-www-form-urlencoded requests
+  // (e.g., '+' becomes space in PHP/Tomcat). Therefore, we manually build
+  // the payload using encodeURIComponent for each field.
+  login(userName: string, password: string) {
+    const payload = `userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`;
+
+    return this.httpClient
+      .post<ITicket>(`${this.baseUrlService.getRestApiBase()}/login`, payload, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .pipe(
+        tap(
+          data => {
+            this.nzMessageService.success('Login Success');
+            this.setTicket(data);
+          },
+          () => {
+            this.nzMessageService.warning("The username and password that you entered don't match.");
+          }
+        )
+      );
   }
 
   getZeppelinVersion() {

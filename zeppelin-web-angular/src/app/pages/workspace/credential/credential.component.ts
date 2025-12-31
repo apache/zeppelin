@@ -10,15 +10,15 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { collapseMotion } from 'ng-zorro-antd/core';
-import { NzMessageService } from 'ng-zorro-antd/message';
-
-import { finalize } from 'rxjs/operators';
 
 import { CredentialForm } from '@zeppelin/interfaces';
 import { CredentialService, InterpreterService, TicketService } from '@zeppelin/services';
+import { collapseMotion } from 'ng-zorro-antd/core/animation';
+import { NzMessageService } from 'ng-zorro-antd/message';
+
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'zeppelin-credential',
@@ -27,7 +27,7 @@ import { CredentialService, InterpreterService, TicketService } from '@zeppelin/
   animations: [collapseMotion],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CredentialComponent implements OnInit {
+export class CredentialComponent {
   addForm: FormGroup;
   showAdd = false;
   adding = false;
@@ -49,12 +49,15 @@ export class CredentialComponent implements OnInit {
     private credentialService: CredentialService,
     private ticketService: TicketService
   ) {
-    this.setDocsLink();
-  }
-
-  setDocsLink() {
     const version = this.ticketService.version;
     this.docsLink = `https://zeppelin.apache.org/docs/${version}/setup/security/datasource_authorization.html`;
+    this.getCredentials();
+    this.getInterpreterNames();
+    this.addForm = this.fb.group({
+      entity: [null, [Validators.required]],
+      username: [null, [Validators.required]],
+      password: [null, [Validators.required]]
+    });
   }
 
   onEntityInput(event: Event) {
@@ -69,12 +72,13 @@ export class CredentialComponent implements OnInit {
   }
 
   getEntityFromForm(form: FormGroup): string {
-    return form.get('entity') && form.get('entity').value;
+    const entity = form.get('entity');
+    return entity && entity.value;
   }
 
   isEditing(form: FormGroup): boolean {
     const entity = this.getEntityFromForm(form);
-    return entity && this.editFlags.has(entity);
+    return !!entity && this.editFlags.has(entity);
   }
 
   setEditable(form: FormGroup) {
@@ -95,10 +99,10 @@ export class CredentialComponent implements OnInit {
   }
 
   submitForm(): void {
-    for (const i in this.addForm.controls) {
-      this.addForm.controls[i].markAsDirty();
-      this.addForm.controls[i].updateValueAndValidity();
-    }
+    Object.keys(this.addForm.controls).forEach(key => {
+      this.addForm.controls[key].markAsDirty();
+      this.addForm.controls[key].updateValueAndValidity();
+    });
     if (this.addForm.valid) {
       const data = this.addForm.getRawValue() as CredentialForm;
       this.addCredential(data);
@@ -106,10 +110,10 @@ export class CredentialComponent implements OnInit {
   }
 
   saveCredential(form: FormGroup) {
-    for (const i in form.controls) {
-      form.controls[i].markAsDirty();
-      form.controls[i].updateValueAndValidity();
-    }
+    Object.keys(form.controls).forEach(key => {
+      form.controls[key].markAsDirty();
+      form.controls[key].updateValueAndValidity();
+    });
     if (form.valid) {
       this.credentialService.updateCredential(form.getRawValue()).subscribe(() => {
         this.nzMessageService.success('Successfully saved credentials.');
@@ -188,15 +192,5 @@ export class CredentialComponent implements OnInit {
       password: null
     });
     this.cdr.markForCheck();
-  }
-
-  ngOnInit(): void {
-    this.getCredentials();
-    this.getInterpreterNames();
-    this.addForm = this.fb.group({
-      entity: [null, [Validators.required]],
-      username: [null, [Validators.required]],
-      password: [null, [Validators.required]]
-    });
   }
 }

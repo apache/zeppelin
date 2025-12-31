@@ -10,18 +10,18 @@
  * limitations under the License.
  */
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 
-import { TicketService } from '@zeppelin/services';
+import { ThemeService, TicketService } from '@zeppelin/services';
 
 @Component({
   selector: 'zeppelin-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.less']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   logout$ = this.ticketService.logout$;
   loading$ = this.router.events.pipe(
     filter(data => data instanceof NavigationEnd || data instanceof NavigationStart),
@@ -35,5 +35,13 @@ export class AppComponent {
     })
   );
 
-  constructor(private router: Router, private ticketService: TicketService) {}
+  constructor(
+    private router: Router,
+    private ticketService: TicketService,
+    private themeService: ThemeService
+  ) {}
+
+  ngOnInit(): void {
+    this.themeService.updateMonacoTheme();
+  }
 }

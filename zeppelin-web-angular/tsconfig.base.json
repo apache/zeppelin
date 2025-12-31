@@ -1,0 +1,31 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@zeppelin/*": ["./src/app/*", "./src/environments/*"],
+      "@zeppelin/visualization": ["dist/zeppelin-visualization"],
+      "@zeppelin/visualization/*": ["dist/zeppelin-visualization/*"],
+      "@zeppelin/sdk": ["dist/zeppelin-sdk"],
+      "@zeppelin/sdk/*": ["dist/zeppelin-sdk/*"]
+    },
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "strict": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "es2020",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "target": "es5",
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2018", "dom"]
+  },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "strictTemplates": true
+  }
+}

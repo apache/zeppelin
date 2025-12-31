@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +45,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Azure storage backend for notebooks
  */
-public class AzureNotebookRepo implements NotebookRepo {
+public class AzureNotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(AzureNotebookRepo.class);
 
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private String user;
   private String shareName;
   private CloudFileDirectory rootDir;
@@ -57,14 +58,14 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
-    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
-    shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    user = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
+    shareName = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
 
     try {
       CloudStorageAccount account = CloudStorageAccount.parse(
-          conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
+          zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
       CloudFileClient client = account.createCloudFileClient();
       CloudFileShare share = client.getShareReference(shareName);
       share.createIfNotExists();
@@ -123,9 +124,9 @@ public class AzureNotebookRepo implements NotebookRepo {
       throw new IOException(msg, e);
     }
     String json = IOUtils.toString(ins,
-        conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
-    return Note.fromJson(noteId, json);
+    return noteParser.fromJson(noteId, json);
   }
 
   @Override

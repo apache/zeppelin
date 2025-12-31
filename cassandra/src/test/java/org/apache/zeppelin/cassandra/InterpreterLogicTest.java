@@ -22,12 +22,17 @@ import static com.datastax.oss.driver.api.core.ConsistencyLevel.ONE;
 import static com.datastax.oss.driver.api.core.ConsistencyLevel.QUORUM;
 import static com.datastax.oss.driver.api.core.ConsistencyLevel.SERIAL;
 import static com.datastax.oss.driver.api.core.cql.BatchType.UNLOGGED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import static java.util.Arrays.asList;
@@ -37,16 +42,8 @@ import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -71,320 +68,327 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(MockitoJUnitRunner.class)
-public class InterpreterLogicTest {
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+class InterpreterLogicTest {
 
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private InterpreterContext intrContext;
-
-  @Mock
   private CqlSession session;
+
+  @BeforeEach
+  public void setup() {
+    intrContext = mock(InterpreterContext.class, Answers.RETURNS_DEEP_STUBS);
+    session = mock(CqlSession.class);
+  }
 
   final InterpreterLogic helper = new InterpreterLogic(session, new Properties());
 
-  @Captor
-  ArgumentCaptor<ParamOption[]> optionsCaptor;
-
   @Test
-  public void should_parse_input_string_block() {
-    //Given
+  void should_parse_input_string_block() {
+    // Given
     String input = "SELECT * FROM users LIMIT 10;";
 
-    //When
+    // When
     final List<AnyBlock> anyBlocks = this.toJavaList(helper.parseInput(input));
 
-    //Then
-    assertThat(anyBlocks).hasSize(1);
-    assertThat(anyBlocks.get(0)).isInstanceOf(SimpleStm.class);
+    // Then
+    assertEquals(1, anyBlocks.size());
+    assertTrue(anyBlocks.get(0) instanceof SimpleStm);
   }
 
   @Test
-  public void should_parse_input_string_block_with_comment_dash() {
-    //Given
+  void should_parse_input_string_block_with_comment_dash() {
+    // Given
     String input = "SELECT * FROM users LIMIT 10; -- this is a comment";
 
-    //When
+    // When
     final List<AnyBlock> anyBlocks = this.toJavaList(helper.parseInput(input));
 
-    //Then
-    assertThat(anyBlocks).hasSize(2);
-    assertThat(anyBlocks.get(0)).isInstanceOf(SimpleStm.class);
-    assertThat(anyBlocks.get(1)).isInstanceOf(TextBlockHierarchy.Comment.class);
+    // Then
+    assertEquals(2, anyBlocks.size());
+    assertTrue(anyBlocks.get(0) instanceof SimpleStm);
+    assertTrue(anyBlocks.get(1) instanceof TextBlockHierarchy.Comment);
   }
 
   @Test
-  public void should_parse_input_string_block_with_comment_slash() {
-    //Given
+  void should_parse_input_string_block_with_comment_slash() {
+    // Given
     String input = "SELECT * FROM users LIMIT 10; // this is a comment";
 
-    //When
+    // When
     final List<AnyBlock> anyBlocks = this.toJavaList(helper.parseInput(input));
 
-    //Then
-    assertThat(anyBlocks).hasSize(2);
-    assertThat(anyBlocks.get(0)).isInstanceOf(SimpleStm.class);
-    assertThat(anyBlocks.get(1)).isInstanceOf(TextBlockHierarchy.Comment.class);
+    // Then
+    assertEquals(2, anyBlocks.size());
+    assertTrue(anyBlocks.get(0) instanceof SimpleStm);
+    assertTrue(anyBlocks.get(1) instanceof TextBlockHierarchy.Comment);
   }
 
   @Test
-  public void should_exception_while_parsing_input() {
-    //Given
+  void should_exception_while_parsing_input() {
+    // Given
     String input = "SELECT * FROM users LIMIT 10";
 
-    //When
-    expectedException.expect(InterpreterException.class);
-    expectedException.expectMessage("Error parsing input:\n" +
-            "\t'SELECT * FROM users LIMIT 10'\n" +
-            "Did you forget to add ; (semi-colon) at the end of each CQL statement ?");
+    // When
+    InterpreterException ex = assertThrows(InterpreterException.class, () -> {
+      helper.parseInput(input);
+    });
 
-    helper.parseInput(input);
+    assertEquals("Error parsing input:\n" +
+        "\t'SELECT * FROM users LIMIT 10'\n" +
+        "Did you forget to add ; (semi-colon) at the end of each CQL statement ?", ex.getMessage());
+
   }
 
   @Test
-  public void should_extract_variable_and_default_value() {
-    //Given
+  void should_extract_variable_and_default_value() {
+    // Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
-    when(intrContext.getGui().input("table", "zeppelin.demo")).thenReturn("zeppelin.demo");
-    when(intrContext.getGui().input("id", "'John'")).thenReturn("'John'");
+    when(intrContext.getGui().textbox("table", "zeppelin.demo")).thenReturn("zeppelin.demo");
+    when(intrContext.getGui().textbox("id", "'John'")).thenReturn("'John'");
 
-    //When
+    // When
     final String actual = helper.maybeExtractVariables(
-            "SELECT * FROM {{table=zeppelin.demo}} WHERE id={{id='John'}}", intrContext);
+        "SELECT * FROM {{table=zeppelin.demo}} WHERE id={{id='John'}}", intrContext);
 
-    //Then
-    assertThat(actual).isEqualTo("SELECT * FROM zeppelin.demo WHERE id='John'");
+    // Then
+    assertEquals("SELECT * FROM zeppelin.demo WHERE id='John'", actual);
   }
 
   @Test
-  public void should_extract_variable_and_choices() {
-    //Given
+  void should_extract_variable_and_choices() {
+    // Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
-    when(intrContext.getGui().select(eq("name"), optionsCaptor.capture(), eq("'Paul'")))
-            .thenReturn("'Jack'");
-
-    //When
+    ArgumentCaptor<ParamOption[]> optionsCaptor = ArgumentCaptor.forClass(ParamOption[].class);
+    when(intrContext.getGui().select(any(), any(), any())).thenReturn("'Jack'");
+    // When
     final String actual = helper.maybeExtractVariables(
-            "SELECT * FROM zeppelin.artists WHERE name={{name='Paul'|'Jack'|'Smith'}}",
-            intrContext);
-
-    //Then
-    assertThat(actual).isEqualTo("SELECT * FROM zeppelin.artists WHERE name='Jack'");
+        "SELECT * FROM zeppelin.artists WHERE name={{name='Paul'|'Jack'|'Smith'}}",
+        intrContext);
+    verify(intrContext.getGui()).select(eq("name"), optionsCaptor.capture(), eq("'Paul'"));
+    // Then
+    assertEquals("SELECT * FROM zeppelin.artists WHERE name='Jack'", actual);
     final List<ParamOption> paramOptions = asList(optionsCaptor.getValue());
-    assertThat(paramOptions.get(0).getValue()).isEqualTo("'Paul'");
-    assertThat(paramOptions.get(1).getValue()).isEqualTo("'Jack'");
-    assertThat(paramOptions.get(2).getValue()).isEqualTo("'Smith'");
+    assertEquals("'Paul'", paramOptions.get(0).getValue());
+    assertEquals("'Jack'", paramOptions.get(1).getValue());
+    assertEquals("'Smith'", paramOptions.get(2).getValue());
   }
 
   @Test
-  public void should_extract_no_variable() {
-    //Given
+  void should_extract_no_variable() {
+    // Given
     GUI gui = mock(GUI.class);
     when(intrContext.getGui()).thenReturn(gui);
 
-    //When
+    // When
     final String actual = helper.maybeExtractVariables("SELECT * FROM zeppelin.demo", intrContext);
 
-    //Then
-    verifyZeroInteractions(gui);
-    assertThat(actual).isEqualTo("SELECT * FROM zeppelin.demo");
+    // Then
+    verifyNoInteractions(gui);
+    assertEquals("SELECT * FROM zeppelin.demo", actual);
   }
 
   @Test
-  public void should_extract_variable_from_angular_object_registry() {
-    //Given
+  void should_extract_variable_from_angular_object_registry() {
+    // Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     angularObjectRegistry.add("id", "from_angular_registry", "noteId", "paragraphId");
     when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
     when(intrContext.getNoteId()).thenReturn("noteId");
     when(intrContext.getParagraphId()).thenReturn("paragraphId");
 
-    //When
+    // When
     final String actual = helper.maybeExtractVariables(
-            "SELECT * FROM zeppelin.demo WHERE id='{{id=John}}'", intrContext);
+        "SELECT * FROM zeppelin.demo WHERE id='{{id=John}}'", intrContext);
 
-    //Then
-    assertThat(actual).isEqualTo("SELECT * FROM zeppelin.demo WHERE id='from_angular_registry'");
+    // Then
+    assertEquals("SELECT * FROM zeppelin.demo WHERE id='from_angular_registry'", actual);
     verify(intrContext, never()).getGui();
   }
 
   @Test
   public void should_error_if_incorrect_variable_definition() {
-    //Given
+    // Given
 
-    //When
-    expectedException.expect(ParsingException.class);
-    expectedException.expectMessage("Invalid bound variable definition for " +
-            "'{{table?zeppelin.demo}}' in 'SELECT * FROM {{table?zeppelin.demo}} " +
-            "WHERE id={{id='John'}}'. It should be of form 'variable=defaultValue'");
+    // When
+    ParsingException thrown = assertThrows(ParsingException.class, () -> {
+      // Then
+      helper.maybeExtractVariables("SELECT * FROM {{table?zeppelin.demo}} WHERE id={{id='John'}}",
+          intrContext);
+    });
+    assertEquals("Invalid bound variable definition for " +
+        "'{{table?zeppelin.demo}}' in 'SELECT * FROM {{table?zeppelin.demo}} " +
+        "WHERE id={{id='John'}}'. It should be of form 'variable=defaultValue' " +
+        "or 'variable=value1|value2|...|valueN'",
+        thrown.getMessage());
 
-    //Then
-    helper.maybeExtractVariables("SELECT * FROM {{table?zeppelin.demo}} WHERE id={{id='John'}}",
-            intrContext);
   }
 
   @Test
-  public void should_extract_consistency_option() {
-    //Given
+  void should_extract_consistency_option() {
+    // Given
     List<QueryParameters> options = Arrays.asList(new Consistency(ALL),
-            new Consistency(ONE));
+        new Consistency(ONE));
 
-    //When
+    // When
     final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
-    //Then
-    assertThat(actual.consistency().get()).isEqualTo(ALL);
+    // Then
+    assertEquals(ALL, actual.consistency().get());
   }
 
   @Test
-  public void should_extract_serial_consistency_option() {
-    //Given
+  void should_extract_serial_consistency_option() {
+    // Given
     List<QueryParameters> options = Arrays.asList(new SerialConsistency(SERIAL),
-            new SerialConsistency(LOCAL_SERIAL));
+        new SerialConsistency(LOCAL_SERIAL));
 
-    //When
+    // When
     final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
-    //Then
-    assertThat(actual.serialConsistency().get()).isEqualTo(SERIAL);
+    // Then
+    assertEquals(SERIAL, actual.serialConsistency().get());
   }
 
   @Test
-  public void should_extract_timestamp_option() {
-    //Given
+  void should_extract_timestamp_option() {
+    // Given
     List<QueryParameters> options = Arrays.asList(new Timestamp(123L),
-            new Timestamp(456L));
+        new Timestamp(456L));
 
-    //When
+    // When
     final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
-    //Then
-    assertThat(actual.timestamp().get()).isEqualTo(123L);
+    // Then
+    assertEquals(123L, actual.timestamp().get());
   }
 
   @Test
-  public void should_extract_request_timeout_option() {
-    //Given
+  void should_extract_request_timeout_option() {
+    // Given
     List<QueryParameters> options = Collections.singletonList(new RequestTimeOut(100));
 
-    //When
+    // When
     final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
-    //Then
-    assertThat(actual.requestTimeOut().get()).isEqualTo(100);
+    // Then
+    assertEquals(100, actual.requestTimeOut().get());
   }
 
   @Test
-  public void should_generate_simple_statement() {
-    //Given
+  void should_generate_simple_statement() {
+    // Given
     String input = "SELECT * FROM users LIMIT 10;";
     CassandraQueryOptions options = new CassandraQueryOptions(Option.apply(QUORUM),
-            Option.empty(),
-            Option.empty(),
-            Option.empty(),
-            Option.empty());
+        Option.empty(),
+        Option.empty(),
+        Option.empty(),
+        Option.empty());
 
-    //When
+    // When
     final SimpleStatement actual = helper.generateSimpleStatement(new SimpleStm(input), options,
-            intrContext);
+        intrContext);
 
-    //Then
-    assertThat(actual).isNotNull();
-    assertThat(actual.getQuery()).isEqualTo("SELECT * FROM users LIMIT 10;");
-    assertThat(actual.getConsistencyLevel()).isSameAs(QUORUM);
+    // Then
+    assertNotNull(actual);
+    assertEquals("SELECT * FROM users LIMIT 10;", actual.getQuery());
+    assertSame(QUORUM, actual.getConsistencyLevel());
   }
 
   @Test
-  public void should_generate_batch_statement() {
-    //Given
+  void should_generate_batch_statement() {
+    // Given
     SimpleStatement st1 = SimpleStatement.newInstance("SELECT * FROM users LIMIT 10;");
     SimpleStatement st2 = SimpleStatement.newInstance("INSERT INTO users(id) VALUES(10);");
     SimpleStatement st3 = SimpleStatement.newInstance(
-            "UPDATE users SET name = 'John DOE' WHERE id=10;");
+        "UPDATE users SET name = 'John DOE' WHERE id=10;");
     CassandraQueryOptions options = new CassandraQueryOptions(Option.apply(QUORUM),
-            Option.empty(),
-            Option.empty(),
-            Option.empty(),
-            Option.empty());
+        Option.empty(),
+        Option.empty(),
+        Option.empty(),
+        Option.empty());
 
-    //When
+    // When
     BatchStatement actual = helper.generateBatchStatement(UNLOGGED, options,
-            toScalaList(asList(st1, st2, st3)));
+        toScalaList(asList(st1, st2, st3)));
 
-    //Then
-    assertThat(actual).isNotNull();
+    // Then
+    assertNotNull(actual);
     List<BatchableStatement> statements = new ArrayList<>();
-    for (BatchableStatement b: actual) {
+    for (BatchableStatement b : actual) {
       statements.add(b);
     }
-    assertThat(statements).hasSize(3);
-    assertThat(statements.get(0)).isSameAs(st1);
-    assertThat(statements.get(1)).isSameAs(st2);
-    assertThat(statements.get(2)).isSameAs(st3);
-    assertThat(actual.getConsistencyLevel()).isSameAs(QUORUM);
+    assertEquals(3, statements.size());
+    assertSame(st1, statements.get(0));
+    assertSame(st2, statements.get(1));
+    assertSame(st3, statements.get(2));
+    assertSame(QUORUM, actual.getConsistencyLevel());
   }
 
   @Test
-  public void should_parse_bound_values() {
-    //Given
+  void should_parse_bound_values() {
+    // Given
     String bs = "'jdoe',32,'John DOE',null, true, '2014-06-12 34:00:34'";
 
-    //When
+    // When
     final List<String> actual = this.toJavaList(helper.parseBoundValues("ps", bs));
 
-    //Then
-    assertThat(actual).containsExactly("'jdoe'", "32", "'John DOE'",
-            "null", "true", "2014-06-12 34:00:34");
+    // Then
+    assertEquals("'jdoe'", actual.get(0));
+    assertEquals("32", actual.get(1));
+    assertEquals("'John DOE'", actual.get(2));
+    assertEquals("null", actual.get(3));
+    assertEquals("true", actual.get(4));
+    assertEquals("2014-06-12 34:00:34", actual.get(5));
   }
 
   @Test
-  public void should_parse_simple_date() {
-    //Given
+  void should_parse_simple_date() {
+    // Given
     String dateString = "2015-07-30 12:00:01";
 
-    //When
+    // When
     final Instant actual = helper.parseDate(dateString);
 
-    //Then
+    // Then
     ZonedDateTime dt = actual.atZone(ZoneOffset.UTC);
 
-    assertThat(dt.getLong(ChronoField.YEAR_OF_ERA)).isEqualTo(2015);
-    assertThat(dt.getLong(ChronoField.MONTH_OF_YEAR)).isEqualTo(7);
-    assertThat(dt.getLong(ChronoField.DAY_OF_MONTH)).isEqualTo(30);
-    assertThat(dt.getLong(ChronoField.HOUR_OF_DAY)).isEqualTo(12);
-    assertThat(dt.getLong(ChronoField.MINUTE_OF_HOUR)).isEqualTo(0);
-    assertThat(dt.getLong(ChronoField.SECOND_OF_MINUTE)).isEqualTo(1);
+    assertEquals(2015, dt.getLong(ChronoField.YEAR_OF_ERA));
+    assertEquals(7, dt.getLong(ChronoField.MONTH_OF_YEAR));
+    assertEquals(30, dt.getLong(ChronoField.DAY_OF_MONTH));
+    assertEquals(12, dt.getLong(ChronoField.HOUR_OF_DAY));
+    assertEquals(0, dt.getLong(ChronoField.MINUTE_OF_HOUR));
+    assertEquals(1, dt.getLong(ChronoField.SECOND_OF_MINUTE));
   }
 
   @Test
-  public void should_parse_accurate_date() {
-    //Given
+  void should_parse_accurate_date() {
+    // Given
     String dateString = "2015-07-30 12:00:01.123";
 
-    //When
+    // When
     final Instant actual = helper.parseDate(dateString);
 
-    //Then
+    // Then
     ZonedDateTime dt = actual.atZone(ZoneOffset.UTC);
 
-    assertThat(dt.getLong(ChronoField.YEAR_OF_ERA)).isEqualTo(2015);
-    assertThat(dt.getLong(ChronoField.MONTH_OF_YEAR)).isEqualTo(7);
-    assertThat(dt.getLong(ChronoField.DAY_OF_MONTH)).isEqualTo(30);
-    assertThat(dt.getLong(ChronoField.HOUR_OF_DAY)).isEqualTo(12);
-    assertThat(dt.getLong(ChronoField.MINUTE_OF_HOUR)).isEqualTo(0);
-    assertThat(dt.getLong(ChronoField.SECOND_OF_MINUTE)).isEqualTo(1);
-    assertThat(dt.getLong(ChronoField.MILLI_OF_SECOND)).isEqualTo(123);
+    assertEquals(2015, dt.getLong(ChronoField.YEAR_OF_ERA));
+    assertEquals(7, dt.getLong(ChronoField.MONTH_OF_YEAR));
+    assertEquals(30, dt.getLong(ChronoField.DAY_OF_MONTH));
+    assertEquals(12, dt.getLong(ChronoField.HOUR_OF_DAY));
+    assertEquals(0, dt.getLong(ChronoField.MINUTE_OF_HOUR));
+    assertEquals(1, dt.getLong(ChronoField.SECOND_OF_MINUTE));
+    assertEquals(123, dt.getLong(ChronoField.MILLI_OF_SECOND));
   }
 
-  private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list)  {
+  private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list) {
     return scala.collection.JavaConversions.collectionAsScalaIterable(list).toList();
   }
 
-  private  <A> java.util.List<A> toJavaList(scala.collection.immutable.List<A> list){
+  private <A> java.util.List<A> toJavaList(scala.collection.immutable.List<A> list) {
     return scala.collection.JavaConversions.seqAsJavaList(list);
   }
 }

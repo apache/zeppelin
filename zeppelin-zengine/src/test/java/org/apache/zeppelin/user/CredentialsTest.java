@@ -17,16 +17,16 @@
 
 package org.apache.zeppelin.user;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CredentialsTest {
+class CredentialsTest {
 
   @Test
-  public void testDefaultProperty() throws IOException {
+  void testDefaultProperty() throws IOException {
     Credentials credentials = new Credentials();
     UserCredentials userCredentials = new UserCredentials();
     UsernamePassword up1 = new UsernamePassword("user2", "password");

@@ -25,38 +25,42 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
-
+class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutLifecycleManagerTest.class);
   private File zeppelinSiteFile = new File("zeppelin-site.xml");
 
   @Override
+  @BeforeEach
   public void setUp() throws Exception {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    super.setUp();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS.getVarName(),
         TimeoutLifecycleManager.class.getName());
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "1000");
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10s");
-
-    super.setUp();
   }
 
   @Override
+  @AfterEach
   public void tearDown() {
     zeppelinSiteFile.delete();
   }
 
   @Test
-  public void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
+  void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
     assertTrue(interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test.echo", new ExecutionContext("user1", "note1", "test"));
     assertFalse(remoteInterpreter.isOpened());
@@ -79,7 +83,7 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
+  void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
     assertTrue(interpreterFactory.getInterpreter("test.sleep", new ExecutionContext("user1", "note1", "test")) instanceof RemoteInterpreter);
     final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("test.sleep", new ExecutionContext("user1", "note1", "test"));
 
@@ -122,6 +126,10 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
     while(!remoteInterpreter.isOpened()) {
       Thread.sleep(1000);
+      if (!remoteInterpreter.getOrCreateInterpreterProcess().isAlive()) {
+        LOGGER.error("Interpreter already shut down");
+        break;
+      }
       LOGGER.info("Wait for interpreter to be started");
     }
 

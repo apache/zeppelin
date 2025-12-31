@@ -19,7 +19,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 
-import { ZeppelinHeliumModule } from '@zeppelin/helium';
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -27,9 +26,8 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { loadMonacoBefore } from '@zeppelin/languages';
 import { TicketService } from '@zeppelin/services';
-import { ShareModule } from '@zeppelin/share';
+import { JoinedEditorOptions, NZ_CODE_EDITOR_CONFIG, ShareModule } from '@zeppelin/share';
 
-import { NZ_CODE_EDITOR_CONFIG } from '@zeppelin/share/code-editor';
 import { AppHttpInterceptor } from './app-http.interceptor';
 import { AppMessageInterceptor } from './app-message.interceptor';
 import { AppRoutingModule } from './app-routing.module';
@@ -51,8 +49,7 @@ registerLocaleData(en);
     BrowserAnimationsModule,
     ShareModule,
     AppRoutingModule,
-    RouterModule,
-    ZeppelinHeliumModule
+    RouterModule
   ],
   providers: [
     ...RUNTIME_COMPILER_PROVIDERS,
@@ -71,7 +68,8 @@ registerLocaleData(en);
       useValue: {
         defaultEditorOption: {
           scrollBeyondLastLine: false
-        },
+          // TODO: Change 'as' to 'satisfies' when typescript version is over 4.9 to detect unsupported editor options at compile time.
+        } as JoinedEditorOptions,
         onLoad: loadMonaco
       }
     },

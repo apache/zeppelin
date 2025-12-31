@@ -159,7 +159,7 @@
         "envName": null,
         "propertyName": "zeppelin.spark.deprecatedMsg.show",
         "defaultValue": true,
-        "description": "Whether show the spark deprecated message, spark 2.2 and before are deprecated. Zeppelin will display warning message by default",
+        "description": "Whether show the spark deprecated message, prior Spark 3.3 are deprecated. Zeppelin will display warning message by default",
         "type": "checkbox"
       }
     },
@@ -329,40 +329,6 @@
       "editOnDblClick": false,
       "completionSupport": true,
       "completionKey": "TAB"
-    }
-  },
-  {
-    "group": "spark",
-    "name": "kotlin",
-    "className": "org.apache.zeppelin.spark.KotlinSparkInterpreter",
-    "properties": {
-      "zeppelin.spark.printREPLOutput": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.printREPLOutput",
-        "defaultValue": true,
-        "description": "Print REPL output",
-        "type": "checkbox"
-      },
-      "zeppelin.spark.maxResult": {
-        "envName": null,
-        "propertyName": "zeppelin.kotlin.maxResult",
-        "defaultValue": "1000",
-        "description": "Max number of result to display.",
-        "type": "number"
-      },
-      "zeppelin.kotlin.shortenTypes": {
-        "envName": null,
-        "propertyName": "zeppelin.kotlin.shortenTypes",
-        "defaultValue": true,
-        "description": "Show short types instead of full, e.g. List<String> or kotlin.collections.List<kotlin.String>",
-        "type": "checkbox"
-      }
-    },
-    "editor": {
-      "language": "kotlin",
-      "editOnDblClick": false,
-      "completionKey": "TAB",
-      "completionSupport": false
     }
   }
 ]

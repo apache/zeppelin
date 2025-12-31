@@ -42,7 +42,7 @@ If you want to build from source, you must first install the following dependenc
   </tr>
   <tr>
     <td>OpenJDK or Oracle JDK</td>
-    <td>1.8 (151+)<br>(set JAVA_HOME)</td>
+    <td>11<br>(set JAVA_HOME)</td>
   </tr>
 </table>
 
@@ -79,23 +79,11 @@ You can directly start Zeppelin by running the following command after successfu
 
 ### Build profiles
 
-
-#### Scala profile
-
-To be noticed, this scala profile affect the modules (e.g. cassandra) that use scala except Spark interpreter (Spark interpreter use other profiles to control its scala version, see the doc below).
-
-Set scala version (default 2.10). Available profiles are
-
-```
--Pscala-2.10
--Pscala-2.11
-```
-
 #### Spark Interpreter
 
-To be noticed, the spark profiles here only affect the uni test (no need to specify `SPARK_HOME`) of spark interpreter. 
+To be noticed, the spark profiles here only affect the unit test (no need to specify `SPARK_HOME`) of spark interpreter. 
 Zeppelin doesn't require you to build with different spark to make different versions of spark work in Zeppelin.
-You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`. Actually Zeppelin supports all the versions of Spark from 1.6 to 3.0.
+You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`. Actually Zeppelin supports all the versions of Spark from 3.3 to 3.5.
 
 To build with a specific Spark version or scala versions, define one or more of the following profiles and options:
 
@@ -106,10 +94,9 @@ Set spark major version
 Available profiles are
 
 ```
--Pspark-3.2
--Pspark-3.1
--Pspark-3.0
--Pspark-2.4
+-Pspark-3.5
+-Pspark-3.4
+-Pspark-3.3
 ```
 
 minor version can be adjusted by `-Dspark.version=x.x.x`
@@ -117,29 +104,21 @@ minor version can be adjusted by `-Dspark.version=x.x.x`
 ##### `-Pspark-scala-[version] (optional)`
 
 To be noticed, these profiles also only affect the unit test (no need to specify `SPARK_HOME`) of Spark interpreter. 
-Actually Zeppelin supports all the versions of scala (2.11, 2.12) in Spark interpreter as long as you specify `SPARK_HOME`.
+Actually Zeppelin supports all the versions of scala (2.12, 2.13) in Spark interpreter as long as you specify `SPARK_HOME`.
 
 Available profiles are
 
 ```
--Pspark-scala-2.11
 -Pspark-scala-2.12
+-Pspark-scala-2.13
 ```
  
-#### Build hadoop with Zeppelin (`-Phadoop[version]`)
+#### Build hadoop with Zeppelin
  
 To be noticed, hadoop profiles only affect Zeppelin server, it doesn't affect any interpreter. 
 Zeppelin server use hadoop in some cases, such as using hdfs as notebook storage. You can check this [page](./hadoop_integration.html) for more details about how to configure hadoop in Zeppelin.
 
-Set hadoop major version (default hadoop2).
-Available profiles are
-
-```
--Phadoop2
--Phadoop3
-```
-
-minor version can be adjusted by `-Dhadoop.version=x.x.x`
+Hadoop version can be adjusted by `-Dhadoop.version=x.x.x`
 
 
 ##### `-Pvendor-repo` (optional)
@@ -156,11 +135,11 @@ Build examples under zeppelin-examples directory
 Here are some examples with several options:
 
 ```bash
-# build with spark-3.0, spark-scala-2.12
-./mvnw clean package -Pspark-3.0 -Pspark-scala-2.12 -DskipTests
+# build with spark-3.5, spark-scala-2.12
+./mvnw clean package -Pspark-3.5 -Pspark-scala-2.12 -DskipTests
 
-# build with spark-2.4, spark-scala-2.11
-./mvnw clean package -Pspark-2.4 -Pspark-scala-2.11 -DskipTests
+# build with spark-3.5, spark-scala-2.13
+./mvnw clean package -Pspark-3.5 -Pspark-scala-2.13 -DskipTests
 
 ```
 
@@ -186,7 +165,7 @@ spark.bin.download.url # default http://d3kbcqa49mib13.cloudfront.net/${spark.ar
 Py4J package
 
 ```bash
-python.py4j.version # default 0.9.2
+python.py4j.version # default 0.10.9.7
 pypi.repo.url # default https://pypi.python.org/packages
 python.py4j.repo.folder # default /64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3
 ```
@@ -200,7 +179,7 @@ Frontend Maven Plugin configurations
 
 ```
 plugin.frontend.nodeDownloadRoot # default https://nodejs.org/dist/
-plugin.frontend.npmDownloadRoot # default http://registry.npmjs.org/npm/-/
+plugin.frontend.npmDownloadRoot # default https://registry.npmjs.org/npm/-/
 plugin.frontend.yarnDownloadRoot # default https://github.com/yarnpkg/yarn/releases/download/
 ```
 
@@ -214,7 +193,7 @@ If you don't have requirements prepared, install it.
 ```bash
 sudo apt-get update
 sudo apt-get install git
-sudo apt-get install openjdk-8-jdk
+sudo apt-get install openjdk-11-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
 sudo apt-get install r-base-dev
@@ -301,10 +280,10 @@ To package the final distribution including the compressed archive, run:
 To build a distribution with specific profiles, run:
 
 ```sh
-./mvnw clean package -Pbuild-distr -Pspark-2.4
+./mvnw clean package -Pbuild-distr -Pspark-3.5
 ```
 
-The profiles `-Pspark-2.4` can be adjusted if you wish to build to a specific spark versions.  
+The profiles `-Pspark-3.5` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 
@@ -318,5 +297,3 @@ mvn verify
 # or take care of starting/stoping zeppelin-server from packaged zeppelin-distribuion/target
 mvn verify -P using-packaged-distr
 ```
-
-[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

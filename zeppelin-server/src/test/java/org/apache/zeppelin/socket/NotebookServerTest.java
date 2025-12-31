@@ -16,14 +16,14 @@
  */
 package org.apache.zeppelin.socket;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -32,18 +32,20 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
@@ -62,6 +64,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -70,58 +73,173 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /** Basic REST API tests for notebookServer. */
-public class NotebookServerTest extends AbstractTestRestApi {
+class NotebookServerTest extends AbstractTestRestApi {
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookServerTest.class);
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static NotebookService notebookService;
   private static AuthorizationService authorizationService;
-  private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
-  @BeforeClass
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
-    notebook = TestUtils.getInstance(Notebook.class);
-    authorizationService =  TestUtils.getInstance(AuthorizationService.class);
-    notebookServer = TestUtils.getInstance(NotebookServer.class);
-    notebookService = TestUtils.getInstance(NotebookService.class);
+    zepServer = new MiniZeppelinServer(NotebookServerTest.class.getSimpleName());
+    zepServer.addInterpreter("md");
+    zepServer.addInterpreter("angular");
+    zepServer.addInterpreter("spark");
+    zepServer.copyBinDir();
+    zepServer.start();
+    notebook = zepServer.getService(Notebook.class);
+    authorizationService = zepServer.getService(AuthorizationService.class);
+    notebookServer = zepServer.getService(NotebookServer.class);
+    notebookService = zepServer.getService(NotebookService.class);
   }
 
-  @AfterClass
+  @AfterAll
   public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+    zepServer.destroy();
   }
 
-  @Before
-  public void setUp() {
-    mockRequest = mock(HttpServletRequest.class);
+  @BeforeEach
+  void setUp() {
+    zConf = zepServer.getZeppelinConfiguration();
     anonymous = AuthenticationInfo.ANONYMOUS;
   }
 
   @Test
-  public void checkOrigin() throws UnknownHostException {
+  void checkOrigin() throws UnknownHostException {
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
-    assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-          notebookServer.checkOrigin(origin));
+    assertTrue(notebookServer.checkOrigin(origin),
+      "Origin " + origin + " is not allowed. Please check your hostname.");
   }
 
   @Test
-  public void checkInvalidOrigin(){
+  void checkInvalidOrigin() {
     assertFalse(notebookServer.checkOrigin("http://evillocalhost:8080"));
   }
 
   @Test
-  public void testCollaborativeEditing() throws IOException {
-    if (!ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+  void testUnicastNoteJobInfo_whenJobManagerDisabled() throws IOException {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    NotebookSocket conn = createWebSocket();
+    ServiceContext context = new ServiceContext(anonymous, new HashSet<>());
+    Message fromMessage = new Message(OP.LIST_NOTE_JOBS);
+
+    try {
+      notebookServer.unicastNoteJobInfo(conn, context, fromMessage);
+      String expectedErrorMessage = "Job Manager is disabled in the current configuration.";
+      Message expectedMessage = new Message(OP.JOB_MANAGER_DISABLED).put("errorMessage", expectedErrorMessage);
+      verify(conn, times(1)).send(eq(notebookServer.serializeMessage(expectedMessage)));
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testBroadcastUpdateNoteJobInfo_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.broadcastUpdateNoteJobInfo(mockNote, System.currentTimeMillis());
+      }, "broadcastUpdateNoteJobInfo should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphRemove_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphRemove(mockParagraph);
+      }, "onParagraphRemove should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnNoteRemove_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onNoteRemove(mockNote, anonymous);
+      }, "onNoteRemove should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphCreate_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphCreate(mockParagraph);
+      }, "onParagraphCreate should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnNoteCreate_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Note mockNote = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(mockNote.getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onNoteCreate(mockNote, anonymous);
+      }, "onNoteCreate should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testOnParagraphStatusChange_whenJobManagerDisabled() {
+    boolean originalFlag = disableJobManagerAndBackupFlag();
+    Paragraph mockParagraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
+    when(mockParagraph.getNote().getId()).thenReturn("testNoteId");
+
+    try {
+      assertDoesNotThrow(() -> {
+        notebookServer.onParagraphStatusChange(mockParagraph, Status.RUNNING);
+      }, "onParagraphStatusChange should not throw exception when job manager is disabled");
+    } finally {
+      restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testCollaborativeEditing() throws IOException {
+    if (!zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       return;
     }
     NotebookSocket sock1 = createWebSocket();
@@ -189,7 +307,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent()
+  void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent()
           throws IOException, InterruptedException {
     String note1Id = null;
     try {
@@ -268,7 +386,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testAngularObjectSaveToNote()
+  void testAngularObjectSaveToNote()
       throws IOException, InterruptedException {
     // create a notebook
     String note1Id = null;
@@ -379,7 +497,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testLoadAngularObjectFromNote() throws IOException, InterruptedException {
+  void testLoadAngularObjectFromNote() throws IOException, InterruptedException {
     // create a notebook
     String note1Id = null;
     try {
@@ -406,15 +524,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
 
       // wait for paragraph finished
-      Status status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
-      while (true) {
-        System.out.println("loop");
-        if (status == Job.Status.FINISHED) {
-          break;
-        }
-        Thread.sleep(100);
-        status = notebook.processNote(note1Id, note1-> note1.getParagraph(p1Id).getStatus());
-      }
+      await().atMost(Duration.ofMinutes(5)).pollInterval(Duration.ofMillis(100))
+          .until(checkParagraphStatus(note1Id, p1Id, Status.FINISHED));
       // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
       Thread.sleep(1000);
 
@@ -452,8 +563,16 @@ public class NotebookServerTest extends AbstractTestRestApi {
     }
   }
 
+  private Callable<Boolean> checkParagraphStatus(String noteId, String paragraphId, Status status) {
+    return () -> {
+      return status
+          .equals(notebook.processNote(noteId, note -> note.getParagraph(paragraphId).getStatus()));
+    };
+
+  }
+
   @Test
-  public void testImportNotebook() throws IOException {
+  void testImportNotebook() throws IOException {
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\"," + "\"progressUpdateIntervalMs\":500," +
@@ -468,7 +587,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
         noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
-        LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+        LOGGER.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
                 "worry ", e);
       }
 
@@ -489,7 +608,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testImportJupyterNote() throws IOException {
+  void testImportJupyterNote() throws IOException {
     String jupyterNoteJson = IOUtils.toString(getClass().getResourceAsStream("/Lecture-4.ipynb"), StandardCharsets.UTF_8);
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
             "{\"note\": " + jupyterNoteJson + "}}";
@@ -501,14 +620,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
         noteId = notebookServer.importNote(null, context, messageReceived);
       } catch (NullPointerException e) {
         //broadcastNoteList(); failed nothing to worry.
-        LOG.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
+        LOGGER.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
                 "worry ", e);
       }
 
       notebook.processNote(noteId,
         note -> {
           assertNotNull(note);
-          assertTrue(note.getName(), note.getName().startsWith("Note converted from Jupyter_"));
+          assertTrue(note.getName().startsWith("Note converted from Jupyter_"), note.getName());
           assertEquals("md", note.getParagraphs().get(0).getIntpText());
           assertEquals("\n# matplotlib - 2D and 3D plotting in Python",
             note.getParagraphs().get(0).getScriptText());
@@ -525,7 +644,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void bindAngularObjectToRemoteForParagraphs() throws Exception {
+  void bindAngularObjectToRemoteForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "DuyHai DOAN";
@@ -541,7 +660,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
-      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgument(1, NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
@@ -566,7 +685,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
               .put("noteId", "noteId")
               .put("paragraphId", "paragraphId"));
 
-      notebookServer.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
+      Set<NotebookSocket> sockets = new HashSet<>();
+      sockets.add(otherConn);
+      sockets.add(conn);
+      notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
       notebookServer.angularObjectClientBind(conn, messageReceived);
@@ -583,7 +705,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void unbindAngularObjectFromRemoteForParagraphs() throws Exception {
+  void unbindAngularObjectFromRemoteForParagraphs() throws Exception {
     //Given
     final String varName = "name";
     final String value = "val";
@@ -597,7 +719,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.setNotebook(() -> notebook);
       notebookServer.setNotebookService(() -> notebookService);
       final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
-      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgumentAt(1,NoteProcessor.class).process(note));
+      when(notebook.processNote(eq("noteId"), Mockito.any())).then(e -> e.getArgument(1, NoteProcessor.class).process(note));
       final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
       when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
@@ -619,7 +741,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
               .put("noteId", "noteId")
               .put("paragraphId", "paragraphId"));
 
-      notebookServer.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
+      Set<NotebookSocket> sockets = new HashSet<>();
+      sockets.add(otherConn);
+      sockets.add(conn);
+      notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
       notebookServer.angularObjectClientUnbind(conn, messageReceived);
@@ -636,7 +761,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCreateNoteWithDefaultInterpreterId() throws IOException {
+  void testCreateNoteWithDefaultInterpreterId() throws IOException {
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();
     NotebookSocket sock2 = createWebSocket();
@@ -660,7 +785,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
         .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
     int sendCount = 2;
-    if (ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+    if (zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       sendCount++;
     }
     // expect the events are broadcasted properly
@@ -683,7 +808,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRuntimeInfos() throws IOException {
+  void testRuntimeInfos() throws IOException {
     // mock note
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
@@ -698,7 +823,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       noteId = notebookServer.importNote(null, context, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
-      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+      LOGGER.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
           "worry ", e);
     } catch (IOException e) {
       e.printStackTrace();
@@ -735,7 +860,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetParagraphList() throws IOException {
+  void testGetParagraphList() throws IOException {
     String noteId = null;
 
     try {
@@ -760,7 +885,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       } catch (TException e) {
         e.printStackTrace();
       }
-      assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
+      assertNotNull(paragraphList0, user1Id + " can get anonymous's note");
 
       // test user1 cannot get user2's note
       authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
@@ -775,7 +900,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       } catch (TException e) {
         e.printStackTrace();
       }
-      assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
+      assertNull(paragraphList1, user1Id + " cannot get " + user2Id + "'s note");
 
       // test user1 can get user2's shared note
       authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
@@ -790,7 +915,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
       } catch (TException e) {
         e.printStackTrace();
       }
-      assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
+      assertNotNull(paragraphList2, user1Id + " can get " + user2Id + "'s shared note");
     } finally {
       if (null != noteId) {
         notebook.removeNote(noteId, anonymous);
@@ -799,7 +924,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testNoteRevision() throws IOException {
+  void testNoteRevision() throws IOException {
     String noteId = null;
 
     try {
@@ -842,5 +967,18 @@ public class NotebookServerTest extends AbstractTestRestApi {
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
     return sock;
+  }
+
+  private boolean disableJobManagerAndBackupFlag() {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    boolean originalFlag = zConf.isJobManagerEnabled();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(), "false");
+    return originalFlag;
+  }
+
+  private void restoreJobManagerFlag(boolean originalFlag) {
+    ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_JOBMANAGER_ENABLE.getVarName(),
+        String.valueOf(originalFlag));
   }
 }

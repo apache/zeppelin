@@ -31,7 +31,7 @@ import java.util.List;
  * Interpreter result template.
  */
 public class InterpreterResult implements Serializable, JsonSerializable {
-  transient Logger logger = LoggerFactory.getLogger(InterpreterResult.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterResult.class);
   private static final Gson gson = new Gson();
 
   /**
@@ -92,7 +92,7 @@ public class InterpreterResult implements Serializable, JsonSerializable {
       this.msg.addAll(out.toInterpreterResultMessage());
       out.close();
     } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
     }
 
   }

@@ -25,8 +25,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.cluster.ClusterManagerClient;
-import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObject;
@@ -80,7 +78,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,8 +93,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.Optional;
-
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * Entry point for Interpreter process.
@@ -150,8 +145,6 @@ public class RemoteInterpreterServer extends Thread
   private boolean isForceShutdown = true;
 
   private ZeppelinConfiguration zConf;
-  // cluster manager client
-  private ClusterManagerClient clusterManagerClient;
 
   private static Thread shutdownThread;
 
@@ -207,20 +200,9 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
-    this.zConf = ZeppelinConfiguration.create();
+    this.zConf = ZeppelinConfiguration.load();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       this.zConf.setProperty(entry.getKey(), entry.getValue());
-    }
-
-    if (zConf.isClusterMode()) {
-      clusterManagerClient = ClusterManagerClient.getInstance(zConf);
-      clusterManagerClient.start(interpreterGroupId);
-
-      // Cluster mode, discovering interpreter processes through metadata registration
-      // TODO (Xun): Unified use of cluster metadata for process discovery of all operating modes
-      // 1. Can optimize the startup logic of the process
-      // 2. Can solve the problem that running the interpreter's IP in docker may be a virtual IP
-      putClusterMeta();
     }
 
     try {
@@ -333,26 +315,6 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  // Submit interpreter process metadata information to cluster metadata
-  private void putClusterMeta() {
-    if (!zConf.isClusterMode()){
-      return;
-    }
-    String nodeName = clusterManagerClient.getClusterNodeName();
-
-    // commit interpreter meta
-    HashMap<String, Object> meta = new HashMap<>();
-    meta.put(ClusterMeta.NODE_NAME, nodeName);
-    meta.put(ClusterMeta.INTP_PROCESS_NAME, interpreterGroupId);
-    meta.put(ClusterMeta.INTP_TSERVER_HOST, host);
-    meta.put(ClusterMeta.INTP_TSERVER_PORT, port);
-    meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
-    meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
-    meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
-
-    clusterManagerClient.putClusterMeta(INTP_PROCESS_META, interpreterGroupId, meta);
-  }
-
   @Override
   public void createInterpreter(String interpreterGroupId, String sessionId, String
       className, Map<String, String> properties, String userName) throws InterpreterRPCException, TException {
@@ -373,7 +335,7 @@ public class RemoteInterpreterServer extends Thread
                   properties.get("zeppelin.interpreter.output.limit"));
         }
 
-        depLoader = new DependencyResolver(localRepoPath);
+        depLoader = new DependencyResolver(localRepoPath, zConf);
         appLoader = new ApplicationLoader(resourcePool, depLoader);
 
         resultCacheInSeconds =
@@ -399,6 +361,7 @@ public class RemoteInterpreterServer extends Thread
 
       interpreter.setInterpreterGroup(interpreterGroup);
       interpreter.setUserName(userName);
+      interpreter.setZeppelinConfiguration(zConf);
 
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
 
@@ -673,8 +636,6 @@ public class RemoteInterpreterServer extends Thread
     public void run() {
       LOGGER.info("Shutting down...");
       LOGGER.info("Shutdown initialized by {}", cause);
-      // delete interpreter cluster meta
-      deleteClusterMeta();
 
       if (interpreterGroup != null) {
         synchronized (interpreterGroup) {
@@ -736,30 +697,16 @@ public class RemoteInterpreterServer extends Thread
       LOGGER.info("Shutting down");
     }
 
-    private void deleteClusterMeta() {
-      if (zConf == null || !zConf.isClusterMode()){
-        return;
-      }
-
-      try {
-        // delete interpreter cluster meta
-        clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        LOGGER.error(e.getMessage(), e);
-        Thread.currentThread().interrupt();
-      }
-    }
   }
 
   class InterpretJobListener implements JobListener {
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {
+    public void onProgressUpdate(Job<?> job, int progress) {
     }
 
     @Override
-    public void onStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job<?> job, Status before, Status after) {
       synchronized (this) {
         notifyAll();
       }
@@ -940,7 +887,7 @@ public class RemoteInterpreterServer extends Thread
     LOGGER.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
-    Job job = intp.getScheduler().getJob(jobId);
+    Job<?> job = intp.getScheduler().getJob(jobId);
 
     if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
@@ -1104,7 +1051,7 @@ public class RemoteInterpreterServer extends Thread
       for (Interpreter intp : interpreters) {
         Scheduler scheduler = intp.getScheduler();
         if (scheduler != null) {
-          Job job = scheduler.getJob(jobId);
+          Job<?> job = scheduler.getJob(jobId);
           if (job != null) {
             return job.getStatus().name();
           }

@@ -33,8 +33,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,22 +42,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class RemoteInterpreterTest extends AbstractInterpreterTest {
+class RemoteInterpreterTest extends AbstractInterpreterTest {
 
   private InterpreterSetting interpreterSetting;
   private String note1Id;
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
@@ -70,7 +70,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testSharedMode() throws InterpreterException, IOException {
+  void testSharedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
@@ -104,7 +104,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testScopedMode() throws InterpreterException, IOException {
+  void testScopedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
@@ -148,7 +148,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testIsolatedMode() throws InterpreterException, IOException {
+  void testIsolatedMode() throws InterpreterException, IOException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.ISOLATED);
 
     Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", note1Id);
@@ -192,7 +192,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
+  void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
@@ -201,7 +201,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
+  void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "1");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
@@ -210,7 +210,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException, InterpreterException {
+  void testRemoteInterperterErrorStatus()
+      throws TTransportException, IOException, InterpreterException {
     interpreterSetting.setProperty("zeppelin.interpreter.echo.fail", "true");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -223,7 +224,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testFIFOScheduler() throws InterruptedException, InterpreterException {
+  void testFIFOScheduler() throws InterruptedException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     // by default SleepInterpreter would use FIFOScheduler
 
@@ -306,7 +307,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
+  void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     Interpreter interpreter2 = interpreterSetting.getInterpreter("user1", note1Id, "echo");
@@ -315,7 +316,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testMultiInterpreterSession() {
+  void testMultiInterpreterSession() {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
     Interpreter interpreter1_user1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
     Interpreter interpreter2_user1 = interpreterSetting.getInterpreter("user1", note1Id, "echo");
@@ -332,7 +333,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void should_push_local_angular_repo_to_remote() throws Exception {
+  void should_push_local_angular_repo_to_remote() throws Exception {
 
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name_1", "value_1", "note_1", "paragraphId_1");
@@ -347,7 +348,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testEnvStringPattern() {
+  void testEnvStringPattern() {
     assertFalse(RemoteInterpreterUtils.isEnvString(null));
     assertFalse(RemoteInterpreterUtils.isEnvString(""));
     assertFalse(RemoteInterpreterUtils.isEnvString("abcDEF"));
@@ -358,7 +359,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testEnvironmentAndProperty() throws InterpreterException {
+  void testEnvironmentAndProperty() throws InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("ENV_1", "VALUE_1");
     interpreterSetting.setProperty("property_1", "value_1");
@@ -374,7 +375,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testConvertDynamicForms() throws InterpreterException {
+  void testConvertDynamicForms() throws InterpreterException {
     GUI gui = new GUI();
     OptionInput.ParamOption[] paramOptions = {
         new OptionInput.ParamOption("value1", "param1"),
@@ -395,7 +396,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testFailToLaunchInterpreterProcess_InvalidRunner() {
+  void testFailToLaunchInterpreterProcess_InvalidRunner() {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(), "invalid_runner");
       final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", note1Id, "sleep");
@@ -414,7 +415,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testFailToLaunchInterpreterProcess_ErrorInRunner() {
+  void testFailToLaunchInterpreterProcess_ErrorInRunner() {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
                zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_invalid.sh");
@@ -434,7 +435,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testFailToLaunchInterpreterProcess_Timeout() {
+  void testFailToLaunchInterpreterProcess_Timeout() {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
               zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");

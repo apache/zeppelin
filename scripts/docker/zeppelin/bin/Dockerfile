@@ -17,29 +17,29 @@ FROM ubuntu:20.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
-ENV Z_VERSION="0.10.0"
+ENV Z_VERSION="0.13.0-SNAPSHOT"
 
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     ZEPPELIN_HOME="/opt/zeppelin" \
     HOME="/opt/zeppelin" \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     ZEPPELIN_ADDR="0.0.0.0"
 
 RUN echo "$LOG_TAG install basic packages" && \
     apt-get -y update && \
     # Switch back to install JRE instead of JDK when moving to JDK9 or later.
-    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-8-jdk-headless wget unzip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y locales language-pack-en tini openjdk-11-jdk-headless wget unzip && \
     # Cleanup
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoclean && \
     apt-get clean
 
 # Install conda to manage python and R packages
-ARG miniconda_version="py37_4.9.2"
+ARG miniconda_version="py39_24.1.2-0"
 # Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
-ARG miniconda_sha256="79510c6e7bd9e012856e25dcb21b3e093aa4ac8113d9aa7e82a86987eabe1c31"
+ARG miniconda_sha256="2ec135e4ae2154bb41e8df9ecac7ef23a7d6ca59fc1c8071cfe5298505c19140"
 # Install python and R packages via conda
 COPY env_python_3_with_R.yml /env_python_3_with_R.yml
 
@@ -65,7 +65,7 @@ ENV PATH /opt/conda/envs/python_3_with_R/bin:/opt/conda/bin:$PATH
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     mkdir -p ${ZEPPELIN_HOME} && \
-    wget -nv -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz https://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    wget -nv -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz "https://www.apache.org/dyn/closer.lua/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz?action=download" && \
     tar --strip-components=1 -zxvf  /tmp/zeppelin-${Z_VERSION}-bin-all.tgz -C ${ZEPPELIN_HOME} && \
     rm -f /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     chown -R root:root ${ZEPPELIN_HOME} && \

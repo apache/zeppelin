@@ -422,8 +422,8 @@ public class Resource implements JsonSerializable, Serializable {
   }
 
   private void logException(Exception e) {
-    Logger logger = LoggerFactory.getLogger(Resource.class);
-    logger.error(e.getMessage(), e);
+    Logger LOGGER = LoggerFactory.getLogger(Resource.class);
+    LOGGER.error(e.getMessage(), e);
   }
 
   public String toJson() {

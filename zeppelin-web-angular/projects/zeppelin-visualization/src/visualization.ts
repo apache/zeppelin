@@ -10,26 +10,30 @@
  * limitations under the License.
  */
 
-import { ComponentRef } from '@angular/core';
+import { CdkPortalOutlet } from '@angular/cdk/portal';
+import { ComponentRef, ViewContainerRef } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { GraphConfig } from '@zeppelin/sdk';
 import { Transformation } from './transformation';
 
-// tslint:disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export abstract class Visualization<T = any> {
-  // tslint:disable-next-line
+  // eslint-disable-next-line
   transformed: any;
-  componentRef: ComponentRef<T>;
-  configChange$ = new Subject<GraphConfig>();
+  componentRef: ComponentRef<T> | null = null;
+  configChange$: Subject<GraphConfig> | null = new Subject<GraphConfig>();
   constructor(private config: GraphConfig) {}
 
   abstract getTransformation(): Transformation;
-  abstract render(tableData): void;
+  abstract render(tableData: unknown): void;
   abstract refresh(): void;
   abstract destroy(): void;
 
   configChanged() {
+    if (!this.configChange$) {
+      throw new Error('configChange$ is not initialized');
+    }
     return this.configChange$.asObservable();
   }
 
@@ -42,3 +46,10 @@ export abstract class Visualization<T = any> {
     return this.config;
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type VisualizationConstructor<T = any> = new (
+  portalOutlet: CdkPortalOutlet,
+  viewContainerRef: ViewContainerRef,
+  config: GraphConfig
+) => Visualization<T>;

@@ -14,8 +14,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } 
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 
-import { MessageService } from '@zeppelin/services/message.service';
-import { NoteListService } from '@zeppelin/services/note-list.service';
+import { MessageService, NoteListService } from '@zeppelin/services';
 
 @Component({
   selector: 'zeppelin-folder-rename',
@@ -24,8 +23,8 @@ import { NoteListService } from '@zeppelin/services/note-list.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FolderRenameComponent implements OnInit {
-  @Input() newFolderPath: string;
-  @Input() folderId: string;
+  @Input() newFolderPath!: string;
+  @Input() folderId!: string;
   willMerged = false;
 
   checkMerged() {
@@ -39,7 +38,7 @@ export class FolderRenameComponent implements OnInit {
     this.nzModalRef.destroy();
   }
 
-  normalizeFolderId(folderId) {
+  normalizeFolderId(folderId: string) {
     let normalizeFolderId = folderId.trim();
 
     while (normalizeFolderId.indexOf('\\') > -1) {

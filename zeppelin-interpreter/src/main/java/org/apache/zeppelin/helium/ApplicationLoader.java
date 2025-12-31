@@ -38,7 +38,7 @@ import java.util.Map;
  * Load application
  */
 public class ApplicationLoader {
-  Logger logger = LoggerFactory.getLogger(ApplicationLoader.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationLoader.class);
 
   private final DependencyResolver depResolver;
   private final ResourcePool resourcePool;

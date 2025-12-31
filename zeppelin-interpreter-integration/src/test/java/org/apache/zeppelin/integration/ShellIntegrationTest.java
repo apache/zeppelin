@@ -17,43 +17,52 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.TestUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+class ShellIntegrationTest extends AbstractTestRestApi {
 
-public class ShellIntegrationTest extends AbstractTestRestApi {
+  private static MiniZeppelinServer zepServer;
 
-
-  @BeforeClass
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-            "helium");
-    AbstractTestRestApi.startUp(ShellIntegrationTest.class.getSimpleName());
+  @BeforeAll
+  static void init() throws Exception {
+    zepServer = new MiniZeppelinServer(ShellIntegrationTest.class.getSimpleName());
+    zepServer.addInterpreter("sh");
+    zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
+    zepServer.start();
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    zConf = zepServer.getZeppelinConfiguration();
   }
 
   @Test
-  public void testBasicShell() throws IOException {
+  void testBasicShell() throws IOException {
     String noteId = null;
     try {
-      noteId = TestUtils.getInstance(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
-      TestUtils.getInstance(Notebook.class).processNote(noteId,
+      noteId = zepServer.getService(Notebook.class).createNote("note1", AuthenticationInfo.ANONYMOUS);
+      zepServer.getService(Notebook.class).processNote(noteId,
         note -> {
           Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -67,8 +76,6 @@ public class ShellIntegrationTest extends AbstractTestRestApi {
           p.setText("%sh invalid_cmd");
           note.run(p.getId(), true);
           assertEquals(Job.Status.ERROR, p.getStatus());
-          assertTrue(p.getReturn().toString(),
-                  p.getReturn().message().get(0).getData().contains("command not found"));
 
           // test shell environment variable
           p.setText("%sh a='hello world'\n" +
@@ -88,7 +95,7 @@ public class ShellIntegrationTest extends AbstractTestRestApi {
 
     } finally {
       if (null != noteId) {
-        TestUtils.getInstance(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
+        zepServer.getService(Notebook.class).removeNote(noteId, AuthenticationInfo.ANONYMOUS);
       }
     }
   }

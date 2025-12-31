@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
+
+import jakarta.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -56,7 +58,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.SchedulerThreadFactory;
+import org.apache.zeppelin.scheduler.NamedThreadFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.util.ExecutorUtil;
@@ -77,7 +79,7 @@ public class Notebook {
   private NoteManager noteManager;
   private InterpreterFactory replFactory;
   private InterpreterSettingManager interpreterSettingManager;
-  private ZeppelinConfiguration conf;
+  private ZeppelinConfiguration zConf;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private List<NoteEventListener> noteEventListeners = new CopyOnWriteArrayList<>();
@@ -92,7 +94,7 @@ public class Notebook {
    * @throws SchedulerException
    */
   public Notebook(
-      ZeppelinConfiguration conf,
+      ZeppelinConfiguration zConf,
       AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
       NoteManager noteManager,
@@ -100,7 +102,7 @@ public class Notebook {
       InterpreterSettingManager interpreterSettingManager,
       Credentials credentials)
       {
-    this.conf = conf;
+    this.zConf = zConf;
     this.authorizationService = authorizationService;
     this.noteManager = noteManager;
     this.notebookRepo = notebookRepo;
@@ -114,7 +116,7 @@ public class Notebook {
   }
 
   public void recoveryIfNecessary() {
-    if (conf.isRecoveryEnabled()) {
+    if (zConf.isRecoveryEnabled()) {
       recoverRunningParagraphs();
     }
   }
@@ -137,7 +139,7 @@ public class Notebook {
   public void initNotebook() {
     if (initExecutor == null || initExecutor.isShutdown() || initExecutor.isTerminated()) {
       initExecutor = new ThreadPoolExecutor(0, Runtime.getRuntime().availableProcessors(), 1, TimeUnit.MINUTES,
-                     new LinkedBlockingQueue<>(), new SchedulerThreadFactory("NotebookInit"));
+                     new LinkedBlockingQueue<>(), new NamedThreadFactory("NotebookInit"));
     }
     for (NoteInfo noteInfo : getNotesInfo()) {
       initExecutor.execute(() -> {
@@ -211,7 +213,7 @@ public class Notebook {
 
   @Inject
   public Notebook(
-      ZeppelinConfiguration conf,
+      ZeppelinConfiguration zConf,
       AuthorizationService authorizationService,
       NotebookRepo notebookRepo,
       NoteManager noteManager,
@@ -221,7 +223,7 @@ public class Notebook {
       NoteEventListener noteEventListener)
       throws IOException {
     this(
-        conf,
+        zConf,
         authorizationService,
         notebookRepo,
         noteManager,
@@ -308,7 +310,8 @@ public class Notebook {
                          boolean save) throws IOException {
     Note note =
             new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
-                    paragraphJobListener, credentials, noteEventListeners);
+                    paragraphJobListener, credentials, noteEventListeners, zConf,
+                    notebookRepo.getNoteParser());
     noteManager.addNote(note, subject);
     // init noteMeta
     authorizationService.createNoteAuth(note.getId(), subject);
@@ -351,7 +354,7 @@ public class Notebook {
    */
   public String importNote(String sourceJson, String notePath, AuthenticationInfo subject)
       throws IOException {
-    Note oldNote = Note.fromJson(null, sourceJson);
+    Note oldNote = notebookRepo.getNoteParser().fromJson(null, sourceJson);
     if (notePath == null) {
       notePath = oldNote.getName();
     }
@@ -414,7 +417,7 @@ public class Notebook {
             newNote.setRunning(false);
 
             saveNote(newNote, subject);
-            authorizationService.cloneNoteMeta(newNote.getId(), sourceNoteId, subject);
+            authorizationService.createNoteAuth(newNote.getId(), subject);
             return null;
           });
 
@@ -645,7 +648,7 @@ public class Notebook {
     note.setCronSupported(getConf());
 
     if (note.getDefaultInterpreterGroup() == null) {
-      note.setDefaultInterpreterGroup(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
+      note.setDefaultInterpreterGroup(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
     }
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
@@ -750,30 +753,18 @@ public class Notebook {
   }
 
   public List<NoteInfo> getNotesInfo(Predicate<String> func) {
-    String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    String homescreenNoteId = zConf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
-        conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+        zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
-      List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
-              func.test(entry.getKey()) &&
-              ((!hideHomeScreenNotebookFromList) ||
-                  ((hideHomeScreenNotebookFromList) && !entry.getKey().equals(homescreenNoteId))))
-          .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
 
-      notesInfo.sort((note1, note2) -> {
-            String name1 = note1.getId();
-            if (note1.getPath() != null) {
-              name1 = note1.getPath();
-            }
-            String name2 = note2.getId();
-            if (note2.getPath() != null) {
-              name2 = note2.getPath();
-            }
-            return name1.compareTo(name2);
-          });
-      return notesInfo;
+      return noteManager.getNotesInfo().entrySet().stream().filter(entry ->
+              func.test(entry.getKey()) &&
+                  (!hideHomeScreenNotebookFromList || !entry.getKey().equals(homescreenNoteId)))
+          .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
+          .sorted(Comparator.comparing(note -> note.getPath() != null ? note.getPath() : note.getId()))
+          .collect(Collectors.toUnmodifiableList());
     }
   }
 
@@ -814,7 +805,7 @@ public class Notebook {
   }
 
   public ZeppelinConfiguration getConf() {
-    return conf;
+    return zConf;
   }
 
   public void close() {
@@ -846,8 +837,8 @@ public class Notebook {
     }
   }
 
-  public Boolean isRevisionSupported() {
-    if(!conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
+  public boolean isRevisionSupported() {
+    if(!zConf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_VERSIONED_MODE_ENABLE)) {
       return false;
     }
     if (notebookRepo instanceof NotebookRepoSync) {

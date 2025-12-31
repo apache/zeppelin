@@ -14,11 +14,13 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Inject,
   Input,
   OnInit,
-  Output
+  Output,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -26,10 +28,9 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
-import { Note, OP, RevisionListItem } from '@zeppelin/sdk';
-import { MessageService, NoteActionService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
-
-import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
+import { MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
+import { MessageService, NotebookService, NoteStatusService, SaveAsService, TicketService } from '@zeppelin/services';
+import { NoteCreateComponent, ShortcutComponent } from '@zeppelin/share';
 
 @Component({
   selector: 'zeppelin-notebook-action-bar',
@@ -38,13 +39,13 @@ import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.com
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookActionBarComponent extends MessageListenersManager implements OnInit {
-  @Input() note: Note['note'];
+  @Input() note!: Exclude<Note['note'], undefined>;
   @Input() isOwner = true;
-  @Input() looknfeel: string;
+  @Input() looknfeel: 'report' | 'default' | 'simple' = 'default';
   @Input() noteRevisions: RevisionListItem[] = [];
-  @Input() currentRevision: string;
+  @Input() currentRevision?: string;
   @Input() collaborativeMode = false;
-  @Input() collaborativeModeUsers = [];
+  @Input() collaborativeModeUsers: string[] = [];
   @Input() revisionView = false;
   @Input() activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
   @Output() readonly activatedExtensionChange = new EventEmitter<
@@ -52,13 +53,17 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   >();
   @Output() readonly editorHideChange = new EventEmitter<boolean>();
   @Output() readonly tableHideChange = new EventEmitter<boolean>();
+  @Output() readonly handleSearch = new EventEmitter<string>();
+  @ViewChild('searchInput', { static: false }) searchInputRef?: ElementRef<HTMLInputElement>;
   lfOption: Array<'report' | 'default' | 'simple'> = ['default', 'simple', 'report'];
+  isRevisionSupported: boolean = false;
   isNoteParagraphRunning = false;
   principal = this.ticketService.ticket.principal;
   editorHide = false;
   commitVisible = false;
   tableHide = false;
-  isRevisionSupported = JSON.parse(this.ticketService.configuration.isRevisionSupported);
+  searchText = '';
+  replaceText = '';
   cronOption = [
     { name: 'None', value: undefined },
     { name: '1m', value: '0 0/1 * * * ?' },
@@ -69,6 +74,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     { name: '12h', value: '0 0 0/12 * * ?' },
     { name: '1d', value: '0 0 0 * * ?' }
   ];
+
   updateNoteName(name: string) {
     const trimmedNewName = name.trim();
     if (trimmedNewName.length > 0 && this.note.name !== trimmedNewName) {
@@ -113,12 +119,15 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
       this.activatedExtension = 'hide';
     } else {
       this.activatedExtension = extension;
+      if (extension === 'interpreter') {
+        this.messageService.getInterpreterBindings(this.note.id);
+      }
     }
     this.activatedExtensionChange.emit(this.activatedExtension);
   }
 
   @MessageListener(OP.PARAGRAPH)
-  paragraphUpdate() {
+  paragraphUpdate(_data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     this.updateIsNoteParagraphRunning();
     this.cdr.markForCheck();
   }
@@ -126,15 +135,13 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   runAllParagraphs() {
     this.messageService.runAllParagraphs(
       this.note.id,
-      this.note.paragraphs.map(p => {
-        return {
-          id: p.id,
-          title: p.title,
-          paragraph: p.text,
-          config: p.config,
-          params: p.settings.params
-        };
-      })
+      this.note.paragraphs.map(p => ({
+        id: p.id,
+        title: p.title,
+        paragraph: p.text,
+        config: p.config,
+        params: p.settings.params
+      }))
     );
   }
 
@@ -142,7 +149,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.messageService.paragraphClearAllOutput(this.note.id);
   }
 
-  setCronScheduler(cronExpr: string) {
+  setCronScheduler(cronExpr: string | undefined) {
     if (cronExpr) {
       if (!this.note.config.cronExecutingUser) {
         this.note.config.cronExecutingUser = this.ticketService.ticket.principal;
@@ -163,8 +170,12 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.setConfig();
   }
 
-  setConfig() {
-    // TODO(hsuanxyz)
+  setConfig(config?: Exclude<Note['note'], undefined>['config']) {
+    if (config) {
+      this.note.config = config;
+    }
+
+    this.messageService.updateNote(this.note.id, this.note.name, this.note.config);
   }
 
   cloneNote() {
@@ -179,6 +190,9 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   exportNote() {
+    if (!this.ticketService.configuration) {
+      throw new Error('Configuration is not loaded');
+    }
     const sizeLimit = +this.ticketService.configuration['zeppelin.websocket.max.text.message.size'];
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
@@ -194,6 +208,10 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     }
   }
 
+  reloadNote() {
+    this.messageService.reloadNote(this.note.id);
+  }
+
   toggleAllEditor() {
     this.editorHide = !this.editorHide;
     this.editorHideChange.emit(this.editorHide);
@@ -205,7 +223,32 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   searchCode() {
-    // TODO(hsuanxyz)
+    this.handleSearch.emit(this.searchText);
+  }
+
+  onSearchMenuOpenChange(open: boolean) {
+    if (open) {
+      setTimeout(() => {
+        this.searchInputRef?.nativeElement?.focus();
+      }, 0);
+    } else {
+      this.searchText = '';
+      this.searchCode();
+    }
+  }
+
+  // TODO: Implement logic to find the previous search match in the notebook editor
+  onFindPrevClick(_searchText: string) {}
+
+  // TODO: Implement logic to find the next search match in the notebook editor
+  onFindNextClick(_searchText: string) {}
+
+  // TODO: Implement logic to replace the current search match with the replacement text
+  onReplaceClick(_searchText: string, _replaceText: string) {}
+
+  // TODO: Implement logic to replace all search matches with the replacement text
+  onReplaceAllClick(searchText: string, _replaceText: string) {
+    this.handleSearch.emit(searchText);
   }
 
   deleteNote() {
@@ -214,6 +257,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
 
   moveNoteToTrash() {
     this.messageService.moveNoteToTrash(this.note.id);
+    this.router.navigate(['/']);
   }
 
   get isTrash() {
@@ -229,7 +273,11 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   showShortCut() {
-    // TODO(hsuanxyz)
+    this.nzModalService.info({
+      nzTitle: `Shortcut Info`,
+      nzWidth: '600px',
+      nzContent: ShortcutComponent
+    });
   }
 
   togglePermissions() {
@@ -265,7 +313,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     if (!this.note.config.cron) {
       return '';
     } else if (this.cronOption.find(cron => cron.value === this.note.config.cron)) {
-      return this.cronOption.find(cron => cron.value === this.note.config.cron).name;
+      return this.cronOption.find(cron => cron.value === this.note.config.cron)!.name;
     } else {
       return this.note.config.cron;
     }
@@ -273,21 +321,28 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
 
   constructor(
     public messageService: MessageService,
+    @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private nzModalService: NzModalService,
     private ticketService: TicketService,
     private nzMessageService: NzMessageService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private noteActionService: NoteActionService,
     private noteStatusService: NoteStatusService,
-    @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
+    private notebookService: NotebookService,
     private activatedRoute: ActivatedRoute,
     private saveAsService: SaveAsService
   ) {
     super(messageService);
+    this.updateIsNoteParagraphRunning();
+    if (!this.ticketService.configuration) {
+      throw new Error('Configuration is not loaded');
+    }
   }
 
   ngOnInit(): void {
-    this.updateIsNoteParagraphRunning();
+    this.notebookService.capabilities().subscribe(c => {
+      this.isRevisionSupported = c.isRevisionSupported;
+      this.cdr.markForCheck();
+    });
   }
 }

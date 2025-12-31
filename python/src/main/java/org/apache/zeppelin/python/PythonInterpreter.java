@@ -70,7 +70,6 @@ public class PythonInterpreter extends Interpreter {
   private ZeppelinContext zeppelinContext;
   // set by PythonCondaInterpreter
   private String condaPythonExec;
-  private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -116,7 +115,6 @@ public class PythonInterpreter extends Interpreter {
     }
 
     try {
-      this.usePy4jAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "true"));
       createGatewayServerAndStartScript();
     } catch (IOException e) {
       LOGGER.error("Fail to open PythonInterpreter", e);
@@ -132,8 +130,7 @@ public class PythonInterpreter extends Interpreter {
     // container can also connect to this gateway server.
     String serverAddress = PythonUtils.getLocalIP(properties);
     String secret = PythonUtils.createSecret(256);
-    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret,
-        usePy4jAuth);
+    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret);
     gatewayServer.start();
 
     // launch python process to connect to the gateway server in JVM side
@@ -149,9 +146,7 @@ public class PythonInterpreter extends Interpreter {
 
     outputStream = new InterpreterOutputStream(LOGGER);
     Map<String, String> env = setupPythonEnv();
-    if (usePy4jAuth) {
-      env.put("PY4J_GATEWAY_SECRET", secret);
-    }
+    env.put("PY4J_GATEWAY_SECRET", secret);
     if (LOGGER.isInfoEnabled()) {
       LOGGER.info("Launching Python Process Command: {} {}",
           cmd.getExecutable(), StringUtils.join(cmd.getArguments(), " "));
@@ -191,7 +186,10 @@ public class PythonInterpreter extends Interpreter {
     copyResourceToPythonWorkDir("python/zeppelin_context.py", "zeppelin_context.py");
     copyResourceToPythonWorkDir("python/backend_zinline.py", "backend_zinline.py");
     copyResourceToPythonWorkDir("python/mpl_config.py", "mpl_config.py");
-    copyResourceToPythonWorkDir("python/py4j-src-0.10.7.zip", "py4j-src-0.10.7.zip");
+    copyResourceToPythonWorkDir(
+        PythonConstants.PY4J_RESOURCE_PATH,
+        PythonConstants.PY4J_ZIP_FILENAME);
+
   }
 
   protected boolean useIPython() {
@@ -217,7 +215,8 @@ public class PythonInterpreter extends Interpreter {
     Map<String, String> env = EnvironmentUtils.getProcEnvironment();
     appendToPythonPath(env, pythonWorkDir.getAbsolutePath());
     if (useBuiltinPy4j) {
-      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.7.zip");
+      appendToPythonPath(env,
+          pythonWorkDir.getAbsolutePath() + "/" + PythonConstants.PY4J_ZIP_FILENAME);
     }
     LOGGER.info("PYTHONPATH: {}", env.get("PYTHONPATH"));
     return env;

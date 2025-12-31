@@ -20,13 +20,15 @@ import {
   EditorSettingSend,
   FolderRename,
   GetInterpreterBindings,
-  SaveInterpreterBindings,
   GetNode,
+  ImportNote,
+  ImportNoteReceived,
   ListRevision,
   ListRevisionHistory,
   MoveFolderToTrash,
   MoveNoteToTrash,
   NewNote,
+  NewNoteReceived,
   Note,
   NotesInfo,
   NoteRename,
@@ -37,10 +39,12 @@ import {
   NoteUpdated,
   ParagraphAdded,
   ParagraphMoved,
+  ReloadNote,
   RemoveFolder,
   RemoveNoteForms,
   RestoreFolder,
   RestoreNote,
+  SaveInterpreterBindings,
   SaveNoteFormsReceived,
   SaveNoteFormsSend,
   SetNoteRevision,
@@ -63,6 +67,7 @@ import {
   MoveParagraph,
   ParagraphClearAllOutput,
   ParagraphClearOutput,
+  ParagraphExecutedBySpell,
   ParagraphRemove,
   ParagraphRemoved,
   ParagraphStatus,
@@ -74,12 +79,12 @@ import {
   RunParagraph
 } from './message-paragraph.interface';
 
-import { ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
+import { JobManagerDisabled, ListNoteJobs, ListUpdateNoteJobs } from './message-job.interface';
 
 import { InterpreterBindings, InterpreterSetting } from './message-interpreter.interface';
 import { OP } from './message-operator.interface';
 
-export type MixMessageDataTypeMap = MessageSendDataTypeMap & MessageReceiveDataTypeMap;
+export type MessageDataTypeMap = MessageSendDataTypeMap | MessageReceiveDataTypeMap;
 
 export interface MessageReceiveDataTypeMap {
   [OP.COMPLETION_LIST]: CompletionReceived;
@@ -90,6 +95,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.ERROR_INFO]: ErrorInfo;
   [OP.LIST_NOTE_JOBS]: ListNoteJobs;
   [OP.LIST_UPDATE_NOTE_JOBS]: ListUpdateNoteJobs;
+  [OP.JOB_MANAGER_DISABLED]: JobManagerDisabled;
   [OP.INTERPRETER_SETTINGS]: InterpreterSetting;
   [OP.LIST_REVISION_HISTORY]: ListRevision;
   [OP.INTERPRETER_BINDINGS]: InterpreterBindings;
@@ -97,7 +103,8 @@ export interface MessageReceiveDataTypeMap {
   [OP.SET_NOTE_REVISION]: SetNoteRevisionStatus;
   [OP.PARAGRAPH_ADDED]: ParagraphAdded;
   [OP.NOTE_RUNNING_STATUS]: NoteRunningStatus;
-  [OP.NEW_NOTE]: NoteRevision;
+  [OP.NEW_NOTE]: NewNoteReceived;
+  [OP.IMPORT_NOTE]: ImportNoteReceived;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsSend;
   [OP.PARAGRAPH]: UpdateParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphSend;
@@ -121,6 +128,7 @@ export interface MessageSendDataTypeMap {
   [OP.RESTORE_ALL]: undefined;
   [OP.EMPTY_TRASH]: undefined;
   [OP.RELOAD_NOTES_FROM_REPO]: undefined;
+  [OP.RELOAD_NOTE]: ReloadNote;
   [OP.GET_NOTE]: GetNode;
   [OP.NEW_NOTE]: NewNote;
   [OP.MOVE_NOTE_TO_TRASH]: MoveNoteToTrash;
@@ -141,7 +149,7 @@ export interface MessageSendDataTypeMap {
   [OP.ANGULAR_OBJECT_CLIENT_BIND]: AngularObjectClientBind;
   [OP.ANGULAR_OBJECT_CLIENT_UNBIND]: AngularObjectClientUnbind;
   [OP.CANCEL_PARAGRAPH]: CancelParagraph;
-  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: {}; // TODO(hsuanxyz)
+  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: ParagraphExecutedBySpell;
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;
@@ -150,7 +158,7 @@ export interface MessageSendDataTypeMap {
   [OP.COMPLETION]: Completion;
   [OP.COMMIT_PARAGRAPH]: CommitParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphReceived;
-  [OP.IMPORT_NOTE]: {}; // TODO(hsuanxyz)
+  [OP.IMPORT_NOTE]: ImportNote;
   [OP.CHECKPOINT_NOTE]: CheckpointNote;
   [OP.SET_NOTE_REVISION]: SetNoteRevision;
   [OP.LIST_REVISION_HISTORY]: ListRevisionHistory;

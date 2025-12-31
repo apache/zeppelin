@@ -35,6 +35,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 /**
  * Backend for storing Notebooks on S3
  */
-public class S3NotebookRepo implements NotebookRepo {
+public class S3NotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3NotebookRepo.class);
 
   // Use a credential provider chain so that instance profiles can be utilized
@@ -87,64 +88,64 @@ public class S3NotebookRepo implements NotebookRepo {
   private String user;
   private boolean useServerSideEncryption;
   private CannedAccessControlList objectCannedAcl;
-  private ZeppelinConfiguration conf;
   private String rootFolder;
 
   public S3NotebookRepo() {
 
   }
 
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
-    bucketName = conf.getS3BucketName();
-    user = conf.getS3User();
+  @Override
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    bucketName = zConf.getS3BucketName();
+    user = zConf.getS3User();
     rootFolder = user + "/notebook";
-    useServerSideEncryption = conf.isS3ServerSideEncryption();
-    if (StringUtils.isNotBlank(conf.getS3CannedAcl())) {
-        objectCannedAcl = CannedAccessControlList.valueOf(conf.getS3CannedAcl());
+    useServerSideEncryption = zConf.isS3ServerSideEncryption();
+    if (StringUtils.isNotBlank(zConf.getS3CannedAcl())) {
+        objectCannedAcl = CannedAccessControlList.valueOf(zConf.getS3CannedAcl());
     }
 
     // always use the default provider chain
     AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
     CryptoConfiguration cryptoConf = new CryptoConfiguration();
-    String keyRegion = conf.getS3KMSKeyRegion();
+    String keyRegion = zConf.getS3KMSKeyRegion();
 
     if (StringUtils.isNotBlank(keyRegion)) {
       cryptoConf.setAwsKmsRegion(Region.getRegion(Regions.fromName(keyRegion)));
     }
 
     ClientConfiguration cliConf = createClientConfiguration();
-    
+
     // see if we should be encrypting data in S3
-    String kmsKeyID = conf.getS3KMSKeyID();
+    String kmsKeyID = zConf.getS3KMSKeyID();
     if (kmsKeyID != null) {
       // use the AWS KMS to encrypt data
       KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
       this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
     }
-    else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
+    else if (zConf.getS3EncryptionMaterialsProviderClass() != null) {
       // use a custom encryption materials provider class
-      EncryptionMaterialsProvider emp = createCustomProvider(conf);
+      EncryptionMaterialsProvider emp = createCustomProvider(zConf);
       this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
     }
     else {
       // regular S3
       this.s3client = new AmazonS3Client(credentialsProvider, cliConf);
     }
-    s3client.setS3ClientOptions(S3ClientOptions.builder().setPathStyleAccess(conf.isS3PathStyleAccess()).build());
+    s3client.setS3ClientOptions(S3ClientOptions.builder().setPathStyleAccess(zConf.isS3PathStyleAccess()).build());
 
     // set S3 endpoint to use
-    s3client.setEndpoint(conf.getS3Endpoint());
+    s3client.setEndpoint(zConf.getS3Endpoint());
   }
 
   /**
    * Create an instance of a custom encryption materials provider class
    * which supplies encryption keys to use when reading/writing data in S3.
    */
-  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf)
+  private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration zConf)
       throws IOException {
     // use a custom encryption materials provider class
-    String empClassname = conf.getS3EncryptionMaterialsProviderClass();
+    String empClassname = zConf.getS3EncryptionMaterialsProviderClass();
     EncryptionMaterialsProvider emp;
     try {
       Object empInstance = Class.forName(empClassname).newInstance();
@@ -172,7 +173,7 @@ public class S3NotebookRepo implements NotebookRepo {
     ClientConfigurationFactory configFactory = new ClientConfigurationFactory();
     ClientConfiguration config = configFactory.getConfig();
 
-    String s3SignerOverride = conf.getS3SignerOverride();
+    String s3SignerOverride = zConf.getS3SignerOverride();
     if (StringUtils.isNotBlank(s3SignerOverride)) {
       config.setSignerOverride(s3SignerOverride);
     }
@@ -223,8 +224,8 @@ public class S3NotebookRepo implements NotebookRepo {
       throw new IOException("Fail to get note: " + notePath + " from S3", ace);
     }
     try (InputStream ins = s3object.getObjectContent()) {
-      String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      return Note.fromJson(noteId, json);
+      String json = IOUtils.toString(ins, zConf.getString(ConfVars.ZEPPELIN_ENCODING));
+      return noteParser.fromJson(noteId, json);
     }
   }
 
@@ -234,9 +235,9 @@ public class S3NotebookRepo implements NotebookRepo {
     String key = rootFolder + "/" + buildNoteFileName(note);
     File file = File.createTempFile("note", "zpln");
     try {
-      Writer writer = new OutputStreamWriter(new FileOutputStream(file));
-      writer.write(json);
-      writer.close();
+      try (Writer writer = new OutputStreamWriter(new FileOutputStream(file))) {
+        writer.write(json);
+      }
       PutObjectRequest putRequest = new PutObjectRequest(bucketName, key, file);
       if (useServerSideEncryption) {
         // Request server-side encryption.
@@ -334,5 +335,4 @@ public class S3NotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOGGER.warn("Method not implemented");
   }
-
 }

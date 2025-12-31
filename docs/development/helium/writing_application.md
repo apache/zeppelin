@@ -25,7 +25,7 @@ limitations under the License.
 
 ## What is Apache Zeppelin Application
 
-Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. While application runs on Interpreter process, it's able to access resources provided by Interpreter through ResourcePool. Output is always rendered by AngularDisplaySystem. Therefore application provides all the possiblities of making interactive graphical application that uses data and processing power of any Interpreter.
+Apache Zeppelin Application is a package that runs on Interpreter process and displays it's output inside of the notebook. While application runs on Interpreter process, it's able to access resources provided by Interpreter through ResourcePool. Output is always rendered by AngularDisplaySystem. Therefore application provides all the possibilities of making interactive graphical application that uses data and processing power of any Interpreter.
 
 
 ## Make your own Application
@@ -143,7 +143,7 @@ Entry point. Class that extends `org.apache.zeppelin.helium.Application`
 
 Two dimensional array that defines required resources by name or by className. Helium Application launcher will compare resources in the ResourcePool with the information in this field and suggest application only when all required resources are available in the ResourcePool.
 
-Resouce name is a string which will be compared with the name of objects in the ResourcePool. className is a string with ":" prepended, which will be compared with className of the objects in the ResourcePool.
+Resource name is a string which will be compared with the name of objects in the ResourcePool. className is a string with ":" prepended, which will be compared with className of the objects in the ResourcePool.
 
 Application may require two or more resources. Required resources can be listed inside of the json array. For example, if the application requires object "name1", "name2" and "className1" type of object to run, resources field can be
 

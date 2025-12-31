@@ -1,41 +1,49 @@
 name: frontend
+
 on:
   push:
+    branches-ignore:
+      - 'dependabot/**'
   pull_request:
     branches:
       - master
-      - branch-*
-    types: [opened, synchronize]
+      - 'branch-*'
 
 env:
   # Disable keepAlive and pool
   # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
   MAVEN_OPTS: >-
-      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit
       -Dhttp.keepAlive=false
       -Dmaven.wagon.http.pool=false
       -Dmaven.wagon.http.retryHandler.count=3
+  MAVEN_ARGS: >-
+      -B --no-transfer-progress
   ZEPPELIN_HELIUM_REGISTRY: helium
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1
-  INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!submarine,!sparql,!mongodb'
+  INTERPRETERS: '!hbase,!jdbc,!file,!flink,!cassandra,!elasticsearch,!bigquery,!alluxio,!livy,!groovy,!java,!neo4j,!sparql,!mongodb'
+  ZEPPELIN_E2E_TEST_NOTEBOOK_DIR: '/tmp/zeppelin-e2e-notebooks'
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
 
 jobs:
   run-e2e-tests-in-zeppelin-web:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Cache local Maven repository
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -46,27 +54,41 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: Install application
-        run: ./mvnw -B install -DskipTests -DskipRat -pl ${INTERPRETERS} -Phadoop2 -Pscala-2.11
+        run: ./mvnw clean install -DskipTests -am -pl zeppelin-web,zeppelin-web-angular -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist ${MAVEN_ARGS}
       - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -DskipRat -pl zeppelin-web -Pscala-2.11 -Pweb-e2e -B
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web -Pweb-classic -Pspark-scala-2.12 -Pspark-3.4 -Pweb-dist -Pweb-e2e ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi
 
-  run-tests-in-zeppelin-web-angular:
-    runs-on: ubuntu-20.04
+  run-playwright-e2e-tests:
+    runs-on: ubuntu-24.04
+    env:
+      # Use VFS storage instead of Git to avoid Git-related issues in CI
+      ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
+    strategy:
+      matrix:
+        mode: [anonymous, auth]
+        python: [ 3.9 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('zeppelin-web-angular/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - name: Cache local Maven repository
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -76,26 +98,87 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Run headless test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw package -DskipRat -pl zeppelin-web-angular -Pweb-angular -B
+      - name: Setup conda environment with python ${{ matrix.python }}
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: python_only
+          python-version: ${{ matrix.python }}
+          auto-activate-base: false
+          use-mamba: true
+          channels: conda-forge,defaults
+          channel-priority: strict
+      - name: Install application
+        run: ./mvnw clean install -DskipTests -am -pl python,rlang,zeppelin-jupyter-interpreter,zeppelin-web-angular ${MAVEN_ARGS}
+      - name: Setup Zeppelin Server (Shiro.ini)
+        run: |
+          export ZEPPELIN_CONF_DIR=./conf
+          if [ "${{ matrix.mode }}" != "anonymous" ]; then
+            cp conf/shiro.ini.template conf/shiro.ini
+            sed -i 's/user1 = password2, role1, role2/user1 = password2, role1, role2, admin/' conf/shiro.ini
+          fi
+      - name: Setup Test Notebook Directory
+        run: |
+          # NOTE: Must match zeppelin.notebook.dir defined in pom.xml
+          mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+          echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
+      - name: Run headless E2E test with Maven
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.mode }}
+          path: zeppelin-web-angular/playwright-report/
+          retention-days: 3
+      - name: Print Zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
+      - name: Cleanup Test Notebook Directory
+        if: always()
+        run: |
+          if [ -d "$ZEPPELIN_E2E_TEST_NOTEBOOK_DIR" ]; then
+            echo "Cleaning up test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
+            rm -rf $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+            echo "Test notebook directory cleaned up"
+          else
+            echo "No test notebook directory to clean up"
+          fi
 
-  test-selenium-with-spark-module-for-spark-2-4:
-    runs-on: ubuntu-20.04
+  test-selenium-with-spark-module-for-spark-3-5:
+    runs-on: ubuntu-24.04
     defaults:
       run:
         shell: bash -l {0}
+    env:
+      ZEPPELIN_SELENIUM_BROWSER: "edge"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK 8
-        uses: actions/setup-java@v2
+      - name: Install Microsoft Edge
+        run: |
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+          sudo apt-get update
+          sudo apt-get install -y microsoft-edge-stable
+      - name: Install msedgedriver
+        run: |
+          EDGE_VERSION=$(microsoft-edge --version | awk '{print $3}')
+          wget -q "https://msedgedriver.microsoft.com/${EDGE_VERSION}/edgedriver_linux64.zip" -O edgedriver.zip
+          unzip -q edgedriver.zip
+          sudo mv msedgedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/msedgedriver
+          rm edgedriver.zip
+      - name: Print Edge version
+        run: msedgedriver --version
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 8
+          java-version: 11
       - name: Cache local Maven repository
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -105,27 +188,29 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.7 and R
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Setup conda environment with python 3.9 and R
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: python_3_with_R
           environment-file: testing/env_python_3_with_R.yml
-          python-version: 3.7
-          mamba-version: "*"
+          python-version: 3.9
           channels: conda-forge,defaults
-          channel-priority: true
+          channel-priority: strict
           auto-activate-base: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
           R -e "IRkernel::installspec()"
-      - name: install environment
+      - name: Install Environment
         run: |
-          ./mvnw clean install -DskipTests -DskipRat -pl ${INTERPRETERS} -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B
-          ./mvnw clean package -pl zeppelin-plugins -amd -B
+          ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}
       - name: run tests
         run: |
-          source ./testing/downloadSpark.sh "2.4.7" "2.7" && echo "SPARK_HOME: ${SPARK_HOME}" && xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" ./mvnw verify -DskipRat -Pspark-2.4 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pspark-scala-2.11 -B -pl zeppelin-integration -DfailIfNoTests=false
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1024x16" \
+            ./mvnw verify -DfailIfNoTests=false \
+            -pl zeppelin-integration \
+            -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist -Pusing-source-tree \
+            ${MAVEN_ARGS}
       - name: Print zeppelin logs
         if: always()
         run: if [ -d "logs" ]; then cat logs/*; fi

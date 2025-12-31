@@ -380,7 +380,7 @@ class InterpreterLogic(val session: CqlSession, val properties: Properties)  {
         findInAngularRepository(variable) match {
           case Some(value) => statement.replaceAll(escapedExp,value.toString)
           case None =>
-            val value = context.getGui.input(variable, defaultVal)
+            val value = context.getGui.textbox(variable, defaultVal)
             statement.replaceAll(escapedExp, value.toString)
         }
 

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -38,7 +40,7 @@ public class Credentials {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Credentials.class);
 
-  private ConfigStorage storage;
+  private final ConfigStorage storage;
   private Map<String, UserCredentials> credentialsMap;
   private Gson gson;
   private Encryptor encryptor;
@@ -47,18 +49,19 @@ public class Credentials {
    * Wrapper for user credentials. It can load credentials from a file
    * and will encrypt the file if an encryptKey is configured.
    *
-   * @param conf
+   * @param zConf
    * @throws IOException
    */
-  public Credentials(ZeppelinConfiguration conf) {
+  @Inject
+  public Credentials(ZeppelinConfiguration zConf, ConfigStorage storage) {
     credentialsMap = new HashMap<>();
-    if (conf.credentialsPersist()) {
-      String encryptKey = conf.getCredentialsEncryptKey();
+    if (zConf.credentialsPersist()) {
+      String encryptKey = zConf.getCredentialsEncryptKey();
       if (StringUtils.isNotBlank(encryptKey)) {
         this.encryptor = new Encryptor(encryptKey);
       }
+      this.storage = storage;
       try {
-        storage = ConfigStorage.getInstance(conf);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
         gson = builder.create();
@@ -66,12 +69,11 @@ public class Credentials {
       } catch (IOException e) {
         LOGGER.error("Fail to create ConfigStorage for Credentials. Persistenz will be disabled", e);
         encryptor = null;
-        storage = null;
         gson = null;
       }
     } else {
       encryptor = null;
-      storage = null;
+      this.storage = null;
       gson = null;
     }
   }
@@ -79,7 +81,7 @@ public class Credentials {
   /**
    * Wrapper for inmemory user credentials.
    *
-   * @param conf
+   * @param zConf
    * @throws IOException
    */
   public Credentials() {
@@ -137,7 +139,7 @@ public class Credentials {
   private void loadFromFile() throws IOException {
     try {
       String json = storage.loadCredentials();
-      if (json != null && encryptor != null) {
+      if (encryptor != null && StringUtils.isNotBlank(json)) {
         json = encryptor.decrypt(json);
       }
 

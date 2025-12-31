@@ -23,11 +23,11 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-interpreter-integration</artifactId>
-  <version>0.11.0-SNAPSHOT</version>
+  <version>0.13.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Zeppelin: Interpreter Integration Test</name>
 
@@ -59,20 +59,10 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -99,12 +89,6 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -116,8 +100,15 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -130,10 +121,54 @@
 
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <!-- separate dependency -->
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-minicluster</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Needed for Minihadoop Cluster
+         Do not use jakarta.xml.bind-api
+         because this dependency is used in a higher version in zeppelin-server and results in dependency-conflicts
+     -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Also needed for Mini Hadoop Cluster
+         Do not use jakarta.activation-api,
+         because this dependency is used in a higher version in zeppelin-server and results in dependency-conflicts
+     -->
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>javax.activation-api</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -165,116 +200,6 @@
           </environmentVariables>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>hadoop2</id>
-
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-
-      <properties>
-        <hadoop.version>${hadoop2.7.version}</hadoop.version>
-        <hadoop-client-api.artifact>hadoop-client</hadoop-client-api.artifact>
-        <hadoop-client-runtime.artifact>hadoop-yarn-api</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client</hadoop-client-minicluster.artifact>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <scope>test</scope>
-          <version>${hadoop.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-common</artifactId>
-          <version>${hadoop.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-client</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-api</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-common</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop.version}</version>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-hdfs</artifactId>
-          <version>${hadoop.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-yarn-server-tests</artifactId>
-          <version>${hadoop.version}</version>
-          <classifier>tests</classifier>
-          <scope>test</scope>
-        </dependency>
-
-      </dependencies>
-
-    </profile>
-    <profile>
-      <id>hadoop3</id>
-
-      <properties>
-        <hadoop.version>${hadoop3.2.version}</hadoop.version>
-        <hadoop-client-runtime.artifact>hadoop-client-runtime</hadoop-client-runtime.artifact>
-        <hadoop-client-minicluster.artifact>hadoop-client-minicluster</hadoop-client-minicluster.artifact>
-      </properties>
-
-      <dependencies>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-runtime.artifact}</artifactId>
-          <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>${hadoop-client-minicluster.artifact}</artifactId>
-          <scope>test</scope>
-        </dependency>
-
-      </dependencies>
-    </profile>
-  </profiles>
-
 </project>

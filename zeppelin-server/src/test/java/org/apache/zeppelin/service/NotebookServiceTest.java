@@ -18,13 +18,13 @@
 
 package org.apache.zeppelin.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -54,9 +55,11 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
@@ -65,20 +68,24 @@ import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.TestInfo;
+
 
 import com.google.gson.Gson;
 
-public class NotebookServiceTest {
+class NotebookServiceTest {
 
   private static NotebookService notebookService;
 
   private File notebookDir;
+  private File confDir;
   private SearchService searchService;
   private Notebook notebook;
   private ServiceContext context =
@@ -86,17 +93,29 @@ public class NotebookServiceTest {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  private Gson gson = new Gson();
+  private NoteParser noteParser;
 
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp(TestInfo testInfo) throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
-            notebookDir.getAbsolutePath());
-    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+        notebookDir.getAbsolutePath());
+    // enable cron for testNoteUpdate method
+    if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
+      confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+            confDir.getAbsolutePath());
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
+      String shiroPath = zConf.getAbsoluteDir(String.format("%s/shiro.ini", zConf.getConfDir()));
+      Files.createFile(new File(shiroPath).toPath());
+      context.getUserAndRoles().add("test");
+    }
+    noteParser = new GsonNoteParser(zConf);
+    ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
-    notebookRepo.init(zeppelinConfiguration);
+    notebookRepo.init(zConf, noteParser);
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
@@ -116,11 +135,12 @@ public class NotebookServiceTest {
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
-    NoteManager noteManager = new NoteManager(notebookRepo, zeppelinConfiguration);
-    AuthorizationService authorizationService = new AuthorizationService(noteManager, zeppelinConfiguration);
+    NoteManager noteManager = new NoteManager(notebookRepo, zConf);
+    AuthorizationService authorizationService =
+        new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
-            zeppelinConfiguration,
+            zConf,
             authorizationService,
             notebookRepo,
             noteManager,
@@ -128,13 +148,13 @@ public class NotebookServiceTest {
             mockInterpreterSettingManager,
             credentials,
             null);
-    searchService = new LuceneSearch(zeppelinConfiguration, notebook);
-    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    searchService = new LuceneSearch(zConf, notebook);
+    QuartzSchedulerService schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
     notebook.waitForFinishInit(1, TimeUnit.MINUTES);
     notebookService =
         new NotebookService(
-            notebook, authorizationService, zeppelinConfiguration, schedulerService);
+            notebook, authorizationService, zConf, schedulerService);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
@@ -142,14 +162,17 @@ public class NotebookServiceTest {
         .thenReturn(mockInterpreterSetting);
   }
 
-  @After
-  public void tearDown() {
+  @AfterEach
+  void tearDown() {
     notebookDir.delete();
+    if (confDir != null){
+      confDir.delete();
+    }
     searchService.close();
   }
 
   @Test
-  public void testNoteOperations() throws IOException {
+  void testNoteOperations() throws IOException {
     // get home note
     String homeNoteId = notebookService.getHomeNote(context, callback);
     assertNull(homeNoteId);
@@ -326,7 +349,7 @@ public class NotebookServiceTest {
         moveToTrash = true;
       }
     }
-    assertTrue("No note is moved to trash", moveToTrash);
+    assertTrue(moveToTrash, "No note is moved to trash");
 
     // restore it
     notebookService.restoreNote(importedNoteId, context, callback);
@@ -359,7 +382,7 @@ public class NotebookServiceTest {
         moveToTrash = true;
       }
     }
-    assertTrue("No folder is moved to trash", moveToTrash);
+    assertTrue(moveToTrash, "No folder is moved to trash");
 
     // restore folder
     reset(callback);
@@ -388,7 +411,65 @@ public class NotebookServiceTest {
   }
 
   @Test
-  public void testRenameNoteRejectsDuplicate() throws IOException {
+  void testNoteUpdate() throws IOException {
+    // create note
+    String note1Id = notebookService.createNote("/folder_update/note_test_update", "test", true, context, callback);
+    // update note with cron for every 5 minutes
+    reset(callback);
+    Map<String, Object> updatedConfig = new HashMap<>();
+    updatedConfig.put("isZeppelinNotebookCronEnable", true);
+    updatedConfig.put("looknfeel", "looknfeel");
+    updatedConfig.put("personalizedMode", "false");
+    updatedConfig.put("cron", "0 0/5 * * * ?");
+    updatedConfig.put("cronExecutingRoles", "[\"test\"]");
+    updatedConfig.put("cronExecutingUser", "test");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertEquals("note_test_update", note1.getName());
+              assertEquals("test", note1.getConfig().get("cronExecutingUser"));
+              assertEquals("[\"test\"]", note1.getConfig().get("cronExecutingRoles"));
+              assertEquals("0 0/5 * * * ?", note1.getConfig().get("cron"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
+    // update note with cron for every 1 hour
+    reset(callback);
+    updatedConfig.put("cron", "0 0 0/1 * * ?");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertEquals("0 0 0/1 * * ?", note1.getConfig().get("cron"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
+    // update note with wrong user
+    reset(callback);
+    updatedConfig.put("cronExecutingUser", "wrong_user");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              verify(callback).onFailure(any(IllegalArgumentException.class), any(ServiceContext.class));
+              return null;
+            });
+    // disable cron
+    reset(callback);
+    updatedConfig.put("cron", null);
+    updatedConfig.put("cronExecutingRoles", "");
+    updatedConfig.put("cronExecutingUser", "");
+    notebookService.updateNote(note1Id, "note_test_update", updatedConfig, context, callback);
+    notebook.processNote(note1Id,
+            note1 -> {
+              assertNull(note1.getConfig().get("cron"));
+              assertEquals("", note1.getConfig().get("cronExecutingRoles"));
+              assertEquals("", note1.getConfig().get("cronExecutingUser"));
+              verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+              return null;
+            });
+  }
+
+  @Test
+  void testRenameNoteRejectsDuplicate() throws IOException {
     String note1Id = notebookService.createNote("/folder/note1", "test", true, context, callback);
     notebook.processNote(note1Id,
       note1 -> {
@@ -416,7 +497,7 @@ public class NotebookServiceTest {
 
 
   @Test
-  public void testParagraphOperations() throws IOException {
+  void testParagraphOperations() throws IOException {
     // create note
     String note1Id = notebookService.createNote("note1", "python", false, context, callback);
     notebook.processNote(note1Id,
@@ -508,7 +589,7 @@ public class NotebookServiceTest {
   }
 
   @Test
-  public void testNormalizeNotePath() throws IOException {
+  void testNormalizeNotePath() throws IOException {
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(" "));
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(null));
     assertEquals("/my_note", notebookService.normalizeNotePath("my_note"));
@@ -527,6 +608,31 @@ public class NotebookServiceTest {
       fail("Should fail");
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("%2e%2e/%2e%2e/tmp/test222");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      // Double URL encoding of ".."
+      notebookService.normalizeNotePath("%252e%252e/%252e%252e/tmp/test333");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("%252525252e%252525252e/tmp/test444");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Exceeded maximum decode attempts. Possible malicious input.", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("./");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
   }
 }

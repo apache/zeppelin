@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-
-import junit.framework.TestCase;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -31,7 +29,8 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.python.IPythonInterpreterTest;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,9 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -101,6 +100,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
 
   @Override
+  @AfterEach
   public void tearDown() throws InterpreterException {
     intpGroup.close();
     interpreter = null;
@@ -248,7 +248,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
       fail("Should not be able to start IPythonInterpreter");
     } catch (InterpreterException e) {
       String exceptionMsg = ExceptionUtils.getStackTrace(e);
-      TestCase.assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+      assertTrue(exceptionMsg.contains("No such file or directory"), exceptionMsg);
     }
   }
 

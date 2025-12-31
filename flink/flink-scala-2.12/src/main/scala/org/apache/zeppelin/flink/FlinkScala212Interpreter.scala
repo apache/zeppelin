@@ -24,13 +24,15 @@ import java.util.Properties
 
 import org.apache.zeppelin.interpreter.InterpreterContext
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.zeppelin.conf.ZeppelinConfiguration
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{IMain, JPrintWriter}
 
 class FlinkScala212Interpreter(override val properties: Properties,
-                               override val flinkScalaClassLoader: URLClassLoader)
-  extends FlinkScalaInterpreter(properties, flinkScalaClassLoader) {
+                               override val flinkScalaClassLoader: ClassLoader,
+                               override val zConf: ZeppelinConfiguration)
+  extends FlinkScalaInterpreter(properties, flinkScalaClassLoader, zConf) {
 
   override def completion(buf: String,
                           cursor: Int,

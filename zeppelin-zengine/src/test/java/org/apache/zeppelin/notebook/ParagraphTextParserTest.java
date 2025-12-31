@@ -17,16 +17,15 @@
 
 package org.apache.zeppelin.notebook;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ParagraphTextParserTest {
+class ParagraphTextParserTest {
 
   @Test
-  public void testJupyter() {
+  void testJupyter() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%jupyter(kernel=ir)");
     assertEquals("jupyter", parseResult.getIntpText());
     assertEquals(1, parseResult.getLocalProperties().size());
@@ -36,7 +35,7 @@ public class ParagraphTextParserTest {
 
 
   @Test
-  public void testCassandra() {
+  void testCassandra() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
             "%cassandra(locale=ru_RU, timeFormat=\"E, d MMM yy\", floatPrecision = 5, output=cql)\n"
                     + "select * from system_auth.roles;");
@@ -47,7 +46,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testSparkSubmit() {
+  void testSparkSubmit() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
             "%spark-submit --class A a.jar");
     assertEquals("spark-submit", parseResult.getIntpText());
@@ -55,7 +54,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextLocalPropertiesAndText() {
+  void testParagraphTextLocalPropertiesAndText() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark(pool=pool_1) sc.version");
     assertEquals("spark.pyspark", parseResult.getIntpText());
     assertEquals(1, parseResult.getLocalProperties().size());
@@ -64,7 +63,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextLocalPropertiesNoText() {
+  void testParagraphTextLocalPropertiesNoText() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark(pool=pool_1)");
     assertEquals("spark.pyspark", parseResult.getIntpText());
     assertEquals(1, parseResult.getLocalProperties().size());
@@ -73,7 +72,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextLocalPropertyNoValueNoText() {
+  void testParagraphTextLocalPropertyNoValueNoText() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark(pool)");
     assertEquals("spark.pyspark", parseResult.getIntpText());
     assertEquals(1, parseResult.getLocalProperties().size());
@@ -82,7 +81,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextNoLocalProperties() {
+  void testParagraphTextNoLocalProperties() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark.pyspark\nsc.version");
     assertEquals("spark.pyspark", parseResult.getIntpText());
     assertEquals(0, parseResult.getLocalProperties().size());
@@ -90,7 +89,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphNoInterpreter() {
+  void testParagraphNoInterpreter() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("sc.version");
     assertEquals("", parseResult.getIntpText());
     assertEquals(0, parseResult.getLocalProperties().size());
@@ -98,7 +97,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphInterpreterWithoutProperties() {
+  void testParagraphInterpreterWithoutProperties() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse("%spark() sc.version");
     assertEquals("spark", parseResult.getIntpText());
     assertEquals(0, parseResult.getLocalProperties().size());
@@ -106,7 +105,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextQuotedPropertyValue1() {
+  void testParagraphTextQuotedPropertyValue1() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
             "%spark.pyspark(pool=\"value with = inside\")");
     assertEquals("spark.pyspark", parseResult.getIntpText());
@@ -116,7 +115,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextQuotedPropertyValue2() {
+  void testParagraphTextQuotedPropertyValue2() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
             "%spark.pyspark(pool=\"value with \\\" inside\", p=\"eol\\ninside\" )");
     assertEquals("spark.pyspark", parseResult.getIntpText());
@@ -127,7 +126,7 @@ public class ParagraphTextParserTest {
   }
 
   @Test
-  public void testParagraphTextQuotedPropertyKeyAndValue() {
+  void testParagraphTextQuotedPropertyKeyAndValue() {
     ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(
             "%spark.pyspark(\"po ol\"=\"value with \\\" inside\")");
     assertEquals("spark.pyspark", parseResult.getIntpText());
@@ -136,38 +135,32 @@ public class ParagraphTextParserTest {
     assertEquals("", parseResult.getScriptText());
   }
 
-  @Rule
-  public ExpectedException exceptionRule = ExpectedException.none();
 
   @Test
-  public void testParagraphTextUnfinishedConfig() {
-    exceptionRule.expect(RuntimeException.class);
-    exceptionRule.expectMessage(
+  void testParagraphTextUnfinishedConfig() {
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool="),
             "Problems by parsing paragraph. Not finished interpreter configuration");
-    ParagraphTextParser.parse("%spark.pyspark(pool=");
   }
 
   @Test
-  public void testParagraphTextUnfinishedQuote() {
-    exceptionRule.expect(RuntimeException.class);
-    exceptionRule.expectMessage(
+  void testParagraphTextUnfinishedQuote() {
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=\"2314234) sc.version"),
             "Problems by parsing paragraph. Not finished interpreter configuration");
-    ParagraphTextParser.parse("%spark.pyspark(pool=\"2314234) sc.version");
   }
 
   @Test
-  public void testParagraphTextUnclosedBackslash() {
-    exceptionRule.expect(RuntimeException.class);
-    exceptionRule.expectMessage(
+  void testParagraphTextUnclosedBackslash() {
+    assertThrows(RuntimeException.class,
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=\\"),
             "Problems by parsing paragraph. Unfinished escape sequence");
-    ParagraphTextParser.parse("%spark.pyspark(pool=\\");
   }
 
   @Test
-  public void testParagraphTextEmptyKey() {
-    exceptionRule.expect(RuntimeException.class);
-    exceptionRule.expectMessage(
+  void testParagraphTextEmptyKey() {
+    assertThrows((RuntimeException.class),
+            () -> ParagraphTextParser.parse("%spark.pyspark(pool=123, ,)"),
             "Problems by parsing paragraph. Local property key is empty");
-    ParagraphTextParser.parse("%spark.pyspark(pool=123, ,)");
   }
 }

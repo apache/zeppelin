@@ -97,15 +97,38 @@ function printTable(dbquery, fields, flattenArray) {
     });
 }
 
-(DBQuery.prototype || DBQuery).table = function (fields, flattenArray) {
-    if (this._limit > tableLimit) {
-        this.limit(tableLimit);
-    }
-    printTable(this, fields, flattenArray);
-};
+function ensureTableFunction() {
+    (DBQuery.prototype || DBQuery).table = function (fields, flattenArray) {
+        if (this._limit > tableLimit) {
+            this.limit(tableLimit);
+        }
+        printTable(this, fields, flattenArray);
+    };
 
-if (globalThis.DBCommandCursor)
-    (DBCommandCursor.prototype || DBCommandCursor).table = (DBQuery.prototype || DBQuery).table;
+    if (globalThis.DBCommandCursor)
+        (DBCommandCursor.prototype || DBCommandCursor).table = (DBQuery.prototype || DBQuery).table;
+
+    var tableFunc = function(fields, flattenArray) {
+        if (this._limit > tableLimit) {
+            this.limit(tableLimit);
+        }
+        printTable(this, fields, flattenArray);
+        return this;
+    };
+
+    try {
+        var sampleCursor = db.getCollection('__dummy__').find({}).limit(0);
+        var proto = Object.getPrototypeOf(sampleCursor);
+
+        if (proto && !proto.table) {
+            proto.table = tableFunc;
+        }
+    } catch (e) {
+        print("Registration Error: prototype registration failed:", e.message);
+    }
+}
+
+ensureTableFunction();
 
 var userName = "USER_NAME_PLACEHOLDER";
 var password = "PASSWORD_PLACEHOLDER";

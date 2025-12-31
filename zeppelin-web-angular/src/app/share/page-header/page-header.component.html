@@ -11,8 +11,13 @@
   -->
 
 <nz-card class="header">
-  <h2>{{title}} <span class="header-extra"><ng-container [ngTemplateOutlet]="extra"></ng-container></span></h2>
-  <p><ng-container *nzStringTemplateOutlet="description">{{description}}</ng-container></p>
+  <h2>
+    {{ title }}
+    <span class="header-extra"><ng-container [ngTemplateOutlet]="extra || null"></ng-container></span>
+  </h2>
+  <p>
+    <ng-container [ngTemplateOutlet]="description"></ng-container>
+  </p>
   <nz-divider *ngIf="divider" nzType="horizontal"></nz-divider>
   <ng-content></ng-content>
 </nz-card>

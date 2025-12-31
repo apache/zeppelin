@@ -27,6 +27,7 @@ Apache Zeppelin is using [Micrometer](https://micrometer.io/) - a vendor-neutral
 ### Prometheus Monitoring
 
 [Prometheus](https://prometheus.io/) is the leading monitoring solution for [Kubernetes](https://kubernetes.io/). The Prometheus endpoint can be activated with the configuration property `zeppelin.metric.enable.prometheus`. The metrics are accessible via the unauthenticated endpoint `/metrics`.
+For [Grafana](https://grafana.com/) a good starting point for a dashboard can be found in our [Github Repository](https://github.com/apache/zeppelin/blob/grafana/examples/dashboard.json).
 
 ### JMX Monitoring
 

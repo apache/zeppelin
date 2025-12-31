@@ -42,6 +42,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
   private static final Set<String> FLINK_EXECUTION_MODES = Sets.newHashSet(
           "local", "remote", "yarn", "yarn-application", "kubernetes-application");
 
+
   public FlinkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
   }
@@ -78,7 +79,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
         throw new IOException("flink.app.jar is not specified for kubernetes-application mode");
       }
       envs.put("FLINK_APP_JAR", flinkAppJar);
-      LOGGER.info("K8s application's FLINK_APP_JAR : " + flinkAppJar);
+      LOGGER.info("K8s application's FLINK_APP_JAR : {}", flinkAppJar);
       context.getProperties().put("zeppelin.interpreter.forceShutdown", "false");
     } else {
       String flinkAppJar = chooseFlinkAppJar(flinkHome);
@@ -156,7 +157,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     final String flinkScalaVersion = scalaVersion;
     File flinkInterpreterFolder =
-            new File(ZeppelinConfiguration.create().getInterpreterDir(), "flink");
+        new File(zConf.getInterpreterDir(), "flink");
     List<File> flinkScalaJars =
             Arrays.stream(flinkInterpreterFolder
                     .listFiles(file -> file.getName().endsWith(".jar")))

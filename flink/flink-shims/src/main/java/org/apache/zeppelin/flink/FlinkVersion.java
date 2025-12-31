@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class FlinkVersion {
-  private static final Logger logger = LoggerFactory.getLogger(FlinkVersion.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FlinkVersion.class);
 
   private int majorVersion;
   private int minorVersion;
@@ -50,7 +50,7 @@ public class FlinkVersion {
       this.version = Integer.parseInt(String.format("%d%02d%02d",
               majorVersion, minorVersion, patchVersion));
     } catch (Exception e) {
-      logger.error("Can not recognize Flink version " + versionString +
+      LOGGER.error("Can not recognize Flink version " + versionString +
           ". Assume it's a future release", e);
     }
   }

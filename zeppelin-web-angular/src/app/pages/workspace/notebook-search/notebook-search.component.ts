@@ -13,7 +13,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
-import { NotebookSearchService } from '@zeppelin/services/notebook-search.service';
+import { NotebookService } from '@zeppelin/services';
 import { Subject } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 
@@ -29,17 +29,25 @@ export class NotebookSearchComponent implements OnInit, OnDestroy {
     takeUntil(this.destroy$),
     map(params => params.queryStr),
     filter(queryStr => typeof queryStr === 'string' && !!queryStr.trim()),
-    tap(() => (this.searching = true)),
-    switchMap(queryStr => this.notebookSearchService.search(queryStr))
+    tap(queryStr => {
+      this.searching = true;
+      this.searchTerm = queryStr;
+    }),
+    switchMap(queryStr => this.notebookService.search(queryStr))
   );
 
   results: NotebookSearchResultItem[] = [];
   searching = false;
+  searchTerm = '';
+
+  get hasNoResults(): boolean {
+    return !this.searching && this.results.length === 0 && this.searchTerm.length > 0;
+  }
 
   constructor(
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-    private notebookSearchService: NotebookSearchService
+    private notebookService: NotebookService
   ) {}
 
   ngOnInit() {
@@ -51,7 +59,7 @@ export class NotebookSearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.notebookSearchService.clear();
+    this.notebookService.clearQuery();
     this.destroy$.next();
     this.destroy$.complete();
   }

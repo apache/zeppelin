@@ -13,6 +13,10 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
+  <span class="numbering"
+        ng-if="paragraph.config.numbering">
+    Paragraph<span ng-bind-html="paragraph.number"></span> |
+  </span>
   <span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
       <a href="{{paragraph.runtimeInfos.jobUrl.values[0].jobUrl}}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;"
@@ -137,7 +141,7 @@ limitations under the License.
             <span class="icon-action-redo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
-            <span class="shortcut-keys">Ctrl+Shift+Enter</span>
+            <span class="shortcut-keys">Ctrl+Shift+Up</span>
             Run all above
           </a>
         </li>
@@ -146,7 +150,7 @@ limitations under the License.
             <span class="icon-action-undo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
-            <span class="shortcut-keys">Ctrl+Shift+Enter</span>
+            <span class="shortcut-keys">Ctrl+Shift+Down</span>
              Run all below
           </a>
         </li>
@@ -185,7 +189,7 @@ limitations under the License.
         <li>
           <a ng-click="toggleEnableDisable(paragraph)" ng-class="{'item-disable' : isNoteRunning}">
             <span class="icon-control-play shortcut-icon"></span>
-            <span class="shortcut-keys">Ctrl+ {{ isMac ? 'Option' : 'Alt'}}+R</span>
+            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+R</span>
             {{paragraph.config.enabled ? "Disable" : "Enable"}} run
           </a>
         </li>

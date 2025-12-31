@@ -26,13 +26,13 @@ import {
   ViewContainerRef
 } from '@angular/core';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { AnsiUp } from 'ansi_up';
+import * as hljs from 'highlight.js';
+import { cloneDeep, isEqual } from 'lodash';
+import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-
-import { default as AnsiUp } from 'ansi_up';
-import * as hljs from 'highlight.js';
-import { NzResizeEvent } from 'ng-zorro-antd/resizable';
-import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
+import { utils, writeFile, WritingOptions } from 'xlsx';
 
 import {
   DatasetType,
@@ -46,17 +46,49 @@ import {
   VisualizationStackedAreaChart
 } from '@zeppelin/sdk';
 
-import { ZeppelinHeliumService } from '@zeppelin/helium';
-import { TableData, Visualization } from '@zeppelin/visualization';
+import {
+  HeliumClassicVisualization,
+  HeliumClassicVisualizationConstructor,
+  HeliumVisualizationBundle
+} from '@zeppelin/interfaces';
+import {
+  ClassicVisualizationService,
+  DynamicTemplate,
+  HeliumService,
+  NgZService,
+  RuntimeCompilerService
+} from '@zeppelin/services';
+import { TableData, Visualization, VisualizationConstructor } from '@zeppelin/visualization';
+import {
+  AreaChartVisualization,
+  BarChartVisualization,
+  LineChartVisualization,
+  PieChartVisualization,
+  ScatterChartVisualization,
+  TableVisualization
+} from '@zeppelin/visualizations';
 
-import { HeliumManagerService } from '@zeppelin/helium-manager';
-import { DynamicTemplate, NgZService, RuntimeCompilerService } from '@zeppelin/services';
-import { AreaChartVisualization } from '@zeppelin/visualizations/area-chart/area-chart-visualization';
-import { BarChartVisualization } from '@zeppelin/visualizations/bar-chart/bar-chart-visualization';
-import { LineChartVisualization } from '@zeppelin/visualizations/line-chart/line-chart-visualization';
-import { PieChartVisualization } from '@zeppelin/visualizations/pie-chart/pie-chart-visualization';
-import { ScatterChartVisualization } from '@zeppelin/visualizations/scatter-chart/scatter-chart-visualization';
-import { TableVisualization } from '@zeppelin/visualizations/table/table-visualization';
+interface VisualizationItem {
+  id: string;
+  name: string;
+  changeSubscription: Subscription | null;
+}
+
+interface ClassicVisualizationItem extends VisualizationItem {
+  isClassic: true;
+  icon: SafeHtml;
+  Class: HeliumClassicVisualizationConstructor;
+  instance: HeliumClassicVisualization | undefined;
+}
+
+interface ModernVisualizationItem extends VisualizationItem {
+  isClassic: false;
+  icon: string;
+  Class: VisualizationConstructor;
+  instance: Visualization | undefined;
+}
+
+type VisualizationItemType = ClassicVisualizationItem | ModernVisualizationItem;
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-result',
@@ -65,30 +97,31 @@ import { TableVisualization } from '@zeppelin/visualizations/table/table-visuali
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() result: ParagraphIResultsMsgItem;
-  @Input() config: ParagraphConfigResult;
-  @Input() id: string;
+  @Input() result!: ParagraphIResultsMsgItem;
+  @Input() config?: ParagraphConfigResult;
+  @Input() id!: string;
   @Input() published = false;
-  @Input() currentCol = 12;
+  @Input() currentCol?: number = 12;
+  @Input() isPending!: boolean;
   @Output() readonly configChange = new EventEmitter<ParagraphConfigResult>();
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
-  @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet: CdkPortalOutlet;
+  @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet!: CdkPortalOutlet;
 
   private destroy$ = new Subject();
   datasetType = DatasetType;
-  angularComponent: DynamicTemplate;
+  angularComponent: DynamicTemplate | null = null;
   innerHTML: string | SafeHtml = '';
   plainText: string | SafeHtml = '';
   imgData: string | SafeUrl = '';
   tableData = new TableData();
-  frontEndError: string;
-  // tslint:disable-next-line:no-any
-  visualizations: any[] = [
+  frontEndError?: string;
+  visualizations: VisualizationItemType[] = [
     {
       id: 'table',
       name: 'Table',
       icon: 'table',
       Class: TableVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -97,6 +130,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Bar Chart',
       icon: 'bar-chart',
       Class: BarChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -105,6 +139,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Pie Chart',
       icon: 'pie-chart',
       Class: PieChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -113,6 +148,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Line Chart',
       icon: 'line-chart',
       Class: LineChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -121,6 +157,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Area Chart',
       icon: 'area-chart',
       Class: AreaChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     },
@@ -129,39 +166,22 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       name: 'Scatter Chart',
       icon: 'dot-chart',
       Class: ScatterChartVisualization,
+      isClassic: false,
       changeSubscription: null,
       instance: undefined
     }
   ];
 
   constructor(
+    public injector: Injector,
     private viewContainerRef: ViewContainerRef,
     private cdr: ChangeDetectorRef,
     private runtimeCompilerService: RuntimeCompilerService,
     private sanitizer: DomSanitizer,
-    private injector: Injector,
     private ngZService: NgZService,
-    private zeppelinHeliumService: ZeppelinHeliumService,
-    private heliumManagerService: HeliumManagerService
-  ) {
-    this.heliumManagerService
-      .packagesLoadChange()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(packages => {
-        packages.forEach(pack => {
-          this.visualizations.push({
-            id: pack._raw.id,
-            name: pack.name,
-            icon: pack._raw.icon,
-            Class: pack._raw.visualization,
-            componentFactoryResolver: pack.moduleFactory.create(this.injector).componentFactoryResolver,
-            changeSubscription: null,
-            instance: undefined
-          });
-        });
-        this.cdr.markForCheck();
-      });
-  }
+    private heliumService: HeliumService,
+    private classicVisualizationService: ClassicVisualizationService
+  ) {}
 
   ngOnInit() {
     this.ngZService
@@ -172,13 +192,76 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
           this.cdr.markForCheck();
         }
       });
+    this.heliumService
+      .visualizationBundles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(bundles => {
+        this.handleVisualizationBundles(bundles);
+      });
+  }
+
+  private handleVisualizationBundles(bundles: HeliumVisualizationBundle[]): void {
+    const newlyAddedBundleIds = this.addNewVisualizationBundles(bundles);
+
+    this.checkAndTriggerReRender(newlyAddedBundleIds);
+    this.cdr.markForCheck();
+  }
+
+  private addNewVisualizationBundles(bundles: HeliumVisualizationBundle[]): string[] {
+    const newlyAddedBundleIds: string[] = [];
+
+    bundles.forEach(bundle => {
+      // Check if this bundle is already in our visualizations array
+      const existingVisualization = this.visualizations.find(v => v.id === bundle.id);
+      if (!existingVisualization) {
+        // This is a new bundle
+        newlyAddedBundleIds.push(bundle.id);
+        const isClassic = !Visualization.prototype.isPrototypeOf(bundle.class.prototype);
+        if (isClassic) {
+          this.visualizations.push({
+            id: bundle.id,
+            name: bundle.name,
+            icon: this.sanitizer.bypassSecurityTrustHtml(bundle.icon),
+            Class: bundle.class,
+            changeSubscription: null,
+            isClassic,
+            instance: undefined
+          });
+        }
+      }
+    });
+
+    return newlyAddedBundleIds;
+  }
+
+  private checkAndTriggerReRender(newlyAddedBundleIds: string[]): void {
+    // Re-render only if the current mode is one of the newly loaded bundles
+    if (
+      this.result &&
+      this.result.type === DatasetType.TABLE &&
+      this.config &&
+      this.config.graph &&
+      newlyAddedBundleIds.length > 0
+    ) {
+      const currentMode = this.config.graph.mode;
+      const isCurrentModeNewlyAdded = newlyAddedBundleIds.includes(currentMode);
+
+      if (isCurrentModeNewlyAdded) {
+        const currentVisualization = this.visualizations.find(v => v.id === currentMode);
+        if (currentVisualization && currentVisualization.isClassic) {
+          // Trigger re-rendering for the specific classic visualization that just loaded
+          setTimeout(() => {
+            this.renderDefaultDisplay();
+          }, 0);
+        }
+      }
+    }
   }
 
   exportFile(type: 'csv' | 'tsv'): void {
     if (this.tableData && this.tableData.rows) {
       const wb = utils.book_new();
-      let ws: WorkSheet;
-      ws = utils.json_to_sheet(this.tableData.rows);
+      const ws = utils.json_to_sheet(this.tableData.rows);
       utils.book_append_sheet(wb, ws, 'Sheet1');
       writeFile(wb, `export.${type}`, {
         bookType: 'csv',
@@ -188,12 +271,18 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   switchMode(mode: VisualizationMode) {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     this.config.graph.mode = mode;
     this.renderGraph();
     this.configChange.emit(this.config);
   }
 
   switchSetting() {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
     this.config.graph.optionOpen = !this.config.graph.optionOpen;
     this.renderGraph();
     this.configChange.emit(this.config);
@@ -224,16 +313,13 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         this.renderAngular();
         break;
     }
-    this.cdr.markForCheck();
-    if (this.published) {
-      this.cdr.detectChanges();
-    }
+    this.cdr.detectChanges();
   }
 
   renderHTML(): void {
     const div = document.createElement('div');
     div.innerHTML = this.result.data;
-    const codeEle: HTMLElement = div.querySelector('pre code');
+    const codeEle = div.querySelector('pre code');
     if (codeEle) {
       hljs.highlightBlock(codeEle);
     }
@@ -254,9 +340,34 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       });
   }
 
+  private checkAndReplaceCarriageReturn(data: string): string {
+    const str = data.replace(/\r\n/g, '\n');
+    if (/\r/.test(str)) {
+      const generatedLines = str.split('\n').map(line => {
+        if (!/\r/.test(line)) {
+          return line;
+        }
+        const parts = line.split('\r');
+        let currentLine = parts[0];
+        for (let i = 1; i < parts.length; i++) {
+          const part = parts[i];
+          const partLength = part.length;
+          // apply terminal-like output. carriage return has the effect of moving output cursor to the front.
+          const overwritten = part + currentLine.substring(partLength);
+          currentLine = overwritten;
+        }
+        return currentLine;
+      });
+      return generatedLines.join('\n');
+    } else {
+      return str;
+    }
+  }
+
   renderText(): void {
     const ansiUp = new AnsiUp();
-    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(this.result.data));
+    const processedData = this.checkAndReplaceCarriageReturn(this.result.data);
+    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(processedData));
   }
 
   renderImg(): void {
@@ -264,63 +375,123 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   setGraphConfig() {
-    if (!this.config || !this.config.graph) {
+    const config = this.config;
+    if (!config || !config.graph) {
       return;
     }
-    const visualizationItem = this.visualizations.find(v => v.id === this.config.graph.mode);
+    const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
     if (!visualizationItem || !visualizationItem.instance) {
       return;
     }
-    visualizationItem.instance.setConfig(this.config.graph);
+    if (visualizationItem.isClassic) {
+      const targetElementId = `p${this.id}_${config.graph.mode}`;
+      this.classicVisualizationService.setClassicVisualizationConfig(targetElementId, config.graph);
+    } else {
+      visualizationItem.instance.setConfig(config.graph);
+    }
+  }
+
+  getCurrentVisualization() {
+    return this.visualizations.find(v => v.id === this.config?.graph.mode) ?? null;
   }
 
   renderGraph() {
     this.setDefaultConfig();
-    let instance: Visualization;
-    const visualizationItem = this.visualizations.find(v => v.id === this.config.graph.mode);
+
+    const config = this.config!;
+    const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
     if (!visualizationItem) {
       return;
     }
-    this.destroyVisualizations(this.config.graph.mode);
-    if (!visualizationItem.instance) {
-      // tslint:disable-next-line:no-any
-      instance = new visualizationItem.Class(
-        this.config.graph,
-        this.portalOutlet,
-        this.viewContainerRef,
-        visualizationItem.componentFactoryResolver
-      );
-      visualizationItem.instance = instance;
-      visualizationItem.changeSubscription = instance.configChanged().subscribe(config => {
-        this.config.graph = config;
-        this.renderGraph();
-        this.configChange.emit({
-          graph: config
-        });
-      });
-    } else {
-      instance = visualizationItem.instance;
-      instance.setConfig(this.config.graph);
-    }
+    this.destroyVisualizations(config.graph.mode);
+
+    // Load tableData first - this is needed for both classic and modern visualizations
     this.tableData.loadParagraphResult(this.result);
-    const transformation = instance.getTransformation();
-    transformation.setConfig(this.config.graph);
+
+    if (!visualizationItem.instance) {
+      if (visualizationItem.isClassic) {
+        // Classic visualization - delegate to ClassicVisualizationService
+        const targetElementId = `p${this.id}_${config.graph.mode}`;
+        const emitter = (c: GraphConfig) => {
+          if (!this.config) {
+            throw new Error('config is not defined');
+          }
+          this.commitClassicVizConfigChange(c, this.config.graph.mode);
+          this.renderGraph();
+        };
+
+        this.classicVisualizationService
+          .createClassicVisualization(visualizationItem.Class, targetElementId, config.graph, this.tableData, emitter)
+          .then(classicInstance => {
+            visualizationItem.instance = classicInstance;
+            this.cdr.markForCheck();
+          })
+          .catch(error => {
+            console.error('Failed to create classic visualization:', error);
+          });
+        return; // Exit early for classic visualizations
+      } else {
+        // Modern visualization
+        const classicVisInstance = new visualizationItem.Class(this.portalOutlet, this.viewContainerRef, config.graph);
+        visualizationItem.instance = classicVisInstance;
+        visualizationItem.changeSubscription = classicVisInstance.configChanged().subscribe(c => {
+          if (!this.config) {
+            throw new Error('config is not defined');
+          }
+          this.config.graph = c;
+          this.renderGraph();
+          this.configChange.emit({
+            graph: c
+          });
+        });
+      }
+    } else {
+      if (visualizationItem.isClassic) {
+        // Update existing classic visualization
+        const targetElementId = `p${this.id}_${config.graph.mode}`;
+        this.classicVisualizationService.updateClassicVisualization(targetElementId, config.graph, this.tableData);
+        return; // Exit early for classic visualizations
+      } else {
+        visualizationItem.instance.setConfig(config.graph);
+      }
+    }
+
+    // For classic visualizations, rendering is already handled in the service
+    if (visualizationItem.isClassic) {
+      return;
+    }
+
+    // TypeScript's control flow analysis doesn't properly narrow the discriminated union type
+    // after the early return above. This may be due to the TypeScript version (3.8) or the
+    // complexity of the union type. Using explicit type assertion to ensure type safety.
+    const modernVisualizationItem = visualizationItem as ModernVisualizationItem;
+
+    // For modern visualizations, continue with standard rendering
+    const transformation = modernVisualizationItem.instance!.getTransformation();
+    transformation.setConfig(config.graph);
     transformation.setTableData(this.tableData);
     const transformed = transformation.transform(this.tableData);
-    instance.render(transformed);
+    modernVisualizationItem.instance!.render(transformed);
   }
 
   destroyVisualizations(omit?: string) {
     this.visualizations.forEach(v => {
       if (v.id !== omit && v.instance) {
-        if (v.changeSubscription instanceof Subscription) {
-          v.changeSubscription.unsubscribe();
-          v.changeSubscription = null;
+        if (v.isClassic) {
+          // Destroy classic visualization through service
+          const targetElementId = `p${this.id}_${v.id}`;
+          this.classicVisualizationService.destroyInstance(targetElementId);
+          v.instance = undefined;
+        } else {
+          if (v.changeSubscription instanceof Subscription) {
+            v.changeSubscription.unsubscribe();
+            v.changeSubscription = null;
+          }
+          if (typeof v.instance.destroy === 'function') {
+            v.instance.destroy();
+          }
+          v.instance = undefined;
         }
-        if (typeof v.instance.destroy === 'function') {
-          v.instance.destroy();
-        }
-        v.instance = undefined;
       }
     });
   }
@@ -332,7 +503,10 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     if (!this.config.graph.setting) {
       this.config.graph.setting = {};
     }
-    if (!this.config.graph.setting[this.config.graph.mode]) {
+    if (
+      !(this.config.graph.mode in this.config.graph.setting) ||
+      !this.config.graph.setting[this.config.graph.mode as keyof GraphConfig['setting']]
+    ) {
       switch (this.config.graph.mode) {
         case 'multiBarChart':
           this.config.graph.setting[this.config.graph.mode] = new VisualizationMultiBarChart();
@@ -353,10 +527,24 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   onResize($event: NzResizeEvent) {
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
+    const config = this.config;
     const { width, height, col } = $event;
+    if (height === undefined) {
+      throw new Error('height is not defined');
+    }
     if (this.result.type === DatasetType.TABLE) {
-      this.config.graph.height = height;
+      config.graph.height = height;
       this.setGraphConfig();
+
+      // Handle classic visualization resize
+      const visualizationItem = this.visualizations.find(v => v.id === config.graph.mode);
+      if (visualizationItem && visualizationItem.isClassic) {
+        const targetElementId = `p${this.id}_${this.config.graph.mode}`;
+        this.classicVisualizationService.resizeClassicVisualization(targetElementId);
+      }
     }
     this.sizeChange.emit({ width, height, col });
   }
@@ -367,7 +555,51 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
 
   ngOnDestroy(): void {
     this.destroyVisualizations();
+    this.classicVisualizationService.destroyAllInstances(true);
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private commitClassicVizConfigChange(configForMode: GraphConfig, mode: string) {
+    if (this.isPending) {
+      return;
+    }
+
+    if (!this.config) {
+      throw new Error('config is not defined');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newConfigGraph: any = cloneDeep(this.config.graph) || {};
+
+    // copy setting for mode
+    if (!newConfigGraph.setting) {
+      newConfigGraph.setting = {};
+    }
+    newConfigGraph.setting[mode] = cloneDeep(configForMode);
+
+    // copy common setting
+    if (newConfigGraph.setting[mode]) {
+      newConfigGraph.commonSetting = newConfigGraph.setting[mode].common;
+      delete newConfigGraph.setting[mode].common;
+    }
+    // copy pivot setting
+    if (newConfigGraph.commonSetting?.pivot) {
+      newConfigGraph.keys = newConfigGraph.commonSetting.pivot.keys;
+      newConfigGraph.groups = newConfigGraph.commonSetting.pivot.groups;
+      newConfigGraph.values = newConfigGraph.commonSetting.pivot.values;
+      delete newConfigGraph.commonSetting.pivot;
+    }
+
+    // don't send commitParagraphResult when config is the same.
+    // see https://issues.apache.org/jira/browse/ZEPPELIN-4280.
+    if (isEqual(this.config.graph, newConfigGraph)) {
+      return;
+    }
+
+    this.configChange.emit({ graph: newConfigGraph });
+    // Update local graph config
+    this.config.graph = newConfigGraph;
   }
 }

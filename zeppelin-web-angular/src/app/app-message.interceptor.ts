@@ -22,6 +22,8 @@ import { TicketService } from '@zeppelin/services';
 
 @Injectable()
 export class AppMessageInterceptor implements MessageInterceptor {
+  private prevErrorInfo: string | null = null;
+
   constructor(
     private router: Router,
     private nzNotificationService: NzNotificationService,
@@ -29,10 +31,12 @@ export class AppMessageInterceptor implements MessageInterceptor {
     private nzModalService: NzModalService
   ) {}
 
-  received<T extends keyof MessageReceiveDataTypeMap>(data: WebSocketMessage<T>): WebSocketMessage<T> {
+  received(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     if (data.op === OP.NEW_NOTE) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.NEW_NOTE];
-      this.router.navigate(['/notebook', rData.note.id]).then();
+      if (rData.note?.id) {
+        this.router.navigate(['/notebook', rData.note.id]).then();
+      }
     } else if (data.op === OP.AUTH_INFO) {
       const rData = data.data as MessageReceiveDataTypeMap[OP.AUTH_INFO];
       if (this.ticketService.ticket.roles === '[]') {
@@ -58,10 +62,20 @@ export class AppMessageInterceptor implements MessageInterceptor {
         });
       }
     } else if (data.op === OP.ERROR_INFO) {
-      // tslint:disable-next-line:no-any
-      const rData = (data.data as any) as MessageReceiveDataTypeMap[OP.ERROR_INFO];
-      if (rData.info) {
-        this.nzNotificationService.warning('ERROR', rData.info);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rData = data.data as any as MessageReceiveDataTypeMap[OP.ERROR_INFO];
+      const isDuplicateError = this.prevErrorInfo === rData.info;
+
+      if (!isDuplicateError && rData.info) {
+        this.nzNotificationService.warning('ERROR', rData.info, {
+          nzStyle: { wordWrap: 'break-word', wordBreak: 'break-all' }
+        });
+        this.prevErrorInfo = rData.info;
+      }
+      if (isDuplicateError) {
+        setTimeout(() => {
+          this.prevErrorInfo = null;
+        }, 500);
       }
     }
     return data;

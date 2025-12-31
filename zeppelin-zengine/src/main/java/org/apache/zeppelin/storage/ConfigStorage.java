@@ -18,11 +18,9 @@
 
 package org.apache.zeppelin.storage;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.healthcheck.HealthChecks;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -30,6 +28,7 @@ import org.apache.zeppelin.util.ReflectionUtils;
 
 import java.io.IOException;
 
+import java.util.List;
 /**
  * Interface for storing zeppelin configuration.
  *
@@ -43,19 +42,9 @@ public abstract class ConfigStorage {
 
   protected static final String STORAGE_HEALTHCHECK_NAME = "ConfigStorage";
 
-  private static ConfigStorage instance;
-
   protected ZeppelinConfiguration zConf;
 
-  public static synchronized ConfigStorage getInstance(ZeppelinConfiguration zConf)
-      throws IOException {
-    if (instance == null) {
-      instance = createConfigStorage(zConf);
-    }
-    return instance;
-  }
-
-  private static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
+  public static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     String configStorageClass =
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS);
     return ReflectionUtils.createClazzInstance(configStorageClass,
@@ -63,7 +52,7 @@ public abstract class ConfigStorage {
   }
 
 
-  public ConfigStorage(ZeppelinConfiguration zConf) {
+  protected ConfigStorage(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
 
@@ -81,7 +70,6 @@ public abstract class ConfigStorage {
   public abstract void saveCredentials(String credentials) throws IOException;
 
   protected InterpreterInfoSaving buildInterpreterInfoSaving(String json) {
-    //TODO(zjffdu) This kind of post processing is ugly.
     JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
     InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
     for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
@@ -90,16 +78,11 @@ public abstract class ConfigStorage {
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
       interpreterSetting.getOption();
-      interpreterSetting.convertPermissionsFromUsersToOwners(
-          jsonObject.getAsJsonObject("interpreterSettings")
-              .getAsJsonObject(interpreterSetting.getId()));
+      JsonObject interpreterSettingJson = jsonObject.getAsJsonObject("interpreterSettings")
+          .getAsJsonObject(interpreterSetting.getId());
+      List<String> users = InterpreterSetting.extractUsersFromJsonString(interpreterSettingJson.toString());
+      interpreterSetting.convertPermissionsFromUsersToOwners(users);
     }
     return infoSaving;
-  }
-
-  @VisibleForTesting
-  public static void reset() {
-    HealthChecks.getHealthCheckLivenessRegistry().unregister(STORAGE_HEALTHCHECK_NAME);
-    instance = null;
   }
 }

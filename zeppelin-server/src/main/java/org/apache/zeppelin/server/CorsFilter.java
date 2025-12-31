@@ -18,14 +18,14 @@ package org.apache.zeppelin.server;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.slf4j.Logger;
@@ -37,6 +37,12 @@ import org.slf4j.LoggerFactory;
 public class CorsFilter implements Filter {
   private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);
 
+  private final ZeppelinConfiguration zConf;
+
+  public CorsFilter(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
+  }
+
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
@@ -44,7 +50,7 @@ public class CorsFilter implements Filter {
     String origin = "";
 
     try {
-      if (CorsUtils.isValidOrigin(sourceHost, ZeppelinConfiguration.create())) {
+      if (CorsUtils.isValidOrigin(sourceHost, zConf)) {
         origin = sourceHost;
       }
     } catch (URISyntaxException e) {
@@ -70,13 +76,12 @@ public class CorsFilter implements Filter {
     response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
     response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
 
-    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
-    response.setHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
-    if (zeppelinConfiguration.useSsl()) {
-      response.setHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
+    response.setHeader("X-FRAME-OPTIONS", zConf.getXFrameOptions());
+    if (zConf.useSsl()) {
+      response.setHeader("Strict-Transport-Security", zConf.getStrictTransport());
     }
-    response.setHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
-    response.setHeader("X-Content-Type-Options", zeppelinConfiguration.getXContentTypeOptions());
+    response.setHeader("X-XSS-Protection", zConf.getXxssProtection());
+    response.setHeader("X-Content-Type-Options", zConf.getXContentTypeOptions());
   }
 
   @Override

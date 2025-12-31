@@ -16,59 +16,74 @@
  */
 package org.apache.zeppelin.rest;
 
-import static org.junit.Assert.assertTrue;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.zeppelin.MiniZeppelinServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class ConfigurationsRestApiTest extends AbstractTestRestApi {
+class ConfigurationsRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
 
-  @BeforeClass
-  public static void init() throws Exception {
-    AbstractTestRestApi.startUp(ConfigurationsRestApi.class.getSimpleName());
+  private static MiniZeppelinServer zep;
+
+  @BeforeAll
+  static void init() throws Exception {
+    zep = new MiniZeppelinServer(ConfigurationsRestApi.class.getSimpleName());
+    zep.start();
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zep.destroy();
+  }
+
+  @BeforeEach
+  void setup() {
+    zConf = zep.getZeppelinConfiguration();
   }
 
   @Test
-  public void testGetAll() throws IOException {
-    CloseableHttpResponse get = httpGet("/configurations/all");
-    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
-        new TypeToken<Map<String, Object>>(){}.getType());
-    Map<String, String> body = (Map<String, String>) resp.get("body");
-    assertTrue(body.size() > 0);
-    // it shouldn't have key/value pair which key contains "password"
-    for (String key : body.keySet()) {
-      assertTrue(!key.contains("password"));
+  void testGetAll() throws IOException {
+    try (CloseableHttpResponse get = httpGet("/configurations/all")) {
+      Map<String, Object> resp =
+          gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      Map<String, String> body = (Map<String, String>) resp.get("body");
+      assertTrue(body.size() > 0);
+      // it shouldn't have key/value pair which key contains "password"
+      for (String key : body.keySet()) {
+        assertTrue(!key.contains("password"));
+      }
     }
-    get.close();
   }
 
   @Test
-  public void testGetViaPrefix() throws IOException {
+  void testGetViaPrefix() throws IOException {
     final String prefix = "zeppelin.server";
-    CloseableHttpResponse get = httpGet("/configurations/prefix/" + prefix);
-    Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
-        new TypeToken<Map<String, Object>>(){}.getType());
-    Map<String, String> body = (Map<String, String>) resp.get("body");
-    assertTrue(body.size() > 0);
-    for (String key : body.keySet()) {
-      assertTrue(!key.contains("password") && key.startsWith(prefix));
+    try (
+        CloseableHttpResponse get = httpGet("/configurations/prefix/" + prefix)) {
+      Map<String, Object> resp =
+          gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+              new TypeToken<Map<String, Object>>() {
+              }.getType());
+      Map<String, String> body = (Map<String, String>) resp.get("body");
+      assertTrue(body.size() > 0);
+      for (String key : body.keySet()) {
+        assertTrue(!key.contains("password") && key.startsWith(prefix));
+      }
     }
-    get.close();
   }
 }

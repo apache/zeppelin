@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -55,12 +56,12 @@ public class DependencyResolver extends AbstractDependencyResolver {
                                                     "org.apache.zeppelin:zeppelin-interpreter",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
-  public DependencyResolver(String localRepoPath) {
-    super(localRepoPath);
+  public DependencyResolver(String localRepoPath, ZeppelinConfiguration zConf) {
+    super(localRepoPath, zConf);
   }
 
-  public DependencyResolver(String localRepoPath, Proxy proxy) {
-    super(localRepoPath, proxy);
+  public DependencyResolver(String localRepoPath, Proxy proxy, ZeppelinConfiguration zConf) {
+    super(localRepoPath, proxy, zConf);
   }
 
   public List<File> load(String artifact)

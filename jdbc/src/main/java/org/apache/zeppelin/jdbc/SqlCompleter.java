@@ -39,7 +39,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
  * SQL auto complete functionality for the JdbcInterpreter.
  */
 public class SqlCompleter {
-  private static Logger logger = LoggerFactory.getLogger(SqlCompleter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlCompleter.class);
 
   /**
    * Delimiter that can split SQL statement in keyword list.
@@ -83,7 +83,7 @@ public class SqlCompleter {
   }
 
   public int complete(String buffer, int cursor, List<InterpreterCompletion> candidates) {
-    logger.debug("Complete with buffer = " + buffer + ", cursor = " + cursor);
+    LOGGER.debug("Complete with buffer = " + buffer + ", cursor = " + cursor);
 
     // The delimiter breaks the buffer into separate words (arguments), separated by the
     // white spaces.
@@ -102,7 +102,7 @@ public class SqlCompleter {
     int complete = completeName(cursorArgument, argumentPosition, candidates,
             findAliasesInSQL(argumentList.getArguments()));
 
-    logger.debug("complete:" + complete + ", size:" + candidates.size());
+    LOGGER.debug("complete:" + complete + ", size:" + candidates.size());
     return complete;
   }
 
@@ -137,7 +137,7 @@ public class SqlCompleter {
         schemas.close();
       }
     } catch (SQLException t) {
-      logger.error("Failed to retrieve the schema names", t);
+      LOGGER.error("Failed to retrieve the schema names", t);
     }
     return res;
   }
@@ -169,7 +169,7 @@ public class SqlCompleter {
         schemas.close();
       }
     } catch (SQLException t) {
-      logger.error("Failed to retrieve the schema names", t);
+      LOGGER.error("Failed to retrieve the schema names", t);
     }
     return res;
   }
@@ -182,7 +182,7 @@ public class SqlCompleter {
         tables.add(table);
       }
     } catch (Throwable t) {
-      logger.error("Failed to retrieve the table name", t);
+      LOGGER.error("Failed to retrieve the table name", t);
     }
   }
 
@@ -203,12 +203,11 @@ public class SqlCompleter {
         columns.add(column);
       }
     } catch (Throwable t) {
-      logger.error("Failed to retrieve the column name", t);
+      LOGGER.error("Failed to retrieve the column name", t);
     }
   }
 
-  public static Set<String> getSqlKeywordsCompletions(DatabaseMetaData meta) throws IOException,
-          SQLException {
+  public static Set<String> getSqlKeywordsCompletions(DatabaseMetaData meta) throws IOException {
     // Add the default SQL completions
     String keywords =
             new BufferedReader(new InputStreamReader(
@@ -217,11 +216,11 @@ public class SqlCompleter {
     Set<String> completions = new TreeSet<>();
 
     if (null != meta) {
-      // Add the driver specific SQL completions
-      String driverSpecificKeywords =
-              "/" + meta.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
-      logger.info("JDBC DriverName:" + driverSpecificKeywords);
       try {
+        // Add the driver specific SQL completions
+        String driverSpecificKeywords =
+                "/" + meta.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
+        LOGGER.info("JDBC DriverName: {}", driverSpecificKeywords);
         if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
           String driverKeywords =
                   new BufferedReader(new InputStreamReader(
@@ -229,36 +228,36 @@ public class SqlCompleter {
                           .readLine();
           keywords += "," + driverKeywords.toUpperCase();
         }
-      } catch (Exception e) {
-        logger.debug("fail to get driver specific SQL completions for " +
-                driverSpecificKeywords + " : " + e, e);
+      } catch (IOException | SQLException e) {
+        LOGGER.debug("fail to get driver specific SQL completions for " +
+            meta.getClass().getName() + " : " + e, e);
       }
 
       // Add the keywords from the current JDBC connection
       try {
         keywords += "," + meta.getSQLKeywords();
-      } catch (Exception e) {
-        logger.debug("fail to get SQL key words from database metadata: " + e, e);
+      } catch (SQLException e) {
+        LOGGER.debug("fail to get SQL key words from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getStringFunctions();
-      } catch (Exception e) {
-        logger.debug("fail to get string function names from database metadata: " + e, e);
+      } catch (SQLException e) {
+        LOGGER.debug("fail to get string function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getNumericFunctions();
-      } catch (Exception e) {
-        logger.debug("fail to get numeric function names from database metadata: " + e, e);
+      } catch (SQLException e) {
+        LOGGER.debug("fail to get numeric function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getSystemFunctions();
-      } catch (Exception e) {
-        logger.debug("fail to get system function names from database metadata: " + e, e);
+      } catch (SQLException e) {
+        LOGGER.debug("fail to get system function names from database metadata: " + e, e);
       }
       try {
         keywords += "," + meta.getTimeDateFunctions();
-      } catch (Exception e) {
-        logger.debug("fail to get time date function names from database metadata: " + e, e);
+      } catch (SQLException e) {
+        LOGGER.debug("fail to get time date function names from database metadata: " + e, e);
       }
 
       // Set all keywords to lower-case versions
@@ -333,12 +332,12 @@ public class SqlCompleter {
           initColumns(schemaTable, columns);
         }
 
-        logger.info("Completer initialized with " + schemas.size() + " schemas, " +
+        LOGGER.info("Completer initialized with " + schemas.size() + " schemas, " +
             columns.size() + " tables and " + keywords.size() + " keywords");
       }
 
     } catch (SQLException | IOException e) {
-      logger.error("Failed to update the metadata completions", e);
+      LOGGER.error("Failed to update the metadata completions", e);
     }
   }
 

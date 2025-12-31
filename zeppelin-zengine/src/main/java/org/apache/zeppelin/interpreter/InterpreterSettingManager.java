@@ -35,14 +35,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.cluster.ClusterManagerServer;
-import org.apache.zeppelin.cluster.event.ClusterEvent;
-import org.apache.zeppelin.cluster.event.ClusterEventListener;
-import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -61,6 +57,7 @@ import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphTextParser;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -75,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.Authentication;
+import org.apache.zeppelin.dep.Repository;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,8 +96,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC;
-
 
 /**
  * InterpreterSettingManager is the component which manage all the interpreter settings.
@@ -107,7 +103,7 @@ import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETT
  * TODO(zjffdu) We could move it into another separated component.
  */
 @ManagedObject("interpreterSettingManager")
-public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
+public class InterpreterSettingManager implements NoteEventListener {
 
   private static final Pattern VALID_INTERPRETER_NAME = Pattern.compile("^[-_a-zA-Z0-9]+$");
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
@@ -115,7 +111,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       "language", (Object) "text",
       "editOnDblClick", false);
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
+  private final PluginManager pluginManager;
   private final Path interpreterDirPath;
 
   /**
@@ -133,7 +130,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     new ConcurrentHashMap<>());
   private final Map<String, List<Meter>> interpreterSettingsMeters = new ConcurrentHashMap<>();
 
-  private final List<RemoteRepository> interpreterRepositories;
+  private final List<Repository> interpreterRepositories;
   private InterpreterOption defaultOption;
   private String defaultInterpreterGroup;
   private final Gson gson;
@@ -151,48 +148,56 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private List<String> excludesInterpreters;
 
   @Inject
-  public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
+  public InterpreterSettingManager(ZeppelinConfiguration zConf,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
                                        remoteInterpreterProcessListener,
-                                   ApplicationEventListener appEventListener)
+                                   ApplicationEventListener appEventListener,
+                                   ConfigStorage storage,
+                                   PluginManager pluginManager)
       throws IOException {
-    this(zeppelinConfiguration, new InterpreterOption(),
+    this(zConf, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
         appEventListener,
-        ConfigStorage.getInstance(zeppelinConfiguration));
+        storage,
+        pluginManager);
   }
 
-  public InterpreterSettingManager(ZeppelinConfiguration conf,
+  public InterpreterSettingManager(ZeppelinConfiguration zConf,
       InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       ApplicationEventListener appEventListener,
-      ConfigStorage configStorage)
+      ConfigStorage configStorage,
+      PluginManager pluginManager)
       throws IOException {
-    this.conf = conf;
+    this.zConf = zConf;
+    this.pluginManager = pluginManager;
     this.defaultOption = defaultOption;
-    this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
+    this.interpreterDirPath = Paths.get(zConf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
     this.dependencyResolver =
-        new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
-    this.interpreterRepositories = dependencyResolver.getRepos();
-    this.defaultInterpreterGroup = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
+        new DependencyResolver(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO), zConf);
+    this.interpreterRepositories = new ArrayList<>();
+    for (RemoteRepository repo : dependencyResolver.getRepos()) {
+      this.interpreterRepositories.add(Repository.fromRemoteRepository(repo));
+    }
+    this.defaultInterpreterGroup = zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     this.gson = new GsonBuilder().setPrettyPrinting().create();
 
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
 
-    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
+    this.interpreterEventServer = new RemoteInterpreterEventServer(zConf, this);
     this.interpreterEventServer.start();
 
     this.recoveryStorage =
         ReflectionUtils.createClazzInstance(
-            conf.getRecoveryStorageClass(),
+            zConf.getRecoveryStorageClass(),
             new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-            new Object[] {conf, this});
+            new Object[] {zConf, this});
 
     LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
 
@@ -222,7 +227,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
 
   private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
-    interpreterSetting.setConf(conf)
+    interpreterSetting.setConf(zConf)
         .setInterpreterSettingManager(this)
         .setAngularObjectRegistryListener(angularObjectRegistryListener)
         .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
@@ -230,6 +235,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setDependencyResolver(dependencyResolver)
         .setRecoveryStorage(recoveryStorage)
         .setInterpreterEventServer(interpreterEventServer)
+        .setPluginMananger(pluginManager)
         .postProcessing();
   }
 
@@ -307,10 +313,17 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
 
     if (infoSaving.interpreterRepositories != null) {
-      for (RemoteRepository repo : infoSaving.interpreterRepositories) {
-        if (!dependencyResolver.getRepos().contains(repo)) {
-          this.interpreterRepositories.add(repo);
-        }
+      for (Repository repo : infoSaving.interpreterRepositories) {
+        // Remove existing repository with same ID (last one wins)
+        this.interpreterRepositories.removeIf(r -> r.getId().equals(repo.getId()));
+        
+        // Add the repository
+        this.interpreterRepositories.add(repo);
+        
+        // Update dependency resolver
+        dependencyResolver.delRepo(repo.getId());
+        dependencyResolver.addRepo(repo.getId(), repo.getUrl(), repo.isSnapshot(),
+                repo.getAuthentication(), repo.getProxy());
       }
 
       // force interpreter dependencies loading once the
@@ -360,12 +373,12 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   private void init() throws IOException {
     this.includesInterpreters =
-            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_INCLUDES).split(","))
+            Arrays.asList(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_INCLUDES).split(","))
                     .stream()
                     .filter(t -> !t.isEmpty())
                     .collect(Collectors.toList());
     this.excludesInterpreters =
-            Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES).split(","))
+            Arrays.asList(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES).split(","))
                     .stream()
                     .filter(t -> !t.isEmpty())
                     .collect(Collectors.toList());
@@ -399,7 +412,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private void loadJupyterKernelLanguageMap() throws IOException {
-    String kernels = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
+    String kernels = zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
     for (String kernel : kernels.split(",")) {
       String[] tokens = kernel.split(":");
       if (tokens.length != 2) {
@@ -414,7 +427,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private void loadInterpreterSettingFromDefaultDir(boolean override) throws IOException {
     // 1. detect interpreter setting via interpreter-setting.json in each interpreter folder
     // 2. detect interpreter setting in interpreter.json that is saved before
-    String interpreterJson = conf.getInterpreterJson();
+    String interpreterJson = zConf.getInterpreterJson();
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
     if (Files.exists(interpreterDirPath)) {
       try (DirectoryStream<Path> directoryPaths = Files
@@ -531,7 +544,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         .setRunner(runner)
         .setInterpreterDir(interpreterDir)
         .setRunner(runner)
-        .setConf(conf)
+        .setConf(zConf)
+        .setPluginManager(pluginManager)
         .setIntepreterSettingManager(this)
         .create();
 
@@ -786,7 +800,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         LOGGER.info("Start to copy dependencies for interpreter: {}", setting.getName());
         for (Dependency d : deps) {
           File destDir = new File(
-              conf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+              zConf.getAbsoluteDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
           int numSplits = d.getGroupArtifactVersion().split(":").length;
           if (!(numSplits >= 3 && numSplits <= 6)) {
@@ -828,8 +842,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     InterpreterSetting interpreterSetting = null;
     try {
       interpreterSetting = inlineCreateNewSetting(name, group, dependencies, option, properties);
-
-      broadcastClusterEvent(ClusterEvent.CREATE_INTP_SETTING, interpreterSetting);
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
       throw e;
@@ -897,17 +909,30 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   public List<RemoteRepository> getRepositories() {
-    return this.interpreterRepositories;
+    List<RemoteRepository> repos = new ArrayList<>();
+    for (Repository r : this.interpreterRepositories) {
+      repos.add(r.toRemoteRepository());
+    }
+    return repos;
   }
 
-  public void addRepository(String id, String url, boolean snapshot, Authentication auth,
-      Proxy proxy) throws IOException {
-    dependencyResolver.addRepo(id, url, snapshot, auth, proxy);
+  public void addRepository(Repository repository) throws IOException {
+    // Remove existing repository with same ID (last one wins)
+    interpreterRepositories.removeIf(r -> r.getId().equals(repository.getId()));
+    
+    // Add the repository
+    interpreterRepositories.add(repository);
+    
+    // Update dependency resolver
+    dependencyResolver.delRepo(repository.getId());
+    dependencyResolver.addRepo(repository.getId(), repository.getUrl(), repository.isSnapshot(),
+            repository.getAuthentication(), repository.getProxy());
     saveToFile();
   }
 
   public void removeRepository(String id) throws IOException {
     dependencyResolver.delRepo(id);
+    interpreterRepositories.removeIf(r -> r.getId().equals(id));
     saveToFile();
   }
 
@@ -949,8 +974,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       throws InterpreterException, IOException {
     try {
       InterpreterSetting intpSetting = inlineSetPropertyAndRestart(id, option, properties, dependencies, true);
-      // broadcast cluster event
-      broadcastClusterEvent(ClusterEvent.UPDATE_INTP_SETTING, intpSetting);
     } catch (Exception e) {
       throw e;
     }
@@ -1015,7 +1038,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       // broadcast cluster event
       InterpreterSetting intpSetting = new InterpreterSetting();
       intpSetting.setId(id);
-      broadcastClusterEvent(ClusterEvent.DELETE_INTP_SETTING, intpSetting);
     }
   }
 
@@ -1035,7 +1057,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
         // Cluster event accepting nodes do not need to save files repeatedly
         saveToFile();
       }
-      File localRepoPath = new File(conf.getInterpreterLocalRepoPath());
+      File localRepoPath = new File(zConf.getInterpreterLocalRepoPath());
       FileUtils.deleteDirectory(new File(localRepoPath, id));
       removed = true;
     }
@@ -1065,7 +1087,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
   public InterpreterSetting getDefaultInterpreterSetting() {
     InterpreterSetting setting =
-        getByName(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
+        getByName(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
     if (setting != null) {
       return setting;
     } else {
@@ -1212,56 +1234,4 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     // do nothing
   }
 
-  @Override
-  public void onClusterEvent(String msg) {
-    LOGGER.debug("onClusterEvent : {}", msg);
-
-    try {
-      ClusterMessage message = ClusterMessage.deserializeMessage(msg);
-      String jsonIntpSetting = message.get("intpSetting");
-      InterpreterSetting intpSetting = InterpreterSetting.fromJson(jsonIntpSetting);
-      String id = intpSetting.getId();
-      String name = intpSetting.getName();
-      String group = intpSetting.getGroup();
-      InterpreterOption option = intpSetting.getOption();
-      HashMap<String, InterpreterProperty> properties
-          = (HashMap<String, InterpreterProperty>) InterpreterSetting
-          .convertInterpreterProperties(intpSetting.getProperties());
-      List<Dependency> dependencies = intpSetting.getDependencies();
-
-      switch (message.clusterEvent) {
-        case CREATE_INTP_SETTING:
-          inlineCreateNewSetting(name, group, dependencies, option, properties);
-          break;
-        case UPDATE_INTP_SETTING:
-          inlineSetPropertyAndRestart(id, option, properties, dependencies, false);
-          break;
-        case DELETE_INTP_SETTING:
-          inlineRemove(id, false);
-          break;
-        default:
-          LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
-          break;
-      }
-    } catch (IOException e) {
-      LOGGER.error(e.getMessage(), e);
-    } catch (InterpreterException e) {
-      LOGGER.error(e.getMessage(), e);
-    }
-  }
-
-  // broadcast cluster event
-  private void broadcastClusterEvent(ClusterEvent event, InterpreterSetting intpSetting) {
-    if (!conf.isClusterMode()) {
-      return;
-    }
-
-    String jsonIntpSetting = InterpreterSetting.toJson(intpSetting);
-
-    ClusterMessage message = new ClusterMessage(event);
-    message.put("intpSetting", jsonIntpSetting);
-    String msg = ClusterMessage.serializeMessage(message);
-    ClusterManagerServer.getInstance(conf).broadcastClusterEvent(
-        CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
-  }
 }

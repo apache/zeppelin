@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +40,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
+import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,10 +49,9 @@ import org.slf4j.LoggerFactory;
 /**
 * NotebookRepo implementation based on apache vfs
 */
-public class VFSNotebookRepo implements NotebookRepo {
+public class VFSNotebookRepo extends AbstractNotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(VFSNotebookRepo.class);
 
-  protected ZeppelinConfiguration conf;
   protected FileSystemManager fsManager;
   protected FileObject rootNotebookFileObject;
   protected String rootNotebookFolder;
@@ -58,16 +61,16 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void init(ZeppelinConfiguration conf) throws IOException {
-    this.conf = conf;
-    setNotebookDirectory(conf.getNotebookDir());
+  public void init(ZeppelinConfiguration zConf, NoteParser noteParser) throws IOException {
+    super.init(zConf, noteParser);
+    setNotebookDirectory(zConf.getNotebookDir());
   }
 
   protected void setNotebookDirectory(String notebookDirPath) throws IOException {
     URI filesystemRoot = null;
     try {
       LOGGER.info("Using notebookDir: {}", notebookDirPath);
-      if (conf.isWindowsPath(notebookDirPath)) {
+      if (zConf.isWindowsPath(notebookDirPath)) {
         filesystemRoot = new File(notebookDirPath).toURI();
       } else {
         filesystemRoot = new URI(notebookDirPath);
@@ -77,7 +80,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
-      File f = new File(conf.getAbsoluteDir(filesystemRoot.getPath()));
+      File f = new File(zConf.getAbsoluteDir(filesystemRoot.getPath()));
       filesystemRoot = f.toURI();
     }
     this.fsManager = VFS.getManager();
@@ -102,18 +105,24 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   private Map<String, NoteInfo> listFolder(FileObject fileObject) throws IOException {
     Map<String, NoteInfo> noteInfos = new HashMap<>();
+
+    if (fileObject.getName().getBaseName().startsWith(".")) {
+      LOGGER.warn("Skip hidden item: {}", fileObject.getName());
+      return noteInfos;
+    }
+
     if (fileObject.isFolder()) {
-      if (fileObject.getName().getBaseName().startsWith(".")) {
-        LOGGER.warn("Skip hidden folder: {}", fileObject.getName().getPath());
-        return noteInfos;
-      }
       for (FileObject child : fileObject.getChildren()) {
         noteInfos.putAll(listFolder(child));
       }
     } else {
-      // getPath() method returns a string without root directory in windows, so we use getURI() instead
-      // windows does not support paths with "file:///" prepended. so we replace it by "/"
-      String noteFileName = fileObject.getName().getURI().replace("file:///", "/");
+      // getPath() drops the drive on Windows, so use getURI().
+      // Decode URI to change %20 to spaces.
+      // Windows cannot handle "file:///", replace it with "/".
+      String noteFileName = URLDecoder.decode(
+              fileObject.getName().getURI(), StandardCharsets.UTF_8
+      ).replace("file:///", "/");
+
       if (noteFileName.endsWith(".zpln")) {
         try {
           String noteId = getNoteId(noteFileName);
@@ -128,15 +137,27 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
     FileObject noteFile = rootNotebookFileObject.resolveFile(buildNoteFileName(noteId, notePath),
         NameScope.DESCENDENT);
     String json = IOUtils.toString(noteFile.getContent().getInputStream(),
-        conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = Note.fromJson(noteId, json);
-    // setPath here just for testing, because actually NoteManager will setPath
-    note.setPath(notePath);
-    return note;
+        zConf.getString(ConfVars.ZEPPELIN_ENCODING));
+
+    try {
+      Note note = noteParser.fromJson(noteId, json);
+      // setPath here just for testing, because actually NoteManager will setPath
+      note.setPath(notePath);
+      return note;
+    } catch (CorruptedNoteException e) {
+      String errorMessage = String.format(
+          "Fail to parse note json. Please check the file at this path to resolve the issue. "
+          + "Path: %s, "
+          + "Content: %s",
+          rootNotebookFolder + notePath, json
+      );
+      throw new CorruptedNoteException(noteId, errorMessage, e);
+    }
   }
 
   @Override
@@ -148,7 +169,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     OutputStream out = null;
     try {
       out = noteJson.getContent().getOutputStream(false);
-      IOUtils.write(note.toJson().getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
+      IOUtils.write(note.toJson().getBytes(zConf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
     } finally {
       if (out != null) {
         out.close();

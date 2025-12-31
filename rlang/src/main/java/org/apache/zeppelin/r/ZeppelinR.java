@@ -38,7 +38,7 @@ import java.util.Map;
  * R repl interaction
  */
 public class ZeppelinR {
-  private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
 
   private RInterpreter rInterpreter;
   private RProcessLogOutputStream processOutputStream;
@@ -49,14 +49,14 @@ public class ZeppelinR {
    * Request to R repl
    */
   private Request rRequestObject = null;
-  private Integer rRequestNotifier = new Integer(0);
+  private Integer rRequestNotifier = Integer.valueOf(0);
 
   /**
    * Response from R repl
    */
   private Object rResponseValue = null;
   private boolean rResponseError = false;
-  private Integer rResponseNotifier = new Integer(0);
+  private Integer rResponseNotifier = Integer.valueOf(0);
 
   public ZeppelinR(RInterpreter rInterpreter) {
     this.rInterpreter = rInterpreter;
@@ -124,11 +124,9 @@ public class ZeppelinR {
     cmd.addArgument(rInterpreter.sparkVersion() + "");
     cmd.addArgument(timeout);
     cmd.addArgument(rInterpreter.isSparkSupported() + "");
-    if (rInterpreter.isSecretSupported()) {
-      cmd.addArgument(SparkRBackend.get().socketSecret());
-    }
+    cmd.addArgument(SparkRBackend.get().socketSecret());
     // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
-    LOGGER.info("R Command: " + cmd.toString());
+    LOGGER.info("R Command: {}", cmd);
     processOutputStream = new RProcessLogOutputStream(rInterpreter);
     Map env = EnvironmentUtils.getProcEnvironment();
     rProcessLauncher = new RProcessLauncher(cmd, env, processOutputStream);

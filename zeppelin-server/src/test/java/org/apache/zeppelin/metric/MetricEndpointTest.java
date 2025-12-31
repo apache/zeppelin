@@ -17,32 +17,38 @@
 
 package org.apache.zeppelin.metric;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.zeppelin.rest.NotebookRepoRestApiTest;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class MetricEndpointTest extends AbstractTestRestApi {
+class MetricEndpointTest extends AbstractTestRestApi {
 
-  @BeforeClass
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS.getVarName(),
-      "true");
-    AbstractTestRestApi.startUp(MetricEndpointTest.class.getSimpleName());
+  private static MiniZeppelinServer zepServer;
+
+  @BeforeAll
+  static void setUp() throws Exception {
+    zepServer = new MiniZeppelinServer(NotebookRepoRestApiTest.class.getSimpleName());
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS.getVarName(), "true");
+    zepServer.start();
   }
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @AfterAll
+  static void destroy() throws Exception {
+    zepServer.destroy();
   }
 
   /**
@@ -50,19 +56,17 @@ public class MetricEndpointTest extends AbstractTestRestApi {
    * @throws IOException
    */
   @Test
-  public void testPrometheusMetricJVM() throws IOException {
-    CloseableHttpResponse get = getHttpClient().execute(new HttpGet(getUrlToTest() + "/metrics"));
-    assertEquals(200, get.getStatusLine().getStatusCode());
-    String response = EntityUtils.toString(get.getEntity());
-    assertTrue("Contains JVM metric", response.contains("jvm_memory"));
-    get.close();
+  void testPrometheusMetricJVM() throws IOException {
+    try (
+        CloseableHttpResponse get = getHttpClient().execute(
+            new HttpGet(getUrlToTest(zepServer.getZeppelinConfiguration()) + "/metrics"))) {
+      assertEquals(200, get.getStatusLine().getStatusCode());
+      String response = EntityUtils.toString(get.getEntity());
+      assertTrue(response.contains("jvm_memory"), "Contains JVM metric");
+    }
   }
 
-  protected static String getUrlToTest() {
-    String url = "http://localhost:8080";
-    if (System.getProperty("url") != null) {
-      url = System.getProperty("url");
-    }
-    return url;
+  protected static String getUrlToTest(ZeppelinConfiguration zConf) {
+    return "http://localhost:" + zConf.getServerPort();
   }
 }

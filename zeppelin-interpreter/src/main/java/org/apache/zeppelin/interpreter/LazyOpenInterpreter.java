@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
@@ -202,6 +203,11 @@ public class LazyOpenInterpreter
   @Override
   public void setUserName(String userName) {
     this.intp.setUserName(userName);
+  }
+
+  @Override
+  public void setZeppelinConfiguration(ZeppelinConfiguration zConf) {
+    this.intp.setZeppelinConfiguration(zConf);
   }
 
   @Override

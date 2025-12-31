@@ -18,16 +18,20 @@ package org.apache.zeppelin.socket;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.utils.ServerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
 
-import javax.websocket.Session;
+import jakarta.websocket.Session;
 
 /**
  * Notebook websocket.
  */
 public class NotebookSocket {
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotebookSocket.class);
+
   private Session session;
   private Map<String, Object> headers;
   private String user;
@@ -36,6 +40,7 @@ public class NotebookSocket {
     this.session = session;
     this.headers = headers;
     this.user = StringUtils.EMPTY;
+    LOGGER.debug("NotebookSocket created for session: {}", session.getId());
   }
 
   public String getHeader(String key) {
@@ -43,7 +48,11 @@ public class NotebookSocket {
   }
 
   public void send(String serializeMessage) throws IOException {
-    session.getBasicRemote().sendText(serializeMessage);
+    session.getAsyncRemote().sendText(serializeMessage, result -> {
+      if (result.getException() != null) {
+        LOGGER.error("Failed to send async message for User {} in Session {}: {}", this.user, this.session.getId(), result.getException());
+      }
+    });
   }
 
   public String getUser() {
@@ -51,6 +60,7 @@ public class NotebookSocket {
   }
 
   public void setUser(String user) {
+    LOGGER.debug("Setting user: {}", user);
     this.user = user;
   }
 

@@ -17,37 +17,32 @@
 
 package org.apache.zeppelin.rest.exception;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
-import org.apache.zeppelin.rest.message.gson.ExceptionSerializer;
+import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
+import org.apache.zeppelin.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<Throwable> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationException.class);
-
-  private final Gson gson;
-
-  public WebApplicationExceptionMapper() {
-    GsonBuilder gsonBuilder = new GsonBuilder().enableComplexMapKeySerialization();
-    gsonBuilder.registerTypeHierarchyAdapter(
-            Exception.class, new ExceptionSerializer());
-    this.gson = gsonBuilder.create();
-  }
+    
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationExceptionMapper.class);
 
   @Override
   public Response toResponse(Throwable exception) {
     if (exception instanceof WebApplicationException) {
       return ((WebApplicationException) exception).getResponse();
+    } else if (exception instanceof NotePathAlreadyExistsException) {
+      return ExceptionUtils.jsonResponseContent(Response.Status.CONFLICT, exception.getMessage());
     } else {
       LOGGER.error("Error response", exception);
-      return Response.status(500).entity(gson.toJson(exception)).build();
+      // Return generic error message to prevent information disclosure
+      String errorMessage = "{\"status\":\"error\",\"message\":\"Internal server error\"}";
+      return Response.status(500).entity(errorMessage).build();
     }
   }
 }

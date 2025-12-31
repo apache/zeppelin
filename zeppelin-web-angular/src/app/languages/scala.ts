@@ -12,8 +12,10 @@
 
 'use strict';
 
-import IRichLanguageConfiguration = monaco.languages.LanguageConfiguration;
-import ILanguage = monaco.languages.IMonarchLanguage;
+import { languages } from 'monaco-editor';
+
+type IRichLanguageConfiguration = languages.LanguageConfiguration;
+type ILanguage = languages.IMonarchLanguage;
 
 export const conf: IRichLanguageConfiguration = {
   // the default separators except `@$`
@@ -22,7 +24,11 @@ export const conf: IRichLanguageConfiguration = {
     lineComment: '//',
     blockComment: ['/*', '*/']
   },
-  brackets: [['{', '}'], ['[', ']'], ['(', ')']],
+  brackets: [
+    ['{', '}'],
+    ['[', ']'],
+    ['(', ')']
+  ],
   autoClosingPairs: [
     { open: '{', close: '}' },
     { open: '[', close: ']' },
@@ -226,6 +232,7 @@ export const language = {
       [/[\/*]/, 'comment.doc']
     ],
 
+    // eslint-disable-next-line id-blacklist
     string: [
       [/[^\\"]+/, 'string'],
       [/@escapes/, 'string.escape'],

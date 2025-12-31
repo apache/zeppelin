@@ -16,10 +16,10 @@
  */
 package org.apache.zeppelin.search;
 import static org.apache.zeppelin.search.LuceneSearch.formatId;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,11 +45,11 @@ import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class LuceneSearchTest {
+class LuceneSearchTest {
 
   private Notebook notebook;
   private InterpreterSettingManager interpreterSettingManager;
@@ -57,25 +57,27 @@ public class LuceneSearchTest {
   private LuceneSearch noteSearchService;
   private File indexDir;
 
-  @Before
+  @BeforeEach
   public void startUp() throws IOException {
-    indexDir = Files.createTempDirectory("lucene").toFile();
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(), indexDir.getAbsolutePath());
+    indexDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(),
+        indexDir.getAbsolutePath());
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    noteManager = new NoteManager(new InMemoryNotebookRepo(), conf);
+
+    noteManager = new NoteManager(new InMemoryNotebookRepo(), zConf);
     interpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterSetting defaultInterpreterSetting = mock(InterpreterSetting.class);
     when(defaultInterpreterSetting.getName()).thenReturn("test");
     when(interpreterSettingManager.getDefaultInterpreterSetting()).thenReturn(defaultInterpreterSetting);
-    notebook = new Notebook(conf, mock(AuthorizationService.class),
+    notebook = new Notebook(zConf, mock(AuthorizationService.class),
         mock(NotebookRepo.class), noteManager,
             mock(InterpreterFactory.class), interpreterSettingManager,
             mock(Credentials.class), null);
-    noteSearchService = new LuceneSearch(ZeppelinConfiguration.create(), notebook);
+    noteSearchService = new LuceneSearch(zConf, notebook);
   }
 
-  @After
+  @AfterEach
   public void shutDown() throws IOException {
     noteSearchService.close();
     FileUtils.deleteDirectory(indexDir);
@@ -89,9 +91,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQuery() throws IOException, InterruptedException {
+  void canIndexAndQuery() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -109,10 +111,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQueryByNotebookName() throws IOException, InterruptedException {
+  void canIndexAndQueryByNotebookName() throws IOException, InterruptedException {
     // given
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
     // when
@@ -125,10 +127,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQueryByParagraphTitle() throws IOException, InterruptedException {
+  void canIndexAndQueryByParagraphTitle() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
-    String note2Id = newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
+    newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
+    newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
     drainSearchEvents();
 
     // when
@@ -147,7 +149,7 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexKeyContract() throws IOException, InterruptedException {
+  void indexKeyContract() throws IOException, InterruptedException {
     // given
     String note1Id = newNoteWithParagraph("Notebook1", "test");
     drainSearchEvents();
@@ -163,7 +165,7 @@ public class LuceneSearchTest {
   }
 
   @Test // (expected=IllegalStateException.class)
-  public void canNotSearchBeforeIndexing() {
+  void canNotSearchBeforeIndexing() {
     // given NO noteSearchService.index() was called
     // when
     List<Map<String, String>> result = noteSearchService.query("anything");
@@ -174,9 +176,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndReIndex() throws IOException, InterruptedException {
+  void canIndexAndReIndex() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -199,7 +201,7 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canDeleteNull() throws IOException {
+  void canDeleteNull() {
     // give
     // looks like a bug in web UI: it tries to delete a note twice (after it has just been deleted)
     // when
@@ -207,9 +209,9 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canDeleteFromIndex() throws IOException, InterruptedException {
+  void canDeleteFromIndex() throws IOException, InterruptedException {
     // given
-    String note1Id = newNoteWithParagraph("Notebook1", "test");
+    newNoteWithParagraph("Notebook1", "test");
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
@@ -228,10 +230,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexParagraphUpdatedOnNoteSave() throws IOException, InterruptedException {
+  void indexParagraphUpdatedOnNoteSave() throws IOException, InterruptedException {
     // given: total 2 notebooks, 3 paragraphs
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
     assertEquals(3, resultForQuery("test").size());
@@ -261,10 +263,10 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void indexNoteNameUpdatedOnNoteSave() throws IOException, InterruptedException {
+  void indexNoteNameUpdatedOnNoteSave() throws IOException, InterruptedException {
     // given: total 2 notebooks, 3 paragraphs
     String note1Id = newNoteWithParagraph("Notebook1", "test");
-    String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
+    newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
     assertEquals(3, resultForQuery("test").size());
 

@@ -1,0 +1,26 @@
+name: Close stale PRs after 1 year of inactivity
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Every day at 11 AM KST (2 AM UTC)
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 365
+          days-before-close: 30
+          stale-pr-message: >
+            This pull request has been inactive for over a year.  
+            If no further activity occurs within the next 30 days, it will be automatically closed.  
+            If you believe this PR is still relevant, please feel free to leave a comment or make an update. Thank you!
+          close-pr-message: >
+            This pull request has been automatically closed due to prolonged inactivity (over one year without updates).  
+            If you feel this was done in error or would like to continue the discussion, feel free to reopen it. Thank you for your contributions!
+          only-prs: true
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          exempt-pr-labels: suspend-stale

@@ -16,13 +16,21 @@
 # limitations under the License.
 #
 
-if [[ "$#" -ne 1 ]]; then
-    echo "usage) $0 [livy version]"
-    echo "   eg) $0 0.2"
+if [[ "$#" -ne 1 && "$#" -ne 2 ]]; then
+    echo "usage) $0 <livy version> [scala version]"
+    echo "   eg) $0 0.7.1-incubating"
+    echo "       $0 0.8.0-incubating 2.11"
     exit 0
 fi
 
+# See simple version normalization:
+# http://stackoverflow.com/questions/16989598/bash-comparing-version-numbers
+function version { echo "$@" | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 LIVY_VERSION="${1}"
+SCALA_VERSION_SUFFIX=""
+if [ $(version $LIVY_VERSION) -ge $(version "0.8.0") ]; then
+    SCALA_VERSION_SUFFIX="_${2}"
+fi
 
 set -xe
 
@@ -37,19 +45,21 @@ ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 #   None
 # Arguments:
 #   url - source URL
+#   file - output filename
 # Returns:
 #   None
 #######################################
 download_with_retry() {
     local url="$1"
-    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
+    local file="${2:-$(basename $url)}"
+    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 --output-document "${file}" "${url}"
     if [[ "$?" -ne 0 ]]; then
         echo "3 download attempts for ${url} failed"
     fi
 }
 
 LIVY_CACHE=".livy-dist"
-LIVY_ARCHIVE="livy-${LIVY_VERSION}-bin"
+LIVY_ARCHIVE="apache-livy-${LIVY_VERSION}${SCALA_VERSION_SUFFIX}-bin"
 export LIVY_HOME="${ZEPPELIN_HOME}/livy-server-$LIVY_VERSION"
 echo "LIVY_HOME is ${LIVY_HOME}"
 
@@ -64,7 +74,7 @@ if [[ ! -d "${LIVY_HOME}" ]]; then
         # download livy from archive if not cached
         echo "${LIVY_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
-        download_with_retry "https://dist.apache.org/repos/dist/release/incubator/livy/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip"
+        download_with_retry "https://www.apache.org/dyn/closer.lua/incubator/livy/${LIVY_VERSION}/${LIVY_ARCHIVE}.zip?action=download" "${LIVY_ARCHIVE}.zip"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi

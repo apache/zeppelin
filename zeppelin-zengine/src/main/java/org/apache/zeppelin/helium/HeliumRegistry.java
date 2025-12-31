@@ -26,7 +26,7 @@ public abstract class HeliumRegistry {
   private final String name;
   private final String uri;
 
-  public HeliumRegistry(String name, String uri) {
+  protected HeliumRegistry(String name, String uri) {
     this.name = name;
     this.uri = uri;
   }

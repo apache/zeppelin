@@ -18,9 +18,9 @@
 package org.apache.zeppelin.cassandra
 
 import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, SimpleStatement}
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec._
 
-class EnhancedSessionTest extends FlatSpec {
+class EnhancedSessionTest extends AnyFlatSpec {
 
   "Query" should "be detected as DDL for create" in {
     assertResult(true){

@@ -59,12 +59,15 @@ import java.util.UUID;
  * ]
  */
 public class HeliumOnlineRegistry extends HeliumRegistry {
-  private Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
   private final Gson gson;
   private final File registryCacheFile;
+  private final ZeppelinConfiguration zConf;
 
-  public HeliumOnlineRegistry(String name, String uri, File registryCacheDir) {
+  public HeliumOnlineRegistry(String name, String uri, File registryCacheDir,
+      ZeppelinConfiguration zConf) {
     super(name, uri);
+    this.zConf = zConf;
     registryCacheDir.mkdirs();
     UUID registryCacheFileUuid = UUID.nameUUIDFromBytes(uri.getBytes());
     this.registryCacheFile = new File(registryCacheDir, registryCacheFileUuid.toString());
@@ -81,10 +84,9 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
     HttpGet get = new HttpGet(uri());
     HttpResponse response;
     try {
-      ZeppelinConfiguration cfg = ZeppelinConfiguration.create();
-      if ((get.getURI().getHost().equals(cfg.getS3Endpoint()))) {
-        if (cfg.getS3Timeout() != null) {
-          int timeout = Integer.valueOf(cfg.getS3Timeout());
+      if ((get.getURI().getHost().equals(zConf.getS3Endpoint()))) {
+        if (zConf.getS3Timeout() != null) {
+          int timeout = Integer.parseInt(zConf.getS3Timeout());
           RequestConfig requestCfg = RequestConfig.custom()
                   .setConnectTimeout(timeout)
                   .setSocketTimeout(timeout)
@@ -94,13 +96,15 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       }
       response = client.execute(get);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      LOGGER.error(e.getMessage());
       return readFromCache();
     }
 
     if (response.getStatusLine().getStatusCode() != 200) {
       // try read from cache
-      logger.error(uri() + " returned " + response.getStatusLine().toString());
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error("{} returned {}", uri(), response.getStatusLine());
+      }
       return readFromCache();
     } else {
       List<HeliumPackage> packageList = new LinkedList<>();
@@ -147,7 +151,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       }
       else return null;
     } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
+      LOGGER.error(ex.getMessage(), ex);
       return null;
     }
   }
@@ -161,7 +165,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
               new TypeToken<List<HeliumPackage>>() {
               }.getType());
         } catch (FileNotFoundException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
           return new LinkedList<>();
         }
       } else {

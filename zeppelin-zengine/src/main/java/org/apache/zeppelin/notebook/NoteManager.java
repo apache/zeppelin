@@ -21,15 +21,15 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
@@ -66,12 +66,14 @@ public class NoteManager {
   private NoteCache noteCache;
   // noteId -> notePath
   private Map<String, String> notesInfo;
+  private final ZeppelinConfiguration zConf;
 
   @Inject
-  public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration conf) throws IOException {
+  public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration zConf) throws IOException {
+    this.zConf = zConf;
     this.notebookRepo = notebookRepo;
-    this.noteCache = new NoteCache(conf.getNoteCacheThreshold());
-    this.root = new Folder("/", notebookRepo, noteCache);
+    this.noteCache = new NoteCache(zConf.getNoteCacheThreshold());
+    this.root = new Folder("/", notebookRepo, noteCache, zConf);
     this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
     init();
   }
@@ -102,7 +104,7 @@ public class NoteManager {
    * @throws IOException
    */
   public void reloadNotes() throws IOException {
-    this.root = new Folder("/", notebookRepo, noteCache);
+    this.root = new Folder("/", notebookRepo, noteCache, zConf);
     this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
     init();
   }
@@ -247,7 +249,7 @@ public class NoteManager {
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
     // Update path of the note
-    if (!StringUtils.equalsIgnoreCase(notePath, newNotePath)) {
+    if (!StringUtils.equals(notePath, newNotePath)) {
       processNote(noteId,
         note -> {
           note.setPath(newNotePath);
@@ -258,7 +260,7 @@ public class NoteManager {
     // save note if note name is changed, because we need to update the note field in note json.
     String oldNoteName = getNoteName(notePath);
     String newNoteName = getNoteName(newNotePath);
-    if (!StringUtils.equalsIgnoreCase(oldNoteName, newNoteName)) {
+    if (!StringUtils.equals(oldNoteName, newNoteName)) {
       processNote(noteId,
         note -> {
           this.notebookRepo.save(note, subject);
@@ -436,20 +438,24 @@ public class NoteManager {
     private Folder parent;
     private NotebookRepo notebookRepo;
     private NoteCache noteCache;
+    private final ZeppelinConfiguration zConf;
 
     // noteName -> NoteNode
     private Map<String, NoteNode> notes = new ConcurrentHashMap<>();
     // folderName -> Folder
     private Map<String, Folder> subFolders = new ConcurrentHashMap<>();
 
-    public Folder(String name, NotebookRepo notebookRepo, NoteCache noteCache) {
+    public Folder(String name, NotebookRepo notebookRepo, NoteCache noteCache,
+        ZeppelinConfiguration zConf) {
       this.name = name;
+      this.zConf = zConf;
       this.notebookRepo = notebookRepo;
       this.noteCache = noteCache;
     }
 
-    public Folder(String name, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
-      this(name, notebookRepo, noteCache);
+    public Folder(String name, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache,
+        ZeppelinConfiguration zConf) {
+      this(name, notebookRepo, noteCache, zConf);
       this.parent = parent;
     }
 
@@ -458,7 +464,7 @@ public class NoteManager {
         return this;
       }
       if (!subFolders.containsKey(folderName)) {
-        subFolders.put(folderName, new Folder(folderName, this, notebookRepo, noteCache));
+        subFolders.put(folderName, new Folder(folderName, this, notebookRepo, noteCache, zConf));
       }
       return subFolders.get(folderName);
     }
@@ -492,7 +498,7 @@ public class NoteManager {
     }
 
     public void addNote(String noteName, NoteInfo noteInfo) {
-      notes.put(noteName, new NoteNode(noteInfo, this, notebookRepo, noteCache));
+      notes.put(noteName, new NoteNode(noteInfo, this, notebookRepo, noteCache, zConf));
     }
 
     /**
@@ -589,12 +595,15 @@ public class NoteManager {
     private NoteInfo noteInfo;
     private NotebookRepo notebookRepo;
     private NoteCache noteCache;
+    private ZeppelinConfiguration zConf;
 
-    public NoteNode(NoteInfo noteInfo, Folder parent, NotebookRepo notebookRepo, NoteCache noteCache) {
+    public NoteNode(NoteInfo noteInfo, Folder parent, NotebookRepo notebookRepo,
+        NoteCache noteCache, ZeppelinConfiguration zConf) {
       this.noteInfo = noteInfo;
       this.parent = parent;
       this.notebookRepo = notebookRepo;
       this.noteCache = noteCache;
+      this.zConf = zConf;
     }
 
     /**
@@ -621,7 +630,7 @@ public class NoteManager {
           } else {
             note.setPath(parent.toString() + "/" + note.getName());
           }
-          note.setCronSupported(ZeppelinConfiguration.create());
+          note.setCronSupported(zConf);
           noteCache.putNote(note);
         }
       }
@@ -736,7 +745,6 @@ public class NoteManager {
         if (size() <= NoteCache.this.threshold) {
           return false;
         }
-
         final Note eldestNote = eldest.getValue();
         final Lock lock = eldestNote.getLock().writeLock();
         if (lock.tryLock()) { // avoid eviction in case the note is in use
@@ -748,11 +756,32 @@ public class NoteManager {
         } else {
           LOGGER.info("Can not evict note {}, because the write lock can not be acquired. {} notes currently loaded.",
               eldestNote.getId(), size());
+          cleanupCache();
           return false;
         }
       }
-    }
 
+      private void cleanupCache() {
+        Iterator<Map.Entry<String, Note>> iterator = this.entrySet().iterator();
+        int count = 0;
+        // if size >= shrinked_size and have next() try remove
+        while ((this.size() - 1) >= NoteCache.this.threshold && iterator.hasNext()) {
+          Map.Entry<String, Note> noteEntry = iterator.next();
+          final Note note = noteEntry.getValue();
+          final Lock lock = note.getLock().writeLock();
+          if (lock.tryLock()) { // avoid eviction in case the note is in use
+            try {
+              iterator.remove(); // remove LRU element from LinkedHashMap
+              LOGGER.debug("Remove note {} from LRU Cache", note.getId());
+              ++count;
+            } finally {
+              lock.unlock();
+            }
+          }
+        }
+        LOGGER.info("The cache cleanup removes {} entries", count);
+      }
+    }
   }
 
 

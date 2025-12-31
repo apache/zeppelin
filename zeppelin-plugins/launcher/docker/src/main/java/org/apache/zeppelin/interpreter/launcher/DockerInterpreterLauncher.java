@@ -41,8 +41,7 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
   public InterpreterClient launchDirectly(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: {}", context.getInterpreterSettingGroup());
     this.context = context;
-    this.properties = context.getProperties();
-    int connectTimeout = getConnectTimeout();
+    int connectTimeout = getConnectTimeout(context);
     if (connectTimeout < 200000) {
       // DockerInterpreterLauncher needs to pull the image and create the container,
       // it takes a long time, so the force is set to 200 seconds.
@@ -60,7 +59,6 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
     } else {
       interpreterLauncher = new StandardInterpreterLauncher(zConf, recoveryStorage);
     }
-    interpreterLauncher.setProperties(context.getProperties());
     Map<String, String> env = interpreterLauncher.buildEnvFromProperties(context);
 
     return new DockerInterpreterProcess(
@@ -69,7 +67,7 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
         context.getInterpreterGroupId(),
         context.getInterpreterSettingGroup(),
         context.getInterpreterSettingName(),
-        properties,
+        context.getProperties(),
         env,
         context.getIntpEventServerHost(),
         context.getIntpEventServerPort(),

@@ -23,15 +23,14 @@ import java.util.List;
  */
 public class NewNoteRequest {
 
-  //TODO(zjffdu) rename it to be notePath instead of name
-  private final String name;
+  private final String notePath;
   private final String defaultInterpreterGroup;
   private final Boolean addingEmptyParagraph;
   private final List<NewParagraphRequest> paragraphs;
   private final String revisionId;
 
-  public NewNoteRequest(String name, String defaultInterpreterGroup, Boolean addingEmptyParagraph, List<NewParagraphRequest> paragraphs, String revisionId) {
-    this.name = name;
+  public NewNoteRequest(String notePath, String defaultInterpreterGroup, Boolean addingEmptyParagraph, List<NewParagraphRequest> paragraphs, String revisionId) {
+    this.notePath = notePath;
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.addingEmptyParagraph = addingEmptyParagraph;
     this.paragraphs = paragraphs;
@@ -49,8 +48,8 @@ public class NewNoteRequest {
     return addingEmptyParagraph.booleanValue();
   }
 
-  public String getName() {
-    return name;
+  public String getNotePath() {
+    return notePath;
   }
 
   public String getDefaultInterpreterGroup() {

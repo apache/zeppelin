@@ -10,29 +10,42 @@
   ~ limitations under the License.
   -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="light">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="./assets/images/zeppelin.png" type="image/x-icon">
-  <title>Zeppelin</title>
-  <base href="/">
-</head>
-<body>
-<zeppelin-root>
-  <section class="spin">
-    <div>
-      <div class="logo"></div>
-      <div class="spin-text">
-        <h1 class="brand-title" style="display: none">Zeppelin</h1>
-        <span class="status" style="display: none">Booting ...</span>
-      </div>
-    </div>
-  </section>
-</zeppelin-root>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="./assets/images/zeppelin.png" type="image/x-icon" />
+    <link rel="stylesheet" href="./assets/fonts/material-symbols-outlined.css" />
+    <title>Zeppelin</title>
+    <script>
+      // Prevent FOUC (Flash of Unstyled Content)
+      (function () {
+        const savedTheme = localStorage.getItem('zeppelin-theme');
+        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark =
+          savedTheme === 'dark' || (savedTheme === 'system' && systemPrefersDark) || (!savedTheme && systemPrefersDark);
 
-  <script type="text/x-mathjax-config">
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <zeppelin-root>
+      <section class="spin">
+        <div>
+          <div class="logo"></div>
+          <div class="spin-text">
+            <h1 class="brand-title" style="display: none">Zeppelin</h1>
+            <span class="status" style="display: none">Booting ...</span>
+          </div>
+        </div>
+      </section>
+    </zeppelin-root>
+
+    <script type="text/x-mathjax-config">
       var config = {
         extensions: ["tex2jax.js"],
         jax: ["input/TeX", "output/HTML-CSS"],
@@ -44,7 +57,15 @@
         "HTML-CSS": { availableFonts: ["TeX"] },
         messageStyle: "none"
       }
+      const origin = window.location.origin;
+      const pathname = window.location.pathname;
+      config.root = window.location.origin + (
+        // remove trailing slash
+        pathname.charAt(pathname.length - 1) === '/' ?
+          pathname.slice(0, -1) :
+          pathname
+      );
       MathJax.Hub.Config(config);
     </script>
-</body>
+  </body>
 </html>

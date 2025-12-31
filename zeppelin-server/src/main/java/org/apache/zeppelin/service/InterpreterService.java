@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import jline.internal.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -50,13 +50,13 @@ public class InterpreterService {
               .setNameFormat(InterpreterService.class.getSimpleName() + "-")
               .build());
 
-  private final ZeppelinConfiguration conf;
+  private final ZeppelinConfiguration zConf;
   private final InterpreterSettingManager interpreterSettingManager;
 
   @Inject
   public InterpreterService(
-      ZeppelinConfiguration conf, InterpreterSettingManager interpreterSettingManager) {
-    this.conf = conf;
+      ZeppelinConfiguration zConf, InterpreterSettingManager interpreterSettingManager) {
+    this.zConf = zConf;
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
@@ -68,10 +68,10 @@ public class InterpreterService {
     Preconditions.checkNotNull(interpreterName);
     Preconditions.checkNotNull(request.getArtifact());
 
-    String interpreterBaseDir = conf.getInterpreterDir();
-    String localRepoPath = conf.getInterpreterLocalRepoPath();
+    String interpreterBaseDir = zConf.getInterpreterDir();
+    String localRepoPath = zConf.getInterpreterLocalRepoPath();
 
-    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath);
+    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath, zConf);
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
     List<String> possibleInterpreterDirectories = new ArrayList<>();

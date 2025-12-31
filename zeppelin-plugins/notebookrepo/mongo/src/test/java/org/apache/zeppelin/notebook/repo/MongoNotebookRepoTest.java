@@ -18,70 +18,65 @@
 package org.apache.zeppelin.notebook.repo;
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_MONGO_URI;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Map;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
+import de.flapdoodle.reverse.TransitionWalker.ReachedState;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class MongoNotebookRepoTest {
+class MongoNotebookRepoTest {
 
-  private MongodExecutable mongodExecutable;
+  private ReachedState<RunningMongodProcess> mongodProcess;
 
   private ZeppelinConfiguration zConf;
+  private NoteParser noteParser;
 
   private MongoNotebookRepo notebookRepo;
 
-  @Before
-  public void setUp() throws IOException {
-    String bindIp = "localhost";
-    ServerSocket socket = new ServerSocket(0);
-    int port = socket.getLocalPort();
-    socket.close();
+  @BeforeEach
+  void setUp() throws IOException {
+    zConf = ZeppelinConfiguration.load();
+    noteParser = new GsonNoteParser(zConf);
 
-    MongodConfig mongodConfig = MongodConfig.builder()
-        .version(Version.Main.PRODUCTION)
-        .net(new Net(bindIp, port, Network.localhostIsIPv6()))
-        .build();
+    ReachedState<RunningMongodProcess> mongodProcess = Mongod.instance().start(Version.Main.V8_0);
+    String host = mongodProcess.current().getServerAddress().getHost();
+    int port = mongodProcess.current().getServerAddress().getPort();
+    zConf.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + host + ":" + port);
 
-    mongodExecutable = MongodStarter.getDefaultInstance()
-        .prepare(mongodConfig);
-    mongodExecutable.start();
-
-    System.setProperty(ZEPPELIN_NOTEBOOK_MONGO_URI.getVarName(), "mongodb://" + bindIp + ":" + port);
-    zConf = ZeppelinConfiguration.create();
     notebookRepo = new MongoNotebookRepo();
-    notebookRepo.init(zConf);
+    notebookRepo.init(zConf, noteParser);
   }
 
-  @After
-  public void tearDown() throws IOException {
-    if (mongodExecutable != null) {
-      mongodExecutable.stop();
+  @AfterEach
+  void tearDown() throws IOException {
+    if (mongodProcess != null) {
+      mongodProcess.close();
     }
   }
 
   @Test
-  public void testBasics() throws IOException {
+  void testBasics() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     // create note1
     Note note1 = new Note();
     note1.setPath("/my_project/my_note1");
+    note1.setNoteParser(noteParser);
+    note1.setZeppelinConfiguration(zConf);
     Paragraph p1 = note1.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p1.setText("%md hello world");
     p1.setTitle("my title");
@@ -96,6 +91,8 @@ public class MongoNotebookRepoTest {
     // create note2
     Note note2 = new Note();
     note2.setPath("/my_note2");
+    note2.setNoteParser(noteParser);
+    note2.setZeppelinConfiguration(zConf);
     Paragraph p2 = note2.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
     p2.setText("%md hello world2");
     p2.setTitle("my title2");
@@ -128,15 +125,17 @@ public class MongoNotebookRepoTest {
   }
 
   @Test
-  public void testGetNotePath() throws IOException {
+  void testGetNotePath() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
     Note note = new Note();
     String notePath = "/folder1/folder2/folder3/folder4/folder5/my_note";
     note.setPath(notePath);
+    note.setNoteParser(noteParser);
+    note.setZeppelinConfiguration(zConf);
     notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
 
-    notebookRepo.init(zConf);
+    notebookRepo.init(zConf, noteParser);
     Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
     assertEquals(notePath, noteInfos.get(note.getId()).getPath());

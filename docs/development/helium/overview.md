@@ -40,4 +40,4 @@ Currently, Helium supports 4 types of package.
 ## Configuration
 
 Zeppelin ships with several builtin helium plugins which is located in $ZEPPELIN_HOME/heliums. If you want to try more types of heliums plugins,
-you can configure `zeppelin.helium.registry` to be `helium,https://s3.amazonaws.com/helium-package/helium.json` in zeppelin-site.xml. `https://s3.amazonaws.com/helium-package/helium.json` will be updated regularly.
+you can configure `zeppelin.helium.registry` to be `helium,https://zeppelin.apache.org/helium.json` in zeppelin-site.xml. `https://zeppelin.apache.org/helium.json` will be updated regularly.

@@ -160,7 +160,7 @@ public class K8sUtils {
       // Remove all disallowed values
       result = result.replaceAll("[^a-z0-9\\.-]", "");
       // Remove all multiple dots
-      result = result.replaceAll("\\.+", ".");
+      result = result.replaceAll("\\.+", "");
       if (result.isEmpty() || !Character.isLetterOrDigit(result.charAt(0))) {
         result = ZEPPELIN + result;
       }

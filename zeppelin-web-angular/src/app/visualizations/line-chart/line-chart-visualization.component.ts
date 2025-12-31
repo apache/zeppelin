@@ -20,6 +20,8 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
+import * as G2 from '@antv/g2';
+import { GraphConfig, VisualizationLineChart } from '@zeppelin/sdk';
 
 import { G2VisualizationComponentBase, Visualization, VISUALIZATION } from '@zeppelin/visualization';
 
@@ -35,17 +37,23 @@ import { VisualizationXAxisSettingComponent } from '../common/x-axis-setting/x-a
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LineChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
-  @ViewChild('container', { static: false }) container: ElementRef<HTMLDivElement>;
+  @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;
   @ViewChild(VisualizationXAxisSettingComponent, { static: false })
-  xAxisSettingComponent: VisualizationXAxisSettingComponent;
+  xAxisSettingComponent!: VisualizationXAxisSettingComponent;
   @ViewChild(VisualizationPivotSettingComponent, { static: false })
-  pivotSettingComponent: VisualizationPivotSettingComponent;
+  pivotSettingComponent!: VisualizationPivotSettingComponent;
   forceY = false;
   lineWithFocus = false;
   isDateFormat = false;
   dateFormat = '';
 
   settingChange(): void {
+    if (!this.config || !this.visualization.configChange$) {
+      throw new Error('config or visualization.configChange$ is not defined');
+    }
+    if (!this.config.setting.lineChart) {
+      this.config.setting.lineChart = new VisualizationLineChart();
+    }
     const setting = this.config.setting.lineChart;
     setting.lineWithFocus = this.lineWithFocus;
     setting.forceY = this.forceY;
@@ -54,14 +62,20 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     this.visualization.configChange$.next(this.config);
   }
 
-  constructor(@Inject(VISUALIZATION) public visualization: Visualization, private cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(VISUALIZATION) public visualization: Visualization,
+    private cdr: ChangeDetectorRef
+  ) {
     super(visualization);
   }
 
   ngOnInit() {}
 
-  refreshSetting() {
-    const setting = this.config.setting.lineChart;
+  refreshSetting(config: GraphConfig) {
+    if (!config.setting.lineChart) {
+      config.setting.lineChart = new VisualizationLineChart();
+    }
+    const setting = config.setting.lineChart;
     this.forceY = setting.forceY || false;
     this.lineWithFocus = setting.lineWithFocus || false;
     this.isDateFormat = setting.isDateFormat || false;
@@ -71,28 +85,29 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     this.cdr.markForCheck();
   }
 
-  setScale() {
+  setScale(chart: G2.Chart) {
     const key = this.getKey();
     const tickCount = calcTickCount(this.container.nativeElement);
-    this.chart.scale(key, {
+    chart.scale(key, {
       tickCount,
       type: 'cat'
     });
   }
 
-  renderBefore() {
+  renderBefore(config: GraphConfig, chart: G2.Chart) {
     const key = this.getKey();
-    const setting = this.config.setting.lineChart;
-    this.setScale();
-    this.chart
-      .line()
-      .position(`${key}*__value__`)
-      .color('__key__');
-    setChartXAxis(this.visualization, 'lineChart', this.chart, key);
+    if (!config.setting.lineChart) {
+      config.setting.lineChart = new VisualizationLineChart();
+    }
+    const setting = config.setting.lineChart;
+    this.setScale(chart);
+    chart.line().position(`${key}*__value__`).color('__key__');
+    setChartXAxis(this.visualization, 'lineChart', chart, key);
 
     if (setting.isDateFormat) {
       if (this.visualization.transformed && this.visualization.transformed.rows) {
-        const invalid = this.visualization.transformed.rows.some(r => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const invalid = this.visualization.transformed.rows.some((r: any) => {
           const isInvalidDate = Number.isNaN(new Date(r[key]).valueOf());
           if (isInvalidDate) {
             console.warn(`${r[key]} is [Invalid Date]`);
@@ -102,7 +117,7 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
         if (invalid) {
           return;
         }
-        this.chart.scale({
+        chart.scale({
           [key]: {
             type: 'time',
             mask: setting.dateFormat || 'YYYY-MM-DD'
@@ -112,7 +127,7 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     }
 
     if (setting.forceY) {
-      this.chart.scale({
+      chart.scale({
         __value__: {
           min: 0
         }
@@ -120,13 +135,16 @@ export class LineChartVisualizationComponent extends G2VisualizationComponentBas
     }
   }
 
-  renderAfter() {
-    const setting = this.config.setting.lineChart;
+  renderAfter(config: GraphConfig) {
+    if (!config.setting.lineChart) {
+      config.setting.lineChart = new VisualizationLineChart();
+    }
+    const setting = config.setting.lineChart;
     if (setting.lineWithFocus) {
-      // tslint:disable-next-line
+      // eslint-disable-next-line
       (this.chart as any).interact('brush');
     } else {
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (this.chart as any).clearInteraction();
     }
   }

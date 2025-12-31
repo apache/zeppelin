@@ -27,7 +27,7 @@ limitations under the License.
 [Apache Flink](https://flink.apache.org) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. 
 Flink has been designed to run in all common cluster environments, perform computations at in-memory speed and at any scale.
 
-In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Only Flink 1.10+ is supported, old versions of flink won't work.**
+In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Currently, only Flink 1.15+ is supported, old versions of flink won't work.**
 Apache Flink is supported in Zeppelin with the Flink interpreter group which consists of the five interpreters listed below.
 
 <table class="table-configuration">
@@ -73,10 +73,6 @@ Apache Flink is supported in Zeppelin with the Flink interpreter group which con
   <tr>
     <td>Support multiple versions of Flink</td>
     <td>You can run different versions of Flink in one Zeppelin instance</td>
-  </tr>
-  <tr>
-    <td>Support multiple versions of Scala</td>
-    <td>You can run different Scala versions of Flink in on Zeppelin instance</td>
   </tr>
   <tr>
     <td>Support multiple languages</td>
@@ -142,15 +138,16 @@ docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/flink-sql-cookbook-on-zep
 
 ## Prerequisites
 
-Download Flink 1.10 or afterwards (Scala 2.11 & 2.12 are both supported)
+Download Flink 1.15 or afterwards (Only Scala 2.12 is supported)
 
-### Specific for Flink 1.15
+### Version-specific notes for Flink
 
-Flink 1.15 is scala free and has changed its binary distribution. If you would like to make Zeppelin work with Flink 1.15, you need to do the following extra steps.
+Flink 1.15 is scala free and has changed its binary distribution, the following extra steps is required.
 * Move FLINK_HOME/opt/flink-table-planner_2.12-1.15.0.jar to FLINK_HOME/lib
 * Move FLINK_HOME/lib/flink-table-planner-loader-1.15.0.jar to FLINK_HOME/opt
 * Download flink-table-api-scala-bridge_2.12-1.15.0.jar and flink-table-api-scala_2.12-1.15.0.jar to FLINK_HOME/lib
 
+Flink 1.16 introduces new `ClientResourceManager` for sql client, you need to move `FLINK_HOME/opt/flink-sql-client-1.16.0.jar` to `FLINK_HOME/lib`
 
 ## Flink on Zeppelin Architecture
 
@@ -304,7 +301,7 @@ You can also add and set other Flink properties which are not listed in the tabl
   </tr>
   <tr>
     <td>zeppelin.flink.hive.version</td>
-    <td>2.3.4</td>
+    <td>2.3.7</td>
     <td>Hive version that you would like to connect</td>
   </tr>
   <tr>

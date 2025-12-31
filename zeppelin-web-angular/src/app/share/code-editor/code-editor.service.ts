@@ -14,6 +14,7 @@ import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { of as observableOf, BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { editor } from 'monaco-editor';
 
 import {
   JoinedEditorOptions,
@@ -22,17 +23,15 @@ import {
   NZ_CODE_EDITOR_CONFIG
 } from './nz-code-editor.definitions';
 
-import { editor } from 'monaco-editor';
-
-// tslint:disable no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function tryTriggerFunc(fn?: (...args: any[]) => any): (...args: any) => void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (...args: any[]) => {
     if (fn) {
       fn(...args);
     }
   };
 }
-// tslint:enable no-any
 
 @Injectable({
   providedIn: 'root'
@@ -44,14 +43,15 @@ export class CodeEditorService {
   private loadingStatus = NzCodeEditorLoadingStatus.UNLOAD;
   private option: JoinedEditorOptions;
 
-  option$ = new BehaviorSubject<JoinedEditorOptions>(this.option);
+  option$: BehaviorSubject<JoinedEditorOptions>;
 
   constructor(
     @Inject(NZ_CODE_EDITOR_CONFIG) private config: NzCodeEditorConfig,
-    @Inject(DOCUMENT) _document: any // tslint:disable-line no-any
+    @Inject(DOCUMENT) _document: any // eslint-disable-line  @typescript-eslint/no-explicit-any
   ) {
     this.document = _document;
     this.option = this.config.defaultEditorOption || {};
+    this.option$ = new BehaviorSubject<JoinedEditorOptions>(this.option);
   }
 
   // TODO(hsuanxyz): use config service later.
@@ -59,7 +59,7 @@ export class CodeEditorService {
     this.option = { ...this.option, ...option };
     this.option$.next(this.option);
 
-    if (option.theme) {
+    if ('theme' in option && option.theme) {
       editor.setTheme(option.theme);
     }
   }

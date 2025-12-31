@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,10 +54,7 @@ public abstract class FlinkShims {
                                       Properties properties)
       throws Exception {
     Class<?> flinkShimsClass;
-    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 12) {
-      LOGGER.info("Initializing shims for Flink 1.12");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink112Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
+    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
       LOGGER.info("Initializing shims for Flink 1.13");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink113Shims");
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
@@ -65,6 +63,12 @@ public abstract class FlinkShims {
     } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 15) {
       LOGGER.info("Initializing shims for Flink 1.15");
       flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink115Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 16) {
+      LOGGER.info("Initializing shims for Flink 1.16");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink116Shims");
+    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 17) {
+      LOGGER.info("Initializing shims for Flink 1.17");
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink117Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
@@ -91,7 +95,10 @@ public abstract class FlinkShims {
     return flinkVersion;
   }
 
-  public abstract Object createFunctionCatalog(Object tableConfig, Object catalogManager, Object moduleManager);
+  public abstract Object createFunctionCatalog(Object tableConfig,
+                                               Object catalogManager,
+                                               Object moduleManager,
+                                               List<URL> jars);
 
   public abstract void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext);
 
@@ -148,6 +155,28 @@ public abstract class FlinkShims {
   public abstract ImmutablePair<Object, Object> createPlannerAndExecutor(
           ClassLoader classLoader, Object environmentSettings, Object sEnv,
           Object tableConfig, Object moduleManager, Object functionCatalog, Object catalogManager);
+
+  public abstract Object createResourceManager(List<URL> jars, Object tableConfig);
+
+  public abstract Object createScalaBlinkStreamTableEnvironment(
+          Object environmentSettingsObj,
+          Object senvObj,
+          Object tableConfigObj,
+          Object moduleManagerObj,
+          Object functionCatalogObj,
+          Object catalogManagerObj,
+          List<URL> jars,
+          ClassLoader classLoader);
+
+  public abstract Object createJavaBlinkStreamTableEnvironment(
+          Object environmentSettingsObj,
+          Object senvObj,
+          Object tableConfigObj,
+          Object moduleManagerObj,
+          Object functionCatalogObj,
+          Object catalogManagerObj,
+          List<URL> jars,
+          ClassLoader classLoader);
 
   public abstract Object createBlinkPlannerEnvSettingBuilder();
 

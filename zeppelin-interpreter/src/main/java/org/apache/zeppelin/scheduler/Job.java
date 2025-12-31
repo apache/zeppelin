@@ -38,8 +38,9 @@ import java.util.Map;
  * Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job<T> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
-  private static SimpleDateFormat JOB_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd-HHmmss");
+  private static final String DATE_FORMAT = "yyyyMMdd-HHmmss";
 
   /**
    * Job status.
@@ -70,6 +71,14 @@ public abstract class Job<T> {
     public boolean isCompleted() {
       return this == FINISHED || this == ERROR || this == ABORT;
     }
+
+    public boolean isAbort() {
+      return this == ABORT;
+    }
+
+    public boolean isFailed() {
+      return this == ERROR || this == ABORT;
+    }
   }
 
   private String jobName;
@@ -85,15 +94,15 @@ public abstract class Job<T> {
   private transient volatile Throwable exception;
   private transient JobListener listener;
 
-  public Job(String jobName, JobListener listener) {
+  protected Job(String jobName, JobListener listener) {
     this.jobName = jobName;
     this.listener = listener;
     dateCreated = new Date();
-    id = JOB_DATE_FORMAT.format(dateCreated) + "_" + jobName;
+    id = new SimpleDateFormat(DATE_FORMAT).format(dateCreated) + "_" + jobName;
     setStatus(Status.READY);
   }
 
-  public Job(String jobId, String jobName, JobListener listener) {
+  protected Job(String jobId, String jobName, JobListener listener) {
     this.jobName = jobName;
     this.listener = listener;
     dateCreated = new Date();
@@ -115,8 +124,14 @@ public abstract class Job<T> {
   }
 
   @Override
-  public boolean equals(Object o) {
-    return ((Job) o).id.equals(id);
+  public boolean equals(Object obj) {
+    if (obj == null)
+      return false;
+
+    if (!(obj instanceof Job))
+      return false;
+
+    return ((Job<?>) obj).id.equals(id);
   }
 
   public Status getStatus() {
