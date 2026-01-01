@@ -670,12 +670,12 @@ class NotebookRestApiTest extends AbstractTestRestApi {
           Paragraph p2 = note1.getParagraph(1);
           try {
             p1.waitUntilFinished();
+            assertEquals(Job.Status.FINISHED, p1.getStatus());
             p2.waitUntilFinished();
+            assertEquals(Job.Status.FINISHED, p2.getStatus());
           } catch (InterruptedException e) {
             fail(e);
           }
-          assertEquals(Job.Status.FINISHED, p1.getStatus());
-          assertEquals(Job.Status.FINISHED, p2.getStatus());
           assertEquals("hello\n", p2.getReturn().message().get(0).getData());
           return null;
         });
