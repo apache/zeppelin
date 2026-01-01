@@ -46,9 +46,9 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
     let file = $scope.note.importFile;
     let reader = new FileReader();
 
-    $http.get(baseUrlSrv.getRestApiBase() + '/wsMaxMessageSize')
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/client')
       .then(function(response) {
-        const limit = response.data.body;
+        const limit = response.data.body.wsMaxMessageSize;
 
         if (file.size > limit) {
           $scope.note.errorText = 'File size limit Exceeded!';

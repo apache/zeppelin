@@ -29,6 +29,10 @@ export interface Ticket {
   roles: string;
 }
 
+export interface ClientConfigurations {
+  wsMaxTextMessageSize: number;
+}
+
 export interface ConfigurationsInfo {
   configurations: {
     'zeppelin.war.tempdir': string;
