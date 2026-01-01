@@ -33,24 +33,54 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
+  # ============================================
+  # Job 1: Prepare Docker image (reusable workflow)
+  # ============================================
+  prepare-python-r-env:
+    uses: ./.github/workflows/build-docker-images.yml
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+
+  # ============================================
+  # Job 2: Run tests using prepared image
+  # ============================================
   # test on core-modules (zeppelin-interpreter,zeppelin-zengine,zeppelin-server),
   # some interpreters are included, because zeppelin-server test depends on them: spark, shell & markdown
   core-modules:
+    needs: prepare-python-r-env
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        java: [ 11 ]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Tune Runner VM
-        uses: ./.github/actions/tune-runner-vm
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
+
+      # Try to download artifact (only exists for fork PRs with new image)
+      - name: Download Docker image artifact
+        id: download-artifact
+        uses: actions/download-artifact@v4
         with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
+          name: docker-image
+          path: /tmp
+        continue-on-error: true
+
+      # Load image from artifact if downloaded
+      - name: Load Docker image from artifact
+        if: steps.download-artifact.outcome == 'success'
+        run: |
+          echo "Loading image from artifact..."
+          gunzip -c /tmp/docker-image.tar.gz | docker load
+          echo "Image loaded successfully"
+
+      # Pull image from GHCR if artifact not available (image exists in registry)
+      - name: Pull Docker image from GHCR
+        if: steps.download-artifact.outcome != 'success'
+        run: |
+          echo "Pulling image from GHCR..."
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull ${{ needs.prepare-python-r-env.outputs.image-name }}
+
       - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
@@ -59,31 +89,55 @@ jobs:
             !~/.m2/repository/org/apache/zeppelin/
             ~/.spark-dist
             ~/.cache
-            ~/conda_pkgs_dir
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: install application with some interpreter
-        run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
-      - name: install and test plugins
-        run: ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
-      - name: Setup conda environment with python 3.9 and R
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3.9_with_R.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
-          auto-activate-base: false
-          use-mamba: true
-      - name: Make IRkernel available to Jupyter
+
+      - name: Verify environment
         run: |
-          R -e "IRkernel::installspec()"
-          conda list
-          conda info
-      - name: run tests # skip spark test because we would run them in other CI
-        run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+          docker run --rm \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            bash -c '
+              echo "Python version:" && python --version && \
+              echo "Conda info:" && conda info && \
+              echo "R version:" && R --version
+            '
+
+      - name: install application with some interpreter
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
+
+      - name: install and test plugins
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
+
+      - name: run tests
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -v ~/.m2:/home/zeppelin/.m2 \
+            -v ~/.cache:/home/zeppelin/.cache \
+            -w /workspace \
+            -e MAVEN_OPTS="${MAVEN_OPTS}" \
+            -e SPARK_PRINT_LAUNCH_COMMAND="${SPARK_PRINT_LAUNCH_COMMAND}" \
+            -e SPARK_LOCAL_IP="${SPARK_LOCAL_IP}" \
+            -e ZEPPELIN_LOCAL_IP="${ZEPPELIN_LOCAL_IP}" \
+            ${{ needs.prepare-python-r-env.outputs.image-name }} \
+            ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
   # test interpreter modules except spark, flink, python, rlang, jupyter
   interpreter-test-non-core:

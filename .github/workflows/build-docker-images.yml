@@ -1,0 +1,135 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches: [master, 'branch-*']
+    paths:
+      - 'testing/env_*.yml'
+      - '.github/docker/**'
+  workflow_dispatch:  # Allow manual trigger
+  workflow_call:  # Allow calling from other workflows
+    outputs:
+      image-name:
+        description: 'The full image name with tag'
+        value: ${{ jobs.build-python-r-env.outputs.image-name }}
+      image-exists:
+        description: 'Whether the image already exists in GHCR'
+        value: ${{ jobs.build-python-r-env.outputs.image-exists }}
+
+jobs:
+  build-python-r-env:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write  # Required for GHCR push
+    outputs:
+      image-name: ${{ steps.hash.outputs.image-name }}
+      image-exists: ${{ steps.check.outputs.exists }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Calculate environment file hash
+        id: hash
+        run: |
+          # Include both environment file AND Dockerfile in hash calculation
+          COMBINED_HASH=$(cat testing/env_python_3.9_with_R.yml .github/docker/python-r-env.Dockerfile | sha256sum | cut -d' ' -f1 | cut -c1-12)
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-${COMBINED_HASH}"
+          echo "hash=${COMBINED_HASH}" >> $GITHUB_OUTPUT
+          echo "image-name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "Image will be: ${IMAGE_NAME}"
+
+      - name: Check if image already exists
+        id: check
+        run: |
+          IMAGE="${{ steps.hash.outputs.image-name }}"
+
+          if docker manifest inspect ${IMAGE} >/dev/null 2>&1; then
+            echo "Image ${IMAGE} already exists, skipping build"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image ${IMAGE} does not exist, will build"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Determine if push is allowed
+        id: push-check
+        run: |
+          # Fork PRs have read-only GITHUB_TOKEN, cannot push to GHCR
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]]; then
+              echo "Fork PR detected - push will be skipped"
+              echo "can-push=false" >> $GITHUB_OUTPUT
+            else
+              echo "Same-repo PR - push is allowed"
+              echo "can-push=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Push/workflow_dispatch event - push is allowed"
+            echo "can-push=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 1: Build the image locally first
+      - name: Build Docker image
+        if: steps.check.outputs.exists != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .github/docker/python-r-env.Dockerfile
+          push: false
+          load: true
+          tags: ${{ steps.hash.outputs.image-name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            ENV_FILE=testing/env_python_3.9_with_R.yml
+
+      # Step 2: Push to GHCR only if we have write access
+      - name: Push Docker image to GHCR
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push == 'true'
+        run: |
+          docker push ${{ steps.hash.outputs.image-name }}
+          docker tag ${{ steps.hash.outputs.image-name }} ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
+          docker push ghcr.io/${{ github.repository_owner }}/zeppelin-test-env:py39-r-latest
+
+      # Step 3: Save image as artifact for downstream jobs (only if built locally and not pushed)
+      - name: Save Docker image as artifact
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push != 'true'
+        run: |
+          docker save ${{ steps.hash.outputs.image-name }} | gzip > /tmp/docker-image.tar.gz
+          echo "Image saved to artifact (size: $(du -h /tmp/docker-image.tar.gz | cut -f1))"
+
+      - name: Upload Docker image artifact
+        if: steps.check.outputs.exists != 'true' && steps.push-check.outputs.can-push != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/docker-image.tar.gz
+          retention-days: 1
+
+      - name: Image ready
+        run: |
+          if [[ "${{ steps.check.outputs.exists }}" == "true" ]]; then
+            echo "Image already exists in GHCR: ${{ steps.hash.outputs.image-name }}"
+          elif [[ "${{ steps.push-check.outputs.can-push }}" == "true" ]]; then
+            echo "Image built and pushed to GHCR: ${{ steps.hash.outputs.image-name }}"
+          else
+            echo "Image built locally and saved as artifact (fork PR has read-only permissions)"
+          fi
