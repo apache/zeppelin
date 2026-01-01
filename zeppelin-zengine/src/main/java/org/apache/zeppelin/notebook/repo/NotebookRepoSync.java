@@ -28,8 +28,6 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,9 +207,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     for (NotebookRepo repo : repos) {
-      repo.remove(noteId, notePath, subject);
+      try {
+        repo.remove(noteId, notePath, subject);
+      } catch (IOException e) {
+        LOGGER.error("Failed to remove note {} from repo {}", noteId, repo.getClass().getName(), e);
+        throw new IOException("Failed to remove note from repository: " + repo.getClass().getName(), e);
+      }
     }
-    /* TODO(khalid): handle case when removing from secondary storage fails */
   }
 
   @Override
