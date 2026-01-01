@@ -24,6 +24,13 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
   $scope.note.step1 = true;
   $scope.note.step2 = false;
   $scope.maxLimit = '';
+  let limit = 0;
+
+  $http.get(baseUrlSrv.getRestApiBase() + '/configurations/client')
+    .then(function(response) {
+      limit = response.data.body.wsMaxMessageSize;
+      $scope.maxLimit = Math.round(limit / 1048576);
+    });
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -46,29 +53,19 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
     let file = $scope.note.importFile;
     let reader = new FileReader();
 
-    $http.get(baseUrlSrv.getRestApiBase() + '/wsMaxMessageSize')
-      .then(function(response) {
-        const limit = response.data.body;
+    if (file.size > limit) {
+      $scope.note.errorText = 'File size limit Exceeded!';
+      $scope.$apply();
+      return;
+    }
 
-        if (file.size > limit) {
-          $scope.note.errorText = 'File size limit Exceeded!';
-          $scope.$apply();
-          return;
-        }
+    reader.onloadend = function() {
+      vm.processImportJson(reader.result);
+    };
 
-        reader.onloadend = function() {
-          vm.processImportJson(reader.result);
-        };
-
-        if (file) {
-          reader.readAsText(file);
-        }
-      })
-      .catch(function(err) {
-        console.error('Error while fetching max message size', err);
-        $scope.note.errorText = 'Unable to get upload limit.';
-        $scope.$apply();
-      });
+    if (file) {
+      reader.readAsText(file);
+    }
   };
 
   $scope.uploadURL = function() {
