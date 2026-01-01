@@ -47,6 +47,21 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   }
 
   @GET
+  @Path("client")
+  @ZeppelinApi
+  public Response getClientConfigurations() {
+    try {
+        int maxMessageSize = configurationService.getWsMaxMessageSize();
+
+        return new JsonResponse<>(Status.OK, "", Map.of(
+                "wsMaxTextMessageSize", maxMessageSize
+        )).build();
+        } catch (Exception e) {
+        return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, "Fail to get max message size", e).build();
+    }
+  }
+
+  @GET
   @Path("all")
   @ZeppelinApi
   public Response getAll() {

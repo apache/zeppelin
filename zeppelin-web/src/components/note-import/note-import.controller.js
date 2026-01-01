@@ -16,7 +16,7 @@ import './note-import.css';
 
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 
-function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
+function NoteImportCtrl($scope, $timeout, websocketMsgSrv, $http, baseUrlSrv) {
   'ngInject';
 
   let vm = this;
@@ -24,13 +24,6 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
   $scope.note.step1 = true;
   $scope.note.step2 = false;
   $scope.maxLimit = '';
-  let limit = 0;
-
-  websocketMsgSrv.listConfigurations();
-  $scope.$on('configurationsInfo', function(scope, event) {
-    limit = event.configurations['zeppelin.websocket.max.text.message.size'];
-    $scope.maxLimit = Math.round(limit / 1048576);
-  });
 
   vm.resetFlags = function() {
     $scope.note = {};
@@ -53,19 +46,29 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
     let file = $scope.note.importFile;
     let reader = new FileReader();
 
-    if (file.size > limit) {
-      $scope.note.errorText = 'File size limit Exceeded!';
-      $scope.$apply();
-      return;
-    }
+    $http.get(baseUrlSrv.getRestApiBase() + '/configurations/client')
+      .then(function(response) {
+        const limit = response.data.body.wsMaxMessageSize;
 
-    reader.onloadend = function() {
-      vm.processImportJson(reader.result);
-    };
+        if (file.size > limit) {
+          $scope.note.errorText = 'File size limit Exceeded!';
+          $scope.$apply();
+          return;
+        }
 
-    if (file) {
-      reader.readAsText(file);
-    }
+        reader.onloadend = function() {
+          vm.processImportJson(reader.result);
+        };
+
+        if (file) {
+          reader.readAsText(file);
+        }
+      })
+      .catch(function(err) {
+        console.error('Error while fetching max message size', err);
+        $scope.note.errorText = 'Unable to get upload limit.';
+        $scope.$apply();
+      });
   };
 
   $scope.uploadURL = function() {

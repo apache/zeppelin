@@ -43,6 +43,10 @@ public class ConfigurationService {
     return properties;
   }
 
+  public int getWsMaxMessageSize() {
+    return Integer.parseInt(zConf.getWebsocketMaxTextMessageSize());
+  }
+
   public Map<String, String> getPropertiesWithPrefix(String prefix,
                                                      ServiceContext context,
                                                      ServiceCallback<Map<String, String>> callback)

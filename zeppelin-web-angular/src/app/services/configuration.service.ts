@@ -13,8 +13,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+import { Observable } from 'rxjs';
+import { ClientConfigurations } from '@zeppelin/sdk';
+import { BaseUrlService } from '@zeppelin/services/base-url.service';
 import { BaseRest } from './base-rest';
-import { BaseUrlService } from './base-url.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +29,13 @@ export class ConfigurationService extends BaseRest {
     super(baseUrlService);
   }
 
-  getAll() {
+  fetchWsMaxMessageSize(): Promise<number> {
+    const configurations = this.http.get<ClientConfigurations>(this.restUrl`/configurations/client`);
+
+    return configurations.toPromise().then(config => config.wsMaxTextMessageSize);
+  }
+
+  getAll(): Observable<{ [p: string]: string }> {
     return this.http.get<{ [key: string]: string }>(this.restUrl`/configurations/all`);
   }
 }
