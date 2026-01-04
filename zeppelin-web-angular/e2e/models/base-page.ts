@@ -84,31 +84,6 @@ export class BasePage {
     return (await locator.textContent()) || '';
   }
 
-  async clickFirstVisibleElement(
-    selectors: string[],
-    options?: {
-      parent?: Locator;
-      visibilityTimeout?: number;
-      clickTimeout?: number;
-    }
-  ): Promise<boolean> {
-    const { parent, visibilityTimeout = 2000, clickTimeout = 5000 } = options || {};
-    const baseLocator = parent || this.page;
-
-    for (const selector of selectors) {
-      try {
-        const element = baseLocator.locator(selector);
-        if (await element.isVisible({ timeout: visibilityTimeout })) {
-          await element.click({ timeout: clickTimeout });
-          return true;
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-    return false;
-  }
-
   async waitForFormLabels(labelTexts: string[], timeout = 10000): Promise<void> {
     await this.page.waitForFunction(
       texts => {

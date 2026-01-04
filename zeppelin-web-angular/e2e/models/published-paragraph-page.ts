@@ -43,13 +43,4 @@ export class PublishedParagraphPage extends BasePage {
   async clickErrorModalOk(): Promise<void> {
     await this.errorModalOkButton.click({ timeout: 15000 });
   }
-
-  async isOnHomePage(): Promise<boolean> {
-    try {
-      await this.welcomeTitle.waitFor({ state: 'visible', timeout: 5000 });
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 }
