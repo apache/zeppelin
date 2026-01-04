@@ -30,7 +30,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await darkModePage.clearLocalStorage();
   });
 
-  test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page, browserName }) => {
+  test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page }) => {
     // GIVEN: User is on the main page, which starts in 'system' mode by default (localStorage cleared).
     await test.step('GIVEN the page starts in system mode', async () => {
       await darkModePage.assertSystemTheme(); // Robot icon for system theme
@@ -40,12 +40,8 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step('WHEN the user explicitly sets theme to light mode', async () => {
       await darkModePage.setThemeInLocalStorage('light');
       await page.waitForTimeout(500);
-      if (browserName === 'webkit') {
-        const currentUrl = page.url();
-        await page.goto(currentUrl, { waitUntil: 'load' });
-      } else {
-        page.reload();
-      }
+      // Reload the page to apply localStorage theme changes
+      await page.reload();
       await waitForZeppelinReady(page);
       await darkModePage.assertLightTheme(); // Now it should be light mode with sun icon
     });
@@ -54,12 +50,8 @@ test.describe('Dark Mode Theme Switching', () => {
     await test.step('WHEN the user explicitly sets theme to dark mode', async () => {
       await darkModePage.setThemeInLocalStorage('dark');
       await page.waitForTimeout(500);
-      if (browserName === 'webkit') {
-        const currentUrl = page.url();
-        await page.goto(currentUrl, { waitUntil: 'load' });
-      } else {
-        page.reload();
-      }
+      // Reload the page to apply localStorage theme changes
+      await page.reload();
       await waitForZeppelinReady(page);
       await darkModePage.assertDarkTheme();
     });
