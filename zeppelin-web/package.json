@@ -48,7 +48,7 @@
     "bootstrap3-dialog": "~1.35.4",
     "clipboard": "~1.5.5",
     "d3": "^3.4.4",
-    "diff": "3.3.0",
+    "diff": "8.0.3",
     "diff-match-patch": "1.0.0",
     "es5-shim": "~3.1.0",
     "excel-builder": "2.0.0",
