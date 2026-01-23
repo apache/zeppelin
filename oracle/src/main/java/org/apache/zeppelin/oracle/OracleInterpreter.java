@@ -1,13 +1,29 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.oracle;
 
 import oracle.ucp.admin.UniversalConnectionPoolManager;
 import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +97,7 @@ public class OracleInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     LOGGER.info("Opening Oracle Interpreter");
 
     maxResult =
@@ -93,7 +109,7 @@ public class OracleInterpreter extends Interpreter {
       LOGGER.info("Oracle JDBC Driver loaded successfully: {}", driverName);
     } catch (ClassNotFoundException e) {
       LOGGER.error("Failed to load Oracle JDBC driver", e);
-      throw new RuntimeException("Oracle JDBC driver not found", e);
+      throw new InterpreterException("Oracle JDBC driver not found", e);
     }
 
     LOGGER.info("Oracle Interpreter opened successfully!");
@@ -109,12 +125,11 @@ public class OracleInterpreter extends Interpreter {
       String user = getProperty(ORACLE_USER_KEY);
       String password = getProperty(ORACLE_PASSWORD_KEY);
 
-      if (StringUtils.isNotBlank(walletLocation)) {
+      if (walletLocation != null && !walletLocation.trim().isEmpty()) {
         // Wallet-based connection
         System.setProperty("oracle.net.tns_admin", walletLocation);
-        if (StringUtils.isBlank(tnsAlias)) {
-          throw new RuntimeException(
-            "TNS alias must be provided when using wallet");
+        if (tnsAlias == null || tnsAlias.trim().isEmpty()) {
+          throw new InterpreterException("TNS alias must be provided when using wallet");
         }
         url = "jdbc:oracle:thin:@" + tnsAlias + "?TNS_ADMIN=" + walletLocation;
         pds.setConnectionProperty("oracle.net.ssl_server_dn_match", "true");
@@ -128,7 +143,6 @@ public class OracleInterpreter extends Interpreter {
        * Configure pool properties using interpreter settings
        * Ensure the properties are within valid ranges
        */
-
       pds.setConnectionPoolName(getProperty(ORACLE_UCP_CONNECTION_POOL_NAME));
 
       pds.setInitialPoolSize(Math.max(0, Integer.parseInt(
@@ -165,10 +179,10 @@ public class OracleInterpreter extends Interpreter {
       logPoolStatistics();
     } catch (SQLException e) {
       LOGGER.error("Failed to initialize UCP", e);
-      throw new RuntimeException("UCP initialization failed", e);
+      throw new InterpreterException("UCP initialization failed", e);
     } catch (NumberFormatException e) {
       LOGGER.error("Invalid number format in UCP properties", e);
-      throw new RuntimeException("Invalid UCP configuration", e);
+      throw new InterpreterException("Invalid UCP configuration", e);
     }
   }
 
@@ -185,7 +199,6 @@ public class OracleInterpreter extends Interpreter {
         stats.getAvailableConnectionsCount() + ", Borrowed: " +
         stats.getBorrowedConnectionsCount() + ", Abandoned Connections: " +
         stats.getAbandonedConnectionsCount());
-    // TODO : Additional stats can be added
   }
 
   private Connection getConnection() throws SQLException {
@@ -196,8 +209,7 @@ public class OracleInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String sql, InterpreterContext context) {
     LOGGER.info("Executing SQL: {}", sql);
-
-    if (StringUtils.isBlank(sql)) {
+    if (sql == null || sql.trim().isEmpty()) {
       return new InterpreterResult(Code.SUCCESS, "");
     }
 
@@ -212,12 +224,11 @@ public class OracleInterpreter extends Interpreter {
     } catch (SQLException e) {
       LOGGER.error("Error executing SQL", e);
       String errorMsg =
-        "SQL Error: " + e.getMessage() + "\n" + "SQLState: " + e.getSQLState() + "\n" + "Error Code: " + e.getErrorCode() + "\n\n" + ExceptionUtils.getStackTrace(
-          e);
+        "SQL Error: " + e.getMessage() + "\n" + "SQLState: " + e.getSQLState() + "\n" + "Error Code: " + e.getErrorCode() + "\n\n";
       return new InterpreterResult(Code.ERROR, errorMsg);
     } catch (Exception e) {
       LOGGER.error("Unexpected error", e);
-      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
@@ -263,32 +274,38 @@ public class OracleInterpreter extends Interpreter {
           } else {
             int updateCount = statement.getUpdateCount();
             if (updateCount >= 0) {
-              regularResult = "%text Affected rows: " + updateCount + "\n";
+              regularResult = "%text " + updateCount + " row" + (updateCount > 1 ? "s" : "") + " affected.\n";
             } else {
               regularResult = "%text Executed successfully.\n";
             }
           }
           // Fetch DBMS_OUTPUT
           String output = getDbmsOutput(conn);
-          resultMsg.append(regularResult)
-                   .append("%text ")
-                   .append(output)
-                   .append("\n");
+          resultMsg.append(regularResult);
+          if (output != null && !output.trim().isEmpty()) {
+            resultMsg.append("%text ").append(output).append("\n");
+          }
         } finally {
           if (resultSet != null) {
             try {
               resultSet.close();
-            } catch (SQLException e) { /* ignore */ }
-          }
+            } catch (SQLException e) {
+              LOGGER.warn("Failed to close result set", e);
+            }
           if (statement != null) {
             try {
               statement.close();
-            } catch (SQLException e) { /* ignore */ }
+            } catch (SQLException e) {
+            LOGGER.warn("Failed to close statement", e);
+            }
+          }
           }
           if (enableStmt != null) {
             try {
               enableStmt.close();
-            } catch (SQLException e) { /* ignore */ }
+            } catch (SQLException e) {
+              LOGGER.warn("Failed to close enable statement", e);
+            }
           }
         }
         paragraphStatements.remove(context.getParagraphId());
@@ -304,18 +321,24 @@ public class OracleInterpreter extends Interpreter {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) { /* ignore */ }
+        } catch (SQLException e) {
+          LOGGER.warn("Failed to return connection to Pool", e);
+        }
       }
     }
     return new InterpreterResult(Code.SUCCESS, resultMsg.toString());
   }
 
   private void parseSqlBlocks(String bufferedSql, List<String> sqlList) {
-    String trimmed = bufferedSql.trim().toUpperCase();
+    String trimmed = bufferedSql.trim();
     if (trimmed.isEmpty()) return;
-    boolean isPlSql = trimmed.startsWith("BEGIN") ||
-                      trimmed.startsWith("DECLARE") ||
-                      trimmed.matches("^(CREATE(\\s+OR\\s+REPLACE)?)\\s+(PROCEDURE|FUNCTION|PACKAGE|TRIGGER|TYPE)\\b.*");
+
+    String normalized = trimmed.replaceAll("\\s+", " ").toUpperCase();
+
+    boolean isPlSql = normalized.startsWith("BEGIN") ||
+      normalized.startsWith("DECLARE") ||
+      normalized.matches("^CREATE\\s+(OR\\s+REPLACE\\s+)?(PROCEDURE|FUNCTION|PACKAGE|TRIGGER|TYPE|PACKAGE|VIEW\\s+BODY)\\b.*");
+
     if (isPlSql) {
       sqlList.add(bufferedSql);
     } else {

@@ -19,54 +19,39 @@
 
     <properties>
         <interpreter.name>oracle</interpreter.name>
+        <oracle.oraclelib.version>23.26.0.0.0</oracle.oraclelib.version>
+        <oracle.securitylib.version>21.20.0.0</oracle.securitylib.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>zeppelin-interpreter</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
 
         <!-- Oracle JDBC Driver -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
-            <version>21.9.0.0</version>
+            <version>${oracle.oraclelib.version}</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ucp</artifactId>
-            <version>21.9.0.0</version>
+            <version>${oracle.oraclelib.version}</version>
         </dependency>
 
         <!-- dependencies for oracle security -->
         <dependency>
             <groupId>com.oracle.database.security</groupId>
             <artifactId>oraclepki</artifactId>
-            <version>21.9.0.0</version>
+            <version>${oracle.oraclelib.version}</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.security</groupId>
             <artifactId>osdt_core</artifactId>
-            <version>21.9.0.0</version>
+            <version>${oracle.securitylib.version}</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.security</groupId>
             <artifactId>osdt_cert</artifactId>
-            <version>21.9.0.0</version>
-        </dependency>
-
-        <!-- Apache Commons for utility functions -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
+            <version>${oracle.securitylib.version}</version>
         </dependency>
 
     </dependencies>
@@ -89,6 +74,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/../../interpreter/${interpreter.name}</outputDirectory>
                             <includeScope>runtime</includeScope>
+                            <includeArtifactIds>ojdbc8,ucp,oraclepki,osdt_core,osdt_cert</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
