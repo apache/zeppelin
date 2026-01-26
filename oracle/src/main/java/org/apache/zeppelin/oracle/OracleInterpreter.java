@@ -61,25 +61,25 @@ public class OracleInterpreter extends Interpreter {
   private static final String MAX_RESULT_KEY = "oracle.max.result";
 
   // UCP Properties
-  private static final String ORACLE_UCP_CONNECTION_POOL_NAME =
+  private static final String UCP_CONNECTION_POOL_NAME =
     "zeppelin.oracleucp.connectionPoolName";
-  private static final String ORACLE_UCP_INITIAL_POOL_SIZE =
+  private static final String UCP_INITIAL_POOL_SIZE =
     "zeppelin.oracleucp.initialPoolSize";
-  private static final String ORACLE_UCP_MIN_POOL_SIZE =
+  private static final String UCP_MIN_POOL_SIZE =
     "zeppelin.oracleucp.minPoolSize";
-  private static final String ORACLE_UCP_MAX_POOL_SIZE =
+  private static final String UCP_MAX_POOL_SIZE =
     "zeppelin.oracleucp.maxPoolSize";
-  private static final String ORACLE_UCP_CONNECTION_WAIT_TIMEOUT =
+  private static final String UCP_CONNECTION_WAIT_TIMEOUT =
     "zeppelin.oracleucp.connectionWaitTimeout";
-  private static final String ORACLE_UCP_INACTIVE_CONNECTION_TIMEOUT =
+  private static final String UCP_INACTIVE_CONNECTION_TIMEOUT =
     "zeppelin.oracleucp.inactiveConnectionTimeout";
-  private static final String ORACLE_UCP_VALIDATE_CONNECTION_ON_BORROW =
+  private static final String UCP_VALIDATE_CONNECTION_ON_BORROW =
     "zeppelin.oracleucp.validateConnectionOnBorrow";
-  private static final String ORACLE_UCP_ABANDONED_CONNECTION_TIMEOUT =
+  private static final String UCP_ABANDONED_CONNECTION_TIMEOUT =
     "zeppelin.oracleucp.abandonedConnectionTimeout";
-  private static final String ORACLE_UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT =
+  private static final String UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT =
     "zeppelin.oracleucp.timeToLiveConnectionTimeout";
-  private static final String ORACLE_UCP_MAX_STATEMENTS =
+  private static final String UCP_MAX_STATEMENTS =
     "zeppelin.oracleucp.maxStatements";
 
   // Wallet Properties
@@ -143,37 +143,38 @@ public class OracleInterpreter extends Interpreter {
        * Configure pool properties using interpreter settings
        * Ensure the properties are within valid ranges
        */
-      pds.setConnectionPoolName(getProperty(ORACLE_UCP_CONNECTION_POOL_NAME));
+      pds.setConnectionPoolName(
+        getProperty(UCP_CONNECTION_POOL_NAME));
 
-      pds.setInitialPoolSize(Math.max(0, Integer.parseInt(
-        getProperty(ORACLE_UCP_INITIAL_POOL_SIZE))));
+      pds.setInitialPoolSize(Integer.parseInt(
+        getProperty(UCP_INITIAL_POOL_SIZE)));
 
-      pds.setMinPoolSize(
-        Math.max(0, Integer.parseInt(getProperty(ORACLE_UCP_MIN_POOL_SIZE))));
+      pds.setMinPoolSize(Integer.parseInt(
+        getProperty(UCP_MIN_POOL_SIZE)));
 
-      pds.setMaxPoolSize(
-        Math.max(1, Integer.parseInt(getProperty(ORACLE_UCP_MAX_POOL_SIZE))));
+      pds.setMaxPoolSize(Integer.parseInt(
+        getProperty(UCP_MAX_POOL_SIZE, String.valueOf(Integer.MAX_VALUE))));
 
-      pds.setConnectionWaitTimeout(Math.max(0, Integer.parseInt(
-        getProperty(ORACLE_UCP_CONNECTION_WAIT_TIMEOUT))));
+      pds.setConnectionWaitTimeout(Integer.parseInt(
+        getProperty(UCP_CONNECTION_WAIT_TIMEOUT)));
 
-      pds.setInactiveConnectionTimeout(Math.max(0, Integer.parseInt(
-        getProperty(ORACLE_UCP_INACTIVE_CONNECTION_TIMEOUT))));
+      pds.setInactiveConnectionTimeout(Integer.parseInt(
+        getProperty(UCP_INACTIVE_CONNECTION_TIMEOUT)));
 
       pds.setValidateConnectionOnBorrow(Boolean.parseBoolean(
-        getProperty(ORACLE_UCP_VALIDATE_CONNECTION_ON_BORROW)));
+        getProperty(UCP_VALIDATE_CONNECTION_ON_BORROW)));
       if (pds.getValidateConnectionOnBorrow()) {
         pds.setSQLForValidateConnection("SELECT 1 FROM DUAL");
       }
 
-      pds.setAbandonedConnectionTimeout(Math.max(0, Integer.parseInt(
-        getProperty(ORACLE_UCP_ABANDONED_CONNECTION_TIMEOUT))));
+      pds.setAbandonedConnectionTimeout(Integer.parseInt(
+        getProperty(UCP_ABANDONED_CONNECTION_TIMEOUT)));
 
-      pds.setTimeToLiveConnectionTimeout(Math.max(0, Integer.parseInt(
-        getProperty(ORACLE_UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT))));
+      pds.setTimeToLiveConnectionTimeout(Integer.parseInt(
+        getProperty(UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT)));
 
-      pds.setMaxStatements(
-        Math.max(0, Integer.parseInt(getProperty(ORACLE_UCP_MAX_STATEMENTS))));
+      pds.setMaxStatements(Integer.parseInt(
+        getProperty(UCP_MAX_STATEMENTS)));
 
       // Log initial pool statistics
       logPoolStatistics();
