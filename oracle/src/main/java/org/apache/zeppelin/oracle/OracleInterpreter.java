@@ -225,7 +225,8 @@ public class OracleInterpreter extends Interpreter {
     } catch (SQLException e) {
       LOGGER.error("Error executing SQL", e);
       String errorMsg =
-        "SQL Error: " + e.getMessage() + "\n" + "SQLState: " + e.getSQLState() + "\n" + "Error Code: " + e.getErrorCode() + "\n\n";
+        "SQL Error: " + e.getMessage() + "\n" + "SQLState: " + e.getSQLState() + "\n" +
+          "Error Code: " + e.getErrorCode() + "\n\n";
       return new InterpreterResult(Code.ERROR, errorMsg);
     } catch (Exception e) {
       LOGGER.error("Unexpected error", e);
@@ -427,7 +428,8 @@ public class OracleInterpreter extends Interpreter {
     // Destroy the pool
     if (pds != null) {
       try {
-        UniversalConnectionPoolManager mgr = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
+        UniversalConnectionPoolManager mgr =
+          UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
         mgr.destroyConnectionPool(pds.getConnectionPoolName());
         LOGGER.info("UCP pool destroyed");
       } catch (Exception e) {
