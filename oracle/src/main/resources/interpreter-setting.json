@@ -46,79 +46,79 @@
         "description": "TNS alias name for wallet-based connection",
         "type": "string"
       },
-      "oracle.max.result": {
+      "oracle.maxResults": {
         "envName": null,
-        "propertyName": "oracle.max.result",
+        "propertyName": "oracle.maxResults",
         "defaultValue": "1000",
         "description": "Maximum number of rows to display",
-        "type": "number"
+        "type": "string"
       },
-      "zeppelin.oracleucp.connectionPoolName": {
+      "oracleucp.connectionPoolName": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.connectionPoolName",
+        "propertyName": "oracleucp.connectionPoolName",
         "defaultValue": "ZEPPELIN_UCP_JDBC",
         "description": "UCP Connection pool name",
         "type": "string"
       },
-      "zeppelin.oracleucp.initialPoolSize": {
+      "oracleucp.initialPoolSize": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.initialPoolSize",
+        "propertyName": "oracleucp.initialPoolSize",
         "defaultValue": "0",
         "description": "UCP Initial pool size",
         "type": "number"
       },
-      "zeppelin.oracleucp.minPoolSize": {
+      "oracleucp.minPoolSize": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.minPoolSize",
+        "propertyName": "oracleucp.minPoolSize",
         "defaultValue": "1",
         "description": "UCP Minimum pool size",
         "type": "number"
       },
-      "zeppelin.oracleucp.maxPoolSize": {
+      "oracleucp.maxPoolSize": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.maxPoolSize",
+        "propertyName": "oracleucp.maxPoolSize",
         "defaultValue": "",
         "description": "UCP Maximum pool size",
         "type": "number"
       },
-      "zeppelin.oracleucp.connectionWaitTimeout": {
+      "oracleucp.connectionWaitTimeout": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.connectionWaitTimeout",
-        "defaultValue": "30",
+        "propertyName": "oracleucp.connectionWaitTimeout",
+        "defaultValue": "3",
         "description": "UCP Connection wait timeout (seconds)",
         "type": "number"
       },
-      "zeppelin.oracleucp.inactiveConnectionTimeout": {
+      "oracleucp.inactiveConnectionTimeout": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.inactiveConnectionTimeout",
-        "defaultValue": "3600",
+        "propertyName": "oracleucp.inactiveConnectionTimeout",
+        "defaultValue": "0",
         "description": "UCP Inactive connection timeout (seconds)",
         "type": "number"
       },
-      "zeppelin.oracleucp.validateConnectionOnBorrow": {
+      "oracleucp.validateConnectionOnBorrow": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.validateConnectionOnBorrow",
+        "propertyName": "oracleucp.validateConnectionOnBorrow",
         "defaultValue": "false",
         "description": "UCP Validate connection on borrow",
         "type": "checkbox"
       },
-      "zeppelin.oracleucp.abandonedConnectionTimeout": {
+      "oracleucp.abandonedConnectionTimeout": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.abandonedConnectionTimeout",
+        "propertyName": "oracleucp.abandonedConnectionTimeout",
         "defaultValue": "0",
         "description": "Timeout for abandoned connections (seconds, 0 to disable)",
         "type": "number"
       },
-      "zeppelin.oracleucp.timeToLiveConnectionTimeout": {
+      "oracleucp.timeToLiveConnectionTimeout": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.timeToLiveConnectionTimeout",
+        "propertyName": "oracleucp.timeToLiveConnectionTimeout",
         "defaultValue": "0",
         "description": "Time to live for connections (seconds, 0 to disable)",
         "type": "number"
       },
-      "zeppelin.oracleucp.maxStatements": {
+      "oracleucp.maxStatements": {
         "envName": null,
-        "propertyName": "zeppelin.oracleucp.maxStatements",
+        "propertyName": "oracleucp.maxStatements",
         "defaultValue": "0",
         "description": "Maximum number of statements to cache (0 to disable)",
         "type": "number"

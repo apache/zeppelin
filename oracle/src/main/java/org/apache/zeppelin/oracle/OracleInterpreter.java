@@ -58,36 +58,36 @@ public class OracleInterpreter extends Interpreter {
   private static final String ORACLE_PASSWORD_KEY =
     "oracle.connection.password";
   private static final String ORACLE_DRIVER_KEY = "oracle.connection.driver";
-  private static final String MAX_RESULT_KEY = "oracle.max.result";
+  private static final String MAX_RESULT_KEY = "oracle.maxResults";
 
   // UCP Properties
   private static final String UCP_CONNECTION_POOL_NAME =
-    "zeppelin.oracleucp.connectionPoolName";
+    "oracleucp.connectionPoolName";
   private static final String UCP_INITIAL_POOL_SIZE =
-    "zeppelin.oracleucp.initialPoolSize";
+    "oracleucp.initialPoolSize";
   private static final String UCP_MIN_POOL_SIZE =
-    "zeppelin.oracleucp.minPoolSize";
+    "oracleucp.minPoolSize";
   private static final String UCP_MAX_POOL_SIZE =
-    "zeppelin.oracleucp.maxPoolSize";
+    "oracleucp.maxPoolSize";
   private static final String UCP_CONNECTION_WAIT_TIMEOUT =
-    "zeppelin.oracleucp.connectionWaitTimeout";
+    "oracleucp.connectionWaitTimeout";
   private static final String UCP_INACTIVE_CONNECTION_TIMEOUT =
-    "zeppelin.oracleucp.inactiveConnectionTimeout";
+    "oracleucp.inactiveConnectionTimeout";
   private static final String UCP_VALIDATE_CONNECTION_ON_BORROW =
-    "zeppelin.oracleucp.validateConnectionOnBorrow";
+    "oracleucp.validateConnectionOnBorrow";
   private static final String UCP_ABANDONED_CONNECTION_TIMEOUT =
-    "zeppelin.oracleucp.abandonedConnectionTimeout";
+    "oracleucp.abandonedConnectionTimeout";
   private static final String UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT =
-    "zeppelin.oracleucp.timeToLiveConnectionTimeout";
+    "oracleucp.timeToLiveConnectionTimeout";
   private static final String UCP_MAX_STATEMENTS =
-    "zeppelin.oracleucp.maxStatements";
+    "oracleucp.maxStatements";
 
   // Wallet Properties
   private static final String ORACLE_WALLET_LOCATION =
     "oracle.connection.wallet.location";
   private static final String ORACLE_TNS_ALIAS = "oracle.connection.tns.alias";
 
-  private int maxResult;
+  private int maxResults;
   private PoolDataSource pds;
 
   private Map<String, Statement> paragraphStatements = new ConcurrentHashMap<>();
@@ -100,8 +100,7 @@ public class OracleInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     LOGGER.info("Opening Oracle Interpreter");
 
-    maxResult =
-      Math.max(1, Integer.parseInt(getProperty(MAX_RESULT_KEY, "1000")));
+    maxResults = Integer.parseInt(getProperty(MAX_RESULT_KEY, "1000"));
 
     try {
       String driverName = getProperty(ORACLE_DRIVER_KEY, ORACLE_DRIVER_NAME);
@@ -267,7 +266,7 @@ public class OracleInterpreter extends Interpreter {
           // Execute the sql
           statement = conn.createStatement();
           paragraphStatements.put(context.getParagraphId(), statement);
-          statement.setMaxRows(maxResult);
+          statement.setMaxRows(maxResults);
           boolean isResultSet = statement.execute(s);
           String regularResult;
           if (isResultSet) {
@@ -366,7 +365,7 @@ public class OracleInterpreter extends Interpreter {
 
     // Build rows
     int rowCount = 0;
-    while (resultSet.next() && rowCount < maxResult) {
+    while (resultSet.next() && rowCount < maxResults) {
       for (int i = 1; i <= columnCount; i++) {
         if (i > 1) {
           msg.append("\t");
@@ -378,9 +377,9 @@ public class OracleInterpreter extends Interpreter {
       rowCount++;
     }
 
-    if (rowCount == maxResult) {
+    if (rowCount == maxResults) {
       msg.append("\n... (Results limited to ")
-         .append(maxResult)
+         .append(maxResults)
          .append(" rows)");
     }
 

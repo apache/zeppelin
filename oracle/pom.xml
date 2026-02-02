@@ -80,6 +80,9 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
             </plugin>
         </plugins>
