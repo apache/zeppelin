@@ -34,6 +34,7 @@ import {
   NoteRename,
   NoteRevision,
   NoteRevisionForCompare,
+  NoteRevisionForCompareReceived,
   NoteRunningStatus,
   NoteUpdate,
   NoteUpdated,
@@ -118,6 +119,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.ANGULAR_OBJECT_UPDATE]: AngularObjectUpdate;
   [OP.ANGULAR_OBJECT_REMOVE]: AngularObjectRemove;
   [OP.PARAS_INFO]: ParasInfo;
+  [OP.NOTE_REVISION_FOR_COMPARE]: NoteRevisionForCompareReceived;
 }
 
 export interface MessageSendDataTypeMap {

@@ -125,6 +125,13 @@ export interface NoteRevisionForCompare {
   position: string;
 }
 
+export interface NoteRevisionForCompareReceived {
+  noteId: string;
+  revisionId: string;
+  position: string;
+  note: Note['note'];
+}
+
 export interface CollaborativeModeStatus {
   status: boolean;
   users: string[];
