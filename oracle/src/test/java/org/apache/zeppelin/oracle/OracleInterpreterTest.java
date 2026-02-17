@@ -17,13 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("OracleInterpreter Unit Tests")
 class OracleInterpreterTest {
 
-  // To run these tests, provide DB connection values via env vars or system properties.
-  private static final String ORACLE_CONNECTION_URL =
-    System.getProperty("oracle.url",System.getenv("ORACLE_URL"));
-  private static final String ORACLE_CONNECTION_USERNAME =
-    System.getProperty("oracle.username",System.getenv("ORACLE_USERNAME"));
-  private static final String ORACLE_CONNECTION_PASSWORD =
-    System.getProperty("oracle.password",System.getenv("ORACLE_PASSWORD"));
+  // To run these tests, provide valid DB connection values
+  private static final String ORACLE_CONNECTION_URL = "jdbc:oracle:thin:@//localhost:1521/FREEPDB1";
+  private static final String ORACLE_CONNECTION_USERNAME = "YOUR_USERNAME";
+  private static final String ORACLE_CONNECTION_PASSWORD = "YOUR_PASSWORD";
 
   private OracleInterpreter interpreter;
   private InterpreterContext context;
