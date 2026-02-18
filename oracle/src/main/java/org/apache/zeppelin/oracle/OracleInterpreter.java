@@ -143,37 +143,38 @@ public class OracleInterpreter extends Interpreter {
        * Ensure the properties are within valid ranges
        */
       pds.setConnectionPoolName(
-        getProperty(UCP_CONNECTION_POOL_NAME));
+        getProperty(UCP_CONNECTION_POOL_NAME, "ZEPPELIN_UCP_JDBC"));
 
       pds.setInitialPoolSize(Integer.parseInt(
-        getProperty(UCP_INITIAL_POOL_SIZE)));
+        getProperty(UCP_INITIAL_POOL_SIZE, "0")));
 
       pds.setMinPoolSize(Integer.parseInt(
-        getProperty(UCP_MIN_POOL_SIZE)));
+        getProperty(UCP_MIN_POOL_SIZE, "1")));
 
-      pds.setMaxPoolSize(Integer.parseInt(
-        getProperty(UCP_MAX_POOL_SIZE, String.valueOf(Integer.MAX_VALUE))));
-
+      String maxPoolSizeStr = getProperty(UCP_MAX_POOL_SIZE);
+      if (maxPoolSizeStr != null && !maxPoolSizeStr.trim().isEmpty()) {
+        pds.setMaxPoolSize(Integer.parseInt(maxPoolSizeStr.trim()));
+      }
       pds.setConnectionWaitTimeout(Integer.parseInt(
-        getProperty(UCP_CONNECTION_WAIT_TIMEOUT)));
+        getProperty(UCP_CONNECTION_WAIT_TIMEOUT, "3")));
 
       pds.setInactiveConnectionTimeout(Integer.parseInt(
-        getProperty(UCP_INACTIVE_CONNECTION_TIMEOUT)));
+        getProperty(UCP_INACTIVE_CONNECTION_TIMEOUT, "0")));
 
       pds.setValidateConnectionOnBorrow(Boolean.parseBoolean(
-        getProperty(UCP_VALIDATE_CONNECTION_ON_BORROW)));
+        getProperty(UCP_VALIDATE_CONNECTION_ON_BORROW, "false")));
       if (pds.getValidateConnectionOnBorrow()) {
         pds.setSQLForValidateConnection("SELECT 1 FROM DUAL");
       }
 
       pds.setAbandonedConnectionTimeout(Integer.parseInt(
-        getProperty(UCP_ABANDONED_CONNECTION_TIMEOUT)));
+        getProperty(UCP_ABANDONED_CONNECTION_TIMEOUT, "0")));
 
       pds.setTimeToLiveConnectionTimeout(Integer.parseInt(
-        getProperty(UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT)));
+        getProperty(UCP_TIME_TO_LIVE_CONNECTION_TIMEOUT, "0")));
 
       pds.setMaxStatements(Integer.parseInt(
-        getProperty(UCP_MAX_STATEMENTS)));
+        getProperty(UCP_MAX_STATEMENTS, "0")));
 
       // Log initial pool statistics
       logPoolStatistics();
