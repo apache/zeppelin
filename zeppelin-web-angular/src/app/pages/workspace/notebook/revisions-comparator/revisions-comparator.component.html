@@ -107,11 +107,12 @@
     <pre *ngIf="currentParagraphDiffDisplay?.type === 'deleted'" class="code-panel color-red-row">{{
       currentParagraphDiffDisplay?.paragraph?.text
     }}</pre>
-    <pre
-      *ngIf="currentParagraphDiffDisplay?.type === 'compared'"
-      class="code-panel"
-      [innerHTML]="currentParagraphDiffDisplay?.diff"
-    ></pre>
+    <pre *ngIf="currentParagraphDiffDisplay?.type === 'compared'" class="code-panel"><span
+        *ngFor="let seg of currentParagraphDiffDisplay?.segments"
+        [class.color-green-row]="seg.type === 'insert'"
+        [class.color-red-row]="seg.type === 'delete'"
+        [class.color-black]="seg.type === 'equal'"
+      >{{ seg.text }}</span></pre>
     <pre *ngIf="currentParagraphDiffDisplay === null" class="code-panel empty-code-panel">
       <div>Nothing to display</div>
     </pre>

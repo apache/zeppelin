@@ -12,18 +12,22 @@
 
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import * as DiffMatchPatch from 'diff-match-patch';
 import { Subscription } from 'rxjs';
 
 import { NoteRevisionForCompareReceived, OP, ParagraphItem, RevisionListItem } from '@zeppelin/sdk';
 import { MessageService } from '@zeppelin/services';
 
+interface DiffSegment {
+  type: 'insert' | 'delete' | 'equal';
+  text: string;
+}
+
 interface MergedParagraphDiff {
   paragraph: ParagraphItem;
   firstString: string;
   type: 'added' | 'deleted' | 'compared';
-  diff?: SafeHtml;
+  segments?: DiffSegment[];
   identical?: boolean;
 }
 
@@ -46,7 +50,6 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   currentParagraphDiffDisplay: MergedParagraphDiff | null = null;
   selectedFirstRevisionId: string | null = null;
   selectedSecondRevisionId: string | null = null;
-
   private subscription: Subscription | null = null;
   private dmp = new DiffMatchPatch();
 
@@ -57,8 +60,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   constructor(
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private datePipe: DatePipe,
-    private sanitizer: DomSanitizer
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -139,11 +141,11 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
       } else {
         const text1 = p1.text || '';
         const text2 = p2.text || '';
-        const diffHtml = this.buildLineDiffHtml(text1, text2);
+        const diffResult = this.buildLineDiff(text1, text2);
         paragraphDiffs.push({
           paragraph: p1,
-          diff: diffHtml.html,
-          identical: diffHtml.identical,
+          segments: diffResult.segments,
+          identical: diffResult.identical,
           firstString: (p1.text || '').split('\n')[0],
           type: 'compared'
         });
@@ -180,38 +182,27 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
     return this.datePipe.transform(time * 1000, 'MMMM d yyyy, h:mm:ss a') || '';
   }
 
-  private buildLineDiffHtml(text1: string, text2: string): { html: SafeHtml; identical: boolean } {
+  private buildLineDiff(text1: string, text2: string): { segments: DiffSegment[]; identical: boolean } {
     const { chars1, chars2, lineArray } = this.dmp.diff_linesToChars_(text1, text2);
     const diffs = this.dmp.diff_main(chars1, chars2, false);
     this.dmp.diff_charsToLines_(diffs, lineArray);
 
     let identical = true;
-    let html = '';
+    const segments: DiffSegment[] = [];
 
     for (const [op, text] of diffs) {
-      let str = text;
-      if (str.length > 0 && str[str.length - 1] !== '\n') {
-        str = `${str}\n`;
-      }
-      const escaped = this.escapeHtml(str);
       if (op === DiffMatchPatch.DIFF_INSERT) {
-        html += `<span class="color-green-row">${escaped}</span>`;
+        segments.push({ type: 'insert', text });
         identical = false;
       } else if (op === DiffMatchPatch.DIFF_DELETE) {
-        html += `<span class="color-red-row">${escaped}</span>`;
+        segments.push({ type: 'delete', text });
         identical = false;
       } else {
-        html += `<span class="color-black">${escaped}</span>`;
+        segments.push({ type: 'equal', text });
       }
     }
 
-    return { html, identical };
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(text));
-    return div.innerHTML;
+    return { segments, identical };
   }
 
   ngOnDestroy(): void {
