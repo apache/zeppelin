@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -169,7 +170,8 @@ public class WebDriverManager implements Closeable {
     assertTrue(loaded);
 
     try {
-      driver.manage().window().maximize();
+      // Manually setting fixed window size since `maximize()` crashes for Chrome/Edge driver on linux with xvfb.
+      driver.manage().window().setSize(new Dimension(1920, 1080));
     } catch (Exception e) {
       LOG.warn("Failed to maximize browser window. Consider using setSize() instead.", e);
     }
