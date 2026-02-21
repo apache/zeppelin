@@ -85,6 +85,12 @@ public class WebDriverManager implements Closeable {
     Supplier<WebDriver> chromeDriverSupplier = () -> {
       try {
         ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-search-engine-choice-screen");
+        options.setExperimentalOption("prefs", Map.of(
+            "credentials_enable_service", false,
+            "profile.password_manager_enabled", false,
+            "profile.password_manager_leak_detection", false
+        ));
         return new ChromeDriver(options);
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while ChromeDriver ", e);
