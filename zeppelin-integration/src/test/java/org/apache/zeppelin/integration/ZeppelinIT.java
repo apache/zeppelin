@@ -236,7 +236,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
       manager.getWebDriver().findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]"))
         .sendKeys(Keys.ENTER);
 
-      WebElement depArtifact = pollingWait(By.xpath("//input[@ng-model='setting.depArtifact']"),
+      WebElement depArtifact = visibilityWait(By.xpath("//input[@ng-model='setting.depArtifact']"),
           MAX_BROWSER_TIMEOUT_SEC);
       String artifact = "org.apache.commons:commons-csv:1.1";
       depArtifact.sendKeys(artifact);
@@ -279,7 +279,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
       interpreterLink.click();
       manager.getWebDriver().findElement(By.xpath("//div[@id='spark']//button[contains(.,'edit')]"))
         .sendKeys(Keys.ENTER);
-      WebElement testDepRemoveBtn = pollingWait(By.xpath("//tr[descendant::text()[contains(.,'" +
+      WebElement testDepRemoveBtn = visibilityWait(By.xpath("//tr[descendant::text()[contains(.,'" +
           artifact + "')]]/td[3]/button"), MAX_IMPLICIT_WAIT);
       testDepRemoveBtn.sendKeys(Keys.ENTER);
       manager.getWebDriver().findElement(By.xpath("//div[@id='spark']//form//button[1]")).click();
