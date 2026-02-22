@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
-import { NotebookRepoItemUtil } from '../../../models/notebook-repos-page.util';
+import { NotebookRepoItemUtil } from '../../../models/notebook-repo-item.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Item - Edit Mode', () => {
@@ -24,7 +24,7 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
   let firstRepoName: string;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
@@ -66,22 +66,13 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
   });
 
   test('should reset form when cancel is clicked', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-    if (settingRows === 0) {
-      test.skip();
-      return;
-    }
-
     const firstRow = repoItemPage.settingRows.first();
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 
     await repoItemPage.clickEdit();
 
-    const isInputVisible = await repoItemPage.isInputVisible(settingName);
-    if (isInputVisible) {
-      await repoItemPage.fillSettingInput(settingName, 'temp-value');
-    }
+    await repoItemPage.fillSettingInput(settingName, 'temp-value');
 
     await repoItemPage.clickCancel();
 

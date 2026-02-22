@@ -11,16 +11,21 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { HomePage } from '../../models/home-page';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
 test.describe('Home Page Note Operations', () => {
+  let homePage: HomePage;
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    homePage = new HomePage(page);
+    await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
+    const noteListLocator = page.locator('zeppelin-node-list');
+    await expect(noteListLocator).toBeVisible({ timeout: 15000 });
   });
 
   test.describe('Given note operations are available', () => {
@@ -31,9 +36,9 @@ test.describe('Home Page Note Operations', () => {
         const firstNote = page.locator('.node .file').first();
         await firstNote.hover();
 
-        await expect(page.locator('.file .operation a[nztooltiptitle*="Rename note"]').first()).toBeVisible();
-        await expect(page.locator('.file .operation a[nztooltiptitle*="Clear output"]').first()).toBeVisible();
-        await expect(page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]').first()).toBeVisible();
+        await expect(homePage.nodeList.noteActions.renameNote.first()).toBeVisible();
+        await expect(homePage.nodeList.noteActions.clearOutput.first()).toBeVisible();
+        await expect(homePage.nodeList.noteActions.moveToTrash.first()).toBeVisible();
       } else {
         console.log('No notes available for testing operations');
       }
@@ -50,22 +55,18 @@ test.describe('Home Page Note Operations', () => {
         const firstNote = page.locator('.node .file').first();
         await firstNote.hover();
 
-        const renameIcon = page.locator('.file .operation a[nztooltiptitle*="Rename note"]').first();
-        const clearIcon = page.locator('.file .operation a[nztooltiptitle*="Clear output"]').first();
-        const deleteIcon = page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]').first();
-
-        await expect(renameIcon).toBeVisible();
-        await expect(clearIcon).toBeVisible();
-        await expect(deleteIcon).toBeVisible();
+        await expect(homePage.nodeList.noteActions.renameNote).toBeVisible();
+        await expect(homePage.nodeList.noteActions.clearOutput).toBeVisible();
+        await expect(homePage.nodeList.noteActions.moveToTrash).toBeVisible();
 
         // Test tooltip visibility by hovering over each icon
-        await renameIcon.hover();
+        await homePage.nodeList.noteActions.renameNote.hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Rename note' })).toBeVisible();
 
-        await clearIcon.hover();
+        await homePage.nodeList.noteActions.clearOutput.hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Clear output' })).toBeVisible();
 
-        await deleteIcon.hover();
+        await homePage.nodeList.noteActions.moveToTrash.hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Move note to Trash' })).toBeVisible();
       }
     });
@@ -83,7 +84,7 @@ test.describe('Home Page Note Operations', () => {
         const noteItem = page.locator('.node .file').first();
         await noteItem.hover();
 
-        const renameButton = page.locator('.file .operation a[nztooltiptitle*="Rename note"]').first();
+        const renameButton = homePage.nodeList.noteActions.renameNote.first();
         await expect(renameButton).toBeVisible();
         await renameButton.click();
 
@@ -114,7 +115,7 @@ test.describe('Home Page Note Operations', () => {
         const noteItem = page.locator('.node .file').first();
         await noteItem.hover();
 
-        const clearButton = page.locator('.file .operation a[nztooltiptitle*="Clear output"]').first();
+        const clearButton = homePage.nodeList.noteActions.clearOutput.first();
         await expect(clearButton).toBeVisible();
         await clearButton.click();
 
@@ -133,7 +134,7 @@ test.describe('Home Page Note Operations', () => {
         const noteItem = page.locator('.node .file').first();
         await noteItem.hover();
 
-        const clearButton = page.locator('.file .operation a[nztooltiptitle*="Clear output"]').first();
+        const clearButton = homePage.nodeList.noteActions.clearOutput.first();
         await expect(clearButton).toBeVisible();
         await clearButton.click();
 
@@ -157,7 +158,7 @@ test.describe('Home Page Note Operations', () => {
         const noteItem = page.locator('.node .file').first();
         await noteItem.hover();
 
-        const deleteButton = page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]').first();
+        const deleteButton = homePage.nodeList.noteActions.moveToTrash.first();
         await expect(deleteButton).toBeVisible();
         await deleteButton.click();
 
@@ -176,15 +177,13 @@ test.describe('Home Page Note Operations', () => {
         const noteItem = page.locator('.node .file').first();
         await noteItem.hover();
 
-        const deleteButton = page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]').first();
+        const deleteButton = homePage.nodeList.noteActions.moveToTrash.first();
         await expect(deleteButton).toBeVisible();
         await deleteButton.click();
 
         const confirmButton = page.locator('button:has-text("Yes")');
         if (await confirmButton.isVisible()) {
           await confirmButton.click();
-
-          await page.waitForTimeout(2000);
 
           const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
           await expect(trashFolder).toBeVisible();

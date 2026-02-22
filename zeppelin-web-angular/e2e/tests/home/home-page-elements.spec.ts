@@ -12,13 +12,15 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { HomePageUtil } from '../../models/home-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Home Page - Core Elements', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
+  let homePage: HomePage;
+
   test.beforeEach(async ({ page }) => {
+    homePage = new HomePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
@@ -26,10 +28,7 @@ test.describe('Home Page - Core Elements', () => {
 
   test.describe('Welcome Section', () => {
     test('should display welcome section with correct content', async ({ page }) => {
-      const homePageUtil = new HomePageUtil(page);
-
       await test.step('Given I am on the home page', async () => {
-        const homePage = new HomePage(page);
         await homePage.navigateToHome();
       });
 
@@ -38,13 +37,18 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the welcome section with correct content', async () => {
-        await homePageUtil.verifyWelcomeSection();
+        await expect(homePage.welcomeSection).toBeVisible();
+        await expect(homePage.welcomeTitle).toBeVisible();
+        const headingText = await homePage.getWelcomeHeadingText();
+        expect(headingText.trim()).toBe('Welcome to Zeppelin!');
+        await expect(homePage.welcomeDescription).toBeVisible();
+        const welcomeText = await homePage.welcomeDescription.textContent();
+        expect(welcomeText).toContain('web-based notebook');
+        expect(welcomeText).toContain('interactive data analytics');
       });
     });
 
-    test('should have proper welcome message structure', async ({ page }) => {
-      const homePage = new HomePage(page);
-
+    test('should have proper welcome message structure', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -54,7 +58,7 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the welcome heading', async () => {
-        await expect(homePage.welcomeHeading).toBeVisible();
+        await expect(homePage.welcomeTitle).toBeVisible();
         const headingText = await homePage.getWelcomeHeadingText();
         expect(headingText.trim()).toBe('Welcome to Zeppelin!');
       });
@@ -70,10 +74,7 @@ test.describe('Home Page - Core Elements', () => {
 
   test.describe('Notebook Section', () => {
     test('should display notebook section with all components', async ({ page }) => {
-      const homePageUtil = new HomePageUtil(page);
-
       await test.step('Given I am on the home page', async () => {
-        const homePage = new HomePage(page);
         await homePage.navigateToHome();
       });
 
@@ -82,14 +83,15 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see all notebook section components', async () => {
-        await homePageUtil.verifyNotebookSection();
+        await expect(homePage.notebookSection).toBeVisible();
+        await expect(homePage.notebookHeading).toBeVisible();
+        await expect(homePage.refreshNoteButton).toBeVisible();
+        await page.waitForSelector('zeppelin-node-list', { timeout: 10000 });
+        await expect(homePage.zeppelinNodeList).toBeVisible();
       });
     });
 
-    test('should have functional refresh notes button', async ({ page }) => {
-      const homePage = new HomePage(page);
-      const homePageUtil = new HomePageUtil(page);
-
+    test('should have functional refresh notes button', async () => {
       await test.step('Given I am on the home page with notebook section visible', async () => {
         await homePage.navigateToHome();
         await expect(homePage.refreshNoteButton).toBeVisible();
@@ -100,13 +102,14 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then the notebook list should still be visible', async () => {
-        await homePageUtil.verifyNotebookRefreshFunctionality();
+        await homePage.waitForRefreshToComplete();
+        await expect(homePage.zeppelinNodeList).toBeVisible();
+        const isStillVisible = await homePage.zeppelinNodeList.isVisible();
+        expect(isStillVisible).toBe(true);
       });
     });
 
     test('should display notebook list component', async ({ page }) => {
-      const homePage = new HomePage(page);
-
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -116,7 +119,7 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the notebook list component', async () => {
-        await expect(homePage.notebookList).toBeVisible();
+        await expect(homePage.zeppelinNodeList).toBeVisible();
         const isVisible = await homePage.isNotebookListVisible();
         expect(isVisible).toBe(true);
       });
@@ -125,10 +128,7 @@ test.describe('Home Page - Core Elements', () => {
 
   test.describe('Help Section', () => {
     test('should display help section with documentation link', async ({ page }) => {
-      const homePageUtil = new HomePageUtil(page);
-
       await test.step('Given I am on the home page', async () => {
-        const homePage = new HomePage(page);
         await homePage.navigateToHome();
       });
 
@@ -137,11 +137,11 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the help section', async () => {
-        await homePageUtil.verifyHelpSection();
+        await expect(homePage.helpSection).toBeVisible();
+        await expect(homePage.helpHeading).toBeVisible();
       });
 
       await test.step('And I should see the documentation link', async () => {
-        const homePage = new HomePage(page);
         await expect(homePage.externalLinks.documentation).toBeVisible();
       });
     });
@@ -149,10 +149,7 @@ test.describe('Home Page - Core Elements', () => {
 
   test.describe('Community Section', () => {
     test('should display community section with all links', async ({ page }) => {
-      const homePageUtil = new HomePageUtil(page);
-
       await test.step('Given I am on the home page', async () => {
-        const homePage = new HomePage(page);
         await homePage.navigateToHome();
       });
 
@@ -161,11 +158,15 @@ test.describe('Home Page - Core Elements', () => {
       });
 
       await test.step('Then I should see the community section', async () => {
-        await homePageUtil.verifyCommunitySection();
+        await expect(homePage.communitySection).toBeVisible();
+        await expect(homePage.communityHeading).toBeVisible();
       });
 
       await test.step('And I should see all community links', async () => {
-        await homePageUtil.verifyExternalLinks();
+        await expect(homePage.externalLinks.documentation).toBeVisible();
+        await expect(homePage.externalLinks.mailingList).toBeVisible();
+        await expect(homePage.externalLinks.issuesTracking).toBeVisible();
+        await expect(homePage.externalLinks.github).toBeVisible();
       });
     });
   });
