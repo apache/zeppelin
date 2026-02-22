@@ -98,28 +98,19 @@ export class BasePage {
   async waitForElementAttribute(
     selector: string,
     attribute: string,
-    hasAttribute: boolean = true,
+    exists: boolean = true,
     timeout = 10000
   ): Promise<void> {
-    await this.page.waitForFunction(
-      ({ sel, attr, has }) => {
-        const el = document.querySelector(sel);
-        return el && (has ? el.hasAttribute(attr) : !el.hasAttribute(attr));
-      },
-      { sel: selector, attr: attribute, has: hasAttribute },
-      { timeout }
-    );
+    const locator = this.page.locator(selector);
+    if (exists) {
+      await expect(locator).toHaveAttribute(attribute, { timeout });
+    } else {
+      await expect(locator).not.toHaveAttribute(attribute, { timeout });
+    }
   }
 
   async waitForRouterOutletChild(timeout = 10000): Promise<void> {
-    await this.page.waitForFunction(
-      () => {
-        const workspace = document.querySelector('zeppelin-workspace');
-        const outlet = workspace?.querySelector('router-outlet');
-        return outlet && outlet.nextElementSibling !== null;
-      },
-      { timeout }
-    );
+    await expect(this.page.locator('zeppelin-workspace router-outlet + *')).toHaveCount(1, { timeout });
   }
 
   async fillAndVerifyInput(
