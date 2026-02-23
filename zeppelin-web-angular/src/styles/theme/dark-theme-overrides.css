@@ -177,6 +177,10 @@ html.dark .ant-select-selector:focus {
   border-color: #177ddc !important;
 }
 
+html.dark .ant-select-item-option-active:not(html.dark .ant-select-item-option-disabled) {
+  background-color: #262626 !important;
+}
+
 html.dark .ant-dropdown-menu-item-selected,
 html.dark .ant-dropdown-menu-submenu-title-selected,
 html.dark .ant-dropdown-menu-item-selected > a,
