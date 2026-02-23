@@ -186,9 +186,9 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   }
 
   private buildLineDiffHtml(text1: string, text2: string): { html: SafeHtml; identical: boolean } {
-    const a = this.dmp.diff_linesToChars_(text1, text2);
-    const diffs = this.dmp.diff_main(a.chars1, a.chars2, false);
-    this.dmp.diff_charsToLines_(diffs, a.lineArray);
+    const { chars1, chars2, lineArray } = this.dmp.diff_linesToChars_(text1, text2);
+    const diffs = this.dmp.diff_main(chars1, chars2, false);
+    this.dmp.diff_charsToLines_(diffs, lineArray);
 
     let identical = true;
     let html = '';
