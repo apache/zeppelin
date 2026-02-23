@@ -124,8 +124,8 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
     if (!this.firstNoteRevisionForCompare || !this.secondNoteRevisionForCompare) {
       return;
     }
-    const paragraphs1 = this.firstNoteRevisionForCompare.note?.paragraphs || [];
-    const paragraphs2 = this.secondNoteRevisionForCompare.note?.paragraphs || [];
+    const paragraphs1 = this.secondNoteRevisionForCompare.note?.paragraphs || [];
+    const paragraphs2 = this.firstNoteRevisionForCompare.note?.paragraphs || [];
     const merge: MergedParagraphDiff[] = [];
 
     for (const p1 of paragraphs1) {
@@ -134,7 +134,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
         merge.push({
           paragraph: p1,
           firstString: (p1.text || '').split('\n')[0],
-          type: 'deleted'
+          type: 'added'
         });
       } else {
         const text1 = p1.text || '';
@@ -156,15 +156,10 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
         merge.push({
           paragraph: p2,
           firstString: (p2.text || '').split('\n')[0],
-          type: 'added'
+          type: 'deleted'
         });
       }
     }
-
-    merge.sort((a, b) => {
-      const order = { added: 0, deleted: 1, compared: 2 };
-      return order[a.type] - order[b.type];
-    });
 
     this.mergeNoteRevisionsForCompare = merge;
 
@@ -210,7 +205,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
       }
     }
 
-    return { html: this.sanitizer.bypassSecurityTrustHtml(html), identical };
+    return { html, identical };
   }
 
   private escapeHtml(text: string): string {
