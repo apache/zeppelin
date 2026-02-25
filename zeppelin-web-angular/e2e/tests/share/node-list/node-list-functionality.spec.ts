@@ -11,6 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { HomePage } from '../../../models/home-page';
 import { NodeListPage } from '../../../models/node-list-page';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
 
@@ -42,7 +43,30 @@ test.describe('Node List Functionality', () => {
     expect(isFilterVisible).toBe(true);
   });
 
-  test('Given user is on home page, When viewing node list, Then trash folder should be visible', async () => {
+  test('Given a note has been moved to trash, When viewing node list, Then trash folder should be visible', async ({
+    page
+  }) => {
+    const homePage = new HomePage(page);
+
+    // Create a test note to ensure there is something to trash
+    await homePage.createNote('_e2e_trash_test');
+
+    // Navigate back to home
+    await page.goto('/');
+    await waitForZeppelinReady(page);
+
+    // Hover on the created note and move it to trash
+    const testNote = page.locator('.node .file').filter({ hasText: '_e2e_trash_test' });
+    await testNote.hover();
+    const moveToTrashButton = testNote.locator('.operation a[nztooltiptitle*="Move note to Trash"]');
+    await moveToTrashButton.click();
+
+    // Confirm the move to trash dialog
+    const confirmButton = page.locator('button:has-text("Yes")');
+    await confirmButton.click();
+
+    // Wait for the trash folder to appear and verify
+    await expect(nodeListPage.trashFolder).toBeVisible({ timeout: 10000 });
     const isTrashVisible = await nodeListPage.isTrashFolderVisible();
     expect(isTrashVisible).toBe(true);
   });

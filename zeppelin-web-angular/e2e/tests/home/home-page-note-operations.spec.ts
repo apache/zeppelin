@@ -55,18 +55,18 @@ test.describe('Home Page Note Operations', () => {
         const firstNote = page.locator('.node .file').first();
         await firstNote.hover();
 
-        await expect(homePage.nodeList.noteActions.renameNote).toBeVisible();
-        await expect(homePage.nodeList.noteActions.clearOutput).toBeVisible();
-        await expect(homePage.nodeList.noteActions.moveToTrash).toBeVisible();
+        await expect(homePage.nodeList.noteActions.renameNote.first()).toBeVisible();
+        await expect(homePage.nodeList.noteActions.clearOutput.first()).toBeVisible();
+        await expect(homePage.nodeList.noteActions.moveToTrash.first()).toBeVisible();
 
         // Test tooltip visibility by hovering over each icon
-        await homePage.nodeList.noteActions.renameNote.hover();
+        await homePage.nodeList.noteActions.renameNote.first().hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Rename note' })).toBeVisible();
 
-        await homePage.nodeList.noteActions.clearOutput.hover();
+        await homePage.nodeList.noteActions.clearOutput.first().hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Clear output' })).toBeVisible();
 
-        await homePage.nodeList.noteActions.moveToTrash.hover();
+        await homePage.nodeList.noteActions.moveToTrash.first().hover();
         await expect(page.locator('.ant-tooltip', { hasText: 'Move note to Trash' })).toBeVisible();
       }
     });
