@@ -176,6 +176,9 @@ ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc=apach
 ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
 # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
 ldapRealm.groupSearchEnableMatchingRuleInChain = true
+# enable support for nested groups using memberOf attribute (typically for FreeIPA)
+ldapRealm.useMemberOfForNestedGroups = true
+ldapRealm.memberOfAttribute = memberOf
 # optional mapping from physical groups to logical application roles
 ldapRealm.rolesByGroup = LDN_USERS: user_role, NYK_USERS: user_role, HKG_USERS: user_role, GLOBAL_ADMIN: admin_role
 # optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login).
