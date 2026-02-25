@@ -42,7 +42,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   secondNoteRevisionForCompare: NoteRevisionForCompareReceived | null = null;
   currentFirstRevisionLabel = 'Choose...';
   currentSecondRevisionLabel = 'Choose...';
-  mergeNoteRevisionsForCompare: MergedParagraphDiff[] = [];
+  mergeNoteRevisionsDiff: MergedParagraphDiff[] = [];
   currentParagraphDiffDisplay: MergedParagraphDiff | null = null;
   selectedFirstRevisionId: string | null = null;
   selectedSecondRevisionId: string | null = null;
@@ -124,14 +124,14 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
     if (!this.firstNoteRevisionForCompare || !this.secondNoteRevisionForCompare) {
       return;
     }
-    const paragraphs1 = this.secondNoteRevisionForCompare.note?.paragraphs || [];
-    const paragraphs2 = this.firstNoteRevisionForCompare.note?.paragraphs || [];
-    const merge: MergedParagraphDiff[] = [];
+    const baseParagraphs = this.secondNoteRevisionForCompare.note?.paragraphs || [];
+    const compareParagraphs = this.firstNoteRevisionForCompare.note?.paragraphs || [];
+    const paragraphDiffs: MergedParagraphDiff[] = [];
 
-    for (const p1 of paragraphs1) {
-      const p2 = paragraphs2.find((p: ParagraphItem) => p.id === p1.id) || null;
+    for (const p1 of baseParagraphs) {
+      const p2 = compareParagraphs.find((p: ParagraphItem) => p.id === p1.id) || null;
       if (p2 === null) {
-        merge.push({
+        paragraphDiffs.push({
           paragraph: p1,
           firstString: (p1.text || '').split('\n')[0],
           type: 'added'
@@ -140,7 +140,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
         const text1 = p1.text || '';
         const text2 = p2.text || '';
         const diffHtml = this.buildLineDiffHtml(text1, text2);
-        merge.push({
+        paragraphDiffs.push({
           paragraph: p1,
           diff: diffHtml.html,
           identical: diffHtml.identical,
@@ -150,10 +150,10 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
       }
     }
 
-    for (const p2 of paragraphs2) {
-      const p1 = paragraphs1.find((p: ParagraphItem) => p.id === p2.id) || null;
+    for (const p2 of compareParagraphs) {
+      const p1 = baseParagraphs.find((p: ParagraphItem) => p.id === p2.id) || null;
       if (p1 === null) {
-        merge.push({
+        paragraphDiffs.push({
           paragraph: p2,
           firstString: (p2.text || '').split('\n')[0],
           type: 'deleted'
@@ -161,7 +161,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.mergeNoteRevisionsForCompare = merge;
+    this.mergeNoteRevisionsDiff = paragraphDiffs;
 
     if (this.currentParagraphDiffDisplay !== null) {
       this.changeCurrentParagraphDiffDisplay(this.currentParagraphDiffDisplay.paragraph.id);
@@ -169,7 +169,7 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   }
 
   changeCurrentParagraphDiffDisplay(paragraphId: string): void {
-    const found = this.mergeNoteRevisionsForCompare.find(p => p.paragraph.id === paragraphId);
+    const found = this.mergeNoteRevisionsDiff.find(p => p.paragraph.id === paragraphId);
     this.currentParagraphDiffDisplay = found || null;
   }
 

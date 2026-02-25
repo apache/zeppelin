@@ -74,7 +74,7 @@
     <div class="diff-panel">
       <div class="paragraphs-div">
         <div
-          *ngFor="let p of mergeNoteRevisionsForCompare"
+          *ngFor="let p of mergeNoteRevisionsDiff"
           class="paragraph-item"
           [class.paragraph-item-selected]="currentParagraphDiffDisplay?.paragraph?.id === p.paragraph.id"
           (click)="changeCurrentParagraphDiffDisplay(p.paragraph.id)"
