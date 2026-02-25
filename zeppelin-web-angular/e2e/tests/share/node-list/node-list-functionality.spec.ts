@@ -55,14 +55,18 @@ test.describe('Node List Functionality', () => {
     await page.goto('/');
     await waitForZeppelinReady(page);
 
-    // Hover on the created note and move it to trash
+    // Wait for the created note to appear in the node list, then hover
     const testNote = page.locator('.node .file').filter({ hasText: '_e2e_trash_test' });
+    await expect(testNote).toBeVisible({ timeout: 15000 });
     await testNote.hover();
-    const moveToTrashButton = testNote.locator('.operation a[nztooltiptitle*="Move note to Trash"]');
-    await moveToTrashButton.click();
 
-    // Confirm the move to trash dialog
-    const confirmButton = page.locator('button:has-text("Yes")');
+    // Click the delete icon (nz-popconfirm is on the <i> element)
+    const deleteIcon = testNote.locator('.operation i[nztype="delete"]');
+    await deleteIcon.click();
+
+    // Confirm the popconfirm dialog (ng-zorro en_US default is "OK", not "Yes")
+    await expect(page.locator('text=This note will be moved to trash.')).toBeVisible();
+    const confirmButton = page.locator('.ant-popover button:has-text("OK")');
     await confirmButton.click();
 
     // Wait for the trash folder to appear and verify
