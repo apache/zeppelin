@@ -89,6 +89,12 @@ test.describe('Note Create Modal', () => {
     // Verify the note was created with the correct name (without folder path)
     const notebookTitle = page.locator('p, .notebook-title, .note-title, h1, [data-testid="notebook-title"]').first();
     await expect(notebookTitle).toContainText(noteName);
+
+    // Verify the folder structure was created
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const folder = page.locator('nz-tree-node').filter({ hasText: 'TestFolder' });
+    await expect(folder).toBeVisible();
   });
 
   test('Given Create Note modal is open, When clicking close button, Then modal should close', async () => {

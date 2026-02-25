@@ -21,7 +21,6 @@ export class NoteImportModal extends BasePage {
   readonly jsonFileTab: Locator;
   readonly urlTab: Locator;
   readonly uploadArea: Locator;
-  readonly uploadIcon: Locator;
   readonly uploadText: Locator;
   readonly fileSizeLimit: Locator;
   readonly urlInput: Locator;
@@ -37,16 +36,11 @@ export class NoteImportModal extends BasePage {
     this.jsonFileTab = page.getByRole('tab', { name: 'Import From JSON File' });
     this.urlTab = page.getByRole('tab', { name: 'Import From URL' });
     this.uploadArea = page.locator('nz-upload[nztype="drag"]');
-    this.uploadIcon = page.locator('.ant-upload-drag-icon i[nz-icon]');
     this.uploadText = page.getByText('Click or drag JSON file to this area to upload');
     this.fileSizeLimit = page.locator('.ant-upload-hint strong');
     this.urlInput = page.locator('input[name="importUrl"]');
     this.importNoteButton = page.getByRole('button', { name: 'Import Note' });
     this.errorAlert = page.locator('nz-alert[nztype="error"]');
-  }
-
-  async isModalVisible(): Promise<boolean> {
-    return this.modal.isVisible();
   }
 
   async close(): Promise<void> {
@@ -59,10 +53,6 @@ export class NoteImportModal extends BasePage {
 
   async getImportAsName(): Promise<string> {
     return (await this.importAsInput.inputValue()) || '';
-  }
-
-  async switchToJsonFileTab(): Promise<void> {
-    await this.jsonFileTab.click();
   }
 
   async switchToUrlTab(): Promise<void> {
@@ -91,15 +81,6 @@ export class NoteImportModal extends BasePage {
     return this.importNoteButton.isDisabled();
   }
 
-  async isImportNoteButtonLoading(): Promise<boolean> {
-    const loadingIcon = this.importNoteButton.locator('.anticon-loading');
-    return loadingIcon.isVisible();
-  }
-
-  async isUploadAreaVisible(): Promise<boolean> {
-    return this.uploadArea.isVisible();
-  }
-
   async getFileSizeLimit(): Promise<string> {
     return (await this.fileSizeLimit.textContent()) || '';
   }
@@ -110,10 +91,5 @@ export class NoteImportModal extends BasePage {
 
   async getErrorMessage(): Promise<string> {
     return (await this.errorAlert.textContent()) || '';
-  }
-
-  async uploadFile(filePath: string): Promise<void> {
-    const fileInput = this.page.locator('input[type="file"]');
-    await fileInput.setInputFiles(filePath);
   }
 }

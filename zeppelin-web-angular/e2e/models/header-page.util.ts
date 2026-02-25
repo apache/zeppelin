@@ -12,7 +12,6 @@
 
 import { expect, Page } from '@playwright/test';
 import { HeaderPage } from './header-page';
-import { AboutZeppelinModal } from './about-zeppelin-modal';
 import { NodeListPage } from './node-list-page';
 
 export class HeaderPageUtil {
@@ -57,24 +56,11 @@ export class HeaderPageUtil {
     await expect(nodeList.createNewNoteButton).toBeVisible();
   }
 
-  async verifyAboutZeppelinModalOpens(): Promise<void> {
-    await this.headerPage.clickUserDropdown();
-    await this.headerPage.clickAboutZeppelin();
-
-    const aboutModal = new AboutZeppelinModal(this.page);
-    await expect(aboutModal.modal).toBeVisible();
-  }
-
   async verifySearchNavigation(query: string): Promise<void> {
     await this.headerPage.searchNote(query);
     await this.page.waitForURL(/search/);
     expect(this.page.url()).toContain('search');
     expect(this.page.url()).toContain(query);
-  }
-
-  async verifyConnectionStatus(): Promise<void> {
-    const status = await this.headerPage.getConnectionStatus();
-    expect(['success', 'error']).toContain(status);
   }
 
   async verifyUserMenuItemsVisible(isLoggedIn: boolean): Promise<void> {
@@ -91,17 +77,6 @@ export class HeaderPageUtil {
       expect(username).not.toBe('anonymous');
       await expect(this.headerPage.userMenuItems.logout).toBeVisible();
     }
-  }
-
-  async openNotebookDropdownAndVerifyNodeList(): Promise<void> {
-    await this.headerPage.clickNotebookMenu();
-    await expect(this.headerPage.notebookDropdown).toBeVisible();
-
-    const nodeList = new NodeListPage(this.page);
-    await expect(nodeList.createNewNoteButton).toBeVisible();
-    await expect(nodeList.importNoteButton).toBeVisible();
-    await expect(nodeList.filterInput).toBeVisible();
-    await expect(nodeList.treeView).toBeVisible();
   }
 
   async navigateToInterpreterSettings(): Promise<void> {

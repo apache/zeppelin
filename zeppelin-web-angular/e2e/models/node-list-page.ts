@@ -41,10 +41,6 @@ export class NodeListPage extends BasePage {
     await this.createNewNoteButton.click();
   }
 
-  async filterNotes(searchTerm: string): Promise<void> {
-    await this.filterInput.fill(searchTerm);
-  }
-
   getFolderByName(folderName: string): Locator {
     return this.page.locator('nz-tree-node').filter({ hasText: folderName }).first();
   }
@@ -54,7 +50,7 @@ export class NodeListPage extends BasePage {
   }
 
   async clickNote(noteName: string): Promise<void> {
-    const note = await this.getNoteByName(noteName);
+    const note = this.getNoteByName(noteName);
     // Target the specific link that navigates to the notebook (has href with "#/notebook/")
     const noteLink = note.locator('a[href*="#/notebook/"]');
     await noteLink.click();

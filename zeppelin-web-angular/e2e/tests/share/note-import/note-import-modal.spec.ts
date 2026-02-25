@@ -99,8 +99,6 @@ test.describe('Note Import Modal', () => {
     await noteImportModal.clickImportNote();
 
     await expect(noteImportModal.errorAlert).toBeVisible();
-
-    await noteImportModal.isErrorAlertVisible();
     const errorMessage = await noteImportModal.getErrorMessage();
     expect(errorMessage).toBeTruthy();
   });

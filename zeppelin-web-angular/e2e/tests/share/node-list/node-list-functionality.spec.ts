@@ -11,18 +11,15 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../../../models/home-page';
 import { NodeListPage } from '../../../models/node-list-page';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Node List Functionality', () => {
-  let homePage: HomePage;
   let nodeListPage: NodeListPage;
 
   addPageAnnotationBeforeEach(PAGES.SHARE.NODE_LIST);
 
   test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
     nodeListPage = new NodeListPage(page);
 
     await page.goto('/');

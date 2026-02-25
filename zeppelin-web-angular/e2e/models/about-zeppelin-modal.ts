@@ -35,10 +35,6 @@ export class AboutZeppelinModal extends BasePage {
     this.licenseLink = page.getByRole('link', { name: 'Licensed under the Apache License, Version 2.0' });
   }
 
-  async isModalVisible(): Promise<boolean> {
-    return this.modal.isVisible();
-  }
-
   async close(): Promise<void> {
     await this.closeButton.click();
   }
@@ -49,14 +45,6 @@ export class AboutZeppelinModal extends BasePage {
 
   async isLogoVisible(): Promise<boolean> {
     return this.logo.isVisible();
-  }
-
-  async clickGetInvolvedLink(): Promise<void> {
-    await this.getInvolvedLink.click();
-  }
-
-  async clickLicenseLink(): Promise<void> {
-    await this.licenseLink.click();
   }
 
   async getGetInvolvedHref(): Promise<string | null> {
