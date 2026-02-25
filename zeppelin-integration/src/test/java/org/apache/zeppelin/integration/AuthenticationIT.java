@@ -109,11 +109,11 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     try {
       authenticationUser("admin", "password1");
 
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
 
-      assertTrue(pollingWait(By.xpath(
+      assertTrue(visibilityWait(By.xpath(
         "//div[@id='main']/div/div[2]"),
         MIN_IMPLICIT_WAIT).isDisplayed(), "Check is user has permission to view this page");
 
@@ -121,25 +121,25 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       authenticationUser("finance1", "finance1");
 
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
 
       assertTrue(
-        pollingWait(By.xpath("//div[@id='main']/div/div[2]"), MIN_IMPLICIT_WAIT).isDisplayed(),
+        visibilityWait(By.xpath("//div[@id='main']/div/div[2]"), MIN_IMPLICIT_WAIT).isDisplayed(),
         "Check is user has permission to view this page");
 
       logoutUser("finance1");
 
       authenticationUser("hr1", "hr1");
 
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
 
       try {
         assertTrue(
-          pollingWait(By.xpath("//li[contains(@class, 'ng-toast__message')]//span/span"),
+          visibilityWait(By.xpath("//li[contains(@class, 'ng-toast__message')]//span/span"),
             MIN_IMPLICIT_WAIT).isDisplayed(),
           "Check is user has permission to view this page");
       } catch (TimeoutException e) {
@@ -161,27 +161,27 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       String noteId = manager.getWebDriver().getCurrentUrl()
         .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
 
-      pollingWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
+      clickableWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
-      pollingWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
+      visibilityWait(By.xpath(".//*[@id='selectOwners']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
-      pollingWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
+      visibilityWait(By.xpath(".//*[@id='selectReaders']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
-      pollingWait(By.xpath(".//*[@id='selectRunners']/following::span//input"),
+      visibilityWait(By.xpath(".//*[@id='selectRunners']/following::span//input"),
               MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
-      pollingWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
+      visibilityWait(By.xpath(".//*[@id='selectWriters']/following::span//input"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("finance ");
-      pollingWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
+      visibilityWait(By.xpath("//button[@ng-click='savePermissions()']"), MAX_BROWSER_TIMEOUT_SEC)
           .sendKeys(Keys.ENTER);
 
-      pollingWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Permissions Saved ')]" +
+      clickableWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Permissions Saved ')]" +
               "//div[@class='modal-footer']//button[contains(.,'OK')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       logoutUser("finance1");
 
       authenticationUser("hr1", "hr1");
       try {
-        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        WebElement element = visibilityWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
         assertFalse(element.isDisplayed(), "Check is user has permission to view this note link");
       } catch (Exception e) {
@@ -202,7 +202,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       authenticationUser("finance2", "finance2");
       try {
-        WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        WebElement element = visibilityWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
         assertTrue(element.isDisplayed(), "Check is user has permission to view this note link");
       } catch (Exception e) {

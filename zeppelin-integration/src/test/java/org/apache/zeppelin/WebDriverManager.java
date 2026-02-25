@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -84,6 +85,12 @@ public class WebDriverManager implements Closeable {
     Supplier<WebDriver> chromeDriverSupplier = () -> {
       try {
         ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-search-engine-choice-screen");
+        options.setExperimentalOption("prefs", Map.of(
+            "credentials_enable_service", false,
+            "profile.password_manager_enabled", false,
+            "profile.password_manager_leak_detection", false
+        ));
         return new ChromeDriver(options);
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while ChromeDriver ", e);
@@ -169,7 +176,8 @@ public class WebDriverManager implements Closeable {
     assertTrue(loaded);
 
     try {
-      driver.manage().window().maximize();
+      // Manually setting fixed window size since `maximize()` crashes for Chrome/Edge driver on linux with xvfb.
+      driver.manage().window().setSize(new Dimension(1920, 1080));
     } catch (Exception e) {
       LOG.warn("Failed to maximize browser window. Consider using setSize() instead.", e);
     }

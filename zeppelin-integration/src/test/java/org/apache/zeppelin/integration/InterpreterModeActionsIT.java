@@ -111,10 +111,10 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     try {
       //step 1: (admin) login, set 'globally in shared' mode of python interpreter, logout
       authenticationUser("admin", "password1");
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
-      pollingWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
+      visibilityWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
       clickAndWait(By.xpath("//div[contains(@id, 'python')]//button[contains(@ng-click, 'valueform.$show();\n" +
@@ -206,7 +206,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       waitForParagraph(2, "FINISHED");
@@ -265,11 +265,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
       authenticationUser("admin", "password1");
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
-      pollingWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
+      visibilityWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
 
@@ -370,7 +370,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       runParagraph(2);
@@ -467,7 +467,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       waitForParagraph(1, "FINISHED");
@@ -486,7 +486,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       runParagraph(1);
@@ -510,11 +510,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is 0
       //System: Check if the number of python process is 0
       authenticationUser("admin", "password1");
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
-      pollingWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
+      visibilityWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
 
@@ -553,10 +553,10 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout
       authenticationUser("admin", "password1");
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
-      pollingWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
+      visibilityWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
       clickAndWait(By.xpath("//div[contains(@id, 'python')]//button[contains(@ng-click, 'valueform.$show();\n" +
@@ -653,7 +653,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       runParagraph(2);
@@ -752,7 +752,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       waitForParagraph(1, "FINISHED");
@@ -771,7 +771,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
           .until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       runParagraph(1);
@@ -795,11 +795,11 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is 0
       //System: Check if the number of python process is 0
       authenticationUser("admin", "password1");
-      pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+      clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
-      pollingWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
+      visibilityWait(By.xpath("//input[contains(@ng-model, 'searchInterpreter')]"),
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
 
