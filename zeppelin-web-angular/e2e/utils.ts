@@ -215,7 +215,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
     if (isOnLoginPage) {
       console.log('On login page - checking if authentication is enabled');
 
-      // If we're on login dlpage, this is expected when authentication is required
+      // If we're on login page, this is expected when authentication is required
       // Just wait for login elements to be ready instead of waiting for app content
       await page.waitForFunction(
         () => {
