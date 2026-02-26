@@ -28,7 +28,7 @@
         <!-- Oracle JDBC Driver -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
+            <artifactId>ojdbc11</artifactId>
             <version>${oracle.oraclelib.version}</version>
         </dependency>
         <dependency>
@@ -74,7 +74,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/../../interpreter/${interpreter.name}</outputDirectory>
                             <includeScope>runtime</includeScope>
-                            <includeArtifactIds>ojdbc8,ucp,oraclepki,osdt_core,osdt_cert</includeArtifactIds>
+                            <includeArtifactIds>ojdbc11,ucp,oraclepki,osdt_core,osdt_cert</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>

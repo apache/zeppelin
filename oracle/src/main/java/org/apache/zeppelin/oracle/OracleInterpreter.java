@@ -27,9 +27,13 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
-
+import java.sql.Connection;
 import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 
 import org.apache.zeppelin.interpreter.util.SqlSplitter;
 
@@ -206,7 +210,6 @@ public class OracleInterpreter extends Interpreter {
     return pds.getConnection();
   }
 
-
   @Override
   public InterpreterResult interpret(String sql, InterpreterContext context) {
     LOGGER.info("Executing SQL: {}", sql);
@@ -253,26 +256,28 @@ public class OracleInterpreter extends Interpreter {
      */
     parseSqlBlocks(buffer.toString(), sqlList);
     StringBuilder resultMsg = new StringBuilder();
-    try {
+
+    try (Connection autoClosedConn = conn) {
       for (String s : sqlList) {
-        if (s.trim().isEmpty())
+        if (s.trim().isEmpty()) {
           continue;
-        Statement enableStmt = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
+        }
+        try (Statement enableStmt = autoClosedConn.createStatement();
+             Statement statement = autoClosedConn.createStatement()) {
+
           // Enable DBMS_OUTPUT
-          enableStmt = conn.createStatement();
           enableStmt.execute("BEGIN dbms_output.enable(null); END;");
-          // Execute the sql
-          statement = conn.createStatement();
+
+          // Execute the SQL
           paragraphStatements.put(context.getParagraphId(), statement);
           statement.setMaxRows(maxResults);
           boolean isResultSet = statement.execute(s);
+
           String regularResult;
           if (isResultSet) {
-            resultSet = statement.getResultSet();
-            regularResult = formatAsTable(resultSet);
+            try (ResultSet resultSet = statement.getResultSet()) {
+              regularResult = formatAsTable(resultSet);
+            }
           } else {
             int updateCount = statement.getUpdateCount();
             if (updateCount >= 0) {
@@ -281,36 +286,17 @@ public class OracleInterpreter extends Interpreter {
               regularResult = "%text Executed successfully.\n";
             }
           }
+
           // Fetch DBMS_OUTPUT
-          String output = getDbmsOutput(conn);
+          String output = getDbmsOutput(autoClosedConn);
           resultMsg.append(regularResult);
           if (output != null && !output.trim().isEmpty()) {
             resultMsg.append("%text ").append(output).append("\n");
           }
         } finally {
-          if (resultSet != null) {
-            try {
-              resultSet.close();
-            } catch (SQLException e) {
-              LOGGER.warn("Failed to close result set", e);
-            }
-          if (statement != null) {
-            try {
-              statement.close();
-            } catch (SQLException e) {
-            LOGGER.warn("Failed to close statement", e);
-            }
-          }
-          }
-          if (enableStmt != null) {
-            try {
-              enableStmt.close();
-            } catch (SQLException e) {
-              LOGGER.warn("Failed to close enable statement", e);
-            }
-          }
+          paragraphStatements.remove(context.getParagraphId());
         }
-        paragraphStatements.remove(context.getParagraphId());
+
         // Log pool statistics after each execution for monitoring
         try {
           logPoolStatistics();
@@ -318,16 +304,8 @@ public class OracleInterpreter extends Interpreter {
           LOGGER.warn("Failed to log pool statistics", e);
         }
       }
-    } finally {
-      // Close the connection to return it to the pool
-      if (conn != null) {
-        try {
-          conn.close();
-        } catch (SQLException e) {
-          LOGGER.warn("Failed to return connection to Pool", e);
-        }
-      }
     }
+
     return new InterpreterResult(Code.SUCCESS, resultMsg.toString());
   }
 
@@ -339,7 +317,8 @@ public class OracleInterpreter extends Interpreter {
 
     boolean isPlSql = normalized.startsWith("BEGIN") ||
       normalized.startsWith("DECLARE") ||
-      normalized.matches("^CREATE\\s+(OR\\s+REPLACE\\s+)?(PROCEDURE|FUNCTION|PACKAGE|TRIGGER|TYPE|PACKAGE|VIEW\\s+BODY)\\b.*");
+      normalized.matches("^CREATE\\s+(OR\\s+REPLACE\\s+)?" +
+          "(PROCEDURE|FUNCTION|PACKAGE|TRIGGER|TYPE|PACKAGE|VIEW\\s+BODY)\\b.*");
 
     if (isPlSql) {
       sqlList.add(bufferedSql);
