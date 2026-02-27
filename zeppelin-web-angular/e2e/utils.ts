@@ -215,7 +215,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
     if (isOnLoginPage) {
       console.log('On login page - checking if authentication is enabled');
 
-      // If we're on login dlpage, this is expected when authentication is required
+      // If we're on login page, this is expected when authentication is required
       // Just wait for login elements to be ready instead of waiting for app content
       await page.waitForFunction(
         () => {
@@ -374,7 +374,7 @@ const navigateViaHomePageFallback = async (page: Page, baseNotebookName: string)
 };
 
 const extractFirstParagraphId = async (page: Page): Promise<string> => {
-  await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 20000 });
 
   const paragraphContainer = page.locator('zeppelin-notebook-paragraph').first();
   const dropdownTrigger = paragraphContainer.locator('a[nz-dropdown]');

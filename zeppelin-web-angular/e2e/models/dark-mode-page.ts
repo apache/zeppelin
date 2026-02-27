@@ -11,36 +11,36 @@
  */
 
 import { expect, Locator, Page } from '@playwright/test';
+import { BasePage } from './base-page';
 
-export class ThemePage {
-  readonly page: Page;
+export class DarkModePage extends BasePage {
   readonly themeToggleButton: Locator;
   readonly rootElement: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.themeToggleButton = page.locator('zeppelin-theme-toggle button');
     this.rootElement = page.locator('html');
   }
 
   async toggleTheme() {
-    await this.themeToggleButton.click();
+    await this.themeToggleButton.click({ timeout: 15000 });
   }
 
   async assertDarkTheme() {
-    await expect(this.rootElement).toHaveClass(/dark/);
+    await expect(this.rootElement).toHaveClass(/dark/, { timeout: 10000 });
     await expect(this.rootElement).toHaveAttribute('data-theme', 'dark');
     await expect(this.themeToggleButton).toHaveText('dark_mode');
   }
 
   async assertLightTheme() {
-    await expect(this.rootElement).toHaveClass(/light/);
+    await expect(this.rootElement).toHaveClass(/light/, { timeout: 10000 });
     await expect(this.rootElement).toHaveAttribute('data-theme', 'light');
     await expect(this.themeToggleButton).toHaveText('light_mode');
   }
 
   async assertSystemTheme() {
-    await expect(this.themeToggleButton).toHaveText('smart_toy');
+    await expect(this.themeToggleButton).toHaveText('smart_toy', { timeout: 60000 });
   }
 
   async setThemeInLocalStorage(theme: 'light' | 'dark' | 'system') {

@@ -117,7 +117,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
           .findElement(
               By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]"))
           .getText());
-      pollingWait(By.xpath("//*[@id='actionbar']" +
+      clickableWait(By.xpath("//*[@id='actionbar']" +
           "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
@@ -129,7 +129,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       wait = new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC));
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       assertEquals("Switch to personal mode (owner can change)",
@@ -149,7 +149,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       }
       waitForParagraph(1, "FINISHED");
       setParagraphText("After");
@@ -164,7 +164,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       }
       assertEquals("Before", manager.getWebDriver()
           .findElement(
@@ -205,12 +205,12 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
             "Exception in PersonalizeActionsIT while testGraphAction, status of 1st Spark Paragraph ");
       }
 
-      pollingWait(By.xpath("//*[@id='actionbar']" +
+      clickableWait(By.xpath("//*[@id='actionbar']" +
               "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
               "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
 
-      pollingWait(By.xpath(getParagraphXPath(1) +
+      clickableWait(By.xpath(getParagraphXPath(1) +
           "//button[contains(@uib-tooltip, 'Bar Chart')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       assertEquals("fa fa-bar-chart",
           manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1)
@@ -226,7 +226,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       assertEquals("Switch to personal mode (owner can change)",
@@ -238,7 +238,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"));
 
-      pollingWait(By.xpath(getParagraphXPath(1) +
+      clickableWait(By.xpath(getParagraphXPath(1) +
           "//button[contains(@uib-tooltip, 'Table')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       ZeppelinITUtils.sleep(1000, false);
       assertEquals("fa fa-table", manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1)
@@ -252,7 +252,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
                 MAX_BROWSER_TIMEOUT_SEC).click();
       }
       assertEquals("fa fa-bar-chart",
@@ -293,7 +293,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       assertEquals("Before", manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1) +
           "//input[contains(@name, 'name')]")).getAttribute("value"));
 
-      pollingWait(By.xpath("//*[@id='actionbar']" +
+      clickableWait(By.xpath("//*[@id='actionbar']" +
           "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
           "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
@@ -305,7 +305,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
       element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
       if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+        clickableWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
       assertEquals("Switch to personal mode (owner can change)",
@@ -316,9 +316,9 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       assertEquals("Before", manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1) +
           "//input[contains(@name, 'name')]")).getAttribute("value"));
 
-      pollingWait(By.xpath(getParagraphXPath(1) +
+      visibilityWait(By.xpath(getParagraphXPath(1) +
           "//input[contains(@name, 'name')]"), MAX_BROWSER_TIMEOUT_SEC).clear();
-      pollingWait(By.xpath(getParagraphXPath(1) +
+      visibilityWait(By.xpath(getParagraphXPath(1) +
           "//input[contains(@name, 'name')]"), MAX_BROWSER_TIMEOUT_SEC).sendKeys("After");
 
       runParagraph(1);

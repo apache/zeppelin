@@ -12,23 +12,22 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { HomePageUtil } from '../../models/home-page.util';
 import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Home Page - External Links', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
+  let homePage: HomePage;
+
   test.beforeEach(async ({ page }) => {
+    homePage = new HomePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });
 
   test.describe('Documentation Link', () => {
-    test('should have correct documentation link with dynamic version', async ({ page }) => {
-      const homePage = new HomePage(page);
-      const homePageUtil = new HomePageUtil(page);
-
+    test('should have correct documentation link with dynamic version', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -38,9 +37,9 @@ test.describe('Home Page - External Links', () => {
       });
 
       await test.step('Then it should have the correct href pattern', async () => {
-        const linkTargets = await homePageUtil.testExternalLinkTargets();
-        expect(linkTargets.documentationHref).toContain('zeppelin.apache.org/docs');
-        expect(linkTargets.documentationHref).toContain('index.html');
+        const href = await homePage.externalLinks.documentation.getAttribute('href');
+        expect(href).toContain('zeppelin.apache.org/docs');
+        expect(href).toContain('index.html');
       });
 
       await test.step('And it should open in a new tab', async () => {
@@ -51,10 +50,7 @@ test.describe('Home Page - External Links', () => {
   });
 
   test.describe('Community Links', () => {
-    test('should have correct mailing list link', async ({ page }) => {
-      const homePage = new HomePage(page);
-      const homePageUtil = new HomePageUtil(page);
-
+    test('should have correct mailing list link', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -64,8 +60,8 @@ test.describe('Home Page - External Links', () => {
       });
 
       await test.step('Then it should have the correct href', async () => {
-        const linkTargets = await homePageUtil.testExternalLinkTargets();
-        expect(linkTargets.mailingListHref).toBe('http://zeppelin.apache.org/community.html');
+        const href = await homePage.externalLinks.mailingList.getAttribute('href');
+        expect(href).toBe('http://zeppelin.apache.org/community.html');
       });
 
       await test.step('And it should open in a new tab', async () => {
@@ -79,10 +75,7 @@ test.describe('Home Page - External Links', () => {
       });
     });
 
-    test('should have correct issues tracking link', async ({ page }) => {
-      const homePage = new HomePage(page);
-      const homePageUtil = new HomePageUtil(page);
-
+    test('should have correct issues tracking link', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -92,10 +85,8 @@ test.describe('Home Page - External Links', () => {
       });
 
       await test.step('Then it should have the correct href', async () => {
-        const linkTargets = await homePageUtil.testExternalLinkTargets();
-        expect(linkTargets.issuesTrackingHref).toBe(
-          'https://issues.apache.org/jira/projects/ZEPPELIN/issues/filter=allopenissues'
-        );
+        const href = await homePage.externalLinks.issuesTracking.getAttribute('href');
+        expect(href).toBe('https://issues.apache.org/jira/projects/ZEPPELIN/issues/filter=allopenissues');
       });
 
       await test.step('And it should open in a new tab', async () => {
@@ -109,10 +100,7 @@ test.describe('Home Page - External Links', () => {
       });
     });
 
-    test('should have correct GitHub link', async ({ page }) => {
-      const homePage = new HomePage(page);
-      const homePageUtil = new HomePageUtil(page);
-
+    test('should have correct GitHub link', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });
@@ -122,8 +110,8 @@ test.describe('Home Page - External Links', () => {
       });
 
       await test.step('Then it should have the correct href', async () => {
-        const linkTargets = await homePageUtil.testExternalLinkTargets();
-        expect(linkTargets.githubHref).toBe('https://github.com/apache/zeppelin');
+        const href = await homePage.externalLinks.github.getAttribute('href');
+        expect(href).toBe('https://github.com/apache/zeppelin');
       });
 
       await test.step('And it should open in a new tab', async () => {
@@ -139,9 +127,7 @@ test.describe('Home Page - External Links', () => {
   });
 
   test.describe('Link Verification', () => {
-    test('should have all external links with proper attributes', async ({ page }) => {
-      const homePage = new HomePage(page);
-
+    test('should have all external links with proper attributes', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
       });

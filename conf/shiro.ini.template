@@ -123,6 +123,7 @@ admin = *
 /api/interpreter/setting/restart/** = authc
 /api/interpreter/** = authc, roles[admin]
 /api/notebook-repositories/** = authc, roles[admin]
+/api/configurations/client/** = anon
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]
 /api/admin/** = authc, roles[admin]

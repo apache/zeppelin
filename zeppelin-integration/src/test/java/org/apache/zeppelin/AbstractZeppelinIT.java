@@ -18,12 +18,10 @@
 package org.apache.zeppelin;
 
 
-import com.google.common.base.Function;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -38,8 +36,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,15 +51,13 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void authenticationUser(String userName, String password) {
-    pollingWait(
+    clickableWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
 
-    ZeppelinITUtils.sleep(1000, false);
-
-    pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(
+    visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
+    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
+    clickableWait(
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
 
@@ -132,7 +126,7 @@ abstract public class AbstractZeppelinIT {
   protected boolean waitForParagraph(final int paragraphNo, final String state) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
         + "//div[contains(@class, 'control')]//span[2][contains(.,'" + state + "')]");
-    WebElement element = pollingWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
+    WebElement element = visibilityWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
     return element.isDisplayed();
   }
 
@@ -145,7 +139,7 @@ abstract public class AbstractZeppelinIT {
 
   protected boolean waitForText(final String txt, final By locator) {
     try {
-      WebElement element = pollingWait(locator, MAX_BROWSER_TIMEOUT_SEC);
+      WebElement element = visibilityWait(locator, MAX_BROWSER_TIMEOUT_SEC);
       return txt.equals(element.getText());
     } catch (TimeoutException e) {
       return false;
@@ -153,12 +147,21 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<>(manager.getWebDriver())
-        .withTimeout(Duration.of(timeWait, ChronoUnit.SECONDS))
-        .pollingEvery(Duration.of(1, ChronoUnit.SECONDS))
-        .ignoring(NoSuchElementException.class);
+    WebDriverWait wait = new WebDriverWait(manager.getWebDriver(),
+        Duration.ofSeconds(timeWait));
+    return wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+  }
 
-    return wait.until((Function<WebDriver, WebElement>) driver -> driver.findElement(locator));
+  protected WebElement visibilityWait(final By locator, final long timeWait) {
+    WebDriverWait wait = new WebDriverWait(manager.getWebDriver(),
+        Duration.ofSeconds(timeWait));
+    return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+  }
+
+  protected WebElement clickableWait(final By locator, final long timeWait) {
+    WebDriverWait wait = new WebDriverWait(manager.getWebDriver(),
+        Duration.ofSeconds(timeWait));
+    return wait.until(ExpectedConditions.elementToBeClickable(locator));
   }
 
   protected void createNewNote() {
@@ -193,7 +196,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void clickAndWait(final By locator) {
-    WebElement element = pollingWait(locator, MAX_IMPLICIT_WAIT);
+    WebElement element = clickableWait(locator, MAX_IMPLICIT_WAIT);
     try {
       element.click();
       ZeppelinITUtils.sleep(1000, false);

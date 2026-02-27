@@ -12,8 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { BasePage } from '../models/base-page';
-import { LoginTestUtil } from '../models/login-page.util';
-import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES, performLoginIfRequired } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
@@ -23,6 +22,8 @@ test.describe('Zeppelin App Component', () => {
     basePage = new BasePage(page);
 
     await page.goto('/', { waitUntil: 'load' });
+    await waitForZeppelinReady(page);
+    await performLoginIfRequired(page);
   });
 
   test('should have correct component selector and structure', async ({ page }) => {
@@ -56,12 +57,8 @@ test.describe('Zeppelin App Component', () => {
 
   test('should display workspace after loading', async ({ page }) => {
     await waitForZeppelinReady(page);
-    const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
-    if (isShiroEnabled) {
-      await expect(page.locator('zeppelin-login')).toBeVisible();
-    } else {
-      await expect(page.locator('zeppelin-workspace')).toBeVisible();
-    }
+    // After the `beforeEach` hook, which handles login, the workspace should be visible.
+    await expect(basePage.zeppelinWorkspace).toBeVisible();
   });
 
   test('should handle navigation events correctly', async ({ page }) => {
@@ -142,6 +139,7 @@ test.describe('Zeppelin App Component', () => {
 
   test('should maintain component integrity during navigation', async ({ page }) => {
     await waitForZeppelinReady(page);
+    await performLoginIfRequired(page);
 
     const zeppelinRoot = page.locator('zeppelin-root');
     const routerOutlet = zeppelinRoot.locator('router-outlet').first();
