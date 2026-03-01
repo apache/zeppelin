@@ -12,3 +12,4 @@
 
 export * from './tableUtils';
 export * from './textUtils';
+export * from './exportFile';

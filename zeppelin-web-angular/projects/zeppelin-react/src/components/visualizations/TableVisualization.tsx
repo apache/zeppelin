@@ -13,8 +13,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
-import { parseTableData, TableData } from '@/utils';
-import { useTableExport } from '@/hooks';
+import { parseTableData, TableData, exportFile } from '@/utils';
 import type { ParagraphConfigResults, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
 
 interface TableVisualizationProps {
@@ -27,7 +26,6 @@ export const TableVisualization = ({ result, config, index }: TableVisualization
   const [currentMode, setCurrentMode] = useState<VisualizationMode>('table');
   const [tableData, setTableData] = useState<TableData | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
-  const exportFile = useTableExport();
 
   const handleExport = (type: 'csv' | 'xlsx') => {
     if (tableData) {

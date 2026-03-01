@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-// Added styles for tables rendered as HTML from app/pages/workspace/share/result/result.component.ts
+import hljs from 'highlight.js';
 import './HTMLRenderer.css';
 
 interface HTMLRendererProps {
@@ -28,6 +28,12 @@ export const HTMLRenderer = ({ html }: HTMLRendererProps) => {
       // To render HTML containing libraries like BokehJS, we must manually add script tags
       // to the DOM to execute them.
       container.innerHTML = html;
+
+      // Highlight code blocks (matches Angular: result.component.ts renderHTML)
+      const codeEle = container.querySelector('pre code');
+      if (codeEle) {
+        hljs.highlightBlock(codeEle as HTMLElement);
+      }
 
       const scripts = Array.from(container.querySelectorAll('script'));
 

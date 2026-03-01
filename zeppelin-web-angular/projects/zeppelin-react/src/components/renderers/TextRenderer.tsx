@@ -10,16 +10,17 @@
  * limitations under the License.
  */
 
-import { Typography } from 'antd';
+import Ansi from 'ansi-to-react';
 
 export interface TextRendererProps {
   text: string;
 }
 
+// Matches Angular: result.component.ts renderText()
 export const TextRenderer = ({ text }: TextRendererProps) => {
   return (
-    <Typography.Text style={{ whiteSpace: 'pre-wrap' }}>
-      {text}
-    </Typography.Text>
+    <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+      <Ansi>{text}</Ansi>
+    </pre>
   );
 };
