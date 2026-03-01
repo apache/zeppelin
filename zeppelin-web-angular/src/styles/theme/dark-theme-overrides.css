@@ -166,6 +166,21 @@ html.dark .ant-menu-submenu-title:hover {
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
+html.dark .ant-select-selector {
+  background-color: #262626 !important;
+  border-color: #434343 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark .ant-select-selector:hover,
+html.dark .ant-select-selector:focus {
+  border-color: #177ddc !important;
+}
+
+html.dark .ant-select-item-option-active:not(html.dark .ant-select-item-option-disabled) {
+  background-color: #262626 !important;
+}
+
 html.dark .ant-dropdown-menu-item-selected,
 html.dark .ant-dropdown-menu-submenu-title-selected,
 html.dark .ant-dropdown-menu-item-selected > a,
