@@ -97,7 +97,7 @@ export class NotebookParagraphComponent
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
   @Output() readonly selected = new EventEmitter<string>();
   @Output() readonly selectAtIndex = new EventEmitter<number>();
-  @Output() readonly searchCode = new EventEmitter();
+  @Output() readonly openSearchMenu = new EventEmitter();
 
   private destroy$ = new Subject();
 
@@ -700,7 +700,7 @@ export class NotebookParagraphComponent
   }
 
   handleFindInCode() {
-    this.searchCode.emit();
+    this.openSearchMenu.emit();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
