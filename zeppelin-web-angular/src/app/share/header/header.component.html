@@ -52,19 +52,19 @@
       <ul nz-menu>
         <li nz-menu-item (click)="about()">About Zeppelin</li>
         <li nz-menu-divider></li>
-        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
+        <li nz-menu-item nzMatchRouter>
           <a [routerLink]="['/interpreter']">Interpreter</a>
         </li>
-        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
+        <li nz-menu-item nzMatchRouter>
           <a [routerLink]="['/notebook-repos']">Notebook Repos</a>
         </li>
-        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
+        <li nz-menu-item nzMatchRouter>
           <a [routerLink]="['/credential']">Credential</a>
         </li>
-        <!--        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">-->
+        <!--        <li nz-menu-item nzMatchRouter>-->
         <!--          <a [routerLink]="['/helium']">Helium</a>-->
         <!--        </li>-->
-        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
+        <li nz-menu-item nzMatchRouter>
           <a [routerLink]="['/configuration']">Configuration</a>
         </li>
         <ng-container *ngIf="ticketService.ticket.principal !== 'anonymous'">
