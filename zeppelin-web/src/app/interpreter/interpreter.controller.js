@@ -468,7 +468,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       message: 'Do you want to restart this interpreter?',
       callback: function(result) {
         if (result) {
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
+          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart-all/' + settingId)
             .then(function(res) {
               let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
               $scope.interpreterSettings[index] = res.data.body;

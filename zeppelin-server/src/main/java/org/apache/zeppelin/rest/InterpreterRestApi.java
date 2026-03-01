@@ -190,7 +190,8 @@ public class InterpreterRestApi extends AbstractRestApi {
   }
 
   /**
-   * Restart interpreter setting.
+   * Restart interpreter setting for a specific note.
+   * Requires noteId in request body.
    */
   @PUT
   @Path("setting/restart/{settingId}")
@@ -204,7 +205,8 @@ public class InterpreterRestApi extends AbstractRestApi {
 
       String noteId = request == null ? null : request.getNoteId();
       if (null == noteId) {
-        interpreterSettingManager.close(settingId);
+        return new JsonResponse<>(Status.BAD_REQUEST, "noteId is required. Use /restart-all endpoint for global restart.")
+                .build();
       } else {
         Set<String> entities = new HashSet<>();
         entities.add(authenticationService.getPrincipal());
@@ -226,6 +228,24 @@ public class InterpreterRestApi extends AbstractRestApi {
     if (setting == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
     }
+    return new JsonResponse<>(Status.OK, "", setting).build();
+  }
+
+  /**
+   * Restart interpreter setting globally (all sessions).
+   * This endpoint should be protected by shiro.ini for admin only.
+   */
+  @PUT
+  @Path("setting/restart-all/{settingId}")
+  @ZeppelinApi
+  public Response restartSettingAll(@PathParam("settingId") String settingId) {
+    LOGGER.info("Restart ALL interpreterSetting {}, user={}", settingId, authenticationService.getPrincipal());
+
+    InterpreterSetting setting = interpreterSettingManager.get(settingId);
+    if (setting == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
+    }
+    interpreterSettingManager.close(settingId);
     return new JsonResponse<>(Status.OK, "", setting).build();
   }
 

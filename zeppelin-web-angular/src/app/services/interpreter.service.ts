@@ -82,6 +82,6 @@ export class InterpreterService extends BaseRest {
   }
 
   restartInterpreterSetting(settingId: string) {
-    return this.http.put(this.restUrl`/interpreter/setting/restart/${settingId}`, null);
+    return this.http.put(this.restUrl`/interpreter/setting/restart-all/${settingId}`, null);
   }
 }

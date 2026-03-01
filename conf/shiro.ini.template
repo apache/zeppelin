@@ -118,8 +118,14 @@ admin = *
 #
 /api/version = anon
 /api/cluster/address = anon
-# Allow all authenticated users to restart interpreters on a notebook page.
-# Comment out the following line if you would like to authorize only admin users to restart interpreters.
+# Interpreter restart endpoints:
+# - /api/interpreter/setting/restart/** : Restart interpreter for a specific note (requires noteId in request body)
+# - /api/interpreter/setting/restart-all/** : Restart interpreter globally (affects all users/sessions)
+#
+# Allow all authenticated users to restart interpreters on a notebook page and globally.
+# Comment out the following line and uncomment the next line if you would like to authorize only admin users to restart interpreters globally.
+/api/interpreter/setting/restart-all/** = authc
+#/api/interpreter/setting/restart-all/** = authc, roles[admin]
 /api/interpreter/setting/restart/** = authc
 /api/interpreter/** = authc, roles[admin]
 /api/notebook-repositories/** = authc, roles[admin]
