@@ -699,6 +699,10 @@ public class InterpreterSetting {
 
   public void setOption(InterpreterOption option) {
     this.option = option;
+    // Ensure zConf is set for the new option to avoid NullPointerException
+    if (this.zConf != null) {
+      this.option.setConf(this.zConf);
+    }
   }
 
   public String getInterpreterDir() {
