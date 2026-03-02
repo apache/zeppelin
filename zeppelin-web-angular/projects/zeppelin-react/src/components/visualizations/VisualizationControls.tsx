@@ -11,16 +11,14 @@
  */
 
 import { Button, Space } from 'antd';
-import {
-  BarChartOutlined,
-  PieChartOutlined,
-  LineChartOutlined,
-  DotChartOutlined,
-  TableOutlined,
-  AreaChartOutlined,
-  DownloadOutlined,
-  FileExcelOutlined
-} from '@ant-design/icons';
+import BarChartOutlined from '@ant-design/icons/BarChartOutlined';
+import PieChartOutlined from '@ant-design/icons/PieChartOutlined';
+import LineChartOutlined from '@ant-design/icons/LineChartOutlined';
+import DotChartOutlined from '@ant-design/icons/DotChartOutlined';
+import TableOutlined from '@ant-design/icons/TableOutlined';
+import AreaChartOutlined from '@ant-design/icons/AreaChartOutlined';
+import DownloadOutlined from '@ant-design/icons/DownloadOutlined';
+import FileExcelOutlined from '@ant-design/icons/FileExcelOutlined';
 import type { VisualizationMode } from '@zeppelin/sdk';
 
 interface VisualizationControlsProps {

@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Table } from 'antd';
-import { Column, Line, Pie, Scatter } from '@antv/g2plot';
+import type { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
 import { parseTableData, exportFile } from '@/utils';
 import type { ParagraphConfigResult, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
@@ -76,62 +76,68 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
     }));
 
     let chart: Column | Line | Pie | Scatter | null = null;
+    let cancelled = false;
 
-    switch (currentMode) {
-      case 'multiBarChart':
-        chart = new Column(chartRef.current, {
-          data,
-          xField: 'category',
-          yField: 'value',
-          color: '#1890ff',
-          columnWidthRatio: 0.8
-        });
-        break;
-      case 'lineChart':
-        chart = new Line(chartRef.current, {
-          data,
-          xField: 'category',
-          yField: 'value',
-          color: '#1890ff'
-        });
-        break;
-      case 'pieChart':
-        chart = new Pie(chartRef.current, {
-          data,
-          angleField: 'value',
-          colorField: 'category'
-        });
-        break;
-      case 'scatterChart':
-        chart = new Scatter(chartRef.current, {
-          data,
-          xField: 'x',
-          yField: 'y',
-          color: '#1890ff'
-        });
-        break;
-      case 'stackedAreaChart':
-        chart = new Line(chartRef.current, {
-          data,
-          xField: 'category',
-          yField: 'value',
-          color: '#1890ff',
-          point: {
-            size: 3,
-            shape: 'circle'
-          },
-          lineStyle: {
-            lineWidth: 2
-          }
-        });
-        break;
-    }
+    import('@antv/g2plot').then(g2plot => {
+      if (cancelled || !chartRef.current) return;
 
-    if (chart) {
-      chart.render();
-    }
+      switch (currentMode) {
+        case 'multiBarChart':
+          chart = new g2plot.Column(chartRef.current, {
+            data,
+            xField: 'category',
+            yField: 'value',
+            color: '#1890ff',
+            columnWidthRatio: 0.8
+          });
+          break;
+        case 'lineChart':
+          chart = new g2plot.Line(chartRef.current, {
+            data,
+            xField: 'category',
+            yField: 'value',
+            color: '#1890ff'
+          });
+          break;
+        case 'pieChart':
+          chart = new g2plot.Pie(chartRef.current, {
+            data,
+            angleField: 'value',
+            colorField: 'category'
+          });
+          break;
+        case 'scatterChart':
+          chart = new g2plot.Scatter(chartRef.current, {
+            data,
+            xField: 'x',
+            yField: 'y',
+            color: '#1890ff'
+          });
+          break;
+        case 'stackedAreaChart':
+          chart = new g2plot.Line(chartRef.current, {
+            data,
+            xField: 'category',
+            yField: 'value',
+            color: '#1890ff',
+            point: {
+              size: 3,
+              shape: 'circle'
+            },
+            lineStyle: {
+              lineWidth: 2
+            }
+          });
+          break;
+      }
+
+      if (chart) {
+        chart.render();
+      }
+    });
 
     return () => {
+      cancelled = true;
       if (chart) {
         chart.destroy();
       }

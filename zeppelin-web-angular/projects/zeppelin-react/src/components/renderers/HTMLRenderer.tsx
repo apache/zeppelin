@@ -11,7 +11,6 @@
  */
 
 import { useEffect, useRef } from 'react';
-import hljs from 'highlight.js';
 import './HTMLRenderer.css';
 
 interface HTMLRendererProps {
@@ -32,7 +31,9 @@ export const HTMLRenderer = ({ html }: HTMLRendererProps) => {
       // Highlight code blocks (matches Angular: result.component.ts renderHTML)
       const codeEle = container.querySelector('pre code');
       if (codeEle) {
-        hljs.highlightBlock(codeEle as HTMLElement);
+        import('highlight.js').then(({ default: hljs }) => {
+          hljs.highlightBlock(codeEle as HTMLElement);
+        });
       }
 
       const scripts = Array.from(container.querySelectorAll('script'));

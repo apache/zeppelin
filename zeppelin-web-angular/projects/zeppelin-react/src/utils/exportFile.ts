@@ -10,22 +10,23 @@
  * limitations under the License.
  */
 
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import type { TableData } from './tableUtils';
 
 const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
 const EXCEL_EXTENSION = '.xlsx';
 
-export const exportFile = (tableData: TableData, type: 'csv' | 'xlsx') => {
+export const exportFile = async (tableData: TableData, type: 'csv' | 'xlsx') => {
   if (!tableData?.rows || tableData.rows.length === 0) {
     return;
   }
 
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([tableData.columnNames, ...tableData.rows]);
+  const { saveAs } = await import('file-saver');
 
   if (type === 'xlsx') {
+    const XLSX = await import('xlsx');
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([tableData.columnNames, ...tableData.rows]);
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
     const excelBuffer = XLSX.write(wb, {
