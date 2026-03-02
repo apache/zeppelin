@@ -4,7 +4,9 @@
   "scripts": {
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",
-    "dev": "webpack serve --config webpack.config.js --mode development"
+    "dev": "webpack serve --config webpack.config.js --mode development",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix"
   },
   "dependencies": {
     "@ant-design/icons": "5.4.0",
@@ -23,7 +25,12 @@
     "@types/react": "18.3.26",
     "@types/react-dom": "18.3.7",
     "@types/xlsx": "0.0.36",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
     "css-loader": "6.8.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "html-webpack-plugin": "5.5.0",
     "style-loader": "3.3.0",
     "ts-loader": "9.4.0",

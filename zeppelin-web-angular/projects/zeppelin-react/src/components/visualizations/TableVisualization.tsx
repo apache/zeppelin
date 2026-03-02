@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { Table } from 'antd';
 import { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
 import { parseTableData, TableData, exportFile } from '@/utils';
@@ -38,7 +39,7 @@ export const TableVisualization = ({ result, config, index }: TableVisualization
       setCurrentMode(config[index].graph.mode as VisualizationMode);
     }
     setTableData(parseTableData(result.data));
-  }, [result, config]);
+  }, [result, config, index]);
 
   const renderVisualization = () => {
     if (!tableData || tableData.rows.length === 0) return null;
@@ -48,6 +49,7 @@ export const TableVisualization = ({ result, config, index }: TableVisualization
         title: col,
         dataIndex: idx,
         key: idx,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         render: (text: any) => text
       }));
 
@@ -56,7 +58,6 @@ export const TableVisualization = ({ result, config, index }: TableVisualization
         ...row.reduce((acc, cell, cellIdx) => ({ ...acc, [cellIdx]: cell }), {})
       }));
 
-      const { Table } = require('antd');
       return (
         <Table
           columns={columns}
