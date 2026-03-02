@@ -18,8 +18,8 @@ module.exports = {
   output: {
     // Unique name for this microfrontend to avoid collisions with other apps
     uniqueName: 'shell',
-    // Auto-detect publicPath at runtime for Module Federation dynamic imports
-    publicPath: 'auto'
+    publicPath: '/',
+    scriptType: 'text/javascript'
   },
   optimization: {
     // Disable runtime chunk to prevent conflicts with Module Federation's runtime

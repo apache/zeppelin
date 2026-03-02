@@ -1,6 +1,9 @@
 {
   "name": "@zeppelin/react",
   "version": "0.0.1",
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",

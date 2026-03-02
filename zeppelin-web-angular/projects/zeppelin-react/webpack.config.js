@@ -123,7 +123,8 @@ module.exports = (_env, argv) => {
       path: path.resolve(__dirname, 'dist'),
       clean: true,
       publicPath: publicPath,
-      uniqueName: 'reactApp'
+      uniqueName: 'reactApp',
+      scriptType: 'text/javascript'
     }
   };
 };
