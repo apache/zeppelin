@@ -10,36 +10,29 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Table } from 'antd';
 import { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
-import { parseTableData, TableData, exportFile } from '@/utils';
-import type { ParagraphConfigResults, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
+import { parseTableData, exportFile } from '@/utils';
+import type { ParagraphConfigResult, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
 
 interface TableVisualizationProps {
   result: ParagraphIResultsMsgItem;
-  index: number;
-  config?: ParagraphConfigResults;
+  config?: ParagraphConfigResult;
 }
 
-export const TableVisualization = ({ result, config, index }: TableVisualizationProps) => {
-  const [currentMode, setCurrentMode] = useState<VisualizationMode>('table');
-  const [tableData, setTableData] = useState<TableData | null>(null);
+export const TableVisualization = ({ result, config }: TableVisualizationProps) => {
+  const [currentMode, setCurrentMode] = useState<VisualizationMode>(config?.graph.mode || 'table');
   const chartRef = useRef<HTMLDivElement>(null);
+
+  const tableData = useMemo(() => parseTableData(result.data), [result.data]);
 
   const handleExport = (type: 'csv' | 'xlsx') => {
     if (tableData) {
       exportFile(tableData, type);
     }
   };
-
-  useEffect(() => {
-    if (config?.[index].graph.mode) {
-      setCurrentMode(config[index].graph.mode as VisualizationMode);
-    }
-    setTableData(parseTableData(result.data));
-  }, [result, config, index]);
 
   const renderVisualization = () => {
     if (!tableData || tableData.rows.length === 0) return null;

@@ -200,6 +200,23 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     });
   }
 
+  /**
+   * Loads the React micro-frontend via Webpack Module Federation.
+   *
+   * 1. Loads remoteEntry.js (dev: localhost:3001, prod: /assets/react/).
+   * 2. remoteEntry.js registers `window.reactApp` as a federation container.
+   * 3. `container.get('./PublishedParagraph')` returns a module with a `mount(el, props)` function.
+   * 4. `mount()` calls `createRoot()` and renders into the given element.
+   *
+   * Adding a new React module:
+   * 1. Create component in `projects/zeppelin-react/src/`.
+   * 2. Add `mount` export + register in `webpack.config.js` `exposes`.
+   * 3. Re-export from `main.ts`.
+   * 4. Load from Angular: `container.get('./YourModule')`.
+   *
+   * See `projects/zeppelin-react/README.md` for the full guide.
+   * Append `?react=true` to a published paragraph URL to activate.
+   */
   private loadReactWidget() {
     if (!this.reactContainer || !this.paragraph) {
       return;

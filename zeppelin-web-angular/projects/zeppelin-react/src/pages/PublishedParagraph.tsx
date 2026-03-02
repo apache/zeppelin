@@ -22,7 +22,7 @@ export interface PublishedParagraphProps {
   config?: ParagraphConfigResults;
 }
 
-const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
+export const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
   if (!results || results.length === 0) {
     return <Empty />;
   }
@@ -66,4 +66,3 @@ export const mount = (element: HTMLElement, props?: PublishedParagraphProps) => 
   };
 };
 
-export default PublishedParagraph;

@@ -10,4 +10,4 @@
  * limitations under the License.
  */
 
-export { default as PublishedParagraph, mount } from './pages/PublishedParagraph';
+export { PublishedParagraph, mount } from './pages/PublishedParagraph';

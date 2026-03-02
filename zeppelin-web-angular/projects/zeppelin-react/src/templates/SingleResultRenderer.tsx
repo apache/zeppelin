@@ -13,7 +13,7 @@
 import { Alert } from 'antd';
 import { HTMLRenderer, TextRenderer, ImageRenderer, TableVisualization } from '@/components';
 import { checkAndReplaceCarriageReturn } from '@/utils';
-import { DatasetType, ParagraphConfigResults, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
+import { DatasetType, ParagraphConfigResult, ParagraphConfigResults, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
 
 interface SingleResultRendererProps {
   result: ParagraphIResultsMsgItem;
@@ -22,9 +22,11 @@ interface SingleResultRendererProps {
 }
 
 export const SingleResultRenderer = ({ result, index, config }: SingleResultRendererProps) => {
+  const resultConfig: ParagraphConfigResult | undefined = config?.[index];
+
   switch (result.type) {
     case DatasetType.TABLE:
-      return <TableVisualization result={result} index={index} config={config} />;
+      return <TableVisualization result={result} config={resultConfig} />;
     case DatasetType.HTML:
       return <HTMLRenderer html={result.data} />;
     case DatasetType.TEXT:
