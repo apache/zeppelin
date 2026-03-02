@@ -51,6 +51,8 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   useReact = false;
   isLoading = true;
   error: string | null = null;
+  private unmountReact: (() => void) | null = null;
+  private reactScriptLoaded = false;
 
   @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
   @ViewChild('reactContainer', { static: false }) reactContainer!: ElementRef<HTMLDivElement>;
@@ -203,16 +205,12 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   /**
    * Loads the React micro-frontend via Webpack Module Federation.
    *
-   * 1. Loads remoteEntry.js (dev: localhost:3001, prod: /assets/react/).
+   * Flow:
+   * 1. Loads remoteEntry.js once (skips on subsequent calls via `reactScriptLoaded` flag).
    * 2. remoteEntry.js registers `window.reactApp` as a federation container.
    * 3. `container.get('./PublishedParagraph')` returns a module with a `mount(el, props)` function.
    * 4. `mount()` calls `createRoot()` and renders into the given element.
-   *
-   * Adding a new React module:
-   * 1. Create component in `projects/zeppelin-react/src/`.
-   * 2. Add `mount` export + register in `webpack.config.js` `exposes`.
-   * 3. Re-export from `main.ts`.
-   * 4. Load from Angular: `container.get('./YourModule')`.
+   * 5. `mount()` returns an `unmount` function, stored for cleanup in `ngOnDestroy`.
    *
    * See `projects/zeppelin-react/README.md` for the full guide.
    * Append `?react=true` to a published paragraph URL to activate.
@@ -222,10 +220,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = environment.reactRemoteEntryUrl;
-
-    script.onload = async () => {
+    const loadModule = async () => {
       // @ts-ignore
       const container = window.reactApp;
       if (!container) {
@@ -247,15 +242,34 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
         config: this.paragraph?.config?.results
       };
 
-      mount(mountPoint, props);
+      this.unmountReact = mount(mountPoint, props);
+    };
+
+    if (this.reactScriptLoaded) {
+      loadModule();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = environment.reactRemoteEntryUrl;
+
+    script.onload = () => {
+      this.reactScriptLoaded = true;
+      loadModule();
+    };
+
+    script.onerror = () => {
+      this.error = 'Failed to load React widget';
+      this.cdr.markForCheck();
     };
 
     document.head.appendChild(script);
   }
 
   private cleanupReactWidget() {
-    if (this.reactContainer?.nativeElement) {
-      this.reactContainer.nativeElement.innerHTML = '';
+    if (this.unmountReact) {
+      this.unmountReact();
+      this.unmountReact = null;
     }
   }
 }
