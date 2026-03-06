@@ -20,7 +20,6 @@ package org.apache.zeppelin.interpreter.launcher;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +42,8 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
           "local", "remote", "yarn", "yarn-application", "kubernetes-application");
 
 
-  public FlinkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    super(zConf, recoveryStorage);
+  public FlinkInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
+    super(zProperties, recoveryStorage);
   }
 
   @Override
@@ -157,7 +156,7 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     final String flinkScalaVersion = scalaVersion;
     File flinkInterpreterFolder =
-        new File(zConf.getInterpreterDir(), "flink");
+        new File(zProperties.getProperty("zeppelin.interpreter.dir", "interpreter"), "flink");
     List<File> flinkScalaJars =
             Arrays.stream(flinkInterpreterFolder
                     .listFiles(file -> file.getName().endsWith(".jar")))

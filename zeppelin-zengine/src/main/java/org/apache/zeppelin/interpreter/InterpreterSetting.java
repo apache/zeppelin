@@ -197,7 +197,7 @@ public class InterpreterSetting {
 
     public Builder setConf(ZeppelinConfiguration zConf) {
       interpreterSetting.zConf = zConf;
-      interpreterSetting.option.setConf(zConf);
+      interpreterSetting.option.setUsernameForceLowerCase(zConf.isUsernameForceLowerCase());
       return this;
     }
 
@@ -664,7 +664,7 @@ public class InterpreterSetting {
 
   public InterpreterSetting setConf(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
-    this.option.setConf(zConf);
+    this.option.setUsernameForceLowerCase(zConf.isUsernameForceLowerCase());
     return this;
   }
 

@@ -20,8 +20,6 @@ package org.apache.zeppelin.interpreter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-
 /**
  *
  */
@@ -29,7 +27,7 @@ public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
-  private transient ZeppelinConfiguration zConf;
+  private transient boolean usernameForceLowerCase;
 
   // always set it as true, keep this field just for backward compatibility
   boolean remote = true;
@@ -60,8 +58,8 @@ public class InterpreterOption {
     this.host = host;
   }
 
-  public void setConf(ZeppelinConfiguration zConf) {
-    this.zConf = zConf;
+  public void setUsernameForceLowerCase(boolean usernameForceLowerCase) {
+    this.usernameForceLowerCase = usernameForceLowerCase;
   }
 
   public boolean permissionIsSet() {
@@ -73,7 +71,7 @@ public class InterpreterOption {
   }
 
   public List<String> getOwners() {
-    if (null != owners && zConf.isUsernameForceLowerCase()) {
+    if (null != owners && usernameForceLowerCase) {
       List<String> lowerCaseUsers = new ArrayList<>();
       for (String owner : owners) {
         lowerCaseUsers.add(owner.toLowerCase());
@@ -117,7 +115,7 @@ public class InterpreterOption {
     option.setPermission = other.setPermission;
     option.owners = (null == other.owners) ?
         new ArrayList<>() : new ArrayList<>(other.owners);
-    option.zConf = other.zConf;
+    option.usernameForceLowerCase = other.usernameForceLowerCase;
     return option;
   }
 

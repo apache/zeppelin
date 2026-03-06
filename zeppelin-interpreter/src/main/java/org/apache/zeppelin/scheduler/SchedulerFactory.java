@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.scheduler;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +49,21 @@ public class SchedulerFactory {
   }
 
   private SchedulerFactory() {
-    int threadPoolSize = ZeppelinConfiguration
-        .getStaticInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
+    int threadPoolSize = getSchedulerPoolSize();
     LOGGER.info("Scheduler Thread Pool Size: {}", threadPoolSize);
     executor = ExecutorFactory.singleton().createOrGet(SCHEDULER_EXECUTOR_NAME, threadPoolSize);
+  }
+
+  private static int getSchedulerPoolSize() {
+    String envValue = System.getenv("ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE");
+    if (envValue != null) {
+      return Integer.parseInt(envValue);
+    }
+    String propValue = System.getProperty("zeppelin.scheduler.threadpool.size");
+    if (propValue != null) {
+      return Integer.parseInt(propValue);
+    }
+    return 100;
   }
 
   public void destroy() {
