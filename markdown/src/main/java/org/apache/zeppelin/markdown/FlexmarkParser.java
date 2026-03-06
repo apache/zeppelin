@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Properties;
 
 import static com.vladsch.flexmark.ext.emoji.EmojiImageType.UNICODE_ONLY;
 
@@ -43,7 +44,9 @@ public class FlexmarkParser implements MarkdownParser {
   private Parser parser;
   private HtmlRenderer renderer;
 
-  public FlexmarkParser(boolean escapeHtml) {
+  public FlexmarkParser(Properties properties) {
+    boolean escapeHtml = Boolean.parseBoolean(
+        properties.getProperty("zeppelin.notebook.markdown.escape.html", "true"));
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(StrikethroughExtension.create(),
             TablesExtension.create(),

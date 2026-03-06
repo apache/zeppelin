@@ -74,9 +74,7 @@ public class Markdown extends Interpreter {
     LOGGER.debug("Creating {} markdown interpreter", parserType);
 
     if (MarkdownParserType.FLEXMARK.toString().equals(parserType)) {
-      boolean escapeHtml = Boolean.parseBoolean(
-          getProperty("zeppelin.notebook.markdown.escape.html", "true"));
-      return new FlexmarkParser(escapeHtml);
+      return new FlexmarkParser(getProperties());
     } else {
       // default parser
       return new Markdown4jParser();
