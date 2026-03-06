@@ -10,7 +10,17 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+import Ansi from 'ansi-to-react';
+
+export interface TextRendererProps {
+  text: string;
+}
+
+// Matches Angular: result.component.ts renderText()
+export const TextRenderer = ({ text }: TextRendererProps) => {
+  return (
+    <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+      <Ansi>{text}</Ansi>
+    </pre>
+  );
 };

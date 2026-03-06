@@ -19,8 +19,8 @@ module.exports = defineConfig({
   globalTeardown: require.resolve('./e2e/global-teardown'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 1,
-  workers: 10,
+  retries: process.env.CI ? 2 : 1,
+  workers: process.env.CI ? 2 : 10,
   timeout: 300000,
   expect: {
     timeout: 60000

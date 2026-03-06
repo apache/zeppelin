@@ -13,6 +13,7 @@
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 import { WorkspacePage } from './workspace-page';
+import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 
 export class WorkspaceUtil extends BasePage {
   private workspacePage: WorkspacePage;
@@ -20,6 +21,17 @@ export class WorkspaceUtil extends BasePage {
   constructor(page: Page) {
     super(page);
     this.workspacePage = new WorkspacePage(page);
+  }
+
+  async navigateAndWaitForLoad(): Promise<void> {
+    await this.workspacePage.navigateToWorkspace();
+    await performLoginIfRequired(this.page);
+    await waitForZeppelinReady(this.page);
+  }
+
+  async verifyWorkspaceLayout(): Promise<void> {
+    await expect(this.workspacePage.workspaceComponent).toBeVisible();
+    await expect(this.workspacePage.routerOutlet).toBeAttached();
   }
 
   async verifyHeaderVisibility(shouldBeVisible: boolean): Promise<void> {

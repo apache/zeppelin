@@ -15,14 +15,12 @@ import { navigateToNotebookWithFallback } from '../utils';
 import { BasePage } from './base-page';
 
 export class PublishedParagraphPage extends BasePage {
-  readonly paragraphResult: Locator;
-  readonly errorModalContent: Locator;
-  readonly errorModalOkButton: Locator;
+  private readonly errorModalContent: Locator;
+  private readonly errorModalOkButton: Locator;
   readonly confirmationModal: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.paragraphResult = page.locator('zeppelin-notebook-paragraph-result');
     this.errorModalContent = this.page.locator('.ant-modal-body', { hasText: 'Paragraph Not Found' }).last();
     this.errorModalOkButton = page.getByRole('button', { name: 'OK' }).last();
     this.confirmationModal = page.locator('div.ant-modal-confirm').last();

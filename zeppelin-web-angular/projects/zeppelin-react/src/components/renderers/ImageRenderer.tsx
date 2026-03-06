@@ -10,7 +10,14 @@
  * limitations under the License.
  */
 
-export const environment = {
-  production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+export interface ImageRendererProps {
+  imageData: string;
+}
+
+export const ImageRenderer = ({ imageData }: ImageRendererProps) => {
+  const imgSrc = `data:image/png;base64,${imageData}`;
+
+  return (
+    <img src={imgSrc} alt="Result" style={{ maxWidth: '100%', height: 'auto' }} />
+  );
 };

@@ -142,7 +142,8 @@ export const flattenPageComponents = (pages: PageStructureType): string[] => {
 export const getCoverageTransformPaths = (): string[] => flattenPageComponents(PAGES);
 
 export const waitForUrlNotContaining = async (page: Page, fragment: string) => {
-  await page.waitForURL(url => !url.toString().includes(fragment));
+  await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+  await page.waitForURL(url => !url.toString().includes(fragment), { timeout: 15000 });
 };
 
 export const getCurrentPath = (page: Page): string => {
@@ -194,6 +195,7 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
     try {
       await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
       await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
+      await page.waitForLoadState('networkidle');
       await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
       await waitForZeppelinReady(page);
       return true;
