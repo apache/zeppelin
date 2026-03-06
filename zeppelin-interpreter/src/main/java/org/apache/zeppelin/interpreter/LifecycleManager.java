@@ -19,19 +19,20 @@
 package org.apache.zeppelin.interpreter;
 
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
+
+import java.util.Properties;
 
 /**
  * Abstract base class for managing the lifecycle of interpreters
  */
 public abstract class LifecycleManager {
 
-  protected ZeppelinConfiguration zConf;
+  protected Properties properties;
   protected RemoteInterpreterServer remoteInterpreterServer;
 
-  public LifecycleManager(ZeppelinConfiguration zConf, RemoteInterpreterServer remoteInterpreterServer) {
-    this.zConf = zConf;
+  public LifecycleManager(Properties properties, RemoteInterpreterServer remoteInterpreterServer) {
+    this.properties = properties;
     this.remoteInterpreterServer = remoteInterpreterServer;
   }
 

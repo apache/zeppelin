@@ -18,18 +18,19 @@
 
 package org.apache.zeppelin.interpreter.lifecycle;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
+
+import java.util.Properties;
 
 /**
  * Do nothing for the lifecycle of interpreter. User need to explicitly start/stop interpreter.
  */
 public class NullLifecycleManager extends LifecycleManager {
 
-  public NullLifecycleManager(ZeppelinConfiguration zConf,
+  public NullLifecycleManager(Properties properties,
                               RemoteInterpreterServer remoteInterpreterServer) {
-    super(zConf, remoteInterpreterServer);
+    super(properties, remoteInterpreterServer);
   }
 
   @Override

@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.Authentication;
@@ -49,26 +48,28 @@ public abstract class AbstractDependencyResolver {
   protected RepositorySystemSession session;
   private Proxy proxy = null;
 
-  protected AbstractDependencyResolver(String localRepoPath, ZeppelinConfiguration zConf) {
-    if (zConf.getZeppelinProxyUrl() != null) {
+  protected AbstractDependencyResolver(String localRepoPath,
+      String proxyUrl, String proxyUser, String proxyPassword, String mvnRepoUrl) {
+    if (proxyUrl != null) {
       try {
-        URL proxyUrl = new URL(zConf.getZeppelinProxyUrl());
-        Authentication auth = new AuthenticationBuilder().addUsername(zConf.getZeppelinProxyUser()).addPassword(zConf.getZeppelinProxyPassword()).build();
-        proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
+        URL parsedProxyUrl = new URL(proxyUrl);
+        Authentication auth = new AuthenticationBuilder()
+            .addUsername(proxyUser).addPassword(proxyPassword).build();
+        proxy = new Proxy(parsedProxyUrl.getProtocol(), parsedProxyUrl.getHost(),
+            parsedProxyUrl.getPort(), auth);
       } catch (MalformedURLException e) {
-        LOGGER.error("Proxy Url {} is not valid - skipping Proxy config", zConf.getZeppelinProxyUrl(), e);
+        LOGGER.error("Proxy Url {} is not valid - skipping Proxy config", proxyUrl, e);
       }
     }
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.addAll(Booter.newCentralRepositorys(proxy, zConf)); // add maven central
+    repos.addAll(Booter.newCentralRepositorys(proxy, mvnRepoUrl)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 
-  protected AbstractDependencyResolver(String localRepoPath, Proxy proxy,
-      ZeppelinConfiguration zConf) {
+  protected AbstractDependencyResolver(String localRepoPath, Proxy proxy, String mvnRepoUrl) {
     this.proxy = proxy;
     session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.addAll(Booter.newCentralRepositorys(proxy, zConf)); // add maven central
+    repos.addAll(Booter.newCentralRepositorys(proxy, mvnRepoUrl)); // add maven central
     repos.add(Booter.newLocalRepository());
   }
 

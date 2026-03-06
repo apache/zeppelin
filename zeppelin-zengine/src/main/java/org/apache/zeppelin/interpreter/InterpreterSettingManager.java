@@ -178,7 +178,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     this.interpreterDirPath = Paths.get(zConf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
     this.dependencyResolver =
-        new DependencyResolver(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO), zConf);
+        new DependencyResolver(zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO),
+            zConf.getZeppelinProxyUrl(), zConf.getZeppelinProxyUser(),
+            zConf.getZeppelinProxyPassword(),
+            zConf.getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO));
     this.interpreterRepositories = new ArrayList<>();
     for (RemoteRepository repo : dependencyResolver.getRepos()) {
       this.interpreterRepositories.add(Repository.fromRemoteRepository(repo));

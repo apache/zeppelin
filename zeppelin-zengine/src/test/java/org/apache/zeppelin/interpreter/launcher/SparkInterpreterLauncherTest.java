@@ -55,6 +55,7 @@ class SparkInterpreterLauncherTest {
   private String sparkHome;
   private String zeppelinHome;
   private ZeppelinConfiguration zConf;
+  private Properties zProperties;
 
   @BeforeEach
   public void setUp() {
@@ -63,12 +64,22 @@ class SparkInterpreterLauncherTest {
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
         new File("..").getAbsolutePath());
     zeppelinHome = zConf.getZeppelinHome();
+    zProperties = new Properties();
+    zProperties.putAll(zConf.getCompleteConfiguration());
+    zProperties.setProperty("zeppelin.home", zConf.getZeppelinHome());
+    zProperties.setProperty("zeppelin.conf.dir", zConf.getConfDir());
+    zProperties.setProperty("zeppelin.interpreter.dir",
+        zConf.getInterpreterDir());
+    zProperties.setProperty("zeppelin.interpreter.localRepo",
+        zConf.getInterpreterLocalRepoPath());
+    zProperties.setProperty("zeppelin.interpreter.remoterunner",
+        zConf.getInterpreterRemoteRunnerPath());
     LOGGER.info("ZEPPELIN_HOME: " + zeppelinHome);
   }
 
   @Test
   void testConnectTimeOut() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty(
@@ -91,7 +102,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testLocalMode() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("ENV_1", "");
@@ -121,7 +132,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testYarnClientMode_1() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -154,7 +165,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testYarnClientMode_2() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -189,7 +200,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testYarnClusterMode_1() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -231,7 +242,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testYarnClusterMode_2() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -282,7 +293,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testYarnClusterMode_3() throws IOException {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     Properties properties = new Properties();
     properties.setProperty("SPARK_HOME", sparkHome);
     properties.setProperty("property_1", "value_1");
@@ -335,7 +346,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionDirectStreamCapture() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -354,7 +365,7 @@ class SparkInterpreterLauncherTest {
   
   @Test
   void testDetectSparkScalaVersionByReplClassWithNonExistentDirectory() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -379,7 +390,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithFileInsteadOfDirectory() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -414,7 +425,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithValidDirectory() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -443,7 +454,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithEmptyDirectory() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -471,7 +482,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithMultipleJars() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -507,7 +518,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithScala213() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
@@ -536,7 +547,7 @@ class SparkInterpreterLauncherTest {
 
   @Test
   void testDetectSparkScalaVersionByReplClassWithUnsupportedScalaVersion() throws Exception {
-    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zProperties, null);
     
     // Use reflection to access private method
     Method detectMethod = SparkInterpreterLauncher.class.getDeclaredMethod(

@@ -25,7 +25,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -144,7 +143,7 @@ public class RemoteInterpreterServer extends Thread
   // pod (RemoteInterpreterServer)
   private boolean isForceShutdown = true;
 
-  private ZeppelinConfiguration zConf;
+  private Properties zProperties;
 
   private static Thread shutdownThread;
 
@@ -200,10 +199,8 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
-    this.zConf = ZeppelinConfiguration.load();
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      this.zConf.setProperty(entry.getKey(), entry.getValue());
-    }
+    this.zProperties = new Properties();
+    this.zProperties.putAll(properties);
 
     try {
       lifecycleManager = createLifecycleManager();
@@ -213,8 +210,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     if (!isTest) {
-      int connectionPoolSize =
-              this.zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE);
+      int connectionPoolSize = Integer.parseInt(
+              zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100"));
       LOGGER.info("Creating RemoteInterpreterEventClient with connection pool size: {}",
               connectionPoolSize);
       intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
@@ -249,8 +246,8 @@ public class RemoteInterpreterServer extends Thread
     shutDownThread.start();
   }
 
-  public ZeppelinConfiguration getConf() {
-    return this.zConf;
+  public Properties getProperties() {
+    return this.zProperties;
   }
 
   public LifecycleManager getLifecycleManager() {
@@ -270,11 +267,13 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private LifecycleManager createLifecycleManager() throws Exception {
-    String lifecycleManagerClass = zConf.getLifecycleManagerClass();
+    String lifecycleManagerClass = zProperties.getProperty(
+            "zeppelin.interpreter.lifecyclemanager.class",
+            "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager");
     Class<?> clazz = Class.forName(lifecycleManagerClass);
     LOGGER.info("Creating interpreter lifecycle manager: {}", lifecycleManagerClass);
-    return (LifecycleManager) clazz.getConstructor(ZeppelinConfiguration.class, RemoteInterpreterServer.class)
-            .newInstance(zConf, this);
+    return (LifecycleManager) clazz.getConstructor(Properties.class, RemoteInterpreterServer.class)
+            .newInstance(zProperties, this);
   }
 
   public static void main(String[] args) throws Exception {
@@ -335,7 +334,11 @@ public class RemoteInterpreterServer extends Thread
                   properties.get("zeppelin.interpreter.output.limit"));
         }
 
-        depLoader = new DependencyResolver(localRepoPath, zConf);
+        depLoader = new DependencyResolver(localRepoPath,
+                zProperties.getProperty("zeppelin.proxy.url"),
+                zProperties.getProperty("zeppelin.proxy.user"),
+                zProperties.getProperty("zeppelin.proxy.password"),
+                zProperties.getProperty("zeppelin.interpreter.dep.mvnRepo"));
         appLoader = new ApplicationLoader(resourcePool, depLoader);
 
         resultCacheInSeconds =
@@ -361,7 +364,6 @@ public class RemoteInterpreterServer extends Thread
 
       interpreter.setInterpreterGroup(interpreterGroup);
       interpreter.setUserName(userName);
-      interpreter.setZeppelinConfiguration(zConf);
 
       interpreterGroup.addInterpreterToSession(new LazyOpenInterpreter(interpreter), sessionId);
 
@@ -484,7 +486,7 @@ public class RemoteInterpreterServer extends Thread
       this.intpEventServerHost = host;
       this.intpEventServerPort = port;
       intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
-              this.zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE));
+              Integer.parseInt(zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100")));
       intpEventClient.setIntpGroupId(interpreterGroupId);
 
       this.angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);

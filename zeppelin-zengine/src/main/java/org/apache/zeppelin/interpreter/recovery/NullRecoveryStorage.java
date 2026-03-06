@@ -35,7 +35,7 @@ public class NullRecoveryStorage extends RecoveryStorage {
   public NullRecoveryStorage(ZeppelinConfiguration zConf,
                              InterpreterSettingManager interpreterSettingManager)
       throws IOException {
-    super(zConf);
+    super();
   }
 
   @Override

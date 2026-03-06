@@ -20,12 +20,9 @@ package org.apache.zeppelin.interpreter.launcher;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE;
 
 /**
  * Component to Launch interpreter process.
@@ -33,13 +30,23 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_I
 public abstract class InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterLauncher.class);
-  private static final String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
+  private static final String SPECIAL_CHARACTER="{}()<>&*'|=?;[]$–#~!.\"%/\\:+,`";
 
-  protected final ZeppelinConfiguration zConf;
+  private static final String CONNECT_TIMEOUT_KEY = "zeppelin.interpreter.connect.timeout";
+  private static final long DEFAULT_CONNECT_TIMEOUT = 600000L;
+
+  private static final String CONNECTION_POOL_SIZE_KEY = "zeppelin.interpreter.connection.poolsize";
+  private static final int DEFAULT_CONNECTION_POOL_SIZE = 100;
+
+  private static final String RECOVERY_ENABLED_KEY = "zeppelin.recovery.storage.class";
+  private static final String NULL_RECOVERY_CLASS =
+      "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage";
+
+  protected final Properties zProperties;
   protected final RecoveryStorage recoveryStorage;
 
-  protected InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
-    this.zConf = zConf;
+  protected InterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
+    this.zProperties = zProperties;
     this.recoveryStorage = recoveryStorage;
   }
 
@@ -49,21 +56,20 @@ public abstract class InterpreterLauncher {
    * @return
    */
   protected int getConnectTimeout(InterpreterLaunchContext context) {
-    int connectTimeout =
-            (int) zConf.getTime(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    int connectTimeout = (int) Long.parseLong(
+        zProperties.getProperty(CONNECT_TIMEOUT_KEY,
+            String.valueOf(DEFAULT_CONNECT_TIMEOUT)));
     Properties properties = context.getProperties();
-    if (properties != null && properties.containsKey(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
-      connectTimeout = Integer.parseInt(properties.getProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));
+    if (properties != null && properties.containsKey(CONNECT_TIMEOUT_KEY)) {
+      connectTimeout = Integer.parseInt(properties.getProperty(CONNECT_TIMEOUT_KEY));
     }
     return connectTimeout;
   }
 
   protected int getConnectPoolSize(InterpreterLaunchContext context) {
     return Integer.parseInt(context.getProperties().getProperty(
-            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName(),
-            ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue() + ""));
+            CONNECTION_POOL_SIZE_KEY,
+            String.valueOf(DEFAULT_CONNECTION_POOL_SIZE)));
   }
 
   public static String escapeSpecialCharacter(String command) {
@@ -86,7 +92,7 @@ public abstract class InterpreterLauncher {
    */
   public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
     // try to recover it first
-    if (zConf.isRecoveryEnabled()) {
+    if (isRecoveryEnabled()) {
       InterpreterClient recoveredClient =
               recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
       if (recoveredClient != null) {
@@ -104,6 +110,11 @@ public abstract class InterpreterLauncher {
 
     // launch it via sub class implementation without recovering.
     return launchDirectly(context);
+  }
+
+  private boolean isRecoveryEnabled() {
+    String recoveryClass = zProperties.getProperty(RECOVERY_ENABLED_KEY, NULL_RECOVERY_CLASS);
+    return !NULL_RECOVERY_CLASS.equals(recoveryClass);
   }
 
   /**
