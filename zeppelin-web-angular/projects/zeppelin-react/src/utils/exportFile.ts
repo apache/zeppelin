@@ -23,7 +23,7 @@ export const exportFile = async (tableData: TableData, type: 'csv' | 'xlsx') => 
   const { saveAs } = await import('file-saver');
 
   if (type === 'xlsx') {
-    const XLSX = await import('xlsx');
+    const XLSX = await import('xlsx-js-style');
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([tableData.columnNames, ...tableData.rows]);
