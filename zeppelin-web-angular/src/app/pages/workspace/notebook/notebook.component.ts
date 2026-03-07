@@ -435,18 +435,31 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       this.noteVarShareService.clear();
     });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(param => {
-      const { noteId, revisionId } = param;
-      if (revisionId) {
-        this.messageService.noteRevision(noteId, revisionId);
-      } else {
-        this.messageService.getNote(noteId);
-      }
-      this.revisionView = !!revisionId;
+      this.revisionView = !!param.revisionId;
       this.cdr.markForCheck();
-      this.messageService.listRevisionHistory(noteId);
-      // TODO(hsuanxyz) scroll to current paragraph
     });
     this.revisionView = !!this.activatedRoute.snapshot.params.revisionId;
+
+    // Fetch note when WebSocket connects or reconnects
+    this.messageService.connectedStatus$
+      .pipe(startWith(this.messageService.connectedStatus), takeUntil(this.destroy$))
+      .subscribe(connected => {
+        console.log('connectedStatus$ changed to ', connected ? 'connected' : 'disconnected');
+        if (connected) {
+          const { noteId, revisionId } = this.activatedRoute.snapshot.params;
+          if (!noteId) {
+            throw new Error('Query parameter `noteId` is required.');
+          }
+          if (revisionId) {
+            this.messageService.noteRevision(noteId, revisionId);
+          } else {
+            this.messageService.getNote(noteId);
+          }
+          this.cdr.markForCheck();
+          this.messageService.listRevisionHistory(noteId);
+          // TODO(hsuanxyz) scroll to current paragraph
+        }
+      });
   }
 
   removeParagraphFromNgZ(): void {
