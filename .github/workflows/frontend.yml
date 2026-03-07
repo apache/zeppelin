@@ -30,6 +30,20 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
+  npm-audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      # TODO: Add zeppelin-web-angular root audit after Angular version upgrade and stabilization
+      - name: Run npm audit on zeppelin-react
+        working-directory: zeppelin-web-angular/projects/zeppelin-react
+        run: npm ci --ignore-scripts && npm audit --audit-level=high
+
   run-e2e-tests-in-zeppelin-web:
     runs-on: ubuntu-24.04
     steps:
