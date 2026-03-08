@@ -448,7 +448,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         if (connected) {
           const { noteId, revisionId } = this.activatedRoute.snapshot.params;
           if (!noteId) {
-            throw new Error('Query parameter `noteId` is required.');
+            throw new Error('Route parameter `noteId` is required.');
           }
           if (revisionId) {
             this.messageService.noteRevision(noteId, revisionId);
