@@ -56,14 +56,29 @@ public abstract class InterpreterLauncher {
    * @return
    */
   protected int getConnectTimeout(InterpreterLaunchContext context) {
-    int connectTimeout = (int) Long.parseLong(
+    int connectTimeout = (int) parseTimeValue(
         zProperties.getProperty(CONNECT_TIMEOUT_KEY,
             String.valueOf(DEFAULT_CONNECT_TIMEOUT)));
     Properties properties = context.getProperties();
     if (properties != null && properties.containsKey(CONNECT_TIMEOUT_KEY)) {
-      connectTimeout = Integer.parseInt(properties.getProperty(CONNECT_TIMEOUT_KEY));
+      connectTimeout = (int) parseTimeValue(properties.getProperty(CONNECT_TIMEOUT_KEY));
     }
     return connectTimeout;
+  }
+
+  /**
+   * Parse a time value string that may have a suffix (s for seconds, ms for milliseconds).
+   * If no suffix, the value is treated as milliseconds.
+   */
+  private static long parseTimeValue(String value) {
+    value = value.trim().toLowerCase();
+    if (value.endsWith("ms")) {
+      return Long.parseLong(value.substring(0, value.length() - 2).trim());
+    } else if (value.endsWith("s")) {
+      return Long.parseLong(value.substring(0, value.length() - 1).trim()) * 1000;
+    } else {
+      return Long.parseLong(value);
+    }
   }
 
   protected int getConnectPoolSize(InterpreterLaunchContext context) {
