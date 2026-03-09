@@ -75,7 +75,7 @@ jobs:
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -125,7 +125,7 @@ jobs:
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: verify interpreter
         run: ./mvnw verify -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
@@ -167,7 +167,7 @@ jobs:
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -222,7 +222,7 @@ jobs:
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -278,7 +278,7 @@ jobs:
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: run tests for flink
         run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink }} -am -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
@@ -326,7 +326,7 @@ jobs:
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -373,7 +373,7 @@ jobs:
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
@@ -442,7 +442,7 @@ jobs:
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
-          auto-activate-base: false
+          auto-activate: false
           use-mamba: true
       - name: Make IRkernel available to Jupyter
         run: |
