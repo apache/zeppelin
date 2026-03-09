@@ -31,26 +31,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StandardInterpreterLauncherTest {
 
-  private Properties zProperties;
+  private ZeppelinConfiguration zConf;
 
   @BeforeEach
   public void setUp() {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
-    zProperties = new Properties();
-    zProperties.putAll(zConf.getCompleteConfiguration());
-    zProperties.setProperty("zeppelin.home", zConf.getZeppelinHome());
-    zProperties.setProperty("zeppelin.conf.dir", zConf.getConfDir());
-    zProperties.setProperty("zeppelin.interpreter.dir",
-        zConf.getInterpreterDir());
-    zProperties.setProperty("zeppelin.interpreter.localRepo",
-        zConf.getInterpreterLocalRepoPath());
-    zProperties.setProperty("zeppelin.interpreter.remoterunner",
-        zConf.getInterpreterRemoteRunnerPath());
+    zConf = ZeppelinConfiguration.load();
   }
 
   @Test
   void testLauncher() throws IOException {
-    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zProperties, null);
+    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -65,6 +55,7 @@ class StandardInterpreterLauncherTest {
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getLongValue(),
         interpreterProcess.getConnectTimeout());
+    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
     assertTrue(interpreterProcess.getEnv().containsKey("INTERPRETER_GROUP_ID"));
@@ -74,7 +65,7 @@ class StandardInterpreterLauncherTest {
 
   @Test
   void testConnectTimeOut() throws IOException {
-    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zProperties, null);
+    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
@@ -88,6 +79,7 @@ class StandardInterpreterLauncherTest {
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(10000, interpreterProcess.getConnectTimeout());
+    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertTrue(interpreterProcess.getEnv().size() >= 1);
     assertTrue(interpreterProcess.getEnv().containsKey("INTERPRETER_GROUP_ID"));
     assertEquals(true, interpreterProcess.isUserImpersonated());

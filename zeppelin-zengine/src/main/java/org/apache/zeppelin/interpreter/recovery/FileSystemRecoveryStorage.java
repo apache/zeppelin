@@ -44,7 +44,6 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemRecoveryStorage.class);
 
-  private final ZeppelinConfiguration zConf;
   private FileSystemStorage fs;
   private Path recoveryDir;
   private InterpreterSettingManager interpreterSettingManager;
@@ -52,8 +51,7 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   public FileSystemRecoveryStorage(ZeppelinConfiguration zConf,
                                    InterpreterSettingManager interpreterSettingManager)
       throws IOException {
-    super();
-    this.zConf = zConf;
+    super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     String recoveryDirProperty = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR);
     this.fs = new FileSystemStorage(zConf, recoveryDirProperty);

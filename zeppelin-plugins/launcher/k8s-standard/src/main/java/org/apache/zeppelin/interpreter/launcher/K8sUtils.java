@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+
 import io.fabric8.kubernetes.client.Config;
 
 public class K8sUtils {
@@ -102,13 +104,13 @@ public class K8sUtils {
 
   /**
    * Get the namespace of the interpreter.
-   * Check Order: zeppelin.k8s.interpreter.namespace -> getCurrentK8sNamespace() -> zProperties.getProperty("zeppelin.k8s.namespace")
+   * Check Order: zeppelin.k8s.interpreter.namespace -> getCurrentK8sNamespace() -> zConf.getK8sNamepsace()
    * @param properties
-   * @param zProperties
+   * @param zConf
    * @return the interpreter namespace
    * @throws IOException
    */
-  public static String getInterpreterNamespace(Properties properties, Properties zProperties) throws IOException {
+  public static String getInterpreterNamespace(Properties properties, ZeppelinConfiguration zConf) throws IOException {
     if(properties.containsKey("zeppelin.k8s.interpreter.namespace")){
       return properties.getProperty("zeppelin.k8s.interpreter.namespace");
     }
@@ -116,7 +118,7 @@ public class K8sUtils {
     if (isRunningOnKubernetes()) {
       return getCurrentK8sNamespace();
     } else {
-      return zProperties.getProperty("zeppelin.k8s.namespace", "default");
+      return zConf.getK8sNamepsace();
     }
   }
 

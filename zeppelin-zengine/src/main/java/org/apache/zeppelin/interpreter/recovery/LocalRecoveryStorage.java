@@ -38,20 +38,17 @@ public class LocalRecoveryStorage extends RecoveryStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LocalRecoveryStorage.class);
 
-  private final ZeppelinConfiguration zConf;
   private InterpreterSettingManager interpreterSettingManager;
   private File recoveryDir;
 
   public LocalRecoveryStorage(ZeppelinConfiguration zConf) {
-    super();
-    this.zConf = zConf;
+    super(zConf);
   }
 
   public LocalRecoveryStorage(ZeppelinConfiguration zConf,
                               InterpreterSettingManager interpreterSettingManager)
           throws IOException {
-    super();
-    this.zConf = zConf;
+    super(zConf);
     this.recoveryDir = new File(zConf.getRecoveryDir());
     LOGGER.info("Using folder {} to store recovery data", recoveryDir);
     if (!this.recoveryDir.exists()) {

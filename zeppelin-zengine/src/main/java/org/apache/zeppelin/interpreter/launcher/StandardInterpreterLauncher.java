@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
@@ -41,8 +41,8 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardInterpreterLauncher.class);
 
-  public StandardInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
-    super(zProperties, recoveryStorage);
+  public StandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
@@ -68,20 +68,14 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
           false);
     } else {
       // create new remote process
-      String interpreterLocalRepoPath = zProperties.getProperty("zeppelin.interpreter.localRepo",
-          "local-repo");
-      String localRepoPath = interpreterLocalRepoPath + File.separator
+      String localRepoPath = zConf.getInterpreterLocalRepoPath() + File.separator
           + context.getInterpreterSettingId();
-      String interpreterDir = zProperties.getProperty("zeppelin.interpreter.dir", "interpreter");
-      String interpreterPortRange = zProperties.getProperty("zeppelin.interpreter.portRange", ":");
-      String remoteRunnerPath = zProperties.getProperty("zeppelin.interpreter.remoterunner",
-          System.getProperty("zeppelin.home") + "/bin/interpreter.sh");
       return new ExecRemoteInterpreterProcess(
-          context.getIntpEventServerPort(), context.getIntpEventServerHost(), interpreterPortRange,
-          interpreterDir + "/" + groupName, localRepoPath,
+          context.getIntpEventServerPort(), context.getIntpEventServerHost(), zConf.getInterpreterPortRange(),
+          zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
           buildEnvFromProperties(context), connectTimeout, connectionPoolSize, name,
           context.getInterpreterGroupId(), option.isUserImpersonate(),
-          runner != null ? runner.getPath() : remoteRunnerPath);
+          runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath());
     }
   }
 

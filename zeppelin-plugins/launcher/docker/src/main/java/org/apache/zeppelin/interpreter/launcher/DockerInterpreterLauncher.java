@@ -16,13 +16,13 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
@@ -32,9 +32,9 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
 
   private InterpreterLaunchContext context;
 
-  public DockerInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage)
+  public DockerInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage)
       throws IOException {
-    super(zProperties, recoveryStorage);
+    super(zConf, recoveryStorage);
   }
 
   @Override
@@ -53,17 +53,17 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
 
     StandardInterpreterLauncher interpreterLauncher = null;
     if (isSpark()) {
-      interpreterLauncher = new SparkInterpreterLauncher(zProperties, recoveryStorage);
+      interpreterLauncher = new SparkInterpreterLauncher(zConf, recoveryStorage);
     } else if (isFlink()) {
-      interpreterLauncher = new FlinkInterpreterLauncher(zProperties, recoveryStorage);
+      interpreterLauncher = new FlinkInterpreterLauncher(zConf, recoveryStorage);
     } else {
-      interpreterLauncher = new StandardInterpreterLauncher(zProperties, recoveryStorage);
+      interpreterLauncher = new StandardInterpreterLauncher(zConf, recoveryStorage);
     }
     Map<String, String> env = interpreterLauncher.buildEnvFromProperties(context);
 
     return new DockerInterpreterProcess(
-        zProperties,
-        zProperties.getProperty("zeppelin.docker.container.image", "apache/zeppelin"),
+        zConf,
+        zConf.getDockerContainerImage(),
         context.getInterpreterGroupId(),
         context.getInterpreterSettingGroup(),
         context.getInterpreterSettingName(),

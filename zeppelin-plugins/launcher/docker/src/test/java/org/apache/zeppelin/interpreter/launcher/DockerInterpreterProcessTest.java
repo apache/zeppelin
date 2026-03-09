@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class DockerInterpreterProcessTest {
 
@@ -39,10 +40,8 @@ class DockerInterpreterProcessTest {
 
   @Test
   void testCreateIntpProcess() throws IOException {
-    Properties zProperties = new Properties();
-    zProperties.putAll(zConf.getCompleteConfiguration());
     DockerInterpreterLauncher launcher
-        = new DockerInterpreterLauncher(zProperties, null);
+        = new DockerInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
@@ -63,25 +62,21 @@ class DockerInterpreterProcessTest {
 
   @Test
   void testEnv() throws IOException {
+    when(zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME))
+        .thenReturn("my-spark-home");
+    when(zConf.getBoolean(ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER))
+        .thenReturn(false);
+    when(zConf.getString(ConfVars.ZEPPELIN_DOCKER_HOST))
+        .thenReturn("http://my-docker-host:2375");
+
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
 
-    Properties zProps = new Properties();
-    zProps.putAll(zConf.getCompleteConfiguration());
-    zProps.setProperty(
-        ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME.getVarName(),
-        "my-spark-home");
-    zProps.setProperty(
-        ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER.getVarName(),
-        "false");
-    zProps.setProperty(
-        ConfVars.ZEPPELIN_DOCKER_HOST.getVarName(),
-        "http://my-docker-host:2375");
     DockerInterpreterProcess intp = spy(new DockerInterpreterProcess(
-        zProps,
+        zConf,
         "interpreter-container:1.0",
         "shared_process",
         "sh",
@@ -106,10 +101,8 @@ class DockerInterpreterProcessTest {
     HashMap<String, String> envs = new HashMap<String, String>();
     envs.put("MY_ENV1", "V1");
 
-    Properties zProps = new Properties();
-    zProps.putAll(zConf.getCompleteConfiguration());
     DockerInterpreterProcess intp = new DockerInterpreterProcess(
-        zProps,
+        zConf,
         "interpreter-container:1.0",
         "shared_process",
         "sh",

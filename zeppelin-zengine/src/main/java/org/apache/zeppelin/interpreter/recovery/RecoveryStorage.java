@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
 import java.io.IOException;
@@ -31,9 +32,13 @@ import java.util.Map;
  */
 public abstract class RecoveryStorage {
 
+  protected ZeppelinConfiguration zConf;
   protected Map<String, InterpreterClient> restoredClients;
 
-  public RecoveryStorage() {
+  // TODO(zjffdu) The constructor is inconsistent between base class and its implementation.
+  //  The implementation actually use InterpreterSettingManager, the interface should also use it.
+  public RecoveryStorage(ZeppelinConfiguration zConf) {
+    this.zConf = zConf;
   }
 
   /**

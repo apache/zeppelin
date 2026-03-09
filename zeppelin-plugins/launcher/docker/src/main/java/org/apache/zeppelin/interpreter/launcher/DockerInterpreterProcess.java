@@ -53,6 +53,8 @@ import com.spotify.docker.client.messages.ProgressMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.launcher.utils.TarFileEntry;
 import org.apache.zeppelin.interpreter.launcher.utils.TarUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -61,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB;
 
 public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerInterpreterProcess.class);
@@ -90,7 +93,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   @VisibleForTesting
   boolean uploadLocalLibToContainter = true;
 
-  private Properties zProperties;
+  private ZeppelinConfiguration zConf;
 
   private String zeppelinHome;
   private final String containerZeppelinHome;
@@ -104,7 +107,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private static final String CONTAINER_UPLOAD_TAR_DIR = "/tmp/zeppelin-tar";
 
   public DockerInterpreterProcess(
-      Properties zProperties,
+      ZeppelinConfiguration zConf,
       String containerImage,
       String interpreterGroupId,
       String interpreterGroupName,
@@ -125,22 +128,20 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     this.properties = properties;
     this.envs = new HashMap<>(envs);
 
-    this.zProperties = zProperties;
+    this.zConf = zConf;
     this.containerName = interpreterGroupId.toLowerCase();
 
-    containerZeppelinHome = zProperties.getProperty(
-        "zeppelin.docker.container.home", "/opt/zeppelin");
-    containerSparkHome = zProperties.getProperty(
-        "zeppelin.docker.container.spark.home", "/opt/spark");
-    uploadLocalLibToContainter = Boolean.parseBoolean(
-        zProperties.getProperty("zeppelin.docker.upload.local.lib.to.container", "true"));
+    containerZeppelinHome = zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_HOME);
+    containerSparkHome = zConf.getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_SPARK_HOME);
+    uploadLocalLibToContainter = zConf.getBoolean(
+        ConfVars.ZEPPELIN_DOCKER_UPLOAD_LOCAL_LIB_TO_CONTAINTER);
 
     try {
       this.zeppelinHome = getZeppelinHome();
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
-    dockerHost = zProperties.getProperty("zeppelin.docker.host", "http://0.0.0.0:2375");
+    dockerHost = zConf.getString(ConfVars.ZEPPELIN_DOCKER_HOST);
   }
 
   @Override
@@ -327,8 +328,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     envs.remove("PATH");
 
     // set container time zone
-    envs.put("TZ", zProperties.getProperty("zeppelin.docker.time.zone",
-        java.util.TimeZone.getDefault().getID()));
+    envs.put("TZ", zConf.getString(ConfVars.ZEPPELIN_DOCKER_TIME_ZONE));
 
     List<String> listEnv = new ArrayList<>();
     for (Map.Entry<String, String> entry : this.envs.entrySet()) {
@@ -498,7 +498,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       copyFiles.putIfAbsent(intpKeytab, intpKeytab);
     }
     // 3.5) zeppelin server keytab file
-    String zeppelinServerKeytab = zProperties.getProperty("zeppelin.server.kerberos.keytab", "");
+    String zeppelinServerKeytab = zConf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)) {
       copyFiles.putIfAbsent(zeppelinServerKeytab, zeppelinServerKeytab);
     }
@@ -636,10 +636,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   private String getZeppelinHome() throws IOException {
     // check zeppelinHome is exist
-    String zeppelinHomePath = zProperties.getProperty("zeppelin.home", "./");
-    File fileZeppelinHome = new File(zeppelinHomePath);
+    File fileZeppelinHome = new File(zConf.getZeppelinHome());
     if (fileZeppelinHome.exists() && fileZeppelinHome.isDirectory()) {
-      return zeppelinHomePath;
+      return zConf.getZeppelinHome();
     }
 
     throw new IOException("Can't find zeppelin home path!");

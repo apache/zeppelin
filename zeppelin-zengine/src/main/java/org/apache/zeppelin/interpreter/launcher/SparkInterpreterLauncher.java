@@ -36,6 +36,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -53,8 +54,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   private static final String DEFAULT_MASTER = "local[*]";
   Optional<String> sparkMaster = Optional.empty();
 
-  public SparkInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
-    super(zProperties, recoveryStorage);
+  public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
@@ -110,21 +111,18 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       // Because `zeppelin.interpreter.forceShutdown` is initialized in RemoteInterpreterServer
       // before SparkInterpreter is created.
       context.getProperties().put("zeppelin.interpreter.forceShutdown", "false");
-    } else if (Boolean.parseBoolean(
-            zProperties.getProperty("zeppelin.spark.only_yarn_cluster", "false"))){
+    } else if (zConf.isOnlyYarnCluster()){
       throw new IOException("Only yarn-cluster mode is allowed, please set " +
-              "zeppelin.spark.only_yarn_cluster" +
+              ZeppelinConfiguration.ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER.getVarName() +
               " to false if you want to use other modes.");
     }
 
     if (isYarnMode(context) && getDeployMode(context).equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
-        String confDir = zProperties.getProperty("zeppelin.conf.dir", "conf");
         sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
-            confDir + "/log4j_yarn_cluster.properties");
+            zConf.getConfDir() + "/log4j_yarn_cluster.properties");
       } else {
-        String confDir = zProperties.getProperty("zeppelin.conf.dir", "conf");
-        sparkProperties.put("spark.files", confDir + "/log4j_yarn_cluster.properties");
+        sparkProperties.put("spark.files", zConf.getConfDir() + "/log4j_yarn_cluster.properties");
       }
       sparkProperties.put("spark.yarn.maxAppAttempts", "1");
     }
@@ -146,8 +144,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       try {
         List<String> additionalJars = new ArrayList<>();
         Path localRepoPath =
-                Paths.get(zProperties.getProperty("zeppelin.interpreter.localRepo", "local-repo"),
-                    context.getInterpreterSettingId());
+                Paths.get(zConf.getInterpreterLocalRepoPath(), context.getInterpreterSettingId());
         if (Files.exists(localRepoPath) && Files.isDirectory(localRepoPath)) {
           try (DirectoryStream<Path> localRepoStream = Files.newDirectoryStream(localRepoPath, Files::isRegularFile)) {
             List<String> localRepoJars = StreamSupport.stream(localRepoStream.spliterator(),
@@ -157,8 +154,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           }
         }
 
-        String zeppelinHome = zProperties.getProperty("zeppelin.home", "..");
-        Path scalaFolder =  Paths.get(zeppelinHome, "/interpreter/spark/scala-" + scalaVersion);
+        Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
         if (!scalaFolder.toFile().exists()) {
           throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
         }
@@ -169,7 +165,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           additionalJars.addAll(scalaJars);
         }
         // add zeppelin-interpreter-shaded
-        Path interpreterFolder = Paths.get(zeppelinHome, "/interpreter");
+        Path interpreterFolder = Paths.get(zConf.getZeppelinHome(), "/interpreter");
         try (DirectoryStream<Path> interpreterStream = Files.newDirectoryStream(interpreterFolder, Files::isRegularFile)) {
           List<String> interpreterJars = StreamSupport.stream(interpreterStream.spliterator(),
                 false)
@@ -198,8 +194,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     StringJoiner sparkConfSJ = new StringJoiner("|");
-    if (context.getOption().isUserImpersonate() && Boolean.parseBoolean(
-            zProperties.getProperty("zeppelin.impersonate.spark.proxy.user", "true"))) {
+    if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
       sparkConfSJ.add("--proxy-user");
       sparkConfSJ.add(context.getUserName());
       sparkProperties.remove("spark.yarn.keytab");
@@ -226,9 +221,9 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
 
     String keytab = properties.getProperty("spark.yarn.keytab",
-            zProperties.getProperty("zeppelin.server.kerberos.keytab"));
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB));
     String principal = properties.getProperty("spark.yarn.principal",
-            zProperties.getProperty("zeppelin.server.kerberos.principal"));
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL));
 
     if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
       env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
@@ -391,7 +386,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
                   " for non-local mode, if you specify it in zeppelin-env.sh, please move that into " +
                   " interpreter setting");
         }
-        String zeppelinHome = zProperties.getProperty("zeppelin.home", "..");
+        String zeppelinHome = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME);
         sparkRBasePath = new File(zeppelinHome,
                 "interpreter" + File.separator + "spark" + File.separator + "R");
       } else {

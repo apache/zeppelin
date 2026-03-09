@@ -23,8 +23,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -41,8 +41,8 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
   private final KubernetesClient client;
 
-  public K8sStandardInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
-    super(zProperties, recoveryStorage);
+  public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
     client = new DefaultKubernetesClient();
   }
 
@@ -68,7 +68,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
       //The namespace of zeppelin server can only be read from Config.KUBERNETES_NAMESPACE_PATH while it runs in k8s cluster, it may be different from the namespace of interpreter
       String serverNamespace = K8sUtils.getCurrentK8sNamespace();
       return String.format("%s.%s.svc",
-              zProperties.getProperty("zeppelin.k8s.service.name", "zeppelin-server"),
+              zConf.getK8sServiceName(),
               serverNamespace);
     } else {
       return context.getIntpEventServerHost();
@@ -96,7 +96,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    * Only if a spark interpreter process is running, user impersonation should be possible for --proxy-user
    */
   private boolean isUserImpersonateForSparkInterpreter(InterpreterLaunchContext context) {
-      return Boolean.parseBoolean(zProperties.getProperty("zeppelin.impersonate.spark.proxy.user", "true")) &&
+      return zConf.getZeppelinImpersonateSparkProxyUser() &&
           context.getOption().isUserImpersonate() &&
           "spark".equalsIgnoreCase(context.getInterpreterSettingGroup());
   }
@@ -107,9 +107,9 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
     return new K8sRemoteInterpreterProcess(
             client,
-            K8sUtils.getInterpreterNamespace(context.getProperties(), zProperties),
-            new File(zProperties.getProperty("zeppelin.k8s.template.dir", "k8s"), "interpreter"),
-            zProperties.getProperty("zeppelin.k8s.interpreter.container.image"),
+            K8sUtils.getInterpreterNamespace(context.getProperties(), zConf),
+            new File(zConf.getK8sTemplatesDir(), "interpreter"),
+            zConf.getK8sContainerImage(),
             context.getInterpreterGroupId(),
             context.getInterpreterSettingGroup(),
             context.getInterpreterSettingName(),
@@ -117,12 +117,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             buildEnvFromProperties(context),
             getZeppelinService(context),
             getZeppelinServiceRpcPort(context),
-            Boolean.parseBoolean(zProperties.getProperty("zeppelin.k8s.portforward", "false")),
-            zProperties.getProperty("zeppelin.k8s.spark.container.image"),
+            zConf.getK8sPortForward(),
+            zConf.getK8sSparkContainerImage(),
             getConnectTimeout(context),
             getConnectPoolSize(context),
             isUserImpersonateForSparkInterpreter(context),
-            Boolean.parseBoolean(zProperties.getProperty("zeppelin.k8s.timeout.during.pending", "true")));
+            zConf.getK8sTimeoutDuringPending());
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {

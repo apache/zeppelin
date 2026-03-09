@@ -46,6 +46,7 @@ import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   private String host;
   private int port = -1;
-  private final Properties zProperties;
+  private final ZeppelinConfiguration zConf;
   private final InterpreterLaunchContext launchContext;
   private final Properties properties;
   private final Map<String, String> envs;
@@ -102,12 +103,12 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
           Map<String, String> envs,
           int connectTimeout,
           int connectionPoolSize,
-          Properties zProperties) {
+          ZeppelinConfiguration zConf) {
     super(connectTimeout,
             connectionPoolSize,
             launchContext.getIntpEventServerHost(),
             launchContext.getIntpEventServerPort());
-    this.zProperties = zProperties;
+    this.zConf = zConf;
     this.launchContext = launchContext;
     this.properties = properties;
     this.envs = envs;
@@ -325,12 +326,12 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     vargs.add("-p");
     vargs.add(launchContext.getIntpEventServerPort() + "");
     vargs.add("-r");
-    vargs.add(zProperties.getProperty("zeppelin.interpreter.rpc.portRange", ":") + "");
+    vargs.add(zConf.getInterpreterPortRange() + "");
     vargs.add("-i");
     vargs.add(launchContext.getInterpreterGroupId());
     vargs.add("-l");
     vargs.add(ApplicationConstants.Environment.PWD.$() + "/zeppelin/" +
-            zProperties.getProperty("zeppelin.interpreter.localRepo", "local-repo")
+            ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO.getStringValue()
             + "/" + launchContext.getInterpreterSettingName());
     vargs.add("-g");
     vargs.add(launchContext.getInterpreterSettingName());
@@ -491,7 +492,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     try (ZipOutputStream interpreterZipStream = new ZipOutputStream(new FileOutputStream(interpreterArchive))) {
       interpreterZipStream.setLevel(0);
 
-      String zeppelinHomeEnv = zProperties.getProperty("zeppelin.home", "./");
+      String zeppelinHomeEnv = zConf.getZeppelinHome();
       if (org.apache.commons.lang3.StringUtils.isBlank(zeppelinHomeEnv)) {
         throw new IOException("ZEPPELIN_HOME is not specified");
       }
@@ -505,7 +506,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
       File interpreterDir = new File(zeppelinHome, "interpreter/" + launchContext.getInterpreterSettingGroup());
       addFileToZipStream(interpreterZipStream, interpreterDir, "interpreter");
 
-      File localRepoDir = new File(zProperties.getProperty("zeppelin.interpreter.localRepo", "local-repo") + File.separator
+      File localRepoDir = new File(zConf.getInterpreterLocalRepoPath() + File.separator
               + launchContext.getInterpreterSettingName());
       if (localRepoDir.exists() && localRepoDir.isDirectory()) {
         LOGGER.debug("Adding localRepoDir {} to interpreter zip: ", localRepoDir.getAbsolutePath());

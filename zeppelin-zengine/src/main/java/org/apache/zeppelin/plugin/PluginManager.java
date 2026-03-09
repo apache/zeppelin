@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import jakarta.inject.Inject;
 
@@ -110,24 +109,13 @@ public class PluginManager {
     String launcherClassName = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
     LOGGER.info("Loading Interpreter Launcher Plugin: {}", launcherClassName);
 
-    Properties zProperties = new Properties();
-    zProperties.putAll(zConf.getCompleteConfiguration());
-    zProperties.setProperty("zeppelin.home", zConf.getZeppelinHome());
-    zProperties.setProperty("zeppelin.conf.dir", zConf.getConfDir());
-    zProperties.setProperty("zeppelin.interpreter.dir",
-        zConf.getInterpreterDir());
-    zProperties.setProperty("zeppelin.interpreter.localRepo",
-        zConf.getInterpreterLocalRepoPath());
-    zProperties.setProperty("zeppelin.interpreter.remoterunner",
-        zConf.getInterpreterRemoteRunnerPath());
-
     if (builtinLauncherClassNames.contains(launcherClassName) ||
             Boolean.parseBoolean(System.getProperty("zeppelin.isTest", "false"))) {
       try {
         return (InterpreterLauncher)
                 (Class.forName(launcherClassName))
-                        .getConstructor(Properties.class, RecoveryStorage.class)
-                        .newInstance(zProperties, recoveryStorage);
+                        .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+                        .newInstance(zConf, recoveryStorage);
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
               | NoSuchMethodException | InvocationTargetException e) {
         throw new IOException("Fail to instantiate InterpreterLauncher from classpath directly:"
@@ -139,8 +127,8 @@ public class PluginManager {
     InterpreterLauncher launcher = null;
     try {
       launcher = (InterpreterLauncher) (Class.forName(launcherClassName, true, pluginClassLoader))
-          .getConstructor(Properties.class, RecoveryStorage.class)
-          .newInstance(zProperties, recoveryStorage);
+          .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+          .newInstance(zConf, recoveryStorage);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
         | NoSuchMethodException | InvocationTargetException e) {
       throw new IOException("Fail to instantiate Launcher " + launcherPlugin +

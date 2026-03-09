@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -25,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Launcher for running interpreter in yarn container.
@@ -34,8 +34,8 @@ public class YarnInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(YarnInterpreterLauncher.class);
 
-  public YarnInterpreterLauncher(Properties zProperties, RecoveryStorage recoveryStorage) {
-    super(zProperties, recoveryStorage);
+  public YarnInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
@@ -48,7 +48,7 @@ public class YarnInterpreterLauncher extends InterpreterLauncher {
             buildEnvFromProperties(context),
             getConnectTimeout(context),
             getConnectPoolSize(context),
-            zProperties);
+            zConf);
   }
 
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
