@@ -62,6 +62,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   editorHide = false;
   commitVisible = false;
   tableHide = false;
+  isSearchMenuVisible = false;
   searchText = '';
   replaceText = '';
   cronOption = [
@@ -249,6 +250,11 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   // TODO: Implement logic to replace all search matches with the replacement text
   onReplaceAllClick(searchText: string, _replaceText: string) {
     this.handleSearch.emit(searchText);
+  }
+
+  openSearchMenu() {
+    this.isSearchMenuVisible = true;
+    this.cdr.markForCheck();
   }
 
   deleteNote() {
