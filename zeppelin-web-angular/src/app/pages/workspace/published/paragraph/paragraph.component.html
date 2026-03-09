@@ -9,7 +9,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <div *ngIf="useReact" #reactContainer></div>
 <div *ngIf="!useReact">
   <zeppelin-notebook-paragraph-dynamic-forms
@@ -28,6 +27,7 @@
       [currentCol]="paragraph.config.colWidth"
       [config]="configs[i]"
       [result]="result"
+      data-testid="paragraph-result"
     ></zeppelin-notebook-paragraph-result>
   </ng-container>
 </div>
