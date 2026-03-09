@@ -179,7 +179,7 @@
     <plugin.source.version>3.2.1</plugin.source.version>
     <plugin.os.version>1.4.1.Final</plugin.os.version>
 
-    <testcontainers.version>1.19.0</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
 
     <MaxMetaspace>512m</MaxMetaspace>
 
