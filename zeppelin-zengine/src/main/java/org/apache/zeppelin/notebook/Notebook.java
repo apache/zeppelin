@@ -44,6 +44,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.event.EventBus;
+import org.apache.zeppelin.event.NoteRemoveEvent;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -65,6 +67,7 @@ import org.apache.zeppelin.util.ExecutorUtil;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.PreDestroy;
 
 /**
  * High level api of Notebook related operations, such as create, move & delete note/folder.
@@ -86,11 +89,13 @@ public class Notebook {
   private Credentials credentials;
   private final List<Consumer<String>> initConsumers;
   private ExecutorService initExecutor;
+  private EventBus eventBus;
 
   /**
    * Main constructor \w manual Dependency Injection
    *
    * @throws IOException
+   *
    * @throws SchedulerException
    */
   public Notebook(
@@ -100,7 +105,8 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      Credentials credentials)
+      Credentials credentials,
+      EventBus eventBus)
       {
     this.zConf = zConf;
     this.authorizationService = authorizationService;
@@ -111,6 +117,7 @@ public class Notebook {
     // TODO(zjffdu) cycle refer, not a good solution
     this.interpreterSettingManager.setNotebook(this);
     this.credentials = credentials;
+    this.eventBus = eventBus;
     addNotebookEventListener(this.interpreterSettingManager);
     initConsumers = new LinkedList<>();
   }
@@ -220,7 +227,9 @@ public class Notebook {
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       Credentials credentials,
-      NoteEventListener noteEventListener)
+      NoteEventListener noteEventListener,
+      EventBus eventBus
+      )
       throws IOException {
     this(
         zConf,
@@ -229,7 +238,8 @@ public class Notebook {
         noteManager,
         replFactory,
         interpreterSettingManager,
-        credentials);
+        credentials,
+        eventBus);
     if (null != noteEventListener) {
       addNotebookEventListener(noteEventListener);
     }
@@ -425,14 +435,16 @@ public class Notebook {
       });
   }
 
-  private void removeNote(Note note, AuthenticationInfo subject) throws IOException {
-    LOGGER.info("Remove note: {}", note.getId());
-    // Set Remove to true to cancel saving this note
-    note.setRemoved(true);
-    noteManager.removeNote(note.getId(), subject);
-    authorizationService.removeNoteAuth(note.getId());
-    fireNoteRemoveEvent(note, subject);
-  }
+    private void removeNote(Note note, AuthenticationInfo subject) throws IOException {
+      LOGGER.info("Remove note: {}", note.getId());
+      // Set Remove to true to cancel saving this note
+      note.setRemoved(true);
+      noteManager.removeNote(note.getId(), subject);
+      authorizationService.removeNoteAuth(note.getId());
+
+      fireNoteRemoveEvent(note, subject);
+      eventBus.post(new NoteRemoveEvent(note, subject));
+    }
 
   public void removeCorruptedNote(String noteId, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove corrupted note: {}", noteId);
@@ -830,6 +842,7 @@ public class Notebook {
       listener.onNoteUpdate(note, subject);
     }
   }
+
 
   private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) {
     for (NoteEventListener listener : noteEventListeners) {
