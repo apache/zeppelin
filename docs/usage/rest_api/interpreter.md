@@ -478,13 +478,13 @@ The role of registered interpreters, settings and interpreters group are describ
 
 
 <br/>
-### Restart an interpreter
+### Restart an interpreter for a specific note
 
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method restarts the given interpreter id.</td>
+      <td>This ```PUT``` method restarts the given interpreter for a specific note. The ```noteId``` is required in the request body.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -496,10 +496,10 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Fail code</td>
-      <td> 500 </td>
+      <td> 400 (if noteId is missing), 403 (no permission), 404 (interpreter not found), 500 </td>
     </tr>
     <tr>
-      <td>Sample JSON input (Optional)</td>
+      <td>Sample JSON input (Required)</td>
       <td>
 
 ```json
@@ -508,6 +508,42 @@ The role of registered interpreters, settings and interpreters group are describ
 }
 ```
 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+
+```json
+{"status":"OK"}
+```
+</td>
+    </tr>
+  </table>
+
+<br/>
+### Restart an interpreter globally
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method restarts the given interpreter globally (affects all users/sessions). This endpoint can be restricted to admin users only via shiro.ini configuration.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart-all/[interpreter ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 403 (no permission), 404 (interpreter not found), 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON input</td>
+      <td>None</td>
     </tr>
     <tr>
       <td>Sample JSON response</td>
