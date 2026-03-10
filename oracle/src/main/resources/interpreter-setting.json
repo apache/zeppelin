@@ -1,0 +1,133 @@
+[
+  {
+    "group": "oracle",
+    "name": "oracle",
+    "className": "org.apache.zeppelin.oracle.OracleInterpreter",
+    "properties": {
+      "oracle.connection.url": {
+        "envName": null,
+        "propertyName": "oracle.connection.url",
+        "defaultValue": "jdbc:oracle:thin:@//localhost:1521/ORCL",
+        "description": "Oracle JDBC connection URL",
+        "type": "string"
+      },
+      "oracle.connection.username": {
+        "envName": null,
+        "propertyName": "oracle.connection.username",
+        "defaultValue": "",
+        "description": "Oracle database username",
+        "type": "string"
+      },
+      "oracle.connection.password": {
+        "envName": null,
+        "propertyName": "oracle.connection.password",
+        "defaultValue": "",
+        "description": "Oracle database password",
+        "type": "password"
+      },
+      "oracle.connection.driver": {
+        "envName": null,
+        "propertyName": "oracle.connection.driver",
+        "defaultValue": "oracle.jdbc.OracleDriver",
+        "description": "Oracle JDBC driver class",
+        "type": "string"
+      },
+      "oracle.connection.wallet.location": {
+        "envName": null,
+        "propertyName": "oracle.connection.wallet.location",
+        "defaultValue": "",
+        "description": "Path to the Oracle Wallet directory (containing tnsnames.ora)",
+        "type": "string"
+      },
+      "oracle.connection.tns.alias": {
+        "envName": null,
+        "propertyName": "oracle.connection.tns.alias",
+        "defaultValue": "",
+        "description": "TNS alias name for wallet-based connection",
+        "type": "string"
+      },
+      "oracle.maxResults": {
+        "envName": null,
+        "propertyName": "oracle.maxResults",
+        "defaultValue": "1000",
+        "description": "Maximum number of rows to display",
+        "type": "string"
+      },
+      "oracleucp.connectionPoolName": {
+        "envName": null,
+        "propertyName": "oracleucp.connectionPoolName",
+        "defaultValue": "ZEPPELIN_UCP_JDBC",
+        "description": "UCP Connection pool name",
+        "type": "string"
+      },
+      "oracleucp.initialPoolSize": {
+        "envName": null,
+        "propertyName": "oracleucp.initialPoolSize",
+        "defaultValue": "0",
+        "description": "UCP Initial pool size",
+        "type": "number"
+      },
+      "oracleucp.minPoolSize": {
+        "envName": null,
+        "propertyName": "oracleucp.minPoolSize",
+        "defaultValue": "1",
+        "description": "UCP Minimum pool size",
+        "type": "number"
+      },
+      "oracleucp.maxPoolSize": {
+        "envName": null,
+        "propertyName": "oracleucp.maxPoolSize",
+        "defaultValue": "",
+        "description": "UCP Maximum pool size",
+        "type": "number"
+      },
+      "oracleucp.connectionWaitTimeout": {
+        "envName": null,
+        "propertyName": "oracleucp.connectionWaitTimeout",
+        "defaultValue": "3",
+        "description": "UCP Connection wait timeout (seconds)",
+        "type": "number"
+      },
+      "oracleucp.inactiveConnectionTimeout": {
+        "envName": null,
+        "propertyName": "oracleucp.inactiveConnectionTimeout",
+        "defaultValue": "0",
+        "description": "UCP Inactive connection timeout (seconds)",
+        "type": "number"
+      },
+      "oracleucp.validateConnectionOnBorrow": {
+        "envName": null,
+        "propertyName": "oracleucp.validateConnectionOnBorrow",
+        "defaultValue": "false",
+        "description": "UCP Validate connection on borrow",
+        "type": "checkbox"
+      },
+      "oracleucp.abandonedConnectionTimeout": {
+        "envName": null,
+        "propertyName": "oracleucp.abandonedConnectionTimeout",
+        "defaultValue": "0",
+        "description": "Timeout for abandoned connections (seconds, 0 to disable)",
+        "type": "number"
+      },
+      "oracleucp.timeToLiveConnectionTimeout": {
+        "envName": null,
+        "propertyName": "oracleucp.timeToLiveConnectionTimeout",
+        "defaultValue": "0",
+        "description": "Time to live for connections (seconds, 0 to disable)",
+        "type": "number"
+      },
+      "oracleucp.maxStatements": {
+        "envName": null,
+        "propertyName": "oracleucp.maxStatements",
+        "defaultValue": "0",
+        "description": "Maximum number of statements to cache (0 to disable)",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false,
+      "completionKey": "TAB"
+    }
+  }
+]
