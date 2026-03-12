@@ -44,7 +44,6 @@ import org.apache.flink.table.catalog.hive.HiveCatalog
 import org.apache.flink.table.functions.{AggregateFunction, ScalarFunction, TableAggregateFunction, TableFunction}
 import org.apache.flink.table.module.hive.HiveModule
 import org.apache.flink.yarn.cli.FlinkYarnSessionCli
-import org.apache.zeppelin.conf.ZeppelinConfiguration
 import org.apache.zeppelin.dep.DependencyResolver
 import org.apache.zeppelin.flink.internal.FlinkShell
 import org.apache.zeppelin.flink.internal.FlinkShell._
@@ -66,8 +65,7 @@ import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, Results
  * @param properties
  */
 abstract class FlinkScalaInterpreter(val properties: Properties,
-                                     val flinkScalaClassLoader: ClassLoader,
-                                     val zConf: ZeppelinConfiguration) {
+                                     val flinkScalaClassLoader: ClassLoader) {
 
   private lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -800,7 +798,12 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     val flinkPackageJars =
       if (!StringUtils.isBlank(properties.getProperty("flink.execution.packages", ""))) {
         val packages = properties.getProperty("flink.execution.packages")
-        val dependencyResolver = new DependencyResolver(System.getProperty("user.home") + "/.m2/repository", zConf)
+        val dependencyResolver = new DependencyResolver(
+          System.getProperty("user.home") + "/.m2/repository",
+          properties.getProperty("zeppelin.proxy.url"),
+          properties.getProperty("zeppelin.proxy.user"),
+          properties.getProperty("zeppelin.proxy.password"),
+          properties.getProperty("zeppelin.interpreter.dep.mvnRepo"))
         packages.split(",")
           .flatMap(e => JavaConversions.asScalaBuffer(dependencyResolver.load(e)))
           .map(e => e.getAbsolutePath).toSeq

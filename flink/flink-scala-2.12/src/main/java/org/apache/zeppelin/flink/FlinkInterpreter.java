@@ -22,7 +22,6 @@ import org.apache.flink.api.scala.ExecutionEnvironment;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
@@ -91,8 +90,8 @@ public class FlinkInterpreter extends Interpreter {
     Class<?> clazz = Class.forName(innerIntpClassName);
 
     return (FlinkScalaInterpreter)
-            clazz.getConstructor(Properties.class, ClassLoader.class, ZeppelinConfiguration.class)
-                .newInstance(getProperties(), flinkScalaClassLoader, zConf);
+            clazz.getConstructor(Properties.class, ClassLoader.class)
+                .newInstance(getProperties(), flinkScalaClassLoader);
   }
 
   @Override

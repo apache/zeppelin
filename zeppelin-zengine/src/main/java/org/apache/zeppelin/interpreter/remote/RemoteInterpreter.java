@@ -77,7 +77,6 @@ public class RemoteInterpreter extends Interpreter {
     this.sessionId = sessionId;
     this.className = className;
     this.setUserName(userName);
-    this.setZeppelinConfiguration(zConf);
   }
 
   public boolean isOpened() {
