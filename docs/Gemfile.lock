@@ -244,7 +244,7 @@ GEM
     rb-inotify (0.11.1)
       ffi (~> 1.0)
     redcarpet (3.6.0)
-    rexml (3.3.8)
+    rexml (3.4.2)
     rouge (3.30.0)
     rubyzip (2.3.2)
     safe_yaml (1.0.5)
