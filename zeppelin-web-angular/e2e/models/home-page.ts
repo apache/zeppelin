@@ -141,8 +141,14 @@ export class HomePage extends BasePage {
   async filterNotes(searchTerm: string): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 10000 });
     await this.nodeList.filterInput.waitFor({ state: 'visible', timeout: 5000 });
-    await this.nodeList.filterInput.fill(searchTerm, { timeout: 15000 });
-    await this.nodeList.filterInput.dispatchEvent('input');
+    // pressSequentially fires real key events so Angular's ngModel detects the change (fill() does not).
+    // Triple-click to select all, then type to replace or Backspace to clear.
+    await this.nodeList.filterInput.click({ clickCount: 3 });
+    if (searchTerm) {
+      await this.nodeList.filterInput.pressSequentially(searchTerm);
+    } else {
+      await this.nodeList.filterInput.press('Backspace');
+    }
   }
 
   async waitForRefreshToComplete(): Promise<void> {
