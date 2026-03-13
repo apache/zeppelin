@@ -148,8 +148,4 @@ export class HomePage extends BasePage {
   async waitForRefreshToComplete(): Promise<void> {
     await this.waitForElementAttribute('a.refresh-note i[nz-icon]', 'nzSpin', false);
   }
-
-  async getDocumentationLinkHref(): Promise<string | null> {
-    return this.externalLinks.documentation.getAttribute('href');
-  }
 }

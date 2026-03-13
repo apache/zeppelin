@@ -167,7 +167,7 @@ test.describe('Home Page Note Operations', () => {
         expect(actualValue.length).toBeLessThanOrEqual(parseInt(maxLengthAttr, 10));
       } else {
         // No client-side cap — the full value passes through
-        expect(actualValue).toContain('_e2e_ml_');
+        expect(actualValue).toBe(longName);
       }
 
       // Dismiss the modal without creating

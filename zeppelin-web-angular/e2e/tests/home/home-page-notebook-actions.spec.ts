@@ -29,8 +29,11 @@ test.describe('Home Page Notebook Actions', () => {
   test.describe('Given notebook list is displayed', () => {
     test('When page loads Then should show notebook actions', async () => {
       await expect(homePage.nodeList.createNewNoteLink).toBeVisible();
+      await expect(homePage.nodeList.createNewNoteLink).toContainText('Create new Note');
       await expect(homePage.nodeList.importNoteLink).toBeVisible();
+      await expect(homePage.nodeList.importNoteLink).toContainText('Import Note');
       await expect(homePage.nodeList.filterInput).toBeVisible();
+      await expect(homePage.nodeList.filterInput).toHaveAttribute('placeholder', /Filter/i);
     });
 
     test('When refresh button is clicked Then should keep refresh icon visible', async ({ page }) => {
@@ -41,6 +44,7 @@ test.describe('Home Page Notebook Actions', () => {
       await expect(refreshIcon).toBeVisible();
 
       await homePage.clickRefreshNotes();
+      await homePage.waitForRefreshToComplete();
 
       await expect(refreshIcon).toBeVisible();
     });
@@ -65,6 +69,7 @@ test.describe('Home Page Notebook Actions', () => {
         await expect(page.locator('zeppelin-node-list')).toBeVisible();
         await expect(homePage.nodeList.filterInput).toBeEditable();
         await expect(homePage.nodeList.filterInput).toHaveValue(specialInput);
+        await expect(page.locator('zeppelin-header')).toBeVisible();
       }
 
       // Clean up: clear the filter so other tests start fresh

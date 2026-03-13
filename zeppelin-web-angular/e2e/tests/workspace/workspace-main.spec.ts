@@ -45,10 +45,14 @@ test.describe('Workspace Main Component', () => {
 
     test('When workspace loads Then should have router outlet attached', async () => {
       await workspaceUtil.verifyRouterOutletActivation();
+      // Verify the activated route rendered a home component, not just an empty outlet
+      await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
     });
 
     test('When workspace activates Then should render content inside router outlet', async () => {
       await workspaceUtil.waitForComponentActivation();
+      // Confirm that home content loaded into the workspace, not just that children.length > 1
+      await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
     });
   });
 });
