@@ -28,10 +28,6 @@ test.describe('Home Page - External Links', () => {
 
   test.describe('Documentation Link', () => {
     test('should have correct documentation link with dynamic version', async () => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
       await test.step('When I examine the documentation link', async () => {
         await expect(homePage.externalLinks.documentation).toBeVisible();
       });
@@ -39,7 +35,7 @@ test.describe('Home Page - External Links', () => {
       await test.step('Then it should have the correct href pattern', async () => {
         const href = await homePage.externalLinks.documentation.getAttribute('href');
         expect(href).toContain('zeppelin.apache.org/docs');
-        expect(href).toContain('index.html');
+        expect(href).toMatch(/\/docs\/\d+\.\d+\.\d+(-SNAPSHOT)?\/index\.html/);
       });
 
       await test.step('And it should open in a new tab', async () => {
@@ -51,10 +47,6 @@ test.describe('Home Page - External Links', () => {
 
   test.describe('Community Links', () => {
     test('should have correct mailing list link', async () => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
       await test.step('When I examine the mailing list link', async () => {
         await expect(homePage.externalLinks.mailingList).toBeVisible();
       });
@@ -76,10 +68,6 @@ test.describe('Home Page - External Links', () => {
     });
 
     test('should have correct issues tracking link', async () => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
       await test.step('When I examine the issues tracking link', async () => {
         await expect(homePage.externalLinks.issuesTracking).toBeVisible();
       });
@@ -101,10 +89,6 @@ test.describe('Home Page - External Links', () => {
     });
 
     test('should have correct GitHub link', async () => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
       await test.step('When I examine the GitHub link', async () => {
         await expect(homePage.externalLinks.github).toBeVisible();
       });
@@ -122,33 +106,6 @@ test.describe('Home Page - External Links', () => {
       await test.step('And it should have the GitHub icon', async () => {
         const githubIcon = homePage.externalLinks.github.locator('i[nz-icon][nzType="github"]');
         await expect(githubIcon).toBeVisible();
-      });
-    });
-  });
-
-  test.describe('Link Verification', () => {
-    test('should have all external links with proper attributes', async () => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
-      await test.step('When I examine all external links', async () => {
-        await expect(homePage.externalLinks.documentation).toBeVisible();
-        await expect(homePage.externalLinks.mailingList).toBeVisible();
-        await expect(homePage.externalLinks.issuesTracking).toBeVisible();
-        await expect(homePage.externalLinks.github).toBeVisible();
-      });
-
-      await test.step('Then all links should open in new tabs', async () => {
-        const docTarget = await homePage.externalLinks.documentation.getAttribute('target');
-        const mailTarget = await homePage.externalLinks.mailingList.getAttribute('target');
-        const issuesTarget = await homePage.externalLinks.issuesTracking.getAttribute('target');
-        const githubTarget = await homePage.externalLinks.github.getAttribute('target');
-
-        expect(docTarget).toBe('_blank');
-        expect(mailTarget).toBe('_blank');
-        expect(issuesTarget).toBe('_blank');
-        expect(githubTarget).toBe('_blank');
       });
     });
   });

@@ -64,17 +64,27 @@ test.describe('Anonymous User Login Redirect', () => {
       expect(currentPath).not.toContain('#/login');
     });
 
-    test('When accessing login page directly, Then should display all home page elements correctly', async ({
+    test('When accessing login page directly, Then should display full home page with all sections and links', async ({
       page
     }) => {
       await page.goto('/#/login');
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
+      // Sections
       await expect(homePage.welcomeTitle).toBeVisible();
       await expect(homePage.notebookSection).toBeVisible();
       await expect(homePage.helpSection).toBeVisible();
       await expect(homePage.communitySection).toBeVisible();
+      // Notebook actions
+      await expect(homePage.nodeList.createNewNoteLink).toBeVisible();
+      await expect(homePage.nodeList.importNoteLink).toBeVisible();
+      await expect(homePage.nodeList.filterInput).toBeVisible();
+      // External links
+      await expect(homePage.externalLinks.documentation).toBeVisible();
+      await expect(homePage.externalLinks.mailingList).toBeVisible();
+      await expect(homePage.externalLinks.issuesTracking).toBeVisible();
+      await expect(homePage.externalLinks.github).toBeVisible();
     });
 
     test('When clicking Zeppelin logo after redirect, Then should maintain home URL and content', async ({ page }) => {
@@ -108,57 +118,6 @@ test.describe('Anonymous User Login Redirect', () => {
       expect(isAnonymous).toBe(true);
     });
 
-    test('When accessing login page, Then should display welcome heading and main sections', async ({ page }) => {
-      await page.goto('/#/login');
-      await waitForZeppelinReady(page);
-      await page.waitForURL(url => !url.toString().includes('#/login'));
-
-      await expect(basePage.welcomeTitle).toBeVisible();
-      await expect(page.locator('text=Notebook').first()).toBeVisible();
-      await expect(page.locator('text=Help').first()).toBeVisible();
-      await expect(page.locator('text=Community').first()).toBeVisible();
-    });
-
-    test('When accessing login page, Then should display notebook functionalities', async ({ page }) => {
-      await page.goto('/#/login');
-      await waitForZeppelinReady(page);
-      await page.waitForURL(url => !url.toString().includes('#/login'));
-
-      await expect(page.locator('text=Create new Note')).toBeVisible();
-      await expect(page.locator('text=Import Note')).toBeVisible();
-
-      const filterInput = page.locator('input[placeholder*="Filter"]');
-      if ((await filterInput.count()) > 0) {
-        await expect(filterInput).toBeVisible();
-      }
-    });
-
-    test('When accessing login page, Then should display external links in help and community sections', async ({
-      page
-    }) => {
-      await page.goto('/#/login');
-      await waitForZeppelinReady(page);
-      await page.waitForURL(url => !url.toString().includes('#/login'));
-
-      const docLinks = page.locator('a[href*="zeppelin.apache.org/docs"]');
-      const communityLinks = page.locator('a[href*="community.html"]');
-      const issuesLinks = page.locator('a[href*="issues.apache.org"]');
-      const githubLinks = page.locator('a[href*="github.com/apache/zeppelin"]');
-
-      if ((await docLinks.count()) > 0) {
-        await expect(docLinks).toBeVisible();
-      }
-      if ((await communityLinks.count()) > 0) {
-        await expect(communityLinks).toBeVisible();
-      }
-      if ((await issuesLinks.count()) > 0) {
-        await expect(issuesLinks).toBeVisible();
-      }
-      if ((await githubLinks.count()) > 0) {
-        await expect(githubLinks).toBeVisible();
-      }
-    });
-
     test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({
       page
     }) => {
@@ -185,6 +144,48 @@ test.describe('Anonymous User Login Redirect', () => {
       expect(isHomeContentDisplayed).toBe(true);
     });
 
+    test('When accessing protected route directly, Then should load home content for anonymous user', async ({
+      page
+    }) => {
+      // Notebook-repos is a management route; anonymous users should either access it or be redirected home
+      await page.goto('/#/notebook-repos');
+      await waitForZeppelinReady(page);
+
+      // Then: Either the notebook-repos page loads (anonymous mode allows it) OR
+      // the user is redirected back to home — both are valid; the app must not crash or show an empty shell
+      const currentPath = getCurrentPath(page);
+      const isAnonymous = await homePage.isAnonymousUser();
+
+      expect(isAnonymous).toBe(true);
+      // The app root must still be rendering — not a blank white page
+      await expect(basePage.zeppelinWorkspace).toBeVisible();
+      // If redirected, must land on home (not an error page)
+      if (!currentPath.includes('#/notebook-repos')) {
+        // JUSTIFIED: both states are valid — notebook-repos accessible OR redirect to home; only assert welcomeTitle on redirect path
+        await expect(basePage.welcomeTitle).toBeVisible();
+      }
+    });
+
+    test('When accessing configuration route directly, Then should handle navigation for anonymous user', async ({
+      page
+    }) => {
+      // Configuration is a management route — anonymous users should either access it or be redirected home
+      await page.goto('/#/configuration');
+      await waitForZeppelinReady(page);
+
+      const currentPath = getCurrentPath(page);
+      const isAnonymous = await homePage.isAnonymousUser();
+
+      expect(isAnonymous).toBe(true);
+      // The app root must still be rendering — not a blank white page
+      await expect(basePage.zeppelinWorkspace).toBeVisible();
+      // If redirected, must land on home (not an error page)
+      if (!currentPath.includes('#/configuration')) {
+        // JUSTIFIED: both states are valid — configuration accessible OR redirect to home; only assert welcomeTitle on redirect path
+        await expect(basePage.welcomeTitle).toBeVisible();
+      }
+    });
+
     test('When multiple page loads occur on login URL, Then should consistently redirect to home', async ({ page }) => {
       for (let i = 0; i < 3; i++) {
         await page.goto('/#/login');
@@ -192,7 +193,7 @@ test.describe('Anonymous User Login Redirect', () => {
         await waitForUrlNotContaining(page, '#/login');
 
         await expect(basePage.welcomeTitle).toBeVisible();
-        await expect(page.locator('text=anonymous')).toBeVisible();
+        await expect(page.getByText('anonymous', { exact: true })).toBeVisible();
 
         const path = getCurrentPath(page);
         expect(path).toContain('#/');

@@ -13,7 +13,6 @@
 import { expect, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 import { WorkspacePage } from './workspace-page';
-import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
 
 export class WorkspaceUtil extends BasePage {
   private workspacePage: WorkspacePage;
@@ -23,34 +22,16 @@ export class WorkspaceUtil extends BasePage {
     this.workspacePage = new WorkspacePage(page);
   }
 
-  async navigateAndWaitForLoad(): Promise<void> {
-    await this.workspacePage.navigateToWorkspace();
-    await performLoginIfRequired(this.page);
-    await waitForZeppelinReady(this.page);
-  }
-
-  async verifyWorkspaceLayout(): Promise<void> {
-    await expect(this.workspacePage.workspaceComponent).toBeVisible();
-    await expect(this.workspacePage.routerOutlet).toBeAttached();
-  }
-
-  async verifyHeaderVisibility(shouldBeVisible: boolean): Promise<void> {
-    if (shouldBeVisible) {
-      await expect(this.workspacePage.zeppelinHeader).toBeVisible();
-    } else {
-      await expect(this.workspacePage.zeppelinHeader).toBeHidden();
-    }
-  }
-
   async verifyRouterOutletActivation(): Promise<void> {
-    await expect(this.workspacePage.routerOutlet).toBeAttached();
+    // Verify routing has activated by checking that workspace content is visible, not just that router-outlet exists
+    await expect(this.workspacePage.zeppelinWorkspace).toBeVisible();
     await this.waitForRouterOutletChild();
   }
 
   async waitForComponentActivation(): Promise<void> {
     await this.page.waitForFunction(
       () => {
-        const workspace = document.querySelector('zeppelin-workspace');
+        const workspace = document.querySelector('zeppelin-workspace'); // JUSTIFIED: router outlet child count > 1 is not observable via Playwright locator API
         const content = workspace?.querySelector('.content');
         return content && content.children.length > 1;
       },

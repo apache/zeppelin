@@ -30,6 +30,7 @@ test.describe('Notebook Repository Item - Settings', () => {
 
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+    expect(firstRepoName, 'No repository found — ensure at least one repo is configured').not.toBe('');
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
   });
 
@@ -41,68 +42,47 @@ test.describe('Notebook Repository Item - Settings', () => {
     await expect(headers.nth(1)).toContainText('Value');
   });
 
-  test('should display all setting rows', async () => {
-    const settingCount = await repoItemPage.getSettingCount();
-    expect(settingCount).toBeGreaterThan(0);
-  });
-
-  test('should show input controls for INPUT type settings in edit mode', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-
+  test('should show input controls for INPUT type settings in edit mode', async ({ page }) => {
     await repoItemPage.clickEdit();
 
-    for (let i = 0; i < settingRows; i++) {
-      const row = repoItemPage.settingRows.nth(i);
-      const settingName = (await row.locator('td').first().textContent()) || '';
+    const inputRows = repoItemPage.settingRows.filter({ has: page.locator('input[nz-input]') });
+    await expect(inputRows).not.toHaveCount(0); // repo must have at least one INPUT-type setting
 
-      const isInputVisible = await repoItemPage.isInputVisible(settingName);
-      if (isInputVisible) {
-        const input = row.locator('input[nz-input]');
-        await expect(input).toBeVisible();
-        await expect(input).toHaveAttribute('nz-input');
-      }
+    const count = await inputRows.count();
+    for (let i = 0; i < count; i++) {
+      const input = inputRows.nth(i).locator('input[nz-input]');
+      await expect(input).toBeVisible();
+      await expect(input).toHaveAttribute('nz-input');
     }
   });
 
-  test('should show dropdown controls for DROPDOWN type settings in edit mode', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-
+  test('should show dropdown controls for DROPDOWN type settings in edit mode', async ({ page }) => {
     await repoItemPage.clickEdit();
 
-    for (let i = 0; i < settingRows; i++) {
-      const row = repoItemPage.settingRows.nth(i);
-      const settingName = (await row.locator('td').first().textContent()) || '';
+    const dropdownRows = repoItemPage.settingRows.filter({ has: page.locator('nz-select') });
+    const count = await dropdownRows.count();
+    test.skip(count === 0, 'VFSNotebookRepo has no DROPDOWN-type settings in this environment');
 
-      const isDropdownVisible = await repoItemPage.isDropdownVisible(settingName);
-      if (isDropdownVisible) {
-        const select = row.locator('nz-select');
-        await expect(select).toBeVisible();
-      }
+    for (let i = 0; i < count; i++) {
+      await expect(dropdownRows.nth(i).locator('nz-select')).toBeVisible();
     }
   });
 
-  test('should update input value in edit mode', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
-
+  test('should update input value in edit mode', async ({ page }) => {
     await repoItemPage.clickEdit();
 
-    for (let i = 0; i < settingRows; i++) {
-      const row = repoItemPage.settingRows.nth(i);
-      const settingName = (await row.locator('td').first().textContent()) || '';
+    const inputRows = repoItemPage.settingRows.filter({ has: page.locator('input[nz-input]') });
+    await expect(inputRows).not.toHaveCount(0); // repo must have at least one INPUT-type setting
 
-      const isInputVisible = await repoItemPage.isInputVisible(settingName);
-      if (isInputVisible) {
-        const testValue = 'test-value';
-        await repoItemPage.fillSettingInput(settingName, testValue);
-        const inputValue = await repoItemPage.getSettingInputValue(settingName);
-        expect(inputValue).toBe(testValue);
-        break;
-      }
-    }
+    const firstRow = inputRows.first(); // first: any INPUT-type row works — all share the same input control structure
+    const settingName = (await firstRow.locator('td').first().textContent()) || '';
+    const testValue = 'test-value';
+    await repoItemPage.fillSettingInput(settingName, testValue);
+    expect(await repoItemPage.getSettingInputValue(settingName)).toBe(testValue);
   });
 
   test('should display setting name and value in display mode', async () => {
-    const firstRow = repoItemPage.settingRows.first();
+    const firstRow = repoItemPage.settingRows.first(); // first: any row is sufficient — testing Name/Value column structure
     const nameCell = firstRow.locator('td').first();
     const valueCell = firstRow.locator('td').nth(1);
 
@@ -110,6 +90,8 @@ test.describe('Notebook Repository Item - Settings', () => {
     await expect(valueCell).toBeVisible();
 
     const nameText = await nameCell.textContent();
-    expect(nameText).toBeTruthy();
+    expect(nameText).not.toBe('');
+    const valueText = await valueCell.textContent();
+    expect(valueText).not.toBe('');
   });
 });

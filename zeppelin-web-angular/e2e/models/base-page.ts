@@ -85,14 +85,8 @@ export class BasePage {
   }
 
   async waitForFormLabels(labelTexts: string[], timeout = 10000): Promise<void> {
-    await this.page.waitForFunction(
-      texts => {
-        const labels = Array.from(document.querySelectorAll('nz-form-label'));
-        return texts.some(text => labels.some(l => l.textContent?.includes(text)));
-      },
-      labelTexts,
-      { timeout }
-    );
+    const locators = labelTexts.map(text => this.page.locator('nz-form-label', { hasText: text }));
+    await Promise.race(locators.map(l => l.waitFor({ state: 'attached', timeout })));
   }
 
   async waitForElementAttribute(
@@ -118,16 +112,16 @@ export class BasePage {
     value: string,
     options?: { timeout?: number; clearFirst?: boolean }
   ): Promise<void> {
-    const { timeout = 10000, clearFirst = true } = options || {};
+    const { timeout = 10000 } = options || {};
 
     await expect(locator).toBeVisible({ timeout });
     await expect(locator).toBeEnabled({ timeout: 5000 });
 
-    if (clearFirst) {
-      await locator.clear();
-    }
-
+    // fill() is atomic: clears the field and sets value in a single CDP command,
+    // firing input + change events that Angular's ngModel detects in all browsers.
+    // pressSequentially(delay) was tried but on CI Chromium the inter-keystroke delay
+    // allows Angular's change detection to steal focus after the first character.
     await locator.fill(value);
-    await expect(locator).toHaveValue(value);
+    await expect(locator).toHaveValue(value, { timeout: 10000 });
   }
 }

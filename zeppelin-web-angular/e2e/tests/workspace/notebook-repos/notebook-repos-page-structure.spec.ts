@@ -29,16 +29,14 @@ test.describe('Notebook Repository Page - Structure', () => {
 
   test('should display page header with correct title and description', async () => {
     await expect(notebookReposPage.zeppelinPageHeader).toBeVisible();
-    await expect(notebookReposPage.pageDescription).toBeVisible();
+    await expect(notebookReposPage.zeppelinPageHeader).toContainText('Notebook Repository');
+    await expect(notebookReposPage.pageDescription).toContainText("Manage your Notebook Repositories' settings.");
   });
 
-  test('should render repository list container', async () => {
-    const count = await notebookReposPage.getRepositoryItemCount();
-    expect(count).toBeGreaterThanOrEqual(0);
-  });
-
-  test('should display all repository items', async () => {
-    const count = await notebookReposPage.getRepositoryItemCount();
-    expect(count).toBeGreaterThan(0);
+  test('should display all repository items with names', async () => {
+    await expect(notebookReposPage.repositoryItems).not.toHaveCount(0);
+    // Each item must have a non-empty title — not just a blank card
+    const firstTitle = notebookReposPage.repositoryItems.first().locator('.ant-card-head-title');
+    await expect(firstTitle).not.toBeEmpty();
   });
 });

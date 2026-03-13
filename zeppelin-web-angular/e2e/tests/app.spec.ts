@@ -29,26 +29,21 @@ test.describe('Zeppelin App Component', () => {
   test('should have correct component selector and structure', async ({ page }) => {
     await basePage.waitForPageLoad();
 
-    // Test zeppelin-root selector
-    const zeppelinRoot = page.locator('zeppelin-root');
-    await expect(zeppelinRoot).toBeAttached();
-
     await waitForZeppelinReady(page);
 
     // Verify router-outlet is inside zeppelin-root (use first to avoid multiple elements)
-    const routerOutlet = zeppelinRoot.locator('router-outlet').first();
-    await expect(routerOutlet).toBeAttached();
+    const zeppelinRoot = page.locator('zeppelin-root');
+
+    // Verify routing has activated by checking that actual content is rendered inside the workspace
+    await expect(zeppelinRoot.locator('zeppelin-home, zeppelin-workspace')).toBeVisible();
 
     // Check for loading spinner
     const loadingSpinner = zeppelinRoot.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
     const logoutSpinner = zeppelinRoot.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
 
-    // Loading spinner should exist, logout spinner may or may not exist depending on conditions
-    const loadingSpinnerCount = await loadingSpinner.count();
-    const logoutSpinnerCount = await logoutSpinner.count();
-
-    expect(loadingSpinnerCount).toBeGreaterThanOrEqual(0);
-    expect(logoutSpinnerCount).toBeGreaterThanOrEqual(0);
+    // After waitForZeppelinReady, both spinners must be gone
+    await expect(loadingSpinner).toHaveCount(0);
+    await expect(logoutSpinner).toHaveCount(0);
   });
 
   test('should have proper page title', async ({ page }) => {
@@ -59,34 +54,22 @@ test.describe('Zeppelin App Component', () => {
     await waitForZeppelinReady(page);
     // After the `beforeEach` hook, which handles login, the workspace should be visible.
     await expect(basePage.zeppelinWorkspace).toBeVisible();
+    // Verify the workspace contains actual content (not just a blank shell)
+    await expect(basePage.zeppelinWorkspace.locator('zeppelin-node-list, zeppelin-home').first()).toBeVisible();
   });
 
-  test('should handle navigation events correctly', async ({ page }) => {
+  test('should hide loading spinner after navigation', async ({ page }) => {
     await waitForZeppelinReady(page);
 
-    // Test navigation back to root path
-    try {
-      await page.goto('/', { waitUntil: 'load', timeout: 10000 });
+    await page.goto('/', { waitUntil: 'load', timeout: 10000 });
+    await waitForZeppelinReady(page);
 
-      // Check if loading spinner appears during navigation
-      const loadingSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
-
-      // Loading might be very fast, so we check if it exists
-      const spinnerCount = await loadingSpinner.count();
-      expect(spinnerCount).toBeGreaterThanOrEqual(0);
-
-      await waitForZeppelinReady(page);
-
-      // After ready, loading should be hidden if it was visible
-      if (await loadingSpinner.isVisible()) {
-        await expect(loadingSpinner).toBeHidden();
-      }
-    } catch (error) {
-      console.log('Navigation test skipped due to timeout:', error);
-    }
+    // After the app is ready, the loading spinner must be hidden
+    const loadingSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
+    await expect(loadingSpinner).toBeHidden();
   });
 
-  test('should properly manage loading state observable', async ({ page }) => {
+  test('should hide loading spinner after page reload', async ({ page }) => {
     await basePage.waitForPageLoad();
 
     // Test that loading$ observable works correctly
@@ -95,54 +78,43 @@ test.describe('Zeppelin App Component', () => {
     // Reload page to trigger loading state
     await page.reload({ waitUntil: 'load' });
 
-    // Check loading state during page load
-    const initialLoadingVisible = await loadingSpinner.isVisible();
-
-    if (initialLoadingVisible) {
-      await expect(loadingSpinner).toBeVisible();
-      await expect(loadingSpinner).toContainText('Getting Ticket Data ...');
-    }
+    // If the spinner is briefly visible during reload, it will resolve; just wait for ready
 
     // Wait for loading to complete
     await waitForZeppelinReady(page);
     await expect(loadingSpinner).toBeHidden();
   });
 
-  test('should handle logout observable correctly', async ({ page }) => {
+  test('should show logout spinner when logging out', async ({ page }) => {
     await waitForZeppelinReady(page);
+
+    // Only test logout flow for authenticated (non-anonymous) users — skip before any assertions
+    const statusElement = page.locator('.status');
+    await expect(statusElement).toBeVisible();
+    const statusText = await statusElement.textContent();
+    test.skip(statusText?.includes('anonymous') ?? false, 'Logout spinner only applies to authenticated users');
 
     const logoutSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
 
     // Initially logout spinner should be hidden
     await expect(logoutSpinner).toBeHidden();
 
-    // Check if we have a logout mechanism available
-    const statusElement = page.locator('.status');
-    if (await statusElement.isVisible()) {
-      const statusText = await statusElement.textContent();
+    await statusElement.click();
+    const logoutButton = page.getByRole('link', { name: 'Logout' });
 
-      if (statusText && !statusText.includes('anonymous')) {
-        // If not anonymous user, test logout spinner
-        await statusElement.click();
-        const logoutButton = page.getByRole('link', { name: 'Logout' });
+    // If the dropdown has no Logout link, auth is not configured — skip gracefully
+    const logoutCount = await logoutButton.count();
+    test.skip(logoutCount === 0, 'Logout option not available — auth not configured in this environment');
 
-        if (await logoutButton.isVisible()) {
-          await logoutButton.click();
+    await logoutButton.click();
 
-          // Logout spinner should appear
-          await expect(logoutSpinner).toBeVisible();
-          await expect(logoutSpinner).toContainText('Logging out ...');
-        }
-      }
-    }
+    await expect(logoutSpinner).toBeVisible();
+    await expect(logoutSpinner).toContainText('Logging out ...');
   });
 
   test('should maintain component integrity during navigation', async ({ page }) => {
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-
-    const zeppelinRoot = page.locator('zeppelin-root');
-    const routerOutlet = zeppelinRoot.locator('router-outlet').first();
 
     // Navigate to different pages and ensure component remains intact
     const testPaths = ['/#/notebook', '/#/jobmanager', '/#/configuration'];
@@ -151,36 +123,12 @@ test.describe('Zeppelin App Component', () => {
       await page.goto(path, { waitUntil: 'load', timeout: 10000 });
       await waitForZeppelinReady(page);
 
-      // Component should still be attached
-      await expect(zeppelinRoot).toBeAttached();
-
-      // Router outlet should still be present
-      await expect(routerOutlet).toBeAttached();
+      // Workspace must render visible content after each navigation (confirms Angular didn't unmount the root component)
+      await expect(page.locator('zeppelin-workspace')).toBeVisible();
     }
 
     // Return to home
     await page.goto('/', { waitUntil: 'load' });
     await waitForZeppelinReady(page);
-    await expect(zeppelinRoot).toBeAttached();
-  });
-
-  test('should verify spinner text content and visibility', async ({ page }) => {
-    await basePage.waitForPageLoad();
-
-    // Check exact text content of spinners
-    const loadingSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });
-    const logoutSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
-
-    // Verify spinner elements exist
-    expect(await loadingSpinner.count()).toBeGreaterThanOrEqual(0);
-    expect(await logoutSpinner.count()).toBeGreaterThanOrEqual(0);
-
-    // If loading spinner is visible, check its exact text
-    if (await loadingSpinner.isVisible()) {
-      await expect(loadingSpinner).toHaveText('Getting Ticket Data ...');
-    }
-
-    // Logout spinner should not be visible initially
-    await expect(logoutSpinner).toBeHidden();
   });
 });

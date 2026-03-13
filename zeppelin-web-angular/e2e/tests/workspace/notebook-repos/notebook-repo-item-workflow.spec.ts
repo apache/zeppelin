@@ -44,30 +44,38 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     await repoItemPage.clickEdit();
     await repoItemUtil.verifyEditMode();
 
+    let savedSettingName = '';
+    let savedValue = '';
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
       const settingName = (await row.locator('td').first().textContent()) || '';
 
-      const isInputVisible = await repoItemPage.isInputVisible(settingName);
+      const isInputVisible = await row.locator('input[nz-input]').isVisible();
       if (isInputVisible) {
-        const originalValue = await repoItemPage.getSettingInputValue(settingName);
-        await repoItemPage.fillSettingInput(settingName, originalValue || 'test-value');
+        savedValue = (await repoItemPage.getSettingInputValue(settingName)) || 'test-value';
+        await repoItemPage.fillSettingInput(settingName, savedValue);
+        savedSettingName = settingName;
         break;
       }
     }
 
-    const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
-    expect(isSaveEnabled).toBe(true);
+    await expect(repoItemPage.saveButton).toBeEnabled();
 
     await repoItemPage.clickSave();
 
     await repoItemUtil.verifyDisplayMode();
+
+    // Verify the saved value is shown in display mode — not just that mode switched
+    if (savedSettingName) {
+      const displayValue = await repoItemPage.getSettingValue(savedSettingName);
+      expect(displayValue.trim()).toBe(savedValue.trim());
+    }
   });
 
   test('should complete full edit workflow with cancel', async () => {
     await repoItemUtil.verifyDisplayMode();
 
-    const firstRow = repoItemPage.settingRows.first();
+    const firstRow = repoItemPage.settingRows.first(); // first: any row is representative — testing that cancel reverts all changes
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 

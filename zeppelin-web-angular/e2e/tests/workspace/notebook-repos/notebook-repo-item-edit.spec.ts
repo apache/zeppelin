@@ -32,6 +32,7 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
 
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+    expect(firstRepoName, 'No repository found — ensure at least one repo is configured').not.toBe('');
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
     repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
   });
@@ -41,42 +42,8 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
     await repoItemUtil.verifyEditMode();
   });
 
-  test('should show save and cancel buttons in edit mode', async () => {
-    await repoItemPage.clickEdit();
-    await expect(repoItemPage.saveButton).toBeVisible();
-    await expect(repoItemPage.cancelButton).toBeVisible();
-  });
-
   test('should hide edit button in edit mode', async () => {
     await repoItemPage.clickEdit();
     await expect(repoItemPage.editButton).toBeHidden();
-  });
-
-  test('should apply edit CSS class to card in edit mode', async () => {
-    await repoItemPage.clickEdit();
-    const isEditMode = await repoItemPage.isEditMode();
-    expect(isEditMode).toBe(true);
-  });
-
-  test('should exit edit mode when cancel button is clicked', async () => {
-    await repoItemPage.clickEdit();
-    await repoItemUtil.verifyEditMode();
-    await repoItemPage.clickCancel();
-    await repoItemUtil.verifyDisplayMode();
-  });
-
-  test('should reset form when cancel is clicked', async () => {
-    const firstRow = repoItemPage.settingRows.first();
-    const settingName = (await firstRow.locator('td').first().textContent()) || '';
-    const originalValue = await repoItemPage.getSettingValue(settingName);
-
-    await repoItemPage.clickEdit();
-
-    await repoItemPage.fillSettingInput(settingName, 'temp-value');
-
-    await repoItemPage.clickCancel();
-
-    const currentValue = await repoItemPage.getSettingValue(settingName);
-    expect(currentValue.trim()).toBe(originalValue.trim());
   });
 });

@@ -18,235 +18,215 @@ addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
 test.describe('Home Page Note Operations', () => {
   let homePage: HomePage;
+  let testNoteName: string;
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
+    testNoteName = `_e2e_ops_test_${Date.now()}`;
+
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
-    const noteListLocator = page.locator('zeppelin-node-list');
-    await expect(noteListLocator).toBeVisible({ timeout: 15000 });
+
+    // Create a test note so all operation tests have a real target
+    await homePage.createNote(testNoteName);
+    await page.goto('/#/');
+    await waitForZeppelinReady(page);
+
+    await expect(page.locator('zeppelin-node-list')).toBeVisible({ timeout: 15000 });
+
+    // Force a note list refresh so the newly created note is guaranteed to appear
+    await homePage.clickRefreshNotes();
+    await expect(page.locator('.node .file').filter({ hasText: testNoteName })).toBeVisible({ timeout: 15000 });
   });
 
   test.describe('Given note operations are available', () => {
-    test('When note list loads Then should show note action buttons on hover', async ({ page }) => {
-      const notesExist = await page.locator('.node .file').count();
+    test('When hovering over note Then should show rename, clear, and delete action buttons', async ({ page }) => {
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
 
-      if (notesExist > 0) {
-        const firstNote = page.locator('.node .file').first();
-        await firstNote.hover();
-
-        await expect(homePage.nodeList.noteActions.renameNote.first()).toBeVisible();
-        await expect(homePage.nodeList.noteActions.clearOutput.first()).toBeVisible();
-        await expect(homePage.nodeList.noteActions.moveToTrash.first()).toBeVisible();
-      } else {
-        console.log('No notes available for testing operations');
-      }
+      // Scoped to testNote: CSS .node:hover reveals .operation icons only for the hovered node
+      await expect(testNote.locator('.operation a[nztooltiptitle="Rename note"]')).toBeVisible();
+      await expect(testNote.locator('.operation a[nztooltiptitle="Clear output"]')).toBeVisible();
+      await expect(testNote.locator('.operation a[nztooltiptitle="Move note to Trash"]')).toBeVisible();
     });
 
     test('When hovering over note actions Then should show tooltip descriptions', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
+      // Wait for the buttons to become visible — CSS .node:hover makes <i> display:inline-block
+      const renameBtn = testNote.locator('.operation a[nztooltiptitle="Rename note"]');
+      const clearBtn = testNote.locator('.operation a[nztooltiptitle="Clear output"]');
+      const trashBtn = testNote.locator('.operation a[nztooltiptitle="Move note to Trash"]');
+      await renameBtn.waitFor({ state: 'visible' });
 
-      if (noteExists) {
-        const firstNote = page.locator('.node .file').first();
-        await firstNote.hover();
+      // dispatchEvent mouseenter — justified: nz-tooltip listens to mouseenter; direct hover() on a child
+      // causes a CSS :hover race where the mouse leaves the parent .node .file mid-movement, hiding the button.
+      await renameBtn.dispatchEvent('mouseenter');
+      await expect(page.locator('.ant-tooltip', { hasText: 'Rename note' })).toBeVisible();
+      await renameBtn.dispatchEvent('mouseleave');
 
-        await expect(homePage.nodeList.noteActions.renameNote.first()).toBeVisible();
-        await expect(homePage.nodeList.noteActions.clearOutput.first()).toBeVisible();
-        await expect(homePage.nodeList.noteActions.moveToTrash.first()).toBeVisible();
+      await clearBtn.dispatchEvent('mouseenter');
+      await expect(page.locator('.ant-tooltip', { hasText: 'Clear output' })).toBeVisible();
+      await clearBtn.dispatchEvent('mouseleave');
 
-        // Test tooltip visibility by hovering over each icon
-        await homePage.nodeList.noteActions.renameNote.first().hover();
-        await expect(page.locator('.ant-tooltip', { hasText: 'Rename note' })).toBeVisible();
-
-        await homePage.nodeList.noteActions.clearOutput.first().hover();
-        await expect(page.locator('.ant-tooltip', { hasText: 'Clear output' })).toBeVisible();
-
-        await homePage.nodeList.noteActions.moveToTrash.first().hover();
-        await expect(page.locator('.ant-tooltip', { hasText: 'Move note to Trash' })).toBeVisible();
-      }
+      await trashBtn.dispatchEvent('mouseenter');
+      await expect(page.locator('.ant-tooltip', { hasText: 'Move note to Trash' })).toBeVisible();
+      await trashBtn.dispatchEvent('mouseleave');
     });
   });
 
   test.describe('Given rename note functionality', () => {
-    test('When rename button is clicked Then should trigger rename workflow', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
+    test('When rename button is clicked Then should open rename dialog', async ({ page }) => {
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
 
-      if (noteExists) {
-        const noteItem = page.locator('.node .file').first();
-        await noteItem.hover();
+      const renameButton = testNote.locator('.operation a[nztooltiptitle="Rename note"]');
+      await expect(renameButton).toBeVisible();
+      await renameButton.click();
 
-        const renameButton = homePage.nodeList.noteActions.renameNote.first();
-        await expect(renameButton).toBeVisible();
-        await renameButton.click();
-
-        await page
-          .waitForFunction(
-            () =>
-              document.querySelector('zeppelin-note-rename') !== null ||
-              document.querySelector('[role="dialog"]') !== null ||
-              document.querySelector('.ant-modal') !== null,
-            { timeout: 5000 }
-          )
-          .catch(() => {
-            console.log('Rename modal did not appear - might need different trigger');
-          });
-      }
+      await expect(page.locator('zeppelin-note-rename, [role="dialog"].ant-modal').first()).toBeVisible({
+        timeout: 5000
+      });
     });
   });
 
   test.describe('Given clear output functionality', () => {
-    test('When clear output button is clicked Then should show confirmation dialog', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
+    test('When clear output button is clicked Then should show and dismiss confirmation dialog', async ({ page }) => {
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
 
-      if (noteExists) {
-        const noteItem = page.locator('.node .file').first();
-        await noteItem.hover();
+      const clearButton = testNote.locator('.operation a[nztooltiptitle="Clear output"]');
+      await expect(clearButton).toBeVisible();
+      await clearButton.click();
 
-        const clearButton = homePage.nodeList.noteActions.clearOutput.first();
-        await expect(clearButton).toBeVisible();
-        await clearButton.click();
+      await expect(page.locator('text=Do you want to clear all output?')).toBeVisible();
+      await page.locator('.ant-popover button:has-text("OK")').click();
 
-        await expect(page.locator('text=Do you want to clear all output?')).toBeVisible();
-      }
-    });
-
-    test('When clear output is confirmed Then should execute clear operation', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (noteExists) {
-        const noteItem = page.locator('.node .file').first();
-        await noteItem.hover();
-
-        const clearButton = homePage.nodeList.noteActions.clearOutput.first();
-        await expect(clearButton).toBeVisible();
-        await clearButton.click();
-
-        const confirmButton = page.locator('button:has-text("Yes")');
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
-        }
-      }
+      // Popover should close after confirming the operation
+      await expect(page.locator('text=Do you want to clear all output?')).not.toBeVisible();
     });
   });
 
   test.describe('Given move to trash functionality', () => {
-    test('When delete button is clicked Then should show trash confirmation', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (noteExists) {
-        const noteItem = page.locator('.node .file').first();
-        await noteItem.hover();
-
-        const deleteButton = homePage.nodeList.noteActions.moveToTrash.first();
-        await expect(deleteButton).toBeVisible();
-        await deleteButton.click();
-
-        await expect(page.locator('text=This note will be moved to trash.')).toBeVisible();
-      }
-    });
-
     test('When move to trash is confirmed Then should move note to trash folder', async ({ page }) => {
-      const noteExists = await page
-        .locator('.node .file')
-        .first()
-        .isVisible()
-        .catch(() => false);
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
 
-      if (noteExists) {
-        const noteItem = page.locator('.node .file').first();
-        await noteItem.hover();
+      const deleteButton = testNote.locator('.operation a[nztooltiptitle="Move note to Trash"]');
+      await expect(deleteButton).toBeVisible();
+      await deleteButton.click();
 
-        const deleteButton = homePage.nodeList.noteActions.moveToTrash.first();
-        await expect(deleteButton).toBeVisible();
-        await deleteButton.click();
+      await expect(page.locator('text=This note will be moved to trash.')).toBeVisible();
+      await page.locator('.ant-popover button:has-text("OK")').click();
 
-        const confirmButton = page.locator('button:has-text("Yes")');
-        if (await confirmButton.isVisible()) {
-          await confirmButton.click();
+      // Source note must disappear from the list — not just that Trash folder appears
+      await expect(testNote).not.toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.node .folder').filter({ hasText: 'Trash' })).toBeVisible({ timeout: 10000 });
+    });
+  });
 
-          const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
-          await expect(trashFolder).toBeVisible();
-        }
+  test.describe('Given note filter with special characters', () => {
+    test('When filtering with special characters Then should not crash and should show empty results', async ({
+      page
+    }) => {
+      for (const char of ['#', '%', '"']) {
+        await homePage.filterNotes(char);
+
+        // App must not crash — node list container remains present
+        await expect(page.locator('zeppelin-node-list')).toBeVisible();
+        // Test note name contains none of these chars, so it must not appear
+        await expect(page.locator('.node .file').filter({ hasText: testNoteName })).not.toBeVisible();
       }
+
+      // Clearing filter restores the note
+      await homePage.filterNotes('');
+      await expect(page.locator('.node .file').filter({ hasText: testNoteName })).toBeVisible({ timeout: 5000 });
+    });
+  });
+
+  test.describe('Given max length note name input', () => {
+    test('When note name input is filled with a very long string Then input should cap or accept gracefully', async ({
+      page
+    }) => {
+      await homePage.clickCreateNewNote();
+      await page.waitForSelector('nz-form-label', { timeout: 10000 });
+
+      const notebookNameInput = page.locator('div.ant-modal-content input[name="noteName"]');
+      const maxLengthAttr = await notebookNameInput.getAttribute('maxlength');
+      const longName = `_e2e_ml_${'a'.repeat(300)}`;
+
+      await notebookNameInput.fill(longName);
+      const actualValue = await notebookNameInput.inputValue();
+
+      // Must have content — input did not silently reject the fill
+      expect(actualValue.length).toBeGreaterThan(0);
+
+      if (maxLengthAttr !== null) {
+        // If the element enforces maxlength, the value must be capped at that limit
+        expect(actualValue.length).toBeLessThanOrEqual(parseInt(maxLengthAttr, 10));
+      } else {
+        // No client-side cap — the full value passes through
+        expect(actualValue).toContain('_e2e_ml_');
+      }
+
+      // Dismiss the modal without creating
+      await page.keyboard.press('Escape');
+      await page.locator('div.ant-modal-content').waitFor({ state: 'detached', timeout: 5000 });
     });
   });
 
   test.describe('Given trash folder operations', () => {
+    test.beforeEach(async ({ page }) => {
+      // Move the test note to trash to put the trash folder into a known state
+      const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      await testNote.hover();
+      await testNote.locator('.operation').waitFor({ state: 'visible' });
+
+      const deleteButton = testNote.locator('.operation a[nztooltiptitle="Move note to Trash"]');
+      await deleteButton.click();
+
+      await expect(page.locator('text=This note will be moved to trash.')).toBeVisible();
+      await page.locator('.ant-popover button:has-text("OK")').click();
+      await expect(page.locator('.node .folder').filter({ hasText: 'Trash' })).toBeVisible({ timeout: 10000 });
+    });
+
     test('When trash folder exists Then should show restore and empty options', async ({ page }) => {
-      const trashExists = await page
-        .locator('.node .folder')
-        .filter({ hasText: 'Trash' })
-        .isVisible()
-        .catch(() => false);
+      const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
+      await trashFolder.hover();
+      await trashFolder.locator('.operation').waitFor({ state: 'visible' });
 
-      if (trashExists) {
-        const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
-        await trashFolder.hover();
-
-        await expect(page.locator('.folder .operation a[nztooltiptitle*="Restore all"]')).toBeVisible();
-        await expect(page.locator('.folder .operation a[nztooltiptitle*="Empty all"]')).toBeVisible();
-      }
+      // Scoped to trashFolder: same CSS hover rule applies to .node:hover for folder nodes
+      await expect(trashFolder.locator('.operation a[nztooltiptitle*="Restore all"]')).toBeVisible();
+      await expect(trashFolder.locator('.operation a[nztooltiptitle*="Empty all"]')).toBeVisible();
     });
 
     test('When restore all is clicked Then should show confirmation dialog', async ({ page }) => {
-      const trashExists = await page
-        .locator('.node .folder')
-        .filter({ hasText: 'Trash' })
-        .isVisible()
-        .catch(() => false);
+      const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
+      await trashFolder.hover();
+      await trashFolder.locator('.operation').waitFor({ state: 'visible' });
 
-      if (trashExists) {
-        const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
-        await trashFolder.hover();
+      const restoreButton = trashFolder.locator('.operation a[nztooltiptitle*="Restore all"]');
+      await expect(restoreButton).toBeVisible();
+      // Use force:true — hovering restoreButton directly can briefly exit .folder:hover and hide it
+      await restoreButton.click({ force: true });
 
-        const restoreButton = page.locator('.folder .operation a[nztooltiptitle*="Restore all"]').first();
-        await expect(restoreButton).toBeVisible();
-        await restoreButton.click();
-
-        await expect(
-          page.locator('text=Folders and notes in the trash will be merged into their original position.')
-        ).toBeVisible();
-      }
+      await expect(
+        page.locator('text=Folders and notes in the trash will be merged into their original position.')
+      ).toBeVisible();
     });
 
     test('When empty trash is clicked Then should show permanent deletion warning', async ({ page }) => {
-      const trashExists = await page
-        .locator('.node .folder')
-        .filter({ hasText: 'Trash' })
-        .isVisible()
-        .catch(() => false);
+      const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
+      await trashFolder.hover();
+      await trashFolder.locator('.operation').waitFor({ state: 'visible' });
 
-      if (trashExists) {
-        const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
-        await trashFolder.hover();
+      const emptyButton = trashFolder.locator('.operation a[nztooltiptitle*="Empty all"]');
+      await expect(emptyButton).toBeVisible();
+      await emptyButton.hover();
+      await emptyButton.click();
 
-        const emptyButton = page.locator('.folder .operation a[nztooltiptitle*="Empty all"]').first();
-        await expect(emptyButton).toBeVisible();
-        await emptyButton.click();
-
-        await expect(page.locator('text=This cannot be undone. Are you sure?')).toBeVisible();
-      }
+      await expect(page.locator('text=This cannot be undone. Are you sure?')).toBeVisible();
     });
   });
 });

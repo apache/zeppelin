@@ -30,53 +30,47 @@ test.describe('Notebook Repository Item - Form Validation', () => {
 
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+    expect(firstRepoName, 'No repository found — ensure at least one repo is configured').not.toBe('');
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
   });
 
   test('should disable save button when form is invalid', async () => {
     await repoItemPage.clickEdit();
 
-    const firstRow = repoItemPage.settingRows.first();
+    const firstRow = repoItemPage.settingRows.first(); // first: any row is sufficient — testing that save disables on empty input
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
     await repoItemPage.fillSettingInput(settingName, '');
 
-    const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
-    expect(isSaveEnabled).toBe(false);
+    await expect(repoItemPage.saveButton).not.toBeEnabled();
   });
 
   test('should enable save button when form is valid', async () => {
     await repoItemPage.clickEdit();
 
-    const firstRow = repoItemPage.settingRows.first();
+    const firstRow = repoItemPage.settingRows.first(); // first: any row is sufficient — testing that save enables on valid input
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
 
     const originalValue = await repoItemPage.getSettingInputValue(settingName);
     await repoItemPage.fillSettingInput(settingName, originalValue || 'valid-value');
 
-    const isSaveEnabled = await repoItemPage.isSaveButtonEnabled();
-    expect(isSaveEnabled).toBe(true);
+    await expect(repoItemPage.saveButton).toBeEnabled();
   });
 
-  test('should validate required fields on form controls', async () => {
+  test('should have editable controls for every setting row in edit mode', async () => {
     const settingRows = await repoItemPage.settingRows.count();
 
     await repoItemPage.clickEdit();
 
     for (let i = 0; i < settingRows; i++) {
       const row = repoItemPage.settingRows.nth(i);
-      const settingName = (await row.locator('td').first().textContent()) || '';
-
-      const isInputVisible = await repoItemPage.isInputVisible(settingName);
-      if (isInputVisible) {
-        const input = row.locator('input[nz-input]');
-        await expect(input).toBeVisible();
-      }
-
-      const isDropdownVisible = await repoItemPage.isDropdownVisible(settingName);
-      if (isDropdownVisible) {
-        const select = row.locator('nz-select');
-        await expect(select).toBeVisible();
+      const input = row.locator('input[nz-input]');
+      const select = row.locator('nz-select');
+      await expect(input.or(select), `Row ${i} must have an editable control in edit mode`).toBeVisible();
+      const isInputRow = await input.isVisible();
+      if (isInputRow) {
+        // JUSTIFIED: attribute check only applies to INPUT-type rows; DROPDOWN-type rows use nz-select and have no nz-input
+        await expect(input).toHaveAttribute('nz-input');
       }
     }
   });

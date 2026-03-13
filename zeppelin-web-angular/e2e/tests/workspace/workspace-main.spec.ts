@@ -31,37 +31,23 @@ test.describe('Workspace Main Component', () => {
   });
 
   test.describe('Given user accesses workspace container', () => {
-    test('When workspace loads Then should display main container structure', async ({ page }) => {
+    test('When workspace loads Then should display main container structure', async () => {
       await expect(workspacePage.zeppelinWorkspace).toBeVisible();
-      await expect(workspacePage.routerOutlet).toBeAttached();
-
-      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
-      const contentElements = await page.locator('.content').count();
-      expect(contentElements).toBeGreaterThan(0);
+      // Verify workspace contains the header — not just that the elements exist in isolation
+      await expect(workspacePage.zeppelinWorkspace.locator('zeppelin-header')).toBeVisible();
     });
 
     test('When workspace loads Then should display header component', async () => {
-      await workspaceUtil.verifyHeaderVisibility(true);
+      await expect(workspacePage.zeppelinHeader).toBeVisible();
+      // Header must contain navigable content, not just be an empty shell
+      await expect(workspacePage.zeppelinHeader).toContainText('Zeppelin');
     });
 
-    test('When workspace loads Then should activate router outlet', async () => {
+    test('When workspace loads Then should have router outlet attached', async () => {
       await workspaceUtil.verifyRouterOutletActivation();
     });
 
-    test('When component activates Then should trigger onActivate event', async () => {
-      await workspaceUtil.waitForComponentActivation();
-    });
-  });
-
-  test.describe('Given workspace header visibility', () => {
-    test('When not in publish mode Then should show header', async () => {
-      await workspaceUtil.verifyHeaderVisibility(true);
-    });
-  });
-
-  test.describe('Given router outlet functionality', () => {
-    test('When navigating to workspace Then should load child components', async () => {
-      await workspaceUtil.verifyRouterOutletActivation();
+    test('When workspace activates Then should render content inside router outlet', async () => {
       await workspaceUtil.waitForComponentActivation();
     });
   });

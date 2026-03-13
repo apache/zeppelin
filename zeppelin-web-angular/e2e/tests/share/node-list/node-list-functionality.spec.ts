@@ -31,16 +31,19 @@ test.describe('Node List Functionality', () => {
   test('Given user is on home page, When viewing node list, Then node list should display tree structure', async () => {
     await expect(nodeListPage.nodeListContainer).toBeVisible();
     await expect(nodeListPage.treeView).toBeVisible();
+    await expect(nodeListPage.treeView.locator('nz-tree-node').first()).toBeVisible(); // tree has at least one node
   });
 
   test('Given user is on home page, When viewing node list, Then action buttons should be visible', async () => {
     await expect(nodeListPage.createNewNoteButton).toBeVisible();
+    await expect(nodeListPage.createNewNoteButton).toContainText('Create new Note');
     await expect(nodeListPage.importNoteButton).toBeVisible();
+    await expect(nodeListPage.importNoteButton).toContainText('Import Note');
   });
 
-  test('Given user is on home page, When viewing node list, Then filter input should be visible', async () => {
-    const isFilterVisible = await nodeListPage.isFilterInputVisible();
-    expect(isFilterVisible).toBe(true);
+  test('Given user is on home page, When viewing node list, Then filter input should be visible with placeholder', async () => {
+    await expect(nodeListPage.filterInput).toBeVisible();
+    await expect(nodeListPage.filterInput).toHaveAttribute('placeholder', /[Ff]ilter/);
   });
 
   test('Given a note has been moved to trash, When viewing node list, Then trash folder should be visible', async ({
@@ -71,8 +74,6 @@ test.describe('Node List Functionality', () => {
 
     // Wait for the trash folder to appear and verify
     await expect(nodeListPage.trashFolder).toBeVisible({ timeout: 10000 });
-    const isTrashVisible = await nodeListPage.isTrashFolderVisible();
-    expect(isTrashVisible).toBe(true);
   });
 
   test('Given there are notes in node list, When clicking a note, Then user should navigate to that note', async ({
@@ -81,14 +82,14 @@ test.describe('Node List Functionality', () => {
     await expect(nodeListPage.treeView).toBeVisible();
     const notes = await nodeListPage.getAllVisibleNoteNames();
 
-    if (notes.length > 0 && notes[0]) {
-      const noteName = notes[0].trim();
-
-      await nodeListPage.clickNote(noteName);
-      await page.waitForURL(/notebook\//);
-
-      expect(page.url()).toContain('notebook/');
+    if (notes.length === 0) {
+      test.skip(); // JUSTIFIED: test requires at least one note in the node list
     }
+
+    const noteName = notes[0].trim();
+    await nodeListPage.clickNote(noteName);
+    await page.waitForURL(/notebook\//);
+    expect(page.url()).toContain('notebook/');
   });
 
   test('Given user clicks Create New Note button, When modal opens, Then note create modal should be displayed', async ({
