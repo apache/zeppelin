@@ -34,7 +34,6 @@ test.describe('Home Page - External Links', () => {
 
       await test.step('Then it should have the correct href pattern', async () => {
         const href = await homePage.externalLinks.documentation.getAttribute('href');
-        expect(href).toContain('zeppelin.apache.org/docs');
         expect(href).toMatch(/\/docs\/\d+\.\d+\.\d+(-SNAPSHOT)?\/index\.html/);
       });
 

@@ -11,7 +11,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { WorkspacePage } from 'e2e/models/workspace-page';
+import { BasePage } from 'e2e/models/base-page';
 import { WorkspaceUtil } from '../../models/workspace-page.util';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../utils';
 
@@ -19,28 +19,28 @@ addPageAnnotationBeforeEach(PAGES.WORKSPACE.MAIN);
 
 test.describe('Workspace Main Component', () => {
   let workspaceUtil: WorkspaceUtil;
-  let workspacePage: WorkspacePage;
+  let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
-    workspacePage = new WorkspacePage(page);
+    basePage = new BasePage(page);
     workspaceUtil = new WorkspaceUtil(page);
   });
 
   test.describe('Given user accesses workspace container', () => {
     test('When workspace loads Then should display main container structure', async () => {
-      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
+      await expect(basePage.zeppelinWorkspace).toBeVisible();
       // Verify workspace contains the header — not just that the elements exist in isolation
-      await expect(workspacePage.zeppelinWorkspace.locator('zeppelin-header')).toBeVisible();
+      await expect(basePage.zeppelinWorkspace.locator('zeppelin-header')).toBeVisible();
     });
 
     test('When workspace loads Then should display header component', async () => {
-      await expect(workspacePage.zeppelinHeader).toBeVisible();
+      await expect(basePage.zeppelinHeader).toBeVisible();
       // Header must contain navigable content, not just be an empty shell
-      await expect(workspacePage.zeppelinHeader).toContainText('Zeppelin');
+      await expect(basePage.zeppelinHeader).toContainText('Zeppelin');
     });
 
     test('When workspace loads Then should have router outlet attached', async () => {

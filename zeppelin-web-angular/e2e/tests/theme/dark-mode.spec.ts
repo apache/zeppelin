@@ -34,7 +34,7 @@ test.describe('Dark Mode Theme Switching', () => {
     await darkModePage.clearLocalStorage();
   });
 
-  test('Scenario: User can switch to dark mode and persistence is maintained', async ({ page, browserName }) => {
+  test('Scenario: Dark mode persists across page reload when set via localStorage', async ({ page, browserName }) => {
     // GIVEN: User is on the main page, which starts in 'system' mode by default (localStorage cleared).
     await test.step('GIVEN the page starts in system mode', async () => {
       await darkModePage.assertSystemTheme(); // Robot icon for system theme

@@ -79,11 +79,17 @@ test.describe('Node List Functionality', () => {
   test('Given there are notes in node list, When clicking a note, Then user should navigate to that note', async ({
     page
   }) => {
+    const homePage = new HomePage(page);
+
     await expect(nodeListPage.treeView).toBeVisible();
-    const notes = await nodeListPage.getAllVisibleNoteNames();
+    let notes = await nodeListPage.getAllVisibleNoteNames();
 
     if (notes.length === 0) {
-      test.skip(); // JUSTIFIED: test requires at least one note in the node list
+      // Seed a note so the test always runs — critical navigation path must not be skipped
+      await homePage.createNote(`_e2e_nav_${Date.now()}`);
+      await page.goto('/');
+      await waitForZeppelinReady(page);
+      notes = await nodeListPage.getAllVisibleNoteNames();
     }
 
     const noteName = notes[0].trim();

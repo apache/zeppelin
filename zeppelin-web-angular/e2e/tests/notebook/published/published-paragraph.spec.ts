@@ -208,6 +208,7 @@ test.describe('Published Paragraph', () => {
           // Code preview element only checked in Angular mode
           const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first(); // first: fallback selector covers multiple renderer variants; any match confirms code preview is present
           await expect(codePreview).toBeVisible();
+          await expect(codePreview).not.toBeEmpty(); // code must have content, not just an empty container
 
           await expect(publishedParagraphPage.runButton).toBeVisible();
           await expect(publishedParagraphPage.cancelButton).toBeVisible();

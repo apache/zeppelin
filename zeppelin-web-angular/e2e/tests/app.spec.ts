@@ -50,12 +50,12 @@ test.describe('Zeppelin App Component', () => {
     await expect(page).toHaveTitle(/Zeppelin/);
   });
 
-  test('should display workspace after loading', async ({ page }) => {
+  test('should display home content after loading', async ({ page }) => {
     await waitForZeppelinReady(page);
     // After the `beforeEach` hook, which handles login, the workspace should be visible.
     await expect(basePage.zeppelinWorkspace).toBeVisible();
-    // Verify the workspace contains actual content (not just a blank shell)
-    await expect(basePage.zeppelinWorkspace.locator('zeppelin-node-list, zeppelin-home').first()).toBeVisible();
+    // Verify the home page content is rendered (not just a blank shell)
+    await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
   });
 
   test('should hide loading spinner after navigation', async ({ page }) => {
