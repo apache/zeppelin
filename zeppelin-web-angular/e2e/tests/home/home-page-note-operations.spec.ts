@@ -136,7 +136,7 @@ test.describe('Home Page Note Operations', () => {
         // App must not crash — node list container remains present
         await expect(page.locator('zeppelin-node-list')).toBeVisible();
         // Test note name contains none of these chars, so it must not appear
-        await expect(page.locator('.node .file').filter({ hasText: testNoteName })).not.toBeVisible();
+        await expect(page.locator('.node .file').filter({ hasText: testNoteName })).not.toBeVisible({ timeout: 10000 });
       }
 
       // Clearing filter restores the note

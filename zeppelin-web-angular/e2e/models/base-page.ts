@@ -117,10 +117,9 @@ export class BasePage {
     await expect(locator).toBeVisible({ timeout });
     await expect(locator).toBeEnabled({ timeout: 5000 });
 
-    // fill() is atomic: clears the field and sets value in a single CDP command,
-    // firing input + change events that Angular's ngModel detects in all browsers.
-    // pressSequentially(delay) was tried but on CI Chromium the inter-keystroke delay
-    // allows Angular's change detection to steal focus after the first character.
+    // Click first so Angular's form control is focused and its initial setValue cycle
+    // has completed before we overwrite it.  Then fill() atomically sets the value.
+    await locator.click();
     await locator.fill(value);
     await expect(locator).toHaveValue(value, { timeout: 10000 });
   }

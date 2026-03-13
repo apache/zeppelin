@@ -35,7 +35,7 @@ test.describe('Zeppelin App Component', () => {
     const zeppelinRoot = page.locator('zeppelin-root');
 
     // Verify routing has activated by checking that actual content is rendered inside the workspace
-    await expect(zeppelinRoot.locator('zeppelin-home, zeppelin-workspace')).toBeVisible();
+    await expect(zeppelinRoot.locator('zeppelin-workspace')).toBeVisible();
 
     // Check for loading spinner
     const loadingSpinner = zeppelinRoot.locator('zeppelin-spin').filter({ hasText: 'Getting Ticket Data' });

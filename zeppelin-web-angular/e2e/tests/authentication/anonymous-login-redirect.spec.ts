@@ -169,21 +169,16 @@ test.describe('Anonymous User Login Redirect', () => {
     test('When accessing configuration route directly, Then should handle navigation for anonymous user', async ({
       page
     }) => {
-      // Configuration is a management route — anonymous users should either access it or be redirected home
+      // Configuration is a management route — anonymous users must be redirected home
       await page.goto('/#/configuration');
       await waitForZeppelinReady(page);
+      await waitForUrlNotContaining(page, '#/configuration');
 
-      const currentPath = getCurrentPath(page);
       const isAnonymous = await homePage.isAnonymousUser();
 
       expect(isAnonymous).toBe(true);
-      // The app root must still be rendering — not a blank white page
       await expect(basePage.zeppelinWorkspace).toBeVisible();
-      // If redirected, must land on home (not an error page)
-      if (!currentPath.includes('#/configuration')) {
-        // JUSTIFIED: both states are valid — configuration accessible OR redirect to home; only assert welcomeTitle on redirect path
-        await expect(basePage.welcomeTitle).toBeVisible();
-      }
+      await expect(basePage.welcomeTitle).toBeVisible({ timeout: 15000 });
     });
 
     test('When multiple page loads occur on login URL, Then should consistently redirect to home', async ({ page }) => {

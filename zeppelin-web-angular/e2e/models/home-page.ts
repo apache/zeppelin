@@ -142,6 +142,7 @@ export class HomePage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 10000 });
     await this.nodeList.filterInput.waitFor({ state: 'visible', timeout: 5000 });
     await this.nodeList.filterInput.fill(searchTerm, { timeout: 15000 });
+    await this.nodeList.filterInput.dispatchEvent('input');
   }
 
   async waitForRefreshToComplete(): Promise<void> {
