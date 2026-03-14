@@ -26,9 +26,6 @@ export class NotebookActionBarPage extends BasePage {
   readonly personalModeButton: Locator;
   readonly collaborationModeButton: Locator;
   readonly commitButton: Locator;
-  readonly commitPopover: Locator;
-  readonly commitMessageInput: Locator;
-  readonly commitConfirmButton: Locator;
   readonly setRevisionButton: Locator;
   readonly compareRevisionsButton: Locator;
   readonly revisionDropdown: Locator;
@@ -56,9 +53,6 @@ export class NotebookActionBarPage extends BasePage {
     this.personalModeButton = page.getByRole('button', { name: 'Personal' });
     this.collaborationModeButton = page.getByRole('button', { name: 'Collaboration' });
     this.commitButton = page.getByRole('button', { name: 'Commit' });
-    this.commitPopover = page.locator('.ant-popover');
-    this.commitMessageInput = page.locator('input[placeholder*="commit message"]');
-    this.commitConfirmButton = page.locator('.ant-popover').getByRole('button', { name: 'OK' });
     this.setRevisionButton = page.getByRole('button', { name: 'Set as default revision' });
     this.compareRevisionsButton = page.getByRole('button', { name: 'Compare with current revision' });
     this.revisionDropdown = page.locator('button[nz-dropdown]').filter({ hasText: 'Revision' });

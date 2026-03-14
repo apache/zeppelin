@@ -19,7 +19,6 @@ export class NotebookParagraphPage extends BasePage {
   readonly addParagraphBelow: Locator;
   readonly controlPanel: Locator;
   readonly codeEditor: Locator;
-  readonly progressIndicator: Locator;
   readonly dynamicForms: Locator;
   readonly resultDisplay: Locator;
   readonly footerInfo: Locator;
@@ -33,7 +32,6 @@ export class NotebookParagraphPage extends BasePage {
     this.addParagraphBelow = page.locator('zeppelin-notebook-add-paragraph').last();
     this.controlPanel = page.locator('zeppelin-notebook-paragraph-control').first();
     this.codeEditor = page.locator('zeppelin-notebook-paragraph-code-editor').first();
-    this.progressIndicator = page.locator('zeppelin-notebook-paragraph-progress').first();
     this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms').first();
     this.resultDisplay = page.locator('zeppelin-notebook-paragraph-result').first();
     this.footerInfo = page.locator('zeppelin-notebook-paragraph-footer').first();
