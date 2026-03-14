@@ -127,7 +127,7 @@ test.describe('Home Page Note Operations', () => {
   });
 
   test.describe('Given note filter with special characters', () => {
-    test('When filtering with special characters Then should not crash and should show empty results', async ({
+    test('When filtering with special characters Then should not crash and should dim non-matching results', async ({
       page
     }) => {
       for (const char of ['#', '%', '"']) {
@@ -135,13 +135,17 @@ test.describe('Home Page Note Operations', () => {
 
         // App must not crash — node list container remains present
         await expect(page.locator('zeppelin-node-list')).toBeVisible();
-        // Test note name contains none of these chars, so it must not appear
-        await expect(page.locator('.node .file').filter({ hasText: testNoteName })).not.toBeVisible({ timeout: 10000 });
+        // Test note name contains none of these chars, so it must be dimmed (.not-matched class)
+        await expect(page.locator('.node').filter({ hasText: testNoteName })).toHaveClass(/not-matched/, {
+          timeout: 10000
+        });
       }
 
-      // Clearing filter restores the note
+      // Clearing filter restores the note (removes .not-matched)
       await homePage.filterNotes('');
-      await expect(page.locator('.node .file').filter({ hasText: testNoteName })).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('.node').filter({ hasText: testNoteName })).not.toHaveClass(/not-matched/, {
+        timeout: 5000
+      });
     });
   });
 

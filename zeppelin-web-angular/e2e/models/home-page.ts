@@ -121,7 +121,7 @@ export class HomePage extends BasePage {
     // Wait for the modal form to be fully rendered with proper labels
     await this.page.waitForSelector('nz-form-label', { timeout: 10000 });
 
-    await this.waitForFormLabels(['Note Name', 'Clone Note']);
+    await this.waitForFormLabels(['Note Name']);
 
     // Fill and verify the notebook name input
     await this.fillAndVerifyInput(this.notebookNameInput, notebookName);
