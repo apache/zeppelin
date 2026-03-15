@@ -60,12 +60,13 @@ test.describe('Note Create Modal', () => {
     expect(page.url()).toContain('notebook/');
 
     // Verify the note was created with the correct name
-    const notebookTitle = page.locator('p, .notebook-title, .note-title, h1, [data-testid="notebook-title"]').first();
+    const notebookTitle = page.locator('[data-testid="notebook-title"]');
     await expect(notebookTitle).toContainText(uniqueName);
 
     // Verify in the navigation tree if available
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/#/');
+    await waitForZeppelinReady(page);
+    await page.locator('zeppelin-node-list').waitFor({ state: 'visible', timeout: 15000 });
     const noteInTree = page.getByRole('link', { name: uniqueName });
     await expect(noteInTree).toBeVisible();
   });
@@ -87,14 +88,14 @@ test.describe('Note Create Modal', () => {
     expect(page.url()).toContain('notebook/');
 
     // Verify the note was created with the correct name (without folder path)
-    const notebookTitle = page.locator('p, .notebook-title, .note-title, h1, [data-testid="notebook-title"]').first();
+    const notebookTitle = page.locator('[data-testid="notebook-title"]');
     await expect(notebookTitle).toContainText(noteName);
 
     // Verify the folder structure was created
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    const folder = page.locator('nz-tree-node').filter({ hasText: 'TestFolder' });
-    await expect(folder).toBeVisible();
+    await page.goto('/#/');
+    await waitForZeppelinReady(page);
+    await page.locator('zeppelin-node-list').waitFor({ state: 'visible', timeout: 15000 });
+    await expect(page.locator('a.name[data-testid="folder-TestFolder"]')).toBeVisible();
   });
 
   test('Given Create Note modal is open, When clicking close button, Then modal should close', async () => {
@@ -102,7 +103,7 @@ test.describe('Note Create Modal', () => {
   });
 
   test('Given Create Note modal is open, When viewing folder info alert, Then alert should contain folder creation instructions', async () => {
-    const isInfoVisible = await noteCreateModal.isFolderInfoVisible();
-    expect(isInfoVisible).toBe(true);
+    await expect(noteCreateModal.folderInfoAlert).toBeVisible();
+    await expect(noteCreateModal.folderInfoAlert).toContainText("Use '/' to create folders");
   });
 });

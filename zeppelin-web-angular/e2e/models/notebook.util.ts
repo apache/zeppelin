@@ -33,10 +33,8 @@ export class NotebookUtil extends BasePage {
     await waitForZeppelinReady(this.page);
 
     // Wait for URL to not contain 'login' and for the notebook list to appear
-    await this.page.waitForFunction(
-      () => !window.location.href.includes('#/login') && document.querySelector('zeppelin-node-list') !== null,
-      { timeout: 30000 }
-    );
+    await this.page.waitForURL(url => !url.toString().includes('#/login'), { timeout: 30000 });
+    await this.page.locator('zeppelin-node-list').waitFor({ state: 'attached', timeout: 30000 });
 
     await expect(this.homePage.zeppelinNodeList).toBeVisible({ timeout: 90000 });
     await this.homePage.createNote(notebookName);

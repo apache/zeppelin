@@ -24,14 +24,12 @@ export class NotebookRepoItemUtil extends BasePage {
 
   async verifyDisplayMode(): Promise<void> {
     await expect(this.repoItemPage.editButton).toBeVisible();
-    const isEditMode = await this.repoItemPage.isEditMode();
-    expect(isEditMode).toBe(false);
+    await expect(this.repoItemPage.repositoryCard).not.toHaveClass(/\bedit\b/);
   }
 
   async verifyEditMode(): Promise<void> {
     await expect(this.repoItemPage.saveButton).toBeVisible();
     await expect(this.repoItemPage.cancelButton).toBeVisible();
-    const isEditMode = await this.repoItemPage.isEditMode();
-    expect(isEditMode).toBe(true);
+    await expect(this.repoItemPage.repositoryCard).toHaveClass(/\bedit\b/);
   }
 }
