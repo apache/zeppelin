@@ -10,17 +10,10 @@
  * limitations under the License.
  */
 
-import { expect, Locator, Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export class NotebookSidebarPage extends BasePage {
-  readonly sidebarContainer: Locator;
-  readonly tocButton: Locator;
-  readonly fileTreeButton: Locator;
-  readonly closeButton: Locator;
-  readonly nodeList: Locator;
-  readonly noteToc: Locator;
-
   // Selector constants for state detection
   private static readonly TOC_ALTERNATIVE_SELECTORS = [
     'zeppelin-notebook-sidebar .toc-content',
@@ -38,6 +31,12 @@ export class NotebookSidebarPage extends BasePage {
     'zeppelin-notebook-sidebar zeppelin-node-list',
     'zeppelin-notebook-sidebar .sidebar-content zeppelin-node-list'
   ];
+  readonly sidebarContainer: Locator;
+  readonly tocButton: Locator;
+  readonly fileTreeButton: Locator;
+  readonly closeButton: Locator;
+  readonly nodeList: Locator;
+  readonly noteToc: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -51,12 +50,12 @@ export class NotebookSidebarPage extends BasePage {
 
   async openToc(): Promise<void> {
     await this.tocButton.click();
-    await expect(this.noteToc).toBeVisible();
+    await this.noteToc.waitFor({ state: 'visible' });
   }
 
   async openFileTree(): Promise<void> {
     await this.fileTreeButton.click();
-    await expect(this.nodeList).toBeVisible();
+    await this.nodeList.waitFor({ state: 'visible' });
   }
 
   async closeSidebar(): Promise<void> {

@@ -19,16 +19,9 @@ export class NoteRenamePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    // Note title in elastic input component
-    this.noteTitle = page.locator('zeppelin-elastic-input');
-    this.noteTitleInput = page.locator('zeppelin-elastic-input input');
-  }
-
-  private async ensureEditMode(): Promise<void> {
-    if (!(await this.noteTitleInput.isVisible())) {
-      await this.clickTitle();
-    }
-    await this.noteTitleInput.waitFor({ state: 'visible' });
+    // Note title in elastic input component inside the heading element
+    this.noteTitle = page.getByRole('heading').locator('p');
+    this.noteTitleInput = page.getByRole('heading').locator('input');
   }
 
   async clickTitle(): Promise<void> {
@@ -64,5 +57,12 @@ export class NoteRenamePage extends BasePage {
 
   async getTitle(): Promise<string> {
     return this.getElementText(this.noteTitle);
+  }
+
+  private async ensureEditMode(): Promise<void> {
+    if (!(await this.noteTitleInput.isVisible())) {
+      await this.clickTitle();
+    }
+    await this.noteTitleInput.waitFor({ state: 'visible' });
   }
 }

@@ -82,7 +82,7 @@ export class NotebookKeyboardPage extends BasePage {
     await expect(this.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
   }
 
-  async focusCodeEditor(paragraphIndex: number = 0): Promise<void> {
+  async tryFocusCodeEditor(paragraphIndex: number = 0): Promise<void> {
     if (this.page.isClosed()) {
       console.warn('Cannot focus code editor: page is closed');
       return;
@@ -390,7 +390,7 @@ export class NotebookKeyboardPage extends BasePage {
       return;
     }
 
-    await this.focusCodeEditor(paragraphIndex);
+    await this.tryFocusCodeEditor(paragraphIndex);
     if (this.page.isClosed()) {
       console.warn('Cannot set code editor content: page closed after focusing');
       return;
@@ -545,7 +545,7 @@ export class NotebookKeyboardPage extends BasePage {
     return await this.searchDialog.isVisible();
   }
 
-  async clickModalOkButton(timeout: number = 30000): Promise<void> {
+  async tryClickModalOkButton(timeout: number = 30000): Promise<void> {
     await this.modal.waitFor({ state: 'visible', timeout });
 
     const count = await this.okButtons.count();

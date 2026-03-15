@@ -25,11 +25,7 @@ export class NoteTocPage extends NotebookKeyboardPage {
     this.tocToggleButton = page.getByRole('button', { name: 'Toggle Table of Contents' });
     this.tocPanel = page.locator('zeppelin-note-toc').first();
     this.tocTitle = page.getByText('Table of Contents');
-    this.tocCloseButton = page
-      .locator('button')
-      .filter({ hasText: /close|×/ })
-      .or(page.locator('[class*="close"]'))
-      .first();
+    this.tocCloseButton = page.getByRole('button', { name: 'Close Sidebar' });
     this.tocEmptyMessage = page.getByText('Headings in the output show up here');
   }
 

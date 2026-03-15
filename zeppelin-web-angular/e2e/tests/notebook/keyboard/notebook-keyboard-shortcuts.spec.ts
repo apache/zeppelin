@@ -75,7 +75,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
     test('should execute markdown paragraph with Shift+Enter', async () => {
       // Given: A paragraph with markdown content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
 
       // Verify content was set
@@ -99,15 +99,15 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test.skip();
     test('should run all paragraphs above current with Control+Shift+ArrowUp', async () => {
       // Given: Multiple paragraphs
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nTest content for run above', 0);
       await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Focus on second paragraph
-      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.tryFocusCodeEditor(1);
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nTest content for second paragraph', 1);
-      await keyboardPage.focusCodeEditor(1); // Ensure focus on the second paragraph
+      await keyboardPage.tryFocusCodeEditor(1); // Ensure focus on the second paragraph
 
       // Add an explicit wait for the page to be completely stable and the notebook UI to be interactive
       await keyboardPage.page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network to be idle
@@ -117,7 +117,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+ArrowUp from second paragraph
       await keyboardPage.pressRunAbove();
 
-      await keyboardPage.clickModalOkButton();
+      await keyboardPage.tryClickModalOkButton();
 
       // Then: First paragraph should execute
       await keyboardPage.waitForParagraphExecution(0);
@@ -131,23 +131,23 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test.skip();
     test('should run current and all paragraphs below with Control+Shift+ArrowDown', async () => {
       // Given: Multiple paragraphs with content
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%md\n# First Paragraph\nContent for run below test', 0);
       await keyboardPage.addParagraph();
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Add content to second paragraph
-      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.tryFocusCodeEditor(1);
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nContent for run below test', 1);
 
       // Focus first paragraph
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
 
       // When: User presses Control+Shift+ArrowDown
       await keyboardPage.pressRunBelow();
 
       // Confirmation modal must appear when running paragraphs
-      await keyboardPage.clickModalOkButton();
+      await keyboardPage.tryClickModalOkButton();
 
       // Then: Both paragraphs should execute
       await keyboardPage.waitForParagraphExecution(0);
@@ -165,7 +165,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should cancel running paragraph with Control+Alt+C', async () => {
       test.skip(!!process.env.CI, 'Requires Python interpreter with running indicator — not available in CI');
       // Given: A long-running paragraph
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nimport time;time.sleep(3)\nprint("Should be cancelled")');
 
       // Start execution
@@ -193,7 +193,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.MoveCursorUp: Control+P', () => {
     test('should move cursor up with Control+P', async () => {
       // Given: A paragraph with multiple lines
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
       // Position cursor at end of last line using more reliable cross-browser method
@@ -220,7 +220,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.MoveCursorDown: Control+N', () => {
     test('should move cursor down with Control+N', async () => {
       // Given: A paragraph with multiple lines
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
 
       // Position cursor at beginning of first content line (after %python) using more reliable method
@@ -249,7 +249,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.Delete: Control+Alt+D', () => {
     test('should delete current paragraph with Control+Alt+D', async () => {
       // Wait for notebook to fully load
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.setCodeEditorContent('%python\nprint("First paragraph")', 0);
       const firstParagraph = keyboardPage.getParagraphByIndex(0);
       await firstParagraph.click();
@@ -266,14 +266,14 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%python\nprint("Second paragraph")', 1);
       // Focus first paragraph
       await firstParagraph.click();
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.page.waitForTimeout(1000); // JUSTIFIED: Monaco editor requires time to register focus before keyboard shortcut dispatch
 
       // When: User presses Control+Alt+D
       await keyboardPage.pressDeleteParagraph();
 
       // Handle confirmation modal — removeParagraph() always shows nzModalService.confirm()
-      await keyboardPage.clickModalOkButton();
+      await keyboardPage.tryClickModalOkButton();
 
       // Then: Paragraph count should decrease
       await keyboardPage.waitForParagraphCountChange(currentCount - 1);
@@ -286,7 +286,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialCount = await keyboardPage.getParagraphCount();
       expect(initialCount).toBe(1);
 
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor requires time to register focus before keyboard shortcut dispatch
 
       // When: User presses Control+Alt+D on the only paragraph
@@ -310,13 +310,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.InsertAbove: Control+Alt+A', () => {
     test('should insert paragraph above with Control+Alt+A', async () => {
       // Given: A single paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       const originalContent = '%python\n# Original Paragraph\nprint("Content for insert above test")';
       await keyboardPage.setCodeEditorContent(originalContent);
 
       const initialCount = await keyboardPage.getParagraphCount();
 
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
 
       // When: User presses Control+Alt+A
       await keyboardPage.pressInsertAbove();
@@ -343,7 +343,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.InsertBelow: Control+Alt+B', () => {
     test('should insert paragraph below with Control+Alt+B', async () => {
       // Given: A single paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       const originalContent = '%md\n# Original Paragraph\nContent for insert below test';
       await keyboardPage.setCodeEditorContent(originalContent);
 
@@ -378,7 +378,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test('should insert copy of paragraph below with Control+Shift+C', async () => {
       test.skip();
       // Given: A paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Copy Test\nContent to be copied below');
 
       const initialCount = await keyboardPage.getParagraphCount();
@@ -410,7 +410,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const secondContent = '%python\nprint("Second Paragraph - This should move up")';
 
       // Set first paragraph content
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.setCodeEditorContent(firstContent, 0);
       await keyboardPage.page.waitForTimeout(300); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
@@ -419,7 +419,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Set second paragraph content
-      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.tryFocusCodeEditor(1);
       await keyboardPage.setCodeEditorContent(secondContent, 1);
       await keyboardPage.page.waitForTimeout(300); // JUSTIFIED: Monaco content state settle before read
 
@@ -432,7 +432,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
 
       // Focus on second paragraph for move operation
-      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.tryFocusCodeEditor(1);
       await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
       // When: User presses Control+Alt+K from second paragraph
@@ -461,7 +461,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const secondContent = '%python\nprint("Second Paragraph - Content for second paragraph")';
 
       // Set first paragraph content
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.setCodeEditorContent(firstContent, 0);
       await keyboardPage.page.waitForTimeout(300); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
@@ -470,7 +470,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphCountChange(2);
 
       // Set second paragraph content
-      await keyboardPage.focusCodeEditor(1);
+      await keyboardPage.tryFocusCodeEditor(1);
       await keyboardPage.setCodeEditorContent(secondContent, 1);
       await keyboardPage.page.waitForTimeout(300); // JUSTIFIED: Monaco content state settle before read
 
@@ -483,7 +483,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
 
       // Focus first paragraph for move operation
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
       // When: User presses Control+Alt+J from first paragraph
@@ -510,7 +510,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SwitchEditor: Control+Alt+E', () => {
     test('should toggle editor visibility with Control+Alt+E', async () => {
       // Given: A paragraph with visible editor
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test editor toggle")');
 
       const initialEditorVisibility = await keyboardPage.isEditorVisible(0);
@@ -528,7 +528,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SwitchEnable: Control+Alt+R', () => {
     test('should toggle paragraph enable/disable with Control+Alt+R', async () => {
       // Given: An enabled paragraph
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test enable toggle")');
 
       const initialEnabledState = await keyboardPage.isParagraphEnabled(0);
@@ -546,7 +546,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SwitchOutputShow: Control+Alt+O', () => {
     test('should toggle output visibility with Control+Alt+O', async () => {
       // Given: A paragraph with output
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Output Toggle\nThis creates immediate output');
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
@@ -557,7 +557,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const initialOutputVisibility = await keyboardPage.isOutputVisible(0);
 
       // When: User presses Control+Alt+O
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.pressSwitchOutputShow();
 
       const finalOutputVisibility = await keyboardPage.isOutputVisible(0);
@@ -568,7 +568,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SwitchLineNumber: Control+Alt+M', () => {
     test('should toggle line numbers with Control+Alt+M', async () => {
       // Given: A paragraph with code
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test line numbers")');
 
       const initialLineNumbersVisibility = await keyboardPage.areLineNumbersVisible(0);
@@ -586,7 +586,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SwitchTitleShow: Control+Alt+T', () => {
     test('should toggle title visibility with Control+Alt+T', async () => {
       // Given: A paragraph
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test title toggle")');
 
       const initialTitleVisibility = await keyboardPage.isTitleVisible(0);
@@ -603,7 +603,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.Clear: Control+Alt+L', () => {
     test('should clear output with Control+Alt+L', async () => {
       // Given: A paragraph with executed content that has output
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Content\nFor clear output test');
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
@@ -614,7 +614,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await expect(statusElBefore).toHaveText(/FINISHED|ERROR|PENDING|RUNNING/);
 
       // When: User presses Control+Alt+L
-      await keyboardPage.focusCodeEditor(0);
+      await keyboardPage.tryFocusCodeEditor(0);
       await keyboardPage.pressClearOutput();
 
       // Then: Output should be cleared
@@ -626,7 +626,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.Link: Control+Alt+W', () => {
     test('should trigger link paragraph with Control+Alt+W', async () => {
       // Given: A paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Link Test")');
 
       // Get the current URL to extract notebook ID
@@ -660,7 +660,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.ReduceWidth: Control+Shift+-', () => {
     test('should reduce paragraph width with Control+Shift+-', async () => {
       // Given: A paragraph
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test width reduction")');
 
       const initialWidth = await keyboardPage.getParagraphWidth(0);
@@ -677,7 +677,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.IncreaseWidth: Control+Shift+=', () => {
     test('should increase paragraph width with Control+Shift+=', async () => {
       // Given: A paragraph
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Test width increase")');
 
       // First, reduce width to ensure there's room to increase
@@ -702,7 +702,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test.skip();
     test('should cut line with Control+K', async () => {
       // Given: Code editor with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('first line\nsecond line\nthird line');
 
       const initialContent = await keyboardPage.getCodeEditorContent();
@@ -741,7 +741,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     test.skip();
     test('should paste line with Control+Y', async () => {
       // Given: Content in the editor
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       const originalContent = 'line to cut and paste';
       await keyboardPage.setCodeEditorContent(originalContent);
 
@@ -779,7 +779,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.SearchInsideCode: Control+S', () => {
     test('should open search with Control+S', async () => {
       // Given: A paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Search test content")');
 
       // When: User presses Control+S
@@ -793,7 +793,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('ParagraphActions.FindInCode: Control+Alt+F', () => {
     test('should open find in code with Control+Alt+F', async () => {
       // Given: A paragraph with content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("Find test content")');
 
       // When: User presses Control+Alt+F
@@ -813,7 +813,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('Control+Space: Code Autocompletion', () => {
     test('should trigger autocomplete for Python code', async () => {
       // Given: Code editor with partial Python function
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\npr');
       await keyboardPage.pressKey('End'); // Position cursor at end
 
@@ -840,7 +840,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
     test('should complete autocomplete selection when available', async () => {
       // Given: Code editor with content likely to have autocomplete suggestions
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nimport os\nos.');
       await keyboardPage.pressKey('End');
 
@@ -874,7 +874,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('Tab: Code Indentation', () => {
     test('should indent code properly when Tab is pressed', async () => {
       // Given: Code editor with a function definition and cursor on new line
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\ndef function():');
       await keyboardPage.pressKey('End');
       await keyboardPage.pressKey('Enter');
@@ -905,7 +905,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('Arrow Keys: Cursor Navigation', () => {
     test('should move cursor position with arrow keys', async () => {
       // Given: Code editor with multi-line content
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       const testContent = '%python\nfirst line\nsecond line\nthird line';
       await keyboardPage.setCodeEditorContent(testContent);
 
@@ -929,7 +929,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('Interpreter Selection', () => {
     test('should recognize and highlight interpreter directives', async () => {
       // Given: Empty code editor
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('');
 
       // When: User types various interpreter directives
@@ -969,7 +969,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   test.describe('Comprehensive Shortcuts Integration', () => {
     test('should maintain shortcut functionality after errors', async () => {
       // Given: An error has occurred
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('invalid python syntax here');
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
@@ -986,7 +986,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Set valid content in new paragraph and run
       const newParagraphIndex = (await keyboardPage.getParagraphCount()) - 1;
-      await keyboardPage.focusCodeEditor(newParagraphIndex);
+      await keyboardPage.tryFocusCodeEditor(newParagraphIndex);
       await keyboardPage.setCodeEditorContent('%md\n# Recovery Test\nShortcuts work after error', newParagraphIndex);
       await keyboardPage.pressRunParagraph();
 
@@ -1000,7 +1000,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
     test('should gracefully handle shortcuts when no paragraph is focused', async () => {
       // Given: A notebook with at least one paragraph but no focus
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test paragraph');
 
       // Remove focus by clicking on empty area
@@ -1025,7 +1025,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     });
 
     test('should handle rapid keyboard operations without instability', async () => {
-      await keyboardPage.focusCodeEditor();
+      await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nprint("test")');
 
       // Rapid Shift+Enter operations
