@@ -20,13 +20,6 @@ export class FolderRenamePageUtil {
     this.folderRenamePage = folderRenamePage;
   }
 
-  async verifyContextMenuAppearsOnHover(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-    const folderNode = this.getFolderNode(folderName);
-    const renameButton = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
-    await expect(renameButton).toHaveCount(1);
-  }
-
   async openContextMenuOnHoverAndVerifyOptions(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     const folderNode = this.getFolderNode(folderName);

@@ -77,6 +77,7 @@ test.describe('Note Rename', () => {
     await noteRenamePage.enterTitle('Temporary Title');
     await noteRenamePage.pressEscape();
     await noteRenameUtil.verifyTitleText(originalTitle);
+    await expect(noteRenamePage.noteTitleInput).not.toBeVisible();
   });
 
   test('Given title input is displayed, When clearing title and pressing Enter, Then empty title should not be allowed', async () => {

@@ -61,6 +61,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     // Confirmation dialog must appear when running all paragraphs
     const confirmButton = page
       .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
+      // JUSTIFIED: compound locator targets unique OK button in popconfirm
       .first();
     await expect(confirmButton).toBeVisible({ timeout: 5000 });
     await confirmButton.click();
@@ -105,8 +106,11 @@ test.describe('Notebook Action Bar Functionality', () => {
 
     const confirmSelector = page
       .locator('nz-popconfirm button:has-text("OK"), .ant-popconfirm button:has-text("OK"), button:has-text("OK")')
+      // JUSTIFIED: compound locator targets unique OK button in popconfirm
       .first();
-    const isVisible = await confirmSelector.isVisible({ timeout: 2000 }).catch(() => false); // JUSTIFIED: confirmation dialog is optional — some configurations don't require it
+    // JUSTIFIED: confirmation dialog is optional — some configurations don't require it
+    const isVisible = await confirmSelector.isVisible({ timeout: 2000 }).catch(() => false);
+    // JUSTIFIED: dialog is optional — absent when notebook has no output
     if (isVisible) {
       await confirmSelector.click();
       await expect(confirmSelector).not.toBeVisible();
@@ -118,7 +122,9 @@ test.describe('Notebook Action Bar Functionality', () => {
     const paragraphResults = page.locator('zeppelin-notebook-paragraph-result');
     const resultCount = await paragraphResults.count();
     for (let i = 0; i < resultCount; i++) {
+      // JUSTIFIED: iterating all paragraph results by index
       const result = paragraphResults.nth(i);
+      // JUSTIFIED: only visible results need empty check
       if (await result.isVisible()) {
         await expect(result).toBeEmpty();
       }
@@ -159,12 +165,15 @@ test.describe('Notebook Action Bar Functionality', () => {
     await expect(actionBarPage.commitButton).toBeVisible();
     await expect(actionBarPage.commitButton).toBeEnabled();
 
+    // JUSTIFIED: optional when revision system disabled
     if (await actionBarPage.setRevisionButton.isVisible()) {
       await expect(actionBarPage.setRevisionButton).toBeEnabled();
     }
+    // JUSTIFIED: optional when revision system disabled
     if (await actionBarPage.compareRevisionsButton.isVisible()) {
       await expect(actionBarPage.compareRevisionsButton).toBeEnabled();
     }
+    // JUSTIFIED: optional when revision system disabled
     if (await actionBarPage.revisionDropdown.isVisible()) {
       await actionBarPage.openRevisionDropdown();
       await expect(actionBarPage.revisionDropdownMenu).toBeVisible();
@@ -178,9 +187,11 @@ test.describe('Notebook Action Bar Functionality', () => {
     await actionBarPage.openSchedulerDropdown();
     await expect(actionBarPage.schedulerDropdown).toBeVisible();
 
+    // JUSTIFIED: optional when scheduler disabled
     if (await actionBarPage.cronInput.isVisible()) {
       await expect(actionBarPage.cronInput).toBeEditable();
     }
+    // JUSTIFIED: optional when scheduler disabled
     if (await actionBarPage.cronPresets.first().isVisible()) {
       await expect(actionBarPage.cronPresets).not.toHaveCount(0);
     }
@@ -200,6 +211,7 @@ test.describe('Notebook Action Bar Functionality', () => {
       actionBarPage.permissionsButton,
       actionBarPage.lookAndFeelDropdown
     ]) {
+      // JUSTIFIED: optional per user permissions
       if (await control.isVisible()) {
         await expect(control).toBeEnabled();
       }

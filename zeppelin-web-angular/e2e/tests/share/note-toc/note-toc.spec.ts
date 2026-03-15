@@ -46,6 +46,7 @@ test.describe('Note Table of Contents', () => {
 
     // Verify we're actually in a notebook with more specific checks
     await expect(page).toHaveURL(new RegExp(`#/notebook/${testNotebook.noteId}`));
+    // JUSTIFIED: test notebook always has exactly one paragraph
     await expect(page.locator('zeppelin-notebook-paragraph').first()).toBeVisible({ timeout: 15000 });
 
     // Only proceed if TOC button exists (confirms notebook context)

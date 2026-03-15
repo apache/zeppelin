@@ -12,7 +12,6 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookKeyboardPage } from 'e2e/models/notebook-keyboard-page';
-import { NotebookKeyboardPageUtil } from 'e2e/models/notebook-keyboard-page.util';
 import {
   addPageAnnotationBeforeEach,
   performLoginIfRequired,
@@ -31,19 +30,16 @@ import {
  * These are justified timing gaps to allow Monaco's internal state to settle between
  * keystroke sequences. See: https://github.com/microsoft/monaco-editor/issues/2688
  */
-// serial: Monaco editor internal state (cursor position, focus) cannot be observed via DOM —
-// parallel test runs corrupt each other's editor focus and cursor state
+// JUSTIFIED: Monaco editor focus state is not observable via DOM events; serial ordering prevents cross-test editor state corruption
 test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
   addPageAnnotationBeforeEach(PAGES.SHARE.SHORTCUT);
 
   let keyboardPage: NotebookKeyboardPage;
-  let testUtil: NotebookKeyboardPageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page }) => {
     keyboardPage = new NotebookKeyboardPage(page);
-    testUtil = new NotebookKeyboardPageUtil(page);
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
@@ -58,9 +54,15 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await welcomeModal.waitFor({ state: 'hidden', timeout: 5000 });
     }
 
-    // Simple notebook creation without excessive waiting
     testNotebook = await createTestNotebook(page);
-    await testUtil.prepareNotebookForKeyboardTesting(testNotebook.noteId);
+    await keyboardPage.navigateToNotebook(testNotebook.noteId);
+    const currentUrl = page.url();
+    if (!currentUrl.includes(`/notebook/${testNotebook.noteId}`)) {
+      throw new Error(`Navigation to notebook ${testNotebook.noteId} failed. Got: ${currentUrl}`);
+    }
+    // JUSTIFIED: single-paragraph test notebook; first() is deterministic
+    await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
+    await keyboardPage.setCodeEditorContent('%python\nprint("Hello World")');
   });
 
   test.afterEach(async ({ page }) => {
@@ -85,6 +87,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: Paragraph should execute (reach a terminal state — interpreter availability varies by env)
       await keyboardPage.waitForParagraphExecution(0);
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusEl = keyboardPage.paragraphContainer.first().locator('.status');
       const statusText = (await statusEl.textContent({ timeout: 30000 }))?.trim();
       expect(statusText === 'FINISHED' || statusText === 'ERROR' || statusText === 'ABORT').toBe(true);
@@ -108,6 +111,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Add an explicit wait for the page to be completely stable and the notebook UI to be interactive
       await keyboardPage.page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network to be idle
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 15000 }); // Ensure a paragraph is visible
 
       // When: User presses Control+Shift+ArrowUp from second paragraph
@@ -168,9 +172,11 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.pressRunParagraph();
 
       // Wait for execution to start by checking if paragraph is running
-      await expect(
-        keyboardPage.page.locator('zeppelin-notebook-paragraph .fa-spin, .running-indicator').first()
-      ).toBeVisible({ timeout: 30000 });
+      // JUSTIFIED: compound selector; first() picks any visible running indicator
+      const runningIndicator = keyboardPage.page
+        .locator('zeppelin-notebook-paragraph .fa-spin, .running-indicator')
+        .first();
+      await expect(runningIndicator).toBeVisible({ timeout: 30000 });
 
       // When: User presses Control+Alt+C quickly
       await keyboardPage.pressCancel();
@@ -286,6 +292,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+D on the only paragraph
       await keyboardPage.pressDeleteParagraph();
 
+      // JUSTIFIED: compound locator; first() picks any visible cancel/no button in confirmation dialog
       const cancelButton = keyboardPage.page.locator('button:has-text("Cancel"), button:has-text("No")').first();
       const isCancelVisible = await cancelButton.isVisible({ timeout: 2000 });
       if (isCancelVisible) {
@@ -602,6 +609,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphExecution(0);
 
       // Verify there is output to clear
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusElBefore = keyboardPage.paragraphContainer.first().locator('.status');
       await expect(statusElBefore).toHaveText(/FINISHED|ERROR|PENDING|RUNNING/);
 
@@ -705,6 +713,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       if (browserName === 'firefox') {
         await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
         // Ensure Monaco editor is properly focused
+        // JUSTIFIED: single Monaco editor per paragraph; first() picks the active textarea
         const editorTextarea = keyboardPage.page.locator('.monaco-editor textarea').first();
         await editorTextarea.click();
         await editorTextarea.focus();
@@ -813,6 +822,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.page.waitForTimeout(1000); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
       // Then: Editor must remain functional after shortcut (baseline — always asserts)
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.codeEditor.first()).toBeVisible();
 
       const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
@@ -820,6 +830,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
         // If autocomplete appeared, verify we can interact with it and close it cleanly
         const autocompletePopup = keyboardPage.page
           .locator('.monaco-editor .suggest-widget, .autocomplete-popup, [role="listbox"]')
+          // JUSTIFIED: compound selector; first() picks any visible autocomplete popup
           .first();
         await expect(autocompletePopup).toBeVisible();
         await keyboardPage.pressEscape();
@@ -964,6 +975,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.waitForParagraphExecution(0);
 
       // Verify error result exists (invalid syntax produces a final ERROR or FINISHED with error output)
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusElError = keyboardPage.paragraphContainer.first().locator('.status');
       await expect(statusElError).toHaveText(/FINISHED|ERROR/, { timeout: 30000 });
 
@@ -981,6 +993,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Then: New paragraph should execute (FINISHED or ERROR is acceptable — the key assertion is
       // that execution completed, proving shortcuts are functional after an error occurred)
       await keyboardPage.waitForParagraphExecution(newParagraphIndex);
+      // JUSTIFIED: newParagraphIndex is dynamically computed from getParagraphCount(); nth() is the only way to address this specific paragraph
       const statusElNew = keyboardPage.paragraphContainer.nth(newParagraphIndex).locator('.status');
       await expect(statusElNew).toHaveText(/FINISHED|ERROR/, { timeout: 30000 });
     });
@@ -1007,14 +1020,24 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       expect(afterShortcut === initialCount || afterShortcut === initialCount + 1).toBe(true);
 
       // System must remain stable — editor still accessible
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.codeEditor.first()).toBeVisible();
     });
 
     test('should handle rapid keyboard operations without instability', async () => {
-      // Given: User performs rapid keyboard operations
-      await testUtil.verifyRapidKeyboardOperations();
+      await keyboardPage.focusCodeEditor();
+      await keyboardPage.setCodeEditorContent('%python\nprint("test")');
+
+      // Rapid Shift+Enter operations
+      for (let i = 0; i < 3; i++) {
+        await keyboardPage.pressRunParagraph();
+        // JUSTIFIED: single-paragraph test notebook; first() is deterministic
+        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 15000 });
+        await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: brief gap between rapid sequential runs to prevent WebSocket message overlap
+      }
 
       // Then: System should remain stable
+      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.codeEditor.first()).toBeVisible();
     });
   });

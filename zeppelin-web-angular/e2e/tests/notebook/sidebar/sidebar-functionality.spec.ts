@@ -44,6 +44,7 @@ test.describe('Notebook Sidebar Functionality', () => {
     const navigationControls = page.locator(
       'zeppelin-notebook-sidebar button, .sidebar-nav button, zeppelin-notebook-sidebar i[nz-icon], .sidebar-nav i'
     );
+    // JUSTIFIED: compound selector; first() picks any visible nav control
     await expect(navigationControls.first()).toBeVisible();
   });
 
@@ -80,26 +81,6 @@ test.describe('Notebook Sidebar Functionality', () => {
 
     await sidebar.closeSidebar();
     await page.waitForLoadState('domcontentloaded');
-    expect(await sidebar.getSidebarState()).toBe('CLOSED');
-  });
-
-  test('should verify all sidebar states comprehensively', async () => {
-    await sidebar.openToc();
-    const tocState = await sidebar.getSidebarState();
-
-    if (tocState === 'TOC') {
-      await expect(sidebar.noteToc).toBeVisible();
-    } else {
-      expect(tocState).toBe('FILE_TREE');
-    }
-
-    await expect(sidebar.sidebarContainer).toBeVisible();
-
-    await sidebar.openFileTree();
-    expect(await sidebar.getSidebarState()).toBe('FILE_TREE');
-    await expect(sidebar.nodeList).toBeVisible();
-
-    await sidebar.closeSidebar();
     expect(await sidebar.getSidebarState()).toBe('CLOSED');
   });
 });

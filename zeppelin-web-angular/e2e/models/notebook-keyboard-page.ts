@@ -675,17 +675,10 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
-    const shortcutsToTry = Array.isArray(shortcut) ? shortcut : [shortcut];
-
-    for (const s of shortcutsToTry) {
-      try {
-        const formatted = this.formatKey(s);
-        await this.page.keyboard.press(formatted);
-        return;
-      } catch {
-        continue;
-      }
-    }
+    const shortcuts = Array.isArray(shortcut) ? shortcut : [shortcut];
+    const isMac = process.platform === 'darwin';
+    const selected = isMac && shortcuts.length > 1 ? shortcuts[1] : shortcuts[0];
+    await this.page.keyboard.press(this.formatKey(selected));
   }
 
   private formatKey(shortcut: string): string {

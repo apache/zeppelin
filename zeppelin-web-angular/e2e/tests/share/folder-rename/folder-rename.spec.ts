@@ -21,8 +21,7 @@ import {
   createTestNotebook
 } from '../../../utils';
 
-// serial: rename/delete ops mutate the shared notebook list; parallel execution
-// would cause folder-not-found races when multiple tests modify the same folder structure
+// JUSTIFIED: rename/delete ops mutate shared state; parallel runs cause folder-not-found races
 test.describe.serial('Folder Rename', () => {
   let folderRenamePage: FolderRenamePage;
   let folderRenameUtil: FolderRenamePageUtil;
@@ -44,12 +43,15 @@ test.describe.serial('Folder Rename', () => {
     await page.goto('/#/');
   });
 
-  test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear', async () => {
-    await folderRenameUtil.verifyContextMenuAppearsOnHover(testFolderName);
-  });
-
-  test('Given folder exists, When hovering over folder, Then Rename option should be visible', async () => {
-    await folderRenameUtil.verifyContextMenuAppearsOnHover(testFolderName);
+  test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear with Rename option', async () => {
+    await folderRenamePage.hoverOverFolder(testFolderName);
+    const folderNode = folderRenamePage.page
+      .locator('.node')
+      .filter({ has: folderRenamePage.page.locator('.folder .name', { hasText: testFolderName }) })
+      // JUSTIFIED: filter already narrows to target folder; first() handles nested .node structure
+      .first();
+    const renameButton = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
+    await expect(renameButton).toHaveCount(1);
   });
 
   test('Given context menu is open, When clicking Rename, Then rename modal should open', async () => {
@@ -100,11 +102,12 @@ test.describe.serial('Folder Rename', () => {
     });
   });
 
-  test('Given folder is hovered, When checking available options, Then Delete icon should be visible and clickable', async () => {
+  test('Given folder is hovered, When checking available options, Then Delete icon should be visible', async () => {
     await folderRenamePage.hoverOverFolder(testFolderName);
     const folderNode = folderRenamePage.page
       .locator('.node')
       .filter({ has: folderRenamePage.page.locator('.folder .name', { hasText: testFolderName }) })
+      // JUSTIFIED: filter already narrows to target folder; first() handles nested .node structure
       .first();
     await expect(folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')).toBeVisible();
   });

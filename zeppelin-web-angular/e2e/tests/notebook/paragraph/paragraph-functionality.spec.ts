@@ -68,12 +68,15 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
     await page.waitForLoadState('domcontentloaded');
     await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
+    // JUSTIFIED: codeEditor is visibility:hidden before double-click; toBeAttached confirms it's in the DOM
     await expect(paragraphPage.codeEditor).toBeAttached({ timeout: 10000 });
 
     await paragraphPage.doubleClickToEdit();
     await expect(paragraphPage.codeEditor).toBeVisible();
 
+    // JUSTIFIED: compound selector; first() picks primary Monaco input
     const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
+    // JUSTIFIED: Monaco textarea may be visibility:hidden before focus; toBeAttached confirms DOM presence
     await expect(codeEditor).toBeAttached({ timeout: 10000 });
     await expect(codeEditor).toBeEnabled({ timeout: 10000 });
 
@@ -95,6 +98,7 @@ test.describe('Notebook Paragraph Functionality', () => {
     await paragraphPage.doubleClickToEdit();
     await expect(paragraphPage.codeEditor).toBeVisible();
 
+    // JUSTIFIED: compound selector; first() picks primary Monaco input
     const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
     await expect(codeEditor).toBeAttached({ timeout: 10000 });
     await expect(codeEditor).toBeEnabled({ timeout: 10000 });
@@ -113,7 +117,8 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
     await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 15000 });
 
     // Handles error cases gracefully — Spark may not be available
-    const resultText = await paragraphPage.resultDisplay.textContent().catch(() => null); // JUSTIFIED: result display may not exist when interpreter is unavailable; null triggers graceful fallback below
+    // JUSTIFIED: result display may not exist when interpreter is unavailable; null triggers graceful fallback below
+    const resultText = await paragraphPage.resultDisplay.textContent().catch(() => null);
     const hasInterpreterError =
       resultText &&
       ((resultText.toLowerCase().includes('interpreter') && resultText.toLowerCase().includes('not found')) ||
@@ -127,8 +132,7 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
   });
 
   test('should render footer element in paragraph DOM', async () => {
-    // Footer is visibility:hidden by default (hover-only); toBeAttached() confirms
-    // the element is rendered in the DOM regardless of visual state
+    // JUSTIFIED: footer is visibility:hidden by default (hover-only); toBeAttached confirms it's rendered in DOM
     await expect(paragraphPage.footerInfo).toBeAttached();
   });
 
@@ -155,6 +159,7 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
     await paragraphPage.doubleClickToEdit();
     await expect(paragraphPage.codeEditor).toBeVisible();
 
+    // JUSTIFIED: compound selector; first() picks primary Monaco input
     const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
     await expect(codeEditor).toBeAttached({ timeout: 10000 });
     await expect(codeEditor).toBeEnabled({ timeout: 10000 });
