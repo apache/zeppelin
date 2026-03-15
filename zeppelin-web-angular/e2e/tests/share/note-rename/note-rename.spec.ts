@@ -45,7 +45,7 @@ test.describe('Note Rename', () => {
   });
 
   test('Given notebook page is loaded, When checking note title, Then title should be displayed', async () => {
-    await noteRenameUtil.verifyTitleIsDisplayed();
+    await expect(noteRenamePage.noteTitle).toBeVisible();
   });
 
   test('Given note title is displayed, When checking default title, Then title should match pattern', async () => {
@@ -53,7 +53,8 @@ test.describe('Note Rename', () => {
   });
 
   test('Given note title is displayed, When clicking title, Then title input should appear', async () => {
-    await noteRenameUtil.verifyTitleInputAppearsOnClick();
+    await noteRenamePage.clickTitle();
+    await expect(noteRenamePage.noteTitleInput).toBeVisible();
   });
 
   test('Given title input is displayed, When entering new title and pressing Enter, Then title should be updated', async () => {
@@ -61,16 +62,29 @@ test.describe('Note Rename', () => {
   });
 
   test('Given title input is displayed, When entering new title and blurring, Then title should be updated', async () => {
-    await noteRenameUtil.verifyTitleChangeWithBlur(`Test Note 2-${Date.now()}`);
+    const newTitle = `Test Note 2-${Date.now()}`;
+    await noteRenamePage.clickTitle();
+    await noteRenamePage.clearTitle();
+    await noteRenamePage.enterTitle(newTitle);
+    await noteRenamePage.blur();
+    await noteRenameUtil.verifyTitleText(newTitle);
   });
 
   test('Given title input is displayed, When entering text and pressing Escape, Then changes should be cancelled', async () => {
     const originalTitle = await noteRenamePage.getTitle();
-    await noteRenameUtil.verifyTitleChangeCancelsOnEscape(originalTitle);
+    await noteRenamePage.clickTitle();
+    await noteRenamePage.clearTitle();
+    await noteRenamePage.enterTitle('Temporary Title');
+    await noteRenamePage.pressEscape();
+    await noteRenameUtil.verifyTitleText(originalTitle);
   });
 
   test('Given title input is displayed, When clearing title and pressing Enter, Then empty title should not be allowed', async () => {
-    await noteRenameUtil.verifyEmptyTitleIsNotAllowed();
+    const originalTitle = await noteRenamePage.getTitle();
+    await noteRenamePage.clickTitle();
+    await noteRenamePage.clearTitle();
+    await noteRenamePage.pressEnter();
+    await noteRenameUtil.verifyTitleText(originalTitle);
   });
 
   test('Given note title exists, When changing title multiple times, Then each change should persist', async () => {

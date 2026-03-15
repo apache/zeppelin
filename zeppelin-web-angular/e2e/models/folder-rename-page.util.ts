@@ -20,82 +20,18 @@ export class FolderRenamePageUtil {
     this.folderRenamePage = folderRenamePage;
   }
 
-  private async verifyRenameButtonIsVisible(folderName: string): Promise<void> {
+  async verifyContextMenuAppearsOnHover(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     const folderNode = this.getFolderNode(folderName);
     const renameButton = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
     await expect(renameButton).toHaveCount(1);
   }
 
-  private async verifyDeleteButtonIsVisible(folderName: string): Promise<void> {
+  async openContextMenuOnHoverAndVerifyOptions(folderName: string): Promise<void> {
     await this.folderRenamePage.hoverOverFolder(folderName);
     const folderNode = this.getFolderNode(folderName);
-    const deleteButton = folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]');
-    await expect(deleteButton).toBeVisible();
-  }
-
-  async verifyContextMenuAppearsOnHover(folderName: string): Promise<void> {
-    await this.verifyRenameButtonIsVisible(folderName);
-  }
-
-  async verifyRenameModalOpens(folderName: string): Promise<void> {
-    await this.folderRenamePage.clickRenameMenuItem(folderName);
-    await expect(this.folderRenamePage.renameModal).toBeVisible({ timeout: 10000 });
-  }
-
-  async verifyRenameInputIsDisplayed(): Promise<void> {
-    await expect(this.folderRenamePage.renameInput).toBeVisible();
-  }
-
-  async verifyFolderCanBeRenamed(oldName: string, newName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(oldName);
-    await this.folderRenamePage.clickRenameMenuItem(oldName);
-    await this.folderRenamePage.renameInput.waitFor({ state: 'visible', timeout: 5000 });
-    await this.folderRenamePage.clearNewName();
-    await this.folderRenamePage.enterNewName(newName);
-
-    await this.folderRenamePage.clickConfirm();
-
-    await expect(this.folderRenamePage.renameModal).not.toBeVisible({ timeout: 10000 });
-
-    const oldFolder = this.folderRenamePage.page.locator('.folder .name', { hasText: oldName });
-    await expect(oldFolder).not.toBeVisible({ timeout: 10000 });
-
-    await this.folderRenamePage.page.reload();
-    await this.folderRenamePage.waitForPageLoad();
-
-    const baseNewName = newName.split('/').pop() ?? newName;
-
-    await expect(this.folderRenamePage.page.locator('.folder .name', { hasText: baseNewName })).toBeVisible({
-      timeout: 30000
-    });
-  }
-
-  async verifyEmptyNameIsNotAllowed(folderName: string): Promise<void> {
-    await this.folderRenamePage.hoverOverFolder(folderName);
-    await this.folderRenamePage.clickRenameMenuItem(folderName);
-    await this.folderRenamePage.clearNewName();
-
-    await expect(this.folderRenamePage.confirmButton).toBeDisabled({ timeout: 5000 });
-
-    await this.folderRenamePage.clickCancel();
-    await expect(this.folderRenamePage.renameModal).not.toBeVisible({ timeout: 5000 });
-
-    const originalFolderLocator = this.folderRenamePage.page.locator('.folder .name', { hasText: folderName });
-    await expect(originalFolderLocator).toBeVisible({ timeout: 5000 });
-  }
-
-  async verifyDeleteIconIsDisplayed(folderName: string): Promise<void> {
-    await this.verifyDeleteButtonIsVisible(folderName);
-  }
-
-  async verifyDeleteConfirmationAppears(): Promise<void> {
-    await expect(this.folderRenamePage.deleteConfirmation).toBeVisible();
-  }
-
-  async openContextMenuOnHoverAndVerifyOptions(folderName: string): Promise<void> {
-    await this.verifyRenameButtonIsVisible(folderName);
-    await this.verifyDeleteButtonIsVisible(folderName);
+    await expect(folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]')).toHaveCount(1);
+    await expect(folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')).toBeVisible();
   }
 
   private getFolderNode(folderName: string) {

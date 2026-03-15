@@ -20,17 +20,8 @@ export class NoteRenamePageUtil {
     this.noteRenamePage = noteRenamePage;
   }
 
-  async verifyTitleIsDisplayed(): Promise<void> {
-    await expect(this.noteRenamePage.noteTitle).toBeVisible();
-  }
-
   async verifyTitleText(expectedTitle: string): Promise<void> {
     await expect(this.noteRenamePage.noteTitle).toContainText(expectedTitle);
-  }
-
-  async verifyTitleInputAppearsOnClick(): Promise<void> {
-    await this.noteRenamePage.clickTitle();
-    await expect(this.noteRenamePage.noteTitleInput).toBeVisible();
   }
 
   async verifyTitleCanBeChanged(newTitle: string): Promise<void> {
@@ -39,29 +30,5 @@ export class NoteRenamePageUtil {
     await this.noteRenamePage.enterTitle(newTitle);
     await this.noteRenamePage.pressEnter();
     await this.verifyTitleText(newTitle);
-  }
-
-  async verifyTitleChangeWithBlur(newTitle: string): Promise<void> {
-    await this.noteRenamePage.clickTitle();
-    await this.noteRenamePage.clearTitle();
-    await this.noteRenamePage.enterTitle(newTitle);
-    await this.noteRenamePage.blur();
-    await this.verifyTitleText(newTitle);
-  }
-
-  async verifyTitleChangeCancelsOnEscape(originalTitle: string): Promise<void> {
-    await this.noteRenamePage.clickTitle();
-    await this.noteRenamePage.clearTitle();
-    await this.noteRenamePage.enterTitle('Temporary Title');
-    await this.noteRenamePage.pressEscape();
-    await this.verifyTitleText(originalTitle);
-  }
-
-  async verifyEmptyTitleIsNotAllowed(): Promise<void> {
-    const originalTitle = await this.noteRenamePage.getTitle();
-    await this.noteRenamePage.clickTitle();
-    await this.noteRenamePage.clearTitle();
-    await this.noteRenamePage.pressEnter();
-    await this.verifyTitleText(originalTitle);
   }
 }

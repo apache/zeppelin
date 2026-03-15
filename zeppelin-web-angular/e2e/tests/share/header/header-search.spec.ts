@@ -12,27 +12,29 @@
 
 import { test, expect } from '@playwright/test';
 import { HeaderPage } from '../../../models/header-page';
-import { HeaderPageUtil } from '../../../models/header-page.util';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Header Search Functionality', () => {
   let headerPage: HeaderPage;
-  let headerUtil: HeaderPageUtil;
 
   addPageAnnotationBeforeEach(PAGES.SHARE.HEADER);
 
   test.beforeEach(async ({ page }) => {
     headerPage = new HeaderPage(page);
-    headerUtil = new HeaderPageUtil(page, headerPage);
 
     await page.goto('/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
   });
 
-  test('Given user is on home page, When entering search query and pressing Enter, Then user should navigate to search results page', async () => {
+  test('Given user is on home page, When entering search query and pressing Enter, Then user should navigate to search results page', async ({
+    page
+  }) => {
     const searchQuery = 'test';
-    await headerUtil.verifySearchNavigation(searchQuery);
+    await headerPage.searchNote(searchQuery);
+    await page.waitForURL(/search/);
+    expect(page.url()).toContain('search');
+    expect(page.url()).toContain(searchQuery);
   });
 
   test('Given user is on home page, When viewing search input, Then search input should be visible and accessible', async () => {

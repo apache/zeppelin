@@ -54,12 +54,13 @@ test.describe('Note Table of Contents', () => {
 
   test('Given TOC panel is open, When checking panel title, Then title should display "Table of Contents"', async () => {
     await noteTocUtil.verifyTocPanelOpens();
-    await noteTocUtil.verifyTocTitleIsDisplayed();
+    await expect(noteTocPage.tocTitle).toBeVisible();
+    expect(await noteTocPage.tocTitle.textContent()).toBe('Table of Contents');
   });
 
   test('Given TOC panel is open with no headings, When checking content, Then empty message should be displayed', async () => {
     await noteTocUtil.verifyTocPanelOpens();
-    await noteTocUtil.verifyEmptyMessageIsDisplayed();
+    await expect(noteTocPage.tocEmptyMessage).toBeVisible();
   });
 
   test('Given TOC panel is open, When clicking close button, Then TOC panel should close', async () => {

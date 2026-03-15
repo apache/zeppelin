@@ -25,16 +25,6 @@ export class NoteTocPageUtil {
     await expect(this.noteTocPage.tocPanel).toBeVisible();
   }
 
-  async verifyTocTitleIsDisplayed(): Promise<void> {
-    await expect(this.noteTocPage.tocTitle).toBeVisible();
-    const titleText = await this.noteTocPage.tocTitle.textContent();
-    expect(titleText).toBe('Table of Contents');
-  }
-
-  async verifyEmptyMessageIsDisplayed(): Promise<void> {
-    await expect(this.noteTocPage.tocEmptyMessage).toBeVisible();
-  }
-
   async verifyTocPanelCloses(): Promise<void> {
     await this.noteTocPage.clickTocClose();
     await expect(this.noteTocPage.tocPanel).not.toBeVisible();

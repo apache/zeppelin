@@ -53,13 +53,14 @@ test.describe.serial('Folder Rename', () => {
   });
 
   test('Given context menu is open, When clicking Rename, Then rename modal should open', async () => {
-    await folderRenameUtil.verifyRenameModalOpens(testFolderName);
+    await folderRenamePage.clickRenameMenuItem(testFolderName);
+    await expect(folderRenamePage.renameModal).toBeVisible({ timeout: 10000 });
   });
 
   test('Given rename modal is open, When checking modal content, Then input field should be displayed', async () => {
     await folderRenamePage.hoverOverFolder(testFolderName);
     await folderRenamePage.clickRenameMenuItem(testFolderName);
-    await folderRenameUtil.verifyRenameInputIsDisplayed();
+    await expect(folderRenamePage.renameInput).toBeVisible();
   });
 
   test('Given rename modal is open, When entering new name and confirming, Then folder should be renamed', async ({
@@ -68,21 +69,49 @@ test.describe.serial('Folder Rename', () => {
     const browserName = page.context().browser()?.browserType().name();
     const renamedFolderName = `TestFolderRenamed_${`${Date.now()}_${browserName}`}`;
 
-    await folderRenameUtil.verifyFolderCanBeRenamed(testFolderName, renamedFolderName);
+    await folderRenamePage.hoverOverFolder(testFolderName);
+    await folderRenamePage.clickRenameMenuItem(testFolderName);
+    await folderRenamePage.renameInput.waitFor({ state: 'visible', timeout: 5000 });
+    await folderRenamePage.clearNewName();
+    await folderRenamePage.enterNewName(renamedFolderName);
+    await folderRenamePage.clickConfirm();
+
+    await expect(folderRenamePage.renameModal).not.toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.folder .name', { hasText: testFolderName })).not.toBeVisible({ timeout: 10000 });
+
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+
+    const baseNewName = renamedFolderName.split('/').pop() ?? renamedFolderName;
+    await expect(page.locator('.folder .name', { hasText: baseNewName })).toBeVisible({ timeout: 30000 });
   });
 
   test('Given rename modal is open, When submitting empty name, Then empty name should not be allowed', async () => {
-    await folderRenameUtil.verifyEmptyNameIsNotAllowed(testFolderName);
+    await folderRenamePage.hoverOverFolder(testFolderName);
+    await folderRenamePage.clickRenameMenuItem(testFolderName);
+    await folderRenamePage.clearNewName();
+
+    await expect(folderRenamePage.confirmButton).toBeDisabled({ timeout: 5000 });
+
+    await folderRenamePage.clickCancel();
+    await expect(folderRenamePage.renameModal).not.toBeVisible({ timeout: 5000 });
+    await expect(folderRenamePage.page.locator('.folder .name', { hasText: testFolderName })).toBeVisible({
+      timeout: 5000
+    });
   });
 
   test('Given folder is hovered, When checking available options, Then Delete icon should be visible and clickable', async () => {
     await folderRenamePage.hoverOverFolder(testFolderName);
-    await folderRenameUtil.verifyDeleteIconIsDisplayed(testFolderName);
+    const folderNode = folderRenamePage.page
+      .locator('.node')
+      .filter({ has: folderRenamePage.page.locator('.folder .name', { hasText: testFolderName }) })
+      .first();
+    await expect(folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')).toBeVisible();
   });
 
   test('Given folder exists, When clicking delete icon, Then delete confirmation should appear', async () => {
     await folderRenamePage.clickDeleteIcon(testFolderName);
-    await folderRenameUtil.verifyDeleteConfirmationAppears();
+    await expect(folderRenamePage.deleteConfirmation).toBeVisible();
   });
 
   test('Given folder can be renamed, When opening context menu multiple times, Then menu should consistently appear', async ({
