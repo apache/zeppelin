@@ -24,8 +24,6 @@ export class BasePage {
   readonly zeppelinHeader: Locator;
 
   readonly modalTitle: Locator;
-  readonly modalBody: Locator;
-  readonly modalContent: Locator;
 
   readonly okButton: Locator;
   readonly cancelButton: Locator;
@@ -41,8 +39,6 @@ export class BasePage {
     this.zeppelinHeader = page.locator('zeppelin-header');
 
     this.modalTitle = page.locator('.ant-modal-confirm-title, .ant-modal-title');
-    this.modalBody = page.locator('.ant-modal-confirm-content, .ant-modal-body');
-    this.modalContent = page.locator('.ant-modal-body');
 
     this.okButton = page.locator('button:has-text("OK")');
     this.cancelButton = page.locator('button:has-text("Cancel")');
@@ -69,11 +65,6 @@ export class BasePage {
 
   async navigateToHome(): Promise<void> {
     await this.navigateToRoute('/');
-  }
-
-  getCurrentPath(): string {
-    const url = new URL(this.page.url());
-    return url.hash || url.pathname;
   }
 
   async waitForUrlNotContaining(fragment: string): Promise<void> {

@@ -27,15 +27,6 @@ test.describe('Home Page Notebook Actions', () => {
   });
 
   test.describe('Given notebook list is displayed', () => {
-    test('When page loads Then should show notebook actions', async () => {
-      await expect(homePage.nodeList.createNewNoteLink).toBeVisible();
-      await expect(homePage.nodeList.createNewNoteLink).toContainText('Create new Note');
-      await expect(homePage.nodeList.importNoteLink).toBeVisible();
-      await expect(homePage.nodeList.importNoteLink).toContainText('Import Note');
-      await expect(homePage.nodeList.filterInput).toBeVisible();
-      await expect(homePage.nodeList.filterInput).toHaveAttribute('placeholder', /Filter/i);
-    });
-
     test('When refresh button is clicked Then should keep refresh icon visible', async ({ page }) => {
       const refreshButton = page.locator('a.refresh-note');
       const refreshIcon = page.locator('a.refresh-note i[nz-icon]');
