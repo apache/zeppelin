@@ -47,8 +47,4 @@ export class NoteCreateModal extends BasePage {
   async clickCreate(): Promise<void> {
     await this.createButton.click();
   }
-
-  async isFolderInfoVisible(): Promise<boolean> {
-    return this.folderInfoAlert.isVisible();
-  }
 }
