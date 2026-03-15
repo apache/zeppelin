@@ -116,31 +116,35 @@ test.describe('Published Paragraph', () => {
 
     test('should load published paragraph component by direct URL navigation', async ({ page }) => {
       await page.goto(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`);
-      await page.waitForLoadState('networkidle');
+
+      // Wait for the confirmation modal — it signals NOTE was received and the component is fully rendered.
+      // networkidle fires before the NOTE WebSocket response, so the modal is the reliable ready signal.
+      const confirmModal = page.locator('.ant-modal-confirm');
+      await expect(confirmModal).toBeVisible({ timeout: 15000 });
+      await publishedParagraphPage.cancelButton.click();
+      await expect(confirmModal).toBeHidden({ timeout: 5000 });
 
       await expect(page).toHaveURL(
         new RegExp(`/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`)
       );
-      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible();
     });
 
     test('should load published paragraph and keep component attached after modal confirmation', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
 
-      const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      await expect(publishedContainer).toBeVisible({ timeout: 10000 });
-
-      // Confirmation modal should appear for paragraph execution
+      // Confirmation modal signals NOTE was received and component is fully rendered.
+      // Check container visibility only after modal is dismissed to avoid the
+      // transient visibility:hidden state that persists while the modal is open.
       const modal = page.locator('.ant-modal');
       await expect(modal).toBeVisible({ timeout: 20000 });
 
       await publishedParagraphPage.runButton.click();
       await expect(modal).not.toBeVisible({ timeout: 10000 });
 
-      // Published container should remain visible after modal dismissal
+      const publishedContainer = page.locator('zeppelin-publish-paragraph');
       await expect(publishedContainer).toBeVisible({ timeout: 10000 });
     });
 
@@ -168,9 +172,14 @@ test.describe('Published Paragraph', () => {
       const { noteId, paragraphId } = testNotebook;
 
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible({ timeout: 10000 });
+      // Wait for modal then dismiss — component visibility is unreliable while modal is animating open.
+      const confirmModal = page.locator('.ant-modal-confirm');
+      await expect(confirmModal).toBeVisible({ timeout: 15000 });
+      await publishedParagraphPage.cancelButton.click();
+      await expect(confirmModal).toBeHidden({ timeout: 5000 });
+
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible();
       await expect(page.locator('zeppelin-notebook-paragraph-code-editor')).toBeHidden();
       await expect(page.locator('zeppelin-notebook-paragraph-control')).toBeHidden();
     });
