@@ -37,8 +37,8 @@ export class HomePage extends BasePage {
     importNoteLink: Locator;
     filterInput: Locator;
   };
+  readonly anonymousUserIndicator: Locator;
   private readonly zeppelinLogo: Locator;
-  private readonly anonymousUserIndicator: Locator;
   private readonly createNoteModal: Locator;
   private readonly createNoteButton: Locator;
   private readonly notebookNameInput: Locator;
@@ -86,14 +86,6 @@ export class HomePage extends BasePage {
     await this.navigateToRoute('/login');
     // Wait for potential redirect to complete by checking URL change
     await this.waitForUrlNotContaining('#/login');
-  }
-
-  async isHomeContentDisplayed(): Promise<boolean> {
-    return this.welcomeTitle.isVisible();
-  }
-
-  async isAnonymousUser(): Promise<boolean> {
-    return this.anonymousUserIndicator.isVisible();
   }
 
   async clickZeppelinLogo(): Promise<void> {

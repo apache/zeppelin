@@ -12,13 +12,11 @@
 
 import { expect, test } from '@playwright/test';
 import { BasePage } from 'e2e/models/base-page';
-import { WorkspaceUtil } from '../../models/workspace-page.util';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.MAIN);
 
 test.describe('Workspace Main Component', () => {
-  let workspaceUtil: WorkspaceUtil;
   let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
@@ -27,7 +25,6 @@ test.describe('Workspace Main Component', () => {
     await performLoginIfRequired(page);
 
     basePage = new BasePage(page);
-    workspaceUtil = new WorkspaceUtil(page);
   });
 
   test.describe('Given user accesses workspace container', () => {
@@ -43,15 +40,10 @@ test.describe('Workspace Main Component', () => {
       await expect(basePage.zeppelinHeader).toContainText('Zeppelin');
     });
 
-    test('When workspace loads Then should have router outlet attached', async () => {
-      await workspaceUtil.verifyRouterOutletActivation();
-      // Verify the activated route rendered a home component, not just an empty outlet
-      await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
-    });
-
-    test('When workspace activates Then should render content inside router outlet', async () => {
-      await workspaceUtil.waitForComponentActivation();
-      // Confirm that home content loaded into the workspace, not just that children.length > 1
+    test('When workspace loads Then should have router outlet attached with home component', async ({ page }) => {
+      // Router outlet must have an activated child, not just exist as an empty outlet
+      await expect(page.locator('zeppelin-workspace router-outlet + *')).toHaveCount(1);
+      // Activated route must have rendered the home component
       await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
     });
   });

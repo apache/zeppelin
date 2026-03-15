@@ -48,7 +48,8 @@ test.describe('Home Page - Layout and Grid', () => {
       await test.step('And I should see the help/community column with proper sizing', async () => {
         await expect(homePage.helpCommunityColumn).toBeVisible();
         // Check that the column contains help and community content
-        const helpHeading = homePage.helpCommunityColumn.locator('h3').first(); // first: Help comes before Community in the right column
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
+        const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
         await expect(helpHeading).toBeVisible();
         const helpText = await helpHeading.textContent();
         expect(helpText).toContain('Help');
@@ -70,7 +71,8 @@ test.describe('Home Page - Layout and Grid', () => {
         await expect(homePage.helpCommunityColumn).toBeVisible();
         // Verify headings are readable and contain expected text at tablet width
         const notebookHeading = homePage.notebookColumn.locator('h3');
-        const helpHeading = homePage.helpCommunityColumn.locator('h3').first(); // first: Help comes before Community in the right column
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
+        const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
         await expect(notebookHeading).toContainText('Notebook');
         await expect(helpHeading).toContainText('Help');
       });
@@ -86,7 +88,8 @@ test.describe('Home Page - Layout and Grid', () => {
 
         // Verify headings are readable and contain expected text in mobile view
         const notebookHeading = homePage.notebookColumn.locator('h3');
-        const helpHeading = homePage.helpCommunityColumn.locator('h3').first(); // first: Help comes before Community in the right column
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
+        const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
         await expect(notebookHeading).toBeVisible();
         await expect(notebookHeading).toContainText('Notebook');
         await expect(helpHeading).toBeVisible();

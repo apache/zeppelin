@@ -85,6 +85,7 @@ test.describe('Home Page Note Operations', () => {
       await expect(renameButton).toBeVisible();
       await renameButton.click();
 
+      // JUSTIFIED: compound selector targets rename dialog; first() picks the visible modal instance
       await expect(page.locator('zeppelin-note-rename, [role="dialog"].ant-modal').first()).toBeVisible({
         timeout: 5000
       });
@@ -212,7 +213,7 @@ test.describe('Home Page Note Operations', () => {
 
       const restoreButton = trashFolder.locator('.operation a[nztooltiptitle*="Restore all"]');
       await expect(restoreButton).toBeVisible();
-      // Use force:true — hovering restoreButton directly can briefly exit .folder:hover and hide it
+      // JUSTIFIED: hovering restoreButton directly can briefly exit .folder:hover and hide it
       await restoreButton.click({ force: true });
 
       await expect(

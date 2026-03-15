@@ -31,7 +31,8 @@ test.describe('Node List Functionality', () => {
   test('Given user is on home page, When viewing node list, Then node list should display tree structure', async () => {
     await expect(nodeListPage.nodeListContainer).toBeVisible();
     await expect(nodeListPage.treeView).toBeVisible();
-    await expect(nodeListPage.treeView.locator('nz-tree-node').first()).toBeVisible(); // tree has at least one node
+    // JUSTIFIED: first() confirms at least one tree node is rendered in the list
+    await expect(nodeListPage.treeView.locator('nz-tree-node').first()).toBeVisible();
   });
 
   test('Given user is on home page, When viewing node list, Then action buttons should be visible', async () => {

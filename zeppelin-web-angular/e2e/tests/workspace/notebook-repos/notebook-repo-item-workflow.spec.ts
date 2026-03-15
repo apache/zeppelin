@@ -30,6 +30,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     notebookReposPage = new NotebookReposPage(page);
     await notebookReposPage.navigate();
 
+    // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
@@ -47,7 +48,9 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     let savedSettingName = '';
     let savedValue = '';
     for (let i = 0; i < settingRows; i++) {
+      // JUSTIFIED: nth(i) iterates all rows deterministically to find the first INPUT-type row
       const row = repoItemPage.settingRows.nth(i);
+      // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
       const settingName = (await row.locator('td').first().textContent()) || '';
 
       const isInputVisible = await row.locator('input[nz-input]').isVisible();
@@ -59,6 +62,7 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
       }
     }
 
+    expect(savedSettingName, 'No INPUT-type setting found — cannot verify save result').not.toBe('');
     await expect(repoItemPage.saveButton).toBeEnabled();
 
     await repoItemPage.clickSave();
@@ -66,16 +70,16 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
     await repoItemUtil.verifyDisplayMode();
 
     // Verify the saved value is shown in display mode — not just that mode switched
-    if (savedSettingName) {
-      const displayValue = await repoItemPage.getSettingValue(savedSettingName);
-      expect(displayValue.trim()).toBe(savedValue.trim());
-    }
+    const displayValue = await repoItemPage.getSettingValue(savedSettingName);
+    expect(displayValue.trim()).toBe(savedValue.trim());
   });
 
   test('should complete full edit workflow with cancel', async () => {
     await repoItemUtil.verifyDisplayMode();
 
-    const firstRow = repoItemPage.settingRows.first(); // first: any row is representative — testing that cancel reverts all changes
+    // JUSTIFIED: any row is representative — testing that cancel reverts all changes
+    const firstRow = repoItemPage.settingRows.first();
+    // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
     const settingName = (await firstRow.locator('td').first().textContent()) || '';
     const originalValue = await repoItemPage.getSettingValue(settingName);
 

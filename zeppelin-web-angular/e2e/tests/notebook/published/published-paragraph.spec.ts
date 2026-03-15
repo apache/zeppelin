@@ -51,7 +51,8 @@ test.describe('Published Paragraph', () => {
 
       await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
-      const modal = page.locator('.ant-modal', { hasText: /not found/i }).last(); // last: handles stacked modals
+      // JUSTIFIED: last() handles stacked modals where the most recent error modal appears on top
+      const modal = page.locator('.ant-modal', { hasText: /not found/i }).last();
       await expect(modal).toBeVisible({ timeout: 10000 });
       await expect(modal).toContainText(/not found/i);
     });
@@ -93,7 +94,7 @@ test.describe('Published Paragraph', () => {
       await page.goto(`/#/notebook/${noteId}`);
       await page.waitForLoadState('networkidle');
 
-      // createTestNotebook creates a single paragraph, so .first() is the target
+      // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
       const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
       await expect(paragraphElement).toBeVisible({ timeout: 10000 });
 
@@ -120,7 +121,7 @@ test.describe('Published Paragraph', () => {
       await expect(page).toHaveURL(
         new RegExp(`/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`)
       );
-      await expect(page.locator('zeppelin-publish-paragraph')).toBeAttached({ timeout: 10000 });
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible({ timeout: 10000 });
     });
 
     test('should load published paragraph and keep component attached after modal confirmation', async ({ page }) => {
@@ -130,7 +131,7 @@ test.describe('Published Paragraph', () => {
       await page.waitForLoadState('networkidle');
 
       const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      await expect(publishedContainer).toBeAttached({ timeout: 10000 });
+      await expect(publishedContainer).toBeVisible({ timeout: 10000 });
 
       // Confirmation modal should appear for paragraph execution
       const modal = page.locator('.ant-modal');
@@ -139,8 +140,8 @@ test.describe('Published Paragraph', () => {
       await publishedParagraphPage.runButton.click();
       await expect(modal).not.toBeVisible({ timeout: 10000 });
 
-      // Published container should remain attached after modal dismissal
-      await expect(publishedContainer).toBeAttached({ timeout: 10000 });
+      // Published container should remain visible after modal dismissal
+      await expect(publishedContainer).toBeVisible({ timeout: 10000 });
     });
 
     test('should render React micro-frontend instead of Angular result component', async ({ page }) => {
@@ -156,6 +157,7 @@ test.describe('Published Paragraph', () => {
       await test.step('And React widget should be mounted in the container', async () => {
         // React mount() renders <div data-testid="react-published-paragraph"> or <Empty> (Alert)
         const reactContent = page.locator('[data-testid="react-published-paragraph"], .ant-alert');
+        // JUSTIFIED: compound selector covers React success + error fallback (.ant-alert); either may render
         await expect(reactContent).toBeAttached({ timeout: 15000 });
       });
     });
@@ -168,7 +170,7 @@ test.describe('Published Paragraph', () => {
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('zeppelin-publish-paragraph')).toBeAttached({ timeout: 10000 });
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeVisible({ timeout: 10000 });
       await expect(page.locator('zeppelin-notebook-paragraph-code-editor')).toBeHidden();
       await expect(page.locator('zeppelin-notebook-paragraph-control')).toBeHidden();
     });
@@ -183,7 +185,7 @@ test.describe('Published Paragraph', () => {
 
         await publishedParagraphPage.navigateToNotebook(noteId);
 
-        // Verify paragraph has no results yet
+        // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
         const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
         await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
 
@@ -206,7 +208,8 @@ test.describe('Published Paragraph', () => {
 
         if (!reactMode) {
           // Code preview element only checked in Angular mode
-          const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first(); // first: fallback selector covers multiple renderer variants; any match confirms code preview is present
+          // JUSTIFIED: compound fallback selector; first() picks any element that confirms code preview is rendered
+          const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first();
           await expect(codePreview).toBeVisible();
           await expect(codePreview).not.toBeEmpty(); // code must have content, not just an empty container
 

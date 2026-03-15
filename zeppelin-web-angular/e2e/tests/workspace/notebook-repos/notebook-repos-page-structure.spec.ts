@@ -35,7 +35,7 @@ test.describe('Notebook Repository Page - Structure', () => {
 
   test('should display all repository items with names', async () => {
     await expect(notebookReposPage.repositoryItems).not.toHaveCount(0);
-    // Each item must have a non-empty title — not just a blank card
+    // JUSTIFIED: .first() samples the first repo card; all cards share the same title structure
     const firstTitle = notebookReposPage.repositoryItems.first().locator('.ant-card-head-title');
     await expect(firstTitle).not.toBeEmpty();
   });

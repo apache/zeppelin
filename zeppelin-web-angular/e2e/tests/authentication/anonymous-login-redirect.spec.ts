@@ -54,12 +54,10 @@ test.describe('Anonymous User Login Redirect', () => {
 
       const currentPath = getCurrentPath(page);
       const isLoginUrlMaintained = currentPath.includes('#/login');
-      const isHomeContentDisplayed = await homePage.isHomeContentDisplayed();
-      const isAnonymousUser = await homePage.isAnonymousUser();
 
       expect(isLoginUrlMaintained).toBe(false);
-      expect(isHomeContentDisplayed).toBe(true);
-      expect(isAnonymousUser).toBe(true);
+      await expect(homePage.welcomeTitle).toBeVisible();
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
       expect(currentPath).toContain('#/');
       expect(currentPath).not.toContain('#/login');
     });
@@ -96,12 +94,11 @@ test.describe('Anonymous User Login Redirect', () => {
       await homePage.clickZeppelinLogo();
       await basePage.waitForPageLoad();
       const pathAfterClick = getCurrentPath(page);
-      const homeContentMaintained = await homePage.isHomeContentDisplayed();
 
       expect(pathBeforeClick).toContain('#/');
       expect(pathBeforeClick).not.toContain('#/login');
       expect(pathAfterClick).toContain('#/');
-      expect(homeContentMaintained).toBe(true);
+      await expect(homePage.welcomeTitle).toBeVisible();
     });
 
     test('When accessing login page, Then should redirect and maintain anonymous user state', async ({ page }) => {
@@ -110,12 +107,11 @@ test.describe('Anonymous User Login Redirect', () => {
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const basicMetadata = await getBasicPageMetadata(page);
-      const isAnonymous = await homePage.isAnonymousUser();
 
       expect(basicMetadata.title).toContain('Zeppelin');
       expect(basicMetadata.path).toContain('#/');
       expect(basicMetadata.path).not.toContain('#/login');
-      expect(isAnonymous).toBe(true);
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
     });
 
     test('When navigating between home and login URLs, Then should maintain consistent user experience', async ({
@@ -125,23 +121,20 @@ test.describe('Anonymous User Login Redirect', () => {
       await waitForZeppelinReady(page);
 
       const homeMetadata = await getBasicPageMetadata(page);
-      const isHomeAnonymous = await homePage.isAnonymousUser();
       expect(homeMetadata.path).toContain('#/');
-      expect(isHomeAnonymous).toBe(true);
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
 
       await page.goto('/#/login');
       await waitForZeppelinReady(page);
       await page.waitForURL(url => !url.toString().includes('#/login'));
 
       const loginMetadata = await getBasicPageMetadata(page);
-      const isLoginAnonymous = await homePage.isAnonymousUser();
       expect(loginMetadata.path).toContain('#/');
       expect(loginMetadata.path).not.toContain('#/login');
-      expect(isLoginAnonymous).toBe(true);
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
 
       await homePage.navigateToLogin();
-      const isHomeContentDisplayed = await homePage.isHomeContentDisplayed();
-      expect(isHomeContentDisplayed).toBe(true);
+      await expect(homePage.welcomeTitle).toBeVisible();
     });
 
     test('When accessing protected route directly, Then should load home content for anonymous user', async ({
@@ -154,9 +147,8 @@ test.describe('Anonymous User Login Redirect', () => {
       // Then: Either the notebook-repos page loads (anonymous mode allows it) OR
       // the user is redirected back to home — both are valid; the app must not crash or show an empty shell
       const currentPath = getCurrentPath(page);
-      const isAnonymous = await homePage.isAnonymousUser();
 
-      expect(isAnonymous).toBe(true);
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
       // The app root must still be rendering — not a blank white page
       await expect(basePage.zeppelinWorkspace).toBeVisible();
       // If redirected, must land on home (not an error page)
@@ -176,9 +168,8 @@ test.describe('Anonymous User Login Redirect', () => {
       // Then: Either the configuration page loads (anonymous mode allows it) OR
       // the user is redirected back to home — both are valid; the app must not crash
       const currentPath = getCurrentPath(page);
-      const isAnonymous = await homePage.isAnonymousUser();
 
-      expect(isAnonymous).toBe(true);
+      await expect(homePage.anonymousUserIndicator).toBeVisible();
       await expect(basePage.zeppelinWorkspace).toBeVisible();
       if (!currentPath.includes('#/configuration')) {
         // JUSTIFIED: both states are valid — in anonymous mode (no shiro.ini) all routes including

@@ -103,10 +103,6 @@ export class BasePage {
     }
   }
 
-  async waitForRouterOutletChild(timeout = 10000): Promise<void> {
-    await expect(this.page.locator('zeppelin-workspace router-outlet + *')).toHaveCount(1, { timeout });
-  }
-
   async fillAndVerifyInput(
     locator: Locator,
     value: string,
