@@ -21,8 +21,8 @@
 // Usage:
 //
 //	go run dev/merge-pr.go --pr 5167 --dry-run
-//	go run dev/merge-pr.go --pr 5167 --resolve-jira --fix-version 0.13.0
-//	go run dev/merge-pr.go --pr 5167 --resolve-jira --release-branch branch-0.12,branch-0.11
+//	go run dev/merge-pr.go --pr 5167 --resolve-jira --fix-versions 0.13.0
+//	go run dev/merge-pr.go --pr 5167 --resolve-jira --release-branches branch-0.12,branch-0.11
 package main
 
 import (
@@ -76,8 +76,8 @@ var (
 func init() {
 	flag.IntVar(&flagPR, "pr", 0, "Pull request number (required)")
 	flag.StringVar(&flagTarget, "target", "", "Target branch (default: PR base branch)")
-	flag.Var(&flagFixVersions, "fix-version", "JIRA fix version(s), comma-separated")
-	flag.Var(&flagReleaseBranches, "release-branch", "Release branch(es) to cherry-pick into, comma-separated")
+	flag.Var(&flagFixVersions, "fix-versions", "JIRA fix version(s), comma-separated")
+	flag.Var(&flagReleaseBranches, "release-branches", "Release branch(es) to cherry-pick into, comma-separated")
 	flag.BoolVar(&flagResolveJira, "resolve-jira", false, "Resolve associated JIRA issue(s)")
 	flag.BoolVar(&flagDryRun, "dry-run", false, "Show what would be done without making changes")
 	flag.StringVar(&flagPushRemote, "push-remote", envOrDefault("PUSH_REMOTE_NAME", "apache"), "Git remote for pushing")
