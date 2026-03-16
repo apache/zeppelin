@@ -68,7 +68,6 @@ var (
 	flagReleaseBranches csvFlag
 	flagResolveJira     bool
 	flagDryRun          bool
-	flagPRRemote        string
 	flagPushRemote      string
 	flagGithubToken     string
 	flagJiraToken       string
@@ -81,7 +80,6 @@ func init() {
 	flag.Var(&flagReleaseBranches, "release-branch", "Release branch(es) to cherry-pick into, comma-separated")
 	flag.BoolVar(&flagResolveJira, "resolve-jira", false, "Resolve associated JIRA issue(s)")
 	flag.BoolVar(&flagDryRun, "dry-run", false, "Show what would be done without making changes")
-	flag.StringVar(&flagPRRemote, "pr-remote", envOrDefault("PR_REMOTE_NAME", "apache"), "Git remote for pull requests")
 	flag.StringVar(&flagPushRemote, "push-remote", envOrDefault("PUSH_REMOTE_NAME", "apache"), "Git remote for pushing")
 	flag.StringVar(&flagGithubToken, "github-token", "", "GitHub OAuth token (env: GITHUB_OAUTH_KEY)")
 	flag.StringVar(&flagJiraToken, "jira-token", "", "JIRA access token (env: JIRA_ACCESS_TOKEN)")
@@ -248,10 +246,9 @@ func jiraUnreleasedVersions() ([]jiraVersion, error) {
 	if err := json.Unmarshal(data, &all); err != nil {
 		return nil, err
 	}
-	re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 	var out []jiraVersion
 	for _, v := range all {
-		if !v.Released && !v.Archived && re.MatchString(v.Name) {
+		if !v.Released && !v.Archived && reSemanticVer.MatchString(v.Name) {
 			out = append(out, v)
 		}
 	}
@@ -268,7 +265,10 @@ func jiraTransitions(key string) ([]jiraTransition, error) {
 		return nil, fmt.Errorf("GET transitions %s: HTTP %d: %s", key, code, data)
 	}
 	var r struct{ Transitions []jiraTransition `json:"transitions"` }
-	return r.Transitions, json.Unmarshal(data, &r)
+	if err := json.Unmarshal(data, &r); err != nil {
+		return nil, err
+	}
+	return r.Transitions, nil
 }
 
 func jiraResolve(key, tid string, fv []jiraVersion, comment string) error {
@@ -305,26 +305,39 @@ func cmpVer(a, b string) int {
 	return len(ap) - len(bp)
 }
 
-// ── Title normalization ─────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-var jiraIDRe = regexp.MustCompile(`ZEPPELIN-\d{3,6}`)
+var (
+	jiraIDRe         = regexp.MustCompile(`ZEPPELIN-\d{3,6}`)
+	reTitleFormatted = regexp.MustCompile(`^\[ZEPPELIN-\d{3,6}\]`)
+	reTitleRef       = regexp.MustCompile(`(?i)(ZEPPELIN[-\s]*\d{3,6})`)
+	reWhitespace     = regexp.MustCompile(`\s+`)
+	reLeadingNonWord = regexp.MustCompile(`^\W+`)
+	reSemanticVer    = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+)
+
+func shortSHA(s string) string {
+	if len(s) > 8 {
+		return s[:8]
+	}
+	return s
+}
 
 func standardizeTitle(text string) string {
 	text = strings.TrimRight(text, ".")
 	if strings.HasPrefix(text, `Revert "`) && strings.HasSuffix(text, `"`) {
 		return text
 	}
-	if m, _ := regexp.MatchString(`^\[ZEPPELIN-\d{3,6}\]`, text); m {
+	if reTitleFormatted.MatchString(text) {
 		return text
 	}
-	re := regexp.MustCompile(`(?i)(ZEPPELIN[-\s]*\d{3,6})`)
-	for _, ref := range re.FindAllString(text, -1) {
+	for _, ref := range reTitleRef.FindAllString(text, -1) {
 		text = strings.Replace(text, ref, "", 1)
-		n := strings.ToUpper(regexp.MustCompile(`\s+`).ReplaceAllString(ref, "-"))
+		n := strings.ToUpper(reWhitespace.ReplaceAllString(ref, "-"))
 		text = "[" + n + "]" + text
 	}
-	text = regexp.MustCompile(`^\W+`).ReplaceAllString(text, "")
-	return regexp.MustCompile(`\s+`).ReplaceAllString(strings.TrimSpace(text), " ")
+	text = reLeadingNonWord.ReplaceAllString(text, "")
+	return reWhitespace.ReplaceAllString(strings.TrimSpace(text), " ")
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
@@ -366,8 +379,9 @@ func run() error {
 		fmt.Fprintf(os.Stderr, "WARNING: PR title contains [WIP]: %s\n", pr.Title)
 	}
 
-	if flagTarget == "" {
-		flagTarget = pr.Base.Ref
+	target := flagTarget
+	if target == "" {
+		target = pr.Base.Ref
 	}
 	title := standardizeTitle(pr.Title)
 	src := fmt.Sprintf("%s/%s", pr.User.Login, pr.Head.Ref)
@@ -375,7 +389,7 @@ func run() error {
 	fmt.Printf("=== Pull Request #%d ===\n", flagPR)
 	fmt.Printf("title:  %s\n", title)
 	fmt.Printf("source: %s\n", src)
-	fmt.Printf("target: %s\n", flagTarget)
+	fmt.Printf("target: %s\n", target)
 	fmt.Printf("url:    %s\n", pr.URL)
 	if len(flagReleaseBranches) > 0 {
 		fmt.Printf("release-branches: %s\n", strings.Join(flagReleaseBranches, ", "))
@@ -396,15 +410,18 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	hash := resp.SHA[:8]
-	fmt.Printf("\nPR #%d merged! (hash: %s)\n", flagPR, hash)
+	fmt.Printf("\nPR #%d merged! (hash: %s)\n", flagPR, shortSHA(resp.SHA))
 
-	gitRun("fetch", flagPushRemote, flagTarget)
+	gitRun("fetch", flagPushRemote, target)
 
 	// Cherry-pick into release branches
-	merged := []string{flagTarget}
+	merged := []string{target}
 	for _, branch := range flagReleaseBranches {
 		pick := fmt.Sprintf("PR_TOOL_PICK_PR_%d_%s", flagPR, strings.ToUpper(branch))
+		cleanup := func() {
+			gitRun("checkout", originalHead)
+			gitRun("branch", "-D", pick)
+		}
 		if _, err := gitRun("fetch", flagPushRemote, branch+":"+pick); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: fetch %s failed: %v\n", branch, err)
 			continue
@@ -413,22 +430,17 @@ func run() error {
 		if _, err := gitRun("cherry-pick", "-sx", resp.SHA); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: cherry-pick into %s failed: %v\n", branch, err)
 			gitRun("cherry-pick", "--abort")
-			gitRun("checkout", originalHead)
-			gitRun("branch", "-D", pick)
+			cleanup()
 			continue
 		}
 		if _, err := gitRun("push", flagPushRemote, pick+":"+branch); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: push to %s failed: %v\n", branch, err)
 		} else {
 			h, _ := gitRun("rev-parse", pick)
-			if len(h) > 8 {
-				h = h[:8]
-			}
-			fmt.Printf("Picked into %s (hash: %s)\n", branch, h)
+			fmt.Printf("Picked into %s (hash: %s)\n", branch, shortSHA(h))
 			merged = append(merged, branch)
 		}
-		gitRun("checkout", originalHead)
-		gitRun("branch", "-D", pick)
+		cleanup()
 	}
 
 	// Resolve JIRA
