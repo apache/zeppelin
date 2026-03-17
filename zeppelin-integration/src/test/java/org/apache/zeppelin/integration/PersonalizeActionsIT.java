@@ -210,8 +210,8 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
               "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
 
-      clickableWait(By.xpath(getParagraphXPath(1) +
-          "//button[contains(@uib-tooltip, 'Bar Chart')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+      clickAndWait(By.xpath(getParagraphXPath(1) +
+          "//button[contains(@uib-tooltip, 'Bar Chart')]"));
       assertEquals("fa fa-bar-chart",
           manager.getWebDriver().findElement(By.xpath(getParagraphXPath(1)
               + "//button[contains(@class," +

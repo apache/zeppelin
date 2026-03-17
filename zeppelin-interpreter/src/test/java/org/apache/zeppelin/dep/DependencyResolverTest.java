@@ -18,7 +18,6 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,7 +44,7 @@ class DependencyResolverTest {
         System.currentTimeMillis());
     testPath = tmpDir.getAbsolutePath() + "/test-repo";
     testCopyPath = new File(tmpDir, "test-copy-repo");
-    resolver = new DependencyResolver(testPath, ZeppelinConfiguration.load());
+    resolver = new DependencyResolver(testPath, null, null, null, null);
   }
 
   @AfterAll
