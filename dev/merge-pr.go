@@ -309,8 +309,9 @@ func cmpVer(a, b string) int {
 
 var (
 	jiraIDRe         = regexp.MustCompile(`ZEPPELIN-\d{3,6}`)
-	reTitleFormatted = regexp.MustCompile(`^\[ZEPPELIN-\d{3,6}\]`)
+	reTitleFormatted = regexp.MustCompile(`^\[ZEPPELIN-\d{3,6}\](\[[A-Z0-9_\s,]+\] )+\S+`)
 	reTitleRef       = regexp.MustCompile(`(?i)(ZEPPELIN[-\s]*\d{3,6})`)
+	reComponent      = regexp.MustCompile(`(?i)(\[[\w\s,.\-]+\])`)
 	reWhitespace     = regexp.MustCompile(`\s+`)
 	reLeadingNonWord = regexp.MustCompile(`^\W+`)
 	reSemanticVer    = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
@@ -331,13 +332,23 @@ func standardizeTitle(text string) string {
 	if reTitleFormatted.MatchString(text) {
 		return text
 	}
+	// Extract JIRA ref(s)
+	var jiraRefs []string
 	for _, ref := range reTitleRef.FindAllString(text, -1) {
+		jiraRefs = append(jiraRefs, "["+strings.ToUpper(reWhitespace.ReplaceAllString(ref, "-"))+"]")
 		text = strings.Replace(text, ref, "", 1)
-		n := strings.ToUpper(reWhitespace.ReplaceAllString(ref, "-"))
-		text = "[" + n + "]" + text
 	}
+	// Extract component(s): [SPARK], [FLINK], etc.
+	var components []string
+	for _, comp := range reComponent.FindAllString(text, -1) {
+		components = append(components, strings.ToUpper(comp))
+		text = strings.Replace(text, comp, "", 1)
+	}
+	// Cleanup remaining leading symbols
 	text = reLeadingNonWord.ReplaceAllString(text, "")
-	return reWhitespace.ReplaceAllString(strings.TrimSpace(text), " ")
+	// Assemble: [ZEPPELIN-XXXX][COMPONENT] remaining text
+	result := strings.Join(jiraRefs, "") + strings.Join(components, "") + " " + text
+	return reWhitespace.ReplaceAllString(strings.TrimSpace(result), " ")
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
@@ -481,12 +492,7 @@ func doResolveJira(title string, merged []string) error {
 			fixVer = append(fixVer, v)
 		}
 	} else if len(versions) > 0 {
-		for _, ref := range merged {
-			if ref == "master" {
-				fixVer = append(fixVer, versions[0])
-				break
-			}
-		}
+		fixVer = inferFixVersions(merged, versions)
 	}
 
 	for _, id := range ids {
@@ -533,4 +539,70 @@ func doResolveJira(title string, merged []string) error {
 		fmt.Printf("Resolved %s!\n", id)
 	}
 	return nil
+}
+
+// inferFixVersions maps merge branches to JIRA fix versions.
+// For "master", picks the latest unreleased version.
+// For release branches like "branch-0.12", finds the smallest matching 0.12.x version.
+// Then removes redundant X.Y.0 if a previous minor X.(Y-1).0 is also selected.
+func inferFixVersions(merged []string, versions []jiraVersion) []jiraVersion {
+	var names []string
+	has := make(map[string]bool)
+	for _, branch := range merged {
+		if branch == "master" {
+			if !has[versions[0].Name] {
+				names = append(names, versions[0].Name)
+				has[versions[0].Name] = true
+			}
+		} else {
+			// "branch-0.12" → prefix "0.12"
+			prefix := strings.TrimPrefix(branch, "branch-")
+			// Find all matching versions, pick the smallest (last in desc-sorted list)
+			var found []string
+			for _, v := range versions {
+				if strings.HasPrefix(v.Name, prefix+".") || v.Name == prefix {
+					found = append(found, v.Name)
+				}
+			}
+			if len(found) > 0 {
+				pick := found[len(found)-1]
+				if !has[pick] {
+					names = append(names, pick)
+					has[pick] = true
+				}
+			} else {
+				fmt.Fprintf(os.Stderr, "Warning: no version found for %s, skipping\n", branch)
+			}
+		}
+	}
+	// Remove redundant X.Y.0 when X.(Y-1).0 is also present
+	filtered := make([]string, 0, len(names))
+	for _, v := range names {
+		parts := strings.Split(v, ".")
+		if len(parts) == 3 && parts[2] == "0" {
+			minor, _ := strconv.Atoi(parts[1])
+			if minor > 0 {
+				prev := fmt.Sprintf("%s.%d.0", parts[0], minor-1)
+				if has[prev] {
+					continue
+				}
+			}
+		}
+		filtered = append(filtered, v)
+	}
+	// Map names back to jiraVersion structs
+	vm := make(map[string]jiraVersion)
+	for _, v := range versions {
+		vm[v.Name] = v
+	}
+	var result []jiraVersion
+	for _, name := range filtered {
+		if v, ok := vm[name]; ok {
+			result = append(result, v)
+		}
+	}
+	if len(result) > 0 {
+		fmt.Printf("Auto-inferred fix version(s): %s\n", strings.Join(filtered, ", "))
+	}
+	return result
 }
