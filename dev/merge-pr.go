@@ -192,6 +192,18 @@ func ghMergePR(num int, title, msg string) (*mergeResponse, error) {
 	return &resp, json.Unmarshal(data, &resp)
 }
 
+func ghCommentPR(num int, body string) error {
+	payload := map[string]string{"body": body}
+	_, code, err := httpDo("POST", fmt.Sprintf("%s/issues/%d/comments", githubAPIBase, num), payload, ghAuth())
+	if err != nil {
+		return err
+	}
+	if code != 201 {
+		return fmt.Errorf("comment PR #%d: HTTP %d", num, code)
+	}
+	return nil
+}
+
 // ── JIRA ────────────────────────────────────────────────────────────────────
 
 type jiraIssue struct {
@@ -483,6 +495,19 @@ func run() error {
 			merged = append(merged, branch)
 		}
 		cleanup()
+	}
+
+	// Comment on PR with merge summary
+	var commentLines []string
+	commentLines = append(commentLines, fmt.Sprintf("Merged into %s (%s).", target, shortSHA(resp.SHA)))
+	for _, branch := range merged[1:] {
+		commentLines = append(commentLines, fmt.Sprintf("Cherry-picked into %s.", branch))
+	}
+	comment := strings.Join(commentLines, "\n")
+	if err := ghCommentPR(flagPR, comment); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: failed to comment on PR: %v\n", err)
+	} else {
+		fmt.Println("Commented on PR with merge summary.")
 	}
 
 	// Resolve JIRA
