@@ -24,17 +24,13 @@
 //   java dev/merge-pr.java --pr 5167 --resolve-jira --release-branches branch-0.12,branch-0.11
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,46 +45,49 @@ import java.util.stream.Collectors;
  */
 public class MergePr {
 
-    static final String GITHUB_API_BASE = "https://api.github.com/repos/apache/zeppelin";
-    static final String JIRA_API_BASE = "https://issues.apache.org/jira/rest/api/2";
-    static final HttpClient HTTP = HttpClient.newHttpClient();
+    private static final String GITHUB_API_BASE = "https://api.github.com/repos/apache/zeppelin";
+    private static final String JIRA_API_BASE = "https://issues.apache.org/jira/rest/api/2";
 
-    static final Pattern JIRA_ID_RE = Pattern.compile("ZEPPELIN-\\d{3,6}");
-    static final Pattern TITLE_FORMATTED_RE = Pattern.compile("^\\[ZEPPELIN-\\d{3,6}](\\[[A-Z0-9_\\s,]+] )+\\S+");
-    static final Pattern TITLE_REF_RE = Pattern.compile("(?i)(ZEPPELIN[-\\s]*\\d{3,6})");
-    static final Pattern COMPONENT_RE = Pattern.compile("(?i)(\\[[\\w\\s,.\\-]+])");
-    static final Pattern WHITESPACE_RE = Pattern.compile("\\s+");
-    static final Pattern LEADING_NON_WORD_RE = Pattern.compile("^\\W+");
-    static final Pattern SEMANTIC_VER_RE = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
+    private static final Pattern JIRA_ID_RE = Pattern.compile("ZEPPELIN-\\d{3,6}");
+    private static final Pattern TITLE_FORMATTED_RE = Pattern.compile("^\\[ZEPPELIN-\\d{3,6}](\\[[A-Z0-9_\\s,]+] )+\\S+");
+    private static final Pattern TITLE_REF_RE = Pattern.compile("(?i)(ZEPPELIN[-\\s]*\\d{3,6})");
+    private static final Pattern COMPONENT_RE = Pattern.compile("(?i)(\\[[\\w\\s,.\\-]+])");
+    private static final Pattern WHITESPACE_RE = Pattern.compile("\\s+");
+    private static final Pattern LEADING_NON_WORD_RE = Pattern.compile("^\\W+");
+    private static final Pattern SEMANTIC_VER_RE = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
 
-    // ── Flags ──────────────────────────────────────────────────────────────
+    // ── Instance fields (parsed from CLI args) ─────────────────────────────
 
-    static int flagPR;
-    static String flagTarget = "";
-    static List<String> flagFixVersions = new ArrayList<>();
-    static List<String> flagReleaseBranches = new ArrayList<>();
-    static boolean flagResolveJira;
-    static boolean flagDryRun;
-    static String flagPushRemote;
-    static String flagGithubToken;
-    static String flagJiraToken;
+    private final HttpClient http = HttpClient.newHttpClient();
 
-    static void parseArgs(String[] args) {
-        flagPushRemote = envOrDefault("PUSH_REMOTE_NAME", "apache");
-        flagGithubToken = envOrDefault("GITHUB_OAUTH_KEY", "");
-        flagJiraToken = envOrDefault("JIRA_ACCESS_TOKEN", "");
+    private int pr;
+    private String target = "";
+    private List<String> fixVersions = new ArrayList<>();
+    private List<String> releaseBranches = new ArrayList<>();
+    private boolean resolveJira;
+    private boolean dryRun;
+    private String pushRemote;
+    private String githubToken;
+    private String jiraToken;
+
+    // ── Constructor & arg parsing ──────────────────────────────────────────
+
+    private MergePr(String[] args) {
+        pushRemote = envOrDefault("PUSH_REMOTE_NAME", "apache");
+        githubToken = envOrDefault("GITHUB_OAUTH_KEY", "");
+        jiraToken = envOrDefault("JIRA_ACCESS_TOKEN", "");
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "--pr": flagPR = Integer.parseInt(args[++i]); break;
-                case "--target": flagTarget = args[++i]; break;
-                case "--fix-versions": flagFixVersions = parseCsv(args[++i]); break;
-                case "--release-branches": flagReleaseBranches = parseCsv(args[++i]); break;
-                case "--resolve-jira": flagResolveJira = true; break;
-                case "--dry-run": flagDryRun = true; break;
-                case "--push-remote": flagPushRemote = args[++i]; break;
-                case "--github-token": flagGithubToken = args[++i]; break;
-                case "--jira-token": flagJiraToken = args[++i]; break;
+                case "--pr": pr = Integer.parseInt(args[++i]); break;
+                case "--target": target = args[++i]; break;
+                case "--fix-versions": fixVersions = parseCsv(args[++i]); break;
+                case "--release-branches": releaseBranches = parseCsv(args[++i]); break;
+                case "--resolve-jira": resolveJira = true; break;
+                case "--dry-run": dryRun = true; break;
+                case "--push-remote": pushRemote = args[++i]; break;
+                case "--github-token": githubToken = args[++i]; break;
+                case "--jira-token": jiraToken = args[++i]; break;
                 case "--help": case "-h": printUsage(); System.exit(0); break;
                 default:
                     System.err.println("Unknown flag: " + args[i]);
@@ -98,7 +97,7 @@ public class MergePr {
         }
     }
 
-    static void printUsage() {
+    private static void printUsage() {
         System.err.println("Usage: java dev/merge-pr.java [flags]");
         System.err.println("  --pr int              Pull request number (required)");
         System.err.println("  --target string        Target branch (default: PR base branch)");
@@ -111,7 +110,7 @@ public class MergePr {
         System.err.println("  --jira-token string    JIRA access token (env: JIRA_ACCESS_TOKEN)");
     }
 
-    static List<String> parseCsv(String value) {
+    private static List<String> parseCsv(String value) {
         List<String> result = new ArrayList<>();
         for (String s : value.split(",")) {
             String trimmed = s.trim();
@@ -120,14 +119,14 @@ public class MergePr {
         return result;
     }
 
-    static String envOrDefault(String key, String def) {
+    private static String envOrDefault(String key, String def) {
         String v = System.getenv(key);
         return (v != null && !v.isEmpty()) ? v : def;
     }
 
     // ── Git ────────────────────────────────────────────────────────────────
 
-    static String gitRun(String... args) throws Exception {
+    private String gitRun(String... args) throws Exception {
         String[] cmd = new String[args.length + 1];
         cmd[0] = "git";
         System.arraycopy(args, 0, cmd, 1, args.length);
@@ -143,15 +142,15 @@ public class MergePr {
         return output;
     }
 
-    static String gitCurrentRef() throws Exception {
+    private String gitCurrentRef() throws Exception {
         String ref = gitRun("rev-parse", "--abbrev-ref", "HEAD");
         return "HEAD".equals(ref) ? gitRun("rev-parse", "HEAD") : ref;
     }
 
     // ── HTTP ───────────────────────────────────────────────────────────────
 
-    static HttpResponse<String> httpDo(String method, String url, String body, String auth)
-            throws IOException, InterruptedException {
+    private HttpResponse<String> httpDo(String method, String url, String body, String auth)
+            throws Exception {
         HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json");
@@ -163,27 +162,24 @@ public class MergePr {
         } else {
             builder.method(method, HttpRequest.BodyPublishers.noBody());
         }
-        return HTTP.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        return http.send(builder.build(), HttpResponse.BodyHandlers.ofString());
     }
 
     // ── Simple JSON parser (no external deps) ──────────────────────────────
 
-    // Minimal JSON helpers — we only need to read specific fields from GitHub/JIRA responses.
-    // For writing, we build JSON strings directly.
-
-    static String jsonStr(String json, String key) {
+    private static String jsonStr(String json, String key) {
         String pattern = "\"" + key + "\"\\s*:\\s*\"([^\"]*?)\"";
         Matcher m = Pattern.compile(pattern).matcher(json);
         return m.find() ? m.group(1) : "";
     }
 
-    static boolean jsonBool(String json, String key) {
+    private static boolean jsonBool(String json, String key) {
         String pattern = "\"" + key + "\"\\s*:\\s*(true|false)";
         Matcher m = Pattern.compile(pattern).matcher(json);
         return m.find() && "true".equals(m.group(1));
     }
 
-    static String jsonObj(String json, String key) {
+    private static String jsonObj(String json, String key) {
         String pattern = "\"" + key + "\"\\s*:\\s*\\{";
         Matcher m = Pattern.compile(pattern).matcher(json);
         if (!m.find()) return "{}";
@@ -196,7 +192,7 @@ public class MergePr {
         return "{}";
     }
 
-    static List<String> jsonArray(String json, String key) {
+    private static List<String> jsonArray(String json, String key) {
         String pattern = "\"" + key + "\"\\s*:\\s*\\[";
         Matcher m = Pattern.compile(pattern).matcher(json);
         if (!m.find()) return List.of();
@@ -207,10 +203,12 @@ public class MergePr {
             if (json.charAt(i) == '[') depth++;
             else if (json.charAt(i) == ']') { depth--; if (depth == 0) { arrEnd = i + 1; break; } }
         }
-        String arr = json.substring(start, arrEnd);
-        // Split top-level objects
+        return parseObjectArray(json.substring(start, arrEnd));
+    }
+
+    private static List<String> parseObjectArray(String arr) {
         List<String> items = new ArrayList<>();
-        depth = 0;
+        int depth = 0;
         int itemStart = -1;
         for (int i = 1; i < arr.length() - 1; i++) {
             char c = arr.charAt(i);
@@ -225,19 +223,24 @@ public class MergePr {
         return items;
     }
 
-    // ── GitHub ──────────────────────────────────────────────────────────────
-
-    static String ghAuth() {
-        return flagGithubToken.isEmpty() ? "" : "token " + flagGithubToken;
+    private static String jsonEscape(String s) {
+        return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
     }
 
-    static String ghGetPR(int num) throws Exception {
+    // ── GitHub ──────────────────────────────────────────────────────────────
+
+    private String ghAuth() {
+        return githubToken.isEmpty() ? "" : "token " + githubToken;
+    }
+
+    private String ghGetPR(int num) throws Exception {
         HttpResponse<String> r = httpDo("GET", GITHUB_API_BASE + "/pulls/" + num, null, ghAuth());
         if (r.statusCode() != 200) throw new RuntimeException("GET PR #" + num + ": HTTP " + r.statusCode());
         return r.body();
     }
 
-    static String ghMergePR(int num, String title, String msg) throws Exception {
+    private String ghMergePR(int num, String title, String msg) throws Exception {
         String body = String.format("{\"commit_title\":%s,\"commit_message\":%s,\"merge_method\":\"squash\"}",
                 jsonEscape(title), jsonEscape(msg));
         HttpResponse<String> r = httpDo("PUT", GITHUB_API_BASE + "/pulls/" + num + "/merge", body, ghAuth());
@@ -246,7 +249,7 @@ public class MergePr {
         return r.body();
     }
 
-    static void ghCommentPR(int num, String comment) throws Exception {
+    private void ghCommentPR(int num, String comment) throws Exception {
         String body = String.format("{\"body\":%s}", jsonEscape(comment));
         HttpResponse<String> r = httpDo("POST", GITHUB_API_BASE + "/issues/" + num + "/comments", body, ghAuth());
         if (r.statusCode() != 201) {
@@ -254,40 +257,23 @@ public class MergePr {
         }
     }
 
-    static String jsonEscape(String s) {
-        return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + "\"";
-    }
-
     // ── JIRA ───────────────────────────────────────────────────────────────
 
-    static String jiraAuth() {
-        return flagJiraToken.isEmpty() ? "" : "Bearer " + flagJiraToken;
+    private String jiraAuth() {
+        return jiraToken.isEmpty() ? "" : "Bearer " + jiraToken;
     }
 
-    static String jiraGetIssue(String key) throws Exception {
+    private String jiraGetIssue(String key) throws Exception {
         HttpResponse<String> r = httpDo("GET", JIRA_API_BASE + "/issue/" + key, null, jiraAuth());
         if (r.statusCode() != 200) throw new RuntimeException("GET " + key + ": HTTP " + r.statusCode());
         return r.body();
     }
 
-    static List<Map<String, String>> jiraUnreleasedVersions() throws Exception {
+    private List<Map<String, String>> jiraUnreleasedVersions() throws Exception {
         HttpResponse<String> r = httpDo("GET", JIRA_API_BASE + "/project/ZEPPELIN/versions", null, jiraAuth());
         if (r.statusCode() != 200) throw new RuntimeException("GET versions: HTTP " + r.statusCode());
-        List<String> all = jsonArray(r.body(), "dummy"); // won't work — top level is array
-        // Parse top-level array manually
         String body = r.body().trim();
-        all = new ArrayList<>();
-        int depth = 0; int start = -1;
-        for (int i = 1; i < body.length() - 1; i++) {
-            if (body.charAt(i) == '{' && depth == 0) start = i;
-            if (body.charAt(i) == '{') depth++;
-            if (body.charAt(i) == '}') depth--;
-            if (body.charAt(i) == '}' && depth == 0 && start >= 0) {
-                all.add(body.substring(start, i + 1));
-                start = -1;
-            }
-        }
+        List<String> all = parseObjectArray(body);
         List<Map<String, String>> versions = new ArrayList<>();
         for (String v : all) {
             String name = jsonStr(v, "name");
@@ -304,7 +290,7 @@ public class MergePr {
         return versions;
     }
 
-    static List<Map<String, String>> jiraTransitions(String key) throws Exception {
+    private List<Map<String, String>> jiraTransitions(String key) throws Exception {
         HttpResponse<String> r = httpDo("GET", JIRA_API_BASE + "/issue/" + key + "/transitions", null, jiraAuth());
         if (r.statusCode() != 200) throw new RuntimeException("GET transitions " + key + ": HTTP " + r.statusCode());
         List<Map<String, String>> result = new ArrayList<>();
@@ -317,13 +303,13 @@ public class MergePr {
         return result;
     }
 
-    static void jiraResolve(String key, String transitionId, List<Map<String, String>> fixVersions, String comment)
+    private void jiraResolve(String key, String transitionId, List<Map<String, String>> fvList, String comment)
             throws Exception {
         StringBuilder fvJson = new StringBuilder("[");
-        for (int i = 0; i < fixVersions.size(); i++) {
+        for (int i = 0; i < fvList.size(); i++) {
             if (i > 0) fvJson.append(",");
             fvJson.append(String.format("{\"add\":{\"id\":\"%s\",\"name\":\"%s\"}}",
-                    fixVersions.get(i).get("id"), fixVersions.get(i).get("name")));
+                    fvList.get(i).get("id"), fvList.get(i).get("name")));
         }
         fvJson.append("]");
         String body = String.format(
@@ -333,7 +319,9 @@ public class MergePr {
         if (r.statusCode() != 204) throw new RuntimeException("Resolve " + key + ": HTTP " + r.statusCode());
     }
 
-    static int cmpVer(String a, String b) {
+    // ── Utilities ──────────────────────────────────────────────────────────
+
+    private static int cmpVer(String a, String b) {
         String[] ap = a.split("\\."), bp = b.split("\\.");
         for (int i = 0; i < Math.min(ap.length, bp.length); i++) {
             int d = Integer.parseInt(ap[i]) - Integer.parseInt(bp[i]);
@@ -342,9 +330,7 @@ public class MergePr {
         return ap.length - bp.length;
     }
 
-    // ── Title normalization ────────────────────────────────────────────────
-
-    static String standardizeTitle(String text) {
+    private static String standardizeTitle(String text) {
         text = text.replaceAll("\\.+$", "");
         if (text.startsWith("Revert \"") && text.endsWith("\"")) return text;
         if (TITLE_FORMATTED_RE.matcher(text).find()) return text;
@@ -368,13 +354,13 @@ public class MergePr {
         return WHITESPACE_RE.matcher(result.trim()).replaceAll(" ");
     }
 
-    static String shortSHA(String sha) {
+    private static String shortSHA(String sha) {
         return sha.length() > 8 ? sha.substring(0, 8) : sha;
     }
 
     // ── Fix version inference ──────────────────────────────────────────────
 
-    static List<Map<String, String>> inferFixVersions(List<String> merged,
+    private List<Map<String, String>> inferFixVersions(List<String> merged,
             List<Map<String, String>> versions, boolean inferMaster) {
         List<String> names = new ArrayList<>();
         LinkedHashSet<String> has = new LinkedHashSet<>();
@@ -424,94 +410,53 @@ public class MergePr {
 
     // ── Effective command ──────────────────────────────────────────────────
 
-    static void printEffectiveCommand(String target, List<String> fixVersions) {
+    private void printEffectiveCommand(String targetBranch, List<String> resolvedVersions) {
         List<String> parts = new ArrayList<>();
         parts.add("java dev/merge-pr.java");
-        parts.add("--pr " + flagPR);
-        if (!target.isEmpty() && !"master".equals(target)) parts.add("--target " + target);
-        if (!flagReleaseBranches.isEmpty()) parts.add("--release-branches " + String.join(",", flagReleaseBranches));
-        if (flagResolveJira) parts.add("--resolve-jira");
-        if (!fixVersions.isEmpty()) parts.add("--fix-versions " + String.join(",", fixVersions));
-        if (!"apache".equals(flagPushRemote)) parts.add("--push-remote " + flagPushRemote);
+        parts.add("--pr " + pr);
+        if (!targetBranch.isEmpty() && !"master".equals(targetBranch)) parts.add("--target " + targetBranch);
+        if (!releaseBranches.isEmpty()) parts.add("--release-branches " + String.join(",", releaseBranches));
+        if (resolveJira) parts.add("--resolve-jira");
+        if (!resolvedVersions.isEmpty()) parts.add("--fix-versions " + String.join(",", resolvedVersions));
+        if (!"apache".equals(pushRemote)) parts.add("--push-remote " + pushRemote);
         System.out.println("[dry-run] Effective command:\n  " + String.join(" ", parts));
     }
 
-    // ── Main ───────────────────────────────────────────────────────────────
+    // ── Main flow ──────────────────────────────────────────────────────────
 
-    public static void main(String[] args) throws Exception {
-        parseArgs(args);
-        if (flagPR == 0) {
-            System.err.println("Error: --pr is required");
-            printUsage();
-            System.exit(1);
-        }
-        run();
-    }
-
-    static void run() throws Exception {
+    private void run() throws Exception {
         String originalHead = gitCurrentRef();
 
-        String prJson = ghGetPR(flagPR);
+        String prJson = ghGetPR(pr);
         if (!jsonBool(prJson, "mergeable")) {
-            throw new RuntimeException("PR #" + flagPR + " is not mergeable");
+            throw new RuntimeException("PR #" + pr + " is not mergeable");
         }
         String prTitle = jsonStr(prJson, "title");
         if (prTitle.contains("[WIP]")) {
             System.err.println("WARNING: PR title contains [WIP]: " + prTitle);
         }
 
-        String target = flagTarget.isEmpty() ? jsonStr(jsonObj(prJson, "base"), "ref") : flagTarget;
+        String targetBranch = target.isEmpty() ? jsonStr(jsonObj(prJson, "base"), "ref") : target;
         String title = standardizeTitle(prTitle);
         String headRef = jsonStr(jsonObj(prJson, "head"), "ref");
         String userLogin = jsonStr(jsonObj(prJson, "user"), "login");
         String src = userLogin + "/" + headRef;
         String prBody = jsonStr(prJson, "body");
 
-        System.out.println("=== Pull Request #" + flagPR + " ===");
+        System.out.println("=== Pull Request #" + pr + " ===");
         System.out.println("title:  " + title);
         System.out.println("source: " + src);
-        System.out.println("target: " + target);
+        System.out.println("target: " + targetBranch);
         System.out.println("url:    " + jsonStr(prJson, "url"));
-        if (!flagReleaseBranches.isEmpty()) {
-            System.out.println("release-branches: " + String.join(", ", flagReleaseBranches));
+        if (!releaseBranches.isEmpty()) {
+            System.out.println("release-branches: " + String.join(", ", releaseBranches));
         }
 
-        // Resolve fix versions for effective command display
-        List<String> resolvedFixVersions = new ArrayList<>();
-        if (flagResolveJira && !flagJiraToken.isEmpty()) {
-            List<String> ids = new ArrayList<>();
-            Matcher idm = JIRA_ID_RE.matcher(title);
-            while (idm.find()) ids.add(idm.group());
-            if (!ids.isEmpty()) {
-                try {
-                    List<Map<String, String>> versions = jiraUnreleasedVersions();
-                    if (!versions.isEmpty()) {
-                        Map<String, Map<String, String>> vm = new HashMap<>();
-                        for (Map<String, String> v : versions) vm.put(v.get("name"), v);
-                        LinkedHashSet<String> has = new LinkedHashSet<>();
-                        for (String fv : flagFixVersions) {
-                            if (vm.containsKey(fv)) { resolvedFixVersions.add(fv); has.add(fv); }
-                        }
-                        boolean inferMaster = flagFixVersions.isEmpty();
-                        List<String> branches = new ArrayList<>();
-                        branches.add(target);
-                        branches.addAll(flagReleaseBranches);
-                        for (Map<String, String> iv : inferFixVersions(branches, versions, inferMaster)) {
-                            if (!has.contains(iv.get("name"))) {
-                                resolvedFixVersions.add(iv.get("name"));
-                                has.add(iv.get("name"));
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("Warning: failed to fetch JIRA versions: " + e.getMessage());
-                }
-            }
-        }
+        List<String> resolvedFixVersions = resolveFixVersionNames(title, targetBranch);
 
-        if (flagDryRun) {
+        if (dryRun) {
             System.out.println();
-            printEffectiveCommand(target, resolvedFixVersions);
+            printEffectiveCommand(targetBranch, resolvedFixVersions);
             return;
         }
 
@@ -520,21 +465,21 @@ public class MergePr {
         String name = "", email = "";
         try { name = gitRun("config", "--get", "user.name"); } catch (Exception ignored) {}
         try { email = gitRun("config", "--get", "user.email"); } catch (Exception ignored) {}
-        String msg = body + "\n\nCloses #" + flagPR + " from " + src + ".\n\nSigned-off-by: " + name + " <" + email + ">";
+        String msg = body + "\n\nCloses #" + pr + " from " + src + ".\n\nSigned-off-by: " + name + " <" + email + ">";
 
-        String mergeJson = ghMergePR(flagPR, title, msg);
+        String mergeJson = ghMergePR(pr, title, msg);
         String sha = jsonStr(mergeJson, "sha");
-        System.out.println("\nPR #" + flagPR + " merged! (hash: " + shortSHA(sha) + ")");
+        System.out.println("\nPR #" + pr + " merged! (hash: " + shortSHA(sha) + ")");
 
-        try { gitRun("fetch", flagPushRemote, target); } catch (Exception ignored) {}
+        try { gitRun("fetch", pushRemote, targetBranch); } catch (Exception ignored) {}
 
         // Cherry-pick into release branches
         List<String> merged = new ArrayList<>();
-        merged.add(target);
-        for (String branch : flagReleaseBranches) {
-            String pick = "PR_TOOL_PICK_PR_" + flagPR + "_" + branch.toUpperCase();
+        merged.add(targetBranch);
+        for (String branch : releaseBranches) {
+            String pick = "PR_TOOL_PICK_PR_" + pr + "_" + branch.toUpperCase();
             try {
-                gitRun("fetch", flagPushRemote, branch + ":" + pick);
+                gitRun("fetch", pushRemote, branch + ":" + pick);
             } catch (Exception e) {
                 System.err.println("Warning: fetch " + branch + " failed: " + e.getMessage());
                 continue;
@@ -550,7 +495,7 @@ public class MergePr {
                 continue;
             }
             try {
-                gitRun("push", flagPushRemote, pick + ":" + branch);
+                gitRun("push", pushRemote, pick + ":" + branch);
                 String h = gitRun("rev-parse", pick);
                 System.out.println("Picked into " + branch + " (hash: " + shortSHA(h) + ")");
                 merged.add(branch);
@@ -561,21 +506,9 @@ public class MergePr {
             gitRun("branch", "-D", pick);
         }
 
-        // Comment on PR
-        StringBuilder comment = new StringBuilder();
-        comment.append("Merged into ").append(target).append(" (").append(shortSHA(sha)).append(").");
-        for (int i = 1; i < merged.size(); i++) {
-            comment.append("\nCherry-picked into ").append(merged.get(i)).append(".");
-        }
-        try {
-            ghCommentPR(flagPR, comment.toString());
-            System.out.println("Commented on PR with merge summary.");
-        } catch (Exception e) {
-            System.err.println("Warning: failed to comment on PR: " + e.getMessage());
-        }
+        commentMergeSummary(merged, sha);
 
-        // Resolve JIRA
-        if (flagResolveJira) {
+        if (resolveJira) {
             try {
                 doResolveJira(title, merged);
             } catch (Exception e) {
@@ -584,8 +517,56 @@ public class MergePr {
         }
     }
 
-    static void doResolveJira(String title, List<String> merged) throws Exception {
-        if (flagJiraToken.isEmpty()) throw new RuntimeException("JIRA_ACCESS_TOKEN is not set");
+    private List<String> resolveFixVersionNames(String title, String targetBranch) {
+        if (!resolveJira || jiraToken.isEmpty()) return new ArrayList<>(fixVersions);
+
+        List<String> ids = new ArrayList<>();
+        Matcher idm = JIRA_ID_RE.matcher(title);
+        while (idm.find()) ids.add(idm.group());
+        if (ids.isEmpty()) return new ArrayList<>(fixVersions);
+
+        try {
+            List<Map<String, String>> versions = jiraUnreleasedVersions();
+            if (versions.isEmpty()) return new ArrayList<>(fixVersions);
+
+            Map<String, Map<String, String>> vm = new HashMap<>();
+            for (Map<String, String> v : versions) vm.put(v.get("name"), v);
+
+            LinkedHashSet<String> resolved = new LinkedHashSet<>();
+            for (String fv : fixVersions) {
+                if (vm.containsKey(fv)) resolved.add(fv);
+            }
+
+            boolean inferMaster = fixVersions.isEmpty();
+            List<String> branches = new ArrayList<>();
+            branches.add(targetBranch);
+            branches.addAll(releaseBranches);
+            for (Map<String, String> iv : inferFixVersions(branches, versions, inferMaster)) {
+                resolved.add(iv.get("name"));
+            }
+            return new ArrayList<>(resolved);
+        } catch (Exception e) {
+            System.err.println("Warning: failed to fetch JIRA versions: " + e.getMessage());
+            return new ArrayList<>(fixVersions);
+        }
+    }
+
+    private void commentMergeSummary(List<String> merged, String sha) {
+        StringBuilder comment = new StringBuilder();
+        comment.append("Merged into ").append(merged.get(0)).append(" (").append(shortSHA(sha)).append(").");
+        for (int i = 1; i < merged.size(); i++) {
+            comment.append("\nCherry-picked into ").append(merged.get(i)).append(".");
+        }
+        try {
+            ghCommentPR(pr, comment.toString());
+            System.out.println("Commented on PR with merge summary.");
+        } catch (Exception e) {
+            System.err.println("Warning: failed to comment on PR: " + e.getMessage());
+        }
+    }
+
+    private void doResolveJira(String title, List<String> merged) throws Exception {
+        if (jiraToken.isEmpty()) throw new RuntimeException("JIRA_ACCESS_TOKEN is not set");
 
         List<String> ids = new ArrayList<>();
         Matcher m = JIRA_ID_RE.matcher(title);
@@ -599,13 +580,13 @@ public class MergePr {
 
         List<Map<String, String>> fixVer = new ArrayList<>();
         LinkedHashSet<String> has = new LinkedHashSet<>();
-        for (String fv : flagFixVersions) {
+        for (String fv : fixVersions) {
             if (!vm.containsKey(fv)) throw new RuntimeException("fix version \"" + fv + "\" not found");
             fixVer.add(vm.get(fv));
             has.add(fv);
         }
         if (!versions.isEmpty()) {
-            boolean inferMaster = flagFixVersions.isEmpty();
+            boolean inferMaster = fixVersions.isEmpty();
             for (Map<String, String> iv : inferFixVersions(merged, versions, inferMaster)) {
                 if (!has.contains(iv.get("name"))) {
                     fixVer.add(iv);
@@ -639,8 +620,8 @@ public class MergePr {
                 continue;
             }
 
-            String jiraComment = "Issue resolved by pull request " + flagPR
-                    + "\n[https://github.com/apache/zeppelin/pull/" + flagPR + "]";
+            String jiraComment = "Issue resolved by pull request " + pr
+                    + "\n[https://github.com/apache/zeppelin/pull/" + pr + "]";
             try {
                 jiraResolve(id, resolveId, fixVer, jiraComment);
                 System.out.println("Resolved " + id + "!");
@@ -648,5 +629,17 @@ public class MergePr {
                 System.err.println("Warning: resolve " + id + ": " + e.getMessage());
             }
         }
+    }
+
+    // ── Entry point ────────────────────────────────────────────────────────
+
+    public static void main(String[] args) throws Exception {
+        MergePr cli = new MergePr(args);
+        if (cli.pr == 0) {
+            System.err.println("Error: --pr is required");
+            printUsage();
+            System.exit(1);
+        }
+        cli.run();
     }
 }
