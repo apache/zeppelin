@@ -14,18 +14,23 @@ Parse the user's intent and build the appropriate `go run dev/merge-pr.go` comma
 
 ## Instructions
 
-1. Extract from the user input: PR number, fix-versions, release-branches, resolve-jira, and any other flags.
-2. If the PR number is missing, ask for it.
-3. Always add `--resolve-jira` unless the user explicitly says not to.
-4. Run a dry-run first:
+1. Check if `go` is available by running `go version`. If not found:
+   - Detect OS and arch (`uname -s`, `uname -m`)
+   - Download Go to `.go/` directory: `curl -fsSL https://go.dev/dl/go1.23.6.<os>-<arch>.tar.gz | tar -xz -C .go --strip-components=1`
+   - Use `.go/bin/go` instead of `go` for all subsequent commands.
+   - `.go/` is already in `.gitignore`.
+2. Extract from the user input: PR number, fix-versions, release-branches, resolve-jira, and any other flags.
+3. If the PR number is missing, ask for it.
+4. Always add `--resolve-jira` unless the user explicitly says not to.
+5. Run a dry-run first:
 
 ```
 go run dev/merge-pr.go --pr <number> --resolve-jira [--fix-versions <versions>] [--release-branches <branches>] --dry-run
 ```
 
-5. Show the dry-run output to the user and ask for confirmation before proceeding.
-6. If the user confirms, run the actual merge command (without `--dry-run`), using the effective command from the dry-run output.
-7. After merge, verify the result and report back.
+6. Show the dry-run output to the user and ask for confirmation before proceeding.
+7. If the user confirms, run the actual merge command (without `--dry-run`), using the effective command from the dry-run output.
+8. After merge, verify the result and report back.
 
 ## Flags Reference
 

@@ -149,3 +149,6 @@ tramp
 
 # dotenv files
 .env
+
+# local Go installation
+.go/
