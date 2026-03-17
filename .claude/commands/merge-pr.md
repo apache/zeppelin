@@ -20,7 +20,7 @@ Parse the user's intent and build the appropriate `go run dev/merge-pr.go` comma
    - Use `.go/bin/go` instead of `go` for all subsequent commands.
    - `.go/` is already in `.gitignore`.
 2. Extract from the user input: PR number, fix-versions, release-branches, resolve-jira, and any other flags.
-3. If the PR number is missing, ask for it.
+3. If the PR number is missing or no arguments given, run `go run dev/merge-pr.go --help` to show available flags, then ask the user for the PR number and any options they want.
 4. Always add `--resolve-jira` unless the user explicitly says not to.
 5. Run a dry-run first:
 
