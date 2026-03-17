@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +47,8 @@ import org.apache.commons.configuration2.io.CombinedLocationStrategy;
 import org.apache.commons.configuration2.io.FileLocationStrategy;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.common.ConfigTimeUtils;
+import org.apache.zeppelin.common.InterpreterConfigKeys;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -969,10 +970,9 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_JUPYTER_KERNELS("zeppelin.interpreter.jupyter.kernels", "python:python,ir:r"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
-    ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
-        "https://repo1.maven.org/maven2/"),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO(InterpreterConfigKeys.INTERPRETER_DEP_MVNREPO, "https://repo1.maven.org/maven2/"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 600000L),
-    ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE("zeppelin.interpreter.connection.poolsize", 100),
+    ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE(InterpreterConfigKeys.INTERPRETER_CONNECTION_POOL_SIZE, 100),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_INTERPRETER_INCLUDES("zeppelin.interpreter.include", ""),
@@ -1073,17 +1073,17 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
 
-    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
-            NullLifecycleManager.class.getName()),
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS(
+      InterpreterConfigKeys.INTERPRETER_LIFECYCLE_MANAGER_CLASS, NullLifecycleManager.class.getName()),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
-        "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 60000L),
+      InterpreterConfigKeys.INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL, 60000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
-        "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
+      InterpreterConfigKeys.INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD, 3600000L),
 
     ZEPPELIN_INTERPRETER_YARN_MONITOR_INTERVAL_SECS(
             "zeppelin.interpreter.yarn.monitor.interval_secs", 10),
 
-    ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE("zeppelin.scheduler.threadpool.size", 100),
+    ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE(InterpreterConfigKeys.SCHEDULER_THREADPOOL_SIZE, 100),
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
 
@@ -1120,9 +1120,9 @@ public class ZeppelinConfiguration {
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
     ZEPPELIN_NOTEBOOK_MARKDOWN_ESCAPE_HTML("zeppelin.notebook.markdown.escape.html", true),
-    ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
-    ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
-    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
+    ZEPPELIN_PROXY_URL(InterpreterConfigKeys.PROXY_URL, null),
+    ZEPPELIN_PROXY_USER(InterpreterConfigKeys.PROXY_USER, null),
+    ZEPPELIN_PROXY_PASSWORD(InterpreterConfigKeys.PROXY_PASSWORD, null),
     ZEPPELIN_SEARCH_ENABLE("zeppelin.search.enable", true),
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
@@ -1221,13 +1221,13 @@ public class ZeppelinConfiguration {
     }
   }
 
+  /**
+   * @deprecated Use {@link ConfigTimeUtils#parseTimeValueToMillis(String)} instead.
+   *             Unlike this method, the replacement also accepts plain numeric strings (ms).
+   */
+  @Deprecated
   public static long timeUnitToMill(String timeStrWithUnit) {
-    // If `timeStrWithUnit` doesn't include time unit,
-    // `Duration.parse` would fail to parse and throw Exception.
-    if (timeStrWithUnit.endsWith("ms")) {
-      return Long.parseLong(timeStrWithUnit.substring(0, timeStrWithUnit.length() - 2));
-    }
-    return Duration.parse("PT" + timeStrWithUnit).toMillis();
+    return ConfigTimeUtils.parseTimeValueToMillis(timeStrWithUnit);
   }
 
 }

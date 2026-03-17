@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.scheduler;
 
+import org.apache.zeppelin.common.InterpreterConfigKeys;
 import org.apache.zeppelin.util.ExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public class SchedulerFactory {
     if (envValue != null) {
       return Integer.parseInt(envValue);
     }
-    String propValue = System.getProperty("zeppelin.scheduler.threadpool.size");
+    String propValue = System.getProperty(InterpreterConfigKeys.SCHEDULER_THREADPOOL_SIZE);
     if (propValue != null) {
       return Integer.parseInt(propValue);
     }
