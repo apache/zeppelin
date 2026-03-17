@@ -28,8 +28,12 @@ Parse the user's intent and build the appropriate `go run dev/merge-pr.go` comma
 go run dev/merge-pr.go --pr <number> --resolve-jira [--fix-versions <versions>] [--release-branches <branches>] --dry-run
 ```
 
-6. Show the dry-run output to the user and ask for confirmation before proceeding.
-7. If the user confirms, run the actual merge command (without `--dry-run`), using the effective command from the dry-run output.
+6. Show the dry-run output (including the effective command) to the user and ask:
+   - Does the effective command look correct?
+   - Do you want to change fix-versions, add release-branches, or adjust anything?
+   - If the user wants changes, re-run dry-run with updated flags and ask again.
+   - If the user confirms, proceed to step 7.
+7. Run the actual merge command (without `--dry-run`), using the effective command from the dry-run output.
 8. After merge, verify the result and report back.
 
 ## Flags Reference
