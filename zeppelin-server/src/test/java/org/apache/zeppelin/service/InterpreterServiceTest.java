@@ -102,7 +102,7 @@ class InterpreterServiceTest {
     Path specificInterpreterPath =
         Files.createDirectory(Paths.get(interpreterDir.toString(), interpreterName));
     DependencyResolver dependencyResolver =
-        new DependencyResolver(localRepoDir.toString(), ZeppelinConfiguration.load());
+        new DependencyResolver(localRepoDir.toString(), null, null, null, null);
 
     doNothing().when(mockInterpreterSettingManager).refreshInterpreterTemplates();
 

@@ -163,7 +163,8 @@ public class InstallInterpreter {
       proxy = new Proxy(proxyUrl.getProtocol(), proxyUrl.getHost(), proxyUrl.getPort(), auth);
     }
     DependencyResolver depResolver =
-        new DependencyResolver(localRepoDir, proxy, zConf);
+        new DependencyResolver(localRepoDir, proxy,
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO));
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {

@@ -577,7 +577,7 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
             .setGroup("group")
             .setOption(interpreterOption)
             .setIntepreterSettingManager(interpreterSettingManager)
-            .setDependencyResolver(new DependencyResolver("/tmp", zConf))
+            .setDependencyResolver(new DependencyResolver("/tmp", null, null, null, null))
             .setConf(zConf)
             .create();
 

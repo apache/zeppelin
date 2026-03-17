@@ -71,7 +71,13 @@ public class InterpreterService {
     String interpreterBaseDir = zConf.getInterpreterDir();
     String localRepoPath = zConf.getInterpreterLocalRepoPath();
 
-    final DependencyResolver dependencyResolver = new DependencyResolver(localRepoPath, zConf);
+    final DependencyResolver dependencyResolver = new DependencyResolver(
+        localRepoPath,
+        zConf.getZeppelinProxyUrl(),
+        zConf.getZeppelinProxyUser(),
+        zConf.getZeppelinProxyPassword(),
+        zConf.getString(
+            ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO));
 
     // TODO(jl): Make a rule between an interpreter name and an installation directory
     List<String> possibleInterpreterDirectories = new ArrayList<>();

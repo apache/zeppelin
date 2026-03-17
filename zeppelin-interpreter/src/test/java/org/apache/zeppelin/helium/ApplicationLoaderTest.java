@@ -18,7 +18,6 @@
 package org.apache.zeppelin.helium;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -54,7 +53,7 @@ class ApplicationLoaderTest {
     // given
     LocalResourcePool resourcePool = new LocalResourcePool("pool1");
     DependencyResolver dep =
-        new DependencyResolver(tmpDir.getAbsolutePath(), ZeppelinConfiguration.load());
+        new DependencyResolver(tmpDir.getAbsolutePath(), null, null, null, null);
     ApplicationLoader appLoader = new ApplicationLoader(resourcePool, dep);
 
     HeliumPackage pkg1 = createPackageInfo(MockApplication1.class.getName(), "artifact1");

@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.dep;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.jupiter.api.Test;
 
@@ -56,8 +55,8 @@ class BooterTest {
 
   @Test
   void getInterpreterMvnRepoPathTest() {
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-site-test.xml");
-    List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null, zConf);
+    String mvnRepoUrl = "https://repo1.maven.org/maven2/,https://repo2.maven.org/maven2/";
+    List<RemoteRepository> remoteRepositories = Booter.newCentralRepositorys(null, mvnRepoUrl);
     assertNotNull(remoteRepositories);
     assertEquals(2, remoteRepositories.size());
     assertEquals("https://repo1.maven.org/maven2/", remoteRepositories.get(0).getUrl());

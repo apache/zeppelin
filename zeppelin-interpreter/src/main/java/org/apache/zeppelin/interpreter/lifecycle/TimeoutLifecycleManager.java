@@ -18,13 +18,14 @@
 package org.apache.zeppelin.interpreter.lifecycle;
 
 import org.apache.thrift.TException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -41,15 +42,20 @@ public class TimeoutLifecycleManager extends LifecycleManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutLifecycleManager.class);
 
+  private static final long DEFAULT_CHECK_INTERVAL = 60000L;
+  private static final long DEFAULT_TIMEOUT_THRESHOLD = 3600000L;
+
   private long lastBusyTimeInMillis;
 
-  public TimeoutLifecycleManager(ZeppelinConfiguration zConf,
+  public TimeoutLifecycleManager(Properties properties,
                                  RemoteInterpreterServer remoteInterpreterServer) {
-    super(zConf, remoteInterpreterServer);
-    long checkInterval = zConf.getTime(ZeppelinConfiguration.ConfVars
-            .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
-    long timeoutThreshold = zConf.getTime(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
+    super(properties, remoteInterpreterServer);
+    long checkInterval = parseTimeValue(properties.getProperty(
+            "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval",
+            String.valueOf(DEFAULT_CHECK_INTERVAL)));
+    long timeoutThreshold = parseTimeValue(properties.getProperty(
+        "zeppelin.interpreter.lifecyclemanager.timeout.threshold",
+        String.valueOf(DEFAULT_TIMEOUT_THRESHOLD)));
     ScheduledExecutorService checkScheduler = ExecutorFactory.singleton()
         .createOrGetScheduled("TimeoutLifecycleManager", 1);
     checkScheduler.scheduleAtFixedRate(() -> {
@@ -64,8 +70,19 @@ public class TimeoutLifecycleManager extends LifecycleManager {
         LOGGER.debug("Check idle time of interpreter");
       }
     }, checkInterval, checkInterval, MILLISECONDS);
-    LOGGER.info("TimeoutLifecycleManager is started with checkInterval: {}, timeoutThreshold: ¸{}", checkInterval,
+    LOGGER.info("TimeoutLifecycleManager is started with checkInterval: {}, timeoutThreshold: {}", checkInterval,
         timeoutThreshold);
+  }
+
+  static long parseTimeValue(String value) {
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException e) {
+      if (value.endsWith("ms")) {
+        return Long.parseLong(value.substring(0, value.length() - 2));
+      }
+      return Duration.parse("PT" + value).toMillis();
+    }
   }
 
   @Override

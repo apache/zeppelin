@@ -18,7 +18,6 @@
 package org.apache.zeppelin.dep;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -83,10 +82,10 @@ public class Booter {
   }
 
   public static List<RemoteRepository> newCentralRepositorys(Proxy proxy,
-      ZeppelinConfiguration zConf) {
+      String mvnRepoUrl) {
     String mvnRepoEnv = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
     if (mvnRepoEnv == null) {
-      mvnRepoEnv = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
+      mvnRepoEnv = mvnRepoUrl;
     }
     if (mvnRepoEnv == null) {
       mvnRepoEnv = "https://repo1.maven.org/maven2/";

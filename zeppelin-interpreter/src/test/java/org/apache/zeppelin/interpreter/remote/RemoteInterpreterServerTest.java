@@ -82,7 +82,7 @@ class RemoteInterpreterServerTest {
         server.getPort()));
 
     server.init(new HashMap<>());
-    assertNotNull(server.getConf());
+    assertNotNull(server.getProperties());
     assertNotNull(server.getLifecycleManager());
   }
 
