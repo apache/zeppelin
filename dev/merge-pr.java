@@ -99,15 +99,15 @@ public class MergePr {
 
     private static void printUsage() {
         System.err.println("Usage: java dev/merge-pr.java [flags]");
-        System.err.println("  --pr int              Pull request number (required)");
-        System.err.println("  --target string        Target branch (default: PR base branch)");
-        System.err.println("  --fix-versions value   JIRA fix version(s), comma-separated");
-        System.err.println("  --release-branches value  Release branch(es) to cherry-pick into, comma-separated");
-        System.err.println("  --resolve-jira         Resolve associated JIRA issue(s)");
-        System.err.println("  --dry-run              Show what would be done without making changes");
-        System.err.println("  --push-remote string   Git remote for pushing (default: apache)");
-        System.err.println("  --github-token string  GitHub OAuth token (env: GITHUB_OAUTH_KEY)");
-        System.err.println("  --jira-token string    JIRA access token (env: JIRA_ACCESS_TOKEN)");
+        System.err.println("  --pr int                   Pull request number (required)");
+        System.err.println("  --target string            Target branch (default: PR base branch)");
+        System.err.println("  --fix-versions value       JIRA fix version(s), comma-separated");
+        System.err.println("  --release-branches value   Release branch(es) to cherry-pick into, comma-separated");
+        System.err.println("  --resolve-jira             Resolve associated JIRA issue(s)");
+        System.err.println("  --dry-run                  Show what would be done without making changes");
+        System.err.println("  --push-remote string       Git remote for pushing (default: apache)");
+        System.err.println("  --github-token string      GitHub OAuth token (env: GITHUB_OAUTH_KEY)");
+        System.err.println("  --jira-token string        JIRA access token (env: JIRA_ACCESS_TOKEN)");
     }
 
     private static List<String> parseCsv(String value) {
