@@ -39,6 +39,11 @@ import urllib.request
 GITHUB_API_BASE = "https://api.github.com/repos/apache/zeppelin"
 JIRA_API_BASE = "https://issues.apache.org/jira/rest/api/2"
 
+DEFAULT_BRANCH = "master"
+DEFAULT_REMOTE = "apache"
+JIRA_RESOLVE_TRANSITION = "Resolve Issue"
+JIRA_CLOSED_STATUSES = frozenset(("Resolved", "Closed"))
+
 JIRA_ID_RE = re.compile(r"ZEPPELIN-\d{3,6}")
 TITLE_FORMATTED_RE = re.compile(r"^\[ZEPPELIN-\d{3,6}](\[[A-Z0-9_\s,]+] )+\S+")
 TITLE_REF_RE = re.compile(r"(?i)(ZEPPELIN[-\s]*\d{3,6})")
@@ -56,7 +61,7 @@ class MergePR:
         self.release_branches = _parse_csv(args.release_branches) if args.release_branches else []
         self.resolve_jira = args.resolve_jira
         self.dry_run = args.dry_run
-        self.push_remote = args.push_remote or os.environ.get("PUSH_REMOTE_NAME", "apache")
+        self.push_remote = args.push_remote or os.environ.get("PUSH_REMOTE_NAME", DEFAULT_REMOTE)
         self.github_token = args.github_token or os.environ.get("GITHUB_OAUTH_KEY", "")
         self.jira_token = args.jira_token or os.environ.get("JIRA_ACCESS_TOKEN", "")
 
@@ -64,7 +69,7 @@ class MergePR:
 
     def _git(self, *args):
         result = subprocess.run(
-            ["git"] + list(args),
+            ["git", *args],
             capture_output=True, text=True,
         )
         if result.returncode != 0:
@@ -78,8 +83,8 @@ class MergePR:
 
     # ── HTTP ─────────────────────────────────────────────────────────────
 
-    def _http(self, method, url, body=None, auth=""):
-        data = json.dumps(body).encode() if body is not None else None
+    def _http(self, method, url, payload=None, auth=""):
+        data = json.dumps(payload).encode() if payload is not None else None
         req = urllib.request.Request(url, data=data, method=method)
         req.add_header("Content-Type", "application/json")
         req.add_header("Accept", "application/json")
@@ -89,11 +94,11 @@ class MergePR:
             with urllib.request.urlopen(req) as resp:
                 return resp.status, json.loads(resp.read().decode())
         except urllib.error.HTTPError as e:
-            body_text = e.read().decode() if e.fp else ""
+            err_body = e.read().decode() if e.fp else ""
             try:
-                return e.code, json.loads(body_text)
+                return e.code, json.loads(err_body)
             except json.JSONDecodeError:
-                return e.code, {"error": body_text}
+                return e.code, {"error": err_body}
 
     # ── GitHub ───────────────────────────────────────────────────────────
 
@@ -107,8 +112,8 @@ class MergePR:
         return data
 
     def _gh_merge_pr(self, num, title, msg):
-        body = {"commit_title": title, "commit_message": msg, "merge_method": "squash"}
-        code, data = self._http("PUT", f"{GITHUB_API_BASE}/pulls/{num}/merge", body, self._gh_auth())
+        payload = {"commit_title": title, "commit_message": msg, "merge_method": "squash"}
+        code, data = self._http("PUT", f"{GITHUB_API_BASE}/pulls/{num}/merge", payload, self._gh_auth())
         if code == 405:
             raise RuntimeError(f"Merge PR #{num} is not allowed")
         if code != 200:
@@ -151,26 +156,42 @@ class MergePR:
         return [{"id": t["id"], "name": t["name"]} for t in data.get("transitions", [])]
 
     def _jira_resolve(self, key, transition_id, fix_ver, comment):
-        body = {
+        payload = {
             "transition": {"id": transition_id},
             "update": {
                 "comment": [{"add": {"body": comment}}],
                 "fixVersions": [{"add": {"id": fv["id"], "name": fv["name"]}} for fv in fix_ver],
             },
         }
-        code, _ = self._http("POST", f"{JIRA_API_BASE}/issue/{key}/transitions", body, self._jira_auth())
+        code, _ = self._http("POST", f"{JIRA_API_BASE}/issue/{key}/transitions", payload, self._jira_auth())
         if code != 204:
             raise RuntimeError(f"Resolve {key}: HTTP {code}")
 
-    # ── Fix version inference ────────────────────────────────────────────
+    # ── Fix version resolution ───────────────────────────────────────────
 
-    def _infer_fix_versions(self, merged, versions, infer_master):
-        names, seen = [], set()
-        for branch in merged:
-            if branch == "master":
-                if infer_master and versions[0]["name"] not in seen:
-                    names.append(versions[0]["name"])
-                    seen.add(versions[0]["name"])
+    def _resolve_fix_versions(self, branches, versions):
+        """Resolve fix version objects from explicit --fix-versions and branch inference.
+
+        Returns a list of version dicts ({"id": ..., "name": ...}).
+        Raises RuntimeError if an explicit fix version is not found.
+        """
+        vm = {v["name"]: v for v in versions}
+        fix_ver, seen = [], set()
+
+        for fv in self.fix_versions:
+            if fv not in vm:
+                raise RuntimeError(f'fix version "{fv}" not found')
+            fix_ver.append(vm[fv])
+            seen.add(fv)
+
+        infer_master = not self.fix_versions
+        latest = versions[0]["name"]
+        names = []
+        for branch in branches:
+            if branch == DEFAULT_BRANCH:
+                if infer_master and latest not in seen:
+                    names.append(latest)
+                    seen.add(latest)
             else:
                 prefix = branch[len("branch-"):] if branch.startswith("branch-") else branch
                 found = [v["name"] for v in versions if v["name"].startswith(prefix + ".") or v["name"] == prefix]
@@ -192,25 +213,25 @@ class MergePR:
                     continue
             filtered.append(v)
 
-        vm = {v["name"]: v for v in versions}
-        result = [vm[n] for n in filtered if n in vm]
-        if result:
+        inferred = [vm[n] for n in filtered if n in vm]
+        if inferred:
             print(f"Auto-inferred fix version(s): {', '.join(filtered)}")
-        return result
+        fix_ver.extend(inferred)
+        return fix_ver
 
     # ── Effective command ────────────────────────────────────────────────
 
-    def _print_effective_command(self, target_branch, resolved_versions):
+    def _print_effective_command(self, target_branch, fix_ver):
         parts = ["python3 dev/merge_pr.py", f"--pr {self.pr}"]
-        if target_branch and target_branch != "master":
+        if target_branch and target_branch != DEFAULT_BRANCH:
             parts.append(f"--target {target_branch}")
         if self.release_branches:
             parts.append(f"--release-branches {','.join(self.release_branches)}")
         if self.resolve_jira:
             parts.append("--resolve-jira")
-        if resolved_versions:
-            parts.append(f"--fix-versions {','.join(resolved_versions)}")
-        if self.push_remote != "apache":
+        if fix_ver:
+            parts.append(f"--fix-versions {','.join(fv['name'] for fv in fix_ver)}")
+        if self.push_remote != DEFAULT_REMOTE:
             parts.append(f"--push-remote {self.push_remote}")
         print(f"[dry-run] Effective command:\n  {' '.join(parts)}")
 
@@ -239,11 +260,20 @@ class MergePR:
         if self.release_branches:
             print(f"release-branches: {', '.join(self.release_branches)}")
 
-        resolved_fix_versions = self._resolve_fix_version_names(title, target_branch)
+        # Resolve fix versions once (used for both dry-run display and actual JIRA resolution)
+        fix_ver = []
+        if self.resolve_jira and self.jira_token and JIRA_ID_RE.search(title):
+            try:
+                versions = self._jira_unreleased_versions()
+                if versions:
+                    branches = [target_branch] + self.release_branches
+                    fix_ver = self._resolve_fix_versions(branches, versions)
+            except RuntimeError as e:
+                print(f"Warning: failed to resolve fix versions: {e}", file=sys.stderr)
 
         if self.dry_run:
             print()
-            self._print_effective_command(target_branch, resolved_fix_versions)
+            self._print_effective_command(target_branch, fix_ver)
             return
 
         # Merge
@@ -270,7 +300,7 @@ class MergePR:
         # Cherry-pick into release branches
         merged = [target_branch]
         for branch in self.release_branches:
-            pick = f"PR_TOOL_PICK_PR_{self.pr}_{branch.upper()}"
+            pick = _pick_branch_name(self.pr, branch)
             try:
                 self._git("fetch", self.push_remote, f"{branch}:{pick}")
             except RuntimeError as e:
@@ -279,58 +309,27 @@ class MergePR:
             self._git("checkout", pick)
             try:
                 self._git("cherry-pick", "-sx", sha)
-            except RuntimeError as e:
-                print(f"Warning: cherry-pick into {branch} failed: {e}", file=sys.stderr)
-                try:
-                    self._git("cherry-pick", "--abort")
-                except RuntimeError:
-                    pass
-                self._git("checkout", original_head)
-                self._git("branch", "-D", pick)
-                continue
-            try:
                 self._git("push", self.push_remote, f"{pick}:{branch}")
                 h = self._git("rev-parse", pick)
                 print(f"Picked into {branch} (hash: {_short_sha(h)})")
                 merged.append(branch)
             except RuntimeError as e:
-                print(f"Warning: push to {branch} failed: {e}", file=sys.stderr)
-            self._git("checkout", original_head)
-            self._git("branch", "-D", pick)
+                print(f"Warning: cherry-pick/push into {branch} failed: {e}", file=sys.stderr)
+                try:
+                    self._git("cherry-pick", "--abort")
+                except RuntimeError:
+                    pass
+            finally:
+                self._git("checkout", original_head)
+                self._git("branch", "-D", pick)
 
         self._comment_merge_summary(merged, sha)
 
         if self.resolve_jira:
             try:
-                self._do_resolve_jira(title, merged)
+                self._do_resolve_jira(title, fix_ver)
             except RuntimeError as e:
                 print(f"Warning: JIRA resolution failed: {e}", file=sys.stderr)
-
-    def _resolve_fix_version_names(self, title, target_branch):
-        if not self.resolve_jira or not self.jira_token:
-            return list(self.fix_versions)
-
-        ids = JIRA_ID_RE.findall(title)
-        if not ids:
-            return list(self.fix_versions)
-
-        try:
-            versions = self._jira_unreleased_versions()
-            if not versions:
-                return list(self.fix_versions)
-
-            vm = {v["name"]: v for v in versions}
-            resolved = list(dict.fromkeys(fv for fv in self.fix_versions if fv in vm))
-
-            infer_master = not self.fix_versions
-            branches = [target_branch] + self.release_branches
-            for iv in self._infer_fix_versions(branches, versions, infer_master):
-                if iv["name"] not in resolved:
-                    resolved.append(iv["name"])
-            return resolved
-        except RuntimeError as e:
-            print(f"Warning: failed to fetch JIRA versions: {e}", file=sys.stderr)
-            return list(self.fix_versions)
 
     def _comment_merge_summary(self, merged, sha):
         lines = [f"Merged into {merged[0]} ({_short_sha(sha)})."]
@@ -342,7 +341,7 @@ class MergePR:
         except RuntimeError as e:
             print(f"Warning: failed to comment on PR: {e}", file=sys.stderr)
 
-    def _do_resolve_jira(self, title, merged):
+    def _do_resolve_jira(self, title, fix_ver):
         if not self.jira_token:
             raise RuntimeError("JIRA_ACCESS_TOKEN is not set")
 
@@ -351,22 +350,6 @@ class MergePR:
             print("No JIRA ID found in PR title, skipping.")
             return
 
-        versions = self._jira_unreleased_versions()
-        vm = {v["name"]: v for v in versions}
-
-        fix_ver, seen = [], set()
-        for fv in self.fix_versions:
-            if fv not in vm:
-                raise RuntimeError(f'fix version "{fv}" not found')
-            fix_ver.append(vm[fv])
-            seen.add(fv)
-        if versions:
-            infer_master = not self.fix_versions
-            for iv in self._infer_fix_versions(merged, versions, infer_master):
-                if iv["name"] not in seen:
-                    fix_ver.append(iv)
-                    seen.add(iv["name"])
-
         for jira_id in ids:
             try:
                 issue = self._jira_get_issue(jira_id)
@@ -374,7 +357,7 @@ class MergePR:
                 print(f"Warning: get {jira_id}: {e}", file=sys.stderr)
                 continue
             status = issue.get("fields", {}).get("status", {}).get("name", "")
-            if status in ("Resolved", "Closed"):
+            if status in JIRA_CLOSED_STATUSES:
                 print(f'JIRA {jira_id} already "{status}", skipping.')
                 continue
 
@@ -383,9 +366,9 @@ class MergePR:
             print(f"Status:   {status}")
 
             transitions = self._jira_transitions(jira_id)
-            resolve_id = next((t["id"] for t in transitions if t["name"] == "Resolve Issue"), None)
+            resolve_id = next((t["id"] for t in transitions if t["name"] == JIRA_RESOLVE_TRANSITION), None)
             if not resolve_id:
-                print(f"Warning: no 'Resolve Issue' transition for {jira_id}", file=sys.stderr)
+                print(f"Warning: no '{JIRA_RESOLVE_TRANSITION}' transition for {jira_id}", file=sys.stderr)
                 continue
 
             jira_comment = (
@@ -411,6 +394,10 @@ def _ver_tuple(v):
 
 def _short_sha(sha):
     return sha[:8] if len(sha) > 8 else sha
+
+
+def _pick_branch_name(pr_num, branch):
+    return f"PR_TOOL_PICK_PR_{pr_num}_{branch.upper()}"
 
 
 def _standardize_title(text):
