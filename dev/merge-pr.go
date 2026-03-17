@@ -132,7 +132,7 @@ func httpDo(method, url string, body interface{}, auth string) ([]byte, int, err
 		req.Header.Set("Authorization", auth)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -406,8 +406,39 @@ func run() error {
 		fmt.Printf("release-branches: %s\n", strings.Join(flagReleaseBranches, ", "))
 	}
 
+	// Resolve fix versions for effective command display
+	var resolvedFixVersions []string
+	if flagResolveJira && flagJiraToken != "" {
+		ids := jiraIDRe.FindAllString(title, -1)
+		if len(ids) > 0 {
+			if versions, err := jiraUnreleasedVersions(); err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to fetch JIRA versions: %v\n", err)
+			} else if len(versions) > 0 {
+				vm := make(map[string]jiraVersion)
+				for _, v := range versions {
+					vm[v.Name] = v
+				}
+				has := make(map[string]bool)
+				for _, fv := range flagFixVersions {
+					if _, ok := vm[fv]; ok {
+						resolvedFixVersions = append(resolvedFixVersions, fv)
+						has[fv] = true
+					}
+				}
+				inferMaster := len(flagFixVersions) == 0
+				for _, iv := range inferFixVersions(append([]string{target}, flagReleaseBranches...), versions, inferMaster) {
+					if !has[iv.Name] {
+						resolvedFixVersions = append(resolvedFixVersions, iv.Name)
+						has[iv.Name] = true
+					}
+				}
+			}
+		}
+	}
+
 	if flagDryRun {
-		fmt.Println("\n[dry-run] Would merge PR and stop here.")
+		fmt.Println()
+		printEffectiveCommand(target, resolvedFixVersions)
 		return nil
 	}
 
@@ -549,6 +580,28 @@ func doResolveJira(title string, merged []string) error {
 		fmt.Printf("Resolved %s!\n", id)
 	}
 	return nil
+}
+
+func printEffectiveCommand(target string, fixVersions []string) {
+	var parts []string
+	parts = append(parts, "go run dev/merge-pr.go")
+	parts = append(parts, fmt.Sprintf("--pr %d", flagPR))
+	if target != "" && target != "master" {
+		parts = append(parts, fmt.Sprintf("--target %s", target))
+	}
+	if len(flagReleaseBranches) > 0 {
+		parts = append(parts, fmt.Sprintf("--release-branches %s", strings.Join(flagReleaseBranches, ",")))
+	}
+	if flagResolveJira {
+		parts = append(parts, "--resolve-jira")
+	}
+	if len(fixVersions) > 0 {
+		parts = append(parts, fmt.Sprintf("--fix-versions %s", strings.Join(fixVersions, ",")))
+	}
+	if flagPushRemote != "apache" {
+		parts = append(parts, fmt.Sprintf("--push-remote %s", flagPushRemote))
+	}
+	fmt.Printf("[dry-run] Effective command:\n  %s\n", strings.Join(parts, " "))
 }
 
 // inferFixVersions maps merge branches to JIRA fix versions.
