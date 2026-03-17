@@ -478,21 +478,31 @@ func doResolveJira(title string, merged []string) error {
 		return err
 	}
 
+	vm := make(map[string]jiraVersion)
+	for _, v := range versions {
+		vm[v.Name] = v
+	}
+	// Start with explicitly specified fix versions
 	var fixVer []jiraVersion
-	if len(flagFixVersions) > 0 {
-		vm := make(map[string]jiraVersion)
-		for _, v := range versions {
-			vm[v.Name] = v
+	has := make(map[string]bool)
+	for _, fv := range flagFixVersions {
+		v, ok := vm[fv]
+		if !ok {
+			return fmt.Errorf("fix version %q not found", fv)
 		}
-		for _, fv := range flagFixVersions {
-			v, ok := vm[fv]
-			if !ok {
-				return fmt.Errorf("fix version %q not found", fv)
+		fixVer = append(fixVer, v)
+		has[v.Name] = true
+	}
+	// Auto-infer: master → latest version only when no --fix-versions given;
+	// release branches → matching version always
+	if len(versions) > 0 {
+		inferMaster := len(flagFixVersions) == 0
+		for _, iv := range inferFixVersions(merged, versions, inferMaster) {
+			if !has[iv.Name] {
+				fixVer = append(fixVer, iv)
+				has[iv.Name] = true
 			}
-			fixVer = append(fixVer, v)
 		}
-	} else if len(versions) > 0 {
-		fixVer = inferFixVersions(merged, versions)
 	}
 
 	for _, id := range ids {
@@ -545,12 +555,12 @@ func doResolveJira(title string, merged []string) error {
 // For "master", picks the latest unreleased version.
 // For release branches like "branch-0.12", finds the smallest matching 0.12.x version.
 // Then removes redundant X.Y.0 if a previous minor X.(Y-1).0 is also selected.
-func inferFixVersions(merged []string, versions []jiraVersion) []jiraVersion {
+func inferFixVersions(merged []string, versions []jiraVersion, inferMaster bool) []jiraVersion {
 	var names []string
 	has := make(map[string]bool)
 	for _, branch := range merged {
 		if branch == "master" {
-			if !has[versions[0].Name] {
+			if inferMaster && !has[versions[0].Name] {
 				names = append(names, versions[0].Name)
 				has[versions[0].Name] = true
 			}
