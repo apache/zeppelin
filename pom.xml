@@ -950,6 +950,7 @@
               <exclude>.github/</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.gitattributes</exclude>
+              <exclude>AGENTS.md</exclude>
               <exclude>git.properties</exclude>
               <exclude>.repository/</exclude>
               <exclude>.rat-excludes/</exclude>
