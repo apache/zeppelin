@@ -222,7 +222,8 @@ public class BigQueryInterpreter extends Interpreter {
 
     try {
       LOGGER.info("Executing query: {}", sql);
-      Job queryJob = bqClient.create(JobInfo.newBuilder(queryConfig).setJobId(currentJobId).build());
+      Job queryJob = bqClient.create(
+          JobInfo.newBuilder(queryConfig).setJobId(currentJobId).build());
 
       // Wait for the query to complete
       queryJob = queryJob.waitFor();
