@@ -79,7 +79,9 @@ If no environment-level credentials are found, the interpreter will prompt you t
 2. Select or create a service account with `BigQuery User` and `BigQuery Data Viewer` roles.
 3. Click the **Keys** tab, then **Add Key > Create new key**.
 4. Choose **JSON** format and click **Create**.
-5. When the BigQuery interpreter prompts you in Zeppelin, copy and paste the entire content of this JSON file into the input box.
+5. When the BigQuery interpreter prompts you in Zeppelin, copy and paste the entire content of this JSON file into the input box. Treat this JSON key as a secret.
+
+**Security caution:** Do not paste this key into shared notes, notebooks, version control, or any place where it might be stored or visible to others. Prefer using Application Default Credentials (ADC) or Zeppelin's secure credentials mechanisms where possible, and only use this manual JSON key approach as a fallback when more secure options are not available.
 
 ## Using the BigQuery Interpreter
 

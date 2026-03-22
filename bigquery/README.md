@@ -14,7 +14,8 @@ The interpreter supports multiple ways to authenticate with Google Cloud:
      2. Select your project and service account.
      3. Click **Keys** -> **Add Key** -> **Create new key**.
      4. Select **JSON** and click **Create**.
-     5. Copy the entire content of the downloaded JSON file and paste it into the Zeppelin input box when prompted.
+     5. Copy the entire content of the downloaded JSON file and paste it into the Zeppelin input box when prompted. Treat this JSON key as a secret.
+   - **Security caution:** Do not paste this key into shared notes, notebooks, version control, or any place where it might be stored or visible to others. Prefer using Application Default Credentials (ADC) or Zeppelin's secure credentials mechanisms where possible, and only use this manual JSON key approach as a fallback when more secure options are not available.
 
 # Configuration
 | Property | Default | Description |
