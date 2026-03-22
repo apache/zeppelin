@@ -24,7 +24,7 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
-[BigQuery](https://cloud.google.com/bigquery/what-is-bigquery) is a highly scalable no-ops data warehouse in the Google Cloud Platform. Querying massive datasets can be time consuming and expensive without the right hardware and infrastructure. Google BigQuery solves this problem by enabling super-fast SQL queries against append-only tables using the processing power of Google's infrastructure. Simply move your data into BigQuery and let us handle the hard work. You can control access to both the project and your data based on your business needs, such as giving others the ability to view or query your data.  
+[BigQuery](https://cloud.google.com/bigquery/what-is-bigquery) is a highly scalable no-ops data warehouse in the Google Cloud Platform. This interpreter uses the modern [google-cloud-bigquery](https://github.com/googleapis/java-bigquery) Cloud Client Library to provide high-performance data analytics.
 
 ## Configuration
 <table class="table-configuration">
@@ -60,70 +60,42 @@ limitations under the License.
   </tr>
 </table>
 
+## Authentication
 
-## BigQuery API
-Zeppelin is built against BigQuery API version v2-rev265-1.21.0 - [API Javadocs](https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/java/latest/)
+The BigQuery interpreter supports two primary ways to authenticate:
 
-## Enabling the BigQuery Interpreter
+### 1. Application Default Credentials (ADC)
 
-In a notebook, to enable the **BigQuery** interpreter, click the **Gear** icon and select **bigquery**.
+This is the recommended approach for server environments.
+- **Within GCP**: If Zeppelin is running on Google Compute Engine (GCE) or Google Kubernetes Engine (GKE), it will automatically use the attached service account.
+- **Outside GCP**: Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your service account JSON key file, or run `gcloud auth application-default login` on the server.
 
-### Provide Application Default Credentials
+### 2. Service Account JSON Key (GUI Fallback)
 
-Within Google Cloud Platform (e.g. Google App Engine, Google Compute Engine),
-built-in credentials are used by default.
+If no environment-level credentials are found, the interpreter will prompt you to input your **Service Account JSON key** directly in the notebook paragraph using an input form.
 
-Outside of GCP, follow the Google API authentication instructions for [Zeppelin Google Cloud Storage](https://zeppelin.apache.org/docs/latest/setup/storage/storage.html#notebook-storage-in-google-cloud-storage)
+**How to get a Service Account JSON key:**
+1. Go to the [IAM & Admin > Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) page in the GCP Console.
+2. Select or create a service account with `BigQuery User` and `BigQuery Data Viewer` roles.
+3. Click the **Keys** tab, then **Add Key > Create new key**.
+4. Choose **JSON** format and click **Create**.
+5. When the BigQuery interpreter prompts you in Zeppelin, copy and paste the entire content of this JSON file into the input box.
 
 ## Using the BigQuery Interpreter
 
-In a paragraph, use `%bigquery.sql` to select the **BigQuery** interpreter and then input SQL statements against your datasets stored in BigQuery.
-You can use [BigQuery SQL Reference](https://cloud.google.com/bigquery/query-reference) to build your own SQL.
+In a paragraph, use `%bigquery.sql` to select the **BigQuery** interpreter.
 
-For Example, SQL to query for top 10 departure delays across airports using the flights public dataset
+Example: Query top 10 departure delays using the flights public dataset (Standard SQL)
 
-```bash
+```sql
 %bigquery.sql
-SELECT departure_airport,count(case when departure_delay>0 then 1 else 0 end) as no_of_delays 
-FROM [bigquery-samples:airline_ontime_data.flights] 
-group by departure_airport 
-order by 2 desc 
-limit 10
-```
-
-Another Example, SQL to query for most commonly used java packages from the github data hosted in BigQuery 
-
-```bash
-%bigquery.sql
-SELECT
-  package,
-  COUNT(*) count
-FROM (
-  SELECT
-    REGEXP_EXTRACT(line, r' ([a-z0-9\._]*)\.') package,
-    id
-  FROM (
-    SELECT
-      SPLIT(content, '\n') line,
-      id
-    FROM
-      [bigquery-public-data:github_repos.sample_contents]
-    WHERE
-      content CONTAINS 'import'
-      AND sample_path LIKE '%.java'
-    HAVING
-      LEFT(line, 6)='import' )
-  GROUP BY
-    package,
-    id )
-GROUP BY
-  1
-ORDER BY
-  count DESC
-LIMIT
-  40
+SELECT departure_airport, count(case when departure_delay>0 then 1 else 0 end) as no_of_delays 
+FROM `bigquery-samples.airline_ontime_data.flights`
+GROUP BY departure_airport 
+ORDER BY 2 DESC 
+LIMIT 10
 ```
 
 ## Technical description
 
-For in-depth technical details on current implementation please refer to [bigquery/README.md](https://github.com/apache/zeppelin/blob/master/bigquery/README.md).
+For more implementation details, please refer to the [BigQuery module README](https://github.com/apache/zeppelin/blob/master/bigquery/README.md).
