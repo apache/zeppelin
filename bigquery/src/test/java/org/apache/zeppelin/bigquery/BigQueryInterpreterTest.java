@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ class BigQueryInterpreterTest {
 
   @BeforeAll
   public static void initConstants() {
-    InputStream is = ClassLoader.class.getResourceAsStream("/constants.json");
+    InputStream is = BigQueryInterpreterTest.class.getResourceAsStream("/constants.json");
     constants = (new Gson()).<Constants> fromJson(new InputStreamReader(is), Constants.class);
   }
 
@@ -75,6 +76,10 @@ class BigQueryInterpreterTest {
     bqInterpreter = new BigQueryInterpreter(p);
     bqInterpreter.setInterpreterGroup(intpGroup);
     bqInterpreter.open();
+
+    context = InterpreterContext.builder()
+        .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
+        .build();
   }
 
   @Test
