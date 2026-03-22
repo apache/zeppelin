@@ -86,7 +86,7 @@ public class BigQueryInterpreter extends Interpreter {
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
   static final String REGION = "zeppelin.bigquery.region";
 
-  private JobId currentJobId = null;
+  private volatile JobId currentJobId = null;
   private Exception exceptionOnConnect;
 
   private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
@@ -183,7 +183,7 @@ public class BigQueryInterpreter extends Interpreter {
         }
 
         bqClient = builder.build().getService();
-        service = bqClient; // Cache it for this interpreter instance
+        // Do not cache this client in a shared field to avoid leaking user credentials
         exceptionOnConnect = null;
       } catch (IOException ex) {
         return new InterpreterResult(Code.ERROR, "Failed to parse Service Account JSON: " +
@@ -196,7 +196,8 @@ public class BigQueryInterpreter extends Interpreter {
     String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
     String region = getProperty(REGION, null);
 
-    QueryJobConfiguration.Builder queryConfigBuilder = QueryJobConfiguration.newBuilder(sql);
+    QueryJobConfiguration.Builder queryConfigBuilder = QueryJobConfiguration.newBuilder(sql)
+        .setJobTimeoutMs(wTime);
 
     switch (sqlDialect) {
       case "standardsql":
@@ -299,13 +300,18 @@ public class BigQueryInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
     LOGGER.info("Trying to Cancel current query statement.");
     if (service != null && currentJobId != null) {
-      boolean cancelled = service.cancel(currentJobId);
-      if (cancelled) {
-        LOGGER.info("Query Execution cancelled");
-      } else {
-        LOGGER.warn("Query Execution cancellation returned false");
+      try {
+        boolean cancelled = service.cancel(currentJobId);
+        if (cancelled) {
+          LOGGER.info("Query Execution cancelled");
+        } else {
+          LOGGER.warn("Query Execution cancellation returned false");
+        }
+      } catch (RuntimeException e) {
+        LOGGER.warn("Failed to cancel BigQuery job {}", currentJobId, e);
+      } finally {
+        currentJobId = null;
       }
-      currentJobId = null;
     } else {
       LOGGER.info("Query Execution was already cancelled or not started");
     }
