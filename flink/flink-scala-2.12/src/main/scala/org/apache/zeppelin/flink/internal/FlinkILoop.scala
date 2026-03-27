@@ -145,8 +145,7 @@ class FlinkILoop(
     "org.apache.flink.api.scala.utils._",
     "org.apache.flink.streaming.api.scala._",
     "org.apache.flink.streaming.api.windowing.time._",
-    "org.apache.flink.table.api._",
-    "org.apache.flink.table.api.bridge.scala._",
+    "org.apache.flink.table.api.{TableEnvironment, EnvironmentSettings, Table, TableResult, Schema, DataTypes, Expressions, FormatDescriptor, TableDescriptor}",
     "org.apache.flink.types.Row"
   )
 

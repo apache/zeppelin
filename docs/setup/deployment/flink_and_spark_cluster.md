@@ -85,14 +85,14 @@ cd zeppelin
 Package Zeppelin.
 
 ```bash
-./mvnw clean package -DskipTests -Pspark-3.5 -Pflink-1.17
+./mvnw clean package -DskipTests -Pspark-3.5 -Pflink-119
 ```
 
 `-DskipTests` skips build tests- you're not developing (yet), so you don't need to do tests, the clone version *should* build.
 
 `-Pspark-3.5` tells maven to build a Zeppelin with Spark 3.5.  This is important because Zeppelin has its own Spark interpreter and the versions must be the same.
 
-`-Pflink-1.17` tells maven to build a Zeppelin with Flink 1.17.
+`-Pflink-119` tells maven to build a Zeppelin with Flink 1.19.
 
 **Note:** You can build against any version of Spark that has a Zeppelin build profile available. The key is to make sure you check out the matching version of Spark to build. At the time of this writing, Spark 3.5 was the most recent Spark version available.
 
@@ -215,16 +215,16 @@ Building from source is recommended  where possible, for simplicity in this tuto
 To download the Flink Binary use `wget`
 
 ```bash
-wget -O flink-1.17.1-bin-scala_2.12.tgz "https://www.apache.org/dyn/closer.lua/flink/flink-1.17.1/flink-1.17.1-bin-scala_2.12.tgz?action=download"
-tar -xzvf flink-1.17.1-bin-scala_2.12.tgz
+wget -O flink-1.19.3-bin-scala_2.12.tgz "https://www.apache.org/dyn/closer.lua/flink/flink-1.19.3/flink-1.19.3-bin-scala_2.12.tgz?action=download"
+tar -xzvf flink-1.19.3-bin-scala_2.12.tgz
 ```
 
-This will download Flink 1.17.1.
+This will download Flink 1.19.3.
 
 Start the Flink Cluster.
 
 ```bash
-flink-1.17.1/bin/start-cluster.sh
+flink-1.19.3/bin/start-cluster.sh
 ```
 
 ###### Building From source
@@ -233,13 +233,13 @@ If you wish to build Flink from source, the following will be instructive.  Note
 
 See the [Flink Installation guide](https://github.com/apache/flink/blob/master/README.md) for more detailed instructions.
 
-Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.17.1, and build.
+Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.19.3, and build.
 
 ```bash
 cd $HOME
 git clone https://github.com/apache/flink.git
 cd flink
-git checkout release-1.17.1
+git checkout release-1.19.3
 mvn clean install -DskipTests
 ```
 
@@ -261,8 +261,8 @@ If no task managers are present, restart the Flink cluster with the following co
 (if binaries)
 
 ```bash
-flink-1.17.1/bin/stop-cluster.sh
-flink-1.17.1/bin/start-cluster.sh
+flink-1.19.3/bin/stop-cluster.sh
+flink-1.19.3/bin/start-cluster.sh
 ```
 
 
