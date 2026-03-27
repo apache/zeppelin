@@ -26,5 +26,4 @@ dependencies:
   - jinja2=3.0.3
   - pip
   - pip:
-      - apache-flink==1.15.1
-
+      - apache-flink==1.19.3

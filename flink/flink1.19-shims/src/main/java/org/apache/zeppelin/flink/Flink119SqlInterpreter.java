@@ -63,9 +63,9 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 import static org.apache.flink.util.Preconditions.checkState;
 
 
-public class Flink115SqlInterpreter {
+public class Flink119SqlInterpreter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink115SqlInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink119SqlInterpreter.class);
   private static final String CMD_DESC_DELIMITER = "\t\t";
 
   /**
@@ -142,7 +142,6 @@ public class Flink115SqlInterpreter {
                           "BEGIN STATEMENT SET",
                           "Begins a statement set. Syntax: \"BEGIN STATEMENT SET;\"")
                   .commandDescription("END", "Ends a statement set. Syntax: \"END;\"")
-                  // (TODO) zjffdu, ADD/REMOVE/SHOW JAR
                   .build();
 
   // --------------------------------------------------------------------------------------------
@@ -169,17 +168,12 @@ public class Flink115SqlInterpreter {
   private ZeppelinContext z;
   private Parser sqlParser;
   private SqlSplitter sqlSplitter;
-  // paragraphId -> list of ModifyOperation, used for statement set in 2 syntax:
-  // 1. runAsOne= true
-  // 2. begin statement set;
-  //    ...
-  //    end;
   private Map<String, List<ModifyOperation>> statementOperationsMap = new HashMap<>();
   private boolean isBatch;
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
 
 
-  public Flink115SqlInterpreter(FlinkSqlContext flinkSqlContext, boolean isBatch) {
+  public Flink119SqlInterpreter(FlinkSqlContext flinkSqlContext, boolean isBatch) {
     this.flinkSqlContext = flinkSqlContext;
     this.isBatch = isBatch;
     if (isBatch) {
@@ -277,28 +271,20 @@ public class Flink115SqlInterpreter {
 
   private void callOperation(String sql, Operation operation, InterpreterContext context) throws IOException {
     if (operation instanceof HelpOperation) {
-      // HELP
       callHelp(context);
     } else if (operation instanceof SetOperation) {
-      // SET
       callSet((SetOperation) operation, context);
     } else if (operation instanceof ModifyOperation) {
-      // INSERT INTO/OVERWRITE
       callInsert((ModifyOperation) operation, context);
     } else if (operation instanceof QueryOperation) {
-      // SELECT
       callSelect(sql, (QueryOperation) operation, context);
     } else if (operation instanceof ExplainOperation) {
-      // EXPLAIN
       callExplain((ExplainOperation) operation, context);
     } else if (operation instanceof BeginStatementSetOperation) {
-      // BEGIN STATEMENT SET
       callBeginStatementSet(context);
     } else if (operation instanceof EndStatementSetOperation) {
-      // END
       callEndStatementSet(context);
     } else if (operation instanceof ShowCreateTableOperation) {
-      // SHOW CREATE TABLE
       callShowCreateTable((ShowCreateTableOperation) operation, context);
     } else if (operation instanceof ShowCatalogsOperation) {
       callShowCatalogs(context);
@@ -448,13 +434,11 @@ public class Flink115SqlInterpreter {
 
   public void callSet(SetOperation setOperation, InterpreterContext context) throws IOException {
     if (setOperation.getKey().isPresent() && setOperation.getValue().isPresent()) {
-      // set a property
       String key = setOperation.getKey().get().trim();
       String value = setOperation.getValue().get().trim();
       this.tbenv.getConfig().getConfiguration().setString(key, value);
       LOGGER.info("Set table config: {}={}", key, value);
     } else {
-      // show all properties
       final Map<String, String> properties = this.tbenv.getConfig().getConfiguration().toMap();
       List<String> prettyEntries = new ArrayList<>();
       for (String key : properties.keySet()) {

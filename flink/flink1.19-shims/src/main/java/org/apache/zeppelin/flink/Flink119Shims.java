@@ -36,8 +36,10 @@ import org.apache.flink.table.api.*;
 import org.apache.flink.table.api.bridge.java.internal.StreamTableEnvironmentImpl;
 import org.apache.flink.table.api.config.TableConfigOptions;
 import org.apache.flink.table.catalog.CatalogManager;
+import org.apache.flink.table.catalog.CatalogStoreHolder;
 import org.apache.flink.table.catalog.FunctionCatalog;
 import org.apache.flink.table.catalog.GenericInMemoryCatalog;
+import org.apache.flink.table.catalog.GenericInMemoryCatalogStore;
 import org.apache.flink.table.catalog.ResolvedSchema;
 import org.apache.flink.table.client.resource.ClientResourceManager;
 import org.apache.flink.table.client.util.ClientClassloaderUtil;
@@ -58,7 +60,7 @@ import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims116.CollectStreamTableSink;
+import org.apache.zeppelin.flink.shims119.CollectStreamTableSink;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
@@ -76,25 +78,25 @@ import java.util.Properties;
 
 
 /**
- * Shims for flink 1.16
+ * Shims for Flink 1.19/1.20 (1.x series, last LTS)
  */
-public class Flink116Shims extends FlinkShims {
+public class Flink119Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink116Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink119Shims.class);
 
-  private Flink116SqlInterpreter batchSqlInterpreter;
-  private Flink116SqlInterpreter streamSqlInterpreter;
+  private Flink119SqlInterpreter batchSqlInterpreter;
+  private Flink119SqlInterpreter streamSqlInterpreter;
 
-  public Flink116Shims(FlinkVersion flinkVersion, Properties properties) {
+  public Flink119Shims(FlinkVersion flinkVersion, Properties properties) {
     super(flinkVersion, properties);
   }
 
   public void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.batchSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, true);
+    this.batchSqlInterpreter = new Flink119SqlInterpreter(flinkSqlContext, true);
   }
 
   public void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.streamSqlInterpreter = new Flink116SqlInterpreter(flinkSqlContext, false);
+    this.streamSqlInterpreter = new Flink119SqlInterpreter(flinkSqlContext, false);
   }
 
   @Override
@@ -189,11 +191,21 @@ public class Flink116Shims extends FlinkShims {
 
   @Override
   public Object createCatalogManager(Object config) {
+    ReadableConfig readableConfig = (ReadableConfig) config;
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    CatalogStoreHolder catalogStoreHolder = CatalogStoreHolder.newBuilder()
+            .catalogStore(new GenericInMemoryCatalogStore())
+            .config(readableConfig)
+            .classloader(classLoader)
+            .build();
+
     return CatalogManager.newBuilder()
-            .classLoader(Thread.currentThread().getContextClassLoader())
-            .config((ReadableConfig) config)
+            .classLoader(classLoader)
+            .config(readableConfig)
             .defaultCatalog("default_catalog",
                     new GenericInMemoryCatalog("default_catalog", "default_database"))
+            .catalogStoreHolder(catalogStoreHolder)
             .build();
   }
 
@@ -250,12 +262,12 @@ public class Flink116Shims extends FlinkShims {
 
   @Override
   public Object fromDataSet(Object btenv, Object ds) {
-    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.15");
+    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.19+");
   }
 
   @Override
   public Object toDataSet(Object btenv, Object table) {
-    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.15");
+    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.19+");
   }
 
   @Override
@@ -284,14 +296,6 @@ public class Flink116Shims extends FlinkShims {
     ((StreamTableEnvironmentImpl) (btenv)).registerFunction(name, (TableAggregateFunction) tableAggregateFunction);
   }
 
-  /**
-   * Flink 1.11 bind CatalogManager with parser which make blink and flink could not share the same CatalogManager.
-   * This is a workaround which always reset CatalogTableSchemaResolver before running any flink code.
-   *
-   * @param catalogManager
-   * @param parserObject
-   * @param environmentSetting
-   */
   @Override
   public void setCatalogManagerSchemaResolver(Object catalogManager,
                                               Object parserObject,
