@@ -52,6 +52,36 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 #   -Prat                              Apache RAT license check
 ```
 
+## Build Gotchas
+
+### Shaded JAR Rebuild Chain
+
+The most common build mistake: modifying `zeppelin-interpreter` without rebuilding `zeppelin-interpreter-shaded`. The shaded JAR is an uber JAR that all interpreter processes use. If it's stale, you get `ClassNotFoundException` or `NoSuchMethodError` at runtime.
+
+```bash
+# After changing zeppelin-interpreter, ALWAYS rebuild in order:
+./mvnw clean package -pl zeppelin-interpreter -DskipTests
+./mvnw clean package -pl zeppelin-interpreter-shaded -DskipTests
+# Then rebuild affected interpreter modules
+
+# Shorthand:
+./mvnw clean package -pl zeppelin-interpreter,zeppelin-interpreter-shaded -DskipTests
+```
+
+The shaded JAR is also copied to `interpreter/` directory by maven-antrun-plugin after packaging. If this directory has a stale JAR, interpreter processes will load old code.
+
+### Module Build Order
+
+Maven modules are ordered in the root `pom.xml`. Key sequence:
+```
+zeppelin-interpreter → zeppelin-interpreter-shaded → zeppelin-zengine → zeppelin-server
+```
+
+All interpreter modules build after `zeppelin-interpreter-shaded`. A second shading chain exists for Jupyter:
+```
+zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python, rlang
+```
+
 ## Module Architecture
 
 ### Dependency Flow
@@ -170,9 +200,50 @@ Each interpreter is an independent Maven module inheriting from `zeppelin-interp
 - `zeppelin-web-angular/` — Angular 13, Node 18 (active frontend)
 - `zeppelin-web/` — Legacy AngularJS (activated with `-Pweb-classic`)
 
+### Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `conf/zeppelin-site.xml` | Main server config (port, SSL, notebook storage, interpreter settings). Copy from `.template` |
+| `conf/zeppelin-env.sh` | Shell environment (JAVA_OPTS, memory, Spark master). Copy from `.template` |
+| `conf/shiro.ini` | Authentication/authorization (users, roles, LDAP, Kerberos, PAM). Copy from `.template` |
+| `conf/interpreter.json` | Runtime interpreter settings — **auto-generated**, do not edit manually |
+| `conf/log4j2.properties` | Logging configuration |
+| `conf/interpreter-list` | Static list of available interpreters with Maven coordinates |
+| `{interpreter}/resources/interpreter-setting.json` | Interpreter defaults (build-time, bundled in JAR) |
+
+`conf/*.template` files are the source of truth. Actual config files (`zeppelin-site.xml`, `shiro.ini`, etc.) are `.gitignored`.
+
+### Module Boundaries
+
+Where new code should go:
+
+| If the code... | Put it in |
+|----------------|-----------|
+| Is a base interface/class that all interpreters need | `zeppelin-interpreter` |
+| Handles notebook state, interpreter lifecycle, scheduling, search | `zeppelin-zengine` |
+| Is a REST endpoint, WebSocket handler, or authentication realm | `zeppelin-server` |
+| Is specific to one backend (Spark, Flink, JDBC, etc.) | That interpreter's module |
+| Is a new way to launch interpreter processes | `zeppelin-plugins/launcher/` |
+| Is a new notebook storage backend | `zeppelin-plugins/notebookrepo/` |
+
+**Important**: Code added to `zeppelin-interpreter` is exposed to **every interpreter process** via the shaded JAR. Only add code there if all interpreters genuinely need it.
+
 ## Server–Interpreter Communication
 
 Zeppelin's most important architectural concept: the server and each interpreter run in **separate JVM processes** communicating via **Apache Thrift RPC**. This provides isolation, fault tolerance, and the ability to run interpreters on remote hosts or containers.
+
+### Thrift Code Generation
+
+The `.thrift` files are in `zeppelin-interpreter/src/main/thrift/`. Generated Java files are **checked into git** (not generated at build time) in `zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/thrift/`.
+
+To regenerate after modifying `.thrift` files:
+```bash
+cd zeppelin-interpreter/src/main/thrift
+./genthrift.sh   # requires 'thrift' compiler (v0.13.0) installed locally
+```
+
+The script runs the Thrift compiler, prepends ASF license headers, and moves files to the source tree. **Never edit the generated Java files directly** — changes will be lost on next regeneration.
 
 ### Thrift IPC — Bidirectional
 
@@ -439,6 +510,41 @@ For Spark or Flink work, add the version profile:
    ```
 
 5. **Create a JIRA issue** at [issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN) and use the issue number in PR title: `[ZEPPELIN-XXXX] description`.
+
+### REST API Pattern
+
+All REST endpoints follow this pattern:
+
+```java
+@Path("/notebook")
+@Produces("application/json")
+@Singleton
+public class NotebookRestApi extends AbstractRestApi {
+    @Inject
+    public NotebookRestApi(Notebook notebook, ...) {
+        super(authenticationService);
+    }
+
+    @GET
+    @Path("/{noteId}")
+    @ZeppelinApi
+    public Response getNote(@PathParam("noteId") String noteId) {
+        // Authorization check
+        checkIfUserCanRead(noteId, "Insufficient privileges");
+        // Business logic via service layer
+        Note note = notebook.getNote(noteId);
+        // Return JsonResponse
+        return new JsonResponse<>(Status.OK, "", note).build();
+    }
+}
+```
+
+Key conventions:
+- Extend `AbstractRestApi` (provides `getServiceContext()` for auth)
+- Use `@Inject` constructor for HK2 DI
+- Annotate public methods with `@ZeppelinApi`
+- Return `JsonResponse<T>(status, message, body).build()`
+- Authorization via `checkIfUserCan{Read|Write|Run}()`
 
 ### Code Style
 
