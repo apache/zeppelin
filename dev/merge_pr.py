@@ -92,11 +92,12 @@ class MergePR:
             req.add_header("Authorization", auth)
         try:
             with urllib.request.urlopen(req) as resp:
-                return resp.status, json.loads(resp.read().decode())
+                body = resp.read().decode()
+                return resp.status, json.loads(body) if body else {}
         except urllib.error.HTTPError as e:
             err_body = e.read().decode() if e.fp else ""
             try:
-                return e.code, json.loads(err_body)
+                return e.code, json.loads(err_body) if err_body else {}
             except json.JSONDecodeError:
                 return e.code, {"error": err_body}
 
