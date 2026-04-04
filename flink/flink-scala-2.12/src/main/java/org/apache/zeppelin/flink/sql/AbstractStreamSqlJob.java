@@ -28,6 +28,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.streaming.experimental.SocketStreamIterator;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.sinks.RetractStreamTableSink;
 import org.apache.flink.types.Row;
@@ -65,6 +66,9 @@ public abstract class AbstractStreamSqlJob {
   protected InterpreterContext context;
   protected TableSchema schema;
   protected SocketStreamIterator<Tuple2<Boolean, Row>> iterator;
+  private volatile TableResult insertResult;
+  private volatile boolean cancelled = false;
+  private volatile boolean cancelledWithSavepoint = false;
   protected Object resultLock = new Object();
   protected volatile boolean enableToRefresh = true;
   protected int defaultParallelism;
@@ -151,7 +155,38 @@ public abstract class AbstractStreamSqlJob {
 
       LOGGER.info("Run job: {}, parallelism: {}", tableName, parallelism);
       String jobName = context.getStringLocalProperty("jobName", tableName);
-      table.executeInsert(tableName).await();
+      this.insertResult = table.executeInsert(tableName);
+      // Register the job with JobManager so that cancel (with savepoint) works properly
+      if (insertResult.getJobClient().isPresent()) {
+        jobManager.addJob(context, insertResult.getJobClient().get());
+      }
+      // Use a CountDownLatch to wait for job completion while supporting cancellation
+      java.util.concurrent.CountDownLatch jobDone = new java.util.concurrent.CountDownLatch(1);
+      Thread jobThread = new Thread(() -> {
+        try {
+          insertResult.await();
+        } catch (Exception e) {
+          LOGGER.debug("Job await interrupted or failed", e);
+        } finally {
+          jobDone.countDown();
+        }
+      }, "flink-job-await");
+      jobThread.setDaemon(true);
+      jobThread.start();
+
+      // Wait for either job completion or cancellation
+      while (!cancelled && !jobDone.await(1, java.util.concurrent.TimeUnit.SECONDS)) {
+        // keep waiting
+      }
+      if (cancelled) {
+        // Wait briefly for the job to finish (e.g. stopped with savepoint)
+        jobDone.await(10, java.util.concurrent.TimeUnit.SECONDS);
+        if (cancelledWithSavepoint) {
+          LOGGER.info("Stream sql job stopped with savepoint, jobName: {}", jobName);
+          return buildResult();
+        }
+        throw new InterruptedException("Job was cancelled");
+      }
       LOGGER.info("Flink Job is finished, jobName: {}", jobName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");
@@ -162,7 +197,7 @@ public abstract class AbstractStreamSqlJob {
       return finalResult;
     } catch (Exception e) {
       LOGGER.error("Fail to run stream sql job", e);
-      throw new IOException("Fail to run stream sql job", e);
+      throw new IOException("Job was cancelled", e);
     } finally {
       refreshScheduler.shutdownNow();
     }
@@ -236,6 +271,12 @@ public abstract class AbstractStreamSqlJob {
     public void cancel() {
       isRunning = false;
     }
+  }
+
+  public void cancel(boolean withSavepoint) {
+    LOGGER.info("Canceling stream sql job, withSavepoint={}", withSavepoint);
+    this.cancelledWithSavepoint = withSavepoint;
+    this.cancelled = true;
   }
 
   protected abstract void refresh(InterpreterContext context) throws Exception;

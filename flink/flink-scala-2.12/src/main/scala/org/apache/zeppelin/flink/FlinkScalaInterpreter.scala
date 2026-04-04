@@ -735,6 +735,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
   def cancel(context: InterpreterContext): Unit = {
     jobManager.cancelJob(context)
+    if (z != null) {
+      val savepointDir = context.getLocalProperties.get(JobManager.SAVEPOINT_DIR)
+      val withSavepoint = savepointDir != null && !savepointDir.isEmpty
+      z.asInstanceOf[FlinkZeppelinContext].cancelCurrentStreamJob(withSavepoint)
+    }
   }
 
   def getProgress(context: InterpreterContext): Int = {
