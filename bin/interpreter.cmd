@@ -46,8 +46,8 @@ REM add test classes for unittest
 if exist "%ZEPPELIN_HOME%\zeppelin-interpreter\target\test-classes" (
     set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-interpreter\target\test-classes"
 )
-if exist "%ZEPPELIN_HOME%\zeppelin-zengine\target\test-classes" (
-    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-zengine\target\test-classes"
+if exist "%ZEPPELIN_HOME%\zeppelin-server\target\test-classes" (
+    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-server\target\test-classes"
 )
 
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
