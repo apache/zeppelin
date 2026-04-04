@@ -31,7 +31,7 @@ Interpreters in the same InterpreterGroup can reference each other. For example,
 
 <img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="{{BASE_PATH}}/assets/themes/zeppelin/img/interpreter.png" />
 
-[InterpreterSetting](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/interpreter/InterpreterSetting.java) is configuration of a given [InterpreterGroup](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/InterpreterGroup.java) and a unit of start/stop interpreter.
+[InterpreterSetting](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/interpreter/InterpreterSetting.java) is configuration of a given [InterpreterGroup](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/InterpreterGroup.java) and a unit of start/stop interpreter.
 All Interpreters in the same InterpreterSetting are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via **[Thrift](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/thrift/RemoteInterpreterService.thrift)**.
 
 In 'Separate Interpreter(scoped / isolated) for each note' mode which you can see at the **Interpreter Setting** menu when you create a new interpreter, new interpreter instance will be created per note. But it still runs on the same JVM while they're in the same InterpreterSettings.

@@ -140,14 +140,14 @@ Zeppelin has [set of integration tests](https://github.com/apache/zeppelin/tree/
 
 ```bash
 TEST_SELENIUM=true ./mvnw test -Dtest=[TEST_NAME] -DfailIfNoTests=false \
--pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
+-pl 'zeppelin-interpreter,zeppelin-server'
 ```
 
 For example, to run [ParagraphActionIT](https://github.com/apache/zeppelin/blob/master/zeppelin-integration/src/test/java/org/apache/zeppelin/integration/ParagraphActionsIT.java),
 
 ```bash
 TEST_SELENIUM=true ./mvnw test -Dtest=ParagraphActionsIT -DfailIfNoTests=false \
--pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
+-pl 'zeppelin-interpreter,zeppelin-server'
 ```
 
 You'll need Firefox web browser installed in your development environment.
