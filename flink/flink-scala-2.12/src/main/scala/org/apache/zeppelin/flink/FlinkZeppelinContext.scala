@@ -29,7 +29,7 @@ import org.apache.flink.util.StringUtils
 import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
-import org.apache.zeppelin.flink.sql.{AppendStreamSqlJob, SingleRowStreamSqlJob, UpdateStreamSqlJob}
+import org.apache.zeppelin.flink.sql.{AbstractStreamSqlJob, AppendStreamSqlJob, SingleRowStreamSqlJob, UpdateStreamSqlJob}
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterHookRegistry, ResultMessages, ZeppelinContext}
 import org.apache.zeppelin.tabledata.TableDataUtils
 
@@ -129,29 +129,38 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
     showTable(columnNames, rows)
   }
 
+  @volatile private var currentStreamJob: AbstractStreamSqlJob = _
+
+  def cancelCurrentStreamJob(withSavepoint: Boolean): Unit = {
+    val job = currentStreamJob
+    if (job != null) job.cancel(withSavepoint)
+  }
+
   def show(table: Table, streamType: String, configs: Map[String, String] = Map.empty): Unit = {
     val context = InterpreterContext.get()
     configs.foreach(e => context.getLocalProperties.put(e._1, e._2))
     val tableName = "UnnamedTable_" + context.getParagraphId.replace("-", "_") + "_" + SQL_INDEX.getAndIncrement()
-    if (streamType.equalsIgnoreCase("single")) {
-      val streamJob = new SingleRowStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+    val streamJob: AbstractStreamSqlJob = if (streamType.equalsIgnoreCase("single")) {
+      new SingleRowStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
         table.asInstanceOf[TableImpl].getTableEnvironment,
         flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism, flinkInterpreter.getFlinkShims)
-      streamJob.run(table, tableName)
-    }
-    else if (streamType.equalsIgnoreCase("append")) {
-      val streamJob = new AppendStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+    } else if (streamType.equalsIgnoreCase("append")) {
+      new AppendStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
         table.asInstanceOf[TableImpl].getTableEnvironment,
         flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism, flinkInterpreter.getFlinkShims)
-      streamJob.run(table, tableName)
-    }
-    else if (streamType.equalsIgnoreCase("update")) {
-      val streamJob = new UpdateStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
+    } else if (streamType.equalsIgnoreCase("update")) {
+      new UpdateStreamSqlJob(flinkInterpreter.getStreamExecutionEnvironment,
         table.asInstanceOf[TableImpl].getTableEnvironment,
         flinkInterpreter.getJobManager, context, flinkInterpreter.getDefaultParallelism, flinkInterpreter.getFlinkShims)
-      streamJob.run(table, tableName)
+    } else {
+      throw new IOException("Unrecognized stream type: " + streamType)
     }
-    else throw new IOException("Unrecognized stream type: " + streamType)
+    currentStreamJob = streamJob
+    try {
+      streamJob.run(table, tableName)
+    } finally {
+      currentStreamJob = null
+    }
   }
 
   /**
