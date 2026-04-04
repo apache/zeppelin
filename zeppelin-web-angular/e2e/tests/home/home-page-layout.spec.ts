@@ -27,16 +27,6 @@ test.describe('Home Page - Layout and Grid', () => {
   });
 
   test.describe('Responsive Grid Layout', () => {
-    test('should display responsive grid structure', async ({ page }) => {
-      await test.step('Given I am on the home page', async () => {
-        await homePage.navigateToHome();
-      });
-
-      await test.step('When the page loads', async () => {
-        await waitForZeppelinReady(page);
-      });
-    });
-
     test('should have proper column distribution', async () => {
       await test.step('Given I am on the home page', async () => {
         await homePage.navigateToHome();
@@ -58,6 +48,7 @@ test.describe('Home Page - Layout and Grid', () => {
       await test.step('And I should see the help/community column with proper sizing', async () => {
         await expect(homePage.helpCommunityColumn).toBeVisible();
         // Check that the column contains help and community content
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
         const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
         await expect(helpHeading).toBeVisible();
         const helpText = await helpHeading.textContent();
@@ -78,6 +69,12 @@ test.describe('Home Page - Layout and Grid', () => {
         await expect(homePage.moreInfoGrid).toBeVisible();
         await expect(homePage.notebookColumn).toBeVisible();
         await expect(homePage.helpCommunityColumn).toBeVisible();
+        // Verify headings are readable and contain expected text at tablet width
+        const notebookHeading = homePage.notebookColumn.locator('h3');
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
+        const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
+        await expect(notebookHeading).toContainText('Notebook');
+        await expect(helpHeading).toContainText('Help');
       });
 
       await test.step('When I resize to mobile view', async () => {
@@ -89,11 +86,14 @@ test.describe('Home Page - Layout and Grid', () => {
         await expect(homePage.notebookColumn).toBeVisible();
         await expect(homePage.helpCommunityColumn).toBeVisible();
 
-        // Verify content is still accessible in mobile view
+        // Verify headings are readable and contain expected text in mobile view
         const notebookHeading = homePage.notebookColumn.locator('h3');
+        // JUSTIFIED: Help heading comes before Community heading in the right-column DOM order
         const helpHeading = homePage.helpCommunityColumn.locator('h3').first();
         await expect(notebookHeading).toBeVisible();
+        await expect(notebookHeading).toContainText('Notebook');
         await expect(helpHeading).toBeVisible();
+        await expect(helpHeading).toContainText('Help');
       });
     });
   });

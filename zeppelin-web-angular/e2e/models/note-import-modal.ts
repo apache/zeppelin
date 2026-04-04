@@ -59,16 +59,6 @@ export class NoteImportModal extends BasePage {
     await this.urlTab.click();
   }
 
-  async isJsonFileTabSelected(): Promise<boolean> {
-    const ariaSelected = await this.jsonFileTab.getAttribute('aria-selected');
-    return ariaSelected === 'true';
-  }
-
-  async isUrlTabSelected(): Promise<boolean> {
-    const ariaSelected = await this.urlTab.getAttribute('aria-selected');
-    return ariaSelected === 'true';
-  }
-
   async setImportUrl(url: string): Promise<void> {
     await this.urlInput.fill(url);
   }
@@ -77,19 +67,7 @@ export class NoteImportModal extends BasePage {
     await this.importNoteButton.click();
   }
 
-  async isImportNoteButtonDisabled(): Promise<boolean> {
-    return this.importNoteButton.isDisabled();
-  }
-
   async getFileSizeLimit(): Promise<string> {
     return (await this.fileSizeLimit.textContent()) || '';
-  }
-
-  async isErrorAlertVisible(): Promise<boolean> {
-    return this.errorAlert.isVisible();
-  }
-
-  async getErrorMessage(): Promise<string> {
-    return (await this.errorAlert.textContent()) || '';
   }
 }

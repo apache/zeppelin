@@ -11,58 +11,40 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { WorkspacePage } from 'e2e/models/workspace-page';
-import { WorkspaceUtil } from '../../models/workspace-page.util';
+import { BasePage } from 'e2e/models/base-page';
 import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.MAIN);
 
 test.describe('Workspace Main Component', () => {
-  let workspaceUtil: WorkspaceUtil;
-  let workspacePage: WorkspacePage;
+  let basePage: BasePage;
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     await performLoginIfRequired(page);
 
-    workspacePage = new WorkspacePage(page);
-    workspaceUtil = new WorkspaceUtil(page);
+    basePage = new BasePage(page);
   });
 
   test.describe('Given user accesses workspace container', () => {
-    test('When workspace loads Then should display main container structure', async ({ page }) => {
-      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
-      await expect(workspacePage.routerOutlet).toBeAttached();
-
-      await expect(workspacePage.zeppelinWorkspace).toBeVisible();
-      const contentElements = await page.locator('.content').count();
-      expect(contentElements).toBeGreaterThan(0);
+    test('When workspace loads Then should display main container structure', async () => {
+      await expect(basePage.zeppelinWorkspace).toBeVisible();
+      // Verify workspace contains the header — not just that the elements exist in isolation
+      await expect(basePage.zeppelinWorkspace.locator('zeppelin-header')).toBeVisible();
     });
 
     test('When workspace loads Then should display header component', async () => {
-      await workspaceUtil.verifyHeaderVisibility(true);
+      await expect(basePage.zeppelinHeader).toBeVisible();
+      // Header must contain navigable content, not just be an empty shell
+      await expect(basePage.zeppelinHeader).toContainText('Zeppelin');
     });
 
-    test('When workspace loads Then should activate router outlet', async () => {
-      await workspaceUtil.verifyRouterOutletActivation();
-    });
-
-    test('When component activates Then should trigger onActivate event', async () => {
-      await workspaceUtil.waitForComponentActivation();
-    });
-  });
-
-  test.describe('Given workspace header visibility', () => {
-    test('When not in publish mode Then should show header', async () => {
-      await workspaceUtil.verifyHeaderVisibility(true);
-    });
-  });
-
-  test.describe('Given router outlet functionality', () => {
-    test('When navigating to workspace Then should load child components', async () => {
-      await workspaceUtil.verifyRouterOutletActivation();
-      await workspaceUtil.waitForComponentActivation();
+    test('When workspace loads Then should have router outlet attached with home component', async ({ page }) => {
+      // Router outlet must have an activated child, not just exist as an empty outlet
+      await expect(page.locator('zeppelin-workspace router-outlet + *')).toHaveCount(1);
+      // Activated route must have rendered the home component
+      await expect(basePage.zeppelinWorkspace.locator('zeppelin-home')).toBeVisible();
     });
   });
 });
