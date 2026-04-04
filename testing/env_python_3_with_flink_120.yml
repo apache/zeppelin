@@ -7,7 +7,7 @@ dependencies:
   - scipy
   - numpy=1.19.5
   - grpcio
-  - protobuf
+  - protobuf<4
   - pandasql
   - ipython
   - ipython_genutils
