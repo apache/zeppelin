@@ -533,14 +533,6 @@ public class DownloadUtils {
         mvFile(targetFlinkHomeFolder + File.separator + "opt" + File.separator + jarName,
             targetFlinkHomeFolder + File.separator + "lib" + File.separator + jarName);
       }
-      if (SemanticVersion.of(flinkVersion).equalsOrNewerThan(SemanticVersion.of("1.19.0"))) {
-        // Remove flink-scala jar from lib to avoid Scala version conflict.
-        // flink-scala bundles an old Scala 2.12.7 standard library which conflicts
-        // with the newer Scala version used by Zeppelin's Scala REPL.
-        jarName = "flink-scala_" + scalaVersion + "-" + flinkVersion + ".jar";
-        mvFile(targetFlinkHomeFolder + File.separator + "lib" + File.separator + jarName,
-            targetFlinkHomeFolder + File.separator + "opt" + File.separator + jarName);
-      }
     } catch (Exception e) {
       throw new RuntimeException("Fail to download jar", e);
     }
