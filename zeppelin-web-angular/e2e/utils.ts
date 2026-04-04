@@ -184,8 +184,6 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
     const loginPage = new LoginPage(page);
     await loginPage.login(testUser.username, testUser.password);
 
-    // for webkit
-    await page.waitForTimeout(200);
     await page.evaluate(() => {
       if (window.location.hash.includes('login')) {
         window.location.hash = '#/';
@@ -220,6 +218,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
       // If we're on login page, this is expected when authentication is required
       // Just wait for login elements to be ready instead of waiting for app content
       await page.waitForFunction(
+        // JUSTIFIED: multi-condition AND — Angular presence + login element OR across three selectors; can't express as single locator wait
         () => {
           const hasAngular = document.querySelector('[ng-version]') !== null;
           const hasLoginElements =
@@ -236,6 +235,7 @@ export const waitForZeppelinReady = async (page: Page): Promise<void> => {
 
     // Wait for Angular and Zeppelin to be ready with more robust checks
     await page.waitForFunction(
+      // JUSTIFIED: multi-condition OR across DOM + textContent checks; textContent not expressible via Playwright locator API
       () => {
         // Check for Angular framework
         const hasAngular = document.querySelector('[ng-version]') !== null;
@@ -347,9 +347,7 @@ const navigateViaHomePageFallback = async (page: Page, baseNotebookName: string)
   await page.waitForLoadState('networkidle', { timeout: 15000 });
   await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
-  await page.waitForFunction(() => document.querySelectorAll(NOTEBOOK_PATTERNS.LINK_SELECTOR).length > 0, {
-    timeout: 15000
-  });
+  await page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).first().waitFor({ state: 'attached', timeout: 15000 });
   await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
 
   const notebookLink = page.locator(NOTEBOOK_PATTERNS.LINK_SELECTOR).filter({ hasText: baseNotebookName });
@@ -386,6 +384,10 @@ const extractFirstParagraphId = async (page: Page): Promise<string> => {
   await paragraphLink.waitFor({ state: 'attached', timeout: 15000 });
 
   const paragraphId = await paragraphLink.textContent();
+
+  // Close the dropdown before returning — leaving it open leaks state into subsequent tests
+  await page.keyboard.press('Escape');
+
   if (!paragraphId || !paragraphId.startsWith('paragraph_')) {
     throw new Error(`Invalid paragraph ID found: ${paragraphId}`);
   }

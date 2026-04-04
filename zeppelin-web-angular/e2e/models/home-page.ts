@@ -17,8 +17,6 @@ export class HomePage extends BasePage {
   readonly notebookSection: Locator;
   readonly helpSection: Locator;
   readonly communitySection: Locator;
-  readonly zeppelinLogo: Locator;
-  readonly anonymousUserIndicator: Locator;
   readonly welcomeSection: Locator;
   readonly moreInfoGrid: Locator;
   readonly notebookColumn: Locator;
@@ -28,9 +26,6 @@ export class HomePage extends BasePage {
   readonly notebookHeading: Locator;
   readonly helpHeading: Locator;
   readonly communityHeading: Locator;
-  readonly createNoteModal: Locator;
-  readonly createNoteButton: Locator;
-  readonly notebookNameInput: Locator;
   readonly externalLinks: {
     documentation: Locator;
     mailingList: Locator;
@@ -41,13 +36,12 @@ export class HomePage extends BasePage {
     createNewNoteLink: Locator;
     importNoteLink: Locator;
     filterInput: Locator;
-    tree: Locator;
-    noteActions: {
-      renameNote: Locator;
-      clearOutput: Locator;
-      moveToTrash: Locator;
-    };
   };
+  readonly anonymousUserIndicator: Locator;
+  private readonly zeppelinLogo: Locator;
+  private readonly createNoteModal: Locator;
+  private readonly createNoteButton: Locator;
+  private readonly notebookNameInput: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -58,8 +52,8 @@ export class HomePage extends BasePage {
     this.anonymousUserIndicator = page.locator('text=anonymous');
     this.welcomeSection = page.locator('.welcome');
     this.moreInfoGrid = page.locator('.more-info');
-    this.notebookColumn = page.locator('[nz-col]').first();
-    this.helpCommunityColumn = page.locator('[nz-col]').last();
+    this.notebookColumn = page.locator('[nz-col]').first(); // first() — left column contains the Notebook section
+    this.helpCommunityColumn = page.locator('[nz-col]').last(); // last() — right column contains Help and Community sections
     this.welcomeDescription = page.locator('.welcome').getByText('Zeppelin is web-based notebook');
     this.refreshNoteButton = page.locator('a.refresh-note');
     this.notebookHeading = this.notebookColumn.locator('h3');
@@ -79,13 +73,7 @@ export class HomePage extends BasePage {
     this.nodeList = {
       createNewNoteLink: page.locator('zeppelin-node-list a').filter({ hasText: 'Create new Note' }),
       importNoteLink: page.locator('zeppelin-node-list a').filter({ hasText: 'Import Note' }),
-      filterInput: page.locator('zeppelin-node-list input[placeholder*="Filter"]'),
-      tree: page.locator('zeppelin-node-list nz-tree'),
-      noteActions: {
-        renameNote: page.locator('.file .operation a[nztooltiptitle*="Rename note"]'),
-        clearOutput: page.locator('.file .operation a[nztooltiptitle*="Clear output"]'),
-        moveToTrash: page.locator('.file .operation a[nztooltiptitle*="Move note to Trash"]')
-      }
+      filterInput: page.locator('zeppelin-node-list input[placeholder*="Filter"]')
     };
   }
 
@@ -100,14 +88,6 @@ export class HomePage extends BasePage {
     await this.waitForUrlNotContaining('#/login');
   }
 
-  async isHomeContentDisplayed(): Promise<boolean> {
-    return this.welcomeTitle.isVisible();
-  }
-
-  async isAnonymousUser(): Promise<boolean> {
-    return this.anonymousUserIndicator.isVisible();
-  }
-
   async clickZeppelinLogo(): Promise<void> {
     await this.zeppelinLogo.click({ timeout: 15000 });
   }
@@ -117,17 +97,9 @@ export class HomePage extends BasePage {
     return text || '';
   }
 
-  async getWelcomeDescriptionText(): Promise<string> {
-    const text = await this.welcomeDescription.textContent();
-    return text || '';
-  }
-
   async clickRefreshNotes(): Promise<void> {
+    await this.refreshNoteButton.waitFor({ state: 'visible', timeout: 10000 });
     await this.refreshNoteButton.click({ timeout: 15000 });
-  }
-
-  async isNotebookListVisible(): Promise<boolean> {
-    return this.zeppelinNodeList.isVisible();
   }
 
   async clickCreateNewNote(): Promise<void> {
@@ -141,7 +113,7 @@ export class HomePage extends BasePage {
     // Wait for the modal form to be fully rendered with proper labels
     await this.page.waitForSelector('nz-form-label', { timeout: 10000 });
 
-    await this.waitForFormLabels(['Note Name', 'Clone Note']);
+    await this.waitForFormLabels(['Note Name']);
 
     // Fill and verify the notebook name input
     await this.fillAndVerifyInput(this.notebookNameInput, notebookName);
@@ -149,7 +121,9 @@ export class HomePage extends BasePage {
     // Click the 'Create' button in the modal
     await expect(this.createNoteButton).toBeEnabled({ timeout: 5000 });
     await this.createNoteButton.click({ timeout: 15000 });
-    await this.waitForPageLoad();
+    // Wait for navigation to the notebook page — confirms the note was created server-side.
+    // waitForPageLoad() (domcontentloaded) fires instantly on SPA routing and does not guarantee this.
+    await this.page.waitForURL(/\/notebook\//, { timeout: 45000 });
   }
 
   async clickImportNote(): Promise<void> {
@@ -159,19 +133,17 @@ export class HomePage extends BasePage {
   async filterNotes(searchTerm: string): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded', { timeout: 10000 });
     await this.nodeList.filterInput.waitFor({ state: 'visible', timeout: 5000 });
-    await this.nodeList.filterInput.fill(searchTerm, { timeout: 15000 });
-  }
-
-  async isRefreshIconSpinning(): Promise<boolean> {
-    const spinAttribute = await this.refreshIcon.getAttribute('nzSpin');
-    return spinAttribute === 'true' || spinAttribute === '';
+    // pressSequentially fires real key events so Angular's ngModel detects the change (fill() does not).
+    // Triple-click to select all, then type to replace or Backspace to clear.
+    await this.nodeList.filterInput.click({ clickCount: 3 });
+    if (searchTerm) {
+      await this.nodeList.filterInput.pressSequentially(searchTerm);
+    } else {
+      await this.nodeList.filterInput.press('Backspace');
+    }
   }
 
   async waitForRefreshToComplete(): Promise<void> {
     await this.waitForElementAttribute('a.refresh-note i[nz-icon]', 'nzSpin', false);
-  }
-
-  async getDocumentationLinkHref(): Promise<string | null> {
-    return this.externalLinks.documentation.getAttribute('href');
   }
 }

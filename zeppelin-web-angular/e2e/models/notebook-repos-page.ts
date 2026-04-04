@@ -34,10 +34,6 @@ export class NotebookReposPage extends BasePage {
       this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
     ]);
   }
-
-  async getRepositoryItemCount(): Promise<number> {
-    return await this.repositoryItems.count();
-  }
 }
 
 export class NotebookRepoItemPage extends BasePage {
@@ -72,32 +68,11 @@ export class NotebookRepoItemPage extends BasePage {
     await this.cancelButton.click({ timeout: 15000 });
   }
 
-  async isEditMode(): Promise<boolean> {
-    return await this.repositoryCard.evaluate(el => el.classList.contains('edit'));
-  }
-
-  async isSaveButtonEnabled(): Promise<boolean> {
-    return await this.saveButton.isEnabled();
-  }
-
-  async getSettingValue(settingName: string): Promise<string> {
-    const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const valueCell = row.locator('td').nth(1);
-    return (await valueCell.textContent()) || '';
-  }
-
   async fillSettingInput(settingName: string, value: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
     const input = row.locator('input[nz-input]');
     await input.clear();
     await input.fill(value);
-  }
-
-  async selectSettingDropdown(settingName: string, optionValue: string): Promise<void> {
-    const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const select = row.locator('nz-select');
-    await select.click({ timeout: 15000 });
-    await this.page.locator(`nz-option[nzvalue="${optionValue}"]`).click({ timeout: 15000 });
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
@@ -106,16 +81,9 @@ export class NotebookRepoItemPage extends BasePage {
     return await input.inputValue();
   }
 
-  async isInputVisible(settingName: string): Promise<boolean> {
+  async getSettingValue(settingName: string): Promise<string> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input[nz-input]');
-    return await input.isVisible();
-  }
-
-  async isDropdownVisible(settingName: string): Promise<boolean> {
-    const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const select = row.locator('nz-select');
-    return await select.isVisible();
+    return (await row.locator('td').nth(1).textContent()) || '';
   }
 
   async getSettingCount(): Promise<number> {

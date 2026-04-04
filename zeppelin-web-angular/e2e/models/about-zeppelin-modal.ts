@@ -43,10 +43,6 @@ export class AboutZeppelinModal extends BasePage {
     return (await this.versionText.textContent()) || '';
   }
 
-  async isLogoVisible(): Promise<boolean> {
-    return this.logo.isVisible();
-  }
-
   async getGetInvolvedHref(): Promise<string | null> {
     return this.getInvolvedLink.getAttribute('href');
   }

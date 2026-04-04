@@ -41,11 +41,7 @@ export class NodeListPage extends BasePage {
     await this.createNewNoteButton.click();
   }
 
-  getFolderByName(folderName: string): Locator {
-    return this.page.locator('nz-tree-node').filter({ hasText: folderName }).first();
-  }
-
-  getNoteByName(noteName: string): Locator {
+  private getNoteByName(noteName: string): Locator {
     return this.page.locator('nz-tree-node').filter({ hasText: noteName }).first();
   }
 
@@ -54,14 +50,6 @@ export class NodeListPage extends BasePage {
     // Target the specific link that navigates to the notebook (has href with "#/notebook/")
     const noteLink = note.locator('a[href*="#/notebook/"]');
     await noteLink.click();
-  }
-
-  async isFilterInputVisible(): Promise<boolean> {
-    return this.filterInput.isVisible();
-  }
-
-  async isTrashFolderVisible(): Promise<boolean> {
-    return this.trashFolder.isVisible();
   }
 
   async getAllVisibleNoteNames(): Promise<string[]> {
