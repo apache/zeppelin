@@ -43,6 +43,7 @@ export class Message {
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
   private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
+  private wsSubscription: Subscription | null = null;
   private open$ = new Subject<Event>();
   private close$ = new Subject<CloseEvent>();
   private sent$ = new Subject<WebSocketMessage<MessageSendDataTypeMap>>();
@@ -99,13 +100,26 @@ export class Message {
     if (!this.wsUrl) {
       throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
     }
+
+    // Unsubscribe from existing subscription first
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+      this.wsSubscription = null;
+    }
+
+    // Then close existing WebSocket
+    if (this.ws) {
+      this.ws.complete();
+      this.ws = null;
+    }
+
     this.ws = webSocket<WebSocketMessage<MessageDataTypeMap>>({
       url: this.wsUrl,
       openObserver: this.open$,
       closeObserver: this.close$
     });
 
-    this.ws
+    this.wsSubscription = this.ws
       .pipe(
         // reconnect
         retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
@@ -190,6 +204,10 @@ export class Message {
   }
 
   destroy(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+      this.wsSubscription = null;
+    }
     if (this.ws) {
       this.ws.complete();
       this.ws = null;
