@@ -329,6 +329,10 @@ class ZeppelinIT extends AbstractZeppelinIT {
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
+      // Wait for Angular to re-render the output with ng-click binding
+      waitForText("Run second paragraph", By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
+
       // Set new text value for 2nd paragraph
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
 
