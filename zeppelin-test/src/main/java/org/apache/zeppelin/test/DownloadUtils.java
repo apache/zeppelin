@@ -509,6 +509,11 @@ public class DownloadUtils {
           "https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-client-runtime/3.3.6/hadoop-client-runtime-3.3.6.jar",
           3, new File(targetFlinkHomeFolder,
               "lib" + File.separator + "hadoop-client-runtime-3.3.6.jar"));
+      // commons-logging is required by Hadoop's FileSystem but not bundled in Flink 1.19+
+      download(
+          "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar",
+          3, new File(targetFlinkHomeFolder,
+              "lib" + File.separator + "commons-logging-1.2.jar"));
       download("https://repo1.maven.org/maven2/org/apache/flink/flink-table-api-scala_"
           + scalaVersion + "/"
                       + flinkVersion + "/flink-table-api-scala_" + scalaVersion + "-" + flinkVersion + ".jar",
