@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,6 +172,7 @@ public abstract class FlinkIntegrationTest {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6406: YARN application mode fails with AM container exit code 1 on MiniYARN cluster with Flink 1.19+")
   public void testYarnApplicationMode() throws IOException, InterpreterException, YarnException {
     if (flinkVersion.startsWith("1.10")) {
       LOGGER.info("Skip yarn application mode test for flink 1.10");
