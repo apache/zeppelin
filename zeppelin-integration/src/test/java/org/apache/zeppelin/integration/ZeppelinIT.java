@@ -37,6 +37,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -336,10 +337,13 @@ class ZeppelinIT extends AbstractZeppelinIT {
       // Set new text value for 2nd paragraph
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
 
-      // Click on 1 paragraph to trigger z.runParagraph() function
-
+      // Click on Angular-rendered div to trigger z.runParagraph() function.
+      // Use JavaScript click because Angular-compiled ng-click elements may not be
+      // considered "clickable" by Selenium's native click (overlay/stale issues).
+      WebElement angularDiv = visibilityWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"), MAX_BROWSER_TIMEOUT_SEC);
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", angularDiv);
       ZeppelinITUtils.sleep(1000, false);
-      clickAndWait(By.xpath(getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
       waitForParagraph(2, "FINISHED");
 
