@@ -136,6 +136,14 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
     if (job != null) job.cancel(withSavepoint)
   }
 
+  def setCurrentStreamJob(job: AbstractStreamSqlJob): Unit = {
+    currentStreamJob = job
+  }
+
+  def clearCurrentStreamJob(): Unit = {
+    currentStreamJob = null
+  }
+
   def show(table: Table, streamType: String, configs: Map[String, String] = Map.empty): Unit = {
     val context = InterpreterContext.get()
     configs.foreach(e => context.getLocalProperties.put(e._1, e._2))
