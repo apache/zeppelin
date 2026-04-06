@@ -35,15 +35,15 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 # Full build (skip tests)
 ./mvnw clean package -DskipTests
 
-# Build single module
-./mvnw clean package -pl zeppelin-server -DskipTests
+# Build single module (--am builds required upstream modules)
+./mvnw clean package -pl zeppelin-server --am -DskipTests
 
 # Run module tests
-./mvnw test -pl zeppelin-zengine
+./mvnw test -pl zeppelin-zengine --am
 
 # Run single test class/method
-./mvnw test -pl zeppelin-server -Dtest=NotebookServerTest
-./mvnw test -pl zeppelin-server -Dtest=NotebookServerTest#testMethod
+./mvnw test -pl zeppelin-server --am -Dtest=NotebookServerTest
+./mvnw test -pl zeppelin-server --am -Dtest=NotebookServerTest#testMethod
 
 # Common profiles
 #   -Pspark-3.5 -Pspark-scala-2.12   Spark version
@@ -471,15 +471,26 @@ cd ..
 
 ### Development Workflow
 
+When starting a new change, use a **git worktree** instead of switching branches in your main checkout. This keeps your primary working directory clean and allows parallel work across multiple branches:
+
 ```bash
-# Build only the module you're changing
-./mvnw clean package -pl zeppelin-server -DskipTests
+# Create a worktree for your feature branch
+git worktree add ../zeppelin-ZEPPELIN-XXXX -b ZEPPELIN-XXXX-description
+cd ../zeppelin-ZEPPELIN-XXXX
+
+# When done, clean up
+git worktree remove ../zeppelin-ZEPPELIN-XXXX
+```
+
+```bash
+# Build only the module you're changing (--am builds required upstream modules)
+./mvnw clean package -pl zeppelin-server --am -DskipTests
 
 # Run tests for your module
-./mvnw test -pl zeppelin-server
+./mvnw test -pl zeppelin-server --am
 
 # Run a specific test
-./mvnw test -pl zeppelin-server -Dtest=NotebookServerTest#testMethod
+./mvnw test -pl zeppelin-server --am -Dtest=NotebookServerTest#testMethod
 
 # Start the dev frontend (proxies API to localhost:8080)
 cd zeppelin-web-angular && npm start
@@ -550,6 +561,6 @@ Key conventions:
 
 - **Java**: Google Java Style (2-space indent). Checkstyle enforced — no tabs, LF line endings, newline at EOF
 - **Frontend**: ESLint + Prettier, auto-enforced via pre-commit hook (Husky + lint-staged)
-- **Testing**: JUnit 4 + Mockito (Java), Playwright (frontend E2E)
+- **Testing**: JUnit 5 (Jupiter) + Mockito (Java; a small number of legacy JUnit 4 tests still exist), Playwright (frontend E2E)
 - **Logging**: SLF4J + Log4j2
 - **License**: Apache License 2.0 — all new files need the ASF header
