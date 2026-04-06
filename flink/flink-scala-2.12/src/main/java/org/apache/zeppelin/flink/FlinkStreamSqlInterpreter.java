@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.flink;
 
+import org.apache.zeppelin.flink.sql.AbstractStreamSqlJob;
 import org.apache.zeppelin.flink.sql.AppendStreamSqlJob;
 import org.apache.zeppelin.flink.sql.SingleRowStreamSqlJob;
 import org.apache.zeppelin.flink.sql.UpdateStreamSqlJob;
@@ -53,47 +54,44 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
   public void callInnerSelect(String sql) {
     InterpreterContext context = InterpreterContext.get();
     String streamType = context.getLocalProperties().getOrDefault("type", "update");
+    AbstractStreamSqlJob streamJob;
     if (streamType.equalsIgnoreCase("single")) {
-      SingleRowStreamSqlJob streamJob = new SingleRowStreamSqlJob(
+      streamJob = new SingleRowStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
               flinkInterpreter.getJavaStreamTableEnvironment(),
               flinkInterpreter.getJobManager(),
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      try {
-        streamJob.run(sql);
-      } catch (IOException e) {
-        throw new RuntimeException("Fail to run single type stream job", e);
-      }
     } else if (streamType.equalsIgnoreCase("append")) {
-      AppendStreamSqlJob streamJob = new AppendStreamSqlJob(
+      streamJob = new AppendStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
               flinkInterpreter.getStreamTableEnvironment(),
               flinkInterpreter.getJobManager(),
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      try {
-        streamJob.run(sql);
-      } catch (IOException e) {
-        throw new RuntimeException("Fail to run append type stream job", e);
-      }
     } else if (streamType.equalsIgnoreCase("update")) {
-      UpdateStreamSqlJob streamJob = new UpdateStreamSqlJob(
+      streamJob = new UpdateStreamSqlJob(
               flinkInterpreter.getStreamExecutionEnvironment(),
               flinkInterpreter.getStreamTableEnvironment(),
               flinkInterpreter.getJobManager(),
               context,
               flinkInterpreter.getDefaultParallelism(),
               flinkInterpreter.getFlinkShims());
-      try {
-        streamJob.run(sql);
-      } catch (IOException e) {
-        throw new RuntimeException("Fail to run update type stream job", e);
-      }
     } else {
       throw new RuntimeException("Unrecognized stream type: " + streamType);
+    }
+
+    FlinkZeppelinContext z =
+            (FlinkZeppelinContext) flinkInterpreter.getZeppelinContext();
+    z.setCurrentStreamJob(streamJob);
+    try {
+      streamJob.run(sql);
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to run " + streamType + " type stream job", e);
+    } finally {
+      z.clearCurrentStreamJob();
     }
   }
 
