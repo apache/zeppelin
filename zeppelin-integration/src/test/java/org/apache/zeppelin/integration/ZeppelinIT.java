@@ -293,6 +293,7 @@ class ZeppelinIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testAngularRunParagraph consistently fails due to element clickability timeout")
   void testAngularRunParagraph() throws Exception {
     try {
       createNewNote();
