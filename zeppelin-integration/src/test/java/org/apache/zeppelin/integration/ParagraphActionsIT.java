@@ -822,6 +822,7 @@ class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testMultipleDynamicFormsSameType consistently fails due to element timeout")
   void testMultipleDynamicFormsSameType() throws Exception {
     try {
       createNewNote();

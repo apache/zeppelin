@@ -160,7 +160,6 @@ jobs:
 
   test-selenium-with-spark-module-for-spark-3-5:
     runs-on: ubuntu-24.04
-    continue-on-error: true
     defaults:
       run:
         shell: bash -l {0}
