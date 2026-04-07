@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 
+@Disabled("ZEPPELIN-6410: InterpreterModeActionsIT consistently fails due to Selenium element timeouts on CI")
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
 
