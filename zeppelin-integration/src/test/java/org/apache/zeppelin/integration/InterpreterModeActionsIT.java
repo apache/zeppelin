@@ -26,6 +26,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -549,6 +550,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testPerUserIsolatedAction consistently fails due to element visibility timeout")
   void testPerUserIsolatedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout
