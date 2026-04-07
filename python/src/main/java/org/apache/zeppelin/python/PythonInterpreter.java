@@ -122,7 +122,7 @@ public class PythonInterpreter extends Interpreter {
     }
   }
 
-  // start gateway sever and start python process
+  // start gateway server and start python process
   private void createGatewayServerAndStartScript() throws IOException {
     // start gateway server in JVM side
     int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
