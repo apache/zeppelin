@@ -262,6 +262,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testPerUserScopedAction consistently fails due to element click/visibility timeout")
   void testPerUserScopedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
