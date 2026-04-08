@@ -340,6 +340,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   void testZSession_Flink() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
     intpProperties.put("FLINK_HOME", flinkHome);
+    // Disable Hive delegation token provider which fails without full Hive classpath in Flink 1.19+
+    intpProperties.put("security.delegation.token.provider.hive.enabled", "false");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
@@ -377,6 +379,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   void testZSession_Flink_Submit() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
     intpProperties.put("FLINK_HOME", flinkHome);
+    intpProperties.put("security.delegation.token.provider.hive.enabled", "false");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
