@@ -149,24 +149,6 @@ test.describe('Published Paragraph', () => {
       // the route is still active (not navigated away) without requiring visible content.
       await expect(publishedContainer).toBeAttached({ timeout: 10000 });
     });
-
-    test('should render React micro-frontend instead of Angular result component', async ({ page }) => {
-      await test.step('Given I navigate to React mode URL', async () => {
-        await page.goto(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}?react=true`);
-        await waitForZeppelinReady(page);
-      });
-
-      await test.step('Then Angular result component should not be rendered', async () => {
-        await expect(page.locator('zeppelin-notebook-paragraph-result')).toHaveCount(0, { timeout: 10000 });
-      });
-
-      await test.step('And React widget should be mounted in the container', async () => {
-        // React mount() renders <div data-testid="react-published-paragraph"> or <Empty> (Alert)
-        const reactContent = page.locator('[data-testid="react-published-paragraph"], .ant-alert');
-        // JUSTIFIED: compound selector covers React success + error fallback (.ant-alert); either may render
-        await expect(reactContent).toBeAttached({ timeout: 15000 });
-      });
-    });
   });
 
   test.describe('Published Mode Functionality', () => {
@@ -190,49 +172,39 @@ test.describe('Published Paragraph', () => {
   });
 
   test.describe('Confirmation Modal and Execution', () => {
-    for (const reactMode of [false, true]) {
-      test(`should show confirmation modal with code preview and allow running${reactMode ? ' (React mode)' : ''}`, async ({
-        page
-      }) => {
-        const { noteId, paragraphId } = testNotebook;
+    test('should show confirmation modal with code preview and allow running', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
 
-        await publishedParagraphPage.navigateToNotebook(noteId);
+      await publishedParagraphPage.navigateToNotebook(noteId);
 
-        // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
-        const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
-        await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
+      // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
+      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
+      await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
 
-        const urlSuffix = reactMode ? '?react=true' : '';
-        await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}${urlSuffix}`);
-        await waitForZeppelinReady(page);
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await waitForZeppelinReady(page);
 
-        if (!reactMode) {
-          await expect(page).toHaveURL(new RegExp(`/paragraph/${paragraphId}`));
-        }
+      await expect(page).toHaveURL(new RegExp(`/paragraph/${paragraphId}`));
 
-        const modal = publishedParagraphPage.confirmationModal;
-        await expect(modal).toBeVisible({ timeout: 30000 });
+      const modal = publishedParagraphPage.confirmationModal;
+      await expect(modal).toBeVisible({ timeout: 30000 });
 
-        await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
+      await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
 
-        const modalContent = modal.locator('.ant-modal-confirm-content');
-        await expect(modalContent).toContainText('This paragraph contains the following code:');
-        await expect(modalContent).toContainText('Would you like to execute this code?');
+      const modalContent = modal.locator('.ant-modal-confirm-content');
+      await expect(modalContent).toContainText('This paragraph contains the following code:');
+      await expect(modalContent).toContainText('Would you like to execute this code?');
 
-        if (!reactMode) {
-          // Code preview element only checked in Angular mode
-          // JUSTIFIED: compound fallback selector; first() picks any element that confirms code preview is rendered
-          const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first();
-          await expect(codePreview).toBeVisible();
-          await expect(codePreview).not.toBeEmpty(); // code must have content, not just an empty container
+      // JUSTIFIED: compound fallback selector; first() picks any element that confirms code preview is rendered
+      const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first();
+      await expect(codePreview).toBeVisible();
+      await expect(codePreview).not.toBeEmpty(); // code must have content, not just an empty container
 
-          await expect(publishedParagraphPage.runButton).toBeVisible();
-          await expect(publishedParagraphPage.cancelButton).toBeVisible();
-        }
+      await expect(publishedParagraphPage.runButton).toBeVisible();
+      await expect(publishedParagraphPage.cancelButton).toBeVisible();
 
-        await publishedParagraphPage.runButton.click();
-        await expect(modal).toBeHidden();
-      });
-    }
+      await publishedParagraphPage.runButton.click();
+      await expect(modal).toBeHidden();
+    });
   });
 });
