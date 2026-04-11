@@ -33,11 +33,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import java.time.Duration;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -326,16 +330,31 @@ class ZeppelinIT extends AbstractZeppelinIT {
               "%angular <div id=\\'angularRunParagraph\\' ng-click=\\'z.runParagraph(\""
                       + secondParagraphId.trim()
                       + "\")\\'>Run second paragraph</div>");
+
+      // Capture old output element before re-run to detect when it gets replaced
+      WebElement oldAngularDiv = manager.getWebDriver().findElement(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
+
       runParagraph(1);
+
+      // Wait for the old output element to become stale (proves the paragraph output
+      // was actually refreshed, avoiding race where waitForParagraph sees the old FINISHED state)
+      new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC))
+              .until(ExpectedConditions.stalenessOf(oldAngularDiv));
+
       waitForParagraph(1, "FINISHED");
+
+      // Wait for new Angular output to render
+      WebElement newAngularDiv = visibilityWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"), MAX_BROWSER_TIMEOUT_SEC);
 
       // Set new text value for 2nd paragraph
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
 
-      // Click on 1 paragraph to trigger z.runParagraph() function
-
+      // Click on Angular-rendered div to trigger z.runParagraph() function.
+      // Use JavaScript click to bypass overlay/clickability issues with ng-click elements.
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", newAngularDiv);
       ZeppelinITUtils.sleep(1000, false);
-      clickAndWait(By.xpath(getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
       waitForParagraph(2, "FINISHED");
 

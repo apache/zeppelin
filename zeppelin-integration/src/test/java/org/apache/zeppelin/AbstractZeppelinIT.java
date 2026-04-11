@@ -61,21 +61,38 @@ abstract public class AbstractZeppelinIT {
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC).click();
 
-    ZeppelinITUtils.sleep(1000, false);
+    // Wait for the logged-in navbar user dropdown to appear (indicates login completed
+    // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
+    visibilityWait(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+        MAX_BROWSER_TIMEOUT_SEC);
+    try {
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript(
+          "$('.modal-backdrop').remove(); $('#loginModal').modal('hide');");
+    } catch (Exception e) {
+      // ignore if jQuery/Bootstrap not ready
+    }
+    ZeppelinITUtils.sleep(500, false);
   }
 
   protected void logoutUser(String userName) throws URISyntaxException {
     ZeppelinITUtils.sleep(500, false);
-    manager.getWebDriver().findElement(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]")).click();
+    clickableWait(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(500, false);
-    manager.getWebDriver().findElement(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]//a[@ng-click='navbar.logout()']")).click();
+    clickableWait(
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]//a[@ng-click='navbar.logout()']"),
+        MAX_BROWSER_TIMEOUT_SEC).click();
     ZeppelinITUtils.sleep(2000, false);
-    if (manager.getWebDriver().findElement(
-        By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).isDisplayed()) {
-      manager.getWebDriver().findElement(
-          By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
+    try {
+      WebElement closeButton = manager.getWebDriver().findElement(
+          By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"));
+      if (closeButton.isDisplayed()) {
+        closeButton.click();
+      }
+    } catch (NoSuchElementException e) {
+      // login modal close button not found, which is fine
     }
     manager.getWebDriver().get(new URI(manager.getWebDriver().getCurrentUrl()).resolve("/classic/#/").toString());
     ZeppelinITUtils.sleep(500, false);
