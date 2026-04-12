@@ -1030,8 +1030,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Rapid Shift+Enter operations
       for (let i = 0; i < 3; i++) {
         await keyboardPage.pressRunParagraph();
-        // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 15000 });
+        await keyboardPage.waitForParagraphExecution(0);
         await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: brief gap between rapid sequential runs to prevent WebSocket message overlap
       }
 
