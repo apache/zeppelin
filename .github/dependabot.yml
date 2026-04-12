@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # Keep version updates disabled so this config only groups security updates.
   - package-ecosystem: "bundler"
     directory: "/docs"
     schedule:
@@ -29,6 +30,171 @@ updates:
     open-pull-requests-limit: 0
     groups:
       zeppelin-web-angular-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/dev"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      dev-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      root-maven-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/alluxio"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      alluxio-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/bigquery"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      bigquery-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/elasticsearch"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      elasticsearch-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/flink/flink-scala-2.12"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      flink-scala-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/livy"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      livy-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/rlang"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      rlang-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/shell"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      shell-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/spark/interpreter"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      spark-interpreter-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/spark/spark-scala-parent"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      spark-scala-parent-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/zeppelin-interpreter"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      zeppelin-interpreter-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/zeppelin-plugins/launcher/docker"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      launcher-docker-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/zeppelin-plugins/launcher/k8s-standard"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      launcher-k8s-standard-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "maven"
+    directory: "/zeppelin-plugins/notebookrepo/s3"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      notebookrepo-s3-security-updates:
         applies-to: security-updates
         patterns:
           - "*"
