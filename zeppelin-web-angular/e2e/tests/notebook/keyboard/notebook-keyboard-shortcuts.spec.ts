@@ -85,12 +85,11 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Paragraph should execute (reach a terminal state — interpreter availability varies by env)
+      // Then: Paragraph should execute (reach a terminal state)
       await keyboardPage.waitForParagraphExecution(0);
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusEl = keyboardPage.paragraphContainer.first().locator('.status');
-      const statusText = (await statusEl.textContent({ timeout: 30000 }))?.trim();
-      expect(statusText === 'FINISHED' || statusText === 'ERROR' || statusText === 'ABORT').toBe(true);
+      await expect(statusEl).toHaveText(/FINISHED|ERROR|ABORT/, { timeout: 60000 });
     });
   });
 

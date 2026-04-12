@@ -104,9 +104,11 @@ export class BasePage {
     await expect(locator).toBeVisible({ timeout });
     await expect(locator).toBeEnabled({ timeout: 5000 });
 
-    // Click first so Angular's form control is focused and its initial setValue cycle
-    // has completed before we overwrite it.  Then fill() atomically sets the value.
+    // Click first so Angular's form control is focused.
+    // Then wait for Angular's async setValue cycle (e.g. "Untitled Note 1") to settle
+    // before overwriting — otherwise Angular can clobber our fill() value.
     await locator.click();
+    await expect(locator).not.toHaveValue('', { timeout: 5000 });
     await locator.fill(value);
     await expect(locator).toHaveValue(value, { timeout: 10000 });
   }
