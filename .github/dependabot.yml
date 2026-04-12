@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "bundler"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      docs-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/zeppelin-web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      zeppelin-web-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/zeppelin-web-angular"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    groups:
+      zeppelin-web-angular-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
