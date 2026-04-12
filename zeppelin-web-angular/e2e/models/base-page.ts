@@ -94,11 +94,7 @@ export class BasePage {
     }
   }
 
-  async fillAndVerifyInput(
-    locator: Locator,
-    value: string,
-    options?: { timeout?: number; clearFirst?: boolean }
-  ): Promise<void> {
+  async fillAndVerifyInput(locator: Locator, value: string, options?: { timeout?: number }): Promise<void> {
     const { timeout = 10000 } = options || {};
 
     await expect(locator).toBeVisible({ timeout });

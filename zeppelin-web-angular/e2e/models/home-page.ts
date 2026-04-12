@@ -78,7 +78,7 @@ export class HomePage extends BasePage {
   }
 
   async navigateToHome(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/#/');
     await this.waitForPageLoad();
   }
 

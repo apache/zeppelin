@@ -55,7 +55,8 @@ test.describe('Notebook Repository Item - Edit Workflow', () => {
 
       const isInputVisible = await row.locator('input[nz-input]').isVisible();
       if (isInputVisible) {
-        savedValue = (await repoItemPage.getSettingInputValue(settingName)) || 'test-value';
+        const currentValue = (await repoItemPage.getSettingInputValue(settingName)) || '';
+        savedValue = currentValue ? `${currentValue}_edited` : 'test-value';
         await repoItemPage.fillSettingInput(settingName, savedValue);
         savedSettingName = settingName;
         break;

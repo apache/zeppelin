@@ -88,7 +88,7 @@ test.describe('Node List Functionality', () => {
     if (notes.length === 0) {
       // Seed a note so the test always runs — critical navigation path must not be skipped
       await homePage.createNote(`_e2e_nav_${Date.now()}`);
-      await page.goto('/');
+      await page.goto('/#/');
       await waitForZeppelinReady(page);
       notes = await nodeListPage.getAllVisibleNoteNames();
     }
