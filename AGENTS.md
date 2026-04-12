@@ -18,7 +18,7 @@ limitations under the License.
 # AGENTS.md
 
 > Guidance for AI coding agents working on the Apache Zeppelin codebase.
-> See [AGENTS.md specification](https://github.com/anthropics/agents-md).
+> See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
 
 ## Project Overview
 
@@ -50,6 +50,7 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 #   -Pflink-117                        Flink version
 #   -Pbuild-distr                      Full distribution
 #   -Prat                              Apache RAT license check
+#   -Pweb-classic                      Additionally builds the classic UI web module when specified
 ```
 
 ## Build Gotchas
