@@ -41,7 +41,7 @@
     "angular-ui-bootstrap": "~2.5.0",
     "angular-ui-grid": "4.4.6",
     "angular-websocket": "1.0.14",
-    "angular-xeditable": "0.1.12",
+    "angular-xeditable": "0.10.2",
     "ansi_up": "^2.0.2",
     "ap-viewport-watch": "0.1.43",
     "bootstrap": "~3.4.1",
