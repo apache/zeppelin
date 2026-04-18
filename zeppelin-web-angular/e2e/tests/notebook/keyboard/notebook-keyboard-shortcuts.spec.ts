@@ -85,12 +85,11 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Paragraph should execute (reach a terminal state — interpreter availability varies by env)
+      // Then: Paragraph should execute (reach a terminal state)
       await keyboardPage.waitForParagraphExecution(0);
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusEl = keyboardPage.paragraphContainer.first().locator('.status');
-      const statusText = (await statusEl.textContent({ timeout: 30000 }))?.trim();
-      expect(statusText === 'FINISHED' || statusText === 'ERROR' || statusText === 'ABORT').toBe(true);
+      await expect(statusEl).toHaveText(/FINISHED|ERROR|ABORT/, { timeout: 60000 });
     });
   });
 
@@ -1031,8 +1030,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Rapid Shift+Enter operations
       for (let i = 0; i < 3; i++) {
         await keyboardPage.pressRunParagraph();
-        // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 15000 });
+        await keyboardPage.waitForParagraphExecution(0);
         await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: brief gap between rapid sequential runs to prevent WebSocket message overlap
       }
 

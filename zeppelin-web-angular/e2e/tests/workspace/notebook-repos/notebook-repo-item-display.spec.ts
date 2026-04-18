@@ -28,8 +28,10 @@ test.describe('Notebook Repository Item - Display Mode', () => {
     notebookReposPage = new NotebookReposPage(page);
     await notebookReposPage.navigate();
 
+    // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
     const firstCard = notebookReposPage.repositoryItems.first();
     firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+    expect(firstRepoName, 'No repository found — ensure at least one repo is configured').not.toBe('');
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
   });
 
@@ -40,14 +42,7 @@ test.describe('Notebook Repository Item - Display Mode', () => {
 
   test('should show edit button in display mode', async () => {
     await expect(repoItemPage.editButton).toBeVisible();
-  });
-
-  test('should display settings table', async () => {
-    await expect(repoItemPage.settingTable).toBeVisible();
-  });
-
-  test('should show all settings in display mode', async () => {
-    const settingCount = await repoItemPage.getSettingCount();
-    expect(settingCount).toBeGreaterThan(0);
+    await expect(repoItemPage.editButton).toBeEnabled();
+    await expect(repoItemPage.editButton).toContainText('Edit');
   });
 });

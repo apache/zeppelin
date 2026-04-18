@@ -24,8 +24,6 @@ export class BasePage {
   readonly zeppelinHeader: Locator;
 
   readonly modalTitle: Locator;
-  readonly modalBody: Locator;
-  readonly modalContent: Locator;
 
   readonly okButton: Locator;
   readonly cancelButton: Locator;
@@ -41,8 +39,6 @@ export class BasePage {
     this.zeppelinHeader = page.locator('zeppelin-header');
 
     this.modalTitle = page.locator('.ant-modal-confirm-title, .ant-modal-title');
-    this.modalBody = page.locator('.ant-modal-confirm-content, .ant-modal-body');
-    this.modalContent = page.locator('.ant-modal-body');
 
     this.okButton = page.locator('button:has-text("OK")');
     this.cancelButton = page.locator('button:has-text("Cancel")');
@@ -71,11 +67,6 @@ export class BasePage {
     await this.navigateToRoute('/');
   }
 
-  getCurrentPath(): string {
-    const url = new URL(this.page.url());
-    return url.hash || url.pathname;
-  }
-
   async waitForUrlNotContaining(fragment: string): Promise<void> {
     await this.page.waitForURL(url => !url.toString().includes(fragment));
   }
@@ -85,14 +76,8 @@ export class BasePage {
   }
 
   async waitForFormLabels(labelTexts: string[], timeout = 10000): Promise<void> {
-    await this.page.waitForFunction(
-      texts => {
-        const labels = Array.from(document.querySelectorAll('nz-form-label'));
-        return texts.some(text => labels.some(l => l.textContent?.includes(text)));
-      },
-      labelTexts,
-      { timeout }
-    );
+    const locators = labelTexts.map(text => this.page.locator('nz-form-label', { hasText: text }));
+    await Promise.race(locators.map(l => l.waitFor({ state: 'attached', timeout })));
   }
 
   async waitForElementAttribute(
@@ -109,25 +94,18 @@ export class BasePage {
     }
   }
 
-  async waitForRouterOutletChild(timeout = 10000): Promise<void> {
-    await expect(this.page.locator('zeppelin-workspace router-outlet + *')).toHaveCount(1, { timeout });
-  }
-
-  async fillAndVerifyInput(
-    locator: Locator,
-    value: string,
-    options?: { timeout?: number; clearFirst?: boolean }
-  ): Promise<void> {
-    const { timeout = 10000, clearFirst = true } = options || {};
+  async fillAndVerifyInput(locator: Locator, value: string, options?: { timeout?: number }): Promise<void> {
+    const { timeout = 10000 } = options || {};
 
     await expect(locator).toBeVisible({ timeout });
     await expect(locator).toBeEnabled({ timeout: 5000 });
 
-    if (clearFirst) {
-      await locator.clear();
-    }
-
+    // Click first so Angular's form control is focused.
+    // Then wait for Angular's async setValue cycle (e.g. "Untitled Note 1") to settle
+    // before overwriting — otherwise Angular can clobber our fill() value.
+    await locator.click();
+    await expect(locator).not.toHaveValue('', { timeout: 5000 });
     await locator.fill(value);
-    await expect(locator).toHaveValue(value);
+    await expect(locator).toHaveValue(value, { timeout: 10000 });
   }
 }

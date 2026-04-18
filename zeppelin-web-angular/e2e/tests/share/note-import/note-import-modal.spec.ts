@@ -42,8 +42,7 @@ test.describe('Note Import Modal', () => {
   });
 
   test('Given Import Note modal is open, When viewing default tab, Then JSON File tab should be selected', async () => {
-    const isJsonTabSelected = await noteImportModal.isJsonFileTabSelected();
-    expect(isJsonTabSelected).toBe(true);
+    await expect(noteImportModal.jsonFileTab).toHaveAttribute('aria-selected', 'true');
 
     await expect(noteImportModal.uploadArea).toBeVisible();
     await expect(noteImportModal.uploadText).toBeVisible();
@@ -52,8 +51,7 @@ test.describe('Note Import Modal', () => {
   test('Given Import Note modal is open, When switching to URL tab, Then URL input should be visible', async () => {
     await noteImportModal.switchToUrlTab();
 
-    const isUrlTabSelected = await noteImportModal.isUrlTabSelected();
-    expect(isUrlTabSelected).toBe(true);
+    await expect(noteImportModal.urlTab).toHaveAttribute('aria-selected', 'true');
 
     await expect(noteImportModal.urlInput).toBeVisible();
     await expect(noteImportModal.importNoteButton).toBeVisible();
@@ -62,16 +60,14 @@ test.describe('Note Import Modal', () => {
   test('Given URL tab is selected, When URL is empty, Then import button should be disabled', async () => {
     await noteImportModal.switchToUrlTab();
 
-    const isDisabled = await noteImportModal.isImportNoteButtonDisabled();
-    expect(isDisabled).toBe(true);
+    await expect(noteImportModal.importNoteButton).toBeDisabled();
   });
 
   test('Given URL tab is selected, When entering URL, Then import button should be enabled', async () => {
     await noteImportModal.switchToUrlTab();
     await noteImportModal.setImportUrl('https://example.com/note.json');
 
-    const isDisabled = await noteImportModal.isImportNoteButtonDisabled();
-    expect(isDisabled).toBe(false);
+    await expect(noteImportModal.importNoteButton).toBeEnabled();
   });
 
   test('Given Import Note modal is open, When entering import name, Then name should be set', async () => {
@@ -84,8 +80,7 @@ test.describe('Note Import Modal', () => {
 
   test('Given JSON File tab is selected, When viewing file size limit, Then limit should be displayed', async () => {
     const fileSizeLimit = await noteImportModal.getFileSizeLimit();
-    expect(fileSizeLimit).toBeTruthy();
-    expect(fileSizeLimit.length).toBeGreaterThan(0);
+    expect(fileSizeLimit).toMatch(/\d+\s*(MB|KB|GB)/i);
   });
 
   test('Given Import Note modal is open, When clicking close button, Then modal should close', async () => {
@@ -99,7 +94,6 @@ test.describe('Note Import Modal', () => {
     await noteImportModal.clickImportNote();
 
     await expect(noteImportModal.errorAlert).toBeVisible();
-    const errorMessage = await noteImportModal.getErrorMessage();
-    expect(errorMessage).toBeTruthy();
+    await expect(noteImportModal.errorAlert).not.toBeEmpty();
   });
 });

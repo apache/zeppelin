@@ -51,12 +51,10 @@ test.describe('Published Paragraph', () => {
 
       await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
-      // Directly assert that the modal appears and contains the expected text
-      const modal = page.locator('.ant-modal:has-text("Notebook not found")').last();
-      await expect(modal).toBeVisible({ timeout: 10000 }); // Expect the modal to be visible
-
-      const modalContent = await modal.textContent();
-      expect(modalContent?.toLowerCase()).toContain('not found');
+      // JUSTIFIED: last() handles stacked modals where the most recent error modal appears on top
+      const modal = page.locator('.ant-modal', { hasText: /not found/i }).last();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      await expect(modal).toContainText(/not found/i);
     });
 
     test('should show error modal when paragraph does not exist in valid notebook', async ({ page }) => {
@@ -65,18 +63,12 @@ test.describe('Published Paragraph', () => {
 
       await testUtil.navigateToPublishedParagraph(validNoteId, nonExistentParagraphId);
 
-      // Expect a specific error modal
       const errorModal = page.locator('.ant-modal', { hasText: /Paragraph Not Found|not found|Error/i });
       await expect(errorModal).toBeVisible({ timeout: 10000 });
-
-      // Verify modal content includes the invalid paragraph ID
-      const content = await testUtil.getErrorModalContent();
-      expect(content).toBeDefined();
-      expect(content).toContain(nonExistentParagraphId);
+      await expect(errorModal).toContainText(nonExistentParagraphId);
 
       await testUtil.clickErrorModalOk();
 
-      // Wait for redirect to home page
       await expect(page).toHaveURL(/\/#\/$/, { timeout: 10000 });
     });
 
@@ -85,16 +77,13 @@ test.describe('Published Paragraph', () => {
 
       await publishedParagraphPage.navigateToPublishedParagraph(nonExistentIds.noteId, nonExistentIds.paragraphId);
 
-      const modal = page.locator('.ant-modal', { hasText: 'Paragraph Not Found' }).last();
-      const isModalVisible = await modal.isVisible();
+      // Modal must appear — we navigated to non-existent IDs
+      const modal = page.locator('.ant-modal').filter({ hasText: /not found/i });
+      await expect(modal).toBeVisible({ timeout: 10000 });
 
-      if (isModalVisible) {
-        await publishedParagraphPage.okButton.click();
+      await publishedParagraphPage.okButton.click();
 
-        await expect(page).toHaveURL(/\/#\/$/, { timeout: 10000 });
-      } else {
-        await expect(page).toHaveURL(/\/#\/$/, { timeout: 5000 });
-      }
+      await expect(page).toHaveURL(/\/#\/$/, { timeout: 10000 });
     });
   });
 
@@ -102,86 +91,63 @@ test.describe('Published Paragraph', () => {
     test('should enter published paragraph by clicking link', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
-      // Navigate to the normal notebook view
       await page.goto(`/#/notebook/${noteId}`);
       await page.waitForLoadState('networkidle');
 
-      // Find the first paragraph
-      let paragraphElement = page.locator(`zeppelin-notebook-paragraph[data-testid="${paragraphId}"]`);
-      if ((await paragraphElement.count()) === 0) {
-        paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
-      }
-
+      // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
+      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
       await expect(paragraphElement).toBeVisible({ timeout: 10000 });
 
-      // Click the settings button to open the dropdown
       const settingsButton = paragraphElement.locator('a[nz-dropdown]');
       await settingsButton.click();
 
-      // Click "Link this paragraph" in the dropdown menu
-      const linkParagraphButton = page.locator('li.list-item:has-text("Link this paragraph")');
+      const linkParagraphButton = page.locator('li.list-item', { hasText: 'Link this paragraph' });
       await expect(linkParagraphButton).toBeVisible();
 
-      // Handle the new page/tab that opens
       const [newPage] = await Promise.all([page.waitForEvent('popup'), linkParagraphButton.click()]);
       await newPage.waitForLoadState();
 
-      // Verify the new page URL shows published paragraph
       await expect(newPage).toHaveURL(new RegExp(`/notebook/${noteId}/paragraph/${paragraphId}`), { timeout: 10000 });
 
-      const codeEditor = newPage.locator('zeppelin-notebook-paragraph-code-editor');
-      await expect(codeEditor).toBeHidden();
-
-      const controlPanel = newPage.locator('zeppelin-notebook-paragraph-control');
-      await expect(controlPanel).toBeHidden();
+      // Published mode hides editing controls
+      await expect(newPage.locator('zeppelin-notebook-paragraph-code-editor')).toBeHidden();
+      await expect(newPage.locator('zeppelin-notebook-paragraph-control')).toBeHidden();
     });
 
-    test('should enter published paragraph by direct URL navigation', async ({ page }) => {
+    test('should load published paragraph component by direct URL navigation', async ({ page }) => {
       await page.goto(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`);
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(`/#/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`, {
-        timeout: 10000
-      });
+
+      // Wait for the confirmation modal — it signals NOTE was received and the component is fully rendered.
+      // networkidle fires before the NOTE WebSocket response, so the modal is the reliable ready signal.
+      const confirmModal = page.locator('.ant-modal-confirm');
+      await expect(confirmModal).toBeVisible({ timeout: 15000 });
+      await publishedParagraphPage.cancelButton.click();
+      await expect(confirmModal).toBeHidden({ timeout: 5000 });
+
+      await expect(page).toHaveURL(
+        new RegExp(`/notebook/${testNotebook.noteId}/paragraph/${testNotebook.paragraphId}`)
+      );
+      // JUSTIFIED: paragraph has no results yet so the component renders 0×0 — toBeAttached confirms
+      // the route is active without requiring visible content.
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeAttached({ timeout: 10000 });
     });
 
-    test('should allow running paragraph via confirmation modal in published mode', async ({ page }) => {
+    test('should load published paragraph and keep component attached after modal confirmation', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
-      // Given: Navigate to a specific paragraph's published URL
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
 
-      // Then: URL should correctly preserve both notebook and paragraph identifiers
-      await expect(page).toHaveURL(new RegExp(`/notebook/${noteId}/paragraph/${paragraphId}`), { timeout: 15000 });
-
-      // Verify URL contains the specific notebook and paragraph context
-      expect(page.url()).toContain(noteId);
-      expect(page.url()).toContain(paragraphId);
-
-      // Then: Published paragraph component should be loaded (indicating published mode is active)
-      const publishedContainer = page.locator('zeppelin-publish-paragraph');
-      await publishedContainer.waitFor({ state: 'attached', timeout: 10000 });
-
-      // Then: Confirmation modal should appear for paragraph execution
+      // Confirmation modal signals NOTE was received and component is fully rendered.
       const modal = page.locator('.ant-modal');
       await expect(modal).toBeVisible({ timeout: 20000 });
 
-      // Handle the execution confirmation to complete the published mode setup
-      await expect(publishedParagraphPage.runButton).toBeVisible();
       await publishedParagraphPage.runButton.click();
       await expect(modal).not.toBeVisible({ timeout: 10000 });
 
-      // Then: Published container should remain attached and page should be in published mode
+      const publishedContainer = page.locator('zeppelin-publish-paragraph');
+      // JUSTIFIED: paragraph has no results yet so the component renders 0×0 — toBeAttached confirms
+      // the route is still active (not navigated away) without requiring visible content.
       await expect(publishedContainer).toBeAttached({ timeout: 10000 });
-
-      // Verify we're in published mode by checking for the published component
-      const isPublishedMode = await page.evaluate(() => document.querySelector('zeppelin-publish-paragraph') !== null);
-      expect(isPublishedMode).toBe(true);
-
-      const paragraphContainer = page.locator('zeppelin-publish-paragraph');
-
-      // Published component should be present
-      await expect(paragraphContainer).toBeAttached();
     });
   });
 
@@ -190,99 +156,53 @@ test.describe('Published Paragraph', () => {
       const { noteId, paragraphId } = testNotebook;
 
       await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
-      await page.waitForLoadState('networkidle');
 
-      // In published mode, code editor and control panel should be hidden
-      const codeEditor = page.locator('zeppelin-notebook-paragraph-code-editor');
-      const controlPanel = page.locator('zeppelin-notebook-paragraph-control');
+      // Wait for modal then dismiss — component visibility is unreliable while modal is animating open.
+      const confirmModal = page.locator('.ant-modal-confirm');
+      await expect(confirmModal).toBeVisible({ timeout: 15000 });
+      await publishedParagraphPage.cancelButton.click();
+      await expect(confirmModal).toBeHidden({ timeout: 5000 });
 
-      await expect(codeEditor).toBeHidden();
-      await expect(controlPanel).toBeHidden();
+      // JUSTIFIED: paragraph has no results yet so the component renders 0×0 — toBeAttached confirms
+      // the route is active without requiring visible content.
+      await expect(page.locator('zeppelin-publish-paragraph')).toBeAttached({ timeout: 10000 });
+      await expect(page.locator('zeppelin-notebook-paragraph-code-editor')).toBeHidden();
+      await expect(page.locator('zeppelin-notebook-paragraph-control')).toBeHidden();
     });
   });
 
   test.describe('Confirmation Modal and Execution', () => {
-    test('should show confirmation modal and allow running the paragraph', async ({ page }) => {
+    test('should show confirmation modal with code preview and allow running', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
       await publishedParagraphPage.navigateToNotebook(noteId);
 
+      // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
       const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
-      const paragraphResult = paragraphElement.locator('zeppelin-notebook-paragraph-result');
+      await expect(paragraphElement.locator('zeppelin-notebook-paragraph-result')).toBeHidden();
 
-      // Only clear output if result exists
-      if (await paragraphResult.isVisible()) {
-        const settingsButton = paragraphElement.locator('a[nz-dropdown]');
-        await settingsButton.click();
-
-        const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
-        await clearOutputButton.click();
-        await expect(paragraphResult).toBeHidden();
-      }
-
-      await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
+      await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}`);
+      await waitForZeppelinReady(page);
 
       await expect(page).toHaveURL(new RegExp(`/paragraph/${paragraphId}`));
 
       const modal = publishedParagraphPage.confirmationModal;
-      await expect(modal).toBeVisible();
+      await expect(modal).toBeVisible({ timeout: 30000 });
 
-      // Check for the enhanced modal content
       await expect(publishedParagraphPage.modalTitle).toHaveText('Run Paragraph?');
 
-      // Verify that the modal shows code preview
-      await expect(publishedParagraphPage.modalBody.locator('.ant-modal-confirm-content')).toContainText(
-        'This paragraph contains the following code:'
-      );
-      await expect(publishedParagraphPage.modalBody.locator('.ant-modal-confirm-content')).toContainText(
-        'Would you like to execute this code?'
-      );
+      const modalContent = modal.locator('.ant-modal-confirm-content');
+      await expect(modalContent).toContainText('This paragraph contains the following code:');
+      await expect(modalContent).toContainText('Would you like to execute this code?');
 
-      // Click the Run button in the modal (OK button in confirmation modal)
-      const runButton = modal.locator('.ant-modal-confirm-btns .ant-btn-primary');
-      await expect(runButton).toBeVisible();
-      await runButton.click();
-      await expect(modal).toBeHidden();
-    });
-
-    test('should show confirmation modal for paragraphs without results', async ({ page }) => {
-      const { noteId, paragraphId } = testNotebook;
-
-      await publishedParagraphPage.navigateToNotebook(noteId);
-
-      const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();
-      const settingsButton = paragraphElement.locator('a[nz-dropdown]');
-      await settingsButton.click();
-
-      const clearOutputButton = page.locator('li.list-item:has-text("Clear output")');
-      await clearOutputButton.click();
-      await expect(paragraphElement.locator('[data-testid="paragraph-result"]')).toBeHidden();
-
-      await publishedParagraphPage.navigateToPublishedParagraph(noteId, paragraphId);
-
-      const modal = publishedParagraphPage.confirmationModal;
-      await expect(modal).toBeVisible();
-
-      // Check for the enhanced modal content
-      await expect(publishedParagraphPage.modalTitle).toContainText('Run Paragraph?');
-
-      // Check that code preview is shown
-      await expect(publishedParagraphPage.modalBody.first()).toContainText(
-        'This paragraph contains the following code:'
-      );
-      await expect(publishedParagraphPage.modalBody.first()).toContainText('Would you like to execute this code?');
-
-      // Verify that the code preview area exists
-      const codePreview = publishedParagraphPage.modalBody
-        .locator('pre, code, .code-preview, .highlight, [class*="code"]')
-        .first();
+      // JUSTIFIED: compound fallback selector; first() picks any element that confirms code preview is rendered
+      const codePreview = modalContent.locator('pre, code, .code-preview, [class*="code"]').first();
       await expect(codePreview).toBeVisible();
+      await expect(codePreview).not.toBeEmpty(); // code must have content, not just an empty container
 
-      // Check for Run and Cancel buttons
       await expect(publishedParagraphPage.runButton).toBeVisible();
       await expect(publishedParagraphPage.cancelButton).toBeVisible();
 
-      // Click the Run button in the modal
       await publishedParagraphPage.runButton.click();
       await expect(modal).toBeHidden();
     });

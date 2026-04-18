@@ -450,7 +450,7 @@ export class NotebookKeyboardPage extends BasePage {
     const runningIndicator = paragraph.locator(
       '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
     );
-    await this.waitForExecutionComplete(runningIndicator, paragraphIndex, timeout);
+    await this.waitForExecutionComplete(runningIndicator, timeout);
 
     // Step 3: Wait for result to be visible
     await this.waitForResultVisible(paragraphIndex, timeout);
@@ -565,47 +565,33 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   private async waitForExecutionStart(paragraphIndex: number): Promise<void> {
-    const started = await this.page
-      .waitForFunction(
-        // waitForFunction executes in browser context, not Node.js context.
-        // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ([index, selector]: any[]) => {
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
-          const targetParagraph = paragraphs[index];
-          if (!targetParagraph) {
-            return false;
-          }
+    await this.page.waitForFunction(
+      // waitForFunction executes in browser context, not Node.js context.
+      // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ([index, selector]: any[]) => {
+        const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
+        const targetParagraph = paragraphs[index];
+        if (!targetParagraph) {
+          return false;
+        }
 
-          const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
-          const hasResult = targetParagraph.querySelector(selector);
+        const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
+        const hasResult = targetParagraph.querySelector(selector);
 
-          return hasRunning || hasResult;
-        },
-        [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
-        { timeout: 8000 }
-      )
-      .catch(() => false); // JUSTIFIED: execution may not start within timeout; caller falls back to checking existing result
-
-    if (!started) {
-      const paragraph = this.getParagraphByIndex(paragraphIndex);
-      const existingResult = await paragraph.locator(PARAGRAPH_RESULT_SELECTOR).isVisible();
-      if (!existingResult) {
-        console.log(`Warning: Could not detect execution start for paragraph ${paragraphIndex}`);
-      }
-    }
+        return hasRunning || hasResult;
+      },
+      [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
+      { timeout: 30000 }
+    );
   }
 
-  private async waitForExecutionComplete(
-    runningIndicator: Locator,
-    paragraphIndex: number,
-    timeout: number
-  ): Promise<void> {
+  private async waitForExecutionComplete(runningIndicator: Locator, timeout: number): Promise<void> {
     if (this.page.isClosed()) {
       return;
     }
 
-    await runningIndicator.waitFor({ state: 'detached', timeout: timeout / 2 }).catch(() => {}); // JUSTIFIED: UI stabilization — paragraph may have completed before indicator appeared
+    await runningIndicator.waitFor({ state: 'detached', timeout });
   }
 
   private async waitForResultVisible(paragraphIndex: number, timeout: number): Promise<void> {
@@ -613,33 +599,23 @@ export class NotebookKeyboardPage extends BasePage {
       return;
     }
 
-    const resultVisible = await this.page
-      .waitForFunction(
-        // waitForFunction executes in browser context, not Node.js context.
-        // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ([index, selector]: any[]) => {
-          const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
-          const targetParagraph = paragraphs[index];
-          if (!targetParagraph) {
-            return false;
-          }
+    await this.page.waitForFunction(
+      // waitForFunction executes in browser context, not Node.js context.
+      // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ([index, selector]: any[]) => {
+        const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
+        const targetParagraph = paragraphs[index];
+        if (!targetParagraph) {
+          return false;
+        }
 
-          const result = targetParagraph.querySelector(selector);
-          return result && getComputedStyle(result).display !== 'none';
-        },
-        [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
-        { timeout: Math.min(timeout / 2, 15000) }
-      )
-      .catch(() => false); // JUSTIFIED: result may not appear within timeout; caller checks existence separately
-
-    if (!resultVisible) {
-      const paragraph = this.getParagraphByIndex(paragraphIndex);
-      const resultExists = await paragraph.locator(PARAGRAPH_RESULT_SELECTOR).isVisible();
-      if (!resultExists) {
-        console.log(`Warning: No result found for paragraph ${paragraphIndex} after execution`);
-      }
-    }
+        const result = targetParagraph.querySelector(selector);
+        return result && getComputedStyle(result).display !== 'none';
+      },
+      [paragraphIndex, PARAGRAPH_RESULT_SELECTOR],
+      { timeout }
+    );
   }
 
   private async focusEditorElement(paragraph: Locator, paragraphIndex: number): Promise<void> {

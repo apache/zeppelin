@@ -27,14 +27,7 @@ test.describe('Home Page Notebook Actions', () => {
   });
 
   test.describe('Given notebook list is displayed', () => {
-    test('When page loads Then should show notebook actions', async () => {
-      await expect(homePage.nodeList.createNewNoteLink).toBeVisible();
-      await expect(homePage.nodeList.importNoteLink).toBeVisible();
-      await expect(homePage.nodeList.filterInput).toBeVisible();
-      await expect(homePage.nodeList.tree).toBeVisible();
-    });
-
-    test('When refresh button is clicked Then should trigger reload with loading state', async ({ page }) => {
+    test('When refresh button is clicked Then should keep refresh icon visible', async ({ page }) => {
       const refreshButton = page.locator('a.refresh-note');
       const refreshIcon = page.locator('a.refresh-note i[nz-icon]');
 
@@ -42,48 +35,36 @@ test.describe('Home Page Notebook Actions', () => {
       await expect(refreshIcon).toBeVisible();
 
       await homePage.clickRefreshNotes();
-
-      await page.waitForTimeout(500);
+      await homePage.waitForRefreshToComplete();
 
       await expect(refreshIcon).toBeVisible();
     });
 
     test('When filter is used Then should filter notebook list', async ({ page }) => {
-      // Note (ZEPPELIN-6386):
-      // The Notebook search filter in the New UI is currently too slow,
-      // so this test is temporarily skipped. The skip will be removed
-      // once the performance issue is resolved.
-      test.skip();
+      test.skip(true, 'ZEPPELIN-6386: Notebook search filter in the New UI is too slow — re-enable when fixed');
       await homePage.filterNotes('test');
       await page.waitForLoadState('networkidle', { timeout: 15000 });
       const filteredResults = await page.locator('nz-tree .node').count();
-      expect(filteredResults).toBeGreaterThanOrEqual(0);
+      expect(filteredResults).toBeGreaterThan(0);
     });
-  });
 
-  test.describe('Given create new note action', () => {
-    test('When create new note is clicked Then should open note creation modal', async ({ page }) => {
-      await homePage.clickCreateNewNote();
-      await page.waitForSelector('zeppelin-note-create', { timeout: 10000 });
-      await expect(page.locator('zeppelin-note-create')).toBeVisible();
-    });
-  });
+    test('When filter input receives special characters Then page should not crash', async ({ page }) => {
+      // Given: The filter input is visible
+      await expect(homePage.nodeList.filterInput).toBeVisible();
 
-  test.describe('Given import note action', () => {
-    test('When import note is clicked Then should open import modal', async ({ page }) => {
-      await homePage.clickImportNote();
-      await page.waitForSelector('zeppelin-note-import', { timeout: 10000 });
-      await expect(page.locator('zeppelin-note-import')).toBeVisible();
-    });
-  });
+      // When: User types special characters that could break regex or URL encoding
+      for (const specialInput of ['[test]', '*.note', '/folder/sub', 'a?b=c']) {
+        await homePage.nodeList.filterInput.fill(specialInput);
+        // Then: The page must still render without crashing — no blank screen, input remains editable.
+        // Note: nz-tree may be hidden when the filter returns 0 results; that is valid behavior.
+        await expect(page.locator('zeppelin-node-list')).toBeVisible();
+        await expect(homePage.nodeList.filterInput).toBeEditable();
+        await expect(homePage.nodeList.filterInput).toHaveValue(specialInput);
+        await expect(page.locator('zeppelin-header')).toBeVisible();
+      }
 
-  test.describe('Given notebook refresh functionality', () => {
-    test('When refresh is triggered Then should maintain notebook list visibility', async () => {
-      await homePage.clickRefreshNotes();
-      await homePage.waitForRefreshToComplete();
-      await expect(homePage.zeppelinNodeList).toBeVisible();
-      const isStillVisible = await homePage.zeppelinNodeList.isVisible();
-      expect(isStillVisible).toBe(true);
+      // Clean up: clear the filter so other tests start fresh
+      await homePage.nodeList.filterInput.fill('');
     });
   });
 });

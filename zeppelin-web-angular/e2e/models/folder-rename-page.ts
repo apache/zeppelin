@@ -81,8 +81,10 @@ export class FolderRenamePage extends BasePage {
   }
 
   async clearNewName(): Promise<void> {
-    await this.renameInput.clear();
-    await expect(this.renameInput).toHaveValue('');
+    await this.renameInput.click();
+    await this.renameInput.press('Control+a');
+    await this.renameInput.press('Backspace');
+    await expect(this.renameInput).toHaveValue('', { timeout: 5000 });
   }
 
   async clickConfirm(): Promise<void> {

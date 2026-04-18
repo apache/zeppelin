@@ -35,18 +35,17 @@ test.describe('About Zeppelin Modal', () => {
 
   test('Given user clicks About Zeppelin menu item, When modal opens, Then modal should display all required elements', async () => {
     await expect(aboutModal.modal).toBeVisible();
-    await expect(aboutModal.modalTitle).toBeVisible();
-    await expect(aboutModal.heading).toBeVisible();
+    await expect(aboutModal.modalTitle).toContainText('About Zeppelin');
+    await expect(aboutModal.heading).toContainText('Apache Zeppelin');
     await expect(aboutModal.logo).toBeVisible();
-    await expect(aboutModal.versionText).toBeVisible();
+    await expect(aboutModal.versionText).not.toBeEmpty();
     await expect(aboutModal.getInvolvedLink).toBeVisible();
     await expect(aboutModal.licenseLink).toBeVisible();
   });
 
   test('Given About Zeppelin modal is open, When viewing version information, Then version should be displayed', async () => {
     const version = await aboutModal.getVersionText();
-    expect(version).toBeTruthy();
-    expect(version.length).toBeGreaterThan(0);
+    expect(version).toMatch(/\d+\.\d+/);
   });
 
   test('Given About Zeppelin modal is open, When checking external links, Then links should have correct URLs', async () => {
@@ -62,8 +61,11 @@ test.describe('About Zeppelin Modal', () => {
     await expect(aboutModal.modal).not.toBeVisible();
   });
 
-  test('Given About Zeppelin modal is open, When checking logo, Then logo should be visible and properly loaded', async () => {
-    const isLogoVisible = await aboutModal.isLogoVisible();
-    expect(isLogoVisible).toBe(true);
+  test('Given About Zeppelin modal is open, When checking logo, Then logo should be visible and its image loaded', async () => {
+    await expect(aboutModal.logo).toBeVisible();
+    // JUSTIFIED: naturalWidth is the only reliable way to verify image has loaded;
+    // Playwright has no built-in assertion for image load status
+    const naturalWidth = await aboutModal.logo.evaluate((img: HTMLImageElement) => img.naturalWidth);
+    expect(naturalWidth).toBeGreaterThan(0);
   });
 });
