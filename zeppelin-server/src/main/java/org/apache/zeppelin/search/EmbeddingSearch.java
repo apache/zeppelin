@@ -38,11 +38,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.PreDestroy;
 import jakarta.inject.Inject;
 
@@ -82,11 +86,16 @@ public class EmbeddingSearch extends SearchService {
   private static final int EMBEDDING_DIM = 384;
   private static final int MAX_SEQ_LENGTH = 256;
   private static final int MAX_RESULTS = 20;
+  private static final float MIN_SIMILARITY = 0.25f;
   private static final int MAX_TEXT_LENGTH = 1500;
   private static final int SNIPPET_LENGTH = 150;
 
   static final String ID_FIELD = "id";
   private static final String PARAGRAPH = "paragraph";
+  /** Regex to extract qualified table names from SQL (e.g. schema.table). */
+  private static final Pattern TABLE_RE =
+      Pattern.compile("(?:FROM|JOIN)\\s+([a-zA-Z_]\\w*\\.[a-zA-Z_]\\w*)", Pattern.CASE_INSENSITIVE);
+  private static final float TABLE_BOOST = 0.05f;
 
   private final Notebook notebook;
   private final Path indexPath;
@@ -106,12 +115,17 @@ public class EmbeddingSearch extends SearchService {
     final String noteName;
     final String text;
     final String title;
+    final String tables;
+    final String output;
 
-    IndexEntry(float[] embedding, String noteName, String text, String title) {
+    IndexEntry(float[] embedding, String noteName, String text, String title,
+               String tables, String output) {
       this.embedding = embedding;
       this.noteName = noteName;
       this.text = text;
       this.title = title;
+      this.tables = tables;
+      this.output = output;
     }
   }
 
@@ -290,8 +304,67 @@ public class EmbeddingSearch extends SearchService {
   // ---- Text extraction ----
 
   /**
+   * Strip interpreter prefix like {@code %spark.sql}, {@code %athena} from paragraph text.
+   * Handles both {@code %name\ncode} and {@code %name code} formats.
+   */
+  static String stripInterpreterPrefix(String text) {
+    if (text == null || !text.startsWith("%")) {
+      return text;
+    }
+    // Find end of interpreter directive: first newline or first space after %word
+    int newlineIdx = text.indexOf('\n');
+    if (newlineIdx >= 0) {
+      return text.substring(newlineIdx + 1);
+    }
+    // Single-line: "%interpreter some code" — strip up to first space
+    int spaceIdx = text.indexOf(' ');
+    if (spaceIdx >= 0) {
+      return text.substring(spaceIdx + 1);
+    }
+    // Just "%interpreter" with no content
+    return "";
+  }
+
+  /**
+   * Extract qualified table names (schema.table) from SQL text.
+   */
+  static String extractTables(String text) {
+    if (text == null) {
+      return "";
+    }
+    Set<String> tables = new HashSet<>();
+    Matcher m = TABLE_RE.matcher(text);
+    while (m.find()) {
+      tables.add(m.group(1).toLowerCase());
+    }
+    return String.join(" ", tables);
+  }
+
+  /**
+   * Extract searchable output text from paragraph results (TABLE headers, TEXT).
+   */
+  static String extractOutput(Paragraph p) {
+    InterpreterResult result = p.getReturn();
+    if (result == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+    for (InterpreterResultMessage msg : result.message()) {
+      if (msg.getType() == InterpreterResult.Type.TEXT
+          || msg.getType() == InterpreterResult.Type.TABLE) {
+        String data = msg.getData();
+        if (StringUtils.isNotBlank(data)) {
+          sb.append(data, 0, Math.min(data.length(), 500));
+          sb.append("\n");
+        }
+      }
+    }
+    return sb.toString().trim();
+  }
+
+  /**
    * Build a rich text representation of a paragraph for embedding.
-   * Includes code/text, title, and output (table headers, text results).
+   * Includes code/text, title, table names, and output (table headers, text results).
    */
   private String buildParagraphText(String noteName, Paragraph p) {
     StringBuilder sb = new StringBuilder();
@@ -303,9 +376,12 @@ public class EmbeddingSearch extends SearchService {
     }
     if (StringUtils.isNotBlank(p.getText())) {
       String text = p.getText();
-      // Strip interpreter prefix for cleaner embedding
-      if (text.startsWith("%") && text.contains("\n")) {
-        text = text.substring(text.indexOf('\n') + 1);
+      // Strip interpreter prefix (e.g. "%spark.sql", "%athena\n")
+      text = stripInterpreterPrefix(text);
+      // Include extracted table names for better semantic matching
+      String tables = extractTables(text);
+      if (StringUtils.isNotBlank(tables)) {
+        sb.append("Tables: ").append(tables).append("\n");
       }
       sb.append(text, 0, Math.min(text.length(), MAX_TEXT_LENGTH));
     }
@@ -335,7 +411,7 @@ public class EmbeddingSearch extends SearchService {
 
     float[] queryEmbedding = embed(queryStr);
 
-    // Brute-force cosine similarity search
+    // Phase 1: find top-N results and discover relevant tables
     List<Map.Entry<String, Float>> scored = new ArrayList<>();
     indexLock.readLock().lock();
     try {
@@ -346,26 +422,76 @@ public class EmbeddingSearch extends SearchService {
     } finally {
       indexLock.readLock().unlock();
     }
-
     scored.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));
 
+    // Collect tables from top-20 results, weighted by rank
+    Map<String, Float> tableWeights = new HashMap<>();
+    for (int i = 0; i < Math.min(scored.size(), 20); i++) {
+      IndexEntry entry = index.get(scored.get(i).getKey());
+      if (entry != null && StringUtils.isNotBlank(entry.tables)) {
+        float weight = 1.0f / (i + 1);
+        for (String t : entry.tables.split(" ")) {
+          tableWeights.merge(t, weight, Float::sum);
+        }
+      }
+    }
+    // Keep tables with weight > 20% of top table's weight
+    Set<String> relevantTables = new HashSet<>();
+    if (!tableWeights.isEmpty()) {
+      float maxWeight = Collections.max(tableWeights.values());
+      float threshold = maxWeight * 0.2f;
+      tableWeights.forEach((t, w) -> {
+        if (w >= threshold) {
+          relevantTables.add(t);
+        }
+      });
+    }
+
+    // Phase 2: re-score with table boost
     List<Map<String, String>> results = new ArrayList<>();
-    for (int i = 0; i < Math.min(scored.size(), MAX_RESULTS); i++) {
+    for (int i = 0; i < scored.size() && results.size() < MAX_RESULTS; i++) {
+      float sim = scored.get(i).getValue();
+      if (sim < MIN_SIMILARITY) {
+        break;
+      }
       String docId = scored.get(i).getKey();
       IndexEntry entry = index.get(docId);
-      if (entry == null) {
+      if (entry == null || StringUtils.isBlank(entry.text)) {
         continue;
       }
-      String snippet = entry.text != null
-          ? entry.text.substring(0, Math.min(entry.text.length(), SNIPPET_LENGTH))
-          : "";
+      // Boost paragraphs that reference discovered tables
+      if (!relevantTables.isEmpty() && StringUtils.isNotBlank(entry.tables)) {
+        for (String t : entry.tables.split(" ")) {
+          if (relevantTables.contains(t)) {
+            sim += TABLE_BOOST;
+          }
+        }
+      }
+      // Frontend renders: header + "\n\n" + snippet in Monaco editor
+      // snippet = SQL/code (used for language detection too)
+      // header = title + tables + output preview
+      StringBuilder header = new StringBuilder();
+      if (StringUtils.isNotBlank(entry.title)) {
+        header.append(entry.title).append("\n");
+      }
+      if (StringUtils.isNotBlank(entry.tables)) {
+        header.append("📊 ").append(entry.tables).append("\n");
+      }
+      if (StringUtils.isNotBlank(entry.output)) {
+        String out = entry.output;
+        if (out.length() > 300) {
+          out = out.substring(0, 300);
+        }
+        header.append("\n").append(out);
+      }
       results.add(ImmutableMap.of(
           "id", docId,
           "name", entry.noteName != null ? entry.noteName : "",
-          "snippet", snippet,
-          "text", entry.text != null ? entry.text : "",
-          "header", entry.title != null ? entry.title : ""));
+          "snippet", entry.text,
+          "text", entry.text,
+          "header", header.toString()));
     }
+    // Re-sort by boosted score
     return results;
   }
 
@@ -407,18 +533,7 @@ public class EmbeddingSearch extends SearchService {
     try {
       notebook.processNote(noteId, note -> {
         if (note != null) {
-          // Update the note-name-only entry
-          String id = noteId;
-          String noteName = note.getName();
-          if (StringUtils.isNotBlank(noteName)) {
-            float[] emb = embed(noteName);
-            indexLock.writeLock().lock();
-            try {
-              index.put(id, new IndexEntry(emb, noteName, noteName, ""));
-            } finally {
-              indexLock.writeLock().unlock();
-            }
-          }
+          indexNote(note);
         }
         return null;
       });
@@ -499,18 +614,8 @@ public class EmbeddingSearch extends SearchService {
   // ---- Internal indexing ----
 
   private void indexNote(Note note) {
-    // Index note name
     String noteName = note.getName();
-    if (StringUtils.isNotBlank(noteName)) {
-      float[] emb = embed(noteName);
-      indexLock.writeLock().lock();
-      try {
-        index.put(note.getId(), new IndexEntry(emb, noteName, noteName, ""));
-      } finally {
-        indexLock.writeLock().unlock();
-      }
-    }
-    // Index each paragraph
+    // Index each paragraph (note name is included in paragraph embedding text)
     for (Paragraph p : note.getParagraphs()) {
       indexParagraph(note.getId(), noteName, p);
     }
@@ -524,11 +629,13 @@ public class EmbeddingSearch extends SearchService {
     float[] emb = embed(text);
     String docId = String.join("/", noteId, PARAGRAPH, p.getId());
     String title = p.getTitle() != null ? p.getTitle() : "";
-    String pText = p.getText() != null ? p.getText() : "";
+    String pText = p.getText() != null ? stripInterpreterPrefix(p.getText()) : "";
+    String tables = extractTables(pText);
+    String output = extractOutput(p);
 
     indexLock.writeLock().lock();
     try {
-      index.put(docId, new IndexEntry(emb, noteName, pText, title));
+      index.put(docId, new IndexEntry(emb, noteName, pText, title, tables, output));
     } finally {
       indexLock.writeLock().unlock();
     }
@@ -545,24 +652,30 @@ public class EmbeddingSearch extends SearchService {
 
   /**
    * Save index to a binary file.
-   * Format: [int:count] then for each entry:
-   *   [utf:docId] [utf:noteName] [utf:text] [utf:title] [float[384]:embedding]
+   * Format: [int:version=3][int:count] then for each entry:
+   *   [utf:docId] [utf:noteName] [utf:text] [utf:title] [utf:tables] [utf:output] [float[384]:embedding]
    */
   private void saveIndex() throws IOException {
     Path file = indexPath.resolve("embedding_index.bin");
     indexLock.readLock().lock();
     try (DataOutputStream out = new DataOutputStream(new FileOutputStream(file.toFile()))) {
+      out.writeInt(3); // version 3: includes output field
       out.writeInt(index.size());
       for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
         out.writeUTF(e.getKey());
         out.writeUTF(e.getValue().noteName != null ? e.getValue().noteName : "");
-        // Truncate text for storage
         String text = e.getValue().text != null ? e.getValue().text : "";
         if (text.length() > 2000) {
           text = text.substring(0, 2000);
         }
         out.writeUTF(text);
         out.writeUTF(e.getValue().title != null ? e.getValue().title : "");
+        out.writeUTF(e.getValue().tables != null ? e.getValue().tables : "");
+        String output = e.getValue().output != null ? e.getValue().output : "";
+        if (output.length() > 1000) {
+          output = output.substring(0, 1000);
+        }
+        out.writeUTF(output);
         for (float v : e.getValue().embedding) {
           out.writeFloat(v);
         }
@@ -572,25 +685,36 @@ public class EmbeddingSearch extends SearchService {
     }
   }
 
-  /** Load index from disk if it exists. */
+  /** Load index from disk if it exists. Supports v1/v2/v3 formats. */
   private void loadIndex() {
     Path file = indexPath.resolve("embedding_index.bin");
     if (!Files.exists(file)) {
       return;
     }
     try (DataInputStream in = new DataInputStream(Files.newInputStream(file))) {
-      int count = in.readInt();
-      LOGGER.info("Loading {} embedding index entries from {}", count, file);
+      int first = in.readInt();
+      int version;
+      int count;
+      if (first >= 2 && first <= 3) {
+        version = first;
+        count = in.readInt();
+      } else {
+        version = 1;
+        count = first;
+      }
+      LOGGER.info("Loading {} embedding index entries (v{}) from {}", count, version, file);
       for (int i = 0; i < count; i++) {
         String docId = in.readUTF();
         String noteName = in.readUTF();
         String text = in.readUTF();
         String title = in.readUTF();
+        String tables = version >= 2 ? in.readUTF() : "";
+        String output = version >= 3 ? in.readUTF() : "";
         float[] emb = new float[EMBEDDING_DIM];
         for (int j = 0; j < EMBEDDING_DIM; j++) {
           emb[j] = in.readFloat();
         }
-        index.put(docId, new IndexEntry(emb, noteName, text, title));
+        index.put(docId, new IndexEntry(emb, noteName, text, title, tables, output));
       }
       LOGGER.info("Loaded {} entries into embedding index", index.size());
     } catch (IOException e) {

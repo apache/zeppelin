@@ -7,7 +7,7 @@ search across Zeppelin notebooks using ONNX-based sentence embeddings. This is a
 replacement for `LuceneSearch` that understands meaning, not just keywords.
 
 **Example**: Searching "yesterday's spending" finds paragraphs containing
-`SELECT sum(cost) FROM click_funnel WHERE date = current_date - interval '1' day`
+`SELECT sum(cost) FROM analytics.daily_sales WHERE date = current_date - interval '1' day`
 — something keyword search cannot do.
 
 ## Motivation
@@ -17,7 +17,7 @@ Lucene's `StandardAnalyzer`. This has several limitations for notebook search:
 
 1. **No semantic understanding** — "yesterday's spend" won't find `current_date - 1`
 2. **Poor SQL tokenization** — `StandardAnalyzer` breaks on underscores and dots in
-   table names like `eq_analytics_prod.click_funnel_raw`
+   table names like `analytics_db.daily_sales`
 3. **No output indexing** — query results (table data, text output) are not searchable
 4. **Exact match only** — users must guess the exact terms used in notebooks
 
