@@ -838,6 +838,10 @@ public class ZeppelinConfiguration {
     return getAbsoluteDir(ConfVars.ZEPPELIN_SEARCH_INDEX_PATH);
   }
 
+  public boolean isZeppelinSearchSemanticEnable() {
+    return getBoolean(ConfVars.ZEPPELIN_SEARCH_SEMANTIC_ENABLE);
+  }
+
   public boolean isOnlyYarnCluster() {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
@@ -1127,6 +1131,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SEARCH_INDEX_REBUILD("zeppelin.search.index.rebuild", false),
     ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", true),
     ZEPPELIN_SEARCH_INDEX_PATH("zeppelin.search.index.path", "/tmp/zeppelin-index"),
+    ZEPPELIN_SEARCH_SEMANTIC_ENABLE("zeppelin.search.semantic.enable", false),
     ZEPPELIN_JOBMANAGER_ENABLE("zeppelin.jobmanager.enable", false),
     ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false),
     ZEPPELIN_SESSION_CHECK_INTERVAL("zeppelin.session.check_interval", 60 * 10 * 1000),
