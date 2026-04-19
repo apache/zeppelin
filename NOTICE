@@ -12,3 +12,15 @@ Portions of this software were developed at NFLabs, Inc. (http://www.nflabs.com)
 
    * Pseudo terminal(PTY) implementation in Java
    * (Eclipse Public License) pty4j - http://www.eclipse.org/legal/epl-v10.html
+
+2. ONNX Runtime
+
+   * Cross-platform ML inferencing and training accelerator
+   * (MIT License) onnxruntime - https://github.com/microsoft/onnxruntime
+   * Copyright (c) Microsoft Corporation
+
+3. Deep Java Library (DJL) HuggingFace Tokenizers
+
+   * Java binding for HuggingFace tokenizers
+   * (Apache License 2.0) djl-tokenizers - https://github.com/deepjavalibrary/djl
+   * Copyright (c) Amazon.com, Inc.
