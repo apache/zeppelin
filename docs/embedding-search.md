@@ -8,7 +8,7 @@ replacement for `LuceneSearch` that understands meaning, not just keywords.
 
 **Example**: Searching "yesterday's spending" finds paragraphs containing
 `SELECT sum(cost) FROM analytics.daily_sales WHERE date = current_date - interval '1' day`
-— something keyword search cannot do.
+— something keyword search cannot do (returns 0 results with LuceneSearch).
 
 ## Motivation
 
@@ -41,27 +41,29 @@ finding the right query becomes a significant productivity bottleneck.
 │  │ (DJL)        │  │ (CPU)        │  │ ConcurrentHashMap│  │
 │  └──────────────┘  └──────────────┘  └────────┬─────────┘  │
 │                                                │            │
-│  Query: embed → brute-force cosine sim → top-20│            │
-│  Index: embed paragraph text+title+output      │            │
+│  Two-phase query:                              │            │
+│  1. Embed query → cosine sim → find tables     │            │
+│  2. Re-rank with table boost → top-20          │            │
 │                                                ▼            │
-│                                    embedding_index.bin      │
-│                                    (persisted to disk)      │
+│  Index: text + title + output + tables   embedding_index.bin│
+│         (persisted to disk, versioned)                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### Model
 
 - **all-MiniLM-L6-v2**: 384-dimensional sentence embeddings
-- 22MB ONNX model (86MB fp32, quantized version available)
+- 86MB ONNX model (quantized version available at 22MB)
 - Downloaded on first use to `zeppelin.search.index.path/models/`
 - Runs on CPU via ONNX Runtime (~5ms per paragraph)
 
 ### Index
 
 - In-memory `ConcurrentHashMap<String, IndexEntry>` with `ReadWriteLock`
-- Each entry: 384 floats (1.5KB) + metadata strings
+- Each entry stores: embedding (384 floats), notebook name, paragraph text,
+  title, extracted SQL table names, and paragraph output
 - 10K paragraphs ≈ 15MB RAM, 50K paragraphs ≈ 75MB RAM
-- Persisted as single binary file (`embedding_index.bin`)
+- Persisted as versioned binary file (`embedding_index.bin`, currently v3)
 - Brute-force cosine similarity: < 50ms for 50K paragraphs
 
 ### What gets indexed (vs. LuceneSearch)
@@ -70,17 +72,31 @@ finding the right query becomes a significant productivity bottleneck.
 |---------|:---:|:---:|
 | Paragraph text | ✓ | ✓ |
 | Paragraph title | ✓ | ✓ |
-| Notebook name | ✓ | ✓ |
+| Notebook name | ✓ | ✓ (in embedding context) |
 | Paragraph output (TABLE, TEXT) | ✗ | ✓ |
+| SQL table names (FROM/JOIN) | ✗ | ✓ (extracted + boosted) |
 | Interpreter prefix stripped | ✗ | ✓ |
+
+### Two-Phase Search
+
+1. **Phase 1 — Table Discovery**: Run cosine similarity, collect SQL table names
+   from top-20 results weighted by rank
+2. **Phase 2 — Table Boost**: Re-score results, boosting paragraphs that reference
+   the discovered tables (+0.05 per matching table)
+
+This helps queries like "click funnel analysis" surface all paragraphs that query
+the same tables, even if their SQL text is very different.
 
 ## Configuration
 
 Disabled by default. Enable with a single property:
 
-```properties
-# In zeppelin-site.xml or zeppelin-env.sh
-zeppelin.search.semantic.enable = true
+```xml
+<!-- In zeppelin-site.xml -->
+<property>
+  <name>zeppelin.search.semantic.enable</name>
+  <value>true</value>
+</property>
 ```
 
 Requires `zeppelin.search.enable = true` (already the default).
@@ -96,17 +112,34 @@ Requires `zeppelin.search.enable = true` (already the default).
 ## Changes
 
 ### New files
-- `zeppelin-zengine/.../search/EmbeddingSearch.java` — Core implementation
-- `zeppelin-zengine/.../search/EmbeddingSearchTest.java` — Tests (gated behind env var)
+- `zeppelin-zengine/.../search/EmbeddingSearch.java` — Core implementation (~700 lines)
+- `zeppelin-zengine/.../search/EmbeddingSearchTest.java` — 11 tests including semantic validation
+- `docs/embedding-search.md` — This document
 
-### Modified files
+### Modified files — Backend
 - `zeppelin-zengine/pom.xml` — Add `onnxruntime` and `djl-tokenizers` dependencies
 - `zeppelin-zengine/.../conf/ZeppelinConfiguration.java` — Add `ZEPPELIN_SEARCH_SEMANTIC_ENABLE`
 - `zeppelin-server/.../server/ZeppelinServer.java` — Wire `EmbeddingSearch` based on config
+- `NOTICE` — Attribution for ONNX Runtime and DJL
+
+### Modified files — Frontend
+- `zeppelin-web-angular/.../result-item/` — Render search results with separate
+  code block, output block, and table name display (replaces Monaco editor)
+- `zeppelin-web/src/app/search/` — Same improvements for Classic UI
+- Various TypeScript build fixes (`tsconfig`, type annotations)
 
 ### Dependencies added
 - `com.microsoft.onnxruntime:onnxruntime:1.18.0` (~50MB, Apache 2.0 compatible)
-- `ai.djl.huggingface:tokenizers:0.28.0` (~2MB, Apache 2.0)
+- `ai.djl.huggingface:tokenizers:0.28.0` (~2MB, Apache 2.0, JNA excluded to
+  avoid version conflict with Zeppelin's existing JNA 4.1.0)
+
+## Search Result Display
+
+Both Angular and Classic UIs now render search results with:
+- **Code block**: SQL/Python code with syntax-appropriate styling
+- **Output block**: Paragraph execution results (table data, text output)
+- **Table names**: Extracted SQL table names highlighted with 📊 icon
+- **Language badge**: `sql`, `python`, `md`, etc.
 
 ## Design Decisions
 
@@ -114,30 +147,22 @@ Requires `zeppelin.search.enable = true` (already the default).
 
 ONNX Runtime is the standard inference engine for transformer models. It supports
 the exact same model files used by Python (HuggingFace, ChromaDB, etc.), ensuring
-embedding compatibility. DJL and other Java ML libraries either don't support
-sentence-transformers or require significantly more code.
+embedding compatibility.
 
 ### Why brute-force instead of HNSW/ANN?
 
 For Zeppelin's scale (typically < 50K paragraphs), brute-force cosine similarity
-on normalized vectors is:
-- **Fast enough**: < 50ms for 50K entries (384-dim dot product)
-- **Exact**: No approximation error
-- **Zero complexity**: No graph construction, no tuning parameters
-- **Tiny memory**: Just a flat float array
-
-HNSW would add ~3x memory overhead and code complexity for negligible latency gain.
+on normalized vectors is fast enough (< 50ms), exact (no approximation error),
+and adds zero complexity.
 
 ### Why download model on first use instead of bundling?
 
-The ONNX model is 86MB (fp32). Bundling it would bloat the Zeppelin distribution.
+The ONNX model is 86MB. Bundling it would bloat the Zeppelin distribution.
 Downloading on first use keeps the distribution lean and allows users to swap models.
 
 ### Why not use Lucene's vector search (since 9.0)?
 
 Zeppelin uses Lucene 8.7.0. Upgrading to 9.x is a separate, larger effort.
-Even with Lucene 9.x vector search, you'd still need the ONNX model for embedding
-generation — so the dependency footprint is similar.
 
 ## Testing
 
@@ -150,16 +175,17 @@ ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-zengine \
 mvn test -pl zeppelin-zengine -Dtest=LuceneSearchTest
 ```
 
-### Key test: `semanticSearchFindsRelatedConcepts`
+### Key tests
 
-This test validates the core value proposition — that a natural language query
-("yesterday's spending") correctly ranks a SQL spend query above an unrelated
-user count query, even though neither contains the word "spending" or "yesterday".
+- `semanticSearchFindsRelatedConcepts` — validates that "yesterday's spending"
+  ranks a SQL spend query above an unrelated user count query
+- `newParagraphIsLiveIndexed` — validates that newly added paragraphs are
+  immediately searchable without restart
 
 ## Future Work
 
 - [ ] Quantized model support (22MB INT8 vs 86MB FP32)
 - [ ] Hybrid search: combine embedding similarity with keyword matching
-- [ ] Frontend: show similarity scores in search results
-- [ ] Configurable model path for air-gapped environments
+- [ ] Configurable model URL for air-gapped environments
 - [ ] Batch embedding during initial index rebuild
+- [ ] Similarity score display in search results
