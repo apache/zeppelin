@@ -14,33 +14,30 @@ limitations under the License.
 <div class="searchResults">
     <div ng-if="isResult" class="row">
     <div class="col-sm-8" style="margin: 0 auto; float: none">
-      <ul class="search-results">
+      <ul class="search-results" style="list-style:none;padding:0">
         <li class="panel panel-default" ng-repeat="note in notes">
           <div class="panel-heading">
-            <h4>
+            <h4 style="margin:0;display:flex;align-items:center;gap:8px">
               <i style="font-size: 10px;" class="icon-doc"></i>
               <a class="search-results-header"
                  href="#/notebook/{{note.id}}">
                   {{note.name.trim()==='' && 'Note ' + note.id.split('/',2)[0] || note.name}}
               </a>
+              <span ng-if="note.langBadge" class="label"
+                    ng-class="{'label-success': note.langBadge==='sql', 'label-warning': note.langBadge==='python'||note.langBadge==='pyspark', 'label-info': note.langBadge==='md', 'label-default': note.langBadge!=='sql'&&note.langBadge!=='python'&&note.langBadge!=='pyspark'&&note.langBadge!=='md'}"
+                    style="font-size:11px">{{note.langBadge}}</span>
             </h4>
           </div>
-          <div class="panel-body">
-          <div
-            class="search-result"
-            ui-ace="{
-              onLoad: highlightSearchResults(note),
-              require: ['ace/ext/language_tools']
-            }"
-            ng-model="note.searchResult"
-          >
-          </div>
+          <div class="panel-body" style="padding:0">
+            <pre ng-if="note.codeText" style="margin:0;border:none;border-radius:0;background:#f8f9fa;border-bottom:1px solid #eee;max-height:200px;overflow:auto;font-size:12px">{{note.codeText}}</pre>
+            <pre ng-if="note.outputText" style="margin:0;border:none;border-radius:0;background:#fafbfc;border-left:3px solid #ddd;color:#666;max-height:120px;overflow:auto;font-size:11px;padding:8px 12px">{{note.outputText}}</pre>
+            <div ng-if="note.tablesText" style="padding:6px 12px;font-size:12px;color:#3c763d">📊 {{note.tablesText}}</div>
           </div>
        </li>
       </ul>
     </div>
   </div>
   <div ng-if="!isResult" class="search-no-result-found">
-      <span class="glyphicon glyphicon-search"></span> We couldn’t find any notebook matching <b>'{{searchTerm}}' </b>
+      <span class="glyphicon glyphicon-search"></span> We couldn't find any notebook matching <b>'{{searchTerm}}' </b>
   </div>
 </div>

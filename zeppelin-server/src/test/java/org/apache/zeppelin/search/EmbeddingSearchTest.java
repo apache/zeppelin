@@ -157,7 +157,7 @@ class EmbeddingSearchTest {
   void semanticSearchFindsRelatedConcepts() throws IOException, InterruptedException {
     // given — this is the key test that differentiates from Lucene
     newNoteWithParagraph("SpendAnalysis",
-        "SELECT sum(cost) FROM click_funnel WHERE date = current_date - interval '1' day");
+        "SELECT sum(cost) FROM analytics.daily_sales WHERE date = current_date - interval '1' day");
     newNoteWithParagraph("UserCounts",
         "SELECT count(distinct user_id) FROM sessions WHERE region = 'us'");
     drainSearchEvents();
@@ -268,6 +268,30 @@ class EmbeddingSearchTest {
 
     // then — "Notebook1" note name should still be findable
     assertFalse(searchService.query("Notebook1").isEmpty());
+  }
+
+  @Test
+  void newParagraphIsLiveIndexed() throws IOException, InterruptedException {
+    // given — one notebook exists
+    String noteId = newNoteWithParagraph("Analytics", "SELECT 1");
+    drainSearchEvents();
+
+    // when — add a new paragraph with unique content
+    notebook.processNote(noteId, note -> {
+      Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p.setText("SELECT customer_id, SUM(amount) as lifetime_value FROM orders GROUP BY 1");
+      notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+      note.fireParagraphUpdateEvent(p);
+      return null;
+    });
+    drainSearchEvents();
+
+    // then — the new paragraph should be findable by semantic query
+    List<Map<String, String>> results = searchService.query("lifetime value");
+    assertFalse(results.isEmpty(), "Newly added paragraph should be searchable");
+    boolean found = results.stream()
+        .anyMatch(r -> r.get("text").contains("lifetime_value"));
+    assertTrue(found, "Should find the paragraph with lifetime_value");
   }
 
   // ---- Helper methods (same as LuceneSearchTest) ----

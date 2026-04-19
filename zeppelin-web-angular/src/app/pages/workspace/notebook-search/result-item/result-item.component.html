@@ -12,11 +12,18 @@
 
 <nz-card [nzTitle]="titleTemplateRef">
   <ng-template #titleTemplateRef>
-    <a [routerLink]="routerLink" [queryParams]="queryParams">{{ displayName }}</a>
+    <div class="result-header">
+      <a [routerLink]="routerLink" [queryParams]="queryParams">{{ displayName }}</a>
+      <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
+    </div>
   </ng-template>
-  <zeppelin-code-editor
-    [style.height.px]="height"
-    [nzEditorOption]="editorOption"
-    (nzEditorInitialized)="initializedEditor($event)"
-  ></zeppelin-code-editor>
+  <div *ngIf="codeText" class="code-block">
+    <pre>{{ codeText }}</pre>
+  </div>
+  <div *ngIf="outputText" class="output-block">
+    <pre>{{ outputText }}</pre>
+  </div>
+  <div *ngIf="tablesText" class="tables-block">
+    📊 {{ tablesText }}
+  </div>
 </nz-card>

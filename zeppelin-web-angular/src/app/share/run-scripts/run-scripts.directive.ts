@@ -32,10 +32,10 @@ export class RunScriptsDirective implements OnChanges {
     if (!this.scriptsContent.toString()) {
       return;
     }
-    this.ngZone.onStable.pipe(take(1)).subscribe(() => {
+    (this.ngZone.onStable as any).pipe(take(1)).subscribe(() => {
       this.ngZone.runOutsideAngular(() => {
         const scripts = this.elementRef.nativeElement.getElementsByTagName('script');
-        const externalScripts = [];
+        const externalScripts: HTMLScriptElement[] = [];
         const localScripts: HTMLScriptElement[] = [];
         for (const script of Array.from(scripts)) {
           if (script.text) {
