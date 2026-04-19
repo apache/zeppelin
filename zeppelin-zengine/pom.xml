@@ -205,6 +205,12 @@
       <groupId>ai.djl.huggingface</groupId>
       <artifactId>tokenizers</artifactId>
       <version>${djl.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

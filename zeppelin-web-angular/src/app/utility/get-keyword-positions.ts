@@ -23,7 +23,7 @@ export function getKeywordPositions(keywords: string[], str: string): KeywordPos
   const lineMap = computeLineStartsMap(str);
 
   keywords.forEach((keyword: string) => {
-    const positions = [];
+    const positions: KeywordPosition[] = [];
     const keywordReg = new RegExp(keyword, 'ig');
     let posMatch = keywordReg.exec(str);
 
