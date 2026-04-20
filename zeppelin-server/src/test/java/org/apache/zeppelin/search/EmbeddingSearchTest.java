@@ -64,6 +64,9 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 @EnabledIfEnvironmentVariable(named = "ZEPPELIN_EMBEDDING_TEST", matches = "true")
 class EmbeddingSearchTest {
 
+  /** Shared model directory — avoids re-downloading 86MB model per test method. */
+  private static File sharedModelDir;
+
   private Notebook notebook;
   private InterpreterSettingManager interpreterSettingManager;
   private NoteManager noteManager;
@@ -72,7 +75,13 @@ class EmbeddingSearchTest {
 
   @BeforeEach
   public void startUp() throws IOException {
+    if (sharedModelDir == null) {
+      sharedModelDir = Files.createTempDirectory("EmbeddingSearchTest-models").toFile();
+    }
     indexDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
+    // Copy shared model dir path so model is cached across tests
+    File modelsLink = new File(indexDir, "models");
+    Files.createSymbolicLink(modelsLink.toPath(), sharedModelDir.toPath());
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SEARCH_INDEX_PATH.getVarName(),
         indexDir.getAbsolutePath());

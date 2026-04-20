@@ -88,7 +88,6 @@ public class EmbeddingSearch extends SearchService {
   private static final int MAX_RESULTS = 20;
   private static final float MIN_SIMILARITY = 0.25f;
   private static final int MAX_TEXT_LENGTH = 1500;
-  private static final int SNIPPET_LENGTH = 150;
 
   static final String ID_FIELD = "id";
   private static final String PARAGRAPH = "paragraph";
@@ -198,7 +197,10 @@ public class EmbeddingSearch extends SearchService {
 
   private static void downloadFile(String urlStr, Path dest) throws IOException {
     URL url = new URL(urlStr);
-    try (InputStream in = new BufferedInputStream(url.openStream());
+    java.net.URLConnection conn = url.openConnection();
+    conn.setConnectTimeout(30_000);
+    conn.setReadTimeout(60_000);
+    try (InputStream in = new BufferedInputStream(conn.getInputStream());
          FileOutputStream out = new FileOutputStream(dest.toFile())) {
       byte[] buf = new byte[8192];
       int n;
@@ -447,9 +449,9 @@ public class EmbeddingSearch extends SearchService {
       });
     }
 
-    // Phase 2: re-score with table boost
-    List<Map<String, String>> results = new ArrayList<>();
-    for (int i = 0; i < scored.size() && results.size() < MAX_RESULTS; i++) {
+    // Phase 2: re-score with table boost, collect candidates with boosted scores
+    List<Map.Entry<Map<String, String>, Float>> candidates = new ArrayList<>();
+    for (int i = 0; i < scored.size() && candidates.size() < MAX_RESULTS; i++) {
       float sim = scored.get(i).getValue();
       if (sim < MIN_SIMILARITY) {
         break;
@@ -459,7 +461,6 @@ public class EmbeddingSearch extends SearchService {
       if (entry == null || StringUtils.isBlank(entry.text)) {
         continue;
       }
-      // Boost paragraphs that reference discovered tables
       if (!relevantTables.isEmpty() && StringUtils.isNotBlank(entry.tables)) {
         for (String t : entry.tables.split(" ")) {
           if (relevantTables.contains(t)) {
@@ -467,9 +468,6 @@ public class EmbeddingSearch extends SearchService {
           }
         }
       }
-      // Frontend renders: header + "\n\n" + snippet in Monaco editor
-      // snippet = SQL/code (used for language detection too)
-      // header = title + tables + output preview
       StringBuilder header = new StringBuilder();
       if (StringUtils.isNotBlank(entry.title)) {
         header.append(entry.title).append("\n");
@@ -484,14 +482,19 @@ public class EmbeddingSearch extends SearchService {
         }
         header.append("\n").append(out);
       }
-      results.add(ImmutableMap.of(
+      candidates.add(Map.entry(ImmutableMap.of(
           "id", docId,
           "name", entry.noteName != null ? entry.noteName : "",
           "snippet", entry.text,
           "text", entry.text,
-          "header", header.toString()));
+          "header", header.toString()), sim));
     }
     // Re-sort by boosted score
+    candidates.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));
+    List<Map<String, String>> results = new ArrayList<>();
+    for (Map.Entry<Map<String, String>, Float> c : candidates) {
+      results.add(c.getKey());
+    }
     return results;
   }
 
@@ -657,29 +660,34 @@ public class EmbeddingSearch extends SearchService {
    */
   private void saveIndex() throws IOException {
     Path file = indexPath.resolve("embedding_index.bin");
+    Path tmpFile = indexPath.resolve("embedding_index.bin.tmp");
     indexLock.readLock().lock();
-    try (DataOutputStream out = new DataOutputStream(new FileOutputStream(file.toFile()))) {
-      out.writeInt(3); // version 3: includes output field
-      out.writeInt(index.size());
-      for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
-        out.writeUTF(e.getKey());
-        out.writeUTF(e.getValue().noteName != null ? e.getValue().noteName : "");
-        String text = e.getValue().text != null ? e.getValue().text : "";
-        if (text.length() > 2000) {
-          text = text.substring(0, 2000);
-        }
-        out.writeUTF(text);
-        out.writeUTF(e.getValue().title != null ? e.getValue().title : "");
-        out.writeUTF(e.getValue().tables != null ? e.getValue().tables : "");
-        String output = e.getValue().output != null ? e.getValue().output : "";
-        if (output.length() > 1000) {
-          output = output.substring(0, 1000);
-        }
-        out.writeUTF(output);
-        for (float v : e.getValue().embedding) {
-          out.writeFloat(v);
+    try {
+      try (DataOutputStream out = new DataOutputStream(new FileOutputStream(tmpFile.toFile()))) {
+        out.writeInt(3); // version 3: includes output field
+        out.writeInt(index.size());
+        for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
+          out.writeUTF(e.getKey());
+          out.writeUTF(e.getValue().noteName != null ? e.getValue().noteName : "");
+          String text = e.getValue().text != null ? e.getValue().text : "";
+          if (text.length() > 2000) {
+            text = text.substring(0, 2000);
+          }
+          out.writeUTF(text);
+          out.writeUTF(e.getValue().title != null ? e.getValue().title : "");
+          out.writeUTF(e.getValue().tables != null ? e.getValue().tables : "");
+          String output = e.getValue().output != null ? e.getValue().output : "";
+          if (output.length() > 1000) {
+            output = output.substring(0, 1000);
+          }
+          out.writeUTF(output);
+          for (float v : e.getValue().embedding) {
+            out.writeFloat(v);
+          }
         }
       }
+      Files.move(tmpFile, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+          java.nio.file.StandardCopyOption.ATOMIC_MOVE);
     } finally {
       indexLock.readLock().unlock();
     }
