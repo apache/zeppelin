@@ -55,7 +55,7 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       let tables = '';
       let output = '';
       if (note.header) {
-        note.header.split('\n').forEach(function(line) {
+        note.header.replace(/<\/?B>/gi, '').split('\n').forEach(function(line) {
           if (line.indexOf('📊') === 0) {
             tables += (tables ? ', ' : '') + line.substring(2).trim();
           } else if (line.trim()) {

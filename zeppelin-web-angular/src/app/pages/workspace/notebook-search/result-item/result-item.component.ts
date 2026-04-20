@@ -52,11 +52,11 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
 
     // snippet = SQL/code, header = tables + output
-    this.codeText = this.result.snippet || '';
+    this.codeText = (this.result.snippet || '').replace(/<\/?B>/gi, '');
     this.interpreter = this.detectInterpreter(this.codeText);
 
     // Parse header: lines with 📊 are tables, rest is output
-    const header = this.result.header || '';
+    const header = (this.result.header || '').replace(/<\/?B>/gi, '');
     const lines = header.split('\n');
     const tableParts: string[] = [];
     const outputParts: string[] = [];
@@ -72,12 +72,24 @@ export class NotebookSearchResultItemComponent implements OnChanges {
   }
 
   private detectInterpreter(text: string): string {
-    if (!text) { return ''; }
-    if (/select|insert|create|from|where/i.test(text)) { return 'sql'; }
-    if (/^%(\w*\.)?py/i.test(text)) { return 'python'; }
-    if (/^%md/i.test(text)) { return 'md'; }
-    if (/^%sh/i.test(text)) { return 'sh'; }
-    if (/import |def |class /i.test(text)) { return 'python'; }
-    return 'text';
+    if (!text) {
+      return '';
+    }
+    if (/select|insert|create|from|where/i.test(text)) {
+      return 'sql';
+    }
+    if (/^%(\w*\.)?py/i.test(text)) {
+      return 'python';
+    }
+    if (/^%md/i.test(text)) {
+      return 'md';
+    }
+    if (/^%sh/i.test(text)) {
+      return 'sh';
+    }
+    if (/import |def |class /i.test(text)) {
+      return 'python';
+    }
+    return '';
   }
 }
