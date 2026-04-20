@@ -22,12 +22,24 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
   let results = searchService.search({'q': $routeParams.searchTerm}).query();
 
   function detectLang(text) {
-    if (!text) { return ''; }
-    if (/select|insert|create|from|where/i.test(text)) { return 'sql'; }
-    if (/^%(\w*\.)?py/i.test(text)) { return 'python'; }
-    if (/^%md/i.test(text)) { return 'md'; }
-    if (/^%sh/i.test(text)) { return 'sh'; }
-    if (/import |def |class /i.test(text)) { return 'python'; }
+    if (!text) {
+      return '';
+    }
+    if (/select|insert|create|from|where/i.test(text)) {
+      return 'sql';
+    }
+    if (/^%(\w*\.)?py/i.test(text)) {
+      return 'python';
+    }
+    if (/^%md/i.test(text)) {
+      return 'md';
+    }
+    if (/^%sh/i.test(text)) {
+      return 'sh';
+    }
+    if (/import |def |class /i.test(text)) {
+      return 'python';
+    }
     return '';
   }
 
