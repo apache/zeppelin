@@ -21,9 +21,9 @@ idna==3.10
 jira==3.10.5
 oauthlib==3.3.1
 packaging==25.0
-python-dotenv==1.1.1
+python-dotenv==1.2.2
 requests==2.33.0
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 typing-extensions==4.14.1
-urllib3==2.5.0
+urllib3==2.6.3
