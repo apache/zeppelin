@@ -79,10 +79,13 @@ public class EmbeddingSearch extends SearchService {
   private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingSearch.class);
 
   private static final String MODEL_NAME = "all-MiniLM-L6-v2";
+  private static final String MODEL_REVISION = "c9745ed1d9f207416be6d2e6f8de32d1f16199bf";
   private static final String MODEL_URL =
-      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx";
+      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/"
+          + MODEL_REVISION + "/onnx/model.onnx";
   private static final String TOKENIZER_URL =
-      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json";
+      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/"
+          + MODEL_REVISION + "/tokenizer.json";
   private static final int EMBEDDING_DIM = 384;
   private static final int MAX_SEQ_LENGTH = 256;
   private static final int MAX_RESULTS = 20;
