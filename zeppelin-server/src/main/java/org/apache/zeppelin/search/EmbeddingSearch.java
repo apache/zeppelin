@@ -24,13 +24,10 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.LongBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,13 +76,6 @@ public class EmbeddingSearch extends SearchService {
   private static final Logger LOGGER = LoggerFactory.getLogger(EmbeddingSearch.class);
 
   private static final String MODEL_NAME = "all-MiniLM-L6-v2";
-  private static final String MODEL_REVISION = "c9745ed1d9f207416be6d2e6f8de32d1f16199bf";
-  private static final String MODEL_URL =
-      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/"
-          + MODEL_REVISION + "/onnx/model.onnx";
-  private static final String TOKENIZER_URL =
-      "https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/"
-          + MODEL_REVISION + "/tokenizer.json";
   private static final int EMBEDDING_DIM = 384;
   private static final int MAX_SEQ_LENGTH = 256;
   private static final int MAX_RESULTS = 20;
@@ -180,14 +170,10 @@ public class EmbeddingSearch extends SearchService {
     Path modelFile = modelDir.resolve("model.onnx");
     Path tokenizerFile = modelDir.resolve("tokenizer.json");
 
-    if (!Files.exists(modelFile)) {
-      LOGGER.info("Downloading embedding model {} ...", MODEL_NAME);
-      downloadFile(MODEL_URL, modelFile);
-      LOGGER.info("Model downloaded to {}", modelFile);
-    }
-    if (!Files.exists(tokenizerFile)) {
-      LOGGER.info("Downloading tokenizer for {} ...", MODEL_NAME);
-      downloadFile(TOKENIZER_URL, tokenizerFile);
+    if (!Files.exists(modelFile) || !Files.exists(tokenizerFile)) {
+      throw new IOException(
+          "Embedding model not found at " + modelDir + ". "
+              + "Run bin/install-search-model.sh before enabling semantic search.");
     }
 
     ortEnv = OrtEnvironment.getEnvironment();
@@ -196,21 +182,6 @@ public class EmbeddingSearch extends SearchService {
     ortSession = ortEnv.createSession(modelFile.toString(), opts);
     tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
     LOGGER.info("Embedding model loaded: {}, dim={}", MODEL_NAME, EMBEDDING_DIM);
-  }
-
-  private static void downloadFile(String urlStr, Path dest) throws IOException {
-    URL url = new URL(urlStr);
-    java.net.URLConnection conn = url.openConnection();
-    conn.setConnectTimeout(30_000);
-    conn.setReadTimeout(60_000);
-    try (InputStream in = new BufferedInputStream(conn.getInputStream());
-         FileOutputStream out = new FileOutputStream(dest.toFile())) {
-      byte[] buf = new byte[8192];
-      int n;
-      while ((n = in.read(buf)) != -1) {
-        out.write(buf, 0, n);
-      }
-    }
   }
 
   // ---- Embedding computation ----
