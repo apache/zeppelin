@@ -159,9 +159,11 @@ public class BigQueryInterpreter extends Interpreter {
     try {
       bqClient = getClientForUser(context);
     } catch (IOException e) {
-      // Fallback: Prompt user to input Service Account JSON via z.input
+      // Fallback: prompt for Service Account JSON via a masked password form
+      // to avoid rendering the key in plaintext in the note UI.
       LOGGER.error("Authentication failed. Requesting service account JSON via GUI", e);
-      String saJson = (String) context.getGui().input("GCP Service Account JSON", "");
+      Object raw = context.getGui().password("GCP Service Account JSON");
+      String saJson = raw == null ? "" : raw.toString();
       if (StringUtils.isBlank(saJson)) {
         return new InterpreterResult(Code.ERROR, "%html ⚠️ <b>Authentication Required</b><br/>" +
             "Could not find Application Default Credentials. Please input your " +

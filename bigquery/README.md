@@ -8,13 +8,13 @@ The interpreter supports multiple ways to authenticate with Google Cloud:
    This is the recommended way. If Zeppelin is running on GCE, GKE, or any environment where `gcloud auth application-default login` has been executed, the interpreter will automatically discover the credentials.
 
 2. **Service Account JSON Key (Manual Fallback)**:
-   If ADC is not available, the interpreter will prompt you to input your Service Account JSON key through the Zeppelin GUI.
+   If ADC is not available, the interpreter will prompt you to paste your Service Account JSON key into a **masked password field** rendered in the notebook paragraph.
    - To get a JSON key:
      1. Go to the [GCP Console Service Accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts).
      2. Select your project and service account.
      3. Click **Keys** -> **Add Key** -> **Create new key**.
      4. Select **JSON** and click **Create**.
-     5. Copy the entire content of the downloaded JSON file and paste it into the Zeppelin input box when prompted. Treat this JSON key as a secret.
+     5. Copy the entire content of the downloaded JSON file and paste it into the Zeppelin masked password field when prompted. The input is masked so it is not displayed in plaintext, but you should still treat this JSON key as a secret.
    - **Security caution:** Do not paste this key into shared notes, notebooks, version control, or any place where it might be stored or visible to others. Prefer using Application Default Credentials (ADC) or Zeppelin's secure credentials mechanisms where possible, and only use this manual JSON key approach as a fallback when more secure options are not available.
 
 # Configuration
