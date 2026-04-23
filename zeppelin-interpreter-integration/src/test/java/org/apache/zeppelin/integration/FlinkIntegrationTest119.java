@@ -17,22 +17,13 @@
 
 package org.apache.zeppelin.integration;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import java.io.IOException;
 
-public class FlinkIntegrationTest114 {
-
-  @Nested
-  @DisplayName("Scala 2.11")
-  public class Scala211 extends FlinkIntegrationTest {
-
-      @BeforeEach
-      public void downloadFlink() throws IOException {
-        download("1.14.0", "2.11");
-      }
-  }
+public class FlinkIntegrationTest119 {
 
   @Nested
   @DisplayName("Scala 2.12")
@@ -40,7 +31,7 @@ public class FlinkIntegrationTest114 {
 
       @BeforeEach
       public void downloadFlink() throws IOException {
-        download("1.14.0", "2.12");
+        download("1.19.3", "2.12");
       }
   }
 }

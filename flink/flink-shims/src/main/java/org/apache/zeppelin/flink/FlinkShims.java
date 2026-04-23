@@ -54,21 +54,10 @@ public abstract class FlinkShims {
                                       Properties properties)
       throws Exception {
     Class<?> flinkShimsClass;
-    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
-      LOGGER.info("Initializing shims for Flink 1.13");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink113Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
-      LOGGER.info("Initializing shims for Flink 1.14");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink114Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 15) {
-      LOGGER.info("Initializing shims for Flink 1.15");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink115Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 16) {
-      LOGGER.info("Initializing shims for Flink 1.16");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink116Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 17) {
-      LOGGER.info("Initializing shims for Flink 1.17");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink117Shims");
+    if (flinkVersion.getMajorVersion() == 1
+        && (flinkVersion.getMinorVersion() == 19 || flinkVersion.getMinorVersion() == 20)) {
+      LOGGER.info("Initializing shims for Flink {}", flinkVersion);
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink119Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }

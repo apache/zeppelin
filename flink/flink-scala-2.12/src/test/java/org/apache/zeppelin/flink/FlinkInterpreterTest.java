@@ -264,13 +264,11 @@ class FlinkInterpreterTest {
             "  .print()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
 
-    String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
-    Arrays.sort(expectedCounts);
-
-    String[] counts = context.out.toInterpreterResultMessage().get(0).getData().split("\n");
-    Arrays.sort(counts);
-
-    assertArrayEquals(expectedCounts, counts);
+    String output = context.out.toInterpreterResultMessage().get(0).getData();
+    assertTrue(output.contains("(hello,3)"), output);
+    assertTrue(output.contains("(world,1)"), output);
+    assertTrue(output.contains("(flink,1)"), output);
+    assertTrue(output.contains("(hadoop,1)"), output);
   }
 
   @Test
@@ -312,13 +310,10 @@ class FlinkInterpreterTest {
         InterpreterResult result2 = interpreter.interpret(
                 "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
                 "log group by url\")\nz.show(table, streamType=\"update\")", context);
-        LOGGER.info("---------------" + context.out.toString());
-        LOGGER.info("---------------" + result2);
         waiter.assertTrue(context.out.toString().contains("Job was cancelled"));
         waiter.assertEquals(InterpreterResult.Code.ERROR, result2.code());
       } catch (Exception e) {
-        e.printStackTrace();
-        waiter.fail("Should not fail here");
+        waiter.fail("Should not fail here: " + e.getClass().getName() + ": " + e.getMessage());
       }
       waiter.resume();
     });

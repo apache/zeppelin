@@ -77,7 +77,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL.getVarName(), "5000");
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD.getVarName(), "10000");
     sparkHome = DownloadUtils.downloadSpark();
-    flinkHome = DownloadUtils.downloadFlink("1.17.1", "2.12");
+    flinkHome = DownloadUtils.downloadFlink("1.19.3", "2.12");
     zepServer.start();
     notebook = zepServer.getService(Notebook.class);
 
@@ -340,6 +340,8 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   void testZSession_Flink() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
     intpProperties.put("FLINK_HOME", flinkHome);
+    // Disable Hive delegation token provider which fails without full Hive classpath in Flink 1.19+
+    intpProperties.put("security.delegation.token.provider.hive.enabled", "false");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
@@ -377,6 +379,7 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
   void testZSession_Flink_Submit() throws Exception {
     Map<String, String> intpProperties = new HashMap<>();
     intpProperties.put("FLINK_HOME", flinkHome);
+    intpProperties.put("security.delegation.token.provider.hive.enabled", "false");
 
     ZSession session = ZSession.builder()
             .setClientConfig(clientConfig)
