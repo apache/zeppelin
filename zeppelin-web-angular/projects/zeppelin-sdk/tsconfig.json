@@ -5,6 +5,8 @@
     "target": "es2015",
     "declaration": true,
     "inlineSources": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
     "types": [],
     "lib": ["dom", "es2018"]
   },
