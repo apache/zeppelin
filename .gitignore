@@ -149,3 +149,25 @@ tramp
 
 # dotenv files
 .env
+
+# AI coding agents — personal config (AGENTS.md is shared, these are not)
+CLAUDE.md
+GEMINI.md
+.claude/
+.gemini/
+.codex/
+.cursor/
+.cursorules
+.cursorrules
+.windsurf/
+.windsurfrules
+.cline/
+.clinerules
+.continue/
+.aider*
+.augment/
+.amazonq/
+.junie/
+.goose/
+.roo/
+.rooignore
