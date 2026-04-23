@@ -20,7 +20,7 @@ package org.apache.zeppelin.interpreter;
  * InterpreterFactory Interface
  * Provides the interface to the ClusterManagerServer
  * through the user, nodeId, replName query interpreter
- * Since the InterpreterFactory is in the zeppelin-zengine module,
+ * Since the InterpreterFactory is in the zeppelin-server module,
  * the ClusterManagerServer in the zeppelin-interpreter module
  * cannot access InterpreterFactory#getInterpreter(...),
  * So access through the interface.
