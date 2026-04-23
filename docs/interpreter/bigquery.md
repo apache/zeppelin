@@ -72,14 +72,14 @@ This is the recommended approach for server environments.
 
 ### 2. Service Account JSON Key (GUI Fallback)
 
-If no environment-level credentials are found, the interpreter will prompt you to input your **Service Account JSON key** directly in the notebook paragraph using an input form.
+If no environment-level credentials are found, the interpreter will prompt you to paste your **Service Account JSON key** directly in the notebook paragraph using a **masked password form**, so the key is not displayed in plaintext.
 
 **How to get a Service Account JSON key:**
 1. Go to the [IAM & Admin > Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) page in the GCP Console.
 2. Select or create a service account with `BigQuery User` and `BigQuery Data Viewer` roles.
 3. Click the **Keys** tab, then **Add Key > Create new key**.
 4. Choose **JSON** format and click **Create**.
-5. When the BigQuery interpreter prompts you in Zeppelin, copy and paste the entire content of this JSON file into the input box. Treat this JSON key as a secret.
+5. When the BigQuery interpreter prompts you in Zeppelin, copy and paste the entire content of this JSON file into the masked password field. The input is masked so it is not displayed in plaintext, but you should still treat this JSON key as a secret.
 
 **Security caution:** Do not paste this key into shared notes, notebooks, version control, or any place where it might be stored or visible to others. Prefer using Application Default Credentials (ADC) or Zeppelin's secure credentials mechanisms where possible, and only use this manual JSON key approach as a fallback when more secure options are not available.
 
