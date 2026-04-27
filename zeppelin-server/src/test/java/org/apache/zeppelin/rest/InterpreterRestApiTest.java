@@ -342,11 +342,11 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
           return note.getBindedInterpreterSettings(new ArrayList<>());
         });
 
-      // when: restart interpreter
+      // when: restart interpreter globally
       for (InterpreterSetting setting : settings) {
         if (setting.getName().equals("md")) {
-          // call restart interpreter API
-          CloseableHttpResponse put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
+          // call restart interpreter API (global restart)
+          CloseableHttpResponse put = httpPut("/interpreter/setting/restart-all/" + setting.getId(), "");
           assertThat("test interpreter restart:", put, isAllowed());
           put.close();
           break;
