@@ -359,7 +359,7 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
   }
 
-  public void saveToFile() throws IOException {
+  public synchronized void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
     info.interpreterSettings = new HashMap<>(interpreterSettings);
     info.interpreterRepositories = interpreterRepositories;
