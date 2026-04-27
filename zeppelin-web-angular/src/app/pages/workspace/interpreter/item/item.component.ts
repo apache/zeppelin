@@ -95,7 +95,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       .forEach((e: any) => {
         const { key, value, type } = e;
         properties[key] = {
-          value,
+          value: value.toString(),
           type,
           name: key
         };
