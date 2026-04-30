@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -86,8 +88,22 @@ public class BigQueryInterpreter extends Interpreter {
   static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
   static final String REGION = "zeppelin.bigquery.region";
 
-  private volatile JobId currentJobId = null;
+  private static final String SA_JSON_FORM_KEY = "GCP Service Account JSON";
+
+  // Tracks running queries per paragraph so concurrent paragraphs in shared
+  // interpreter mode don't clobber each other's job/cancel state.
+  private final ConcurrentMap<String, RunningQuery> runningQueries = new ConcurrentHashMap<>();
   private Exception exceptionOnConnect;
+
+  private static final class RunningQuery {
+    private final BigQuery client;
+    private final JobId jobId;
+
+    RunningQuery(BigQuery client, JobId jobId) {
+      this.client = client;
+      this.jobId = jobId;
+    }
+  }
 
   private static final List<InterpreterCompletion> NO_COMPLETION = new ArrayList<>();
 
@@ -159,15 +175,17 @@ public class BigQueryInterpreter extends Interpreter {
     try {
       bqClient = getClientForUser(context);
     } catch (IOException e) {
-      // Fallback: prompt for Service Account JSON via a masked password form
-      // to avoid rendering the key in plaintext in the note UI.
-      LOGGER.error("Authentication failed. Requesting service account JSON via GUI", e);
-      Object raw = context.getGui().password("GCP Service Account JSON");
-      String saJson = raw == null ? "" : raw.toString();
+      // Fallback: read a previously-supplied Service Account JSON from paragraph
+      // form params, or render a masked password form to collect it.
+      LOGGER.error("Authentication failed. Falling back to user-supplied SA JSON via GUI", e);
+      Object existing = context.getGui().getParams().get(SA_JSON_FORM_KEY);
+      String saJson = existing == null ? "" : existing.toString();
       if (StringUtils.isBlank(saJson)) {
+        // No value yet: render the masked form so the user can enter the key.
+        context.getGui().password(SA_JSON_FORM_KEY);
         return new InterpreterResult(Code.ERROR, "%html ⚠️ <b>Authentication Required</b><br/>" +
             "Could not find Application Default Credentials. Please input your " +
-            "Service Account JSON key in the form below and run again.");
+            "Service Account JSON key in the form and run again.");
       }
       try {
         GoogleCredentials credentials = ServiceAccountCredentials.fromStream(
@@ -188,6 +206,8 @@ public class BigQueryInterpreter extends Interpreter {
         // Do not cache this client in a shared field to avoid leaking user credentials
         exceptionOnConnect = null;
       } catch (IOException ex) {
+        // Re-render the masked form so the user can correct an invalid key.
+        context.getGui().password(SA_JSON_FORM_KEY);
         return new InterpreterResult(Code.ERROR, "Failed to parse Service Account JSON: " +
             ex.getMessage());
       }
@@ -216,16 +236,19 @@ public class BigQueryInterpreter extends Interpreter {
     QueryJobConfiguration queryConfig = queryConfigBuilder.build();
 
     String jobIdStr = UUID.randomUUID().toString();
+    JobId jobId;
     if (StringUtils.isNotBlank(region)) {
-      currentJobId = JobId.newBuilder().setLocation(region).setJob(jobIdStr).build();
+      jobId = JobId.newBuilder().setLocation(region).setJob(jobIdStr).build();
     } else {
-      currentJobId = JobId.of(jobIdStr);
+      jobId = JobId.of(jobIdStr);
     }
 
+    String paragraphId = context.getParagraphId();
+    runningQueries.put(paragraphId, new RunningQuery(bqClient, jobId));
     try {
       LOGGER.info("Executing query: {}", sql);
       Job queryJob = bqClient.create(
-          JobInfo.newBuilder(queryConfig).setJobId(currentJobId).build());
+          JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
 
       // Wait for the query to complete
       queryJob = queryJob.waitFor();
@@ -267,7 +290,7 @@ public class BigQueryInterpreter extends Interpreter {
       LOGGER.error("Query execution failed", ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
     } finally {
-      currentJobId = null;
+      runningQueries.remove(paragraphId);
     }
   }
 
@@ -301,22 +324,22 @@ public class BigQueryInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    LOGGER.info("Trying to Cancel current query statement.");
-    if (service != null && currentJobId != null) {
-      try {
-        boolean cancelled = service.cancel(currentJobId);
-        if (cancelled) {
-          LOGGER.info("Query Execution cancelled");
-        } else {
-          LOGGER.warn("Query Execution cancellation returned false");
-        }
-      } catch (RuntimeException e) {
-        LOGGER.warn("Failed to cancel BigQuery job {}", currentJobId, e);
-      } finally {
-        currentJobId = null;
-      }
-    } else {
+    String paragraphId = context.getParagraphId();
+    LOGGER.info("Trying to cancel query for paragraph {}", paragraphId);
+    RunningQuery running = runningQueries.remove(paragraphId);
+    if (running == null) {
       LOGGER.info("Query Execution was already cancelled or not started");
+      return;
+    }
+    try {
+      boolean cancelled = running.client.cancel(running.jobId);
+      if (cancelled) {
+        LOGGER.info("Query Execution cancelled");
+      } else {
+        LOGGER.warn("Query Execution cancellation returned false");
+      }
+    } catch (RuntimeException e) {
+      LOGGER.warn("Failed to cancel BigQuery job {}", running.jobId, e);
     }
   }
 
