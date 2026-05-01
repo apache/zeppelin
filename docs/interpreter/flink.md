@@ -142,11 +142,11 @@ Download Flink 1.19 or afterwards (Only Scala 2.12 is supported)
 
 ### Version-specific notes for Flink
 
-Flink 1.19+ is scala free and has changed its binary distribution, the following extra steps is required.
-* Move FLINK_HOME/opt/flink-table-planner_2.12-1.19.3.jar to FLINK_HOME/lib
-* Move FLINK_HOME/lib/flink-table-planner-loader-1.19.3.jar to FLINK_HOME/opt
-* Download flink-table-api-scala-bridge_2.12-1.19.3.jar and flink-table-api-scala_2.12-1.19.3.jar to FLINK_HOME/lib
-* Move FLINK_HOME/opt/flink-sql-client-1.19.3.jar to FLINK_HOME/lib
+Flink 1.19+ is scala free and has changed its binary distribution, the following extra steps are required. Replace `${FLINK_VERSION}` below with the version of Flink you installed.
+* Move FLINK_HOME/opt/flink-table-planner_2.12-${FLINK_VERSION}.jar to FLINK_HOME/lib
+* Move FLINK_HOME/lib/flink-table-planner-loader-${FLINK_VERSION}.jar to FLINK_HOME/opt
+* Download flink-table-api-scala-bridge_2.12-${FLINK_VERSION}.jar and flink-table-api-scala_2.12-${FLINK_VERSION}.jar to FLINK_HOME/lib
+* Move FLINK_HOME/opt/flink-sql-client-${FLINK_VERSION}.jar to FLINK_HOME/lib
 
 ## Flink on Zeppelin Architecture
 

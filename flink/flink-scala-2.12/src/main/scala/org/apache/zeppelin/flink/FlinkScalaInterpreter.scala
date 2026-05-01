@@ -58,6 +58,7 @@ import scala.collection.JavaConversions
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, Results, SimpleReader}
+import scala.util.control.NonFatal
 
 /**
  * It instantiate flink scala shell and create env, senv, btenv, stenv.
@@ -433,7 +434,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         flinkILoop.bind(name, tpe, value, modifiers: List[String])
         success = true
       } catch {
-        case e: Throwable =>
+        case NonFatal(e) =>
           if (attempt == 1) {
             LOGGER.warn("Retrying bind for " + name + " due to Scala reflection issue: " + e.getMessage)
           } else {
