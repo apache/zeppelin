@@ -196,9 +196,22 @@ public abstract class AbstractStreamSqlJob {
       LOGGER.info("Final Result: {}", finalResult);
       return finalResult;
     } catch (Exception e) {
+      if (cancelled) {
+        throw new IOException("Job was cancelled", e);
+      }
       LOGGER.error("Fail to run stream sql job", e);
-      throw new IOException("Job was cancelled", e);
+      if (e instanceof IOException) {
+        throw (IOException) e;
+      }
+      throw new IOException("Fail to run stream sql job", e);
     } finally {
+      if (insertResult != null && insertResult.getJobClient().isPresent()) {
+        try {
+          jobManager.removeJob(context.getParagraphId());
+        } catch (Exception ex) {
+          LOGGER.warn("Failed to remove job from JobManager", ex);
+        }
+      }
       refreshScheduler.shutdownNow();
     }
   }
