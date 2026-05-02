@@ -146,7 +146,7 @@ export class CredentialComponent {
     this.credentialService.getCredentials().subscribe(data => {
       const controls = [...Object.entries(data.userCredentials)].map(e => {
         const entity = e[0];
-        const { username, password } = e[1] as any;
+        const { username, password } = e[1];
         return this.fb.group({
           entity: [entity, [Validators.required]],
           username: [username, [Validators.required]],

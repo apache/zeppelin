@@ -12,8 +12,6 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "strict": true,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
     "declaration": false,
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,

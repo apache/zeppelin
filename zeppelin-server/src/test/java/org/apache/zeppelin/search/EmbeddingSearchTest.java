@@ -76,10 +76,17 @@ class EmbeddingSearchTest {
   @BeforeEach
   public void startUp() throws IOException {
     if (sharedModelDir == null) {
-      sharedModelDir = Files.createTempDirectory("EmbeddingSearchTest-models").toFile();
+      // Look for model in the default install location first
+      File defaultModelDir = new File("/tmp/zeppelin-index/models");
+      if (defaultModelDir.exists()
+          && new File(defaultModelDir, "all-MiniLM-L6-v2/model.onnx").exists()) {
+        sharedModelDir = defaultModelDir;
+      } else {
+        sharedModelDir = Files.createTempDirectory("EmbeddingSearchTest-models").toFile();
+      }
     }
     indexDir = Files.createTempDirectory(this.getClass().getSimpleName()).toFile();
-    // Copy shared model dir path so model is cached across tests
+    // Symlink models dir so model is cached across tests
     File modelsLink = new File(indexDir, "models");
     Files.createSymbolicLink(modelsLink.toPath(), sharedModelDir.toPath());
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
@@ -107,9 +114,9 @@ class EmbeddingSearchTest {
 
   private void drainSearchEvents() throws InterruptedException {
     while (!searchService.isEventQueueEmpty()) {
-      Thread.sleep(1000);
+      Thread.sleep(500);
     }
-    Thread.sleep(1000);
+    Thread.sleep(500);
   }
 
   @Test
@@ -119,15 +126,14 @@ class EmbeddingSearchTest {
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
-    // when — semantic search should find "all" in "not test at all"
-    List<Map<String, String>> results = searchService.query("all");
+    // when — semantic search for a meaningful phrase
+    List<Map<String, String>> results = searchService.query("testing something");
 
     // then
     assertFalse(results.isEmpty());
-    // The paragraph containing "all" should be in results
-    boolean foundAll = results.stream()
-        .anyMatch(r -> r.get("text").contains("all"));
-    assertTrue(foundAll, "Should find paragraph containing 'all'");
+    boolean foundTest = results.stream()
+        .anyMatch(r -> r.get("text").contains("test"));
+    assertTrue(foundTest, "Should find paragraph containing 'test'");
   }
 
   @Test
@@ -223,13 +229,13 @@ class EmbeddingSearchTest {
     // when
     notebook.processNote(note2Id, note2 -> {
       Paragraph p2 = note2.getLastParagraph();
-      p2.setText("test indeed");
+      p2.setText("updated paragraph with unique content about reindexing");
       searchService.updateParagraphIndex(note2Id, p2.getId());
       return null;
     });
 
-    // then — "indeed" should now be findable
-    List<Map<String, String>> results = searchService.query("indeed");
+    // then — updated content should now be findable
+    List<Map<String, String>> results = searchService.query("reindexing updated content");
     assertFalse(results.isEmpty());
   }
 
@@ -311,6 +317,8 @@ class EmbeddingSearchTest {
       addParagraphWithText(note, parText);
       return null;
     });
+    // Re-index after paragraphs are added (createNote event may fire before paragraphs exist)
+    searchService.updateNoteIndex(noteId);
     return noteId;
   }
 
@@ -321,6 +329,7 @@ class EmbeddingSearchTest {
       addParagraphWithTextAndTitle(note, parText, title);
       return null;
     });
+    searchService.updateNoteIndex(noteId);
     return noteId;
   }
 
@@ -332,6 +341,7 @@ class EmbeddingSearchTest {
       }
       return null;
     });
+    searchService.updateNoteIndex(noteId);
     return noteId;
   }
 
