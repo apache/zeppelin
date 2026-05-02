@@ -24,14 +24,17 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
@@ -88,6 +95,10 @@ public class EmbeddingSearch extends SearchService {
   private static final Pattern TABLE_RE =
       Pattern.compile("(?:FROM|JOIN)\\s+([a-zA-Z_]\\w*\\.[a-zA-Z_]\\w*)", Pattern.CASE_INSENSITIVE);
   private static final float TABLE_BOOST = 0.05f;
+  private static final long FLUSH_INTERVAL_SECONDS = 5;
+  private static final int MAX_INDEX_ENTRIES = 10_000_000;
+  private static final String EXPECTED_MODEL_SHA256 =
+      "6fd5d72fe4589f189f8ebc006442dbb529bb7ce38f8082112682524616046452";
 
   private final Notebook notebook;
   private final Path indexPath;
@@ -100,6 +111,13 @@ public class EmbeddingSearch extends SearchService {
   // In-memory vector index: docId -> (embedding, metadata)
   private final ConcurrentHashMap<String, IndexEntry> index = new ConcurrentHashMap<>();
   private final ReadWriteLock indexLock = new ReentrantReadWriteLock();
+  private final AtomicBoolean indexDirty = new AtomicBoolean(false);
+  private final ScheduledExecutorService flushScheduler =
+      Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "EmbeddingSearch-flush");
+        t.setDaemon(true);
+        return t;
+      });
 
   /** A single indexed document (paragraph or note name). */
   private static class IndexEntry {
@@ -127,6 +145,7 @@ public class EmbeddingSearch extends SearchService {
     this.notebook = notebook;
     this.indexPath = Paths.get(zConf.getZeppelinSearchIndexPath());
     Files.createDirectories(indexPath);
+    restrictPermissions(indexPath);
 
     try {
       initModel();
@@ -134,10 +153,13 @@ public class EmbeddingSearch extends SearchService {
       throw new IOException("Failed to initialize embedding model", e);
     }
 
-    if (zConf.isIndexRebuild()) {
+    loadIndex();
+    if (zConf.isIndexRebuild()
+        || !Files.exists(indexPath.resolve("embedding_index.bin"))) {
       notebook.addInitConsumer(this::addNoteIndex);
     }
-    loadIndex();
+    flushScheduler.scheduleWithFixedDelay(this::flushIfDirty,
+        FLUSH_INTERVAL_SECONDS, FLUSH_INTERVAL_SECONDS, TimeUnit.SECONDS);
     this.notebook.addNotebookEventListener(this);
   }
 
@@ -148,6 +170,7 @@ public class EmbeddingSearch extends SearchService {
     this.notebook = notebook;
     this.indexPath = Paths.get(zConf.getZeppelinSearchIndexPath());
     Files.createDirectories(indexPath);
+    restrictPermissions(indexPath);
     if (!skipModel) {
       try {
         initModel();
@@ -155,10 +178,30 @@ public class EmbeddingSearch extends SearchService {
         throw new IOException("Failed to initialize embedding model", e);
       }
     }
-    if (zConf.isIndexRebuild()) {
+    loadIndex();
+    if (zConf.isIndexRebuild()
+        || !Files.exists(indexPath.resolve("embedding_index.bin"))) {
       notebook.addInitConsumer(this::addNoteIndex);
     }
+    flushScheduler.scheduleWithFixedDelay(this::flushIfDirty,
+        FLUSH_INTERVAL_SECONDS, FLUSH_INTERVAL_SECONDS, TimeUnit.SECONDS);
     this.notebook.addNotebookEventListener(this);
+  }
+
+  private static void restrictPermissions(Path dir) {
+    try {
+      if (Files.getFileStore(dir).supportsFileAttributeView("posix")) {
+        Files.setPosixFilePermissions(dir,
+            PosixFilePermissions.fromString("rwx------"));
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Could not restrict permissions on {}", dir, e);
+    }
+    if (dir.toAbsolutePath().startsWith("/tmp")) {
+      LOGGER.warn("zeppelin.search.index.path is under /tmp ({}); "
+          + "paragraph text and output will be readable by other local users. "
+          + "Consider setting it to a private directory.", dir);
+    }
   }
 
   // ---- Model initialization ----
@@ -176,12 +219,35 @@ public class EmbeddingSearch extends SearchService {
               + "Run bin/install-search-model.sh before enabling semantic search.");
     }
 
+    verifyModelSha256(modelFile);
+
     ortEnv = OrtEnvironment.getEnvironment();
     OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
     opts.setIntraOpNumThreads(Runtime.getRuntime().availableProcessors());
     ortSession = ortEnv.createSession(modelFile.toString(), opts);
     tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
     LOGGER.info("Embedding model loaded: {}, dim={}", MODEL_NAME, EMBEDDING_DIM);
+  }
+
+  private static void verifyModelSha256(Path modelFile) throws IOException {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] fileBytes = Files.readAllBytes(modelFile);
+      byte[] hash = digest.digest(fileBytes);
+      StringBuilder sb = new StringBuilder();
+      for (byte b : hash) {
+        sb.append(String.format("%02x", b));
+      }
+      String actual = sb.toString();
+      if (!EXPECTED_MODEL_SHA256.equals(actual)) {
+        throw new IOException("model.onnx SHA256 mismatch — expected "
+            + EXPECTED_MODEL_SHA256 + " but got " + actual
+            + ". Re-run bin/install-search-model.sh");
+      }
+      LOGGER.info("Model SHA256 verified: {}", modelFile);
+    } catch (NoSuchAlgorithmException e) {
+      LOGGER.warn("SHA-256 not available, skipping model integrity check", e);
+    }
   }
 
   // ---- Embedding computation ----
@@ -208,25 +274,36 @@ public class EmbeddingSearch extends SearchService {
       System.arraycopy(attentionMask, 0, mask, 0, seqLen);
 
       long[] shape = {1, seqLen};
-      OnnxTensor idsTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(ids), shape);
-      OnnxTensor maskTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(mask), shape);
-      OnnxTensor typeTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(tokenTypeIds), shape);
+      OnnxTensor idsTensor = null;
+      OnnxTensor maskTensor = null;
+      OnnxTensor typeTensor = null;
+      try {
+        idsTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(ids), shape);
+        maskTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(mask), shape);
+        typeTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(tokenTypeIds), shape);
 
-      Map<String, OnnxTensor> inputs = new HashMap<>();
-      inputs.put("input_ids", idsTensor);
-      inputs.put("attention_mask", maskTensor);
-      inputs.put("token_type_ids", typeTensor);
+        Map<String, OnnxTensor> inputs = new HashMap<>();
+        inputs.put("input_ids", idsTensor);
+        inputs.put("attention_mask", maskTensor);
+        inputs.put("token_type_ids", typeTensor);
 
-      try (OrtSession.Result result = ortSession.run(inputs)) {
-        // Output shape: [1, seqLen, 384] — mean pool over sequence dim
-        float[][][] output = (float[][][]) result.get(0).getValue();
-        float[] pooled = meanPool(output[0], mask, seqLen);
-        normalize(pooled);
-        return pooled;
+        try (OrtSession.Result result = ortSession.run(inputs)) {
+          // Output shape: [1, seqLen, 384] — mean pool over sequence dim
+          float[][][] output = (float[][][]) result.get(0).getValue();
+          float[] pooled = meanPool(output[0], mask, seqLen);
+          normalize(pooled);
+          return pooled;
+        }
       } finally {
-        idsTensor.close();
-        maskTensor.close();
-        typeTensor.close();
+        if (idsTensor != null) {
+          idsTensor.close();
+        }
+        if (maskTensor != null) {
+          maskTensor.close();
+        }
+        if (typeTensor != null) {
+          typeTensor.close();
+        }
       }
     } catch (OrtException e) {
       LOGGER.error("Embedding failed for text length {}", text.length(), e);
@@ -447,7 +524,7 @@ public class EmbeddingSearch extends SearchService {
         header.append(entry.title).append("\n");
       }
       if (StringUtils.isNotBlank(entry.tables)) {
-        header.append("📊 ").append(entry.tables).append("\n");
+        header.append("[TABLES]").append(entry.tables).append("\n");
       }
       if (StringUtils.isNotBlank(entry.output)) {
         String out = entry.output;
@@ -481,7 +558,7 @@ public class EmbeddingSearch extends SearchService {
         }
         return null;
       });
-      saveIndex();
+      markDirty();
     } catch (IOException e) {
       LOGGER.error("Failed to add note {} to index", noteId, e);
     }
@@ -499,7 +576,7 @@ public class EmbeddingSearch extends SearchService {
         }
         return null;
       });
-      saveIndex();
+      markDirty();
     } catch (IOException e) {
       LOGGER.error("Failed to add paragraph {} of note {}", paragraphId, noteId, e);
     }
@@ -514,7 +591,7 @@ public class EmbeddingSearch extends SearchService {
         }
         return null;
       });
-      saveIndex();
+      markDirty();
     } catch (IOException e) {
       LOGGER.error("Failed to update note index {}", noteId, e);
     }
@@ -532,7 +609,7 @@ public class EmbeddingSearch extends SearchService {
         }
         return null;
       });
-      saveIndex();
+      markDirty();
     } catch (IOException e) {
       LOGGER.error("Failed to update paragraph {} of note {}", paragraphId, noteId, e);
     }
@@ -545,15 +622,12 @@ public class EmbeddingSearch extends SearchService {
     }
     indexLock.writeLock().lock();
     try {
-      index.entrySet().removeIf(e -> e.getKey().startsWith(noteId));
+      index.entrySet().removeIf(e ->
+          e.getKey().equals(noteId) || e.getKey().startsWith(noteId + "/"));
     } finally {
       indexLock.writeLock().unlock();
     }
-    try {
-      saveIndex();
-    } catch (IOException e) {
-      LOGGER.error("Failed to save index after deleting note {}", noteId, e);
-    }
+    markDirty();
   }
 
   @Override
@@ -565,17 +639,15 @@ public class EmbeddingSearch extends SearchService {
         ? String.join("/", noteId, PARAGRAPH, paragraphId)
         : noteId;
     index.remove(docId);
-    try {
-      saveIndex();
-    } catch (IOException e) {
-      LOGGER.error("Failed to save index after deleting paragraph {}", docId, e);
-    }
+    markDirty();
   }
 
   @Override
   @PreDestroy
   public void close() {
     super.close();
+    flushScheduler.shutdown();
+    flushIfDirty();
     try {
       if (ortSession != null) {
         ortSession.close();
@@ -585,6 +657,20 @@ public class EmbeddingSearch extends SearchService {
       }
     } catch (OrtException e) {
       LOGGER.error("Failed to close ONNX session", e);
+    }
+  }
+
+  private void markDirty() {
+    indexDirty.set(true);
+  }
+
+  private void flushIfDirty() {
+    if (indexDirty.compareAndSet(true, false)) {
+      try {
+        saveIndex();
+      } catch (IOException e) {
+        LOGGER.error("Failed to flush embedding index to disk", e);
+      }
     }
   }
 
@@ -635,9 +721,13 @@ public class EmbeddingSearch extends SearchService {
   private void saveIndex() throws IOException {
     Path file = indexPath.resolve("embedding_index.bin");
     Path tmpFile = indexPath.resolve("embedding_index.bin.tmp");
+
+    // Serialize to buffer under lock
+    byte[] data;
     indexLock.readLock().lock();
     try {
-      try (DataOutputStream out = new DataOutputStream(new FileOutputStream(tmpFile.toFile()))) {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try (DataOutputStream out = new DataOutputStream(baos)) {
         out.writeInt(3); // version 3: includes output field
         out.writeInt(index.size());
         for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
@@ -660,10 +750,23 @@ public class EmbeddingSearch extends SearchService {
           }
         }
       }
-      Files.move(tmpFile, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-          java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+      data = baos.toByteArray();
     } finally {
       indexLock.readLock().unlock();
+    }
+
+    // Write to disk outside lock
+    Files.write(tmpFile, data);
+    Files.move(tmpFile, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+        java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+    // Restrict file permissions
+    try {
+      if (Files.getFileStore(file).supportsFileAttributeView("posix")) {
+        Files.setPosixFilePermissions(file,
+            PosixFilePermissions.fromString("rw-------"));
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Could not restrict permissions on {}", file, e);
     }
   }
 
@@ -685,6 +788,11 @@ public class EmbeddingSearch extends SearchService {
         count = first;
       }
       LOGGER.info("Loading {} embedding index entries (v{}) from {}", count, version, file);
+      if (count < 0 || count > MAX_INDEX_ENTRIES) {
+        LOGGER.error("Index entry count {} exceeds sanity bound ({}), skipping load",
+            count, MAX_INDEX_ENTRIES);
+        return;
+      }
       for (int i = 0; i < count; i++) {
         String docId = in.readUTF();
         String noteName = in.readUTF();

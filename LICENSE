@@ -277,3 +277,21 @@ Eclipse Public License - v 1.0
 The following components are provided under the Eclipse Public License, version 1.0.  See file headers and project links for details.
 
   (Eclipse Public License) pty4j - http://www.eclipse.org/legal/epl-v10.html
+
+========================================================================
+MIT License
+========================================================================
+The following components are provided under the MIT License.  See file headers and project links for details.
+
+  (MIT License) ONNX Runtime (https://github.com/microsoft/onnxruntime)
+    Licensed under the MIT License.
+    https://github.com/microsoft/onnxruntime/blob/main/LICENSE
+
+========================================================================
+Apache License 2.0 (bundled dependencies)
+========================================================================
+The following components are provided under the Apache License 2.0.  See file headers and project links for details.
+
+  (Apache License 2.0) DJL - Deep Java Library Tokenizers (https://github.com/deepjavalibrary/djl)
+    Licensed under the Apache License, Version 2.0.
+    https://github.com/deepjavalibrary/djl/blob/master/LICENSE

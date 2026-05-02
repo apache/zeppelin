@@ -26,6 +26,7 @@ export class NotebookSearchResultItemComponent implements OnChanges {
   displayName = '';
   routerLink: string[] = [];
   codeText = '';
+  codeHtml = '';
   outputText = '';
   tablesText = '';
   interpreter = '';
@@ -52,17 +53,20 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
 
     // snippet = SQL/code, header = tables + output
-    this.codeText = (this.result.snippet || '').replace(/<\/?B>/gi, '');
+    const snippet = this.result.snippet || '';
+    // Preserve Lucene <B> highlighting by converting to <mark>
+    this.codeHtml = snippet.replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
+    this.codeText = snippet.replace(/<\/?B>/gi, '');
     this.interpreter = this.detectInterpreter(this.codeText);
 
-    // Parse header: lines with 📊 are tables, rest is output
+    // Parse header: lines with [TABLES] prefix are tables, rest is output
     const header = (this.result.header || '').replace(/<\/?B>/gi, '');
     const lines = header.split('\n');
     const tableParts: string[] = [];
     const outputParts: string[] = [];
     for (const line of lines) {
-      if (line.startsWith('📊')) {
-        tableParts.push(line.substring(2).trim());
+      if (line.startsWith('[TABLES]')) {
+        tableParts.push(line.substring(8).trim());
       } else if (line.trim()) {
         outputParts.push(line);
       }
@@ -75,7 +79,8 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     if (!text) {
       return '';
     }
-    if (/select|insert|create|from|where/i.test(text)) {
+    // Check interpreter prefix first — this is reliable
+    if (/^%(\w*\.)?sql/i.test(text)) {
       return 'sql';
     }
     if (/^%(\w*\.)?py/i.test(text)) {
@@ -87,8 +92,14 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     if (/^%sh/i.test(text)) {
       return 'sh';
     }
-    if (/import |def |class /i.test(text)) {
-      return 'python';
+    // Fall back to keyword heuristic only if no prefix
+    if (!text.startsWith('%')) {
+      if (/\b(?:SELECT|INSERT|CREATE|FROM|WHERE)\b/i.test(text) && /\b(?:SELECT|FROM)\b/i.test(text)) {
+        return 'sql';
+      }
+      if (/import |def |class /i.test(text)) {
+        return 'python';
+      }
     }
     return '';
   }

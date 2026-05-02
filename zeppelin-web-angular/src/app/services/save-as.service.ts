@@ -19,7 +19,7 @@ export class SaveAsService {
   saveAs(content: string, filename: string, extension: string) {
     const BOM = '\uFEFF';
     const fileName = `${filename}.${extension}`;
-    const binaryData: string[] = [];
+    const binaryData = [];
     binaryData.push(BOM);
     binaryData.push(content);
     const blob = new Blob(binaryData, { type: 'octet/stream' });

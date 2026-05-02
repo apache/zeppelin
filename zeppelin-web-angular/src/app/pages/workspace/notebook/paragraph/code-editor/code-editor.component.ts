@@ -360,7 +360,7 @@ export class NotebookParagraphCodeEditorComponent
       return;
     }
     const text = model.getValue();
-    const newDecorations: any[] = [];
+    const newDecorations = [];
     let startIndex = 0;
     while (term && text) {
       const idx = text.indexOf(term, startIndex);

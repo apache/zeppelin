@@ -25,7 +25,8 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
     if (!text) {
       return '';
     }
-    if (/select|insert|create|from|where/i.test(text)) {
+    // Check interpreter prefix first — this is reliable
+    if (/^%(\w*\.)?sql/i.test(text)) {
       return 'sql';
     }
     if (/^%(\w*\.)?py/i.test(text)) {
@@ -37,8 +38,15 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
     if (/^%sh/i.test(text)) {
       return 'sh';
     }
-    if (/import |def |class /i.test(text)) {
-      return 'python';
+    // Fall back to keyword heuristic only if no prefix
+    if (!text.startsWith('%')) {
+      if (/\b(?:SELECT|INSERT|CREATE|FROM|WHERE)\b/i.test(text)
+          && /\b(?:SELECT|FROM)\b/i.test(text)) {
+        return 'sql';
+      }
+      if (/import |def |class /i.test(text)) {
+        return 'python';
+      }
     }
     return '';
   }
@@ -56,18 +64,20 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       let output = '';
       if (note.header) {
         note.header.replace(/<\/?B>/gi, '').split('\n').forEach(function(line) {
-          if (line.indexOf('📊') === 0) {
-            tables += (tables ? ', ' : '') + line.substring(2).trim();
+          if (line.indexOf('[TABLES]') === 0) {
+            tables += (tables ? ', ' : '') + line.substring(8).trim();
           } else if (line.trim()) {
             output += (output ? '\n' : '') + line;
           }
         });
       }
 
-      // Strip <B> tags from snippet
+      // Preserve Lucene <B> highlighting by converting to <mark>
+      let codeHtml = (note.snippet || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
       let code = (note.snippet || '').replace(/<B>/g, '').replace(/<\/B>/g, '');
 
       note.codeText = code;
+      note.codeHtml = codeHtml;
       note.outputText = output;
       note.tablesText = tables;
       note.langBadge = detectLang(code);
