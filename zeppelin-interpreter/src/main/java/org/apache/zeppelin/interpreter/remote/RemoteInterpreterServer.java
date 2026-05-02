@@ -35,6 +35,7 @@ import org.apache.zeppelin.helium.ApplicationException;
 import org.apache.zeppelin.helium.ApplicationLoader;
 import org.apache.zeppelin.helium.HeliumAppAngularObjectRegistry;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.common.InterpreterConfigKeys;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -211,7 +212,7 @@ public class RemoteInterpreterServer extends Thread
 
     if (!isTest) {
       int connectionPoolSize = Integer.parseInt(
-              zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100"));
+              zProperties.getProperty(InterpreterConfigKeys.INTERPRETER_CONNECTION_POOL_SIZE, "100"));
       LOGGER.info("Creating RemoteInterpreterEventClient with connection pool size: {}",
               connectionPoolSize);
       intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
@@ -268,8 +269,8 @@ public class RemoteInterpreterServer extends Thread
 
   private LifecycleManager createLifecycleManager() throws Exception {
     String lifecycleManagerClass = zProperties.getProperty(
-            "zeppelin.interpreter.lifecyclemanager.class",
-            "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager");
+        InterpreterConfigKeys.INTERPRETER_LIFECYCLE_MANAGER_CLASS,
+        "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager");
     Class<?> clazz = Class.forName(lifecycleManagerClass);
     LOGGER.info("Creating interpreter lifecycle manager: {}", lifecycleManagerClass);
     return (LifecycleManager) clazz.getConstructor(Properties.class, RemoteInterpreterServer.class)
@@ -335,10 +336,10 @@ public class RemoteInterpreterServer extends Thread
         }
 
         depLoader = new DependencyResolver(localRepoPath,
-                zProperties.getProperty("zeppelin.proxy.url"),
-                zProperties.getProperty("zeppelin.proxy.user"),
-                zProperties.getProperty("zeppelin.proxy.password"),
-                zProperties.getProperty("zeppelin.interpreter.dep.mvnRepo"));
+          zProperties.getProperty(InterpreterConfigKeys.PROXY_URL),
+          zProperties.getProperty(InterpreterConfigKeys.PROXY_USER),
+          zProperties.getProperty(InterpreterConfigKeys.PROXY_PASSWORD),
+          zProperties.getProperty(InterpreterConfigKeys.INTERPRETER_DEP_MVNREPO));
         appLoader = new ApplicationLoader(resourcePool, depLoader);
 
         resultCacheInSeconds =
@@ -486,7 +487,7 @@ public class RemoteInterpreterServer extends Thread
       this.intpEventServerHost = host;
       this.intpEventServerPort = port;
       intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
-              Integer.parseInt(zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100")));
+        Integer.parseInt(zProperties.getProperty(InterpreterConfigKeys.INTERPRETER_CONNECTION_POOL_SIZE, "100")));
       intpEventClient.setIntpGroupId(interpreterGroupId);
 
       this.angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
