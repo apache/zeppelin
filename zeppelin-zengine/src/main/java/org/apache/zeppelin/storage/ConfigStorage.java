@@ -27,15 +27,14 @@ import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
 
 import java.io.IOException;
-
 import java.util.List;
+
 /**
  * Interface for storing zeppelin configuration.
  *
- * 1. interpreter-setting.json
- * 2. helium.json
- * 3. notebook-authorization.json
- * 4. credentials.json
+ * 1. interpreter.json
+ * 2. notebook-authorization.json
+ * 3. credentials.json
  *
  */
 public abstract class ConfigStorage {
@@ -50,7 +49,6 @@ public abstract class ConfigStorage {
     return ReflectionUtils.createClazzInstance(configStorageClass,
         new Class[] {ZeppelinConfiguration.class}, new Object[] {zConf});
   }
-
 
   protected ConfigStorage(ZeppelinConfiguration zConf) {
     this.zConf = zConf;

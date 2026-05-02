@@ -165,6 +165,26 @@
 
 -->
 
+<!-- Amazon S3 configuration storage through Hadoop S3A -->
+<!-- Stores interpreter.json, notebook-authorization.json, and credentials.json under s3a://{bucket}/{prefix}. -->
+<!-- Configure S3A credentials, endpoint, encryption, and bucket policy through Hadoop configuration. -->
+<!-- Requires hadoop-aws and compatible AWS SDK jars on the Zeppelin server classpath. -->
+<!-- S3A does not enforce POSIX permissions; protect credentials.json with bucket policy/object ownership. -->
+<!--
+<property>
+  <name>zeppelin.config.storage.class</name>
+  <value>org.apache.zeppelin.storage.FileSystemConfigStorage</value>
+  <description>configuration persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.config.fs.dir</name>
+  <value>s3a://zeppelin/user/config</value>
+  <description>S3A path for Zeppelin configuration files</description>
+</property>
+
+-->
+
 <!-- Additionally, encryption is supported for notebook data stored in S3 -->
 <!-- Use the AWS KMS to encrypt data -->
 <!-- If used, the EC2 role assigned to the EMR cluster must have rights to use the given key -->

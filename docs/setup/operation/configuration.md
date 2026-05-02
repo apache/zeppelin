@@ -317,6 +317,18 @@ Sources descending by priority:
     <td>Optional override to control which signature algorithm should be used to sign AWS requests</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_STORAGE_CLASS</h6></td>
+    <td><h6 class="properties">zeppelin.config.storage.class</h6></td>
+    <td>org.apache.zeppelin.storage.LocalConfigStorage</td>
+    <td>Configuration persistence layer implementation for <code>interpreter.json</code>, <code>notebook-authorization.json</code>, and <code>credentials.json</code></td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_FS_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.config.fs.dir</h6></td>
+    <td></td>
+    <td>Path for <code>FileSystemConfigStorage</code>, for example <code>hdfs://...</code> or <code>s3a://bucket/prefix</code>. S3A requires <code>hadoop-aws</code> and compatible AWS SDK jars on the Zeppelin server classpath.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>
     <td><h6 class="properties">zeppelin.notebook.azure.connectionString</h6></td>
     <td></td>

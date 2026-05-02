@@ -27,7 +27,41 @@ limitations under the License.
 Zeppelin has lots of configuration which is stored in files:
 - `interpreter.json` (This file contains all the interpreter setting info)
 - `notebook-authorization.json` (This file contains all the note authorization info)
-- `credential.json` (This file contains the credential info)
+- `credentials.json` (This file contains the credential info)
+
+## Configuration Storage in S3-compatible object storage
+
+Zeppelin can persist configuration state in S3-compatible object storage by reusing
+`FileSystemConfigStorage` with Hadoop S3A. This keeps configuration storage on the
+same Hadoop-compatible storage abstraction used for HDFS and other filesystems.
+
+Set the following properties in `zeppelin-site.xml`:
+
+```xml
+<property>
+    <name>zeppelin.config.storage.class</name>
+    <value>org.apache.zeppelin.storage.FileSystemConfigStorage</value>
+    <description>configuration persistence layer implementation</description>
+</property>
+<property>
+    <name>zeppelin.config.fs.dir</name>
+    <value>s3a://bucket_name/user/config</value>
+    <description>S3A path for Zeppelin configuration files</description>
+</property>
+```
+
+Also ensure the Zeppelin server classpath contains the Hadoop S3A runtime:
+`hadoop-aws` built for the same Hadoop version as Zeppelin, plus its compatible
+AWS SDK dependencies. `HADOOP_CONF_DIR` is still required so Zeppelin can find
+the Hadoop configuration files that define S3A credentials, endpoint, encryption,
+and bucket policy settings. For example, configure properties such as
+`fs.s3a.aws.credentials.provider`, `fs.s3a.endpoint`,
+`fs.s3a.server-side-encryption-algorithm`, and
+`fs.s3a.server-side-encryption.key` in your Hadoop configuration as needed.
+
+S3A does not enforce POSIX permissions on objects. When credentials persistence is
+enabled, protect `credentials.json` with S3 bucket policy, object ownership, and
+encryption settings instead of relying on owner-only file permissions.
 
 ## Configuration Storage in hadoop compatible file system
 
