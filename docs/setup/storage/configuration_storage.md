@@ -29,42 +29,39 @@ Zeppelin has lots of configuration which is stored in files:
 - `notebook-authorization.json` (This file contains all the note authorization info)
 - `credentials.json` (This file contains the credential info)
 
-## Configuration Storage in S3
+## Configuration Storage in S3-compatible object storage
 
-Set the following properties in `zeppelin-site.xml` to persist Zeppelin configuration
-state in S3. This stores `interpreter.json`, `notebook-authorization.json`, and
-`credentials.json` under a shared S3 prefix.
+Zeppelin can persist configuration state in S3-compatible object storage by reusing
+`FileSystemConfigStorage` with Hadoop S3A. This keeps configuration storage on the
+same Hadoop-compatible storage abstraction used for HDFS and other filesystems.
+
+Set the following properties in `zeppelin-site.xml`:
 
 ```xml
 <property>
     <name>zeppelin.config.storage.class</name>
-    <value>org.apache.zeppelin.storage.S3ConfigStorage</value>
+    <value>org.apache.zeppelin.storage.FileSystemConfigStorage</value>
     <description>configuration persistence layer implementation</description>
 </property>
 <property>
-    <name>zeppelin.config.s3.dir</name>
-    <value>s3://bucket_name/user/config</value>
-    <description>S3 prefix or URI for Zeppelin configuration files</description>
+    <name>zeppelin.config.fs.dir</name>
+    <value>s3a://bucket_name/user/config</value>
+    <description>S3A path for Zeppelin configuration files</description>
 </property>
 ```
 
-`zeppelin.config.s3.dir` can be either an S3 URI such as
-`s3://bucket_name/user/config` or a key prefix such as `user/config`. When only a
-key prefix is provided, `zeppelin.notebook.s3.bucket` is used as the bucket. When
-`zeppelin.config.s3.dir` is omitted, Zeppelin stores configuration under
-`{zeppelin.notebook.s3.user}/config`.
+Also ensure the Zeppelin server classpath contains the Hadoop S3A runtime:
+`hadoop-aws` built for the same Hadoop version as Zeppelin, plus its compatible
+AWS SDK dependencies. `HADOOP_CONF_DIR` is still required so Zeppelin can find
+the Hadoop configuration files that define S3A credentials, endpoint, encryption,
+and bucket policy settings. For example, configure properties such as
+`fs.s3a.aws.credentials.provider`, `fs.s3a.endpoint`,
+`fs.s3a.server-side-encryption-algorithm`, and
+`fs.s3a.server-side-encryption.key` in your Hadoop configuration as needed.
 
-`S3ConfigStorage` uses the same S3 client settings as `S3NotebookRepo`, including
-`zeppelin.notebook.s3.endpoint`, `zeppelin.notebook.s3.pathStyleAccess`,
-`zeppelin.notebook.s3.sse`, `zeppelin.notebook.s3.kmsKeyID`,
-`zeppelin.notebook.s3.kmsKeyRegion`,
-`zeppelin.notebook.s3.encryptionMaterialsProvider`,
-and `zeppelin.notebook.s3.signerOverride`.
-
-`S3ConfigStorage` does not inherit `zeppelin.notebook.s3.cannedAcl`, because
-configuration files can contain credentials and other sensitive values. If your
-bucket ownership policy requires a canned ACL, set `zeppelin.config.s3.cannedAcl`
-explicitly and avoid public or broadly readable ACLs.
+S3A does not enforce POSIX permissions on objects. When credentials persistence is
+enabled, protect `credentials.json` with S3 bucket policy, object ownership, and
+encryption settings instead of relying on owner-only file permissions.
 
 ## Configuration Storage in hadoop compatible file system
 

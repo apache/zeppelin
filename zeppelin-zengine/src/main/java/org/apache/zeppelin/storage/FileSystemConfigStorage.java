@@ -41,6 +41,7 @@ import java.util.Set;
 public class FileSystemConfigStorage extends ConfigStorage {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigStorage.class);
+  private static final String S3A = "s3a";
 
   private FileSystemStorage fs;
   private Path interpreterSettingPath;
@@ -55,6 +56,10 @@ public class FileSystemConfigStorage extends ConfigStorage {
     Path configPath = this.fs.makeQualified(new Path(configDir));
     this.fs.tryMkDir(configPath);
     LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
+    if (zConf.credentialsPersist() && S3A.equalsIgnoreCase(configPath.toUri().getScheme())) {
+      LOGGER.warn("S3A does not enforce POSIX file permissions. Protect {} with S3 bucket policy, "
+          + "object ownership, and encryption settings.", zConf.getCredentialsPath(false));
+    }
     this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath(false)));
     this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath(false)));
     this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath(false)));

@@ -326,19 +326,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_CONFIG_FS_DIR</h6></td>
     <td><h6 class="properties">zeppelin.config.fs.dir</h6></td>
     <td></td>
-    <td>Path for <code>FileSystemConfigStorage</code></td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_CONFIG_S3_DIR</h6></td>
-    <td><h6 class="properties">zeppelin.config.s3.dir</h6></td>
-    <td></td>
-    <td>S3 prefix or <code>s3://bucket/prefix</code> URI used by <code>S3ConfigStorage</code>; defaults to <code>{zeppelin.notebook.s3.user}/config</code></td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_CONFIG_S3_CANNED_ACL</h6></td>
-    <td><h6 class="properties">zeppelin.config.s3.cannedAcl</h6></td>
-    <td></td>
-    <td>Optional canned ACL for S3-backed configuration files; keep unset unless required because configuration files can contain secrets</td>
+    <td>Path for <code>FileSystemConfigStorage</code>, for example <code>hdfs://...</code> or <code>s3a://bucket/prefix</code>. S3A requires <code>hadoop-aws</code> and compatible AWS SDK jars on the Zeppelin server classpath.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>

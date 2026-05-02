@@ -47,8 +47,7 @@
 # export ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS # Path style access for S3 bucket
 
 # export ZEPPELIN_CONFIG_STORAGE_CLASS          # Configuration persistence layer implementation
-# export ZEPPELIN_CONFIG_S3_DIR                 # S3 prefix or URI for interpreter.json, notebook-authorization.json, and credentials.json
-# export ZEPPELIN_CONFIG_S3_CANNED_ACL          # Optional canned ACL for S3-backed configuration files
+# export ZEPPELIN_CONFIG_FS_DIR                 # Path for interpreter.json, notebook-authorization.json, and credentials.json
 
 # export ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR      # GCS "directory" (prefix) under which notebooks are saved. E.g. gs://example-bucket/path/to/dir
 # export GOOGLE_APPLICATION_CREDENTIALS         # Provide a service account key file for GCS and BigQuery API calls (overrides application default credentials)

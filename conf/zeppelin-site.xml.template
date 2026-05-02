@@ -165,27 +165,22 @@
 
 -->
 
-<!-- Amazon S3 configuration storage -->
-<!-- Stores interpreter.json, notebook-authorization.json, and credentials.json in S3. -->
-<!-- Uses the S3 bucket, endpoint, encryption, ACL, signer, and path-style settings above. -->
-<!-- If zeppelin.config.s3.dir is omitted, the default S3 prefix is {zeppelin.notebook.s3.user}/config. -->
+<!-- Amazon S3 configuration storage through Hadoop S3A -->
+<!-- Stores interpreter.json, notebook-authorization.json, and credentials.json under s3a://{bucket}/{prefix}. -->
+<!-- Configure S3A credentials, endpoint, encryption, and bucket policy through Hadoop configuration. -->
+<!-- Requires hadoop-aws and compatible AWS SDK jars on the Zeppelin server classpath. -->
+<!-- S3A does not enforce POSIX permissions; protect credentials.json with bucket policy/object ownership. -->
 <!--
 <property>
   <name>zeppelin.config.storage.class</name>
-  <value>org.apache.zeppelin.storage.S3ConfigStorage</value>
+  <value>org.apache.zeppelin.storage.FileSystemConfigStorage</value>
   <description>configuration persistence layer implementation</description>
 </property>
 
 <property>
-  <name>zeppelin.config.s3.dir</name>
-  <value>user/config</value>
-  <description>S3 prefix or s3://bucket/prefix URI for Zeppelin configuration files</description>
-</property>
-
-<property>
-  <name>zeppelin.config.s3.cannedAcl</name>
-  <value></value>
-  <description>optional canned ACL for S3-backed configuration files; keep unset unless required because configuration files can contain secrets</description>
+  <name>zeppelin.config.fs.dir</name>
+  <value>s3a://zeppelin/user/config</value>
+  <description>S3A path for Zeppelin configuration files</description>
 </property>
 
 -->

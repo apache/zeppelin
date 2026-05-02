@@ -39,8 +39,7 @@ REM set ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION    REM AWS KMS key region
 REM set ZEPPELIN_NOTEBOOK_S3_SSE               REM Server-side encryption enabled for notebooks
 REM set ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS REM Path style access for S3 bucket
 REM set ZEPPELIN_CONFIG_STORAGE_CLASS          REM Configuration persistence layer implementation
-REM set ZEPPELIN_CONFIG_S3_DIR                 REM S3 prefix or URI for interpreter.json, notebook-authorization.json, and credentials.json
-REM set ZEPPELIN_CONFIG_S3_CANNED_ACL          REM Optional canned ACL for S3-backed configuration files
+REM set ZEPPELIN_CONFIG_FS_DIR                 REM Path for interpreter.json, notebook-authorization.json, and credentials.json
 REM set ZEPPELIN_IDENT_STRING                  REM A string representing this instance of zeppelin. $USER by default.
 REM set ZEPPELIN_NICENESS                      REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
