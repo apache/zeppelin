@@ -720,6 +720,14 @@ public class ZeppelinConfiguration {
     }
   }
 
+  public String getConfigS3Dir() {
+    return getString(ConfVars.ZEPPELIN_CONFIG_S3_DIR);
+  }
+
+  public String getConfigS3CannedAcl() {
+    return getString(ConfVars.ZEPPELIN_CONFIG_S3_CANNED_ACL);
+  }
+
   public List<String> getAllowedOrigins()
   {
     if (getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).isEmpty()) {
@@ -1033,6 +1041,8 @@ public class ZeppelinConfiguration {
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_CONFIG_FS_DIR("zeppelin.config.fs.dir", ""),
+    ZEPPELIN_CONFIG_S3_DIR("zeppelin.config.s3.dir", ""),
+    ZEPPELIN_CONFIG_S3_CANNED_ACL("zeppelin.config.s3.cannedAcl", null),
     ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
         "org.apache.zeppelin.storage.LocalConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),

@@ -165,6 +165,31 @@
 
 -->
 
+<!-- Amazon S3 configuration storage -->
+<!-- Stores interpreter.json, notebook-authorization.json, and credentials.json in S3. -->
+<!-- Uses the S3 bucket, endpoint, encryption, ACL, signer, and path-style settings above. -->
+<!-- If zeppelin.config.s3.dir is omitted, the default S3 prefix is {zeppelin.notebook.s3.user}/config. -->
+<!--
+<property>
+  <name>zeppelin.config.storage.class</name>
+  <value>org.apache.zeppelin.storage.S3ConfigStorage</value>
+  <description>configuration persistence layer implementation</description>
+</property>
+
+<property>
+  <name>zeppelin.config.s3.dir</name>
+  <value>user/config</value>
+  <description>S3 prefix or s3://bucket/prefix URI for Zeppelin configuration files</description>
+</property>
+
+<property>
+  <name>zeppelin.config.s3.cannedAcl</name>
+  <value></value>
+  <description>optional canned ACL for S3-backed configuration files; keep unset unless required because configuration files can contain secrets</description>
+</property>
+
+-->
+
 <!-- Additionally, encryption is supported for notebook data stored in S3 -->
 <!-- Use the AWS KMS to encrypt data -->
 <!-- If used, the EC2 role assigned to the EMR cluster must have rights to use the given key -->

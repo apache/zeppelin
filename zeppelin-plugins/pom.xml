@@ -37,6 +37,8 @@
     </properties>
 
     <modules>
+        <module>configstorage/s3</module>
+
         <module>notebookrepo/s3</module>
         <module>notebookrepo/github</module>
         <module>notebookrepo/azure</module>

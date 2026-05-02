@@ -317,6 +317,30 @@ Sources descending by priority:
     <td>Optional override to control which signature algorithm should be used to sign AWS requests</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_STORAGE_CLASS</h6></td>
+    <td><h6 class="properties">zeppelin.config.storage.class</h6></td>
+    <td>org.apache.zeppelin.storage.LocalConfigStorage</td>
+    <td>Configuration persistence layer implementation for <code>interpreter.json</code>, <code>notebook-authorization.json</code>, and <code>credentials.json</code></td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_FS_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.config.fs.dir</h6></td>
+    <td></td>
+    <td>Path for <code>FileSystemConfigStorage</code></td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_S3_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.config.s3.dir</h6></td>
+    <td></td>
+    <td>S3 prefix or <code>s3://bucket/prefix</code> URI used by <code>S3ConfigStorage</code>; defaults to <code>{zeppelin.notebook.s3.user}/config</code></td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_CONFIG_S3_CANNED_ACL</h6></td>
+    <td><h6 class="properties">zeppelin.config.s3.cannedAcl</h6></td>
+    <td></td>
+    <td>Optional canned ACL for S3-backed configuration files; keep unset unless required because configuration files can contain secrets</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</h6></td>
     <td><h6 class="properties">zeppelin.notebook.azure.connectionString</h6></td>
     <td></td>
