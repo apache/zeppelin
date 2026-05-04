@@ -62,6 +62,7 @@
     <module>zeppelin-jupyter-interpreter-shaded</module>
     <module>groovy</module>
     <module>spark</module>
+    <module>spark-connect</module>
     <module>spark-submit</module>
     <module>markdown</module>
     <module>mongodb</module>
