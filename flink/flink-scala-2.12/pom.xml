@@ -33,7 +33,7 @@
 
   <properties>
     <!--library versions-->
-    <flink.version>${flink1.17.version}</flink.version>
+    <flink.version>${flink1.19.version}</flink.version>
     <flink.scala.version>2.12.7</flink.scala.version>
     <flink.scala.binary.version>2.12</flink.scala.binary.version>
     <flink.scala.compile.version>${flink.scala.version}</flink.scala.compile.version>
@@ -55,19 +55,7 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>flink1.15-shims</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>flink1.16-shims</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>flink1.17-shims</artifactId>
+      <artifactId>flink1.19-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -1203,39 +1191,10 @@
 
   <profiles>
     <profile>
-      <id>flink-115</id>
+      <id>flink-119</id>
       <properties>
-        <flink.version>${flink1.15.version}</flink.version>
-        <flink.scala.version>2.12.7</flink.scala.version>
-        <flink.scala.binary.version>2.12</flink.scala.binary.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-runtime</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-table-planner_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.flink</groupId>
-          <artifactId>flink-python_${flink.scala.binary.version}</artifactId>
-          <version>${flink.version}</version>
-          <scope>provided</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>flink-116</id>
-      <properties>
-        <flink.version>${flink1.16.version}</flink.version>
-        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.version>${flink1.19.version}</flink.version>
+        <flink.scala.version>2.12.18</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
       </properties>
       <dependencies>
@@ -1267,10 +1226,10 @@
     </profile>
 
     <profile>
-      <id>flink-117</id>
+      <id>flink-120</id>
       <properties>
-        <flink.version>${flink1.17.version}</flink.version>
-        <flink.scala.version>2.12.7</flink.scala.version>
+        <flink.version>${flink1.20.version}</flink.version>
+        <flink.scala.version>2.12.18</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
       </properties>
       <dependencies>
