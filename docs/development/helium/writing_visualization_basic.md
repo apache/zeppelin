@@ -46,7 +46,7 @@ Click 'enable' button.
 
 #### 3. Create and load visualization bundle on the fly
 
-Once a Visualization package is enabled, [HeliumBundleFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/helium/HeliumBundleFactory.java) creates a js bundle. The js bundle is served by `helium/bundle/load` rest api endpoint.
+Once a Visualization package is enabled, [HeliumBundleFactory](https://github.com/apache/zeppelin/blob/master/zeppelin-server/src/main/java/org/apache/zeppelin/helium/HeliumBundleFactory.java) creates a js bundle. The js bundle is served by `helium/bundle/load` rest api endpoint.
 
 #### 4. Run visualization
 
