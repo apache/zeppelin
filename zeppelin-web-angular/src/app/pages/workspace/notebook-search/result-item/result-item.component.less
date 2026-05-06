@@ -10,10 +10,90 @@
  * limitations under the License.
  */
 
-::ng-deep {
-  .monaco-editor {
-    .mark {
-      background: #fdf733;
-    }
+:host {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #e8e8e8;
+  color: #666;
+}
+
+.badge.sql {
+  background: #e6f7e6;
+  color: #389e0d;
+}
+
+.badge.python, .badge.pyspark {
+  background: #fff7e6;
+  color: #d48806;
+}
+
+.badge.md {
+  background: #e6f0ff;
+  color: #1890ff;
+}
+
+.code-block {
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #24292e;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
   }
+}
+
+.output-block {
+  background: #fafbfc;
+  border-left: 3px solid #d1d5da;
+  border-radius: 0 4px 4px 0;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #586069;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+}
+
+.tables-block {
+  font-size: 12px;
+  color: #22863a;
+  padding: 4px 0;
+}
+
+mark {
+  background-color: #fff3bf;
+  padding: 0 1px;
+  border-radius: 2px;
 }
