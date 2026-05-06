@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Locale;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 public class CorsUtils {
@@ -36,15 +37,19 @@ public class CorsUtils {
 
     if (sourceHost != null && !sourceHost.isEmpty()) {
       sourceUriHost = new URI(sourceHost).getHost();
-      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase();
+      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase(Locale.ROOT);
     }
 
-    sourceUriHost = sourceUriHost.toLowerCase();
-    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();
+    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
+    // getAllowedOrigins() returns lowercased entries; normalize sourceHost the same way
+    // before the membership check so case differences in the Origin header do not produce
+    // false rejections of explicitly configured origins.
+    String normalizedOrigin =
+        sourceHost == null ? "" : sourceHost.toLowerCase(Locale.ROOT);
 
     return zConf.getAllowedOrigins().contains("*")
         || currentHost.equals(sourceUriHost)
         || "localhost".equals(sourceUriHost)
-        || zConf.getAllowedOrigins().contains(sourceHost);
+        || zConf.getAllowedOrigins().contains(normalizedOrigin);
   }
 }

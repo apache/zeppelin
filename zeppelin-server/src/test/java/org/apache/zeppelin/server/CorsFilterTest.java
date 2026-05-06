@@ -17,15 +17,21 @@
 package org.apache.zeppelin.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,17 +39,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
  * Basic CORS REST API tests.
  */
 class CorsFilterTest {
-  public static String[] headers = new String[8];
-  public static Integer count = 0;
 
   @Test
-  @SuppressWarnings("rawtypes")
   void validCorsFilterTest() throws IOException, ServletException {
     CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
@@ -51,24 +56,14 @@ class CorsFilterTest {
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
     when(mockRequest.getMethod()).thenReturn("Empty");
-    when(mockRequest.getServerName()).thenReturn("localhost");
-    count = 0;
-
-    doAnswer(new Answer() {
-        @Override
-        public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-            headers[count] = invocationOnMock.getArguments()[1].toString();
-            count++;
-            return null;
-        }
-    }).when(mockResponse).setHeader(anyString(), anyString());
+    Map<String, String> setHeaders = recordSetHeaders(mockResponse);
 
     filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
-    assertEquals("http://localhost:8080", headers[0]);
+
+    assertEquals("http://localhost:8080", setHeaders.get("Access-Control-Allow-Origin"));
   }
 
   @Test
-  @SuppressWarnings("rawtypes")
   void invalidCorsFilterTest() throws IOException, ServletException {
     CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
@@ -76,18 +71,118 @@ class CorsFilterTest {
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     when(mockRequest.getHeader("Origin")).thenReturn("http://evillocalhost:8080");
     when(mockRequest.getMethod()).thenReturn("Empty");
-    when(mockRequest.getServerName()).thenReturn("evillocalhost");
-
-    doAnswer(new Answer() {
-        @Override
-        public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-            headers[count] = invocationOnMock.getArguments()[1].toString();
-            count++;
-            return null;
-        }
-    }).when(mockResponse).setHeader(anyString(), anyString());
+    Map<String, String> setHeaders = recordSetHeaders(mockResponse);
 
     filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
-    assertEquals("", headers[0]);
+
+    assertEquals("", setHeaders.get("Access-Control-Allow-Origin"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"POST", "PUT", "DELETE", "PATCH"})
+  void crossOriginStateChangingBlocked(String method) throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://evil.example.com");
+    when(mockRequest.getMethod()).thenReturn(method);
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+    verify(mockedFilterChain, never()).doFilter(mockRequest, mockResponse);
+  }
+
+  @Test
+  void crossOriginPreflightBlocked() throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://evil.example.com");
+    when(mockRequest.getHeader("Access-Control-Request-Method")).thenReturn("POST");
+    when(mockRequest.getMethod()).thenReturn("OPTIONS");
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+    verify(mockedFilterChain, never()).doFilter(mockRequest, mockResponse);
+  }
+
+  @Test
+  void allowedOriginPostPasses() throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://localhost");
+    when(mockRequest.getMethod()).thenReturn("POST");
+    Map<String, String> setHeaders = recordSetHeaders(mockResponse);
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse, never()).sendError(anyInt(), anyString());
+    verify(mockedFilterChain, times(1)).doFilter(mockRequest, mockResponse);
+    assertEquals("http://localhost", setHeaders.get("Access-Control-Allow-Origin"));
+    assertEquals("true", setHeaders.get("Access-Control-Allow-Credentials"));
+  }
+
+  @Test
+  void disallowedOriginGetPasses() throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://evil.example.com");
+    when(mockRequest.getMethod()).thenReturn("GET");
+    Map<String, String> setHeaders = recordSetHeaders(mockResponse);
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse, never()).sendError(anyInt(), anyString());
+    verify(mockedFilterChain, times(1)).doFilter(mockRequest, mockResponse);
+    assertEquals("", setHeaders.get("Access-Control-Allow-Origin"));
+    assertNull(setHeaders.get("Access-Control-Allow-Credentials"));
+  }
+
+  @Test
+  void noOriginPostPasses() throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn(null);
+    when(mockRequest.getMethod()).thenReturn("POST");
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse, never()).sendError(anyInt(), anyString());
+    verify(mockedFilterChain, times(1)).doFilter(mockRequest, mockResponse);
+  }
+
+  @Test
+  void simpleOptionsWithoutPreflightHeaderPasses() throws IOException, ServletException {
+    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://evil.example.com");
+    when(mockRequest.getHeader("Access-Control-Request-Method")).thenReturn(null);
+    when(mockRequest.getMethod()).thenReturn("OPTIONS");
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+
+    verify(mockResponse, never()).sendError(anyInt(), anyString());
+    verify(mockedFilterChain, times(1)).doFilter(mockRequest, mockResponse);
+  }
+
+  private static Map<String, String> recordSetHeaders(HttpServletResponse response) {
+    Map<String, String> recorded = new HashMap<>();
+    doAnswer(invocation -> {
+      recorded.put(invocation.getArgument(0), invocation.getArgument(1));
+      return null;
+    }).when(response).setHeader(anyString(), anyString());
+    return recorded;
   }
 }

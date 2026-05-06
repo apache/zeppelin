@@ -53,7 +53,7 @@ class ZeppelinConfigurationTest {
 
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
     List<String> origins = zConf.getAllowedOrigins();
-    assertEquals(1, origins.size());
+    assertTrue(origins.isEmpty());
   }
 
   @Test
