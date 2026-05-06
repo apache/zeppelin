@@ -85,7 +85,13 @@ public class EmbeddingSearch extends SearchService {
   private static final String MODEL_NAME = "all-MiniLM-L6-v2";
   private static final int EMBEDDING_DIM = 384;
   private static final int MAX_SEQ_LENGTH = 256;
+  /** Maximum number of candidates returned from {@link #query(String)}. */
   private static final int MAX_RESULTS = 20;
+  /**
+   * Cosine similarity floor for a candidate to be considered a match.
+   * Tuned empirically against all-MiniLM-L6-v2: values below this are effectively noise
+   * for short-query / long-paragraph comparisons. See embedding-search.md for details.
+   */
   private static final float MIN_SIMILARITY = 0.25f;
   private static final int MAX_TEXT_LENGTH = 1500;
 
@@ -94,9 +100,28 @@ public class EmbeddingSearch extends SearchService {
   /** Regex to extract qualified table names from SQL (e.g. schema.table). */
   private static final Pattern TABLE_RE =
       Pattern.compile("(?:FROM|JOIN)\\s+([a-zA-Z_]\\w*\\.[a-zA-Z_]\\w*)", Pattern.CASE_INSENSITIVE);
+  /**
+   * Additive score boost applied to a candidate for each relevant table it references.
+   * Chosen small enough that it only breaks ties among already-similar candidates
+   * and cannot promote semantically unrelated results past {@link #MIN_SIMILARITY}.
+   */
   private static final float TABLE_BOOST = 0.05f;
+  /**
+   * Fraction of the top table's weight used as the cutoff for "relevant" tables in Phase 1
+   * of {@link #query(String)}. Tables below this share are dropped from the boost set
+   * to avoid amplifying incidental mentions.
+   */
+  private static final float TABLE_WEIGHT_THRESHOLD_RATIO = 0.2f;
   private static final long FLUSH_INTERVAL_SECONDS = 5;
+  /**
+   * Hard upper bound on deserialized entry count to protect against a corrupted/tampered
+   * index file causing unbounded allocation on startup. 10M paragraphs is well beyond any
+   * plausible deployment (~18 GB of vectors alone at 384 floats/entry).
+   */
   private static final int MAX_INDEX_ENTRIES = 10_000_000;
+  private static final String INDEX_FILE_NAME = "embedding_index.bin";
+  /** Binary format version written by {@link #saveIndex()} and required by {@link #loadIndex()}. */
+  private static final int INDEX_VERSION = 3;
   private static final String EXPECTED_MODEL_SHA256 =
       "6fd5d72fe4589f189f8ebc006442dbb529bb7ce38f8082112682524616046452";
 
@@ -153,9 +178,8 @@ public class EmbeddingSearch extends SearchService {
       throw new IOException("Failed to initialize embedding model", e);
     }
 
-    loadIndex();
-    if (zConf.isIndexRebuild()
-        || !Files.exists(indexPath.resolve("embedding_index.bin"))) {
+    boolean indexLoaded = loadIndex();
+    if (shouldBootstrapIndex(zConf, indexLoaded)) {
       notebook.addInitConsumer(this::addNoteIndex);
     }
     flushScheduler.scheduleWithFixedDelay(this::flushIfDirty,
@@ -178,9 +202,8 @@ public class EmbeddingSearch extends SearchService {
         throw new IOException("Failed to initialize embedding model", e);
       }
     }
-    loadIndex();
-    if (zConf.isIndexRebuild()
-        || !Files.exists(indexPath.resolve("embedding_index.bin"))) {
+    boolean indexLoaded = loadIndex();
+    if (shouldBootstrapIndex(zConf, indexLoaded)) {
       notebook.addInitConsumer(this::addNoteIndex);
     }
     flushScheduler.scheduleWithFixedDelay(this::flushIfDirty,
@@ -477,9 +500,9 @@ public class EmbeddingSearch extends SearchService {
     }
     scored.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));
 
-    // Collect tables from top-20 results, weighted by rank
+    // Collect tables from the top candidates, weighted by rank
     Map<String, Float> tableWeights = new HashMap<>();
-    for (int i = 0; i < Math.min(scored.size(), 20); i++) {
+    for (int i = 0; i < Math.min(scored.size(), MAX_RESULTS); i++) {
       IndexEntry entry = index.get(scored.get(i).getKey());
       if (entry != null && StringUtils.isNotBlank(entry.tables)) {
         float weight = 1.0f / (i + 1);
@@ -488,11 +511,11 @@ public class EmbeddingSearch extends SearchService {
         }
       }
     }
-    // Keep tables with weight > 20% of top table's weight
+    // Keep tables with weight >= TABLE_WEIGHT_THRESHOLD_RATIO of top table's weight
     Set<String> relevantTables = new HashSet<>();
     if (!tableWeights.isEmpty()) {
       float maxWeight = Collections.max(tableWeights.values());
-      float threshold = maxWeight * 0.2f;
+      float threshold = maxWeight * TABLE_WEIGHT_THRESHOLD_RATIO;
       tableWeights.forEach((t, w) -> {
         if (w >= threshold) {
           relevantTables.add(t);
@@ -584,14 +607,49 @@ public class EmbeddingSearch extends SearchService {
 
   @Override
   public void updateNoteIndex(String noteId) {
+    // Mirror LuceneSearch.updateNoteIndex: this event path is invoked for note-metadata
+    // changes (rename, cron config, etc.) — paragraph edits come through the
+    // add/updateParagraphIndex path. Re-embedding every paragraph here was pure waste for
+    // cron changes and heavy even for renames. Just refresh the noteName field on existing
+    // entries; the embedding slightly drifts (note name contributes to buildParagraphText)
+    // but self-heals on the next paragraph touch.
+    if (noteId == null) {
+      return;
+    }
     try {
       notebook.processNote(noteId, note -> {
-        if (note != null) {
-          indexNote(note);
+        if (note == null) {
+          return null;
+        }
+        String newName = note.getName();
+        if (newName == null) {
+          return null;
+        }
+        indexLock.writeLock().lock();
+        try {
+          boolean mutated = false;
+          String notePrefix = noteId + "/";
+          for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
+            String docId = e.getKey();
+            if (!docId.equals(noteId) && !docId.startsWith(notePrefix)) {
+              continue;
+            }
+            IndexEntry old = e.getValue();
+            if (newName.equals(old.noteName)) {
+              continue;
+            }
+            e.setValue(new IndexEntry(old.embedding, newName, old.text, old.title,
+                old.tables, old.output));
+            mutated = true;
+          }
+          if (mutated) {
+            markDirty();
+          }
+        } finally {
+          indexLock.writeLock().unlock();
         }
         return null;
       });
-      markDirty();
     } catch (IOException e) {
       LOGGER.error("Failed to update note index {}", noteId, e);
     }
@@ -664,12 +722,41 @@ public class EmbeddingSearch extends SearchService {
     indexDirty.set(true);
   }
 
+  /**
+   * Decide whether to register the initial-indexing consumer.
+   *
+   * @param zConf   Zeppelin configuration (for {@code isIndexRebuild})
+   * @param loaded  whether {@link #loadIndex()} completed successfully
+   * @return {@code true} if the index needs to be (re)built from notebooks. Triggers when
+   *         config requests rebuild, the index file is missing, or it was present but
+   *         failed to load (corrupt/partial). A failed load also deletes the bad file so
+   *         the rebuilt index is written fresh.
+   */
+  private boolean shouldBootstrapIndex(ZeppelinConfiguration zConf, boolean loaded) {
+    Path indexFile = indexPath.resolve(INDEX_FILE_NAME);
+    boolean fileMissing = !Files.exists(indexFile);
+    boolean corrupt = !loaded;
+    if (corrupt && !fileMissing) {
+      try {
+        Files.deleteIfExists(indexFile);
+        LOGGER.warn("Deleted corrupt embedding index file {}; will rebuild", indexFile);
+      } catch (IOException e) {
+        LOGGER.warn("Failed to delete corrupt embedding index file {}; will rebuild anyway",
+            indexFile, e);
+      }
+    }
+    return zConf.isIndexRebuild() || fileMissing || corrupt;
+  }
+
   private void flushIfDirty() {
     if (indexDirty.compareAndSet(true, false)) {
       try {
         saveIndex();
       } catch (IOException e) {
-        LOGGER.error("Failed to flush embedding index to disk", e);
+        // Re-set dirty so the next scheduled tick retries the flush
+        // instead of silently dropping the failed write until the next mutation.
+        indexDirty.set(true);
+        LOGGER.error("Failed to flush embedding index to disk; will retry on next tick", e);
       }
     }
   }
@@ -715,12 +802,12 @@ public class EmbeddingSearch extends SearchService {
 
   /**
    * Save index to a binary file.
-   * Format: [int:version=3][int:count] then for each entry:
+   * Format: [int:version=INDEX_VERSION][int:count] then for each entry:
    *   [utf:docId] [utf:noteName] [utf:text] [utf:title] [utf:tables] [utf:output] [float[384]:embedding]
    */
   private void saveIndex() throws IOException {
-    Path file = indexPath.resolve("embedding_index.bin");
-    Path tmpFile = indexPath.resolve("embedding_index.bin.tmp");
+    Path file = indexPath.resolve(INDEX_FILE_NAME);
+    Path tmpFile = indexPath.resolve(INDEX_FILE_NAME + ".tmp");
 
     // Serialize to buffer under lock
     byte[] data;
@@ -728,7 +815,7 @@ public class EmbeddingSearch extends SearchService {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       try (DataOutputStream out = new DataOutputStream(baos)) {
-        out.writeInt(3); // version 3: includes output field
+        out.writeInt(INDEX_VERSION);
         out.writeInt(index.size());
         for (Map.Entry<String, IndexEntry> e : index.entrySet()) {
           out.writeUTF(e.getKey());
@@ -771,35 +858,39 @@ public class EmbeddingSearch extends SearchService {
   }
 
   /** Load index from disk if it exists. Supports v1/v2/v3 formats. */
-  private void loadIndex() {
+  /**
+   * Load the index from disk.
+   *
+   * @return {@code true} if the index loaded successfully (or file was absent);
+   *         {@code false} if the file was present but failed to load or was corrupt,
+   *         signalling the caller to trigger a bootstrap rebuild.
+   */
+  private boolean loadIndex() {
     Path file = indexPath.resolve("embedding_index.bin");
     if (!Files.exists(file)) {
-      return;
+      return true;
     }
     try (DataInputStream in = new DataInputStream(Files.newInputStream(file))) {
-      int first = in.readInt();
-      int version;
-      int count;
-      if (first >= 2 && first <= 3) {
-        version = first;
-        count = in.readInt();
-      } else {
-        version = 1;
-        count = first;
+      int version = in.readInt();
+      if (version != INDEX_VERSION) {
+        LOGGER.warn("Index file version {} does not match expected {}; treating as corrupt "
+            + "and rebuilding", version, INDEX_VERSION);
+        return false;
       }
+      int count = in.readInt();
       LOGGER.info("Loading {} embedding index entries (v{}) from {}", count, version, file);
       if (count < 0 || count > MAX_INDEX_ENTRIES) {
-        LOGGER.error("Index entry count {} exceeds sanity bound ({}), skipping load",
+        LOGGER.error("Index entry count {} exceeds sanity bound ({}), treating as corrupt",
             count, MAX_INDEX_ENTRIES);
-        return;
+        return false;
       }
       for (int i = 0; i < count; i++) {
         String docId = in.readUTF();
         String noteName = in.readUTF();
         String text = in.readUTF();
         String title = in.readUTF();
-        String tables = version >= 2 ? in.readUTF() : "";
-        String output = version >= 3 ? in.readUTF() : "";
+        String tables = in.readUTF();
+        String output = in.readUTF();
         float[] emb = new float[EMBEDDING_DIM];
         for (int j = 0; j < EMBEDDING_DIM; j++) {
           emb[j] = in.readFloat();
@@ -807,8 +898,12 @@ public class EmbeddingSearch extends SearchService {
         index.put(docId, new IndexEntry(emb, noteName, text, title, tables, output));
       }
       LOGGER.info("Loaded {} entries into embedding index", index.size());
+      return true;
     } catch (IOException e) {
-      LOGGER.warn("Failed to load embedding index, will rebuild on next indexing", e);
+      LOGGER.warn("Failed to load embedding index from {}; will rebuild on init", file, e);
+      // Clear any partially-loaded state so we start from a clean slate on rebuild.
+      index.clear();
+      return false;
     }
   }
 }
