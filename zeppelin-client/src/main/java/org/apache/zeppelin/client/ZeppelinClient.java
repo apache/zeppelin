@@ -592,6 +592,7 @@ public class ZeppelinClient {
     bodyObject.put("text", text);
     HttpResponse<JsonNode> response = Unirest.post("/notebook/{noteId}/paragraph")
             .routeParam("noteId", noteId)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);
@@ -617,6 +618,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest.put("/notebook/{noteId}/paragraph/{paragraphId}")
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);

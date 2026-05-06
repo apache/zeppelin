@@ -87,6 +87,9 @@ sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 cookie = org.apache.shiro.web.servlet.SimpleCookie
 cookie.name = JSESSIONID
 cookie.httpOnly = true
+### Restrict the session cookie to same-site requests by default. Set to NONE only when
+### Zeppelin is intentionally embedded into a different origin (and 'cookie.secure = true').
+cookie.sameSite = LAX
 ### Uncomment the below line only when Zeppelin is running over HTTPS
 #cookie.secure = true
 sessionManager.sessionIdCookie = $cookie

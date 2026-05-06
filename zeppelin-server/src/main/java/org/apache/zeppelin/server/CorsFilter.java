@@ -18,6 +18,7 @@ package org.apache.zeppelin.server;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Locale;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -28,6 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.utils.CorsUtils;
+import org.apache.zeppelin.utils.HttpMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,33 +48,52 @@ public class CorsFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
-    String sourceHost = ((HttpServletRequest) request).getHeader("Origin");
-    String origin = "";
+    HttpServletRequest httpRequest = (HttpServletRequest) request;
+    HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-    try {
-      if (CorsUtils.isValidOrigin(sourceHost, zConf)) {
-        origin = sourceHost;
+    String sourceHost = httpRequest.getHeader(CorsUtils.HEADER_ORIGIN);
+    String method = httpRequest.getMethod();
+    String allowedOrigin = "";
+
+    if (sourceHost != null && !sourceHost.isEmpty()) {
+      try {
+        if (CorsUtils.isValidOrigin(sourceHost, zConf)) {
+          allowedOrigin = sourceHost;
+        }
+      } catch (URISyntaxException e) {
+        LOGGER.warn("Rejecting request with malformed Origin header: {}", sourceHost);
       }
-    } catch (URISyntaxException e) {
-      LOGGER.error("Exception in WebDriverManager while getWebDriver ", e);
+
+      if (allowedOrigin.isEmpty() && (isCorsPreflight(httpRequest) || isStateChanging(method))) {
+        LOGGER.warn("Blocking cross-origin {} request from disallowed Origin: {}",
+            method, sourceHost);
+        httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Origin not allowed");
+        return;
+      }
     }
 
-    if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
-      HttpServletResponse resp = ((HttpServletResponse) response);
-      addCorsHeaders(resp, origin);
+    addCorsHeaders(httpResponse, allowedOrigin);
+    if (isCorsPreflight(httpRequest)) {
       return;
-    }
-
-    if (response instanceof HttpServletResponse) {
-      HttpServletResponse alteredResponse = ((HttpServletResponse) response);
-      addCorsHeaders(alteredResponse, origin);
     }
     filterChain.doFilter(request, response);
   }
 
+  private static boolean isCorsPreflight(HttpServletRequest request) {
+    return "OPTIONS".equalsIgnoreCase(request.getMethod())
+        && request.getHeader("Access-Control-Request-Method") != null;
+  }
+
+  private static boolean isStateChanging(String method) {
+    return method != null
+        && HttpMethods.STATE_CHANGING.contains(method.toUpperCase(Locale.ROOT));
+  }
+
   private void addCorsHeaders(HttpServletResponse response, String origin) {
     response.setHeader("Access-Control-Allow-Origin", origin);
-    response.setHeader("Access-Control-Allow-Credentials", "true");
+    if (!origin.isEmpty()) {
+      response.setHeader("Access-Control-Allow-Credentials", "true");
+    }
     response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
     response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
 
