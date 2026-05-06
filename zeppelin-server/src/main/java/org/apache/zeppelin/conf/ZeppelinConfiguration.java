@@ -1045,7 +1045,9 @@ public class ZeppelinConfiguration {
             "https://github.com/yarnpkg/yarn/releases/download/"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
-    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
+    // Default is empty (no cross-origin requests permitted). Operators that need cross-origin
+    // access must set this explicitly to the trusted origin(s) or to "*".
+    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", ""),
     ZEPPELIN_USERNAME_FORCE_LOWERCASE("zeppelin.username.force.lowercase", false),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
