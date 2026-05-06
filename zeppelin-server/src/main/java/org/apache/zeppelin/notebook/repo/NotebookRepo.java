@@ -146,7 +146,7 @@ public interface NotebookRepo extends Closeable {
     if (!notePath.startsWith("/")) {
       throw new IOException("Invalid notePath: " + notePath);
     }
-    rejectTraversalSegments(notePath);
+    NotebookPathValidator.rejectTraversalSegments(notePath);
     return (notePath + "_" + noteId + ".zpln").substring(1);
   }
 
@@ -156,54 +156,6 @@ public interface NotebookRepo extends Closeable {
 
   default String buildNoteTempFileName(Note note) {
     return (note.getPath() + "_" + note.getId() + ".tmp").substring(1);
-  }
-
-  /**
-   * Rejects path traversal segments ({@code ..}, {@code .}) inside a note or
-   * folder path. Note paths are user-controlled (note rename / folder rename
-   * accepts the new path from the client) and are then composed with the
-   * configured notebook root by individual {@link NotebookRepo}
-   * implementations to form a filesystem path or object-store key. Without
-   * this check a {@code "/../etc/zeppelin/foo"} input would compose to a path
-   * outside the notebook root.
-   *
-   * <p>The path is URL-decoded repeatedly first so that variants such as
-   * {@code %2e%2e}, {@code %252e%252e} etc. cannot bypass the check.
-   *
-   * @param notePath user-controlled note or folder path
-   * @throws IOException if the path contains a traversal segment, has too
-   *     many encoding layers, or is {@code null}
-   */
-  default void rejectTraversalSegments(String notePath) throws IOException {
-    if (notePath == null) {
-      throw new IOException("Path must not be null");
-    }
-    String decoded = decodePathRepeatedly(notePath);
-    String stripped = decoded.startsWith("/") ? decoded.substring(1) : decoded;
-    for (String segment : stripped.split("/+")) {
-      if (segment.equals("..") || segment.equals(".")) {
-        throw new IOException("Path traversal segments are not allowed: " + notePath);
-      }
-    }
-  }
-
-  /**
-   * Repeatedly URL-decodes the given input until it stabilises, with a small
-   * cap on the number of layers to bound attacker-controlled work. The
-   * service layer ({@code NotebookService.normalizeNotePath}) performs the
-   * same step on incoming paths; doing it here as well makes the backend
-   * defence robust against callers that bypass that helper.
-   */
-  default String decodePathRepeatedly(String encoded) throws IOException {
-    String previous = encoded;
-    for (int attempt = 0; attempt < 5; attempt++) {
-      String decoded = java.net.URLDecoder.decode(previous, java.nio.charset.StandardCharsets.UTF_8);
-      if (decoded.equals(previous)) {
-        return decoded;
-      }
-      previous = decoded;
-    }
-    throw new IOException("Path has too many URL-encoding layers: " + encoded);
   }
 
   default String getNoteId(String noteFileName) throws IOException {
