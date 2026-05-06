@@ -103,6 +103,8 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void move(String folderPath, String newFolderPath, AuthenticationInfo subject)
       throws IOException {
+    rejectTraversalSegments(folderPath);
+    rejectTraversalSegments(newFolderPath);
     // [ZEPPELIN-4195] newFolderPath parent path maybe not exist
     this.fs.tryMkDir(new Path(notebookDir, folderPath.substring(1)).getParent());
     this.fs.move(new Path(notebookDir, folderPath.substring(1)),
@@ -119,6 +121,7 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    rejectTraversalSegments(folderPath);
     if (!this.fs.delete(new Path(notebookDir, folderPath.substring(1)))) {
       LOGGER.warn("Fail to remove folder: {}", folderPath);
     }

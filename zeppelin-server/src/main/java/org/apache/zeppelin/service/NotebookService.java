@@ -315,6 +315,7 @@ public class NotebookService {
           }
         }
         try {
+          newNotePathReal = normalizeNotePath(newNotePathReal);
           notebook.moveNote(noteId, newNotePathReal, context.getAutheInfo());
           callback.onSuccess(readNote, context);
         } catch (NotePathAlreadyExistsException e) {
