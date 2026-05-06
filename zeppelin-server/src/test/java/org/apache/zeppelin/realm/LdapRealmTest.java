@@ -47,10 +47,11 @@ class LdapRealmTest {
   void testGetUserDn() {
     LdapRealm realm = new LdapRealm();
 
-    // without a user search filter — trailing space is RFC 4514-escaped (\\20)
-    // because getUserDn expands via expandDnTemplate which calls escapeAttributeValue.
+    // without a user search filter — when userDnTemplate is the bare
+    // placeholder, the principal is treated as a full DN supplied verbatim
+    // (no escape) so trailing-space inputs are preserved unchanged.
     realm.setUserSearchFilter(null);
-    assertEquals("foo\\20", realm.getUserDn("foo "));
+    assertEquals("foo ", realm.getUserDn("foo "));
 
     // with a user search filter
     realm.setUserSearchFilter("memberUid={0}");
@@ -127,10 +128,13 @@ class LdapRealmTest {
     assertEquals("foo\\2B", realm.escapeAttributeValue("foo+"));
     assertEquals("foo\\5C", realm.escapeAttributeValue("foo\\"));
     assertEquals("foo\\00", realm.escapeAttributeValue("foo\u0000"));
+    // setUserSearchFilter / setGroupSearchFilter store the operator-supplied
+    // template verbatim; user-controlled values are escaped at substitution
+    // time by expandFilterTemplate, not at config time.
     realm.setUserSearchFilter("uid=<{0}>");
-    assertEquals("uid=\\3C{0}\\3E", realm.getUserSearchFilter());
+    assertEquals("uid=<{0}>", realm.getUserSearchFilter());
     realm.setUserSearchFilter("gid=\\{0}\\");
-    assertEquals("gid=\\5C{0}\\5C", realm.getUserSearchFilter());
+    assertEquals("gid=\\{0}\\", realm.getUserSearchFilter());
   }
 
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {

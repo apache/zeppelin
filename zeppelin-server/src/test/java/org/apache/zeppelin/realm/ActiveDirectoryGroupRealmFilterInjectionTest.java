@@ -17,7 +17,6 @@
 package org.apache.zeppelin.realm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -79,30 +78,23 @@ class ActiveDirectoryGroupRealmFilterInjectionTest {
       "admin)(cn=a*",
       ")(mail=*@corp.com"
   })
-  void doGetAuthorizationInfo_path_escapes_user_payload(String payload)
-      throws Exception {
-    // Drive getRoleNamesForUser indirectly via searchForUserName parameters
-    // since getRoleNamesForUser is package-private; this exercises the same
-    // String.format filter site at L304 with userPrincipalName.
+  void getRoleNamesForUser_escapes_user_payload(String payload) throws Exception {
+    // Exercise the second String.format filter site directly. The method is
+    // private, so use reflection to invoke it.
     LdapContext ctx = mock(LdapContext.class);
     NamingEnumeration<SearchResult> empty = mock(NamingEnumeration.class);
     when(empty.hasMoreElements()).thenReturn(false);
     when(ctx.search(anyString(), anyString(), any(), any(SearchControls.class)))
         .thenReturn(empty);
 
-    ActiveDirectoryGroupRealm realm = new ActiveDirectoryGroupRealm() {
-      // Expose the package-private method through a test-only hook.
-      java.util.Set<String> testGetRoleNamesForUser(String username, LdapContext c)
-          throws javax.naming.NamingException {
-        // Mirror the call chain in queryForAuthorizationInfo
-        return new java.util.LinkedHashSet<>();
-      }
-    };
+    ActiveDirectoryGroupRealm realm = new ActiveDirectoryGroupRealm();
     realm.setSearchBase("dc=example,dc=com");
 
-    // Use searchForUserName as proxy — the same escape utility is applied at
-    // both filter sites and the assertion holds for either one.
-    realm.searchForUserName(payload, ctx, 100);
+    java.lang.reflect.Method method =
+        ActiveDirectoryGroupRealm.class.getDeclaredMethod(
+            "getRoleNamesForUser", String.class, LdapContext.class);
+    method.setAccessible(true);
+    method.invoke(realm, payload, ctx);
 
     ArgumentCaptor<String> filterCap = ArgumentCaptor.forClass(String.class);
     verify(ctx).search(anyString(), filterCap.capture(), any(),

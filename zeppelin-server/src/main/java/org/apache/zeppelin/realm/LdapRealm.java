@@ -363,7 +363,10 @@ public class LdapRealm extends DefaultLdapRealm {
           searchResultEnum = ldapCtx.search(
               getGroupSearchBase(),
               String.format(
-                  MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
+                  MATCHING_RULE_IN_CHAIN_FORMAT,
+                  LdapFilterEncoder.escapeFilterValue(groupObjectClass),
+                  LdapFilterEncoder.escapeFilterValue(memberAttribute),
+                  LdapFilterEncoder.escapeFilterValue(userDn)),
               searchControls);
           while (searchResultEnum != null && searchResultEnum.hasMore()) {
             // searchResults contains all the groups in search scope
@@ -774,7 +777,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   public void setUserSearchFilter(final String filter) {
-    this.userSearchFilter = (filter == null ? null : escapeAttributeValue(filter.trim()));
+    this.userSearchFilter = (filter == null ? null : filter.trim());
   }
 
   public String getGroupSearchFilter() {
@@ -782,7 +785,7 @@ public class LdapRealm extends DefaultLdapRealm {
   }
 
   public void setGroupSearchFilter(final String filter) {
-    this.groupSearchFilter = (filter == null ? null : escapeAttributeValue(filter.trim()));
+    this.groupSearchFilter = (filter == null ? null : filter.trim());
   }
 
   public boolean getUserLowerCase() {
@@ -887,7 +890,13 @@ public class LdapRealm extends DefaultLdapRealm {
     // If not searching use the userDnTemplate and return.
     if ((userSearchBase == null || userSearchBase.isEmpty()) || (userSearchAttributeName == null
         && userSearchFilter == null && !"object".equalsIgnoreCase(userSearchScope))) {
-      userDn = expandDnTemplate(userDnTemplate, matchedPrincipal);
+      // Bare-placeholder template: principal is already a full DN; escaping
+      // its commas would collapse the RDNs and break binds.
+      if (MEMBER_SUBSTITUTION_TOKEN.equals(userDnTemplate)) {
+        userDn = matchedPrincipal;
+      } else {
+        userDn = expandDnTemplate(userDnTemplate, matchedPrincipal);
+      }
       LOGGER.debug("LDAP UserDN and Principal: {},{}", userDn, principal);
       return userDn;
     }
@@ -1045,8 +1054,8 @@ public class LdapRealm extends DefaultLdapRealm {
    * (e.g. {@code userDnTemplate}, {@code userSearchBase}). The {@code input}
    * value is RFC 4514 escaped via the existing {@link #escapeAttributeValue}
    * before substitution so that user-controlled DN metacharacters such as
-   * {@code ,}, {@code =}, {@code +} or leading {@code #} cannot break out of
-   * their RDN or inject additional RDNs.
+   * {@code ,}, {@code +} or leading {@code #} cannot break out of their RDN
+   * or inject additional RDNs.
    */
   protected final String expandDnTemplate(final String template, final String input) {
     String escaped = escapeAttributeValue(input);
