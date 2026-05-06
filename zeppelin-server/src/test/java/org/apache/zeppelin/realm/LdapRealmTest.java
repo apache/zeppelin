@@ -47,9 +47,10 @@ class LdapRealmTest {
   void testGetUserDn() {
     LdapRealm realm = new LdapRealm();
 
-    // without a user search filter
+    // without a user search filter — trailing space is RFC 4514-escaped (\\20)
+    // because getUserDn expands via expandDnTemplate which calls escapeAttributeValue.
     realm.setUserSearchFilter(null);
-    assertEquals("foo ", realm.getUserDn("foo "));
+    assertEquals("foo\\20", realm.getUserDn("foo "));
 
     // with a user search filter
     realm.setUserSearchFilter("memberUid={0}");

@@ -382,11 +382,12 @@ public class LdapRealm extends DefaultLdapRealm {
           }
         } else {
           // Default group search filter
-          String searchFilter = String.format("(objectclass=%1$s)", groupObjectClass);
+          String searchFilter = String.format("(objectclass=%1$s)",
+              LdapFilterEncoder.escapeFilterValue(groupObjectClass));
 
           // If group search filter is defined in Shiro config, then use it
           if (groupSearchFilter != null) {
-            searchFilter = expandTemplate(groupSearchFilter, userName);
+            searchFilter = expandFilterTemplate(groupSearchFilter, userName);
             //searchFilter = String.format("%1$s", groupSearchFilter);
           }
           LOGGER.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + "{}|{}|{}",
@@ -886,24 +887,26 @@ public class LdapRealm extends DefaultLdapRealm {
     // If not searching use the userDnTemplate and return.
     if ((userSearchBase == null || userSearchBase.isEmpty()) || (userSearchAttributeName == null
         && userSearchFilter == null && !"object".equalsIgnoreCase(userSearchScope))) {
-      userDn = expandTemplate(userDnTemplate, matchedPrincipal);
+      userDn = expandDnTemplate(userDnTemplate, matchedPrincipal);
       LOGGER.debug("LDAP UserDN and Principal: {},{}", userDn, principal);
       return userDn;
     }
 
     // Create the searchBase and searchFilter from config.
-    String searchBase = expandTemplate(getUserSearchBase(), matchedPrincipal);
+    String searchBase = expandDnTemplate(getUserSearchBase(), matchedPrincipal);
     String searchFilter;
     if (userSearchFilter == null) {
       if (userSearchAttributeName == null) {
-        searchFilter = String.format("(objectclass=%1$s)", getUserObjectClass());
+        searchFilter = String.format("(objectclass=%1$s)",
+            LdapFilterEncoder.escapeFilterValue(getUserObjectClass()));
       } else {
-        searchFilter = String.format("(&(objectclass=%1$s)(%2$s=%3$s))", getUserObjectClass(),
-            userSearchAttributeName, expandTemplate(getUserSearchAttributeTemplate(),
-                matchedPrincipal));
+        searchFilter = String.format("(&(objectclass=%1$s)(%2$s=%3$s))",
+            LdapFilterEncoder.escapeFilterValue(getUserObjectClass()),
+            LdapFilterEncoder.escapeFilterValue(userSearchAttributeName),
+            expandFilterTemplate(getUserSearchAttributeTemplate(), matchedPrincipal));
       }
     } else {
-      searchFilter = expandTemplate(userSearchFilter, matchedPrincipal);
+      searchFilter = expandFilterTemplate(userSearchFilter, matchedPrincipal);
     }
     SearchControls searchControls = getUserSearchControls();
 
@@ -1025,5 +1028,28 @@ public class LdapRealm extends DefaultLdapRealm {
 
   protected static final String expandTemplate(final String template, final String input) {
     return template.replace(MEMBER_SUBSTITUTION_TOKEN, input);
+  }
+
+  /**
+   * Expands a template that will be embedded in an LDAP search filter.
+   * The {@code input} value is RFC 4515 escaped before substitution so that
+   * user-controlled metacharacters cannot inject filter clauses.
+   */
+  protected static final String expandFilterTemplate(final String template, final String input) {
+    String escaped = LdapFilterEncoder.escapeFilterValue(input);
+    return template.replace(MEMBER_SUBSTITUTION_TOKEN, escaped == null ? "" : escaped);
+  }
+
+  /**
+   * Expands a template that produces a Distinguished Name or DN component
+   * (e.g. {@code userDnTemplate}, {@code userSearchBase}). The {@code input}
+   * value is RFC 4514 escaped via the existing {@link #escapeAttributeValue}
+   * before substitution so that user-controlled DN metacharacters such as
+   * {@code ,}, {@code =}, {@code +} or leading {@code #} cannot break out of
+   * their RDN or inject additional RDNs.
+   */
+  protected final String expandDnTemplate(final String template, final String input) {
+    String escaped = escapeAttributeValue(input);
+    return template.replace(MEMBER_SUBSTITUTION_TOKEN, escaped == null ? "" : escaped);
   }
 }
