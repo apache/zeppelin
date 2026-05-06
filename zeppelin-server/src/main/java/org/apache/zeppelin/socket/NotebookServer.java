@@ -279,7 +279,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
       if (receivedMessage.op != OP.PING) {
         LOGGER.debug("RECEIVE: " + receivedMessage.op +
             ", RECEIVE PRINCIPAL: " + receivedMessage.principal +
-            ", RECEIVE TICKET: " + receivedMessage.ticket +
             ", RECEIVE ROLES: " + receivedMessage.roles +
             ", RECEIVE DATA: " + receivedMessage.data);
       }
@@ -289,12 +288,13 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
       TicketContainer.Entry ticketEntry = TicketContainer.instance.getTicketEntry(receivedMessage.principal);
       if (ticketEntry == null || StringUtils.isEmpty(ticketEntry.getTicket())) {
-        LOGGER.debug("{} message: invalid ticket {}", receivedMessage.op, receivedMessage.ticket);
+        LOGGER.debug("{} message: no ticket on file for principal {}",
+            receivedMessage.op, receivedMessage.principal);
         return;
       } else if (!ticketEntry.getTicket().equals(receivedMessage.ticket)) {
         /* not to pollute logs, log instead of exception */
-        LOGGER.debug("{} message: invalid ticket {} != {}", receivedMessage.op, receivedMessage.ticket,
-            ticketEntry.getTicket());
+        LOGGER.debug("{} message: ticket mismatch for principal {}",
+            receivedMessage.op, receivedMessage.principal);
         if (!receivedMessage.op.equals(OP.PING)) {
           conn.send(serializeMessage(new Message(OP.SESSION_LOGOUT).put("info",
               "Your ticket is invalid possibly due to server restart. Please login again.")));
