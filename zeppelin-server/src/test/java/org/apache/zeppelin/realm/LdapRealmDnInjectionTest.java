@@ -1,0 +1,232 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.zeppelin.realm;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+/**
+ * Regression tests verifying that user-controlled values flowing through
+ * {@link LdapRealm#expandDnTemplate(String, String)} cannot inject RFC 4514 DN
+ * metacharacters such as {@code ,}, {@code +}, or leading {@code #}.
+ *
+ * <p>The most dangerous metacharacters in a DN context are {@code ,} (RDN
+ * separator) and {@code +} (multi-valued RDN separator). Injecting these allows
+ * an attacker to append additional RDN components to the constructed DN.
+ */
+class LdapRealmDnInjectionTest {
+
+  // Typical userDnTemplate used in Zeppelin shiro.ini:
+  //   ldapRealm.userDnTemplate = uid={0},ou=users,dc=example,dc=com
+  private static final String DN_TEMPLATE = "uid={0},ou=users,dc=example,dc=com";
+
+  /**
+   * Minimal concrete subclass that exposes the two protected methods under test.
+   * No LDAP connection is established.
+   */
+  private static class TestableLdapRealm extends LdapRealm {
+    String callExpandDnTemplate(String template, String input) {
+      return expandDnTemplate(template, input);
+    }
+
+    String callEscapeAttributeValue(String input) {
+      return escapeAttributeValue(input);
+    }
+  }
+
+  private TestableLdapRealm realm;
+
+  @BeforeEach
+  void setUp() {
+    realm = new TestableLdapRealm();
+  }
+
+  // -----------------------------------------------------------------------
+  // PoC injection payloads: the rendered DN must not contain unescaped
+  // RFC 4514 metacharacters (comma, plus) that originated from user input.
+  // DN_TEMPLATE has exactly 3 bare commas and 0 bare plus signs.
+  // -----------------------------------------------------------------------
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      ",uid=admin,dc=foo",       // classic extra-RDN injection via comma
+      ",cn=admin",               // inject another RDN via comma
+      "\\,",                     // attempt to pass a literal backslash-comma
+      "+admin=true",             // RFC 4514 multi-valued RDN separator
+      "#secret",                 // leading '#' (BER encoding marker in RFC 4514)
+      "alice,dc=evil,dc=com",    // full suffix injection
+  })
+  void dn_injection_payloads_are_neutralized(String payload) {
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, payload);
+
+    // The rendered DN must not contain more bare commas than the template itself.
+    // DN_TEMPLATE has exactly 3 commas: after uid={0}, ou=users, dc=example.
+    // Any extra bare comma means an RDN was injected from the payload.
+    int bareCommas = countUnescaped(rendered, ',');
+    assertEquals(3, bareCommas,
+        "unexpected bare ',' (possible RDN injection) in rendered DN: " + rendered);
+
+    // The rendered DN must not contain a bare '+' from the payload.
+    // DN_TEMPLATE has 0 '+' signs.
+    int barePlus = countUnescaped(rendered, '+');
+    assertEquals(0, barePlus,
+        "unexpected bare '+' (possible multi-valued RDN injection) in: " + rendered);
+
+    // If the payload contained a comma it must appear escaped as \2C in the output.
+    if (payload.indexOf(',') >= 0) {
+      assertTrue(rendered.contains("\\2C"),
+          "comma from payload not escaped as \\2C in: " + rendered);
+    }
+
+    // If the payload contained '+' it must appear escaped as \2B.
+    if (payload.indexOf('+') >= 0) {
+      assertTrue(rendered.contains("\\2B"),
+          "'+' from payload not escaped as \\2B in: " + rendered);
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Regression: well-formed usernames must pass through without distortion.
+  // -----------------------------------------------------------------------
+
+  @Test
+  void normal_ascii_username_passes_through_unchanged() {
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, "alice");
+    assertEquals("uid=alice,ou=users,dc=example,dc=com", rendered);
+  }
+
+  @Test
+  void username_with_spaces_in_middle_passes_through_unchanged() {
+    // Internal spaces are not special in RFC 4514 attribute values.
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, "john doe");
+    assertEquals("uid=john doe,ou=users,dc=example,dc=com", rendered);
+  }
+
+  @Test
+  void username_with_leading_space_is_escaped() {
+    // RFC 4514: leading space must be escaped.
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, " alice");
+    assertTrue(rendered.startsWith("uid=\\20alice,"),
+        "leading space not escaped in: " + rendered);
+  }
+
+  @Test
+  void username_with_trailing_space_is_escaped() {
+    // RFC 4514: trailing space must be escaped.
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, "alice ");
+    assertTrue(rendered.contains("alice\\20,"),
+        "trailing space not escaped in: " + rendered);
+  }
+
+  @Test
+  void null_input_yields_empty_substitution() {
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, null);
+    assertEquals("uid=,ou=users,dc=example,dc=com", rendered);
+  }
+
+  @Test
+  void korean_username_passes_through_unchanged() {
+    // Non-ASCII printable characters are not RFC 4514 metacharacters
+    // and must not be escaped.
+    String rendered = realm.callExpandDnTemplate(DN_TEMPLATE, "이종열");
+    assertEquals("uid=이종열,ou=users,dc=example,dc=com", rendered);
+  }
+
+  // -----------------------------------------------------------------------
+  // escapeAttributeValue unit tests (RFC 4514 character set coverage).
+  // -----------------------------------------------------------------------
+
+  @Test
+  void escape_comma() {
+    assertEquals("\\2C", realm.callEscapeAttributeValue(","));
+  }
+
+  @Test
+  void escape_plus() {
+    assertEquals("\\2B", realm.callEscapeAttributeValue("+"));
+  }
+
+  @Test
+  void escape_semicolon() {
+    assertEquals("\\3B", realm.callEscapeAttributeValue(";"));
+  }
+
+  @Test
+  void escape_less_than() {
+    assertEquals("\\3C", realm.callEscapeAttributeValue("<"));
+  }
+
+  @Test
+  void escape_greater_than() {
+    assertEquals("\\3E", realm.callEscapeAttributeValue(">"));
+  }
+
+  @Test
+  void escape_backslash() {
+    assertEquals("\\5C", realm.callEscapeAttributeValue("\\"));
+  }
+
+  @Test
+  void escape_double_quote() {
+    assertEquals("\\22", realm.callEscapeAttributeValue("\""));
+  }
+
+  @Test
+  void escape_null_character() {
+    assertEquals("\\00", realm.callEscapeAttributeValue("\u0000"));
+  }
+
+  @Test
+  void escape_result_not_null_for_nonnull_input() {
+    assertNotNull(realm.callEscapeAttributeValue("any value"));
+  }
+
+  @Test
+  void plain_alphanumeric_unchanged() {
+    assertEquals("alice123", realm.callEscapeAttributeValue("alice123"));
+  }
+
+  // -----------------------------------------------------------------------
+  // Helper
+  // -----------------------------------------------------------------------
+
+  /**
+   * Counts occurrences of {@code ch} that are NOT preceded by a backslash.
+   * Sufficient for asserting "no unescaped metacharacter" in RFC 4514 DNs
+   * produced by this codebase (which always uses a single leading backslash).
+   */
+  private static int countUnescaped(String s, char ch) {
+    int count = 0;
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) != ch) {
+        continue;
+      }
+      if (i >= 1 && s.charAt(i - 1) == '\\') {
+        continue;
+      }
+      count++;
+    }
+    return count;
+  }
+}
