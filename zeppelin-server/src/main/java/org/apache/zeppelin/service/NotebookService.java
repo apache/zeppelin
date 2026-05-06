@@ -25,8 +25,6 @@ import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -57,6 +55,7 @@ import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.exception.CorruptedNoteException;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
+import org.apache.zeppelin.notebook.repo.NotebookPathValidator;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.common.Message;
@@ -240,7 +239,7 @@ public class NotebookService {
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = decodeRepeatedly(notePath);
+    notePath = NotebookPathValidator.decodeRepeatedly(notePath);
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
@@ -315,6 +314,7 @@ public class NotebookService {
           }
         }
         try {
+          newNotePathReal = normalizeNotePath(newNotePathReal);
           notebook.moveNote(noteId, newNotePathReal, context.getAutheInfo());
           callback.onSuccess(readNote, context);
         } catch (NotePathAlreadyExistsException e) {
@@ -1567,20 +1567,4 @@ public class NotebookService {
     }
   }
 
-  private static String decodeRepeatedly(final String encoded) throws IOException {
-    String previous = encoded;
-    int maxDecodeAttempts = 5;
-    int attempts = 0;
-
-    while (attempts < maxDecodeAttempts) {
-      String decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8);
-      attempts++;
-      if (decoded.equals(previous)) {
-        return decoded;
-      }
-      previous = decoded;
-    }
-
-    throw new IOException("Exceeded maximum decode attempts. Possible malicious input.");
-  }
 }
