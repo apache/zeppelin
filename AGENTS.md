@@ -39,7 +39,7 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 ./mvnw clean package -pl zeppelin-server --am -DskipTests
 
 # Run module tests
-./mvnw test -pl zeppelin-zengine --am
+./mvnw test -pl zeppelin-interpreter --am
 
 # Run single test class/method
 ./mvnw test -pl zeppelin-server --am -Dtest=NotebookServerTest
@@ -75,7 +75,7 @@ The shaded JAR is also copied to `interpreter/` directory by maven-antrun-plugin
 
 Maven modules are ordered in the root `pom.xml`. Key sequence:
 ```
-zeppelin-interpreter → zeppelin-interpreter-shaded → zeppelin-zengine → zeppelin-server
+zeppelin-interpreter → zeppelin-interpreter-shaded → zeppelin-server
 ```
 
 All interpreter modules build after `zeppelin-interpreter-shaded`. A second shading chain exists for Jupyter:
@@ -92,9 +92,7 @@ zeppelin-interpreter          Base API: Interpreter, InterpreterContext, Thrift 
         ↓
 zeppelin-interpreter-shaded   Uber JAR (maven-shade-plugin, relocated packages)
         ↓
-zeppelin-zengine              Core engine: Notebook, InterpreterFactory, PluginManager
-        ↓
-zeppelin-server               Jetty 11, REST/WebSocket APIs, HK2 DI, entry point
+zeppelin-server               Core engine + Jetty 11, REST/WebSocket APIs, HK2 DI, entry point
 ```
 
 ### Core Modules
@@ -116,15 +114,21 @@ Thrift definitions (`src/main/thrift/`):
 - `RemoteInterpreterService.thrift` — server → interpreter RPCs
 - `RemoteInterpreterEventService.thrift` — interpreter → server event callbacks
 
-#### `zeppelin-zengine/`
-Core engine. Manages notebooks, interpreter lifecycle, scheduling, search, and plugin loading.
+#### `zeppelin-server/`
+The entry point and core of the Zeppelin application. Combines the web server / API layer with the core notebook engine, interpreter lifecycle management, scheduling, search, and plugin loading.
 
-Key classes:
+Web / API layer (`org.apache.zeppelin.server`, `rest`, `socket`):
+- `ZeppelinServer` — `main()`, embedded Jetty 11 server, HK2 DI setup
+- `NotebookRestApi`, `InterpreterRestApi`, `SecurityRestApi`, `ConfigurationsRestApi` — REST endpoints in `org.apache.zeppelin.rest`
+- `NotebookServer` — WebSocket endpoint (`/ws`) for real-time notebook operations and paragraph execution
+- `RemoteInterpreterEventServer` — Thrift server receiving callbacks from interpreter processes (output streaming, status updates)
+
+Engine / runtime (`org.apache.zeppelin.notebook`, `interpreter`, `scheduler`, `search`, `plugin`, `storage`, `conf`):
 - `Notebook` / `Note` / `Paragraph` — notebook data model and execution
 - `InterpreterFactory` — creates interpreter instances
 - `InterpreterSettingManager` — loads `interpreter-setting.json` from each interpreter directory, manages interpreter configurations
 - `InterpreterSetting` — one interpreter's config + runtime state; creates `InterpreterLauncher` and `RemoteInterpreterProcess`
-- `ManagedInterpreterGroup` — zengine's `InterpreterGroup` implementation; owns the `RemoteInterpreterProcess`
+- `ManagedInterpreterGroup` — server-side `InterpreterGroup` implementation; owns the `RemoteInterpreterProcess`
 - `NoteManager` — notebook CRUD, folder tree
 - `SchedulerService` — Quartz-based cron scheduling
 - `SearchService` — Lucene-based notebook search
@@ -132,15 +136,6 @@ Key classes:
 - `ZeppelinConfiguration` — config management (env vars → system properties → `zeppelin-site.xml` → defaults)
 - `RecoveryStorage` — persists interpreter process info for server-restart recovery
 - `ConfigStorage` — persists interpreter settings to JSON
-
-#### `zeppelin-server/`
-Web server and API layer. Entry point for the entire application.
-
-Key classes:
-- `ZeppelinServer` — `main()`, embedded Jetty 11 server, HK2 DI setup
-- `NotebookRestApi`, `InterpreterRestApi`, `SecurityRestApi`, `ConfigurationsRestApi` — REST endpoints in `org.apache.zeppelin.rest`
-- `NotebookServer` — WebSocket endpoint (`/ws`) for real-time notebook operations and paragraph execution
-- `RemoteInterpreterEventServer` — Thrift server receiving callbacks from interpreter processes (output streaming, status updates)
 
 #### `zeppelin-interpreter-shaded/`
 Uses maven-shade-plugin to package `zeppelin-interpreter` + dependencies into an uber JAR with relocated packages (e.g., `org.apache.thrift` → `org.apache.zeppelin.shaded.org.apache.thrift`). This JAR is placed on each interpreter process's classpath.
@@ -222,8 +217,7 @@ Where new code should go:
 | If the code... | Put it in |
 |----------------|-----------|
 | Is a base interface/class that all interpreters need | `zeppelin-interpreter` |
-| Handles notebook state, interpreter lifecycle, scheduling, search | `zeppelin-zengine` |
-| Is a REST endpoint, WebSocket handler, or authentication realm | `zeppelin-server` |
+| Handles notebook state, interpreter lifecycle, scheduling, search, REST/WebSocket, or authentication realm | `zeppelin-server` |
 | Is specific to one backend (Spark, Flink, JDBC, etc.) | That interpreter's module |
 | Is a new way to launch interpreter processes | `zeppelin-plugins/launcher/` |
 | Is a new notebook storage backend | `zeppelin-plugins/notebookrepo/` |
@@ -342,7 +336,7 @@ RemoteInterpreter.interpret()  [first call triggers launch]
 
 ### PluginManager — Custom Classloading
 
-`PluginManager` (`zeppelin-zengine/.../plugin/PluginManager.java`) loads plugins without Java SPI:
+`PluginManager` (`zeppelin-server/.../plugin/PluginManager.java`) loads plugins without Java SPI:
 
 ```
 Plugin loading flow:
@@ -375,7 +369,7 @@ plugins/
 
 ### ReflectionUtils
 
-`ReflectionUtils` (`zeppelin-zengine/.../util/ReflectionUtils.java`) provides generic reflection-based instantiation:
+`ReflectionUtils` (`zeppelin-server/.../util/ReflectionUtils.java`) provides generic reflection-based instantiation:
 
 ```java
 // No-arg constructor
