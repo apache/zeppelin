@@ -145,6 +145,9 @@ public class EmbeddingSearch extends SearchService {
       });
 
   /** A single indexed document (paragraph or note name). */
+  // TODO(ZEPPELIN-6413): Reduce in-memory duplication by keeping only {embedding, docId} here
+  // and rehydrating text/title/output from Notebook.processNote() at query time. Needs a perf
+  // comparison against the current in-memory path and a consistency story on LRU eviction.
   private static class IndexEntry {
     final float[] embedding;
     final String noteName;
@@ -480,6 +483,11 @@ public class EmbeddingSearch extends SearchService {
   // ---- SearchService implementation ----
 
   @Override
+  // TODO(ZEPPELIN-6414): Accept user/roles (or a readability Predicate) and apply the auth
+  // filter before Phase-1 table collection and before the top-K cutoff. Currently the REST
+  // layer filters after truncation, which can hide results the caller is authorized for and
+  // lets inaccessible notes contaminate the table-boost ranking. Requires a SearchService
+  // interface change that also affects LuceneSearch.
   public List<Map<String, String>> query(String queryStr) {
     if (StringUtils.isBlank(queryStr) || index.isEmpty()) {
       return Collections.emptyList();
@@ -805,6 +813,10 @@ public class EmbeddingSearch extends SearchService {
    * Format: [int:version=INDEX_VERSION][int:count] then for each entry:
    *   [utf:docId] [utf:noteName] [utf:text] [utf:title] [utf:tables] [utf:output] [float[384]:embedding]
    */
+  // TODO(ZEPPELIN-6412): Shard persistence by note (e.g. index/notes/<noteId>.bin) so a single
+  // paragraph edit only rewrites that note's file instead of the full index. Needs a per-note
+  // lock strategy, a manifest for load, and a compaction path for deletes; may also revisit
+  // append-only log + periodic compaction as the persistence model.
   private void saveIndex() throws IOException {
     Path file = indexPath.resolve(INDEX_FILE_NAME);
     Path tmpFile = indexPath.resolve(INDEX_FILE_NAME + ".tmp");
@@ -857,7 +869,6 @@ public class EmbeddingSearch extends SearchService {
     }
   }
 
-  /** Load index from disk if it exists. Supports v1/v2/v3 formats. */
   /**
    * Load the index from disk.
    *
@@ -866,7 +877,7 @@ public class EmbeddingSearch extends SearchService {
    *         signalling the caller to trigger a bootstrap rebuild.
    */
   private boolean loadIndex() {
-    Path file = indexPath.resolve("embedding_index.bin");
+    Path file = indexPath.resolve(INDEX_FILE_NAME);
     if (!Files.exists(file)) {
       return true;
     }
