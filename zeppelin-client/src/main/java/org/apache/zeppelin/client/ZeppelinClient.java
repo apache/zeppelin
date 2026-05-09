@@ -307,6 +307,7 @@ public class ZeppelinClient {
     bodyObject.put("defaultInterpreterGroup", defaultInterpreterGroup);
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook")
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);
@@ -346,6 +347,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook/{noteId}")
             .routeParam("noteId", noteId)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);
@@ -362,6 +364,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest
             .put("/notebook/{noteId}/rename")
             .routeParam("noteId", noteId)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
 
@@ -397,6 +400,7 @@ public class ZeppelinClient {
     bodyObject.put("notePath", notePath);
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook/getByPath")
+            .header("Content-Type", "application/json")
             .body(bodyObject)
             .asJson();
     return extractNoteResultFromResponse(response);
@@ -494,6 +498,7 @@ public class ZeppelinClient {
             .routeParam("noteId", noteId)
             .queryString("blocking", "false")
             .queryString("isolated", "true")
+            .header("Content-Type", "application/json")
             .body(bodyObject)
             .asJson();
     checkResponse(response);
@@ -531,6 +536,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook/import")
             .queryString("notePath", notePath)
+            .header("Content-Type", "application/json")
             .body(bodyObject)
             .asJson();
     checkResponse(response);
@@ -710,6 +716,7 @@ public class ZeppelinClient {
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
             .queryString("sessionId", sessionId)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);
@@ -894,6 +901,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest
             .put("/interpreter/setting/restart/{interpreter}")
             .routeParam("interpreter", interpreter)
+            .header("Content-Type", "application/json")
             .body(bodyObject.toString())
             .asJson();
     checkResponse(response);
