@@ -61,12 +61,22 @@ public final class NotebookPathValidator {
 
   /**
    * Repeatedly URL-decodes {@code encoded} until it stabilises, capped at
-   * {@value #MAX_DECODE_LAYERS} layers.
+   * {@value #MAX_DECODE_LAYERS} layers. Detecting stability after {@code N}
+   * layers of encoding requires {@code N + 1} decode passes — the final pass
+   * confirms the result is unchanged — so the loop runs one extra iteration.
+   *
+   * @throws IOException if the input is malformed or has more URL-encoding
+   *     layers than {@value #MAX_DECODE_LAYERS}
    */
   public static String decodeRepeatedly(String encoded) throws IOException {
     String previous = encoded;
-    for (int attempt = 0; attempt < MAX_DECODE_LAYERS; attempt++) {
-      String decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8);
+    for (int pass = 0; pass <= MAX_DECODE_LAYERS; pass++) {
+      String decoded;
+      try {
+        decoded = URLDecoder.decode(previous, StandardCharsets.UTF_8);
+      } catch (IllegalArgumentException e) {
+        throw new IOException("Malformed URL-encoded path: " + encoded, e);
+      }
       if (decoded.equals(previous)) {
         return decoded;
       }

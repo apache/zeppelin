@@ -94,4 +94,20 @@ class NotebookRepoPathValidationTest {
     String payload = "/%2525252525252525252e";
     assertThrows(IOException.class, () -> NotebookPathValidator.decodeRepeatedly(payload));
   }
+
+  @Test
+  void decodeRepeatedly_wraps_malformed_percent_encoding_as_io_exception() {
+    // Trailing "%" without two hex digits makes URLDecoder.decode raise
+    // IllegalArgumentException; the validator must convert it to IOException
+    // so callers get a single, declared failure mode.
+    assertThrows(IOException.class, () -> NotebookPathValidator.decodeRepeatedly("/foo%"));
+    assertThrows(IOException.class, () -> NotebookPathValidator.decodeRepeatedly("/foo%ZZ"));
+  }
+
+  @Test
+  void decodeRepeatedly_accepts_max_decode_layers() throws IOException {
+    // Exactly five layers of "%2e" wrapping ("%252525252e") must decode
+    // cleanly; the constant means *layers*, not raw loop iterations.
+    assertEquals("/..", NotebookPathValidator.decodeRepeatedly("/%252525252e%252525252e"));
+  }
 }
