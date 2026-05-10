@@ -16,6 +16,9 @@ export interface NotebookSearchResultItem {
   snippet: string;
   text: string;
   header: string;
+  title?: string;
+  tables?: string;
+  output?: string;
 }
 
 export interface NotebookCapabilities {

@@ -550,26 +550,25 @@ public class EmbeddingSearch extends SearchService {
           }
         }
       }
-      StringBuilder header = new StringBuilder();
-      if (StringUtils.isNotBlank(entry.title)) {
-        header.append(entry.title).append("\n");
-      }
-      if (StringUtils.isNotBlank(entry.tables)) {
-        header.append("[TABLES]").append(entry.tables).append("\n");
-      }
+      String title = entry.title != null ? entry.title : "";
+      String tables = entry.tables != null ? entry.tables : "";
+      String output = "";
       if (StringUtils.isNotBlank(entry.output)) {
-        String out = entry.output;
-        if (out.length() > 300) {
-          out = out.substring(0, 300);
+        output = entry.output;
+        if (output.length() > 300) {
+          output = output.substring(0, 300);
         }
-        header.append("\n").append(out);
       }
-      candidates.add(Map.entry(ImmutableMap.of(
-          "id", docId,
-          "name", entry.noteName != null ? entry.noteName : "",
-          "snippet", entry.text,
-          "text", entry.text,
-          "header", header.toString()), sim));
+      candidates.add(Map.entry(ImmutableMap.<String, String>builder()
+          .put("id", docId)
+          .put("name", entry.noteName != null ? entry.noteName : "")
+          .put("snippet", entry.text)
+          .put("text", entry.text)
+          .put("header", title)
+          .put("title", title)
+          .put("tables", tables)
+          .put("output", output)
+          .build(), sim));
     }
     // Re-sort by boosted score
     candidates.sort((a, b) -> Float.compare(b.getValue(), a.getValue()));

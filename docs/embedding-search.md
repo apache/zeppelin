@@ -147,12 +147,32 @@ Requires `zeppelin.search.enable = true` (already the default).
 - `ai.djl.huggingface:tokenizers:0.28.0` (~2MB, Apache 2.0, JNA excluded to
   avoid version conflict with Zeppelin's existing JNA 4.1.0)
 
-## Search Result Display
+## Search Result Response Contract
 
-Both Angular and Classic UIs now render search results with:
+Both `LuceneSearch` and `EmbeddingSearch` return `List<Map<String, String>>` with
+these keys:
+
+| Key | LuceneSearch | EmbeddingSearch |
+|-----|-------------|-----------------|
+| `id` | `noteId` or `noteId/paragraph/paragraphId` | Same |
+| `name` | Notebook title | Notebook title |
+| `snippet` | Highlighted paragraph text (`<B>` tags) | Paragraph text (no highlighting) |
+| `text` | Full paragraph text | Full paragraph text |
+| `header` | Highlighted paragraph title (`<B>` tags) | Paragraph title (plain) |
+| `title` | Same as `header` | Paragraph title (plain) |
+| `tables` | `""` (empty) | Space-separated SQL table names |
+| `output` | `""` (empty) | Paragraph output (truncated to 300 chars) |
+
+The `title`, `tables`, and `output` fields are dedicated structured fields. The
+`header` field preserves backward compatibility — for `LuceneSearch` it contains
+the highlighted paragraph title, for `EmbeddingSearch` it contains the plain title.
+
+### Frontend Display
+
+Both Angular and Classic UIs render search results with:
 - **Code block**: SQL/Python code with syntax-appropriate styling
-- **Output block**: Paragraph execution results (table data, text output)
-- **Table names**: Extracted SQL table names highlighted with 📊 icon
+- **Output block**: Paragraph execution results (from `output` field)
+- **Table names**: Extracted SQL table names (from `tables` field)
 - **Language badge**: `sql`, `python`, `md`, etc.
 
 ## Design Decisions

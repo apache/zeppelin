@@ -59,26 +59,15 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       note.id = note.id.replace('paragraph/', '?paragraph=') +
         '&term=' + $routeParams.searchTerm;
 
-      // Parse header into tables and output
-      let tables = '';
-      let output = '';
-      if (note.header) {
-        note.header.replace(/<\/?B>/gi, '').split('\n').forEach(function(line) {
-          if (line.indexOf('[TABLES]') === 0) {
-            tables += (tables ? ', ' : '') + line.substring(8).trim();
-          } else if (line.trim()) {
-            output += (output ? '\n' : '') + line;
-          }
-        });
-      }
-
       // Preserve Lucene <B> highlighting by converting to <mark>
       let codeHtml = (note.snippet || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
       let code = (note.snippet || '').replace(/<B>/g, '').replace(/<\/B>/g, '');
 
+      let tables = (note.tables || '').trim().split(/\s+/).filter(function(t) { return t; }).join(', ');
+
       note.codeText = code;
       note.codeHtml = codeHtml;
-      note.outputText = output;
+      note.outputText = note.output || '';
       note.tablesText = tables;
       note.langBadge = detectLang(code);
 

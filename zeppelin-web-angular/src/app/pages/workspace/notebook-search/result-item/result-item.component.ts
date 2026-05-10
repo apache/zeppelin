@@ -52,27 +52,15 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     }
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
 
-    // snippet = SQL/code, header = tables + output
     const snippet = this.result.snippet || '';
     // Preserve Lucene <B> highlighting by converting to <mark>
     this.codeHtml = snippet.replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
     this.codeText = snippet.replace(/<\/?B>/gi, '');
     this.interpreter = this.detectInterpreter(this.codeText);
 
-    // Parse header: lines with [TABLES] prefix are tables, rest is output
-    const header = (this.result.header || '').replace(/<\/?B>/gi, '');
-    const lines = header.split('\n');
-    const tableParts: string[] = [];
-    const outputParts: string[] = [];
-    for (const line of lines) {
-      if (line.startsWith('[TABLES]')) {
-        tableParts.push(line.substring(8).trim());
-      } else if (line.trim()) {
-        outputParts.push(line);
-      }
-    }
-    this.tablesText = tableParts.join(', ');
-    this.outputText = outputParts.join('\n');
+    const tables = this.result.tables || '';
+    this.tablesText = tables.trim().split(/\s+/).filter(t => t).join(', ');
+    this.outputText = this.result.output || '';
   }
 
   private detectInterpreter(text: string): string {
