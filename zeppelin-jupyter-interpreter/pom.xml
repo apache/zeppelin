@@ -84,11 +84,13 @@
       <artifactId>commons-codec</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter-shaded</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <!--
+      zeppelin-interpreter-shaded is inherited from zeppelin-interpreter-parent with <scope>provided</scope>.
+      Do NOT re-declare it here without that scope (ZEPPELIN-6416): doing so silently downgrades it to
+      the default compile scope and leaks the shaded jar into transitive consumers (e.g. spark-interpreter,
+      and onward into zeppelin-integration's test classpath), which causes ClassCastException between
+      shaded and unshaded org.eclipse.aether.repository.RemoteRepository inside InterpreterSettingManager.
+    -->
 
     <dependency>
       <groupId>${project.groupId}</groupId>

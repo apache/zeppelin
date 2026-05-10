@@ -185,6 +185,29 @@
             <id>enforce-dependency-convergence</id>
             <phase>none</phase>
           </execution>
+          <execution>
+            <id>enforce-no-interpreter-shaded-leak</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>
+                    zeppelin-interpreter-shaded must NOT appear on the zeppelin-integration test classpath.
+                    MiniZeppelinServer instantiates ZeppelinServer in-process; mixing shaded and unshaded
+                    org.eclipse.aether.* in the same JVM causes ClassCastException in
+                    InterpreterSettingManager. See ZEPPELIN-6416.
+                  </message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
