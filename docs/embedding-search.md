@@ -140,7 +140,6 @@ Requires `zeppelin.search.enable = true` (already the default).
 - `zeppelin-web-angular/.../result-item/` — Render search results with separate
   code block, output block, and table name display (replaces Monaco editor)
 - `zeppelin-web/src/app/search/` — Same improvements for Classic UI
-- Various TypeScript build fixes (`tsconfig`, type annotations)
 
 ### Dependencies added
 - `com.microsoft.onnxruntime:onnxruntime:1.18.0` (~50MB, Apache 2.0 compatible)
