@@ -34,6 +34,9 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   noteListVisible = false;
   queryStr: string | null = null;
   classicUiHref: string;
+  searchHistory: string[] = [];
+  private static readonly HISTORY_KEY = 'zeppelin.search.history';
+  private static readonly MAX_HISTORY = 20;
 
   about() {
     this.nzModalService.create({
@@ -54,8 +57,18 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     }
     this.queryStr = this.queryStr.trim();
     if (this.queryStr) {
+      this.addToHistory(this.queryStr);
       this.router.navigate(['/search', this.queryStr]);
     }
+  }
+
+  private addToHistory(term: string): void {
+    this.searchHistory = this.searchHistory.filter(h => h !== term);
+    this.searchHistory.unshift(term);
+    if (this.searchHistory.length > HeaderComponent.MAX_HISTORY) {
+      this.searchHistory = this.searchHistory.slice(0, HeaderComponent.MAX_HISTORY);
+    }
+    localStorage.setItem(HeaderComponent.HISTORY_KEY, JSON.stringify(this.searchHistory));
   }
 
   @MessageListener(OP.CONFIGURATIONS_INFO)
@@ -76,6 +89,11 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   }
 
   ngOnInit() {
+    try {
+      this.searchHistory = JSON.parse(localStorage.getItem(HeaderComponent.HISTORY_KEY) || '[]');
+    } catch {
+      this.searchHistory = [];
+    }
     this.messageService.listConfigurations();
     this.messageService.connectedStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
       this.connectStatus = status ? 'success' : 'error';

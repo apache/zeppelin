@@ -10,9 +10,16 @@
  * limitations under the License.
  */
 
+@import 'theme-mixin';
+
 :host {
   display: block;
   margin-bottom: 12px;
+}
+
+.result-card {
+  cursor: pointer;
+  user-select: text;
 }
 
 .result-header {
@@ -25,28 +32,9 @@
   font-size: 11px;
   padding: 1px 8px;
   border-radius: 10px;
-  background: #e8e8e8;
-  color: #666;
-}
-
-.badge.sql {
-  background: #e6f7e6;
-  color: #389e0d;
-}
-
-.badge.python, .badge.pyspark {
-  background: #fff7e6;
-  color: #d48806;
-}
-
-.badge.md {
-  background: #e6f0ff;
-  color: #1890ff;
 }
 
 .code-block {
-  background: #f6f8fa;
-  border: 1px solid #e1e4e8;
   border-radius: 6px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -54,10 +42,8 @@
 
   pre {
     margin: 0;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 12px;
     line-height: 1.5;
-    color: #24292e;
     white-space: pre-wrap;
     word-break: break-word;
     max-height: 200px;
@@ -66,8 +52,6 @@
 }
 
 .output-block {
-  background: #fafbfc;
-  border-left: 3px solid #d1d5da;
   border-radius: 0 4px 4px 0;
   padding: 8px 12px;
   margin-bottom: 8px;
@@ -75,10 +59,8 @@
 
   pre {
     margin: 0;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 11px;
     line-height: 1.4;
-    color: #586069;
     white-space: pre-wrap;
     word-break: break-word;
     max-height: 120px;
@@ -86,14 +68,72 @@
   }
 }
 
+.title-block {
+  font-size: 12px;
+  padding: 4px 0;
+  margin-bottom: 4px;
+}
+
 .tables-block {
   font-size: 12px;
-  color: #22863a;
   padding: 4px 0;
 }
 
 mark {
-  background-color: #fff3bf;
   padding: 0 1px;
   border-radius: 2px;
 }
+
+.themeMixin({
+  .badge {
+    background: @background-color-base;
+    color: @text-color-secondary;
+  }
+
+  .badge.sql {
+    background: @green-1;
+    color: @green-7;
+  }
+
+  .badge.python, .badge.pyspark {
+    background: @gold-1;
+    color: @gold-7;
+  }
+
+  .badge.md {
+    background: @blue-1;
+    color: @blue-6;
+  }
+
+  .code-block {
+    background: @background-color-light;
+    border: 1px solid @border-color-split;
+
+    pre {
+      font-family: @code-family;
+      color: @text-color;
+    }
+  }
+
+  .output-block {
+    background: @background-color-light;
+    border-left: 3px solid @border-color-base;
+
+    pre {
+      font-family: @code-family;
+      color: @text-color-secondary;
+    }
+  }
+
+  .title-block {
+    color: @text-color-secondary;
+  }
+
+  .tables-block {
+    color: @green-7;
+  }
+
+  mark {
+    background-color: @gold-1;
+  }
+});

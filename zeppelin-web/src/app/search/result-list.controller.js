@@ -67,6 +67,7 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
 
       note.codeText = code;
       note.codeHtml = codeHtml;
+      note.titleHtml = (note.title || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
       note.outputText = note.output || '';
       note.tablesText = tables;
       note.langBadge = detectLang(code);

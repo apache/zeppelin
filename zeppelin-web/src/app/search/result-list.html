@@ -29,6 +29,7 @@ limitations under the License.
             </h4>
           </div>
           <div class="panel-body" style="padding:0">
+            <div ng-if="note.titleHtml" ng-bind-html="note.titleHtml" style="padding:4px 12px;font-size:12px;color:#777"></div>
             <pre ng-if="note.codeHtml" ng-bind-html="note.codeHtml" style="margin:0;border:none;border-radius:0;background:#f8f9fa;border-bottom:1px solid #eee;max-height:200px;overflow:auto;font-size:12px"></pre>
             <pre ng-if="note.outputText" style="margin:0;border:none;border-radius:0;background:#fafbfc;border-left:3px solid #ddd;color:#666;max-height:120px;overflow:auto;font-size:11px;padding:8px 12px">{{note.outputText}}</pre>
             <div ng-if="note.tablesText" style="padding:6px 12px;font-size:12px;color:#3c763d">Tables: {{note.tablesText}}</div>

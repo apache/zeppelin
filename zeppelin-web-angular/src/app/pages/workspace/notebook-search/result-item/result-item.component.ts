@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
 
 @Component({
@@ -29,9 +29,13 @@ export class NotebookSearchResultItemComponent implements OnChanges {
   codeHtml = '';
   outputText = '';
   tablesText = '';
+  titleHtml = '';
   interpreter = '';
 
-  constructor(private router: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.result) {
@@ -39,8 +43,17 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     }
   }
 
+  navigate(event: MouseEvent): void {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    event.preventDefault();
+    this.router.navigate(this.routerLink, { queryParams: this.queryParams });
+  }
+
   private parseResult(): void {
-    const term = this.router.snapshot.params.queryStr;
+    const term = this.route.snapshot.params.queryStr;
     const listOfId = this.result.id.split('/');
     const [noteId, hasParagraph, paragraph] = listOfId;
     if (!hasParagraph) {
@@ -58,8 +71,15 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     this.codeText = snippet.replace(/<\/?B>/gi, '');
     this.interpreter = this.detectInterpreter(this.codeText);
 
+    const title = this.result.title || '';
+    this.titleHtml = title.replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
+
     const tables = this.result.tables || '';
-    this.tablesText = tables.trim().split(/\s+/).filter(t => t).join(', ');
+    this.tablesText = tables
+      .trim()
+      .split(/\s+/)
+      .filter(t => t)
+      .join(', ');
     this.outputText = this.result.output || '';
   }
 

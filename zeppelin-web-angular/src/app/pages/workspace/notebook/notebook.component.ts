@@ -23,7 +23,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
 import { Subject } from 'rxjs';
-import { distinctUntilKeyChanged, map, startWith, takeUntil } from 'rxjs/operators';
+import { distinctUntilKeyChanged, startWith, takeUntil } from 'rxjs/operators';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 
@@ -422,14 +422,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   ngOnInit() {
     this.activatedRoute.queryParamMap
-      .pipe(
-        startWith(this.activatedRoute.snapshot.queryParamMap),
-        takeUntil(this.destroy$),
-        map(data => data.get('paragraph'))
-      )
-      .subscribe(id => {
+      .pipe(startWith(this.activatedRoute.snapshot.queryParamMap), takeUntil(this.destroy$))
+      .subscribe(params => {
+        const id = params.get('paragraph');
         this.onParagraphSelect(id);
         this.onParagraphScrolled(id);
+        this.onParagraphSearch(params.get('term') || '');
       });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(() => {
       this.noteVarShareService.clear();

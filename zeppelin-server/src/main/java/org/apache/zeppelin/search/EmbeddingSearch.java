@@ -36,6 +36,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -106,6 +107,12 @@ public class EmbeddingSearch extends SearchService {
    * and cannot promote semantically unrelated results past {@link #MIN_SIMILARITY}.
    */
   private static final float TABLE_BOOST = 0.05f;
+  /**
+   * Additive score boost when the query string appears literally in the indexed text.
+   * Ensures exact keyword matches surface even when the embedding similarity is low
+   * (e.g. searching "TETRIS" in SQL containing TETRIS_VIDEO_SINGLE_MEDIA).
+   */
+  private static final float KEYWORD_BOOST = 0.30f;
   /**
    * Fraction of the top table's weight used as the cutoff for "relevant" tables in Phase 1
    * of {@link #query(String)}. Tables below this share are dropped from the boost set
@@ -380,6 +387,25 @@ public class EmbeddingSearch extends SearchService {
     return dot;
   }
 
+  /**
+   * Wrap occurrences of each query word in {@code <B>} tags (case-insensitive)
+   * to match Lucene's highlighting convention.
+   */
+  static String highlightTerms(String text, String queryStr) {
+    if (StringUtils.isBlank(text) || StringUtils.isBlank(queryStr)) {
+      return text;
+    }
+    String[] words = queryStr.split("\\s+");
+    for (String word : words) {
+      if (word.isEmpty()) {
+        continue;
+      }
+      String escaped = Pattern.quote(word);
+      text = text.replaceAll("(?i)(" + escaped + ")", "<B>$1</B>");
+    }
+    return text;
+  }
+
   // ---- Text extraction ----
 
   /**
@@ -494,6 +520,7 @@ public class EmbeddingSearch extends SearchService {
     }
 
     float[] queryEmbedding = embed(queryStr);
+    String queryLower = queryStr.toLowerCase(Locale.ROOT);
 
     // Phase 1: find top-N results and discover relevant tables
     List<Map.Entry<String, Float>> scored = new ArrayList<>();
@@ -501,6 +528,10 @@ public class EmbeddingSearch extends SearchService {
     try {
       for (Map.Entry<String, IndexEntry> entry : index.entrySet()) {
         float sim = cosineSimilarity(queryEmbedding, entry.getValue().embedding);
+        IndexEntry ie = entry.getValue();
+        if (ie.text != null && ie.text.toLowerCase(Locale.ROOT).contains(queryLower)) {
+          sim += KEYWORD_BOOST;
+        }
         scored.add(Map.entry(entry.getKey(), sim));
       }
     } finally {
@@ -559,13 +590,15 @@ public class EmbeddingSearch extends SearchService {
           output = output.substring(0, 300);
         }
       }
+      String snippet = highlightTerms(entry.text, queryStr);
+      String highlightedTitle = highlightTerms(title, queryStr);
       candidates.add(Map.entry(ImmutableMap.<String, String>builder()
           .put("id", docId)
           .put("name", entry.noteName != null ? entry.noteName : "")
-          .put("snippet", entry.text)
+          .put("snippet", snippet)
           .put("text", entry.text)
-          .put("header", title)
-          .put("title", title)
+          .put("header", highlightedTitle)
+          .put("title", highlightedTitle)
           .put("tables", tables)
           .put("output", output)
           .build(), sim));

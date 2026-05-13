@@ -10,13 +10,12 @@
   ~ limitations under the License.
   -->
 
-<nz-card [nzTitle]="titleTemplateRef">
-  <ng-template #titleTemplateRef>
-    <div class="result-header">
-      <a [routerLink]="routerLink" [queryParams]="queryParams">{{ displayName }}</a>
-      <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
-    </div>
-  </ng-template>
+<nz-card class="result-card" (click)="navigate($event)">
+  <div class="result-header">
+    <a [routerLink]="routerLink" [queryParams]="queryParams" (click)="$event.stopPropagation()">{{ displayName }}</a>
+    <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
+  </div>
+  <div *ngIf="titleHtml" class="title-block" [innerHTML]="titleHtml"></div>
   <div *ngIf="codeHtml" class="code-block">
     <pre [innerHTML]="codeHtml"></pre>
   </div>
