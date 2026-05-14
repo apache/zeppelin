@@ -255,7 +255,9 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchCtls.setCountLimit(numUsersToFetch);
 
-    String searchFilter = String.format("(&(objectClass=*)(%s=*%s*))", this.getUserSearchAttributeName(), containString);
+    String searchFilter = String.format("(&(objectClass=*)(%s=*%s*))",
+        LdapFilterEncoder.escapeFilterValue(this.getUserSearchAttributeName()),
+        LdapFilterEncoder.escapeFilterValue(containString));
 
     Object[] searchArguments = new Object[]{containString};
 
@@ -301,7 +303,9 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       userPrincipalName = userPrincipalName.split("@")[0];
     }
 
-    String searchFilter = String.format("(&(objectClass=*)(%s=%s))", this.getUserSearchAttributeName(), userPrincipalName);
+    String searchFilter = String.format("(&(objectClass=*)(%s=%s))",
+        LdapFilterEncoder.escapeFilterValue(this.getUserSearchAttributeName()),
+        LdapFilterEncoder.escapeFilterValue(userPrincipalName));
     Object[] searchArguments = new Object[]{userPrincipalName};
 
     NamingEnumeration<SearchResult> answer = ldapContext.search(searchBase, searchFilter, searchArguments,
