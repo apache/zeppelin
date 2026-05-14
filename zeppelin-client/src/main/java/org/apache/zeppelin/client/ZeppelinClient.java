@@ -139,6 +139,7 @@ public class ZeppelinClient {
   public SessionInfo newSession(String interpreter) throws Exception {
     HttpResponse<JsonNode> response = Unirest
             .post("/session")
+            .header("Content-Type", "application/json")
             .queryString("interpreter", interpreter)
             .asJson();
     checkResponse(response);
@@ -782,6 +783,7 @@ public class ZeppelinClient {
     HttpResponse<JsonNode> response = Unirest
             .post("/notebook/{noteId}/paragraph/next")
             .routeParam("noteId", noteId)
+            .header("Content-Type", "application/json")
             .queryString("maxParagraph", maxParagraph)
             .asJson();
     checkResponse(response);
