@@ -593,6 +593,37 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-no-interpreter-shaded-leak</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>
+                    zeppelin-interpreter-shaded must NOT appear on the zeppelin-server classpath.
+                    The shaded jar is meant for interpreter JVMs only (loaded from
+                    ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-*.jar). Mixing the shaded
+                    and unshaded org.eclipse.aether.* on the server classpath causes ClassCastException
+                    in InterpreterSettingManager. See ZEPPELIN-6416.
+                  </message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
