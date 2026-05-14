@@ -146,6 +146,7 @@ public interface NotebookRepo extends Closeable {
     if (!notePath.startsWith("/")) {
       throw new IOException("Invalid notePath: " + notePath);
     }
+    NotebookPathValidator.rejectTraversalSegments(notePath);
     return (notePath + "_" + noteId + ".zpln").substring(1);
   }
 
