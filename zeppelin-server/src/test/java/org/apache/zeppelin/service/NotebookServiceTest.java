@@ -623,7 +623,7 @@ class NotebookServiceTest {
       assertEquals("Note name can not contain '..'", e.getMessage());
     }
     try {
-      notebookService.normalizeNotePath("%252525252e%252525252e/tmp/test444");
+      notebookService.normalizeNotePath("%25252525252e%25252525252e/tmp/test444");
       fail("Should fail");
     } catch (IOException e) {
       assertEquals("Exceeded maximum decode attempts. Possible malicious input.", e.getMessage());
