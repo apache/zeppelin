@@ -34,7 +34,7 @@ import org.apache.zeppelin.utils.HttpMethods;
  * {@code multipart/form-data}; anything else is rejected with 415.
  */
 @Provider
-public class JsonContentTypeFilter implements ContainerRequestFilter {
+public class AllowedContentTypeFilter implements ContainerRequestFilter {
 
   private static final Set<String> ALLOWED_TYPES = Set.of(
       "application/json",

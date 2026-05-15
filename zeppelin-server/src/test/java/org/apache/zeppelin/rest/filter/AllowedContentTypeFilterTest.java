@@ -32,9 +32,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
-class JsonContentTypeFilterTest {
+class AllowedContentTypeFilterTest {
 
-  private final JsonContentTypeFilter filter = new JsonContentTypeFilter();
+  private final AllowedContentTypeFilter filter = new AllowedContentTypeFilter();
 
   @Test
   void getRequestPasses() {

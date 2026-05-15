@@ -18,6 +18,7 @@ package org.apache.zeppelin.server;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.Locale;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -62,6 +63,10 @@ public class CorsFilter implements Filter {
         }
       } catch (URISyntaxException e) {
         LOGGER.warn("Rejecting request with malformed Origin header: {}", sourceHost);
+      } catch (UnknownHostException e) {
+        // Treat as not allowed so a misconfigured host doesn't surface as a 500.
+        LOGGER.warn("Cannot resolve local host for Origin check; treating Origin {} as not allowed",
+            sourceHost);
       }
 
       if (allowedOrigin.isEmpty() && (isCorsPreflight(httpRequest) || isStateChanging(method))) {
