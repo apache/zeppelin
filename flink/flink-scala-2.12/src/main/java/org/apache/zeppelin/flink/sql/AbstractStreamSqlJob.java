@@ -114,6 +114,7 @@ public abstract class AbstractStreamSqlJob {
   }
 
   public String run(Table table, String tableName) throws IOException {
+    ResultRetrievalThread retrievalThread = null;
     try {
       this.table = table;
       int parallelism = Integer.parseInt(context.getLocalProperties()
@@ -150,7 +151,7 @@ public abstract class AbstractStreamSqlJob {
               context.getLocalProperties().getOrDefault("refreshInterval", "3000"));
       refreshScheduler.scheduleAtFixedRate(new RefreshTask(context), delay, period, MILLISECONDS);
 
-      ResultRetrievalThread retrievalThread = new ResultRetrievalThread(refreshScheduler);
+      retrievalThread = new ResultRetrievalThread(refreshScheduler);
       retrievalThread.start();
 
       LOGGER.info("Run job: {}, parallelism: {}", tableName, parallelism);
@@ -205,6 +206,14 @@ public abstract class AbstractStreamSqlJob {
       }
       throw new IOException("Fail to run stream sql job", e);
     } finally {
+      if (retrievalThread != null && retrievalThread.isAlive()) {
+        retrievalThread.cancel();
+        try {
+          retrievalThread.join(5_000);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
+      }
       if (insertResult != null && insertResult.getJobClient().isPresent()) {
         try {
           jobManager.removeJob(context.getParagraphId());
