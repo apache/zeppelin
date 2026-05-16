@@ -51,7 +51,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * BigQuery interpreter for Zeppelin using modern google-cloud-bigquery client.
@@ -150,15 +149,7 @@ public class BigQueryInterpreter extends Interpreter {
     return builder.build().getService();
   }
 
-  private BigQuery getClientForUser(InterpreterContext context) throws IOException {
-    AuthenticationInfo authInfo = context.getAuthenticationInfo();
-
-    // Check if user has provided credentials via Zeppelin Credentials manager
-    if (authInfo != null && authInfo.getTicket() != null) {
-      // Typically we'd use something from credential manager, but let's assume JSON might be passed
-      // String userKey = authInfo.getTicket();
-    }
-
+  private BigQuery getOrCreateDefaultClient() throws IOException {
     if (service != null) {
       return service;
     }
@@ -173,7 +164,7 @@ public class BigQueryInterpreter extends Interpreter {
   private InterpreterResult executeSql(String sql, InterpreterContext context) {
     BigQuery bqClient;
     try {
-      bqClient = getClientForUser(context);
+      bqClient = getOrCreateDefaultClient();
     } catch (IOException e) {
       // Fallback: read a previously-supplied Service Account JSON from paragraph
       // form params, or render a masked password form to collect it.
