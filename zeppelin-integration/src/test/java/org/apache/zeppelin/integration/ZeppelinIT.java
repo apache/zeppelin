@@ -326,11 +326,23 @@ class ZeppelinIT extends AbstractZeppelinIT {
 
       assertTrue(isNotBlank(secondParagraphId), "Cannot find paragraph id for the 2nd paragraph");
 
-      // Update first paragraph to call z.runParagraph() with 2nd paragraph id
-      setTextOfParagraph(1,
-              "%angular <div id=\\'angularRunParagraph\\' ng-click=\\'z.runParagraph(\""
+      // Update first paragraph to call z.runParagraph() with 2nd paragraph id.
+      // ACE setValue does not fire the editor's 'input' event, so paragraph.text
+      // does not commit on its own; if the editor was closed after the first run
+      // ($scope.editor falsy), runParagraph would resend the previous text. Set
+      // paragraph.text on the scope and sync the ACE buffer, then $apply.
+      final String newAngularText =
+              "%angular <div id='angularRunParagraph' ng-click='z.runParagraph(\""
                       + secondParagraphId.trim()
-                      + "\")\\'>Run second paragraph</div>");
+                      + "\")'>Run second paragraph</div>";
+      setTextOfParagraph(1, newAngularText.replace("'", "\\'"));
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript(
+              "var els = document.querySelectorAll('div[ng-controller=\"ParagraphCtrl\"]');"
+                      + "var s = angular.element(els[0]).scope();"
+                      + "s.paragraph.text = arguments[0];"
+                      + "if (s.editor) { s.editor.setValue(arguments[0], 1); s.editor.clearSelection(); }"
+                      + "if (!s.$$phase && !s.$root.$$phase) { s.$apply(); }",
+              newAngularText);
 
       // Capture old output element before re-run to detect when it gets replaced
       WebElement oldAngularDiv = manager.getWebDriver().findElement(By.xpath(
