@@ -344,9 +344,18 @@ class ZeppelinIT extends AbstractZeppelinIT {
 
       waitForParagraph(1, "FINISHED");
 
-      // Wait for new Angular output to render
-      WebElement newAngularDiv = visibilityWait(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"), MAX_BROWSER_TIMEOUT_SEC);
+      // Poll for visibility + rendered text and re-find each iteration; AngularJS may
+      // briefly leave the result div detached or empty during $compile after a rerun.
+      final By newAngularDivLocator = By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]");
+      WebElement newAngularDiv = new WebDriverWait(manager.getWebDriver(),
+              Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC))
+              .ignoring(StaleElementReferenceException.class)
+              .until(driver -> {
+                WebElement el = driver.findElement(newAngularDivLocator);
+                return el.isDisplayed() && "Run second paragraph".equals(el.getText())
+                        ? el : null;
+              });
 
       // Set new text value for 2nd paragraph
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
