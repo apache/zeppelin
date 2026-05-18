@@ -327,28 +327,30 @@ class ZeppelinIT extends AbstractZeppelinIT {
       assertTrue(isNotBlank(secondParagraphId), "Cannot find paragraph id for the 2nd paragraph");
 
       // Update first paragraph to call z.runParagraph() with 2nd paragraph id.
-      // ACE setValue does not fire the editor's 'input' event, so paragraph.text
-      // does not commit on its own; if the editor was closed after the first run
-      // ($scope.editor falsy), runParagraph would resend the previous text. Set
-      // paragraph.text on the scope and sync the ACE buffer, then $apply.
+      // Bypass ACE + the play button: setTextOfParagraph toggles editor
+      // visibility and then calls ace.edit().setValue(), which races with the
+      // editor re-init that follows the toggle. ACE setValue also does not
+      // fire the 'input' event paragraph.controller.js binds to, so
+      // paragraph.text never commits — and when $scope.editor is falsy or
+      // freshly rebound, getEditorValue() falls back to the previous text or
+      // the empty buffer, causing the rerun to echo stale/empty ANGULAR data.
+      // Drive the paragraph straight through its controller scope instead.
       final String newAngularText =
               "%angular <div id='angularRunParagraph' ng-click='z.runParagraph(\""
                       + secondParagraphId.trim()
                       + "\")'>Run second paragraph</div>";
-      setTextOfParagraph(1, newAngularText.replace("'", "\\'"));
-      ((JavascriptExecutor) manager.getWebDriver()).executeScript(
-              "var els = document.querySelectorAll('div[ng-controller=\"ParagraphCtrl\"]');"
-                      + "var s = angular.element(els[0]).scope();"
-                      + "s.paragraph.text = arguments[0];"
-                      + "if (s.editor) { s.editor.setValue(arguments[0], 1); s.editor.clearSelection(); }"
-                      + "if (!s.$$phase && !s.$root.$$phase) { s.$apply(); }",
-              newAngularText);
 
       // Capture old output element before re-run to detect when it gets replaced
       WebElement oldAngularDiv = manager.getWebDriver().findElement(By.xpath(
               getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
-      runParagraph(1);
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript(
+              "var els = document.querySelectorAll('div[ng-controller=\"ParagraphCtrl\"]');"
+                      + "var s = angular.element(els[0]).scope();"
+                      + "s.paragraph.text = arguments[0];"
+                      + "if (s.editor) { s.editor.setValue(arguments[0], 1); s.editor.clearSelection(); }"
+                      + "s.runParagraph(arguments[0], true, false);",
+              newAngularText);
 
       // Wait for the old output element to become stale (proves the paragraph output
       // was actually refreshed, avoiding race where waitForParagraph sees the old FINISHED state)
@@ -357,8 +359,10 @@ class ZeppelinIT extends AbstractZeppelinIT {
 
       waitForParagraph(1, "FINISHED");
 
-      // Poll for visibility + rendered text and re-find each iteration; AngularJS may
-      // briefly leave the result div detached or empty during $compile after a rerun.
+      // Poll for the new render: visible, expected text, and the ng-click
+      // attribute from the second version. Re-find each iteration to tolerate
+      // mid-$compile detaches; requiring ng-click rejects an empty/stale rerun
+      // where the same "Run second paragraph" string slips through.
       final By newAngularDivLocator = By.xpath(
               getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]");
       WebElement newAngularDiv = new WebDriverWait(manager.getWebDriver(),
@@ -366,7 +370,10 @@ class ZeppelinIT extends AbstractZeppelinIT {
               .ignoring(StaleElementReferenceException.class)
               .until(driver -> {
                 WebElement el = driver.findElement(newAngularDivLocator);
-                return el.isDisplayed() && "Run second paragraph".equals(el.getText())
+                String ngClick = el.getAttribute("ng-click");
+                return el.isDisplayed()
+                        && "Run second paragraph".equals(el.getText())
+                        && ngClick != null && ngClick.contains("z.runParagraph")
                         ? el : null;
               });
 
