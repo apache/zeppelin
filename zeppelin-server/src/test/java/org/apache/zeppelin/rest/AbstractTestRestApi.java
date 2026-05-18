@@ -211,7 +211,7 @@ public abstract class AbstractTestRestApi {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpPut httpPut = new HttpPut(getUrlToTest(zConf) + path);
     httpPut.addHeader("Origin", getUrlToTest(zConf));
-    httpPut.setEntity(new StringEntity(body, ContentType.TEXT_PLAIN));
+    httpPut.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
