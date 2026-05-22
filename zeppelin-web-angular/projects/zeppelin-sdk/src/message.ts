@@ -40,6 +40,9 @@ export type ReceiveArgumentsType<K extends keyof MessageReceiveDataTypeMap> =
   MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
 
 export class Message {
+  /** Prevent unbounded growth of the short-circuit tracker */
+  private static readonly MAX_SHORT_CIRCUIT_SIZE = 100;
+
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
   private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
@@ -61,8 +64,6 @@ export class Message {
    * unrelated requests like EDITOR_SETTING are interleaved).
    */
   private shortCircuitedParagraphMsgIds = new Set<number>();
-  /** Prevent unbounded growth of the short-circuit tracker */
-  private static readonly MAX_SHORT_CIRCUIT_SIZE = 100;
 
   constructor() {
     this.open$.subscribe(() => {
