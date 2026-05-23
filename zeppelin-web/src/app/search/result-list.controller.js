@@ -38,13 +38,14 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
     if (/^%sh/i.test(text)) {
       return 'sh';
     }
-    // Fall back to keyword heuristic only if no prefix
+    // Fall back to conservative heuristics only if no prefix present.
+    // Require SELECT ... FROM pattern to avoid false positives from Python
+    // "from ... import" or markdown containing words like "create".
     if (!text.startsWith('%')) {
-      if (/\b(?:SELECT|INSERT|CREATE|FROM|WHERE)\b/i.test(text)
-          && /\b(?:SELECT|FROM)\b/i.test(text)) {
+      if (/\bSELECT\b/i.test(text) && /\bFROM\b/i.test(text)) {
         return 'sql';
       }
-      if (/import |def |class /i.test(text)) {
+      if (/^(import |from \w+ import |def |class )/m.test(text)) {
         return 'python';
       }
     }

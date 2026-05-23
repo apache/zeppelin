@@ -13,12 +13,12 @@ limitations under the License.
 -->
 <div class="searchResults">
     <div ng-if="isResult" class="row">
-    <div class="col-sm-8" style="margin: 0 auto; float: none">
-      <ul class="search-results" style="list-style:none;padding:0">
+    <div class="col-sm-8 search-result-container">
+      <ul class="search-results search-result-list">
         <li class="panel panel-default" ng-repeat="note in notes">
           <div class="panel-heading">
-            <h4 style="margin:0;display:flex;align-items:center;gap:8px">
-              <i style="font-size: 10px;" class="icon-doc"></i>
+            <h4 class="search-result-heading">
+              <i class="icon-doc"></i>
               <a class="search-results-header"
                  href="#/notebook/{{note.id}}">
                   {{note.name.trim()==='' && 'Note ' + note.id.split('/',2)[0] || note.name}}
@@ -28,11 +28,11 @@ limitations under the License.
                     style="font-size:11px">{{note.langBadge}}</span>
             </h4>
           </div>
-          <div class="panel-body" style="padding:0">
-            <div ng-if="note.titleHtml" ng-bind-html="note.titleHtml" style="padding:4px 12px;font-size:12px;color:#777"></div>
-            <pre ng-if="note.codeHtml" ng-bind-html="note.codeHtml" style="margin:0;border:none;border-radius:0;background:#f8f9fa;border-bottom:1px solid #eee;max-height:200px;overflow:auto;font-size:12px"></pre>
-            <pre ng-if="note.outputText" style="margin:0;border:none;border-radius:0;background:#fafbfc;border-left:3px solid #ddd;color:#666;max-height:120px;overflow:auto;font-size:11px;padding:8px 12px">{{note.outputText}}</pre>
-            <div ng-if="note.tablesText" style="padding:6px 12px;font-size:12px;color:#3c763d">Tables: {{note.tablesText}}</div>
+          <div class="panel-body search-result-body">
+            <div ng-if="note.titleHtml" ng-bind-html="note.titleHtml" class="search-result-title"></div>
+            <pre ng-if="note.codeHtml" ng-bind-html="note.codeHtml" class="search-result-code"></pre>
+            <pre ng-if="note.outputText" class="search-result-output">{{note.outputText}}</pre>
+            <div ng-if="note.tablesText" class="search-result-tables">Tables: {{note.tablesText}}</div>
           </div>
        </li>
       </ul>

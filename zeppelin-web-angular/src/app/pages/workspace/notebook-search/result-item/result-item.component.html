@@ -10,7 +10,7 @@
   ~ limitations under the License.
   -->
 
-<nz-card class="result-card" (click)="navigate($event)">
+<nz-card class="result-card" (click)="navigateToResult()">
   <div class="result-header">
     <a [routerLink]="routerLink" [queryParams]="queryParams" (click)="$event.stopPropagation()">{{ displayName }}</a>
     <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
