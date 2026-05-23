@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "HDFS File System Interpreter for Apache Zeppelin"
-description: "Hadoop File System is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like Hadoop MapReduce and Apache Spark or underlying file systems like Alluxio."
+description: "Hadoop File System is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like Hadoop MapReduce and Apache Spark or underlying file systems like S3."
 group: interpreter
 ---
 <!--
@@ -24,7 +24,7 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
-[Hadoop File System](http://hadoop.apache.org/) is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like [Hadoop MapReduce](http://hadoop.apache.org/) and [Apache Spark](http://spark.apache.org/) or underlying file systems like [Alluxio](http://www.alluxio.org/).
+[Hadoop File System](http://hadoop.apache.org/) is a distributed, fault tolerant file system part of the hadoop project and is often used as storage for distributed processing engines like [Hadoop MapReduce](http://hadoop.apache.org/) and [Apache Spark](http://spark.apache.org/) or underlying file systems like [S3](https://aws.amazon.com/s3/).
 
 ## Configuration
 <table class="table-configuration">

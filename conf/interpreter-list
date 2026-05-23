@@ -17,7 +17,6 @@
 #
 # [name]  [maven artifact]  [description]
 
-alluxio         org.apache.zeppelin:zeppelin-alluxio:0.13.0-SNAPSHOT              Alluxio interpreter
 angular         org.apache.zeppelin:zeppelin-angular:0.13.0-SNAPSHOT              HTML and AngularJS view rendering
 bigquery        org.apache.zeppelin:zeppelin-bigquery:0.13.0-SNAPSHOT             BigQuery interpreter
 cassandra       org.apache.zeppelin:zeppelin-cassandra:0.13.0-SNAPSHOT            Cassandra interpreter

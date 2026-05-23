@@ -93,7 +93,7 @@ jobs:
       matrix:
         java: [ 11 ]
     env:
-      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,alluxio,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell'
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

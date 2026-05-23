@@ -168,7 +168,6 @@ Each interpreter is an independent Maven module inheriting from `zeppelin-interp
 | `sparql/` | SPARQL queries |
 | `influxdb/` | InfluxDB |
 | `file/` | HDFS/local file browser |
-| `alluxio/` | Alluxio file system |
 
 ### Plugin Modules (`zeppelin-plugins/`)
 
