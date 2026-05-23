@@ -63,7 +63,9 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       let codeHtml = (note.snippet || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
       let code = (note.snippet || '').replace(/<B>/g, '').replace(/<\/B>/g, '');
 
-      let tables = (note.tables || '').trim().split(/\s+/).filter(function(t) { return t; }).join(', ');
+      let tables = (note.tables || '').trim().split(/\s+/).filter(function(t) {
+        return t;
+      }).join(', ');
 
       note.codeText = code;
       note.codeHtml = codeHtml;
