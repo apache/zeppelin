@@ -36,7 +36,7 @@ RUN set -ex && \
     apt-get autoclean && \
     apt-get clean
 
-ARG version="0.12.1"
+ARG version="0.12.2-SNAPSHOT"
 
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
