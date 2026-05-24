@@ -65,13 +65,14 @@ export class NotebookSearchResultItemComponent implements OnChanges {
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
 
     const snippet = this.result.snippet || '';
-    // Preserve Lucene <B> highlighting by converting to <mark>
-    this.codeHtml = snippet.replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
+    // HTML-escape first so raw '<' in code (e.g. WHERE id < 100) is not parsed
+    // as a DOM tag, then promote only the Lucene <B> markers to <mark>.
+    this.codeHtml = this.highlightToMark(snippet);
     this.codeText = snippet.replace(/<\/?B>/gi, '');
     this.interpreter = this.detectInterpreter(this.codeText);
 
     const title = this.result.title || '';
-    this.titleHtml = title.replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
+    this.titleHtml = this.highlightToMark(title);
 
     const tables = this.result.tables || '';
     this.tablesText = tables
@@ -80,6 +81,17 @@ export class NotebookSearchResultItemComponent implements OnChanges {
       .filter(t => t)
       .join(', ');
     this.outputText = this.result.output || '';
+  }
+
+  private highlightToMark(text: string): string {
+    // Escape HTML so raw '<' in source (e.g. WHERE id < 100) is not parsed as
+    // a DOM tag, then convert the Lucene <B>/<\/B> markers back to <mark>.
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/&lt;B&gt;/gi, '<mark>')
+      .replace(/&lt;\/B&gt;/gi, '</mark>');
   }
 
   private detectInterpreter(text: string): string {

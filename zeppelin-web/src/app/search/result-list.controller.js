@@ -52,6 +52,17 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
     return '';
   }
 
+  // HTML-escape raw text so '<' in source (e.g. WHERE id < 100) is not parsed
+  // as a DOM tag, then promote only the Lucene <B>/<\/B> markers to <mark>.
+  function highlightToMark(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/&lt;B&gt;/gi, '<mark>')
+      .replace(/&lt;\/B&gt;/gi, '</mark>');
+  }
+
   results.$promise.then(function(result) {
     $scope.notes = result.body.map(function(note) {
       if (!/\/paragraph\//.test(note.id)) {
@@ -60,8 +71,6 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       note.id = note.id.replace('paragraph/', '?paragraph=') +
         '&term=' + $routeParams.searchTerm;
 
-      // Preserve Lucene <B> highlighting by converting to <mark>
-      let codeHtml = (note.snippet || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
       let code = (note.snippet || '').replace(/<B>/g, '').replace(/<\/B>/g, '');
 
       let tables = (note.tables || '').trim().split(/\s+/).filter(function(t) {
@@ -69,8 +78,8 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       }).join(', ');
 
       note.codeText = code;
-      note.codeHtml = codeHtml;
-      note.titleHtml = (note.title || '').replace(/<B>/gi, '<mark>').replace(/<\/B>/gi, '</mark>');
+      note.codeHtml = highlightToMark(note.snippet || '');
+      note.titleHtml = highlightToMark(note.title || '');
       note.outputText = note.output || '';
       note.tablesText = tables;
       note.langBadge = detectLang(code);
