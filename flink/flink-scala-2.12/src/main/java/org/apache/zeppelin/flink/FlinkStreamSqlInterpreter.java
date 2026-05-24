@@ -43,7 +43,7 @@ public class FlinkStreamSqlInterpreter extends FlinkSqlInterpreter {
     FlinkSqlContext flinkSqlContext = new FlinkSqlContext(
             flinkInterpreter.getExecutionEnvironment().getJavaEnv(),
             flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv(),
-            flinkInterpreter.getJavaBatchTableEnvironment("blink"),
+            flinkInterpreter.getJavaBatchTableEnvironment(),
             flinkInterpreter.getJavaStreamTableEnvironment(),
             flinkInterpreter.getZeppelinContext(),
             sql -> callInnerSelect(sql));

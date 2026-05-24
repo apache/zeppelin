@@ -47,7 +47,7 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 
 # Common profiles
 #   -Pspark-3.5 -Pspark-scala-2.12   Spark version
-#   -Pflink-117                        Flink version
+#   -Pflink1.20                        Flink version
 #   -Pbuild-distr                      Full distribution
 #   -Prat                              Apache RAT license check
 #   -Pweb-classic                      Additionally builds the classic UI web module when specified

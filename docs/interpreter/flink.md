@@ -27,7 +27,7 @@ limitations under the License.
 [Apache Flink](https://flink.apache.org) is a framework and distributed processing engine for stateful computations over unbounded and bounded data streams. 
 Flink has been designed to run in all common cluster environments, perform computations at in-memory speed and at any scale.
 
-In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Currently, only Flink 1.19+ is supported, old versions of flink won't work.**
+In Zeppelin 0.9, we refactor the Flink interpreter in Zeppelin to support the latest version of Flink. **Currently, only Flink 1.20+ is supported, old versions of flink won't work.**
 Apache Flink is supported in Zeppelin with the Flink interpreter group which consists of the five interpreters listed below.
 
 <table class="table-configuration">
@@ -138,15 +138,17 @@ docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/flink-sql-cookbook-on-zep
 
 ## Prerequisites
 
-Download Flink 1.19 or afterwards (Only Scala 2.12 is supported)
+Download Flink 1.20 (the latest 1.x LTS) or newer (Only Scala 2.12 is supported).
 
 ### Version-specific notes for Flink
 
-Flink 1.19+ is scala free and has changed its binary distribution, the following extra steps are required. Replace `${FLINK_VERSION}` below with the version of Flink you installed.
-* Move FLINK_HOME/opt/flink-table-planner_2.12-${FLINK_VERSION}.jar to FLINK_HOME/lib
-* Move FLINK_HOME/lib/flink-table-planner-loader-${FLINK_VERSION}.jar to FLINK_HOME/opt
-* Download flink-table-api-scala-bridge_2.12-${FLINK_VERSION}.jar and flink-table-api-scala_2.12-${FLINK_VERSION}.jar to FLINK_HOME/lib
-* Move FLINK_HOME/opt/flink-sql-client-${FLINK_VERSION}.jar to FLINK_HOME/lib
+The following extra steps are required to set up the Flink distribution for Zeppelin.
+Replace `${FLINK_VERSION}` below with the version of Flink you installed.
+
+* Move `${FLINK_HOME}/opt/flink-table-planner_2.12-${FLINK_VERSION}.jar` to `${FLINK_HOME}/lib`
+* Move `${FLINK_HOME}/lib/flink-table-planner-loader-${FLINK_VERSION}.jar` to `${FLINK_HOME}/opt`
+* Download `flink-table-api-scala-bridge_2.12-${FLINK_VERSION}.jar` and `flink-table-api-scala_2.12-${FLINK_VERSION}.jar` into `${FLINK_HOME}/lib`
+* Move `${FLINK_HOME}/opt/flink-sql-client-${FLINK_VERSION}.jar` to `${FLINK_HOME}/lib`
 
 ## Flink on Zeppelin Architecture
 

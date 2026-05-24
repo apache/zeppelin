@@ -55,7 +55,7 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>flink1.19-shims</artifactId>
+      <artifactId>flink1.20-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -1191,7 +1191,7 @@
 
   <profiles>
     <profile>
-      <id>flink-119</id>
+      <id>flink1.19</id>
       <properties>
         <flink.version>${flink1.19.version}</flink.version>
         <flink.scala.version>2.12.18</flink.scala.version>
@@ -1226,7 +1226,7 @@
     </profile>
 
     <profile>
-      <id>flink-120</id>
+      <id>flink1.20</id>
       <properties>
         <flink.version>${flink1.20.version}</flink.version>
         <flink.scala.version>2.12.18</flink.scala.version>

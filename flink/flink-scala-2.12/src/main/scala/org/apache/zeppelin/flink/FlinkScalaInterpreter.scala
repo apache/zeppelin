@@ -87,17 +87,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private var btenv: TableEnvironment = _
   private var stenv: TableEnvironment = _
 
-  // TableEnvironment of flink planner (used for convert Flink table to DataSet)
-  private var btenv_2: TableEnvironment = _
-
   // PyFlink depends on java version of TableEnvironment,
   // so need to create java version of TableEnvironment
   // java version of blink TableEnvironment
   private var java_btenv: TableEnvironment = _
   private var java_stenv: TableEnvironment = _
-
-  // java version TableEnvironment of old planner, used for converting Table to DataSet
-  private var java_btenv_2: TableEnvironment = _
 
   private var z: FlinkZeppelinContext = _
   private var flinkVersion: FlinkVersion = _
@@ -436,7 +430,7 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       } catch {
         case NonFatal(e) =>
           if (attempt == 1) {
-            LOGGER.warn("Retrying bind for " + name + " due to Scala reflection issue: " + e.getMessage)
+            LOGGER.warn(s"Retrying bind for $name due to Scala reflection issue: ${e.getMessage}")
           } else {
             throw new InterpreterException(s"Failed to bind $name after retry", e)
           }
@@ -470,9 +464,6 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
       this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
       bindWithRetry("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
       this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
-
-      this.btenv_2 = null
-      this.java_btenv_2 = null
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }
@@ -783,24 +774,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
   def getStreamExecutionEnvironment(): StreamExecutionEnvironment = this.senv
 
-  def getBatchTableEnvironment(planner: String = "blink"): TableEnvironment = {
-    if (planner == "blink")
-      this.btenv
-    else
-      this.btenv_2
-  }
+  def getBatchTableEnvironment(): TableEnvironment = this.btenv
 
-  def getStreamTableEnvironment(): TableEnvironment = {
-    this.stenv
-  }
+  def getStreamTableEnvironment(): TableEnvironment = this.stenv
 
-  def getJavaBatchTableEnvironment(planner: String): TableEnvironment = {
-    if (planner == "blink") {
-      this.java_btenv
-    } else {
-      this.java_btenv_2
-    }
-  }
+  def getJavaBatchTableEnvironment(): TableEnvironment = this.java_btenv
 
   def getJavaStreamTableEnvironment(): TableEnvironment = {
     this.java_stenv

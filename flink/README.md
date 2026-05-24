@@ -10,7 +10,7 @@ Flink interpreter is more complex than other interpreter (such as jdbc, shell).
 Currently, it has the following modules clustered into two groups:
 
 * flink-shims
-* flink1.19-shims (shared by Flink 1.19 and 1.20)
+* flink1.20-shims (shared by Flink 1.19 and 1.20; named after the latest LTS)
 
 * flink-scala-2.12
 

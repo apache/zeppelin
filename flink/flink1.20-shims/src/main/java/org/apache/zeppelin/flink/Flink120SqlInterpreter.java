@@ -63,9 +63,9 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 import static org.apache.flink.util.Preconditions.checkState;
 
 
-public class Flink119SqlInterpreter {
+public class Flink120SqlInterpreter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink119SqlInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink120SqlInterpreter.class);
   private static final String CMD_DESC_DELIMITER = "\t\t";
 
   /**
@@ -173,7 +173,7 @@ public class Flink119SqlInterpreter {
   private ReentrantReadWriteLock.WriteLock lock = new ReentrantReadWriteLock().writeLock();
 
 
-  public Flink119SqlInterpreter(FlinkSqlContext flinkSqlContext, boolean isBatch) {
+  public Flink120SqlInterpreter(FlinkSqlContext flinkSqlContext, boolean isBatch) {
     this.flinkSqlContext = flinkSqlContext;
     this.isBatch = isBatch;
     if (isBatch) {

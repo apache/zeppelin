@@ -60,7 +60,7 @@ import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo;
 import org.apache.flink.types.Row;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.FlinkException;
-import org.apache.zeppelin.flink.shims119.CollectStreamTableSink;
+import org.apache.zeppelin.flink.shims120.CollectStreamTableSink;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
@@ -80,23 +80,23 @@ import java.util.Properties;
 /**
  * Shims for Flink 1.19/1.20 (1.x series, last LTS)
  */
-public class Flink119Shims extends FlinkShims {
+public class Flink120Shims extends FlinkShims {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Flink119Shims.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Flink120Shims.class);
 
-  private Flink119SqlInterpreter batchSqlInterpreter;
-  private Flink119SqlInterpreter streamSqlInterpreter;
+  private Flink120SqlInterpreter batchSqlInterpreter;
+  private Flink120SqlInterpreter streamSqlInterpreter;
 
-  public Flink119Shims(FlinkVersion flinkVersion, Properties properties) {
+  public Flink120Shims(FlinkVersion flinkVersion, Properties properties) {
     super(flinkVersion, properties);
   }
 
   public void initInnerBatchSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.batchSqlInterpreter = new Flink119SqlInterpreter(flinkSqlContext, true);
+    this.batchSqlInterpreter = new Flink120SqlInterpreter(flinkSqlContext, true);
   }
 
   public void initInnerStreamSqlInterpreter(FlinkSqlContext flinkSqlContext) {
-    this.streamSqlInterpreter = new Flink119SqlInterpreter(flinkSqlContext, false);
+    this.streamSqlInterpreter = new Flink120SqlInterpreter(flinkSqlContext, false);
   }
 
   @Override
@@ -258,16 +258,6 @@ public class Flink119Shims extends FlinkShims {
     r1.setKind(RowKind.INSERT);
     r2.setKind(RowKind.INSERT);
     return r1.equals(r2);
-  }
-
-  @Override
-  public Object fromDataSet(Object btenv, Object ds) {
-    throw new RuntimeException("Conversion from DataSet is not supported in Flink 1.19+");
-  }
-
-  @Override
-  public Object toDataSet(Object btenv, Object table) {
-    throw new RuntimeException("Conversion to DataSet is not supported in Flink 1.19+");
   }
 
   @Override
