@@ -12,10 +12,10 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Table } from 'antd';
-import type { Column, Line, Pie, Scatter } from '@antv/g2plot';
 import { VisualizationControls } from './VisualizationControls';
 import { parseTableData, exportFile } from '@/utils';
 import type { ParagraphConfigResult, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
+import type { Chart, ChartConfiguration } from 'chart.js';
 
 interface TableVisualizationProps {
   result: ParagraphIResultsMsgItem;
@@ -66,7 +66,8 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
   };
 
   useEffect(() => {
-    if (!chartRef.current || !tableData || tableData.rows.length === 0 || currentMode === 'table') return;
+    const container = chartRef.current;
+    if (!container || !tableData || tableData.rows.length === 0 || currentMode === 'table') return;
 
     const data = tableData.rows.map((row, idx) => ({
       category: row[0] || `Row ${idx + 1}`,
@@ -75,64 +76,123 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
       y: parseFloat(row[1] || '0') || 0
     }));
 
-    let chart: Column | Line | Pie | Scatter | null = null;
+    container.innerHTML = '';
+
+    let chart: Chart | null = null;
     let cancelled = false;
 
-    import('@antv/g2plot').then(g2plot => {
-      if (cancelled || !chartRef.current) return;
+    import('chart.js/auto').then(module => {
+      if (cancelled || !container) return;
 
+      const ChartConstructor = module.Chart || module.default;
+
+      const canvas = document.createElement('canvas');
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      container.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let chartConfig: ChartConfiguration | null = null;
       switch (currentMode) {
         case 'multiBarChart':
-          chart = new g2plot.Column(chartRef.current, {
-            data,
-            xField: 'category',
-            yField: 'value',
-            color: '#1890ff',
-            columnWidthRatio: 0.8
-          });
+          chartConfig = {
+            type: 'bar',
+            data: {
+              labels: data.map(d => d.category),
+              datasets: [{
+                label: 'Value',
+                data: data.map(d => d.value),
+                backgroundColor: '#1890ff'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          };
           break;
         case 'lineChart':
-          chart = new g2plot.Line(chartRef.current, {
-            data,
-            xField: 'category',
-            yField: 'value',
-            color: '#1890ff'
-          });
+          chartConfig = {
+            type: 'line',
+            data: {
+              labels: data.map(d => d.category),
+              datasets: [{
+                label: 'Value',
+                data: data.map(d => d.value),
+                borderColor: '#1890ff',
+                backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                tension: 0.1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          };
           break;
         case 'pieChart':
-          chart = new g2plot.Pie(chartRef.current, {
-            data,
-            angleField: 'value',
-            colorField: 'category'
-          });
+          chartConfig = {
+            type: 'pie',
+            data: {
+              labels: data.map(d => d.category),
+              datasets: [{
+                data: data.map(d => d.value),
+                backgroundColor: [
+                  '#1890ff', '#2fc25b', '#facc14', '#223273', '#8543e0', '#13c2c2', '#3436c7', '#f04864'
+                ]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          };
           break;
         case 'scatterChart':
-          chart = new g2plot.Scatter(chartRef.current, {
-            data,
-            xField: 'x',
-            yField: 'y',
-            color: '#1890ff'
-          });
+          chartConfig = {
+            type: 'scatter',
+            data: {
+              datasets: [{
+                label: 'Value',
+                data: data.map(d => ({ x: d.x, y: d.y })),
+                backgroundColor: '#1890ff'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: { type: 'linear', position: 'bottom' }
+              }
+            }
+          };
           break;
         case 'stackedAreaChart':
-          chart = new g2plot.Line(chartRef.current, {
-            data,
-            xField: 'category',
-            yField: 'value',
-            color: '#1890ff',
-            point: {
-              size: 3,
-              shape: 'circle'
+          chartConfig = {
+            type: 'line',
+            data: {
+              labels: data.map(d => d.category),
+              datasets: [{
+                label: 'Value',
+                data: data.map(d => d.value),
+                borderColor: '#1890ff',
+                backgroundColor: 'rgba(24, 144, 255, 0.2)',
+                fill: true,
+                tension: 0.1
+              }]
             },
-            lineStyle: {
-              lineWidth: 2
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
             }
-          });
+          };
           break;
       }
 
-      if (chart) {
-        chart.render();
+      if (chartConfig) {
+        chart = new ChartConstructor(ctx, chartConfig);
       }
     });
 
@@ -140,6 +200,9 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
       cancelled = true;
       if (chart) {
         chart.destroy();
+      }
+      if (container) {
+        container.innerHTML = '';
       }
     };
   }, [currentMode, tableData]);
