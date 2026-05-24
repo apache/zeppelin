@@ -1194,7 +1194,6 @@
       <id>flink1.19</id>
       <properties>
         <flink.version>${flink1.19.version}</flink.version>
-        <flink.scala.version>2.12.18</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
       </properties>
       <dependencies>
@@ -1229,7 +1228,6 @@
       <id>flink1.20</id>
       <properties>
         <flink.version>${flink1.20.version}</flink.version>
-        <flink.scala.version>2.12.18</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
       </properties>
       <dependencies>
