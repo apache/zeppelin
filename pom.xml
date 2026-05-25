@@ -77,7 +77,6 @@
     <module>cassandra</module>
     <module>elasticsearch</module>
     <module>bigquery</module>
-    <module>alluxio</module>
     <module>neo4j</module>
     <module>java</module>
     <module>sparql</module>

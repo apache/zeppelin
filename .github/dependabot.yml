@@ -57,17 +57,6 @@ updates:
           - "*"
 
   - package-ecosystem: "maven"
-    directory: "/alluxio"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 0
-    groups:
-      alluxio-security-updates:
-        applies-to: security-updates
-        patterns:
-          - "*"
-
-  - package-ecosystem: "maven"
     directory: "/bigquery"
     schedule:
       interval: "weekly"
