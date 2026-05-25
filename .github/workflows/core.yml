@@ -239,7 +239,7 @@ jobs:
       fail-fast: false
       matrix:
         python: [ 3.9 ]
-        flink: [116, 117]
+        flink: [116, 117, 118]
         include:
           # Flink 1.15 supports Python 3.6, 3.7, and 3.8
           # https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/python/installation/

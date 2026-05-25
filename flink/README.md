@@ -13,6 +13,7 @@ Currently, it has the following modules clustered into two groups:
 * flink1.15-shims
 * flink1.16-shims
 * flink1.17-shims
+* flink1.18-shims
 
 * flink-scala-2.12
 
