@@ -40,9 +40,6 @@ export type ReceiveArgumentsType<K extends keyof MessageReceiveDataTypeMap> =
   MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
 
 export class Message {
-  /** Prevent unbounded growth of the short-circuit tracker */
-  private static readonly MAX_SHORT_CIRCUIT_SIZE = 100;
-
   public connectedStatus = false;
   public connectedStatus$ = new Subject<boolean>();
   private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
@@ -57,13 +54,6 @@ export class Message {
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
   private lastMsgIdSeqSent = 0;
   private readonly normalCloseCode = 1000;
-  /**
-   * Track which PARAGRAPH message seq IDs were explicitly short-circuited.
-   * Only these should be filtered out — not all messages where
-   * lastMsgIdSeqSent > receivedSeq (which can happen legitimately when
-   * unrelated requests like EDITOR_SETTING are interleaved).
-   */
-  private shortCircuitedParagraphMsgIds = new Set<number>();
 
   constructor() {
     this.open$.subscribe(() => {
@@ -184,49 +174,11 @@ export class Message {
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
     return this.received$.pipe(
       filter(message => message.op === op),
-      filter(message => {
-        if (!message.msgId) {
-          // when msgId is not specified, it is not response to client request.
-          // always process them
-          return true;
-        }
-        const uniqueClientId = message.msgId.split('-')[0];
-        const msgIdSeqReceived = parseInt(message.msgId.split('-')[1], 10);
-        const isResponseForRequestFromThisClient = uniqueClientId === this.uniqueClientId;
-
-        if (message.op === OP.PARAGRAPH) {
-          if (isResponseForRequestFromThisClient &&
-               this.shortCircuitedParagraphMsgIds.has(msgIdSeqReceived)
-          ) {
-            console.log('PARAPGRAPH is already updated by shortcircuit');
-            this.shortCircuitedParagraphMsgIds.delete(msgIdSeqReceived);
-            return false;
-          } else {
-            return true;
-          }
-        } else {
-          return true;
-        }
-      }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
 
   shortCircuit(message: WebSocketMessage<MessageReceiveDataTypeMap>) {
-    // Track which PARAGRAPH responses were explicitly short-circuited
-    // so the receive filter can correctly identify and skip them
-    if (message.op === OP.PARAGRAPH && message.msgId) {
-      const msgIdSeq = parseInt(message.msgId.split('-')[1], 10);
-      this.shortCircuitedParagraphMsgIds.add(msgIdSeq);
-      // Prevent unbounded growth: evict the oldest (smallest seq) entries
-      if (this.shortCircuitedParagraphMsgIds.size > Message.MAX_SHORT_CIRCUIT_SIZE) {
-        const sorted = [...this.shortCircuitedParagraphMsgIds].sort((a, b) => a - b);
-        const toDelete = sorted.slice(0, sorted.length - Message.MAX_SHORT_CIRCUIT_SIZE / 2);
-        for (const id of toDelete) {
-          this.shortCircuitedParagraphMsgIds.delete(id);
-        }
-      }
-    }
     this.received$.next(this.interceptReceived(message));
   }
 
