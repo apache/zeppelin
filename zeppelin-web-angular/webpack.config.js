@@ -14,42 +14,73 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const webpack = require('@angular-devkit/build-angular/node_modules/webpack');
 const ModuleFederationPlugin = webpack.container.ModuleFederationPlugin;
 
-module.exports = {
-  output: {
+const MONACO_DIR = /monaco-editor[\\/]/;
+
+module.exports = (config, options, targetOptions) => {
+  config.output = {
+    ...(config.output || {}),
     // Unique name for this microfrontend to avoid collisions with other apps
     uniqueName: 'shell',
     publicPath: '/',
     scriptType: 'text/javascript'
-  },
-  optimization: {
+  };
+
+  config.optimization = {
+    ...(config.optimization || {}),
     // Disable runtime chunk to prevent conflicts with Module Federation's runtime
     runtimeChunk: false
-  },
-  experiments: {
+  };
+
+  config.experiments = {
+    ...(config.experiments || {}),
     // Enable top-level await for async Module Federation container initialization
     topLevelAwait: true
-  },
+  };
+
   // To avoid path conflict with websocket server path of ZeppelinServer
-  devServer: {
+  config.devServer = {
+    ...(config.devServer || {}),
     client: {
-      webSocketURL: {
-        pathname: '/wds-ws'
-      }
+      ...((config.devServer && config.devServer.client) || {}),
+      webSocketURL: { pathname: '/wds-ws' }
     },
     webSocketServer: {
       type: 'ws',
-      options: {
-        path: '/wds-ws'
-      }
+      options: { path: '/wds-ws' }
     }
-  },
-  plugins: [
+  };
+
+  // monaco-editor imports `.css` files from its own JS modules. Angular 14's
+  // build-angular CSS pipeline (postcss + mini-css-extract) does not handle
+  // CSS requested from node_modules JS, and chaining style-loader on top of
+  // its rule produces a postcss collision. Exclude monaco from the existing
+  // CSS rules and add a dedicated rule that injects styles at runtime.
+  config.module = config.module || { rules: [] };
+  config.module.rules = config.module.rules || [];
+  for (const rule of config.module.rules) {
+    if (!rule || !rule.test) continue;
+    const testStr = rule.test.toString();
+    if (testStr.includes('css') || testStr.includes('CSS')) {
+      const existing = rule.exclude ? (Array.isArray(rule.exclude) ? rule.exclude : [rule.exclude]) : [];
+      rule.exclude = [...existing, MONACO_DIR];
+    }
+  }
+  config.module.rules.push({
+    test: /\.css$/,
+    include: MONACO_DIR,
+    use: ['style-loader', 'css-loader']
+  });
+
+  config.plugins = config.plugins || [];
+  config.plugins.push(
     new ModuleFederationPlugin({
       name: 'shell',
       remotes: {
         reactApp: 'reactApp@http://localhost:3001/remoteEntry.js'
       }
-    }),
+    })
+  );
+  config.plugins.push(
     new MonacoWebpackPlugin({
       languages: [
         'bat',
@@ -89,5 +120,7 @@ module.exports = {
       ],
       features: ['!accessibilityHelp']
     })
-  ]
+  );
+
+  return config;
 };
