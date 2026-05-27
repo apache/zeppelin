@@ -228,7 +228,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
         throw new Error('window.reactApp not available');
       }
 
-      const factory = await container.get('./PublishedParagraph');
+      const factory = await container.get<{ mount: (el: HTMLElement, props: unknown) => () => void }>(
+        './PublishedParagraph'
+      );
       const { mount } = factory();
 
       if (!mount || typeof mount !== 'function') {
