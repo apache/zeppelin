@@ -11,3 +11,4 @@
  */
 
 export { PublishedParagraph, mount } from './pages/PublishedParagraph';
+export { ParagraphFooter, mount as mountParagraphFooter } from './components/paragraph/ParagraphFooter';
