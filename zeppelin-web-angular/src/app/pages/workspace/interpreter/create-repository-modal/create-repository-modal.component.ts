@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { takeUntil } from 'rxjs/operators';
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
@@ -27,7 +27,7 @@ import { InterpreterService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InterpreterCreateRepositoryModalComponent extends DestroyHookComponent {
-  validateForm: FormGroup;
+  validateForm: UntypedFormGroup;
   submitting = false;
   urlProtocol = 'http://';
 
@@ -53,7 +53,7 @@ export class InterpreterCreateRepositoryModalComponent extends DestroyHookCompon
   }
 
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private nzModalRef: NzModalRef,
     private interpreterService: InterpreterService
   ) {

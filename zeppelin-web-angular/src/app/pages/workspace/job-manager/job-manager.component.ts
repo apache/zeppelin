@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 import { NzModalService } from 'ng-zorro-antd/modal';
 
@@ -37,7 +37,7 @@ interface FilterForm {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JobManagerComponent extends MessageListenersManager implements OnDestroy {
-  form: FormGroup;
+  form: UntypedFormGroup;
   jobStatusKeys: JobStatus[] = Object.values(JobStatus);
   sortKeys: JobDateSortKeys[] = Object.values(JobDateSortKeys);
   interpreters: string[] = [];
@@ -118,7 +118,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
   constructor(
     public messageService: MessageService,
     private jobManagerService: JobManagerService,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private cdr: ChangeDetectorRef,
     private nzModalService: NzModalService
   ) {
