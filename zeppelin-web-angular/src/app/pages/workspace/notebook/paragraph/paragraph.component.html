@@ -114,14 +114,23 @@
           ></zeppelin-notebook-paragraph-result>
         }
       }
-      <zeppelin-notebook-paragraph-footer
-        [showExecutionTime]="!paragraph.config.tableHide && !viewOnly"
-        [showElapsedTime]="paragraph.status === 'RUNNING'"
-        [user]="paragraph.user"
-        [dateUpdated]="paragraph.dateUpdated"
-        [dateStarted]="paragraph.dateStarted"
-        [dateFinished]="paragraph.dateFinished"
-      ></zeppelin-notebook-paragraph-footer>
+      @if (shouldUseReactFooter) {
+        <div
+          data-testid="react-paragraph-footer"
+          zeppelin-react-mount="./ParagraphFooter"
+          [reactProps]="reactFooterProps"
+        ></div>
+      } @else {
+        <zeppelin-notebook-paragraph-footer
+          data-testid="angular-paragraph-footer"
+          [showExecutionTime]="!paragraph.config.tableHide && !viewOnly"
+          [showElapsedTime]="paragraph.status === 'RUNNING'"
+          [user]="paragraph.user"
+          [dateUpdated]="paragraph.dateUpdated"
+          [dateStarted]="paragraph.dateStarted"
+          [dateFinished]="paragraph.dateFinished"
+        ></zeppelin-notebook-paragraph-footer>
+      }
     </div>
     @if (!viewOnly && !revisionView && last && looknfeel !== 'report') {
       <zeppelin-notebook-add-paragraph

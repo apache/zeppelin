@@ -94,6 +94,34 @@ export class NotebookParagraphComponent
   @Input() collaborativeMode = false;
   @Input() first!: boolean;
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
+  @Input() useReactFooter = false;
+  reactFooterFailed = false;
+
+  get shouldUseReactFooter(): boolean {
+    return this.useReactFooter && !this.reactFooterFailed;
+  }
+
+  readonly onReactFooterError = (error: unknown): void => {
+    console.error('React footer error', error);
+    this.reactFooterFailed = true;
+    this.cdr.markForCheck();
+  };
+
+  get reactFooterProps(): Record<string, unknown> {
+    if (!this.paragraph) {
+      return { onError: this.onReactFooterError };
+    }
+    return {
+      dateStarted: this.paragraph.dateStarted,
+      dateFinished: this.paragraph.dateFinished,
+      dateUpdated: this.paragraph.dateUpdated,
+      showExecutionTime: !this.paragraph.config.tableHide && !this.viewOnly,
+      showElapsedTime: this.paragraph.status === 'RUNNING',
+      user: this.paragraph.user,
+      onError: this.onReactFooterError
+    };
+  }
+
   @Output() readonly saveNoteTimer = new EventEmitter();
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
   @Output() readonly selected = new EventEmitter<string>();

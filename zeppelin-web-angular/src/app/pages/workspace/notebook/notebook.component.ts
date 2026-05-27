@@ -78,6 +78,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   sidebarWidth = 370;
   sidebarAnimationFrame = -1;
   isSidebarOpen = false;
+  useReactFooter = false;
 
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
@@ -429,6 +430,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         this.onParagraphSelect(id);
         this.onParagraphScrolled(id);
         this.onParagraphSearch(params.get('term') || '');
+      });
+    this.activatedRoute.queryParamMap
+      .pipe(startWith(this.activatedRoute.snapshot.queryParamMap), takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.useReactFooter = data.get('reactFooter') === 'true';
+        this.cdr.markForCheck();
       });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(() => {
       this.noteVarShareService.clear();
