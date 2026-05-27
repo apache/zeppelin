@@ -49,6 +49,7 @@ import { NoteTocComponent } from './note-toc/note-toc.component';
 import { PageHeaderComponent } from './page-header/page-header.component';
 import { HumanizeBytesPipe } from './pipes';
 import { ResizeHandleComponent } from './resize-handle';
+import { ReactMountDirective } from './react-mount';
 import { RunScriptsDirective } from './run-scripts/run-scripts.directive';
 import { ShortcutComponent } from './shortcut/shortcut.component';
 import { SpinComponent } from './spin/spin.component';
@@ -69,7 +70,8 @@ const EXPORT_LIST = [
   PageHeaderComponent,
   SpinComponent,
   ThemeToggleComponent,
-  ResizeHandleComponent
+  ResizeHandleComponent,
+  ReactMountDirective
 ];
 const PIPES = [HumanizeBytesPipe];
 
