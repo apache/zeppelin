@@ -69,7 +69,8 @@ module.exports = (_env, argv) => {
         name: 'reactApp',
         filename: 'remoteEntry.js',
         exposes: {
-          './PublishedParagraph': './src/pages/PublishedParagraph'
+          './PublishedParagraph': './src/pages/PublishedParagraph',
+          './ParagraphFooter': './src/components/paragraph/ParagraphFooter'
         },
         shared: {
           react: {
@@ -101,7 +102,8 @@ module.exports = (_env, argv) => {
               version: '1.0.0',
               baseUrl: isProduction ? '/assets/react/' : 'http://localhost:3001/',
               exposes: {
-                './PublishedParagraph': './PublishedParagraph.tsx'
+                './PublishedParagraph': './PublishedParagraph.tsx',
+                './ParagraphFooter': './ParagraphFooter.tsx'
               }
             };
 
