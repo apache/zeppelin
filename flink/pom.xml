@@ -42,7 +42,7 @@
         <interpreter.name>flink</interpreter.name>
 
         <flink1.19.version>1.19.3</flink1.19.version>
-        <flink1.20.version>1.20.3</flink1.20.version>
+        <flink1.20.version>1.20.4</flink1.20.version>
 
         <flink.scala.version>2.12.7</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>

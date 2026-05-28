@@ -227,7 +227,7 @@ class FlinkInterpreterTest {
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     if (interpreter.getFlinkVersion().isAfterFlink114()) {
       assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-      assertEquals("z.show(DataSet) is not supported since Flink 1.19+", resultMessages.get(0).getData());
+      assertEquals("Support for z.show(DataSet) has been removed.", resultMessages.get(0).getData());
     } else {
       assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
       assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());

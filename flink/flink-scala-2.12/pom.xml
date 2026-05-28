@@ -1191,7 +1191,7 @@
 
   <profiles>
     <profile>
-      <id>flink1.19</id>
+      <id>flink-1.19</id>
       <properties>
         <flink.version>${flink1.19.version}</flink.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
@@ -1225,7 +1225,7 @@
     </profile>
 
     <profile>
-      <id>flink1.20</id>
+      <id>flink-1.20</id>
       <properties>
         <flink.version>${flink1.20.version}</flink.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>

@@ -95,7 +95,7 @@ class FlinkZeppelinContext(val flinkInterpreter: FlinkScalaInterpreter,
 
   override def showData(obj: Any, maxResult: Int): String = {
     if (obj.isInstanceOf[DataSet[_]]) {
-      "z.show(DataSet) is not supported since Flink 1.19+"
+      "Support for z.show(DataSet) has been removed."
     } else if (obj.isInstanceOf[Table]) {
       val rows = JavaConversions.asScalaBuffer(
         flinkInterpreter.getFlinkShims.collectToList(obj.asInstanceOf[TableImpl]).asInstanceOf[java.util.List[Row]]).toSeq

@@ -138,7 +138,7 @@ docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/flink-sql-cookbook-on-zep
 
 ## Prerequisites
 
-Download Flink 1.20 (the latest 1.x LTS) or newer (Only Scala 2.12 is supported).
+Download Flink 1.19 or 1.20.
 
 ### Version-specific notes for Flink
 

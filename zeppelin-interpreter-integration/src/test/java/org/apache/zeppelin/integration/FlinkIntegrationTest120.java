@@ -31,7 +31,7 @@ public class FlinkIntegrationTest120 {
 
       @BeforeEach
       public void downloadFlink() throws IOException {
-        download("1.20.3", "2.12");
+        download("1.20.4", "2.12");
       }
   }
 }

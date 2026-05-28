@@ -44,12 +44,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Abstract class for all kinds of stream sql job
@@ -162,7 +164,7 @@ public abstract class AbstractStreamSqlJob {
         jobManager.addJob(context, insertResult.getJobClient().get());
       }
       // Use a CountDownLatch to wait for job completion while supporting cancellation
-      java.util.concurrent.CountDownLatch jobDone = new java.util.concurrent.CountDownLatch(1);
+      CountDownLatch jobDone = new CountDownLatch(1);
       Thread jobThread = new Thread(() -> {
         try {
           insertResult.await();
@@ -176,12 +178,12 @@ public abstract class AbstractStreamSqlJob {
       jobThread.start();
 
       // Wait for either job completion or cancellation
-      while (!cancelled && !jobDone.await(1, java.util.concurrent.TimeUnit.SECONDS)) {
+      while (!cancelled && !jobDone.await(1, SECONDS)) {
         // keep waiting
       }
       if (cancelled) {
         // Wait briefly for the job to finish (e.g. stopped with savepoint)
-        jobDone.await(10, java.util.concurrent.TimeUnit.SECONDS);
+        jobDone.await(10, SECONDS);
         if (cancelledWithSavepoint) {
           LOGGER.info("Stream sql job stopped with savepoint, jobName: {}", jobName);
           return buildResult();
