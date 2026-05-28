@@ -127,11 +127,18 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   private reportError(error: unknown): void {
     const onError = this.latestProps.onError;
     if (typeof onError === 'function') {
-      try {
-        onError(error);
-      } catch {
-        /* swallow callback errors; they shouldn't loop */
-      }
+      // Re-enter the Angular zone so onError handlers can safely mutate
+      // host state and trigger change detection. React lifecycle callbacks
+      // (e.g. error boundaries) run outside the zone because we mounted
+      // there; calling back into the host without ngZone.run would leave
+      // markForCheck() with nothing to flush.
+      this.ngZone.run(() => {
+        try {
+          onError(error);
+        } catch {
+          /* swallow callback errors; they shouldn't loop */
+        }
+      });
     } else {
       console.error('[ReactMountDirective]', error);
     }
