@@ -54,21 +54,10 @@ public abstract class FlinkShims {
                                       Properties properties)
       throws Exception {
     Class<?> flinkShimsClass;
-    if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 13) {
-      LOGGER.info("Initializing shims for Flink 1.13");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink113Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 14) {
-      LOGGER.info("Initializing shims for Flink 1.14");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink114Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 15) {
-      LOGGER.info("Initializing shims for Flink 1.15");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink115Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 16) {
-      LOGGER.info("Initializing shims for Flink 1.16");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink116Shims");
-    } else if (flinkVersion.getMajorVersion() == 1 && flinkVersion.getMinorVersion() == 17) {
-      LOGGER.info("Initializing shims for Flink 1.17");
-      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink117Shims");
+    if (flinkVersion.getMajorVersion() == 1
+        && (flinkVersion.getMinorVersion() == 19 || flinkVersion.getMinorVersion() == 20)) {
+      LOGGER.info("Initializing shims for Flink {}", flinkVersion);
+      flinkShimsClass = Class.forName("org.apache.zeppelin.flink.Flink120Shims");
     } else {
       throw new Exception("Flink version: '" + flinkVersion + "' is not supported yet");
     }
@@ -119,10 +108,6 @@ public abstract class FlinkShims {
   public abstract List collectToList(Object table) throws Exception;
 
   public abstract boolean rowEquals(Object row1, Object row2);
-
-  public abstract Object fromDataSet(Object btenv, Object ds);
-
-  public abstract Object toDataSet(Object btenv, Object table);
 
   public abstract void registerScalarFunction(Object btenv, String name, Object scalarFunction);
 

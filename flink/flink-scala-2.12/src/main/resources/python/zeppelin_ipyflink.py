@@ -49,7 +49,7 @@ s_env = StreamExecutionEnvironment(intp.getJavaStreamExecutionEnvironment())
 if not intp.isAfterFlink114():
     from pyflink.dataset import *
     b_env = pyflink.dataset.ExecutionEnvironment(intp.getJavaExecutionEnvironment())
-    bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment("blink"))
+    bt_env = BatchTableEnvironment(intp.getJavaBatchTableEnvironment())
     st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())
 else:
     st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())

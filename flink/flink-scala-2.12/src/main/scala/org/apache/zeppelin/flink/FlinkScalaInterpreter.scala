@@ -58,6 +58,7 @@ import scala.collection.JavaConversions
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{Completion, IMain, IR, JPrintWriter, Results, SimpleReader}
+import scala.util.control.NonFatal
 
 /**
  * It instantiate flink scala shell and create env, senv, btenv, stenv.
@@ -86,17 +87,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
   private var btenv: TableEnvironment = _
   private var stenv: TableEnvironment = _
 
-  // TableEnvironment of flink planner (used for convert Flink table to DataSet)
-  private var btenv_2: TableEnvironment = _
-
   // PyFlink depends on java version of TableEnvironment,
   // so need to create java version of TableEnvironment
   // java version of blink TableEnvironment
   private var java_btenv: TableEnvironment = _
   private var java_stenv: TableEnvironment = _
-
-  // java version TableEnvironment of old planner, used for converting Table to DataSet
-  private var java_btenv_2: TableEnvironment = _
 
   private var z: FlinkZeppelinContext = _
   private var flinkVersion: FlinkVersion = _
@@ -423,6 +418,26 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
     setAsContext()
   }
 
+  private def bindWithRetry(name: String, tpe: String, value: AnyRef, modifiers: List[String]): Unit = {
+    // Workaround for Scala reflection issue with ImplicitExpressionConversions in Flink 1.19+.
+    // First bind attempt may fail due to unpickling error, but subsequent attempts succeed
+    // because the Scala reflection cache resolves the error state.
+    var success = false
+    for (attempt <- 1 to 2 if !success) {
+      try {
+        flinkILoop.bind(name, tpe, value, modifiers: List[String])
+        success = true
+      } catch {
+        case NonFatal(e) =>
+          if (attempt == 1) {
+            LOGGER.warn(s"Retrying bind for $name due to Scala reflection issue: ${e.getMessage}")
+          } else {
+            throw new InterpreterException(s"Failed to bind $name after retry", e)
+          }
+      }
+    }
+  }
+
   private def createTableEnvs(): Unit = {
     val originalClassLoader = Thread.currentThread().getContextClassLoader
     try {
@@ -438,8 +453,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         .asInstanceOf[EnvironmentSettings.Builder]
         .inBatchMode()
         .build()
-      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader);
-      flinkILoop.bind("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
+      this.btenv = tblEnvFactory.createJavaBlinkBatchTableEnvironment(btEnvSetting, getFlinkScalaShellLoader)
+      bindWithRetry("btenv", btenv.getClass().getCanonicalName(), btenv, List("@transient"))
       this.java_btenv = this.btenv
 
       val stEnvSetting = this.flinkShims.createBlinkPlannerEnvSettingBuilder()
@@ -447,14 +462,8 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
         .inStreamingMode()
         .build()
       this.stenv = tblEnvFactory.createScalaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
-      flinkILoop.bind("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
+      bindWithRetry("stenv", stenv.getClass().getCanonicalName(), stenv, List("@transient"))
       this.java_stenv = tblEnvFactory.createJavaBlinkStreamTableEnvironment(stEnvSetting, getFlinkScalaShellLoader)
-
-      if (!flinkVersion.isAfterFlink114()) {
-        // flink planner is not supported after flink 1.14
-        this.btenv_2 = tblEnvFactory.createScalaFlinkBatchTableEnvironment()
-        this.java_btenv_2 = tblEnvFactory.createJavaFlinkBatchTableEnvironment()
-      }
     } finally {
       Thread.currentThread().setContextClassLoader(originalClassLoader)
     }
@@ -718,6 +727,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
   def cancel(context: InterpreterContext): Unit = {
     jobManager.cancelJob(context)
+    if (z != null) {
+      val savepointDir = context.getLocalProperties.get(JobManager.SAVEPOINT_DIR)
+      val withSavepoint = savepointDir != null && !savepointDir.isEmpty
+      z.asInstanceOf[FlinkZeppelinContext].cancelCurrentStreamJob(withSavepoint)
+    }
   }
 
   def getProgress(context: InterpreterContext): Int = {
@@ -760,24 +774,11 @@ abstract class FlinkScalaInterpreter(val properties: Properties,
 
   def getStreamExecutionEnvironment(): StreamExecutionEnvironment = this.senv
 
-  def getBatchTableEnvironment(planner: String = "blink"): TableEnvironment = {
-    if (planner == "blink")
-      this.btenv
-    else
-      this.btenv_2
-  }
+  def getBatchTableEnvironment(): TableEnvironment = this.btenv
 
-  def getStreamTableEnvironment(): TableEnvironment = {
-    this.stenv
-  }
+  def getStreamTableEnvironment(): TableEnvironment = this.stenv
 
-  def getJavaBatchTableEnvironment(planner: String): TableEnvironment = {
-    if (planner == "blink") {
-      this.java_btenv
-    } else {
-      this.java_btenv_2
-    }
-  }
+  def getJavaBatchTableEnvironment(): TableEnvironment = this.java_btenv
 
   def getJavaStreamTableEnvironment(): TableEnvironment = {
     this.java_stenv

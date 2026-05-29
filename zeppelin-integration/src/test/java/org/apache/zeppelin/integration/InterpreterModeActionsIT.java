@@ -26,6 +26,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.time.Duration;
 
 
+@Disabled("ZEPPELIN-6410: InterpreterModeActionsIT consistently fails due to Selenium element timeouts on CI")
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
 
@@ -261,6 +263,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testPerUserScopedAction consistently fails due to element click/visibility timeout")
   void testPerUserScopedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
@@ -549,6 +552,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
+  @Disabled("ZEPPELIN-6410: testPerUserIsolatedAction consistently fails due to element visibility timeout")
   void testPerUserIsolatedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout

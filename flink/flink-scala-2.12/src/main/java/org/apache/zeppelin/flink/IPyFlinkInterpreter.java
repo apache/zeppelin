@@ -146,8 +146,8 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     return flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv();
   }
 
-  public TableEnvironment getJavaBatchTableEnvironment(String planner) {
-    return flinkInterpreter.getJavaBatchTableEnvironment(planner);
+  public TableEnvironment getJavaBatchTableEnvironment() {
+    return flinkInterpreter.getJavaBatchTableEnvironment();
   }
 
   public TableEnvironment getJavaStreamTableEnvironment() {

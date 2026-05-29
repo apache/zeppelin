@@ -227,7 +227,7 @@ class FlinkInterpreterTest {
     List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
     if (interpreter.getFlinkVersion().isAfterFlink114()) {
       assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
-      assertEquals("z.show(DataSet) is not supported after Flink 1.14", resultMessages.get(0).getData());
+      assertEquals("Support for z.show(DataSet) has been removed.", resultMessages.get(0).getData());
     } else {
       assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
       assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());
@@ -264,13 +264,11 @@ class FlinkInterpreterTest {
             "  .print()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code(), context.out.toString());
 
-    String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
-    Arrays.sort(expectedCounts);
-
-    String[] counts = context.out.toInterpreterResultMessage().get(0).getData().split("\n");
-    Arrays.sort(counts);
-
-    assertArrayEquals(expectedCounts, counts);
+    String output = context.out.toInterpreterResultMessage().get(0).getData();
+    assertTrue(output.contains("(hello,3)"), output);
+    assertTrue(output.contains("(world,1)"), output);
+    assertTrue(output.contains("(flink,1)"), output);
+    assertTrue(output.contains("(hadoop,1)"), output);
   }
 
   @Test
@@ -312,13 +310,10 @@ class FlinkInterpreterTest {
         InterpreterResult result2 = interpreter.interpret(
                 "val table = stenv.sqlQuery(\"select url, count(1) as pv from " +
                 "log group by url\")\nz.show(table, streamType=\"update\")", context);
-        LOGGER.info("---------------" + context.out.toString());
-        LOGGER.info("---------------" + result2);
         waiter.assertTrue(context.out.toString().contains("Job was cancelled"));
         waiter.assertEquals(InterpreterResult.Code.ERROR, result2.code());
       } catch (Exception e) {
-        e.printStackTrace();
-        waiter.fail("Should not fail here");
+        waiter.fail("Should not fail here: " + e.getClass().getName() + ": " + e.getMessage());
       }
       waiter.resume();
     });

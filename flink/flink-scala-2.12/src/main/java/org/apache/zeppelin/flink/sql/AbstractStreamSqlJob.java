@@ -28,6 +28,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment;
 import org.apache.flink.streaming.experimental.SocketStreamIterator;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.sinks.RetractStreamTableSink;
 import org.apache.flink.types.Row;
@@ -43,12 +44,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Abstract class for all kinds of stream sql job
@@ -65,6 +68,9 @@ public abstract class AbstractStreamSqlJob {
   protected InterpreterContext context;
   protected TableSchema schema;
   protected SocketStreamIterator<Tuple2<Boolean, Row>> iterator;
+  private volatile TableResult insertResult;
+  private volatile boolean cancelled = false;
+  private volatile boolean cancelledWithSavepoint = false;
   protected Object resultLock = new Object();
   protected volatile boolean enableToRefresh = true;
   protected int defaultParallelism;
@@ -110,6 +116,7 @@ public abstract class AbstractStreamSqlJob {
   }
 
   public String run(Table table, String tableName) throws IOException {
+    ResultRetrievalThread retrievalThread = null;
     try {
       this.table = table;
       int parallelism = Integer.parseInt(context.getLocalProperties()
@@ -146,12 +153,43 @@ public abstract class AbstractStreamSqlJob {
               context.getLocalProperties().getOrDefault("refreshInterval", "3000"));
       refreshScheduler.scheduleAtFixedRate(new RefreshTask(context), delay, period, MILLISECONDS);
 
-      ResultRetrievalThread retrievalThread = new ResultRetrievalThread(refreshScheduler);
+      retrievalThread = new ResultRetrievalThread(refreshScheduler);
       retrievalThread.start();
 
       LOGGER.info("Run job: {}, parallelism: {}", tableName, parallelism);
       String jobName = context.getStringLocalProperty("jobName", tableName);
-      table.executeInsert(tableName).await();
+      this.insertResult = table.executeInsert(tableName);
+      // Register the job with JobManager so that cancel (with savepoint) works properly
+      if (insertResult.getJobClient().isPresent()) {
+        jobManager.addJob(context, insertResult.getJobClient().get());
+      }
+      // Use a CountDownLatch to wait for job completion while supporting cancellation
+      CountDownLatch jobDone = new CountDownLatch(1);
+      Thread jobThread = new Thread(() -> {
+        try {
+          insertResult.await();
+        } catch (Exception e) {
+          LOGGER.debug("Job await interrupted or failed", e);
+        } finally {
+          jobDone.countDown();
+        }
+      }, "flink-job-await");
+      jobThread.setDaemon(true);
+      jobThread.start();
+
+      // Wait for either job completion or cancellation
+      while (!cancelled && !jobDone.await(1, SECONDS)) {
+        // keep waiting
+      }
+      if (cancelled) {
+        // Wait briefly for the job to finish (e.g. stopped with savepoint)
+        jobDone.await(10, SECONDS);
+        if (cancelledWithSavepoint) {
+          LOGGER.info("Stream sql job stopped with savepoint, jobName: {}", jobName);
+          return buildResult();
+        }
+        throw new InterruptedException("Job was cancelled");
+      }
       LOGGER.info("Flink Job is finished, jobName: {}", jobName);
       // wait for retrieve thread consume all data
       LOGGER.info("Waiting for retrieve thread to be done");
@@ -161,9 +199,30 @@ public abstract class AbstractStreamSqlJob {
       LOGGER.info("Final Result: {}", finalResult);
       return finalResult;
     } catch (Exception e) {
+      if (cancelled) {
+        throw new IOException("Job was cancelled", e);
+      }
       LOGGER.error("Fail to run stream sql job", e);
+      if (e instanceof IOException) {
+        throw (IOException) e;
+      }
       throw new IOException("Fail to run stream sql job", e);
     } finally {
+      if (retrievalThread != null && retrievalThread.isAlive()) {
+        retrievalThread.cancel();
+        try {
+          retrievalThread.join(5_000);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      if (insertResult != null && insertResult.getJobClient().isPresent()) {
+        try {
+          jobManager.removeJob(context.getParagraphId());
+        } catch (Exception ex) {
+          LOGGER.warn("Failed to remove job from JobManager", ex);
+        }
+      }
       refreshScheduler.shutdownNow();
     }
   }
@@ -236,6 +295,12 @@ public abstract class AbstractStreamSqlJob {
     public void cancel() {
       isRunning = false;
     }
+  }
+
+  public void cancel(boolean withSavepoint) {
+    LOGGER.info("Canceling stream sql job, withSavepoint={}", withSavepoint);
+    this.cancelledWithSavepoint = withSavepoint;
+    this.cancelled = true;
   }
 
   protected abstract void refresh(InterpreterContext context) throws Exception;
