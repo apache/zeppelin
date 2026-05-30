@@ -14,7 +14,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-import { collapseMotion } from 'ng-zorro-antd/core/animation';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
@@ -27,7 +26,6 @@ import { InterpreterCreateRepositoryModalComponent } from './create-repository-m
   selector: 'zeppelin-interpreter',
   templateUrl: './interpreter.component.html',
   styleUrls: ['./interpreter.component.less'],
-  animations: [collapseMotion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })

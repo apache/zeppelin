@@ -36,24 +36,26 @@
       Repository
     </button>
   </ng-template>
-  <div [@collapseMotion]="showRepository ? 'expanded' : 'collapsed'">
-    <nz-divider nzType="horizontal"></nz-divider>
-    <h2>Repositories</h2>
-    <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
-    @for (repo of repositories; track repo) {
-      <nz-tag
-        class="repo-item"
-        [nz-tooltip]="repo.url"
-        nzTooltipPlacement="topLeft"
-        [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
-        (nzOnClose)="$event.preventDefault(); removeRepository(repo)"
-      >
-        {{ repo.id }}
+  <div animation-collapse [open]="showRepository">
+    <div class="collapse-content">
+      <nz-divider nzType="horizontal"></nz-divider>
+      <h2>Repositories</h2>
+      <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
+      @for (repo of repositories; track repo) {
+        <nz-tag
+          class="repo-item"
+          [nz-tooltip]="repo.url"
+          nzTooltipPlacement="topLeft"
+          [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
+          (nzOnClose)="$event.preventDefault(); removeRepository(repo)"
+        >
+          {{ repo.id }}
+        </nz-tag>
+      }
+      <nz-tag class="editable-tag" (click)="createRepository()">
+        <i nz-icon nzType="plus"></i>
       </nz-tag>
-    }
-    <nz-tag class="editable-tag" (click)="createRepository()">
-      <i nz-icon nzType="plus"></i>
-    </nz-tag>
+    </div>
   </div>
 </zeppelin-page-header>
 <div class="content">

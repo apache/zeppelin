@@ -16,7 +16,6 @@ import en from '@angular/common/locales/en';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
@@ -43,7 +42,7 @@ registerLocaleData(en);
 @NgModule({
   declarations: [AppComponent],
   bootstrap: [AppComponent],
-  imports: [BrowserModule, FormsModule, BrowserAnimationsModule, ShareModule, AppRoutingModule, RouterModule],
+  imports: [BrowserModule, FormsModule, ShareModule, AppRoutingModule, RouterModule],
   providers: [
     ...RUNTIME_COMPILER_PROVIDERS,
     {

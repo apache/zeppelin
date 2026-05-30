@@ -50,10 +50,19 @@
 
 :host-context(.dark) {
   background: #141414;
-  
+
   .editable-tag {
     background: #1f1f1f;
     border-style: dashed;
     border-color: #434343;
   }
+}
+
+// Establish a block formatting context so the collapsed content's child
+// margins (nz-divider, h2, ...) are contained. NzAnimationCollapseDirective
+// measures the open height as the sum of its direct children's offsetHeight
+// (margin-excluded); without this single margin-containing child the
+// animation stops short of the final auto height and the layout jumps.
+.collapse-content {
+  display: flow-root;
 }

@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzAnimationCollapseDirective } from 'ng-zorro-antd/core/animation';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -46,6 +47,7 @@ import { InterpreterItemComponent } from './item/item.component';
     ReactiveFormsModule,
     InterpreterRoutingModule,
     ShareModule,
+    NzAnimationCollapseDirective,
     NzFormModule,
     NzSelectModule,
     NzSwitchModule,

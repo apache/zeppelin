@@ -14,6 +14,7 @@ import { NgModule } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShareModule } from '@zeppelin/share';
+import { NzAnimationCollapseDirective } from 'ng-zorro-antd/core/animation';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -36,6 +37,7 @@ import { CredentialComponent } from './credential.component';
     FormsModule,
     ShareModule,
     ReactiveFormsModule,
+    NzAnimationCollapseDirective,
     NzFormModule,
     NzAutocompleteModule,
     NzButtonModule,

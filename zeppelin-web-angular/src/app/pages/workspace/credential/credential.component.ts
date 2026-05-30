@@ -15,7 +15,6 @@ import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } fr
 
 import { CredentialForm } from '@zeppelin/interfaces';
 import { CredentialService, InterpreterService, TicketService } from '@zeppelin/services';
-import { collapseMotion } from 'ng-zorro-antd/core/animation';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { finalize } from 'rxjs/operators';
@@ -24,7 +23,6 @@ import { finalize } from 'rxjs/operators';
   selector: 'zeppelin-credential',
   templateUrl: './credential.component.html',
   styleUrls: ['./credential.component.less'],
-  animations: [collapseMotion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
