@@ -31,6 +31,7 @@
         "@angular-eslint/no-forward-ref": "off",
         "@angular-eslint/no-empty-lifecycle-method": "off",
         "@angular-eslint/prefer-standalone": "off",
+        "@angular-eslint/prefer-inject": "off",
         "@angular-eslint/prefer-output-readonly": "error",
         "@typescript-eslint/adjacent-overload-signatures": "off",
         "@typescript-eslint/array-type": "off",
