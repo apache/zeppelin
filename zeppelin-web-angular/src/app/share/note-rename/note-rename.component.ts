@@ -20,7 +20,8 @@ import { MessageService } from '@zeppelin/services';
   selector: 'zeppelin-note-rename',
   templateUrl: './note-rename.component.html',
   styleUrls: ['./note-rename.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NoteRenameComponent implements OnInit {
   newName!: string;

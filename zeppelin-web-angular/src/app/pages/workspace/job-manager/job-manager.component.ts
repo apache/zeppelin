@@ -34,7 +34,8 @@ interface FilterForm {
   selector: 'zeppelin-job-manager',
   templateUrl: './job-manager.component.html',
   styleUrls: ['./job-manager.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class JobManagerComponent extends MessageListenersManager implements OnDestroy {
   form: UntypedFormGroup;

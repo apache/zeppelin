@@ -17,7 +17,8 @@ import { NotebookRepoService } from '@zeppelin/services';
   selector: 'zeppelin-notebook-repos',
   templateUrl: './notebook-repos.component.html',
   styleUrls: ['./notebook-repos.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookReposComponent implements OnInit {
   repositories: NotebookRepo[] = [];

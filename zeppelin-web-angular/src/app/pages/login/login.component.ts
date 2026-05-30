@@ -19,7 +19,8 @@ import { TicketService } from '@zeppelin/services';
   selector: 'zeppelin-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class LoginComponent implements OnInit {
   userName?: string;

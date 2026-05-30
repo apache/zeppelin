@@ -26,7 +26,8 @@ import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.compone
   selector: 'zeppelin-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class HeaderComponent extends MessageListenersManager implements OnInit, OnDestroy {
   private destroy$ = new Subject();

@@ -20,7 +20,8 @@ import { ThemeMode, ThemeService } from '../../services/theme.service';
   selector: 'zeppelin-theme-toggle',
   templateUrl: './theme-toggle.component.html',
   styleUrls: ['./theme-toggle.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ThemeToggleComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();

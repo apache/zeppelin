@@ -18,7 +18,8 @@ import { format, formatDistanceStrict, formatDistanceToNow } from 'date-fns';
   selector: 'zeppelin-notebook-paragraph-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphFooterComponent implements OnChanges {
   @Input() dateStarted?: string;

@@ -54,7 +54,8 @@ import { NotebookParagraphComponent } from './paragraph/paragraph.component';
   selector: 'zeppelin-notebook',
   templateUrl: './notebook.component.html',
   styleUrls: ['./notebook.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookComponent extends MessageListenersManager implements OnInit, OnDestroy {
   @ViewChildren(NotebookParagraphComponent) listOfNotebookParagraphComponent!: QueryList<NotebookParagraphComponent>;

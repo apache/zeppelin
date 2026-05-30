@@ -22,7 +22,8 @@ import { InterpreterItem, MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/
   selector: 'zeppelin-note-create',
   templateUrl: './note-create.component.html',
   styleUrls: ['./note-create.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NoteCreateComponent extends MessageListenersManager implements OnInit {
   path?: string;

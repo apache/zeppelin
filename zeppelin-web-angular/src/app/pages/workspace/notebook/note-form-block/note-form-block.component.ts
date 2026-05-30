@@ -16,7 +16,8 @@ import { DynamicForms, DynamicFormsItem, DynamicFormParams } from '@zeppelin/sdk
   selector: 'zeppelin-note-form-block',
   templateUrl: './note-form-block.component.html',
   styleUrls: ['./note-form-block.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NoteFormBlockComponent implements OnInit {
   @Input() noteTitle: string | undefined;

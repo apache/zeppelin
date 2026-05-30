@@ -16,7 +16,8 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
   selector: 'zeppelin-spin',
   templateUrl: './spin.component.html',
   styleUrls: ['./spin.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class SpinComponent implements OnInit {
   @Input() transparent = false;

@@ -70,7 +70,8 @@ type Mode = 'edit' | 'command';
   selector: 'zeppelin-notebook-paragraph',
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphComponent
   extends ParagraphBase

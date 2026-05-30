@@ -94,7 +94,8 @@ type VisualizationItemType = ClassicVisualizationItem | ModernVisualizationItem;
   selector: 'zeppelin-notebook-paragraph-result',
   templateUrl: './result.component.html',
   styleUrls: ['./result.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() result!: ParagraphIResultsMsgItem;

@@ -25,7 +25,8 @@ import { NoteActionService } from './note-action.service';
   templateUrl: './node-list.component.html',
   providers: [NoteListService],
   styleUrls: ['./node-list.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NodeListComponent extends MessageListenersManager implements OnInit {
   @Input() headerMode = false;

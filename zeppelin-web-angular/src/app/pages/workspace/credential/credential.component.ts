@@ -25,7 +25,8 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './credential.component.html',
   styleUrls: ['./credential.component.less'],
   animations: [collapseMotion],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class CredentialComponent {
   addForm: UntypedFormGroup;

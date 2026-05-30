@@ -53,7 +53,8 @@ import ITextModel = editor.ITextModel;
       useExisting: forwardRef(() => CodeEditorComponent),
       multi: true
     }
-  ]
+  ],
+  standalone: false
 })
 export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   @HostBinding('class.ant-code-editor') antCodeEditor = true;

@@ -14,7 +14,8 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'zeppelin-shortcut',
-  templateUrl: './shortcut.component.html'
+  templateUrl: './shortcut.component.html',
+  standalone: false
 })
 export class ShortcutComponent implements OnInit {
   isMac = navigator.appVersion.indexOf('Mac') !== -1;

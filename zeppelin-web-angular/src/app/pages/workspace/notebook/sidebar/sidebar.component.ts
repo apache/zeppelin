@@ -23,7 +23,8 @@ enum SidebarState {
 @Component({
   selector: 'zeppelin-notebook-sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.less']
+  styleUrls: ['./sidebar.component.less'],
+  standalone: false
 })
 export class NotebookSidebarComponent {
   @Input() note!: Exclude<Note['note'], undefined>;

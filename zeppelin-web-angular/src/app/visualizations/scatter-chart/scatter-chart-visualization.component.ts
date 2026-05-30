@@ -34,7 +34,8 @@ import { calcTickCount } from '../common/util/calc-tick-count';
   selector: 'zeppelin-scatter-chart-visualization',
   templateUrl: './scatter-chart-visualization.component.html',
   styleUrls: ['./scatter-chart-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ScatterChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
   @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;

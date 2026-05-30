@@ -17,7 +17,8 @@ import { InputBoolean } from 'ng-zorro-antd/core/util';
   selector: 'zeppelin-page-header',
   templateUrl: './page-header.component.html',
   styleUrls: ['./page-header.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PageHeaderComponent implements OnInit {
   @Input() title!: string;

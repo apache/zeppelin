@@ -15,7 +15,10 @@ import { Subscriber } from 'rxjs';
 
 import { Message, MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
 
-@Component({ template: '' })
+@Component({
+  template: '',
+  standalone: false
+})
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class MessageListenersManager implements OnDestroy {
   __zeppelinMessageListeners__?: Array<() => void>;

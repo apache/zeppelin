@@ -20,7 +20,8 @@ import { MessageService, NoteListService } from '@zeppelin/services';
   selector: 'zeppelin-folder-rename',
   templateUrl: './folder-rename.component.html',
   styleUrls: ['./folder-rename.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class FolderRenameComponent implements OnInit {
   newFolderPath!: string;

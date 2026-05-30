@@ -31,7 +31,8 @@ import { InterpreterComponent } from '../interpreter.component';
   selector: 'zeppelin-interpreter-item',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class InterpreterItemComponent extends DestroyHookComponent implements OnInit, OnDestroy {
   @Input() mode: 'create' | 'view' | 'edit' = 'view';

@@ -34,7 +34,8 @@ import { VisualizationXAxisSettingComponent } from '../common/x-axis-setting/x-a
   selector: 'zeppelin-line-chart-visualization',
   templateUrl: './line-chart-visualization.component.html',
   styleUrls: ['./line-chart-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class LineChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
   @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;

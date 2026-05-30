@@ -26,7 +26,8 @@ import { NotebookRepo } from '@zeppelin/interfaces';
   selector: 'zeppelin-notebook-repo-item',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookRepoItemComponent implements OnChanges {
   @Input() repo!: NotebookRepo;

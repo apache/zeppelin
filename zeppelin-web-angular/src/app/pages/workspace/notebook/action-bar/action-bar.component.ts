@@ -43,7 +43,8 @@ import { NoteCreateComponent, ShortcutComponent } from '@zeppelin/share';
   selector: 'zeppelin-notebook-action-bar',
   templateUrl: './action-bar.component.html',
   styleUrls: ['./action-bar.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookActionBarComponent extends MessageListenersManager implements OnInit {
   @Input() note!: Exclude<Note['note'], undefined>;

@@ -28,7 +28,8 @@ import { InterpreterCreateRepositoryModalComponent } from './create-repository-m
   templateUrl: './interpreter.component.html',
   styleUrls: ['./interpreter.component.less'],
   animations: [collapseMotion],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class InterpreterComponent implements OnInit, OnDestroy {
   searchInterpreter = '';

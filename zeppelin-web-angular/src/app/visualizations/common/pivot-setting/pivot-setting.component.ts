@@ -20,7 +20,8 @@ import { TableData, Visualization } from '@zeppelin/visualization';
   selector: 'zeppelin-visualization-pivot-setting',
   templateUrl: './pivot-setting.component.html',
   styleUrls: ['./pivot-setting.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class VisualizationPivotSettingComponent implements OnInit {
   @Input() visualization!: Visualization;

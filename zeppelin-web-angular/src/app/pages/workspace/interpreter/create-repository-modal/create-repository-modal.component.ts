@@ -24,7 +24,8 @@ import { InterpreterService } from '@zeppelin/services';
   selector: 'zeppelin-interpreter-create-repository-modal',
   templateUrl: './create-repository-modal.component.html',
   styleUrls: ['./create-repository-modal.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class InterpreterCreateRepositoryModalComponent extends DestroyHookComponent {
   validateForm: UntypedFormGroup;
