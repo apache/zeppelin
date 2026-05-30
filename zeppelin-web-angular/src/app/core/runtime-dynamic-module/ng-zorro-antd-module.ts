@@ -15,7 +15,6 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzAnchorModule } from 'ng-zorro-antd/anchor';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
-import { NzBackTopModule } from 'ng-zorro-antd/back-top';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -26,7 +25,7 @@ import { NzCascaderModule } from 'ng-zorro-antd/cascader';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { NzCommentModule } from 'ng-zorro-antd/comment';
-import { NzNoAnimationModule } from 'ng-zorro-antd/core/no-animation';
+import { NzNoAnimationModule } from 'ng-zorro-antd/core/animation';
 import { NzTransButtonModule } from 'ng-zorro-antd/core/trans-button';
 import { NzWaveModule } from 'ng-zorro-antd/core/wave';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -40,7 +39,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzI18nModule } from 'ng-zorro-antd/i18n';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzInputNumberLegacyModule } from 'ng-zorro-antd/input-number-legacy';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzMentionModule } from 'ng-zorro-antd/mention';
@@ -81,7 +80,6 @@ import { NgModule } from './ngmodule.decorator';
     NzAnchorModule,
     NzAutocompleteModule,
     NzAvatarModule,
-    NzBackTopModule,
     NzBadgeModule,
     NzButtonModule,
     NzBreadCrumbModule,
@@ -103,7 +101,7 @@ import { NgModule } from './ngmodule.decorator';
     NzI18nModule,
     NzIconModule,
     NzInputModule,
-    NzInputNumberLegacyModule,
+    NzInputNumberModule,
     NzLayoutModule,
     NzListModule,
     NzMentionModule,

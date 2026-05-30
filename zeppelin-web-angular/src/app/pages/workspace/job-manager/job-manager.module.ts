@@ -19,7 +19,7 @@ import { ClockCircleOutline, FileOutline, FileUnknownOutline, SearchOutline } fr
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { NzHighlightModule } from 'ng-zorro-antd/core/highlight';
+import { NzHighlightPipe } from 'ng-zorro-antd/core/highlight';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -47,7 +47,7 @@ const icons: IconDefinition[] = [SearchOutline, FileOutline, FileUnknownOutline,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    NzHighlightModule,
+    NzHighlightPipe,
     ShareModule,
     NzIconModule,
     NzInputModule,
