@@ -21,7 +21,7 @@
     ></zeppelin-elastic-input>
   </div>
   <div class="control">
-    <nz-button-group nzSize="small">
+    <nz-space-compact nzSize="small">
       <button
         nz-button
         nz-popconfirm
@@ -120,8 +120,8 @@
           </button>
         </ng-container>
       </ng-container>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="isRevisionSupported">
+    </nz-space-compact>
+    <nz-space-compact nzSize="small" *ngIf="isRevisionSupported">
       <button
         nz-button
         nz-popover
@@ -177,8 +177,8 @@
           </li>
         </ul>
       </nz-dropdown-menu>
-    </nz-button-group>
-    <nz-button-group nzSize="small">
+    </nz-space-compact>
+    <nz-space-compact nzSize="small">
       <button
         nz-button
         nz-dropdown
@@ -199,24 +199,24 @@
             <nz-input-group nzAddOnBefore="Find">
               <input type="text" nz-input #searchInput [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
             </nz-input-group>
-            <nz-button-group class="search-row-btn-group">
+            <nz-space-compact class="search-row-btn-group">
               <button nz-button (click)="onFindPrevClick(searchText)"><i nz-icon nzType="left"></i></button>
               <button nz-button (click)="onFindNextClick(searchText)"><i nz-icon nzType="right"></i></button>
-            </nz-button-group>
+            </nz-space-compact>
           </div>
           <div class="search-code-row">
             <nz-input-group nzAddOnBefore="Replace">
               <input type="text" nz-input [(ngModel)]="replaceText" />
             </nz-input-group>
-            <nz-button-group class="search-row-btn-group">
+            <nz-space-compact class="search-row-btn-group">
               <button nz-button (click)="onReplaceClick(searchText, replaceText)">Replace</button>
               <button nz-button (click)="onReplaceAllClick(searchText, replaceText)">All</button>
-            </nz-button-group>
+            </nz-space-compact>
           </div>
         </div>
       </nz-dropdown-menu>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="!viewOnly">
+    </nz-space-compact>
+    <nz-space-compact nzSize="small" *ngIf="!viewOnly">
       <button
         nz-button
         nz-popconfirm
@@ -237,8 +237,8 @@
       >
         <i nz-icon nzType="delete" nzTheme="outline"></i>
       </button>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="collaborativeMode">
+    </nz-space-compact>
+    <nz-space-compact nzSize="small" *ngIf="collaborativeMode">
       <button
         nz-button
         nz-tooltip
@@ -248,8 +248,8 @@
         <i nz-icon nzType="eye" nzTheme="outline"></i>
         {{ collaborativeModeUsers.length }}
       </button>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="note.config.isZeppelinNotebookCronEnable && !viewOnly">
+    </nz-space-compact>
+    <nz-space-compact nzSize="small" *ngIf="note.config.isZeppelinNotebookCronEnable && !viewOnly">
       <button
         nz-button
         nz-dropdown
@@ -300,10 +300,10 @@
           </div>
         </div>
       </nz-dropdown-menu>
-    </nz-button-group>
+    </nz-space-compact>
   </div>
   <div class="setting">
-    <nz-button-group nzSize="small">
+    <nz-space-compact nzSize="small">
       <button nz-button nzNoAnimation *ngIf="!revisionView" (click)="showShortCut()">
         <i nz-icon nzType="info-circle" nzTheme="outline"></i>
       </button>
@@ -322,6 +322,6 @@
           <li nz-menu-item *ngFor="let lf of lfOption" (click)="setLookAndFeel(lf)">{{ lf }}</li>
         </ul>
       </nz-dropdown-menu>
-    </nz-button-group>
+    </nz-space-compact>
   </div>
 </div>

@@ -22,10 +22,9 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { CredentialRoutingModule } from './credential-routing.module';
 import { CredentialComponent } from './credential.component';
 
@@ -44,11 +43,10 @@ import { CredentialComponent } from './credential.component';
     NzIconModule,
     NzDividerModule,
     NzInputModule,
-    NzMessageModule,
     NzTableModule,
     NzPopconfirmModule,
     NzGridModule,
-    NzToolTipModule
+    NzTooltipModule
   ]
 })
 export class CredentialModule {}

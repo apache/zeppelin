@@ -26,7 +26,7 @@
     </nz-radio-group>
   </div>
 
-  <nz-button-group class="export-dropdown">
+  <nz-space-compact class="export-dropdown">
     <button nz-button (click)="exportFile('csv')">
       <i nz-icon nzType="download" nz-tooltip="Download Data as CSV"></i>
     </button>
@@ -39,7 +39,7 @@
     >
       <i nz-icon nzType="down"></i>
     </button>
-  </nz-button-group>
+  </nz-space-compact>
   <nz-dropdown-menu #exportMenu="nzDropdownMenu">
     <ul nz-menu>
       <li nz-menu-item (click)="exportFile('csv')">CSV</li>

@@ -18,14 +18,13 @@ import { RouterModule } from '@angular/router';
 
 import { ShareModule } from '@zeppelin/share';
 
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { WorkspaceComponent } from './workspace.component';
 
 import { WorkspaceRoutingModule } from './workspace-routing.module';
 
 @NgModule({
   declarations: [WorkspaceComponent],
-  imports: [CommonModule, WorkspaceRoutingModule, FormsModule, ShareModule, RouterModule, NzMessageModule],
+  imports: [CommonModule, WorkspaceRoutingModule, FormsModule, ShareModule, RouterModule],
   providers: [provideHttpClient(withInterceptorsFromDi())]
 })
 export class WorkspaceModule {}

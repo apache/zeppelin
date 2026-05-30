@@ -30,7 +30,7 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 
@@ -61,7 +61,7 @@ const icons: IconDefinition[] = [SearchOutline, FileOutline, FileUnknownOutline,
     JobManagerRoutingModule,
     NzDividerModule,
     NzCardModule,
-    NzToolTipModule,
+    NzTooltipModule,
     NzProgressModule,
     NzSkeletonModule,
     NzEmptyModule,

@@ -45,9 +45,7 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzMentionModule } from 'ng-zorro-antd/mention';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzNotificationModule } from 'ng-zorro-antd/notification';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
@@ -68,7 +66,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTimePickerModule } from 'ng-zorro-antd/time-picker';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { NzTransferModule } from 'ng-zorro-antd/transfer';
 import { NzTreeModule } from 'ng-zorro-antd/tree';
 import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
@@ -110,10 +108,8 @@ import { NgModule } from './ngmodule.decorator';
     NzListModule,
     NzMentionModule,
     NzMenuModule,
-    NzMessageModule,
     NzModalModule,
     NzNoAnimationModule,
-    NzNotificationModule,
     NzPageHeaderModule,
     NzPaginationModule,
     NzPopconfirmModule,
@@ -134,7 +130,7 @@ import { NgModule } from './ngmodule.decorator';
     NzTagModule,
     NzTimePickerModule,
     NzTimelineModule,
-    NzToolTipModule,
+    NzTooltipModule,
     NzTransButtonModule,
     NzTransferModule,
     NzTreeModule,

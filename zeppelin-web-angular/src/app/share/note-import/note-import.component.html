@@ -19,7 +19,7 @@
   </nz-form-item>
 </form>
 
-<nz-tabset>
+<nz-tabs>
   <nz-tab nzTitle="Import From JSON File">
     <nz-upload nzType="drag" [nzBeforeUpload]="beforeUpload" nzAccept="application/json, .zpln">
       <p class="ant-upload-drag-icon">
@@ -49,5 +49,5 @@
       </nz-form-item>
     </form>
   </nz-tab>
-</nz-tabset>
+</nz-tabs>
 <nz-alert nzType="error" [nzMessage]="errorText" *ngIf="errorText"></nz-alert>

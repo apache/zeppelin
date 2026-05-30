@@ -15,7 +15,7 @@ import { NgModule } from '@angular/core';
 
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 
@@ -24,6 +24,6 @@ import { HomeComponent } from './home.component';
 
 @NgModule({
   declarations: [HomeComponent],
-  imports: [CommonModule, HomeRoutingModule, NzGridModule, NzIconModule, NzToolTipModule, ShareModule]
+  imports: [CommonModule, HomeRoutingModule, NzGridModule, NzIconModule, NzTooltipModule, ShareModule]
 })
 export class HomeModule {}

@@ -32,10 +32,11 @@ import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzResizableModule } from 'ng-zorro-antd/resizable';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 
@@ -84,7 +85,7 @@ import { NotebookSidebarComponent } from './sidebar/sidebar.component';
     NzIconModule,
     NzDropDownModule,
     NzNoAnimationModule,
-    NzToolTipModule,
+    NzTooltipModule,
     NzPopconfirmModule,
     NzFormModule,
     NzPopoverModule,
@@ -102,7 +103,8 @@ import { NotebookSidebarComponent } from './sidebar/sidebar.component';
     NzCheckboxModule,
     NzResizableModule,
     NzTableModule,
-    NzTagModule
+    NzTagModule,
+    NzSpaceModule
   ]
 })
 export class NotebookModule {}
