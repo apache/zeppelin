@@ -55,7 +55,8 @@
           <nz-checkbox-group
             *ngSwitchCase="formType.CheckBox"
             [nzDisabled]="disable"
-            [(ngModel)]="checkboxGroups[form.name]"
+            [nzOptions]="checkboxGroups[form.name]"
+            [ngModel]="checkboxValues[form.name]"
             (ngModelChange)="checkboxChange($event, form.name)"
           ></nz-checkbox-group>
         </ng-container>
