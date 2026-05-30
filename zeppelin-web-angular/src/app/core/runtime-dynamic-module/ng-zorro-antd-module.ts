@@ -40,7 +40,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzI18nModule } from 'ng-zorro-antd/i18n';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+import { NzInputNumberLegacyModule } from 'ng-zorro-antd/input-number-legacy';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzListModule } from 'ng-zorro-antd/list';
 import { NzMentionModule } from 'ng-zorro-antd/mention';
@@ -105,7 +105,7 @@ import { NgModule } from './ngmodule.decorator';
     NzI18nModule,
     NzIconModule,
     NzInputModule,
-    NzInputNumberModule,
+    NzInputNumberLegacyModule,
     NzLayoutModule,
     NzListModule,
     NzMentionModule,
