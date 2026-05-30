@@ -12,6 +12,7 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable, Injector } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 import {
   HeliumClassicTransformation,
   HeliumClassicVisualization,
@@ -81,9 +82,7 @@ export class ClassicVisualizationService {
       const assetPath = this.templateAssetMapping.get(templateUrl);
       if (assetPath) {
         // Load from assets and cache the result
-        return this.http
-          .get(assetPath, { responseType: 'text' })
-          .toPromise()
+        return lastValueFrom(this.http.get(assetPath, { responseType: 'text' }))
           .then((templateContent: string) => {
             // Cache the loaded template
             this.templateCache.set(templateUrl, templateContent);

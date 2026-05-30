@@ -100,7 +100,7 @@ export class NotebookParagraphComponent
   @Output() readonly selectAtIndex = new EventEmitter<number>();
   @Output() readonly openSearchMenu = new EventEmitter();
 
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
 
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;

@@ -37,7 +37,7 @@ import { DynamicForms, DynamicFormsItem, DynamicFormsType, DynamicFormParams } f
   standalone: false
 })
 export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
 
   @Input() formDefs!: DynamicForms;
   @Input() paramDefs!: DynamicFormParams;

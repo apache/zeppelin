@@ -30,7 +30,7 @@ import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.compone
   standalone: false
 })
 export class HeaderComponent extends MessageListenersManager implements OnInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   connectStatus = 'error';
   noteListVisible = false;
   queryStr: string | null = null;

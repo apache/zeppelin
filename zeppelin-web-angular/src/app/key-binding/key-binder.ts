@@ -12,7 +12,7 @@
 
 import { ElementRef } from '@angular/core';
 import { editor as MonacoEditor } from 'monaco-editor';
-import { from, Subject } from 'rxjs';
+import { from, Observable, Subject } from 'rxjs';
 import { map, mergeMap, takeUntil } from 'rxjs/operators';
 
 import { ShortcutService } from '@zeppelin/services';
@@ -28,7 +28,7 @@ export class KeyBinder {
   }>();
 
   constructor(
-    private destroySubject: Subject<unknown>,
+    private destroySubject: Observable<unknown>,
     private host: ElementRef,
     private shortcutService: ShortcutService
   ) {}

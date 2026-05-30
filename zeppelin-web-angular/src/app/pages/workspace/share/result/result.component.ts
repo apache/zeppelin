@@ -108,7 +108,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
   @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet!: CdkPortalOutlet;
 
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   datasetType = DatasetType;
   angularComponent: DynamicTemplate | null = null;
   innerHTML: string | SafeHtml = '';

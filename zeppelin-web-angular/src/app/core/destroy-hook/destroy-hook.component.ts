@@ -19,7 +19,7 @@ import { Subject } from 'rxjs';
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class DestroyHookComponent implements OnDestroy {
-  readonly destroy$ = new Subject();
+  readonly destroy$ = new Subject<void>();
 
   ngOnDestroy() {
     this.destroy$.next();

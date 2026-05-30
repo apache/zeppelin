@@ -59,7 +59,7 @@ import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 })
 export class NotebookComponent extends MessageListenersManager implements OnInit, OnDestroy {
   @ViewChildren(NotebookParagraphComponent) listOfNotebookParagraphComponent!: QueryList<NotebookParagraphComponent>;
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   note?: Exclude<Note['note'], undefined>;
   permissions?: Permissions;
   selectId: string | null = null;

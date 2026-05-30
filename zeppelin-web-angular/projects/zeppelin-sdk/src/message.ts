@@ -135,7 +135,7 @@ export class Message {
   }
 
   close() {
-    this.close$.next();
+    this.close$.next(new CloseEvent('close', { code: this.normalCloseCode }));
   }
 
   opened(): Observable<Event> {

@@ -25,7 +25,7 @@ import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
   standalone: false
 })
 export class NotebookSearchComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   private searchAction$ = this.router.params.pipe(
     takeUntil(this.destroy$),
     map(params => params.queryStr),

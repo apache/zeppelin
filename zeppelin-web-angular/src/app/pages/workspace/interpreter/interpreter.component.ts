@@ -190,7 +190,6 @@ export class InterpreterComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.search$?.next();
     this.search$?.complete();
     this.search$ = null;
   }

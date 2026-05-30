@@ -24,7 +24,7 @@ import { ThemeMode, ThemeService } from '../../services/theme.service';
   standalone: false
 })
 export class ThemeToggleComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   currentTheme: ThemeMode = 'light';
   isDarkMode = false;
 
