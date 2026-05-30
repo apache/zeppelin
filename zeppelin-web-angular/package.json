@@ -70,10 +70,7 @@
     "@angular-builders/custom-webpack": "^20.0.0",
     "@angular-devkit/build-angular": "^20.3.26",
     "@angular-eslint/builder": "20.7.0",
-    "@angular-eslint/eslint-plugin": "20.7.0",
-    "@angular-eslint/eslint-plugin-template": "20.7.0",
     "@angular-eslint/schematics": "20.7.0",
-    "@angular-eslint/template-parser": "20.7.0",
     "@angular/cli": "^20.3.26",
     "@angular/compiler-cli": "^20.3.23",
     "@angular/language-service": "^20.3.23",
@@ -87,12 +84,11 @@
     "@types/node": "~12.19.16",
     "@types/parse5": "^5.0.2",
     "@types/webpack-env": "^1.18.8",
-    "@typescript-eslint/eslint-plugin": "^8.33.1",
-    "@typescript-eslint/parser": "^8.33.1",
+    "angular-eslint": "20.7.0",
     "concurrently": "9.2.1",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
-    "eslint": "^8.57.0",
+    "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^50.8.0",
@@ -107,7 +103,8 @@
     "scandirectory": "8.1.1",
     "style-loader": "^4.0.0",
     "ts-node": "~7.0.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.33.1"
   },
   "overrides": {
     "@babel/runtime": "^7.27.0"
