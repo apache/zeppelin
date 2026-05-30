@@ -30,6 +30,7 @@
         ],
         "@angular-eslint/no-forward-ref": "off",
         "@angular-eslint/no-empty-lifecycle-method": "off",
+        "@angular-eslint/prefer-standalone": "off",
         "@angular-eslint/prefer-output-readonly": "error",
         "@typescript-eslint/adjacent-overload-signatures": "off",
         "@typescript-eslint/array-type": "off",
@@ -47,28 +48,8 @@
         "@typescript-eslint/member-delimiter-style": "off",
         "@typescript-eslint/semi": "off",
         "@typescript-eslint/type-annotation-spacing": "off",
-        "@typescript-eslint/ban-types": [
-          "error",
-          {
-            "types": {
-              "Object": {
-                "message": "Use {} instead."
-              },
-              "String": {
-                "message": "Use string instead."
-              },
-              "Number": {
-                "message": "Use number instead."
-              },
-              "Boolean": {
-                "message": "Use boolean instead."
-              },
-              "Function": {
-                "message": "Use specific callable interface instead."
-              }
-            }
-          }
-        ],
+        "@typescript-eslint/no-wrapper-object-types": "error",
+        "@typescript-eslint/no-unsafe-function-type": "error",
         "@typescript-eslint/member-ordering": "warn",
         "@typescript-eslint/explicit-member-accessibility": [
           "off",

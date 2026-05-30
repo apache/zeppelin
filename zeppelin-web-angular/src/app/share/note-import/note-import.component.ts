@@ -24,7 +24,8 @@ import { ImportNote, MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
   selector: 'zeppelin-note-import',
   templateUrl: './note-import.component.html',
   styleUrls: ['./note-import.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NoteImportComponent extends MessageListenersManager implements OnInit {
   noteImportName?: string;
@@ -77,7 +78,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     if (typeof result !== 'object') {
       try {
         result = JSON.parse(result as string);
-      } catch (e) {
+      } catch {
         this.errorText = 'JSON parse exception';
         return;
       }

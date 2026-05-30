@@ -46,7 +46,7 @@ export class ShortcutService {
   bindShortcut(option: ShortcutOption): Observable<ShortcutEvent> {
     const host = option.scope || this.element;
     const eventName = `keydown.${option.keybindings}`;
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {
       const handler = (event: KeyboardEvent) => {

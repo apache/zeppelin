@@ -76,6 +76,8 @@ export const ParagraphActionToHandlerName = {
 //       This allows checking both keys and values at the type level,
 //       while preserving the binding between them.
 
+// Referenced only via `typeof` below to derive a type; the runtime binding is intentionally unused.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MonacoHandledParagraphActions = [
   ParagraphActions.MoveCursorUp,
   ParagraphActions.MoveCursorDown,

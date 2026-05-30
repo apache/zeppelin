@@ -57,7 +57,7 @@ export const copyTextToClipboard = (text: string): void => {
 
   try {
     document.execCommand('copy');
-  } catch (err) {
+  } catch {
     window.prompt('Copy to clipboard: Ctrl+C, Enter', text);
   }
 
