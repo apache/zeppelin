@@ -9,11 +9,8 @@
         "project": true,
         "createDefaultProgram": true
       },
-      "extends": [
-        "plugin:@angular-eslint/ng-cli-compat",
-        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
-        "plugin:@angular-eslint/template/process-inline-templates"
-      ],
+      "extends": ["plugin:@angular-eslint/recommended", "plugin:@angular-eslint/template/process-inline-templates"],
+      "plugins": ["@typescript-eslint", "import", "jsdoc", "prefer-arrow"],
       "rules": {
         "@angular-eslint/component-selector": [
           "error",
@@ -32,6 +29,7 @@
           }
         ],
         "@angular-eslint/no-forward-ref": "off",
+        "@angular-eslint/no-empty-lifecycle-method": "off",
         "@angular-eslint/prefer-output-readonly": "error",
         "@typescript-eslint/adjacent-overload-signatures": "off",
         "@typescript-eslint/array-type": "off",
