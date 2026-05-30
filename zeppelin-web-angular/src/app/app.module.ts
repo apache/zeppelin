@@ -11,7 +11,7 @@
  */
 
 import { registerLocaleData } from '@angular/common';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import en from '@angular/common/locales/en';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -42,15 +42,8 @@ registerLocaleData(en);
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    ShareModule,
-    AppRoutingModule,
-    RouterModule
-  ],
+  bootstrap: [AppComponent],
+  imports: [BrowserModule, FormsModule, BrowserAnimationsModule, ShareModule, AppRoutingModule, RouterModule],
   providers: [
     ...RUNTIME_COMPILER_PROVIDERS,
     {
@@ -81,8 +74,8 @@ registerLocaleData(en);
     {
       provide: TRASH_FOLDER_ID_TOKEN,
       useValue: '~Trash'
-    }
-  ],
-  bootstrap: [AppComponent]
+    },
+    provideHttpClient(withInterceptorsFromDi())
+  ]
 })
 export class AppModule {}
