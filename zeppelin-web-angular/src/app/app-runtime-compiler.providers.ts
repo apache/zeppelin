@@ -21,7 +21,6 @@ import {
 import { JitCompilerFactory } from '@angular/platform-browser-dynamic';
 
 const compilerOptions: CompilerOptions = {
-  useJit: true,
   defaultEncapsulation: ViewEncapsulation.None
 };
 
