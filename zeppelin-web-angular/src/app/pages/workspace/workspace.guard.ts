@@ -11,7 +11,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { of, Observable } from 'rxjs';
 import { catchError, mapTo, tap } from 'rxjs/operators';
 
@@ -20,7 +20,7 @@ import { MessageService, TicketService } from '@zeppelin/services';
 @Injectable({
   providedIn: 'root'
 })
-export class WorkspaceGuard implements CanActivate {
+export class WorkspaceGuard {
   constructor(
     private ticketService: TicketService,
     private router: Router,
