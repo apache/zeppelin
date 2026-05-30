@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 
-import { NzModalRef } from 'ng-zorro-antd/modal';
+import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageService } from '@zeppelin/services';
 
@@ -23,8 +23,8 @@ import { MessageService } from '@zeppelin/services';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NoteRenameComponent implements OnInit {
-  @Input() newName!: string;
-  @Input() id!: string;
+  newName!: string;
+  id!: string;
 
   rename() {
     this.messageService.noteRename(this.id, this.newName);
@@ -33,8 +33,12 @@ export class NoteRenameComponent implements OnInit {
 
   constructor(
     private messageService: MessageService,
-    private nzModalRef: NzModalRef
-  ) {}
+    private nzModalRef: NzModalRef,
+    @Inject(NZ_MODAL_DATA) nzData: { id: string; newName: string }
+  ) {
+    this.id = nzData.id;
+    this.newName = nzData.newName;
+  }
 
   ngOnInit() {}
 }

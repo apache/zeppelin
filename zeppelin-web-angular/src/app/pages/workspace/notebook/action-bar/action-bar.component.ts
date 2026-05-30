@@ -190,7 +190,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     this.nzModalService.create({
       nzTitle: 'Clone Note',
       nzContent: NoteCreateComponent,
-      nzComponentParams: {
+      nzData: {
         cloneNote: this.note
       },
       nzFooter: null

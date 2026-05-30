@@ -27,7 +27,7 @@ export class NoteActionService {
     this.nzModalService.create({
       nzTitle: 'Rename note',
       nzContent: NoteRenameComponent,
-      nzComponentParams: {
+      nzData: {
         id,
         newName: path || name
       },
@@ -40,7 +40,7 @@ export class NoteActionService {
     this.nzModalService.create({
       nzTitle: 'Rename folder',
       nzContent: FolderRenameComponent,
-      nzComponentParams: {
+      nzData: {
         folderId: path,
         newFolderPath: path
       },
@@ -62,7 +62,7 @@ export class NoteActionService {
     this.nzModalService.create({
       nzTitle: 'Create New Note',
       nzContent: NoteCreateComponent,
-      nzComponentParams: { path },
+      nzData: { path },
       nzWidth: '800px',
       nzFooter: null
     });
