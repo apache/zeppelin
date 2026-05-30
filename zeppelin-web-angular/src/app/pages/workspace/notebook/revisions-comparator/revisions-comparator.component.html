@@ -1,14 +1,14 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
 <div class="revisions-comparator" nz-row [nzGutter]="16">
   <div nz-col [nzSpan]="8">
@@ -27,71 +27,87 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            *ngFor="let revision of revisionTable.data; let i = index; let last = last"
-            [class.cursor-hand]="!last"
-            [class.selected-revision]="revision.message === currentSecondRevisionLabel"
-            (click)="!last && onRevisionRowClick(i)"
-          >
-            <td>{{ revision.message }}</td>
-            <td>{{ formatRevisionDate(revision.time) }}</td>
-          </tr>
+          @for (revision of revisionTable.data; track revision; let i = $index; let last = $last) {
+            <tr
+              [class.cursor-hand]="!last"
+              [class.selected-revision]="revision.message === currentSecondRevisionLabel"
+              (click)="!last && onRevisionRowClick(i)"
+            >
+              <td>{{ revision.message }}</td>
+              <td>{{ formatRevisionDate(revision.time) }}</td>
+            </tr>
+          }
         </tbody>
       </nz-table>
     </div>
 
     <div class="revisions-comparator-bar">
-      <nz-select
-        *ngIf="noteRevisions.length > 0"
-        class="revision-select"
-        [ngModel]="selectedFirstRevisionId"
-        nzPlaceHolder="Choose..."
-        (ngModelChange)="onFirstRevisionSelect($event)"
-      >
-        <nz-option
-          *ngFor="let revision of sortedRevisions"
-          [nzValue]="revision.id"
-          [nzLabel]="revision.message + (revision.time ? ' - ' + formatRevisionDate(revision.time) : '')"
-        ></nz-option>
-      </nz-select>
+      @if (noteRevisions.length > 0) {
+        <nz-select
+          class="revision-select"
+          [ngModel]="selectedFirstRevisionId"
+          nzPlaceHolder="Choose..."
+          (ngModelChange)="onFirstRevisionSelect($event)"
+        >
+          @for (revision of sortedRevisions; track revision) {
+            <nz-option
+              [nzValue]="revision.id"
+              [nzLabel]="revision.message + (revision.time ? ' - ' + formatRevisionDate(revision.time) : '')"
+            ></nz-option>
+          }
+        </nz-select>
+      }
       <span class="compare-label">compare with</span>
-      <nz-select
-        *ngIf="noteRevisions.length > 0"
-        class="revision-select"
-        [ngModel]="selectedSecondRevisionId"
-        [nzDisabled]="firstNoteRevisionForCompare === null"
-        nzPlaceHolder="Choose..."
-        (ngModelChange)="onSecondRevisionSelect($event)"
-      >
-        <nz-option
-          *ngFor="let revision of sortedRevisions"
-          [nzValue]="revision.id"
-          [nzLabel]="revision.message + (revision.time ? ' - ' + formatRevisionDate(revision.time) : '')"
-        ></nz-option>
-      </nz-select>
+      @if (noteRevisions.length > 0) {
+        <nz-select
+          class="revision-select"
+          [ngModel]="selectedSecondRevisionId"
+          [nzDisabled]="firstNoteRevisionForCompare === null"
+          nzPlaceHolder="Choose..."
+          (ngModelChange)="onSecondRevisionSelect($event)"
+        >
+          @for (revision of sortedRevisions; track revision) {
+            <nz-option
+              [nzValue]="revision.id"
+              [nzLabel]="revision.message + (revision.time ? ' - ' + formatRevisionDate(revision.time) : '')"
+            ></nz-option>
+          }
+        </nz-select>
+      }
     </div>
 
     <div class="diff-panel">
       <div class="paragraphs-div">
-        <div
-          *ngFor="let p of mergeNoteRevisionsDiff"
-          class="paragraph-item"
-          [class.paragraph-item-selected]="currentParagraphDiffDisplay?.paragraph?.id === p.paragraph.id"
-          (click)="changeCurrentParagraphDiffDisplay(p.paragraph.id)"
-        >
-          <div class="paragraph-item-heading">
-            <span class="paragraph-id">{{ p.paragraph.id }}</span>
-            <strong *ngIf="p.paragraph.title" class="paragraph-title">({{ p.paragraph.title }})</strong>
-            <nz-tag *ngIf="p.type === 'added'" nzColor="green">added</nz-tag>
-            <nz-tag *ngIf="p.type === 'deleted'" nzColor="red">deleted</nz-tag>
-            <nz-tag *ngIf="p.type === 'compared' && !p.identical" nzColor="orange">differences</nz-tag>
-            <nz-tag *ngIf="p.type === 'compared' && p.identical" nzColor="default">identical</nz-tag>
-            <span class="paragraph-first-string">{{ p.firstString }}</span>
+        @for (p of mergeNoteRevisionsDiff; track p) {
+          <div
+            class="paragraph-item"
+            [class.paragraph-item-selected]="currentParagraphDiffDisplay?.paragraph?.id === p.paragraph.id"
+            (click)="changeCurrentParagraphDiffDisplay(p.paragraph.id)"
+          >
+            <div class="paragraph-item-heading">
+              <span class="paragraph-id">{{ p.paragraph.id }}</span>
+              @if (p.paragraph.title) {
+                <strong class="paragraph-title">({{ p.paragraph.title }})</strong>
+              }
+              @if (p.type === 'added') {
+                <nz-tag nzColor="green">added</nz-tag>
+              }
+              @if (p.type === 'deleted') {
+                <nz-tag nzColor="red">deleted</nz-tag>
+              }
+              @if (p.type === 'compared' && !p.identical) {
+                <nz-tag nzColor="orange">differences</nz-tag>
+              }
+              @if (p.type === 'compared' && p.identical) {
+                <nz-tag nzColor="default">identical</nz-tag>
+              }
+              <span class="paragraph-first-string">{{ p.firstString }}</span>
+            </div>
           </div>
-        </div>
-        <div *ngIf="currentSecondRevisionLabel === 'Choose...'" class="empty-paragraph-message">
-          Please select a revision
-        </div>
+        }
+        @if (currentSecondRevisionLabel === 'Choose...') {
+          <div class="empty-paragraph-message">Please select a revision</div>
+        }
       </div>
     </div>
   </div>
@@ -101,20 +117,25 @@
       Revision:
       <strong>{{ currentFirstRevisionLabel }} --> {{ currentSecondRevisionLabel }}</strong>
     </span>
-    <pre *ngIf="currentParagraphDiffDisplay?.type === 'added'" class="code-panel color-green-row">{{
-      currentParagraphDiffDisplay?.paragraph?.text
-    }}</pre>
-    <pre *ngIf="currentParagraphDiffDisplay?.type === 'deleted'" class="code-panel color-red-row">{{
-      currentParagraphDiffDisplay?.paragraph?.text
-    }}</pre>
-    <pre *ngIf="currentParagraphDiffDisplay?.type === 'compared'" class="code-panel"><span
-        *ngFor="let seg of currentParagraphDiffDisplay?.segments"
-        [class.color-green-row]="seg.type === 'insert'"
-        [class.color-red-row]="seg.type === 'delete'"
-        [class.color-black]="seg.type === 'equal'"
-      >{{ seg.text }}</span></pre>
-    <pre *ngIf="currentParagraphDiffDisplay === null" class="code-panel empty-code-panel">
-      <div>Nothing to display</div>
-    </pre>
+    @if (currentParagraphDiffDisplay?.type === 'added') {
+      <pre class="code-panel color-green-row">{{ currentParagraphDiffDisplay?.paragraph?.text }}</pre>
+    }
+    @if (currentParagraphDiffDisplay?.type === 'deleted') {
+      <pre class="code-panel color-red-row">{{ currentParagraphDiffDisplay?.paragraph?.text }}</pre>
+    }
+    @if (currentParagraphDiffDisplay?.type === 'compared') {
+      <pre class="code-panel">@for (seg of currentParagraphDiffDisplay?.segments; track seg) {
+        <span
+          [class.color-green-row]="seg.type === 'insert'"
+          [class.color-red-row]="seg.type === 'delete'"
+          [class.color-black]="seg.type === 'equal'"
+        >{{ seg.text }}</span>
+      }</pre>
+    }
+    @if (currentParagraphDiffDisplay === null) {
+      <pre class="code-panel empty-code-panel">
+        <div>Nothing to display</div>
+      </pre>
+    }
   </div>
 </div>

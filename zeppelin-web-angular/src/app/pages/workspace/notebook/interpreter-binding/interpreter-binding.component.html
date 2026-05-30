@@ -1,14 +1,14 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
 <div class="interpreter-binding">
   <div>
@@ -27,26 +27,40 @@
   </div>
   <div class="interpreter-settings">
     <div cdkDropList class="interpreter-list" (cdkDropListDropped)="drop($event)">
-      <div class="interpreter-box" *ngFor="let item of interpreterBindings; let pFirst = first" cdkDrag>
-        <a class="refresh" (click)="restartInterpreter(item)">
-          <i nz-icon nzType="sync" nzTheme="outline"></i>
-        </a>
-        <div class="interpreter-name">
-          <button nz-button [nzType]="item.selected ? 'primary' : 'default'" (click)="item.selected = !item.selected">
-            <span class="main-name">{{ item.name }}</span>
-            <small>
-              <span class="child-name" *ngFor="let inter of item.interpreters; let first = first">
-                <span *ngIf="!first">,</span>
-                %
-                <span *ngIf="!pFirst || first">{{ item.name }}</span>
-                <span *ngIf="(!pFirst || first) && !first">.</span>
-                <span *ngIf="!first">{{ inter.name }}</span>
-                <span *ngIf="pFirst && first">(default)</span>
-              </span>
-            </small>
-          </button>
+      @for (item of interpreterBindings; track item; let pFirst = $first) {
+        <div class="interpreter-box" cdkDrag>
+          <a class="refresh" (click)="restartInterpreter(item)">
+            <i nz-icon nzType="sync" nzTheme="outline"></i>
+          </a>
+          <div class="interpreter-name">
+            <button nz-button [nzType]="item.selected ? 'primary' : 'default'" (click)="item.selected = !item.selected">
+              <span class="main-name">{{ item.name }}</span>
+              <small>
+                @for (inter of item.interpreters; track inter; let first = $first) {
+                  <span class="child-name">
+                    @if (!first) {
+                      <span>,</span>
+                    }
+                    %
+                    @if (!pFirst || first) {
+                      <span>{{ item.name }}</span>
+                    }
+                    @if ((!pFirst || first) && !first) {
+                      <span>.</span>
+                    }
+                    @if (!first) {
+                      <span>{{ inter.name }}</span>
+                    }
+                    @if (pFirst && first) {
+                      <span>(default)</span>
+                    }
+                  </span>
+                }
+              </small>
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
     <div class="submit-interpreter">
       <button nz-button nzType="primary" (click)="saveSetting()">Save</button>

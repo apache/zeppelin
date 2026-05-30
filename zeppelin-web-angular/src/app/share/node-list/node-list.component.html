@@ -1,14 +1,14 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
 <div class="content" [class.header-mode]="headerMode">
   <h4>
@@ -30,123 +30,128 @@
   <ng-template #treeTpl let-node>
     <span
       class="node"
-      [ngSwitch]="node.origin.nodeType"
       [class.not-matched]="searchValue && !node.isMatched"
       [class.active]="activatedId === node.origin.id"
       (click)="activeNote(node.origin.id)"
     >
-      <span class="folder" *ngSwitchCase="'folder'">
-        <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
-          <i nz-icon [nzType]="node.isExpanded ? 'folder-open' : 'folder'" nzTheme="fill"></i>
-          {{ node.title }}
-        </a>
-        <span class="operation">
-          <ng-container *ngIf="!node.origin.isTrash; else trashFolderTpl">
-            <a nz-tooltip nzTooltipTitle="Create new note">
-              <i nz-icon nzType="file-add" (click)="createNote(node.origin.id)"></i>
+      @switch (node.origin.nodeType) {
+        @case ('folder') {
+          <span class="folder">
+            <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
+              <i nz-icon [nzType]="node.isExpanded ? 'folder-open' : 'folder'" nzTheme="fill"></i>
+              {{ node.title }}
             </a>
-            <a nz-tooltip nzTooltipTitle="Rename folder">
-              <i nz-icon nzType="edit" (click)="renameFolder(node.origin.id)"></i>
+            <span class="operation">
+              @if (!node.origin.isTrash) {
+                <a nz-tooltip nzTooltipTitle="Create new note">
+                  <i nz-icon nzType="file-add" (click)="createNote(node.origin.id)"></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Rename folder">
+                  <i nz-icon nzType="edit" (click)="renameFolder(node.origin.id)"></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Move folder to Trash">
+                  <i
+                    nz-icon
+                    nzType="delete"
+                    nz-popconfirm
+                    nzPopconfirmTitle="This folder will be moved to trash."
+                    (nzOnConfirm)="moveFolderToTrash(node.origin.id)"
+                  ></i>
+                </a>
+              } @else {
+                <a nz-tooltip nzTooltipTitle="Restore folder">
+                  <i nz-icon nzType="undo" (click)="restoreFolder(node.origin.id)"></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Remove folder permanently">
+                  <i
+                    nz-icon
+                    nzType="delete"
+                    nz-popconfirm
+                    nzPopconfirmTitle="This cannot be undone. Are you sure?"
+                    (nzOnConfirm)="removeFolder(node.origin.id)"
+                  ></i>
+                </a>
+              }
+            </span>
+          </span>
+        }
+        @case ('note') {
+          <span class="file">
+            <a class="name">
+              <i nz-icon nzType="file" nzTheme="outline"></i>
+              <a [routerLink]="['/notebook', node.origin.id]">
+                {{ node.title }}
+              </a>
             </a>
-            <a nz-tooltip nzTooltipTitle="Move folder to Trash">
-              <i
-                nz-icon
-                nzType="delete"
-                nz-popconfirm
-                nzPopconfirmTitle="This folder will be moved to trash."
-                (nzOnConfirm)="moveFolderToTrash(node.origin.id)"
-              ></i>
+            <span class="operation">
+              @if (!node.origin.isTrash) {
+                <a nz-tooltip nzTooltipTitle="Rename note">
+                  <i nz-icon nzType="edit" (click)="renameNote(node.origin.id, node.origin.path, node.origin.name)"></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Clear output">
+                  <i
+                    nz-icon
+                    nzType="fire"
+                    nz-popconfirm
+                    nzPopconfirmTitle="Do you want to clear all output?"
+                    (nzOnConfirm)="paragraphClearAllOutput(node.origin.id)"
+                  ></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Move note to Trash">
+                  <i
+                    nz-icon
+                    nzType="delete"
+                    nz-popconfirm
+                    nzPopconfirmTitle="This note will be moved to trash."
+                    (nzOnConfirm)="moveNoteToTrash(node.origin.id)"
+                  ></i>
+                </a>
+              } @else {
+                <a nz-tooltip nzTooltipTitle="Restore note">
+                  <i nz-icon nzType="undo" (click)="restoreNote(node.origin.id)"></i>
+                </a>
+                <a nz-tooltip nzTooltipTitle="Remove note permanently">
+                  <i
+                    nz-icon
+                    nzType="delete"
+                    nz-popconfirm
+                    nzPopconfirmTitle="This cannot be undone. Are you sure?"
+                    (nzOnConfirm)="deleteNote(node.origin.id)"
+                  ></i>
+                </a>
+              }
+            </span>
+          </span>
+        }
+        @case ('trash') {
+          <span class="folder">
+            <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
+              <i nz-icon nzType="delete" nzTheme="fill"></i>
+              {{ node.title }}
             </a>
-          </ng-container>
-          <ng-template #trashFolderTpl>
-            <a nz-tooltip nzTooltipTitle="Restore folder">
-              <i nz-icon nzType="undo" (click)="restoreFolder(node.origin.id)"></i>
-            </a>
-            <a nz-tooltip nzTooltipTitle="Remove folder permanently">
-              <i
-                nz-icon
-                nzType="delete"
-                nz-popconfirm
-                nzPopconfirmTitle="This cannot be undone. Are you sure?"
-                (nzOnConfirm)="removeFolder(node.origin.id)"
-              ></i>
-            </a>
-          </ng-template>
-        </span>
-      </span>
-      <span class="file" *ngSwitchCase="'note'">
-        <a class="name">
-          <i nz-icon nzType="file" nzTheme="outline"></i>
-          <a [routerLink]="['/notebook', node.origin.id]">
-            {{ node.title }}
-          </a>
-        </a>
-        <span class="operation">
-          <ng-container *ngIf="!node.origin.isTrash; else trashFileTpl">
-            <a nz-tooltip nzTooltipTitle="Rename note">
-              <i nz-icon nzType="edit" (click)="renameNote(node.origin.id, node.origin.path, node.origin.name)"></i>
-            </a>
-            <a nz-tooltip nzTooltipTitle="Clear output">
-              <i
-                nz-icon
-                nzType="fire"
-                nz-popconfirm
-                nzPopconfirmTitle="Do you want to clear all output?"
-                (nzOnConfirm)="paragraphClearAllOutput(node.origin.id)"
-              ></i>
-            </a>
-            <a nz-tooltip nzTooltipTitle="Move note to Trash">
-              <i
-                nz-icon
-                nzType="delete"
-                nz-popconfirm
-                nzPopconfirmTitle="This note will be moved to trash."
-                (nzOnConfirm)="moveNoteToTrash(node.origin.id)"
-              ></i>
-            </a>
-          </ng-container>
-          <ng-template #trashFileTpl>
-            <a nz-tooltip nzTooltipTitle="Restore note">
-              <i nz-icon nzType="undo" (click)="restoreNote(node.origin.id)"></i>
-            </a>
-            <a nz-tooltip nzTooltipTitle="Remove note permanently">
-              <i
-                nz-icon
-                nzType="delete"
-                nz-popconfirm
-                nzPopconfirmTitle="This cannot be undone. Are you sure?"
-                (nzOnConfirm)="deleteNote(node.origin.id)"
-              ></i>
-            </a>
-          </ng-template>
-        </span>
-      </span>
-      <span class="folder" *ngSwitchCase="'trash'">
-        <a class="name" (click)="toggleFolder(node)" [attr.data-testid]="'folder-' + node.title">
-          <i nz-icon nzType="delete" nzTheme="fill"></i>
-          {{ node.title }}
-        </a>
-        <span class="operation">
-          <a nz-tooltip nzTooltipTitle="Restore all">
-            <i
-              nz-icon
-              nzType="undo"
-              nz-popconfirm
-              nzPopconfirmTitle="Folders and notes in the trash will be merged into their original position."
-              (nzOnConfirm)="restoreAll()"
-            ></i>
-          </a>
-          <a nz-tooltip nzTooltipTitle="Empty all">
-            <i
-              nz-icon
-              nzType="delete"
-              nz-popconfirm
-              nzPopconfirmTitle="This cannot be undone. Are you sure?"
-              (nzOnConfirm)="emptyTrash()"
-            ></i>
-          </a>
-        </span>
-      </span>
+            <span class="operation">
+              <a nz-tooltip nzTooltipTitle="Restore all">
+                <i
+                  nz-icon
+                  nzType="undo"
+                  nz-popconfirm
+                  nzPopconfirmTitle="Folders and notes in the trash will be merged into their original position."
+                  (nzOnConfirm)="restoreAll()"
+                ></i>
+              </a>
+              <a nz-tooltip nzTooltipTitle="Empty all">
+                <i
+                  nz-icon
+                  nzType="delete"
+                  nz-popconfirm
+                  nzPopconfirmTitle="This cannot be undone. Are you sure?"
+                  (nzOnConfirm)="emptyTrash()"
+                ></i>
+              </a>
+            </span>
+          </span>
+        }
+      }
     </span>
   </ng-template>
 </div>
