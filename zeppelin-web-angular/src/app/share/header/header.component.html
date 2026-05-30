@@ -44,7 +44,7 @@
     </ul>
   </div>
   <div class="user" *ngIf="ticketService.ticket.init">
-    <a nz-dropdown class="status" [nzTrigger]="'click'" [nzDropdownMenu]="menu">
+    <a nz-dropdown class="status" [nzTrigger]="'click'" [nzDropdownMenu]="menu" nzOverlayClassName="zeppelin-user-menu">
       <nz-badge [nzStatus]="connectStatus" [nzText]="ticketService.ticket.screenUsername"></nz-badge>
       <i class="small-icon" nz-icon nzType="caret-down"></i>
     </a>

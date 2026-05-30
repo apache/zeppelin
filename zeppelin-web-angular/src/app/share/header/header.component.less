@@ -113,3 +113,30 @@
     }
   }
 });
+
+// Full-row click target for the router links in THIS dropdown only.
+//
+// ng-zorro renders nz-menu-item content inside <span class="ant-menu-title-content">
+// even inside a dropdown, but the upstream rule that stretches the inner <a> across
+// the whole item targets `.ant-dropdown-menu-title-content > a::after`. The class
+// mismatch leaves the <a> covering only its text, so clicking the item padding closes
+// the dropdown via descendantMenuItemClick without firing routerLink.
+//
+// The dropdown content renders in a body-level CDK overlay, so the fix must escape
+// view encapsulation (::ng-deep). It is scoped to nzOverlayClassName="zeppelin-user-menu"
+// so it only ever applies to this header dropdown — no other dropdown or component is
+// touched. The rule is theme-independent, so it lives outside the .themeMixin block.
+::ng-deep .zeppelin-user-menu {
+  .ant-dropdown-menu-item a {
+    display: block;
+
+    &::after {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      content: '';
+    }
+  }
+}
