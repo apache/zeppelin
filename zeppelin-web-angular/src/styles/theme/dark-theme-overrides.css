@@ -63,7 +63,6 @@
 .ant-space,
 .search {
   transition: none !important;
-  animation: none !important;
 }
 
 .ant-btn *,
@@ -118,7 +117,6 @@
 .ant-space *,
 .search * {
   transition: none !important;
-  animation: none !important;
 }
 
 /* Special handling for search area */
@@ -127,7 +125,6 @@
 .search .ant-input,
 .search input {
   transition: none !important;
-  animation: none !important;
 }
 
 .search:hover,
@@ -143,7 +140,6 @@
 .search input:focus,
 .search input:active {
   transition: none !important;
-  animation: none !important;
 }
 
 /* Prevent dark mode dropdown menu flickering */
@@ -155,7 +151,6 @@ html.dark .ant-menu-submenu-title {
   background-color: #1f1f1f !important;
   color: rgba(255, 255, 255, 0.85) !important;
   transition: none !important;
-  animation: none !important;
 }
 
 html.dark .ant-dropdown-menu-item:hover,
