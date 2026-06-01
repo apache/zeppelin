@@ -52,6 +52,7 @@ export class Message {
   private wsUrl?: string;
   private ticket?: Ticket;
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
+  // TODO: Clean up this variable with `msgId` in server-side. See ZEPPELIN-6419, ZEPPELIN-4985
   private lastMsgIdSeqSent = 0;
   private readonly normalCloseCode = 1000;
 
