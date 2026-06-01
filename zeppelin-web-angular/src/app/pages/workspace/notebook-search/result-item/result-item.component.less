@@ -10,10 +10,131 @@
  * limitations under the License.
  */
 
-::ng-deep {
-  .monaco-editor {
-    .mark {
-      background: #fdf733;
-    }
+@import 'theme-mixin';
+
+:host {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.result-card {
+  cursor: pointer;
+  user-select: text;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+
+.code-block {
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 200px;
+    overflow-y: auto;
   }
 }
+
+.output-block {
+  border-radius: 0 4px 4px 0;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+}
+
+.title-block {
+  font-size: 12px;
+  padding: 4px 0;
+  margin-bottom: 4px;
+}
+
+.tables-block {
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+mark {
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.themeMixin({
+  .badge {
+    background: @background-color-base;
+    color: @text-color-secondary;
+  }
+
+  .badge.sql {
+    background: @green-1;
+    color: @green-7;
+  }
+
+  .badge.python, .badge.pyspark {
+    background: @gold-1;
+    color: @gold-7;
+  }
+
+  .badge.md {
+    background: @blue-1;
+    color: @blue-6;
+  }
+
+  .code-block {
+    background: @background-color-light;
+    border: 1px solid @border-color-split;
+
+    pre {
+      font-family: @code-family;
+      color: @text-color;
+    }
+  }
+
+  .output-block {
+    background: @background-color-light;
+    border-left: 3px solid @border-color-base;
+
+    pre {
+      font-family: @code-family;
+      color: @text-color-secondary;
+    }
+  }
+
+  .title-block {
+    color: @text-color-secondary;
+  }
+
+  .tables-block {
+    color: @green-7;
+  }
+
+  mark {
+    background-color: @gold-1;
+  }
+});

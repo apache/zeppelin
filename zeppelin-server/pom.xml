@@ -42,6 +42,8 @@
     <kerberos.version>2.0.0-M15</kerberos.version>
     <guava.version>32.0.0-jre</guava.version>
     <lucene.version>8.7.0</lucene.version>
+    <onnxruntime.version>1.18.0</onnxruntime.version>
+    <djl.version>0.28.0</djl.version>
     <commons.vfs2.version>2.10.0</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <eirslett.version>1.6</eirslett.version>
@@ -174,6 +176,26 @@
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-highlighter</artifactId>
       <version>${lucene.version}</version>
+    </dependency>
+
+    <!-- Semantic search: ONNX Runtime for model inference -->
+    <dependency>
+      <groupId>com.microsoft.onnxruntime</groupId>
+      <artifactId>onnxruntime</artifactId>
+      <version>${onnxruntime.version}</version>
+    </dependency>
+
+    <!-- Semantic search: DJL HuggingFace tokenizer -->
+    <dependency>
+      <groupId>ai.djl.huggingface</groupId>
+      <artifactId>tokenizers</artifactId>
+      <version>${djl.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

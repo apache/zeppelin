@@ -44,6 +44,10 @@ public class InterpreterFactory implements InterpreterFactoryInterface {
       // Get the default interpreter of the defaultInterpreterSetting
       InterpreterSetting defaultSetting =
           interpreterSettingManager.getByName(executionContext.getDefaultInterpreterGroup());
+      if (defaultSetting == null) {
+        throw new InterpreterNotFoundException("No interpreter found for group: "
+            + executionContext.getDefaultInterpreterGroup());
+      }
       return defaultSetting.getDefaultInterpreter(executionContext);
     }
 

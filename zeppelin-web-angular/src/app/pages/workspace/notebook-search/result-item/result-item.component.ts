@@ -10,23 +10,9 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  NgZone,
-  OnChanges,
-  OnDestroy,
-  SimpleChanges
-} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
-import { JoinedEditorOptions } from '@zeppelin/share';
-import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility';
-import { editor, Range } from 'monaco-editor';
-import IEditor = editor.IEditor;
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 @Component({
   selector: 'zeppelin-notebook-search-result-item',
@@ -34,40 +20,39 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
   styleUrls: ['./result-item.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
+export class NotebookSearchResultItemComponent implements OnChanges {
   @Input() result!: NotebookSearchResultItem;
   queryParams = {};
   displayName = '';
   routerLink: string[] = [];
-  mergedStr?: string;
-  keywords: string[] = [];
-  highlightPositions: KeywordPosition[] = [];
-  editor?: IStandaloneCodeEditor;
-  height = 0;
-  decorations: string[] = [];
-  editorOption = {
-    readOnly: true,
-    fontSize: 12,
-    renderLineHighlight: 'none',
-    minimap: { enabled: false },
-    lineNumbers: 'off',
-    glyphMargin: false,
-    scrollBeyondLastLine: false,
-    contextmenu: false,
-    scrollbar: {
-      handleMouseWheel: false,
-      alwaysConsumeMouseWheel: false
-    }
-  } as JoinedEditorOptions;
+  codeText = '';
+  codeHtml = '';
+  outputText = '';
+  tablesText = '';
+  titleHtml = '';
+  interpreter = '';
 
   constructor(
-    private ngZone: NgZone,
-    private cdr: ChangeDetectorRef,
-    private router: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
-  setDisplayNameAndRouterLink(): void {
-    const term = this.router.snapshot.params.queryStr;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.result) {
+      this.parseResult();
+    }
+  }
+
+  navigateToResult(): void {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    this.router.navigate(this.routerLink, { queryParams: this.queryParams });
+  }
+
+  private parseResult(): void {
+    const term = this.route.snapshot.params.queryStr;
     const listOfId = this.result.id.split('/');
     const [noteId, hasParagraph, paragraph] = listOfId;
     if (!hasParagraph) {
@@ -75,110 +60,68 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
       this.queryParams = {};
     } else {
       this.routerLink = ['/', 'notebook', noteId];
-      this.queryParams = {
-        paragraph,
-        term
-      };
+      this.queryParams = { paragraph, term };
     }
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
+
+    const snippet = this.result.snippet || '';
+    // HTML-escape first so raw '<' in code (e.g. WHERE id < 100) is not parsed
+    // as a DOM tag, then promote only the Lucene <B> markers to <mark>.
+    this.codeHtml = this.highlightToMark(snippet);
+    this.codeText = snippet.replace(/<\/?B>/gi, '');
+    this.interpreter = this.detectInterpreter(this.codeText);
+
+    const title = this.result.title || '';
+    this.titleHtml = this.highlightToMark(title);
+
+    const tables = this.result.tables || '';
+    this.tablesText = tables
+      .trim()
+      .split(/\s+/)
+      .filter(t => t)
+      .join(', ');
+    this.outputText = this.result.output || '';
   }
 
-  setHighlightKeyword(): void {
-    let mergedStr = this.result.header ? `${this.result.header}\n\n${this.result.snippet}` : this.result.snippet;
+  private highlightToMark(text: string): string {
+    // Escape HTML so raw '<' in source (e.g. WHERE id < 100) is not parsed as
+    // a DOM tag, then convert the Lucene <B>/<\/B> markers back to <mark>.
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/&lt;B&gt;/gi, '<mark>')
+      .replace(/&lt;\/B&gt;/gi, '</mark>');
+  }
 
-    const regexp = /<B>(.+?)<\/B>/g;
-    const matches = [];
-    let match = regexp.exec(mergedStr);
-
-    while (match !== null) {
-      if (match[1]) {
-        matches.push(match[1].toLocaleLowerCase());
+  private detectInterpreter(text: string): string {
+    if (!text) {
+      return '';
+    }
+    // Check interpreter prefix first — this is reliable
+    if (/^%(\w*\.)?sql/i.test(text)) {
+      return 'sql';
+    }
+    if (/^%(\w*\.)?py/i.test(text)) {
+      return 'python';
+    }
+    if (/^%md/i.test(text)) {
+      return 'md';
+    }
+    if (/^%sh/i.test(text)) {
+      return 'sh';
+    }
+    // Fall back to conservative heuristics only if no prefix present.
+    // Require SELECT ... FROM pattern to avoid false positives from Python
+    // "from ... import" or markdown containing words like "create".
+    if (!text.startsWith('%')) {
+      if (/\bSELECT\b/i.test(text) && /\bFROM\b/i.test(text)) {
+        return 'sql';
       }
-      match = regexp.exec(mergedStr);
-    }
-
-    mergedStr = mergedStr.replace(regexp, '$1');
-    this.mergedStr = mergedStr;
-    const keywords = [...new Set(matches)];
-    this.highlightPositions = getKeywordPositions(keywords, mergedStr);
-  }
-
-  applyHighlight() {
-    if (this.editor) {
-      this.decorations = this.editor.deltaDecorations(
-        this.decorations,
-        this.highlightPositions.map(highlight => {
-          const line = highlight.line + 1;
-          const character = highlight.character + 1;
-          return {
-            range: new Range(line, character, line, character + highlight.length),
-            options: {
-              className: 'mark',
-              stickiness: 1
-            }
-          };
-        })
-      );
-      this.cdr.markForCheck();
-    }
-  }
-
-  setLanguage() {
-    const model = this.editor?.getModel();
-    if (!model) {
-      throw new Error('Editor model is not defined.');
-    }
-    const editorModes = {
-      scala: /^%(\w*\.)?(spark|flink)/,
-      python: /^%(\w*\.)?(pyspark|python)/,
-      html: /^%(\w*\.)?(angular|ng)/,
-      r: /^%(\w*\.)?(r|sparkr|knitr)/,
-      sql: /^%(\w*\.)?\wql/,
-      yaml: /^%(\w*\.)?\wconf/,
-      markdown: /^%md/,
-      shell: /^%sh/
-    };
-    let mode = 'text';
-    for (const [modeOption, regex] of Object.entries(editorModes)) {
-      if (regex.test(this.result.snippet)) {
-        mode = modeOption;
-        break;
+      if (/^(import |from \w+ import |def |class )/m.test(text)) {
+        return 'python';
       }
     }
-    editor.setModelLanguage(model, mode);
-  }
-
-  autoAdjustEditorHeight() {
-    this.ngZone.run(() => {
-      setTimeout(() => {
-        const model = this.editor?.getModel();
-        if (model) {
-          this.height = this.editor!.getOption(monaco.editor.EditorOption.lineHeight) * (model.getLineCount() + 2);
-          this.editor!.layout();
-          this.cdr.markForCheck();
-        }
-      });
-    });
-  }
-
-  initializedEditor(editorInstance: IEditor) {
-    this.editor = editorInstance as IStandaloneCodeEditor;
-    this.editor.setValue(this.mergedStr ?? '');
-    this.setLanguage();
-    this.autoAdjustEditorHeight();
-    this.applyHighlight();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.result) {
-      this.setDisplayNameAndRouterLink();
-      this.setHighlightKeyword();
-      this.autoAdjustEditorHeight();
-      this.applyHighlight();
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.editor?.dispose();
+    return '';
   }
 }

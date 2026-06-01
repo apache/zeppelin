@@ -190,9 +190,16 @@ public class LuceneSearch extends SearchService {
             header = "";
           }
           matchingParagraphs.add(
-              ImmutableMap.of(
-                  "id", path, // <noteId>/paragraph/<paragraphId>
-                  "name", title, "snippet", fragment, "text", text, "header", header));
+              ImmutableMap.<String, String>builder()
+                  .put("id", path)
+                  .put("name", title)
+                  .put("snippet", fragment)
+                  .put("text", text)
+                  .put("header", header)
+                  .put("title", header)
+                  .put("tables", "")
+                  .put("output", "")
+                  .build());
         } else {
           LOGGER.info("{}. No {} for this document", i + 1, ID_FIELD);
         }

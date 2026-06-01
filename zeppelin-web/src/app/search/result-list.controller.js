@@ -21,24 +21,73 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
   $scope.searchTerm = $routeParams.searchTerm;
   let results = searchService.search({'q': $routeParams.searchTerm}).query();
 
+  function detectLang(text) {
+    if (!text) {
+      return '';
+    }
+    // Check interpreter prefix first — this is reliable
+    if (/^%(\w*\.)?sql/i.test(text)) {
+      return 'sql';
+    }
+    if (/^%(\w*\.)?py/i.test(text)) {
+      return 'python';
+    }
+    if (/^%md/i.test(text)) {
+      return 'md';
+    }
+    if (/^%sh/i.test(text)) {
+      return 'sh';
+    }
+    // Fall back to conservative heuristics only if no prefix present.
+    // Require SELECT ... FROM pattern to avoid false positives from Python
+    // "from ... import" or markdown containing words like "create".
+    if (!text.startsWith('%')) {
+      if (/\bSELECT\b/i.test(text) && /\bFROM\b/i.test(text)) {
+        return 'sql';
+      }
+      if (/^(import |from \w+ import |def |class )/m.test(text)) {
+        return 'python';
+      }
+    }
+    return '';
+  }
+
+  // HTML-escape raw text so '<' in source (e.g. WHERE id < 100) is not parsed
+  // as a DOM tag, then promote only the Lucene <B>/<\/B> markers to <mark>.
+  function highlightToMark(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/&lt;B&gt;/gi, '<mark>')
+      .replace(/&lt;\/B&gt;/gi, '</mark>');
+  }
+
   results.$promise.then(function(result) {
     $scope.notes = result.body.map(function(note) {
-      // redirect to notebook when search result is a notebook itself,
-      // not a paragraph
       if (!/\/paragraph\//.test(note.id)) {
         return note;
       }
-
       note.id = note.id.replace('paragraph/', '?paragraph=') +
         '&term=' + $routeParams.searchTerm;
 
+      let code = (note.snippet || '').replace(/<B>/g, '').replace(/<\/B>/g, '');
+
+      let tables = (note.tables || '').trim().split(/\s+/).filter(function(t) {
+        return t;
+      }).join(', ');
+
+      note.codeText = code;
+      note.codeHtml = highlightToMark(note.snippet || '');
+      note.titleHtml = highlightToMark(note.title || '');
+      note.outputText = note.output || '';
+      note.tablesText = tables;
+      note.langBadge = detectLang(code);
+
       return note;
     });
-    if ($scope.notes.length === 0) {
-      $scope.isResult = false;
-    } else {
-      $scope.isResult = true;
-    }
+
+    $scope.isResult = $scope.notes.length > 0;
 
     $scope.$on('$routeChangeStart', function(event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
@@ -46,111 +95,4 @@ function SearchResultCtrl($scope, $routeParams, searchService) {
       }
     });
   });
-
-  $scope.page = 0;
-  $scope.allResults = false;
-
-  $scope.highlightSearchResults = function(note) {
-    return function(_editor) {
-      function getEditorMode(text) {
-        let editorModes = {
-          'ace/mode/scala': /^%(\w*\.)?spark/,
-          'ace/mode/python': /^%(\w*\.)?(pyspark|python)/,
-          'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)/,
-          'ace/mode/sql': /^%(\w*\.)?\wql/,
-          'ace/mode/markdown': /^%md/,
-          'ace/mode/sh': /^%sh/,
-        };
-
-        return Object.keys(editorModes).reduce(function(res, mode) {
-          return editorModes[mode].test(text) ? mode : res;
-        }, 'ace/mode/scala');
-      }
-
-      let Range = ace.require('ace/range').Range;
-
-      _editor.setOption('highlightActiveLine', false);
-      _editor.$blockScrolling = Infinity;
-      _editor.setReadOnly(true);
-      _editor.renderer.setShowGutter(false);
-      _editor.setTheme('ace/theme/chrome');
-      _editor.getSession().setMode(getEditorMode(note.text));
-
-      function getIndeces(term) {
-        return function(str) {
-          let indeces = [];
-          let i = -1;
-          while ((i = str.indexOf(term, i + 1)) >= 0) {
-            indeces.push(i);
-          }
-          return indeces;
-        };
-      }
-
-      let result = '';
-      if (note.header !== '') {
-        result = note.header + '\n\n' + note.snippet;
-      } else {
-        result = note.snippet;
-      }
-
-      let lines = result
-        .split('\n')
-        .map(function(line, row) {
-          let match = line.match(/<B>(.+?)<\/B>/);
-
-          // return early if nothing to highlight
-          if (!match) {
-            return line;
-          }
-
-          let term = match[1];
-          let __line = line
-            .replace(/<B>/g, '')
-            .replace(/<\/B>/g, '');
-
-          let indeces = getIndeces(term)(__line);
-
-          indeces.forEach(function(start) {
-            let end = start + term.length;
-            if (note.header !== '' && row === 0) {
-              _editor
-                .getSession()
-                .addMarker(
-                  new Range(row, 0, row, line.length),
-                  'search-results-highlight-header',
-                  'background'
-                );
-              _editor
-                .getSession()
-                .addMarker(
-                  new Range(row, start, row, end),
-                  'search-results-highlight',
-                  'line'
-                );
-            } else {
-              _editor
-                .getSession()
-                .addMarker(
-                  new Range(row, start, row, end),
-                  'search-results-highlight',
-                  'line'
-                );
-            }
-          });
-          return __line;
-        });
-
-      // resize editor based on content length
-      _editor.setOption(
-        'maxLines',
-        lines.reduce(function(len, line) {
-          return len + line.length;
-        }, 0)
-      );
-
-      _editor.getSession().setValue(lines.join('\n'));
-      note.searchResult = lines;
-    };
-  };
 }

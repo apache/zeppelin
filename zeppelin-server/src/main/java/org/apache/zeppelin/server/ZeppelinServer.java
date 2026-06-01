@@ -87,6 +87,7 @@ import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.search.EmbeddingSearch;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
@@ -210,7 +211,11 @@ public class ZeppelinServer implements AutoCloseable {
               bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
             }
             if (zConf.getBoolean(ConfVars.ZEPPELIN_SEARCH_ENABLE)) {
-              bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+              if (zConf.isZeppelinSearchSemanticEnable()) {
+                bind(EmbeddingSearch.class).to(SearchService.class).in(Singleton.class);
+              } else {
+                bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+              }
             } else {
               bind(NoSearchService.class).to(SearchService.class).in(Singleton.class);
             }

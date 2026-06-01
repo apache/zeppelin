@@ -10,13 +10,17 @@
   ~ limitations under the License.
   -->
 
-<nz-card [nzTitle]="titleTemplateRef">
-  <ng-template #titleTemplateRef>
-    <a [routerLink]="routerLink" [queryParams]="queryParams">{{ displayName }}</a>
-  </ng-template>
-  <zeppelin-code-editor
-    [style.height.px]="height"
-    [nzEditorOption]="editorOption"
-    (nzEditorInitialized)="initializedEditor($event)"
-  ></zeppelin-code-editor>
+<nz-card class="result-card" (click)="navigateToResult()">
+  <div class="result-header">
+    <a [routerLink]="routerLink" [queryParams]="queryParams" (click)="$event.stopPropagation()">{{ displayName }}</a>
+    <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
+  </div>
+  <div *ngIf="titleHtml" class="title-block" [innerHTML]="titleHtml"></div>
+  <div *ngIf="codeHtml" class="code-block">
+    <pre [innerHTML]="codeHtml"></pre>
+  </div>
+  <div *ngIf="outputText" class="output-block">
+    <pre>{{ outputText }}</pre>
+  </div>
+  <div *ngIf="tablesText" class="tables-block">Tables: {{ tablesText }}</div>
 </nz-card>
