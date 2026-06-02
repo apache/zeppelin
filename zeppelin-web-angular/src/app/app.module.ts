@@ -11,12 +11,11 @@
  */
 
 import { registerLocaleData } from '@angular/common';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import en from '@angular/common/locales/en';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
@@ -42,15 +41,8 @@ registerLocaleData(en);
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    ShareModule,
-    AppRoutingModule,
-    RouterModule
-  ],
+  bootstrap: [AppComponent],
+  imports: [BrowserModule, FormsModule, ShareModule, AppRoutingModule, RouterModule],
   providers: [
     ...RUNTIME_COMPILER_PROVIDERS,
     {
@@ -81,8 +73,8 @@ registerLocaleData(en);
     {
       provide: TRASH_FOLDER_ID_TOKEN,
       useValue: '~Trash'
-    }
-  ],
-  bootstrap: [AppComponent]
+    },
+    provideHttpClient(withInterceptorsFromDi())
+  ]
 })
 export class AppModule {}

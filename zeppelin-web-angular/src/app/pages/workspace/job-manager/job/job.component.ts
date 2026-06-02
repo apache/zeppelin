@@ -29,7 +29,8 @@ import { JobsItem, JobStatus } from '@zeppelin/sdk';
   selector: 'zeppelin-job-manager-job',
   templateUrl: './job.component.html',
   styleUrls: ['./job.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class JobManagerJobComponent implements OnInit, OnChanges {
   @Input() note!: JobsItem;

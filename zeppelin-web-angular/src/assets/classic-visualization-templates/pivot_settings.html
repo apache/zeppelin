@@ -61,8 +61,14 @@ limitations under the License.
           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
           ng-model="tableDataColumns"
           jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}"
-          onmouseover="this.style.backgroundColor='#e6e6e6'; this.style.borderColor='#adadad';"
-          onmouseout="this.style.backgroundColor='#EFEFEF'; this.style.borderColor='#ccc';"
+          onmouseover="
+            this.style.backgroundColor = '#e6e6e6';
+            this.style.borderColor = '#adadad';
+          "
+          onmouseout="
+            this.style.backgroundColor = '#EFEFEF';
+            this.style.borderColor = '#ccc';
+          "
         >
           {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
         </div>
@@ -153,8 +159,8 @@ limitations under the License.
                 class="fa fa-close"
                 ng-click="removeKey($index)"
                 style="margin-left: 5px; cursor: pointer; color: #999"
-                onmouseover="this.style.color='#d9534f';"
-                onmouseout="this.style.color='#999';"
+                onmouseover="this.style.color = '#d9534f'"
+                onmouseout="this.style.color = '#999'"
               ></span>
             </div>
           </li>
@@ -241,8 +247,8 @@ limitations under the License.
                 class="fa fa-close"
                 ng-click="removeGroup($index)"
                 style="margin-left: 5px; cursor: pointer; color: #999"
-                onmouseover="this.style.color='#d9534f';"
-                onmouseout="this.style.color='#999';"
+                onmouseover="this.style.color = '#d9534f'"
+                onmouseout="this.style.color = '#999'"
               ></span>
             </div>
           </li>
@@ -326,7 +332,11 @@ limitations under the License.
                 "
                 type="button"
                 data-toggle="dropdown"
-                onclick="var menu = this.nextElementSibling; menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; event.stopPropagation();"
+                onclick="
+                  var menu = this.nextElementSibling;
+                  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+                  event.stopPropagation();
+                "
               >
                 {{item.name | limitTo: 30}}{{item.name.length > 30 ? '...' : ''}}
                 <span style="text-transform: uppercase; color: #717171; font-weight: 500">{{item.aggr}}</span>
@@ -334,8 +344,8 @@ limitations under the License.
                   class="fa fa-close"
                   ng-click="removeValue($index); $event.stopPropagation();"
                   style="margin-left: 5px; cursor: pointer; color: #999"
-                  onmouseover="this.style.color='#d9534f';"
-                  onmouseout="this.style.color='#999';"
+                  onmouseover="this.style.color = '#d9534f'"
+                  onmouseout="this.style.color = '#999'"
                 ></span>
               </div>
               <ul
@@ -358,45 +368,45 @@ limitations under the License.
                   border-radius: 4px;
                   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
                 "
-                onclick="event.stopPropagation();"
+                onclick="event.stopPropagation()"
               >
                 <li
                   ng-click="setValueAggr($index, 'sum')"
                   style="padding: 3px 20px; cursor: pointer; color: #333"
-                  onmouseover="this.style.backgroundColor='#f5f5f5';"
-                  onmouseout="this.style.backgroundColor='transparent';"
+                  onmouseover="this.style.backgroundColor = '#f5f5f5'"
+                  onmouseout="this.style.backgroundColor = 'transparent'"
                 >
                   <span>sum</span>
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'count')"
                   style="padding: 3px 20px; cursor: pointer; color: #333"
-                  onmouseover="this.style.backgroundColor='#f5f5f5';"
-                  onmouseout="this.style.backgroundColor='transparent';"
+                  onmouseover="this.style.backgroundColor = '#f5f5f5'"
+                  onmouseout="this.style.backgroundColor = 'transparent'"
                 >
                   <span>count</span>
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'avg')"
                   style="padding: 3px 20px; cursor: pointer; color: #333"
-                  onmouseover="this.style.backgroundColor='#f5f5f5';"
-                  onmouseout="this.style.backgroundColor='transparent';"
+                  onmouseover="this.style.backgroundColor = '#f5f5f5'"
+                  onmouseout="this.style.backgroundColor = 'transparent'"
                 >
                   <span>avg</span>
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'min')"
                   style="padding: 3px 20px; cursor: pointer; color: #333"
-                  onmouseover="this.style.backgroundColor='#f5f5f5';"
-                  onmouseout="this.style.backgroundColor='transparent';"
+                  onmouseover="this.style.backgroundColor = '#f5f5f5'"
+                  onmouseout="this.style.backgroundColor = 'transparent'"
                 >
                   <span>min</span>
                 </li>
                 <li
                   ng-click="setValueAggr($index, 'max')"
                   style="padding: 3px 20px; cursor: pointer; color: #333"
-                  onmouseover="this.style.backgroundColor='#f5f5f5';"
-                  onmouseout="this.style.backgroundColor='transparent';"
+                  onmouseover="this.style.backgroundColor = '#f5f5f5'"
+                  onmouseout="this.style.backgroundColor = 'transparent'"
                 >
                   <span>max</span>
                 </li>

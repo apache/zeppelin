@@ -1,14 +1,14 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
 <div class="bar" [class.simple]="looknfeel !== 'default'">
   <div class="title" role="heading" aria-level="1" data-testid="notebook-title">
@@ -21,7 +21,7 @@
     ></zeppelin-elastic-input>
   </div>
   <div class="control">
-    <nz-button-group nzSize="small">
+    <nz-space-compact nzSize="small">
       <button
         nz-button
         nz-popconfirm
@@ -33,152 +33,154 @@
       >
         <i nz-icon nzType="play-circle" nzTheme="outline"></i>
       </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Show/hide the code"
-        (click)="toggleAllEditor()"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-      >
-        <i nz-icon [nzType]="editorHide ? 'fullscreen' : 'fullscreen-exit'" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Show/hide the output"
-        (click)="toggleAllTable()"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-      >
-        <i nz-icon [nzType]="tableHide ? 'book' : 'read'" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-popconfirm
-        nzPopconfirmTitle="Do you want to clear all output?"
-        nz-tooltip
-        nzTooltipTitle="Clear all output"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-        (nzOnConfirm)="clearAllParagraphOutput()"
-      >
-        <i nz-icon nzType="fire" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Clone this note"
-        (click)="cloneNote()"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-      >
-        <i nz-icon nzType="copy" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Export this note"
-        (click)="exportNote()"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-      >
-        <i nz-icon nzType="download" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Reload from note file"
-        (click)="reloadNote()"
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-      >
-        <i nz-icon nzType="reload" nzTheme="outline"></i>
-      </button>
-      <ng-container *ngIf="principal && principal !== 'anonymous' && !viewOnly">
-        <ng-container [ngSwitch]="note.config.personalizedMode">
+      @if (!viewOnly) {
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Show/hide the code"
+          (click)="toggleAllEditor()"
+          [disabled]="revisionView"
+        >
+          <i nz-icon [nzType]="editorHide ? 'fullscreen' : 'fullscreen-exit'" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!viewOnly) {
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Show/hide the output"
+          (click)="toggleAllTable()"
+          [disabled]="revisionView"
+        >
+          <i nz-icon [nzType]="tableHide ? 'book' : 'read'" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!viewOnly) {
+        <button
+          nz-button
+          nz-popconfirm
+          nzPopconfirmTitle="Do you want to clear all output?"
+          nz-tooltip
+          nzTooltipTitle="Clear all output"
+          [disabled]="revisionView"
+          (nzOnConfirm)="clearAllParagraphOutput()"
+        >
+          <i nz-icon nzType="fire" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!viewOnly) {
+        <button nz-button nz-tooltip nzTooltipTitle="Clone this note" (click)="cloneNote()" [disabled]="revisionView">
+          <i nz-icon nzType="copy" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!viewOnly) {
+        <button nz-button nz-tooltip nzTooltipTitle="Export this note" (click)="exportNote()" [disabled]="revisionView">
+          <i nz-icon nzType="download" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!viewOnly) {
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Reload from note file"
+          (click)="reloadNote()"
+          [disabled]="revisionView"
+        >
+          <i nz-icon nzType="reload" nzTheme="outline"></i>
+        </button>
+      }
+      @if (principal && principal !== 'anonymous' && !viewOnly) {
+        @switch (note.config.personalizedMode) {
+          @case ('true') {
+            <button
+              nz-tooltip
+              nzTooltipTitle="Switch to collaboration mode"
+              [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
+              nz-button
+              nzType="primary"
+              (click)="toggleNotePersonalizedMode()"
+            >
+              <i nz-icon nzType="user" nzTheme="outline"></i>
+            </button>
+          }
+          @default {
+            <button
+              nz-tooltip
+              nzTooltipTitle="Switch to personal mode"
+              nz-button
+              [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
+              (click)="toggleNotePersonalizedMode()"
+            >
+              <i nz-icon nzType="team" nzTheme="outline"></i>
+            </button>
+          }
+        }
+      }
+    </nz-space-compact>
+    @if (isRevisionSupported) {
+      <nz-space-compact nzSize="small">
+        @if (!viewOnly) {
           <button
-            *ngSwitchCase="'true'"
-            nz-tooltip
-            nzTooltipTitle="Switch to collaboration mode"
-            [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
             nz-button
-            nzType="primary"
-            (click)="toggleNotePersonalizedMode()"
+            nz-popover
+            [disabled]="revisionView"
+            [(nzPopoverVisible)]="commitVisible"
+            [nzPopoverPlacement]="'right'"
+            [nzPopoverContent]="commitTpl"
+            nzPopoverTrigger="click"
           >
-            <i nz-icon nzType="user" nzTheme="outline"></i>
+            <i nz-icon nzType="to-top" nzTheme="outline"></i>
           </button>
-          <button
-            *ngSwitchDefault
-            nz-tooltip
-            nzTooltipTitle="Switch to personal mode"
-            nz-button
-            [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
-            (click)="toggleNotePersonalizedMode()"
-          >
-            <i nz-icon nzType="team" nzTheme="outline"></i>
-          </button>
-        </ng-container>
-      </ng-container>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="isRevisionSupported">
-      <button
-        nz-button
-        nz-popover
-        *ngIf="!viewOnly"
-        [disabled]="revisionView"
-        [(nzPopoverVisible)]="commitVisible"
-        [nzPopoverPlacement]="'right'"
-        [nzPopoverContent]="commitTpl"
-        nzPopoverTrigger="click"
-      >
-        <i nz-icon nzType="to-top" nzTheme="outline"></i>
-      </button>
-      <ng-template #commitTpl>
-        <nz-input-group nzSearch nzSize="small" [nzAddOnAfter]="suffixButton">
-          <input nzSize="small" autofocus nz-input #inputElement placeholder="commit message" />
-        </nz-input-group>
-        <ng-template #suffixButton>
-          <button nz-button nzSize="small" nzType="primary" (click)="checkpointNote(inputElement.value, $event)">
-            commit
-          </button>
+        }
+        <ng-template #commitTpl>
+          <nz-input-group nzSearch nzSize="small" [nzAddOnAfter]="suffixButton">
+            <input nzSize="small" autofocus nz-input #inputElement placeholder="commit message" />
+          </nz-input-group>
+          <ng-template #suffixButton>
+            <button nz-button nzSize="small" nzType="primary" (click)="checkpointNote(inputElement.value, $event)">
+              commit
+            </button>
+          </ng-template>
         </ng-template>
-      </ng-template>
-      <button
-        nz-button
-        nz-tooltip
-        *ngIf="!viewOnly"
-        [disabled]="!revisionView"
-        nzTooltipTitle="Set revision"
-        (click)="setNoteRevision()"
-      >
-        <i nz-icon nzType="rollback" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-tooltip
-        nzTooltipTitle="Compare revisions"
-        [nzType]="activatedExtension === 'revisions' ? 'primary' : 'default'"
-        (click)="toggleExtension('revisions')"
-      >
-        <i nz-icon nzType="swap" nzTheme="outline"></i>
-      </button>
-      <button nz-button nz-dropdown [nzDropdownMenu]="revisionsMenu" nzTrigger="click">
-        {{ currentRevision }}
-      </button>
-      <nz-dropdown-menu #revisionsMenu="nzDropdownMenu">
-        <ul nz-menu>
-          <li nz-menu-item *ngFor="let r of noteRevisions" (click)="visitRevision(r)">
-            <strong>{{ r.message }}</strong>
-            <nz-divider nzType="vertical"></nz-divider>
-            <em class="font-sm opacity-05">
-              {{ r.time === undefined ? 'Current' : (r.time * 1000 | date: 'MMMM dd yyyy, h:mm:ss a') }}
-            </em>
-          </li>
-        </ul>
-      </nz-dropdown-menu>
-    </nz-button-group>
-    <nz-button-group nzSize="small">
+        @if (!viewOnly) {
+          <button
+            nz-button
+            nz-tooltip
+            [disabled]="!revisionView"
+            nzTooltipTitle="Set revision"
+            (click)="setNoteRevision()"
+          >
+            <i nz-icon nzType="rollback" nzTheme="outline"></i>
+          </button>
+        }
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Compare revisions"
+          [nzType]="activatedExtension === 'revisions' ? 'primary' : 'default'"
+          (click)="toggleExtension('revisions')"
+        >
+          <i nz-icon nzType="swap" nzTheme="outline"></i>
+        </button>
+        <button nz-button nz-dropdown [nzDropdownMenu]="revisionsMenu" nzTrigger="click">
+          {{ currentRevision }}
+        </button>
+        <nz-dropdown-menu #revisionsMenu="nzDropdownMenu">
+          <ul nz-menu>
+            @for (r of noteRevisions; track r) {
+              <li nz-menu-item (click)="visitRevision(r)">
+                <strong>{{ r.message }}</strong>
+                <nz-divider nzType="vertical"></nz-divider>
+                <em class="font-sm opacity-05">
+                  {{ r.time === undefined ? 'Current' : (r.time * 1000 | date: 'MMMM dd yyyy, h:mm:ss a') }}
+                </em>
+              </li>
+            }
+          </ul>
+        </nz-dropdown-menu>
+      </nz-space-compact>
+    }
+    <nz-space-compact nzSize="small">
       <button
         nz-button
         nz-dropdown
@@ -199,117 +201,132 @@
             <nz-input-group nzAddOnBefore="Find">
               <input type="text" nz-input #searchInput [(ngModel)]="searchText" (ngModelChange)="searchCode()" />
             </nz-input-group>
-            <nz-button-group class="search-row-btn-group">
+            <nz-space-compact class="search-row-btn-group">
               <button nz-button (click)="onFindPrevClick(searchText)"><i nz-icon nzType="left"></i></button>
               <button nz-button (click)="onFindNextClick(searchText)"><i nz-icon nzType="right"></i></button>
-            </nz-button-group>
+            </nz-space-compact>
           </div>
           <div class="search-code-row">
             <nz-input-group nzAddOnBefore="Replace">
               <input type="text" nz-input [(ngModel)]="replaceText" />
             </nz-input-group>
-            <nz-button-group class="search-row-btn-group">
+            <nz-space-compact class="search-row-btn-group">
               <button nz-button (click)="onReplaceClick(searchText, replaceText)">Replace</button>
               <button nz-button (click)="onReplaceAllClick(searchText, replaceText)">All</button>
-            </nz-button-group>
+            </nz-space-compact>
           </div>
         </div>
       </nz-dropdown-menu>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="!viewOnly">
-      <button
-        nz-button
-        nz-popconfirm
-        nzPopconfirmTitle="Remove this note permanently?"
-        *ngIf="isTrash"
-        [disabled]="isNoteParagraphRunning"
-        (nzOnConfirm)="deleteNote()"
-      >
-        <i nz-icon nzType="delete" nzTheme="outline"></i>
-      </button>
-      <button
-        nz-button
-        nz-popconfirm
-        nzPopconfirmTitle="Move this note to trash?"
-        *ngIf="!isTrash"
-        [disabled]="isNoteParagraphRunning"
-        (nzOnConfirm)="moveNoteToTrash()"
-      >
-        <i nz-icon nzType="delete" nzTheme="outline"></i>
-      </button>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="collaborativeMode">
-      <button
-        nz-button
-        nz-tooltip
-        [nzType]="collaborativeModeUsers.length ? 'primary' : 'default'"
-        [nzTooltipTitle]="'Users who watch this note:' + collaborativeModeUsers.join(', ')"
-      >
-        <i nz-icon nzType="eye" nzTheme="outline"></i>
-        {{ collaborativeModeUsers.length }}
-      </button>
-    </nz-button-group>
-    <nz-button-group nzSize="small" *ngIf="note.config.isZeppelinNotebookCronEnable && !viewOnly">
-      <button
-        nz-button
-        nz-dropdown
-        nz-tooltip
-        nzSize="small"
-        nzTooltipTitle="Run scheduler"
-        nzTrigger="click"
-        [nzDropdownMenu]="menu"
-        [disabled]="isTrash || revisionView"
-        [nzType]="note.config.cron ? 'primary' : 'default'"
-        [nzDanger]="!note.config.cron && note.info.cron"
-      >
-        <i nz-icon nzType="clock-circle" nzTheme="outline"></i>
-        {{ getCronOptionNameFromValue }}
-      </button>
-      <nz-dropdown-menu #menu="nzDropdownMenu">
-        <div class="ant-dropdown-menu padding-sm scheduler">
-          Run note with cron scheduler. Either choose from preset or write your own
-          <a
-            href="https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html"
-            target="_blank"
+    </nz-space-compact>
+    @if (!viewOnly) {
+      <nz-space-compact nzSize="small">
+        @if (isTrash) {
+          <button
+            nz-button
+            nz-popconfirm
+            nzPopconfirmTitle="Remove this note permanently?"
+            [disabled]="isNoteParagraphRunning"
+            (nzOnConfirm)="deleteNote()"
           >
-            cron expression
-          </a>
-          .
-          <div>
-            <span>- Preset</span>
+            <i nz-icon nzType="delete" nzTheme="outline"></i>
+          </button>
+        }
+        @if (!isTrash) {
+          <button
+            nz-button
+            nz-popconfirm
+            nzPopconfirmTitle="Move this note to trash?"
+            [disabled]="isNoteParagraphRunning"
+            (nzOnConfirm)="moveNoteToTrash()"
+          >
+            <i nz-icon nzType="delete" nzTheme="outline"></i>
+          </button>
+        }
+      </nz-space-compact>
+    }
+    @if (collaborativeMode) {
+      <nz-space-compact nzSize="small">
+        <button
+          nz-button
+          nz-tooltip
+          [nzType]="collaborativeModeUsers.length ? 'primary' : 'default'"
+          [nzTooltipTitle]="'Users who watch this note:' + collaborativeModeUsers.join(', ')"
+        >
+          <i nz-icon nzType="eye" nzTheme="outline"></i>
+          {{ collaborativeModeUsers.length }}
+        </button>
+      </nz-space-compact>
+    }
+    @if (note.config.isZeppelinNotebookCronEnable && !viewOnly) {
+      <nz-space-compact nzSize="small">
+        <button
+          nz-button
+          nz-dropdown
+          nz-tooltip
+          nzSize="small"
+          nzTooltipTitle="Run scheduler"
+          nzTrigger="click"
+          [nzDropdownMenu]="menu"
+          [disabled]="isTrash || revisionView"
+          [nzType]="note.config.cron ? 'primary' : 'default'"
+          [nzDanger]="!note.config.cron && note.info.cron"
+        >
+          <i nz-icon nzType="clock-circle" nzTheme="outline"></i>
+          {{ getCronOptionNameFromValue }}
+        </button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <div class="ant-dropdown-menu padding-sm scheduler">
+            Run note with cron scheduler. Either choose from preset or write your own
             <a
-              class="cron-preset"
-              [class.selected]="cr.value === note.config.cron"
-              *ngFor="let cr of cronOption"
-              (click)="setCronScheduler(cr.value)"
+              href="https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html"
+              target="_blank"
             >
-              {{ cr.name }}
+              cron expression
             </a>
+            .
+            <div>
+              <span>- Preset</span>
+              @for (cr of cronOption; track cr) {
+                <a
+                  class="cron-preset"
+                  [class.selected]="cr.value === note.config.cron"
+                  (click)="setCronScheduler(cr.value)"
+                >
+                  {{ cr.name }}
+                </a>
+              }
+            </div>
+            <div>
+              <span>- Preset</span>
+              <input nz-input nzSize="small" [(ngModel)]="note.config.cron" />
+              @if (note.info.cron) {
+                <p>
+                  {{ note.info.cron }}
+                </p>
+              }
+            </div>
+            <div>
+              <label nz-checkbox [ngModel]="note.config.releaseresource" (ngModelChange)="setReleaseResource($event)">
+                After execution stop the interpreter
+              </label>
+            </div>
           </div>
-          <div>
-            <span>- Preset</span>
-            <input nz-input nzSize="small" [(ngModel)]="note.config.cron" />
-            <p *ngIf="note.info.cron">
-              {{ note.info.cron }}
-            </p>
-          </div>
-          <div>
-            <label nz-checkbox [ngModel]="note.config.releaseresource" (ngModelChange)="setReleaseResource($event)">
-              After execution stop the interpreter
-            </label>
-          </div>
-        </div>
-      </nz-dropdown-menu>
-    </nz-button-group>
+        </nz-dropdown-menu>
+      </nz-space-compact>
+    }
   </div>
   <div class="setting">
-    <nz-button-group nzSize="small">
-      <button nz-button nzNoAnimation *ngIf="!revisionView" (click)="showShortCut()">
-        <i nz-icon nzType="info-circle" nzTheme="outline"></i>
-      </button>
-      <button nz-button nzNoAnimation *ngIf="!revisionView" (click)="toggleExtension('interpreter')">
-        <i nz-icon nzType="setting" [nzTheme]="activatedExtension === 'interpreter' ? 'fill' : 'outline'"></i>
-      </button>
+    <nz-space-compact nzSize="small">
+      @if (!revisionView) {
+        <button nz-button nzNoAnimation (click)="showShortCut()">
+          <i nz-icon nzType="info-circle" nzTheme="outline"></i>
+        </button>
+      }
+      @if (!revisionView) {
+        <button nz-button nzNoAnimation (click)="toggleExtension('interpreter')">
+          <i nz-icon nzType="setting" [nzTheme]="activatedExtension === 'interpreter' ? 'fill' : 'outline'"></i>
+        </button>
+      }
       <button nz-button nzNoAnimation (click)="togglePermissions()">
         <i nz-icon nzType="lock" [nzTheme]="activatedExtension === 'permissions' ? 'fill' : 'outline'"></i>
       </button>
@@ -319,9 +336,11 @@
       </button>
       <nz-dropdown-menu #menu="nzDropdownMenu">
         <ul nz-menu>
-          <li nz-menu-item *ngFor="let lf of lfOption" (click)="setLookAndFeel(lf)">{{ lf }}</li>
+          @for (lf of lfOption; track lf) {
+            <li nz-menu-item (click)="setLookAndFeel(lf)">{{ lf }}</li>
+          }
         </ul>
       </nz-dropdown-menu>
-    </nz-button-group>
+    </nz-space-compact>
   </div>
 </div>

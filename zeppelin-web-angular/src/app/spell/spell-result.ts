@@ -18,7 +18,7 @@ export class SpellResult {
       if (match) {
         return `%${match[1].trim()}`;
       }
-    } catch (error) {
+    } catch {
       // failed to parse, ignore
     }
 

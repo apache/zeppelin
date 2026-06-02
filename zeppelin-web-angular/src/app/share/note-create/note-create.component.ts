@@ -10,10 +10,10 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { MessageService, NoteListService } from '@zeppelin/services';
 
-import { NzModalRef } from 'ng-zorro-antd/modal';
+import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { InterpreterItem, MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/sdk';
@@ -22,11 +22,12 @@ import { InterpreterItem, MessageReceiveDataTypeMap, Note, OP } from '@zeppelin/
   selector: 'zeppelin-note-create',
   templateUrl: './note-create.component.html',
   styleUrls: ['./note-create.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NoteCreateComponent extends MessageListenersManager implements OnInit {
-  @Input() path?: string;
-  @Input() cloneNote?: Exclude<Note['note'], undefined>;
+  path?: string;
+  cloneNote?: Exclude<Note['note'], undefined>;
   noteName = '';
   defaultInterpreter?: string;
   listOfInterpreter: InterpreterItem[] = [];
@@ -94,9 +95,12 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     public messageService: MessageService,
     private cdr: ChangeDetectorRef,
     private noteListService: NoteListService,
-    private nzModalRef: NzModalRef
+    private nzModalRef: NzModalRef,
+    @Inject(NZ_MODAL_DATA) nzData: { path?: string; cloneNote?: Exclude<Note['note'], undefined> }
   ) {
     super(messageService);
+    this.path = nzData?.path;
+    this.cloneNote = nzData?.cloneNote;
   }
 
   ngOnInit() {

@@ -20,7 +20,8 @@ import { MessageService, TicketService } from '@zeppelin/services';
   selector: 'zeppelin-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class HomeComponent extends MessageListenersManager implements OnInit {
   loading = false;

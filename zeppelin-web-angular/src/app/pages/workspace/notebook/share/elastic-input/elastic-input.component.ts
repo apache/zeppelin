@@ -27,7 +27,8 @@ import {
   selector: 'zeppelin-elastic-input',
   templateUrl: './elastic-input.component.html',
   styleUrls: ['./elastic-input.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ElasticInputComponent implements OnChanges {
   @Input() value?: string;

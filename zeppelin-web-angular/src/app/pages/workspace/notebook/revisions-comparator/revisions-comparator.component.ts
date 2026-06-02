@@ -36,7 +36,8 @@ interface MergedParagraphDiff {
   templateUrl: './revisions-comparator.component.html',
   styleUrls: ['./revisions-comparator.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [DatePipe]
+  providers: [DatePipe],
+  standalone: false
 })
 export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
   @Input() noteRevisions: RevisionListItem[] = [];

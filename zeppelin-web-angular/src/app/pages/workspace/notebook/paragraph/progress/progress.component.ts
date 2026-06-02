@@ -16,7 +16,8 @@ import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/c
   selector: 'zeppelin-notebook-paragraph-progress',
   templateUrl: './progress.component.html',
   styleUrls: ['./progress.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphProgressComponent implements OnChanges {
   @Input() progress = 0;

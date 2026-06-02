@@ -22,7 +22,8 @@ import { TableData, Visualization } from '@zeppelin/visualization';
   selector: 'zeppelin-visualization-scatter-setting',
   templateUrl: './scatter-setting.component.html',
   styleUrls: ['./scatter-setting.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class VisualizationScatterSettingComponent implements OnInit {
   @Input() visualization!: Visualization;

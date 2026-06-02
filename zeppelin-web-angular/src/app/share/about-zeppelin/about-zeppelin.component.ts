@@ -17,7 +17,8 @@ import { TicketService } from '@zeppelin/services';
   selector: 'zeppelin-about-zeppelin',
   templateUrl: './about-zeppelin.component.html',
   styleUrls: ['./about-zeppelin.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class AboutZeppelinComponent implements OnInit {
   constructor(public ticketService: TicketService) {}

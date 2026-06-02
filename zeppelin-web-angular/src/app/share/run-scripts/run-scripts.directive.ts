@@ -17,7 +17,8 @@ import { take } from 'rxjs/operators';
 const loadedExternalScripts = new Set<string>();
 
 @Directive({
-  selector: '[zeppelin-run-scripts]'
+  selector: '[zeppelin-run-scripts]',
+  standalone: false
 })
 export class RunScriptsDirective implements OnChanges {
   @Input() scriptsContent!: string | SafeHtml;

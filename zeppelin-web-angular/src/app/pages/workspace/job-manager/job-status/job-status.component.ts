@@ -18,7 +18,8 @@ import { JobStatus } from '@zeppelin/sdk';
   selector: 'zeppelin-job-manager-job-status',
   templateUrl: './job-status.component.html',
   styleUrls: ['./job-status.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class JobManagerJobStatusComponent {
   @Input() status!: JobStatus;

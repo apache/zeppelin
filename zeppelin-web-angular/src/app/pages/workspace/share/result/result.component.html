@@ -1,109 +1,120 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
-<div class="setting-bar" *ngIf="result.type === datasetType.TABLE && !published">
-  <div class="visualization-selector">
-    <nz-radio-group [ngModel]="config?.graph?.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
-      <label
-        class="viz-icon"
-        *ngFor="let item of visualizations"
-        nz-radio-button
-        [nz-tooltip]="item.name"
-        [nzValue]="item.id"
+@if (result.type === datasetType.TABLE && !published) {
+  <div class="setting-bar">
+    <div class="visualization-selector">
+      <nz-radio-group [ngModel]="config?.graph?.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
+        @for (item of visualizations; track item) {
+          <label class="viz-icon" nz-radio-button [nz-tooltip]="item.name" [nzValue]="item.id">
+            @if (!item.isClassic) {
+              <i nz-icon [nzType]="item.icon"></i>
+            }
+            @if (item.isClassic) {
+              <span [innerHTML]="item.icon"></span>
+            }
+          </label>
+        }
+      </nz-radio-group>
+    </div>
+    <nz-space-compact class="export-dropdown">
+      <button nz-button (click)="exportFile('csv')">
+        <i nz-icon nzType="download" nz-tooltip="Download Data as CSV"></i>
+      </button>
+      <button
+        class="export-dropdown-icon-btn"
+        nz-button
+        nz-dropdown
+        [nzDropdownMenu]="exportMenu"
+        nzPlacement="bottomRight"
       >
-        <i *ngIf="!item.isClassic" nz-icon [nzType]="item.icon"></i>
-        <span *ngIf="item.isClassic" [innerHTML]="item.icon"></span>
-      </label>
-    </nz-radio-group>
+        <i nz-icon nzType="down"></i>
+      </button>
+    </nz-space-compact>
+    <nz-dropdown-menu #exportMenu="nzDropdownMenu">
+      <ul nz-menu>
+        <li nz-menu-item (click)="exportFile('csv')">CSV</li>
+        <li nz-menu-item (click)="exportFile('tsv')">TSV</li>
+      </ul>
+    </nz-dropdown-menu>
+    <a class="setting-trigger" tabindex="-1" (click)="switchSetting()">
+      Setting
+      <i
+        nz-icon
+        nzType="caret-down"
+        [nzRotate]="config?.graph?.optionOpen ? 180 : 0"
+        class="setting-icon"
+        nz-dropdown
+      ></i>
+    </a>
   </div>
-
-  <nz-button-group class="export-dropdown">
-    <button nz-button (click)="exportFile('csv')">
-      <i nz-icon nzType="download" nz-tooltip="Download Data as CSV"></i>
-    </button>
-    <button
-      class="export-dropdown-icon-btn"
-      nz-button
-      nz-dropdown
-      [nzDropdownMenu]="exportMenu"
-      nzPlacement="bottomRight"
-    >
-      <i nz-icon nzType="down"></i>
-    </button>
-  </nz-button-group>
-  <nz-dropdown-menu #exportMenu="nzDropdownMenu">
-    <ul nz-menu>
-      <li nz-menu-item (click)="exportFile('csv')">CSV</li>
-      <li nz-menu-item (click)="exportFile('tsv')">TSV</li>
-    </ul>
-  </nz-dropdown-menu>
-
-  <a class="setting-trigger" tabindex="-1" (click)="switchSetting()">
-    Setting
-    <i
-      nz-icon
-      nzType="caret-down"
-      [nzRotate]="config?.graph?.optionOpen ? 180 : 0"
-      class="setting-icon"
-      nz-dropdown
-    ></i>
-  </a>
-</div>
+}
 <div nz-resizable nzPreview (nzResizeEnd)="onResize($event)" [nzGridColumnCount]="12" [nzMinColumn]="1">
-  <nz-resize-handle nzDirection="bottomRight" *ngIf="!published">
-    <zeppelin-resize-handle></zeppelin-resize-handle>
-  </nz-resize-handle>
+  @if (!published) {
+    <nz-resize-handle nzDirection="bottomRight">
+      <zeppelin-resize-handle></zeppelin-resize-handle>
+    </nz-resize-handle>
+  }
   <ng-template cdkPortalOutlet></ng-template>
   <!-- Transformation setting container for classic visualizations -->
-  <div
-    *ngIf="getCurrentVisualization()?.isClassic"
-    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
-    [id]="'trsetting' + id + '_' + config?.graph?.mode"
-    class="transformation-setting"
-  ></div>
-  <!-- Visualization setting container for classic visualizations -->
-  <div
-    *ngIf="getCurrentVisualization()?.isClassic"
-    [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
-    [id]="'vizsetting' + id + '_' + config?.graph?.mode"
-    class="visualization-setting"
-  ></div>
-  <div
-    *ngIf="getCurrentVisualization()?.isClassic"
-    [id]="'p' + id + '_' + config?.graph?.mode"
-    class="classic-visualization-container"
-  ></div>
-  <ng-container [ngSwitch]="result?.type">
+  @if (getCurrentVisualization()?.isClassic) {
     <div
-      *ngSwitchCase="datasetType.HTML"
-      class="inner-html"
-      zeppelin-math-jax
-      zeppelin-run-scripts
-      [scriptsContent]="innerHTML"
-      [innerHTML]="innerHTML"
+      [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+      [id]="'trsetting' + id + '_' + config?.graph?.mode"
+      class="transformation-setting"
     ></div>
-    <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre [innerHTML]="plainText"></pre></div>
-    <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img" /></div>
-  </ng-container>
-  <div *ngIf="frontEndError" class="text-plain">
-    <pre>{{ frontEndError }}</pre>
-  </div>
-  <div *ngIf="angularComponent">
-    <ng-container
-      *ngComponentOutlet="
-        angularComponent.component;
-        ngModuleFactory: angularComponent.moduleFactory;
-        injector: injector
-      "
-    ></ng-container>
-  </div>
+  }
+  <!-- Visualization setting container for classic visualizations -->
+  @if (getCurrentVisualization()?.isClassic) {
+    <div
+      [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
+      [id]="'vizsetting' + id + '_' + config?.graph?.mode"
+      class="visualization-setting"
+    ></div>
+  }
+  @if (getCurrentVisualization()?.isClassic) {
+    <div [id]="'p' + id + '_' + config?.graph?.mode" class="classic-visualization-container"></div>
+  }
+  @switch (result?.type) {
+    @case (datasetType.HTML) {
+      <div
+        class="inner-html"
+        zeppelin-math-jax
+        zeppelin-run-scripts
+        [scriptsContent]="innerHTML"
+        [innerHTML]="innerHTML"
+      ></div>
+    }
+    @case (datasetType.TEXT) {
+      <div class="text-plain"><pre [innerHTML]="plainText"></pre></div>
+    }
+    @case (datasetType.IMG) {
+      <div class="img"><img [src]="imgData" alt="img" /></div>
+    }
+  }
+  @if (frontEndError) {
+    <div class="text-plain">
+      <pre>{{ frontEndError }}</pre>
+    </div>
+  }
+  @if (angularComponent) {
+    <div>
+      <ng-container
+        *ngComponentOutlet="
+          angularComponent.component;
+          ngModuleFactory: angularComponent.moduleFactory;
+          injector: injector
+        "
+      ></ng-container>
+    </div>
+  }
 </div>

@@ -34,7 +34,8 @@ import { MessageService } from '@zeppelin/services';
   exportAs: 'paragraphControl',
   templateUrl: './control.component.html',
   styleUrls: ['./control.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Input() status!: string;

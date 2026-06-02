@@ -17,10 +17,10 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "importHelpers": true,
-    "target": "es5",
+    "target": "es2020",
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2018", "dom"]
   },

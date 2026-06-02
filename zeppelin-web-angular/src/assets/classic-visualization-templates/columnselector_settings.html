@@ -60,8 +60,14 @@ limitations under the License.
           data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
           ng-model="tableDataColumns"
           jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}"
-          onmouseover="this.style.backgroundColor='#e6e6e6'; this.style.borderColor='#adadad';"
-          onmouseout="this.style.backgroundColor='#EFEFEF'; this.style.borderColor='#ccc';"
+          onmouseover="
+            this.style.backgroundColor = '#e6e6e6';
+            this.style.borderColor = '#adadad';
+          "
+          onmouseout="
+            this.style.backgroundColor = '#EFEFEF';
+            this.style.borderColor = '#ccc';
+          "
         >
           {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
         </div>
@@ -151,8 +157,8 @@ limitations under the License.
                 class="fa fa-close"
                 ng-click="remove(prop.name)"
                 style="margin-left: 5px; cursor: pointer; color: #999"
-                onmouseover="this.style.color='#d9534f';"
-                onmouseout="this.style.color='#999';"
+                onmouseover="this.style.color = '#d9534f'"
+                onmouseout="this.style.color = '#999'"
               ></span>
             </div>
           </li>

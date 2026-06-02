@@ -28,7 +28,8 @@ interface TocRow {
 @Component({
   selector: 'zeppelin-note-toc',
   templateUrl: './note-toc.component.html',
-  styleUrls: ['./note-toc.component.less']
+  styleUrls: ['./note-toc.component.less'],
+  standalone: false
 })
 export class NoteTocComponent implements OnInit, DoCheck {
   @Input() note!: Exclude<Note['note'], undefined>;

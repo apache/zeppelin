@@ -36,7 +36,8 @@ import { VisualizationXAxisSettingComponent } from '../common/x-axis-setting/x-a
   selector: 'zeppelin-bar-chart-visualization',
   templateUrl: './bar-chart-visualization.component.html',
   styleUrls: ['./bar-chart-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class BarChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
   @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;

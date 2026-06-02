@@ -19,7 +19,8 @@ import { ThemeService, TicketService } from '@zeppelin/services';
 @Component({
   selector: 'zeppelin-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.less']
+  styleUrls: ['./app.component.less'],
+  standalone: false
 })
 export class AppComponent implements OnInit {
   logout$ = this.ticketService.logout$;

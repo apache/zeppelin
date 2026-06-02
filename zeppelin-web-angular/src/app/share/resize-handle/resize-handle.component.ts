@@ -16,7 +16,8 @@ import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
   selector: 'zeppelin-resize-handle',
   templateUrl: './resize-handle.component.html',
   styleUrls: ['./resize-handle.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ResizeHandleComponent {
   @HostBinding('attr.role') role = 'resize-handle';

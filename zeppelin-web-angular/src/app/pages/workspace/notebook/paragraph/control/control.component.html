@@ -1,50 +1,56 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
-<div class="job-link" *ngIf="runtimeInfos && runtimeInfos.jobUrl">
-  <a
-    [attr.href]="runtimeInfos.jobUrl.values[0].jobUrl"
-    target="_blank"
-    nz-tooltip
-    [nzTooltipTitle]="runtimeInfos.jobUrl.tooltip"
-  >
-    <i nz-icon nzType="build" nzTheme="fill"></i>
-    {{ runtimeInfos.jobUrl.label }}
-  </a>
-</div>
+@if (runtimeInfos && runtimeInfos.jobUrl) {
+  <div class="job-link">
+    <a
+      [attr.href]="runtimeInfos.jobUrl.values[0].jobUrl"
+      target="_blank"
+      nz-tooltip
+      [nzTooltipTitle]="runtimeInfos.jobUrl.tooltip"
+    >
+      <i nz-icon nzType="build" nzTheme="fill"></i>
+      {{ runtimeInfos.jobUrl.label }}
+    </a>
+  </div>
+}
 <div class="status">{{ status }}</div>
-<div class="progress" *ngIf="status === 'RUNNING'">{{ progress }}%</div>
-<ng-container *ngIf="!revisionView">
+@if (status === 'RUNNING') {
+  <div class="progress">{{ progress }}%</div>
+}
+@if (!revisionView) {
   <a class="operate">
-    <i
-      nz-icon
-      *ngIf="status !== 'RUNNING' && status !== 'PENDING' && enabled"
-      (click)="runParagraph.emit()"
-      nzType="play-circle"
-      class="run-para"
-      nzTheme="outline"
-      nz-tooltip
-      nzTooltipTitle="Run paragraph"
-    ></i>
-    <i
-      nz-icon
-      *ngIf="status === 'RUNNING' || status === 'PENDING'"
-      (click)="cancelParagraph.emit()"
-      class="cancel-para"
-      nzType="pause-circle"
-      nzTheme="outline"
-      nz-tooltip
-      nzTooltipTitle="Cancel paragraph"
-    ></i>
+    @if (status !== 'RUNNING' && status !== 'PENDING' && enabled) {
+      <i
+        nz-icon
+        (click)="runParagraph.emit()"
+        nzType="play-circle"
+        class="run-para"
+        nzTheme="outline"
+        nz-tooltip
+        nzTooltipTitle="Run paragraph"
+      ></i>
+    }
+    @if (status === 'RUNNING' || status === 'PENDING') {
+      <i
+        nz-icon
+        (click)="cancelParagraph.emit()"
+        class="cancel-para"
+        nzType="pause-circle"
+        nzTheme="outline"
+        nz-tooltip
+        nzTooltipTitle="Cancel paragraph"
+      ></i>
+    }
   </a>
   <a (click)="toggleEditor()" nz-tooltip nzTooltipTitle="Show/hide the code">
     <i nz-icon [nzType]="editorHide ? 'fullscreen' : 'fullscreen-exit'" nzTheme="outline"></i>
@@ -63,19 +69,21 @@
         <a (click)="copyClipboard(pid)">{{ pid }}</a>
       </li>
       <li nz-menu-divider></li>
-      <li nz-menu-item *ngIf="runOnSelectionChange === true || runOnSelectionChange === false" class="list-item">
-        <span>
-          <i nz-icon nzType="filter" nzTheme="outline"></i>
-          Run on selection change
-        </span>
-        <span>
-          <nz-switch
-            nzSize="small"
-            [ngModel]="runOnSelectionChange"
-            (ngModelChange)="toggleRunOnSelectionChange()"
-          ></nz-switch>
-        </span>
-      </li>
+      @if (runOnSelectionChange === true || runOnSelectionChange === false) {
+        <li nz-menu-item class="list-item">
+          <span>
+            <i nz-icon nzType="filter" nzTheme="outline"></i>
+            Run on selection change
+          </span>
+          <span>
+            <nz-switch
+              nzSize="small"
+              [ngModel]="runOnSelectionChange"
+              (ngModelChange)="toggleRunOnSelectionChange()"
+            ></nz-switch>
+          </span>
+        </li>
+      }
       <li nz-menu-item class="list-item">
         <span>
           <i nz-icon nzType="gateway" nzTheme="outline"></i>
@@ -83,7 +91,9 @@
         </span>
         <span>
           <select [ngModel]="colWidth" (ngModelChange)="changeColWidth($event)">
-            <option [value]="col" [label]="col" *ngFor="let col of colWidthOption"></option>
+            @for (col of colWidthOption; track col) {
+              <option [value]="col" [label]="col"></option>
+            }
           </select>
         </span>
       </li>
@@ -94,19 +104,23 @@
         </span>
         <span>
           <select [ngModel]="fontSize" (ngModelChange)="changeFontSize($event)">
-            <option [value]="size" [label]="size" *ngFor="let size of fontSizeOption"></option>
+            @for (size of fontSizeOption; track size) {
+              <option [value]="size" [label]="size"></option>
+            }
           </select>
         </span>
       </li>
-      <ng-container *ngFor="let menu of listOfMenu">
-        <li nz-menu-item class="list-item" [nzDisabled]="menu.disabled" *ngIf="menu.show" (click)="menu.trigger()">
-          <span>
-            <i nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
-            {{ menu.label }}
-          </span>
-          <span class="short-cut">{{ menu.shortCut }}</span>
-        </li>
-      </ng-container>
+      @for (menu of listOfMenu; track menu) {
+        @if (menu.show) {
+          <li nz-menu-item class="list-item" [nzDisabled]="menu.disabled" (click)="menu.trigger()">
+            <span>
+              <i nz-icon [nzType]="menu.icon" nzTheme="outline"></i>
+              {{ menu.label }}
+            </span>
+            <span class="short-cut">{{ menu.shortCut }}</span>
+          </li>
+        }
+      }
     </ul>
   </nz-dropdown-menu>
-</ng-container>
+}

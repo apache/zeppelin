@@ -21,7 +21,8 @@ import { Visualization } from '@zeppelin/visualization';
   selector: 'zeppelin-visualization-x-axis-setting',
   templateUrl: './x-axis-setting.component.html',
   styleUrls: ['./x-axis-setting.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class VisualizationXAxisSettingComponent implements OnInit {
   @Input() visualization!: Visualization;

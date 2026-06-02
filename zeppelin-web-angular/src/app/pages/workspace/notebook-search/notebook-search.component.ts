@@ -21,10 +21,11 @@ import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
   selector: 'zeppelin-notebook-search',
   templateUrl: './notebook-search.component.html',
   styleUrls: ['./notebook-search.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookSearchComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   private searchAction$ = this.router.params.pipe(
     takeUntil(this.destroy$),
     map(params => params.queryStr),

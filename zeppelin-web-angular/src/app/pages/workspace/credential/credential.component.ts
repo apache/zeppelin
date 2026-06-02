@@ -11,11 +11,10 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 
 import { CredentialForm } from '@zeppelin/interfaces';
 import { CredentialService, InterpreterService, TicketService } from '@zeppelin/services';
-import { collapseMotion } from 'ng-zorro-antd/core/animation';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { finalize } from 'rxjs/operators';
@@ -24,26 +23,26 @@ import { finalize } from 'rxjs/operators';
   selector: 'zeppelin-credential',
   templateUrl: './credential.component.html',
   styleUrls: ['./credential.component.less'],
-  animations: [collapseMotion],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class CredentialComponent {
-  addForm: FormGroup;
+  addForm: UntypedFormGroup;
   showAdd = false;
   adding = false;
   interpreterNames: string[] = [];
   interpreterFilteredNames: string[] = [];
   editFlags: Map<string, CredentialForm> = new Map();
-  credentialFormArray: FormArray = this.fb.array([]);
+  credentialFormArray: UntypedFormArray = this.fb.array([]);
   docsLink: string;
 
-  get credentialControls(): FormGroup[] {
-    return this.credentialFormArray.controls as FormGroup[];
+  get credentialControls(): UntypedFormGroup[] {
+    return this.credentialFormArray.controls as UntypedFormGroup[];
   }
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private nzMessageService: NzMessageService,
     private interpreterService: InterpreterService,
     private credentialService: CredentialService,
@@ -71,17 +70,17 @@ export class CredentialComponent {
     }
   }
 
-  getEntityFromForm(form: FormGroup): string {
+  getEntityFromForm(form: UntypedFormGroup): string {
     const entity = form.get('entity');
     return entity && entity.value;
   }
 
-  isEditing(form: FormGroup): boolean {
+  isEditing(form: UntypedFormGroup): boolean {
     const entity = this.getEntityFromForm(form);
     return !!entity && this.editFlags.has(entity);
   }
 
-  setEditable(form: FormGroup) {
+  setEditable(form: UntypedFormGroup) {
     const entity = this.getEntityFromForm(form);
     if (entity) {
       this.editFlags.set(entity, form.getRawValue());
@@ -89,7 +88,7 @@ export class CredentialComponent {
     this.cdr.markForCheck();
   }
 
-  unsetEditable(form: FormGroup, reset = true) {
+  unsetEditable(form: UntypedFormGroup, reset = true) {
     const entity = this.getEntityFromForm(form);
     if (reset && entity && this.editFlags.has(entity)) {
       form.reset(this.editFlags.get(entity));
@@ -109,7 +108,7 @@ export class CredentialComponent {
     }
   }
 
-  saveCredential(form: FormGroup) {
+  saveCredential(form: UntypedFormGroup) {
     Object.keys(form.controls).forEach(key => {
       form.controls[key].markAsDirty();
       form.controls[key].updateValueAndValidity();
@@ -122,7 +121,7 @@ export class CredentialComponent {
     }
   }
 
-  removeCredential(form: FormGroup) {
+  removeCredential(form: UntypedFormGroup) {
     const entity = this.getEntityFromForm(form);
     if (entity) {
       this.credentialService.removeCredential(entity).subscribe(() => {

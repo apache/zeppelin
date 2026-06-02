@@ -94,7 +94,8 @@ type VisualizationItemType = ClassicVisualizationItem | ModernVisualizationItem;
   selector: 'zeppelin-notebook-paragraph-result',
   templateUrl: './result.component.html',
   styleUrls: ['./result.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() result!: ParagraphIResultsMsgItem;
@@ -107,7 +108,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
   @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet!: CdkPortalOutlet;
 
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   datasetType = DatasetType;
   angularComponent: DynamicTemplate | null = null;
   innerHTML: string | SafeHtml = '';

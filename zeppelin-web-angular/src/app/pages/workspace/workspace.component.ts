@@ -24,10 +24,11 @@ import { NzMessageService } from 'ng-zorro-antd/message';
   selector: 'zeppelin-workspace',
   templateUrl: './workspace.component.html',
   styleUrls: ['./workspace.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
   private messageId: string | null = null;
   publishMode = false;
 

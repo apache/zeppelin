@@ -10,8 +10,7 @@
  * limitations under the License.
  */
 
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, DOCUMENT } from '@angular/core';
 import { EventManager } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
 
@@ -46,7 +45,7 @@ export class ShortcutService {
   bindShortcut(option: ShortcutOption): Observable<ShortcutEvent> {
     const host = option.scope || this.element;
     const eventName = `keydown.${option.keybindings}`;
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {
       const handler = (event: KeyboardEvent) => {

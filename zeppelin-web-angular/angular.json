@@ -126,7 +126,7 @@
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
           "options": {
-            "browserTarget": "zeppelin:build",
+            "buildTarget": "zeppelin:build",
             "port": 4200,
             "host": "localhost",
             "liveReload": true,
@@ -134,10 +134,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "zeppelin:build:production"
+              "buildTarget": "zeppelin:build:production"
             },
             "development": {
-              "browserTarget": "zeppelin:build:development"
+              "buildTarget": "zeppelin:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -145,7 +145,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "zeppelin:build"
+            "buildTarget": "zeppelin:build"
           }
         },
         "lint": {
@@ -199,8 +199,16 @@
       }
     }
   },
-  "defaultProject": "zeppelin",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "schematicCollections": ["@angular-eslint/schematics"],
+    "analytics": false
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
+    }
   }
 }

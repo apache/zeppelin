@@ -14,7 +14,8 @@ import { Directive, ElementRef, HostBinding, Input, OnChanges } from '@angular/c
 
 @Directive({
   // eslint-disable-next-line
-  selector: 'a[href]'
+  selector: 'a[href]',
+  standalone: false
 })
 export class ExternalLinkDirective implements OnChanges {
   @HostBinding('attr.rel') relAttr: HTMLAnchorElement['rel'] | null = null;

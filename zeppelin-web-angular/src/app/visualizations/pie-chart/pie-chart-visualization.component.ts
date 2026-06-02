@@ -30,7 +30,8 @@ import { VisualizationPivotSettingComponent } from '../common/pivot-setting/pivo
   selector: 'zeppelin-pie-chart-visualization',
   templateUrl: './pie-chart-visualization.component.html',
   styleUrls: ['./pie-chart-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PieChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
   @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;

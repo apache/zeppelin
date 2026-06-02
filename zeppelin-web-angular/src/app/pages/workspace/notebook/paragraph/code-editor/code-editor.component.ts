@@ -40,7 +40,8 @@ type DecorationIdentifier = ReturnType<monaco.editor.ICodeEditor['deltaDecoratio
   selector: 'zeppelin-notebook-paragraph-code-editor',
   templateUrl: './code-editor.component.html',
   styleUrls: ['./code-editor.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphCodeEditorComponent
   implements OnChanges, OnDestroy, AfterViewInit, MonacoKeyboardEventHandler

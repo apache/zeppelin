@@ -13,7 +13,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'humanizeBytes'
+  name: 'humanizeBytes',
+  standalone: false
 })
 export class HumanizeBytesPipe implements PipeTransform {
   transform(value: number | string | null | undefined): string {

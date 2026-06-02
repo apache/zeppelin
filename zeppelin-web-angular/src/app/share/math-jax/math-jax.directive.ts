@@ -13,7 +13,8 @@
 import { AfterViewChecked, Directive, ElementRef } from '@angular/core';
 
 @Directive({
-  selector: '[zeppelin-math-jax]'
+  selector: '[zeppelin-math-jax]',
+  standalone: false
 })
 export class MathJaxDirective implements AfterViewChecked {
   constructor(private el: ElementRef<HTMLElement>) {}

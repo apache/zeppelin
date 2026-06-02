@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 
-import { NzModalRef } from 'ng-zorro-antd/modal';
+import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageService, NoteListService } from '@zeppelin/services';
 
@@ -20,11 +20,12 @@ import { MessageService, NoteListService } from '@zeppelin/services';
   selector: 'zeppelin-folder-rename',
   templateUrl: './folder-rename.component.html',
   styleUrls: ['./folder-rename.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class FolderRenameComponent implements OnInit {
-  @Input() newFolderPath!: string;
-  @Input() folderId!: string;
+  newFolderPath!: string;
+  folderId!: string;
   willMerged = false;
 
   checkMerged() {
@@ -70,8 +71,12 @@ export class FolderRenameComponent implements OnInit {
     private noteListService: NoteListService,
     private cdr: ChangeDetectorRef,
     private messageService: MessageService,
-    private nzModalRef: NzModalRef
-  ) {}
+    private nzModalRef: NzModalRef,
+    @Inject(NZ_MODAL_DATA) nzData: { folderId: string; newFolderPath: string }
+  ) {
+    this.folderId = nzData.folderId;
+    this.newFolderPath = nzData.newFolderPath;
+  }
 
   ngOnInit() {
     this.checkMerged();

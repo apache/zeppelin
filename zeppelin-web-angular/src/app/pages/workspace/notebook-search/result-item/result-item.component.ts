@@ -18,7 +18,8 @@ import { NotebookSearchResultItem } from '@zeppelin/interfaces';
   selector: 'zeppelin-notebook-search-result-item',
   templateUrl: './result-item.component.html',
   styleUrls: ['./result-item.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookSearchResultItemComponent implements OnChanges {
   @Input() result!: NotebookSearchResultItem;

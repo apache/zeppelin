@@ -1,14 +1,14 @@
 <!--
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~     http://www.apache.org/licenses/LICENSE-2.0
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 
 <div class="permissions">
   <div>
@@ -35,10 +35,16 @@
             nzMode="multiple"
             name="owners"
           >
-            <nz-option *ngFor="let item of permissions.owners" [nzLabel]="item" [nzValue]="item"></nz-option>
-            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
-              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
-            </nz-option-group>
+            @for (item of permissions.owners; track item) {
+              <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
+            }
+            @for (item of listOfUserAndRole; track item) {
+              <nz-option-group [nzLabel]="item.text">
+                @for (o of item.children; track o) {
+                  <nz-option [nzLabel]="o" [nzValue]="o"></nz-option>
+                }
+              </nz-option-group>
+            }
           </nz-select>
         </nz-form-control>
         <nz-form-control [nzSpan]="17">
@@ -56,10 +62,16 @@
             nzMode="multiple"
             name="writers"
           >
-            <nz-option *ngFor="let item of permissions.writers" [nzLabel]="item" [nzValue]="item"></nz-option>
-            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
-              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
-            </nz-option-group>
+            @for (item of permissions.writers; track item) {
+              <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
+            }
+            @for (item of listOfUserAndRole; track item) {
+              <nz-option-group [nzLabel]="item.text">
+                @for (o of item.children; track o) {
+                  <nz-option [nzLabel]="o" [nzValue]="o"></nz-option>
+                }
+              </nz-option-group>
+            }
           </nz-select>
         </nz-form-control>
         <nz-form-control [nzSpan]="17">
@@ -77,10 +89,16 @@
             nzMode="multiple"
             name="runners"
           >
-            <nz-option *ngFor="let item of permissions.runners" [nzLabel]="item" [nzValue]="item"></nz-option>
-            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
-              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
-            </nz-option-group>
+            @for (item of permissions.runners; track item) {
+              <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
+            }
+            @for (item of listOfUserAndRole; track item) {
+              <nz-option-group [nzLabel]="item.text">
+                @for (o of item.children; track o) {
+                  <nz-option [nzLabel]="o" [nzValue]="o"></nz-option>
+                }
+              </nz-option-group>
+            }
           </nz-select>
         </nz-form-control>
         <nz-form-control [nzSpan]="17">
@@ -98,10 +116,16 @@
             nzMode="multiple"
             name="readers"
           >
-            <nz-option *ngFor="let item of permissions.readers" [nzLabel]="item" [nzValue]="item"></nz-option>
-            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
-              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
-            </nz-option-group>
+            @for (item of permissions.readers; track item) {
+              <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
+            }
+            @for (item of listOfUserAndRole; track item) {
+              <nz-option-group [nzLabel]="item.text">
+                @for (o of item.children; track o) {
+                  <nz-option [nzLabel]="o" [nzValue]="o"></nz-option>
+                }
+              </nz-option-group>
+            }
           </nz-select>
         </nz-form-control>
         <nz-form-control [nzSpan]="17">

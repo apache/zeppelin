@@ -49,7 +49,8 @@ function typeCoercion(value: string, type: ColType): string | number | Date {
   selector: 'zeppelin-visualization-table-visualization',
   templateUrl: './table-visualization.component.html',
   styleUrls: ['./table-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class TableVisualizationComponent implements OnInit {
   tableData?: TableData;

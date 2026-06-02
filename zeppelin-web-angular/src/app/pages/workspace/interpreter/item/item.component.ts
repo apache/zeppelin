@@ -13,9 +13,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormGroup,
+  UntypedFormArray,
+  UntypedFormBuilder,
+  UntypedFormGroup,
   ValidationErrors,
   Validators,
   ValidatorFn
@@ -31,18 +31,19 @@ import { InterpreterComponent } from '../interpreter.component';
   selector: 'zeppelin-interpreter-item',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class InterpreterItemComponent extends DestroyHookComponent implements OnInit, OnDestroy {
   @Input() mode: 'create' | 'view' | 'edit' = 'view';
   @Input() interpreter?: Interpreter;
 
-  formGroup!: FormGroup;
-  optionFormGroup!: FormGroup;
-  editingPropertiesFormGroup?: FormGroup;
-  editingDependenceFormGroup?: FormGroup;
-  propertiesFormArray!: FormArray;
-  dependenciesFormArray!: FormArray;
+  formGroup!: UntypedFormGroup;
+  optionFormGroup!: UntypedFormGroup;
+  editingPropertiesFormGroup?: UntypedFormGroup;
+  editingDependenceFormGroup?: UntypedFormGroup;
+  propertiesFormArray!: UntypedFormArray;
+  dependenciesFormArray!: UntypedFormArray;
   userList$?: Observable<string[]>;
   userSearchChange$: BehaviorSubject<string> | null = new BehaviorSubject('');
   runningOptionMap = {
@@ -412,7 +413,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     public ticketService: TicketService,
     private securityService: SecurityService,
     private interpreterService: InterpreterService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private cdr: ChangeDetectorRef
   ) {
     super();

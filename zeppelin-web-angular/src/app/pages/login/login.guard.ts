@@ -11,7 +11,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { of, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -20,7 +20,7 @@ import { TicketService } from '@zeppelin/services';
 @Injectable({
   providedIn: 'root'
 })
-export class LoginGuard implements CanActivate {
+export class LoginGuard {
   constructor(
     private ticketService: TicketService,
     private router: Router

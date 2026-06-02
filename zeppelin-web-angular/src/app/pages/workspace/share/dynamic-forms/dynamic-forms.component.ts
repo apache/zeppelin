@@ -25,7 +25,7 @@ import {
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
-import { NzCheckBoxOptionInterface } from 'ng-zorro-antd/checkbox';
+import { NzCheckboxOption } from 'ng-zorro-antd/checkbox';
 
 import { DynamicForms, DynamicFormsItem, DynamicFormsType, DynamicFormParams } from '@zeppelin/sdk';
 
@@ -33,10 +33,11 @@ import { DynamicForms, DynamicFormsItem, DynamicFormsType, DynamicFormParams } f
   selector: 'zeppelin-notebook-paragraph-dynamic-forms',
   templateUrl: './dynamic-forms.component.html',
   styleUrls: ['./dynamic-forms.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
 
   @Input() formDefs!: DynamicForms;
   @Input() paramDefs!: DynamicFormParams;
@@ -50,7 +51,10 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
   forms: DynamicFormsItem[] = [];
   formType = DynamicFormsType;
   checkboxGroups: {
-    [key: string]: NzCheckBoxOptionInterface[];
+    [key: string]: NzCheckboxOption[];
+  } = {};
+  checkboxValues: {
+    [key: string]: Array<string | number>;
   } = {};
 
   @HostListener('keydown.enter')
@@ -72,25 +76,22 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
         this.paramDefs[e.name] = e.defaultValue;
       }
       if (e.type === DynamicFormsType.CheckBox) {
-        // CheckBox type should have defined 'options'
-        this.checkboxGroups[e.name] = e.options!.map(opt => {
-          let checked = false;
-          if (this.paramDefs[e.name] && Array.isArray(this.paramDefs[e.name])) {
-            const param = this.paramDefs[e.name] as string[];
-            checked = param.indexOf(opt.value) !== -1;
-          }
-          return {
-            checked,
-            label: opt.displayName || opt.value,
-            value: opt.value
-          };
-        });
+        // CheckBox type should have defined 'options'.
+        // ng-zorro v19 split nz-checkbox-group into `nzOptions` (the {label, value}
+        // choices) and an ngModel that holds the selected values directly, instead
+        // of a single array of {label, value, checked} objects.
+        this.checkboxGroups[e.name] = e.options!.map(opt => ({
+          label: opt.displayName || opt.value,
+          value: opt.value
+        }));
+        const param = this.paramDefs[e.name];
+        this.checkboxValues[e.name] = Array.isArray(param) ? [...param] : [];
       }
     });
   }
 
-  checkboxChange(value: NzCheckBoxOptionInterface[], name: string) {
-    this.paramDefs[name] = value.filter(e => e.checked).map(e => e.value);
+  checkboxChange(value: Array<string | number>, name: string) {
+    this.paramDefs[name] = value as string[];
     this.onFormChange();
   }
 

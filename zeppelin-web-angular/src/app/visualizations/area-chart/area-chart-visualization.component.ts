@@ -34,7 +34,8 @@ import { VisualizationXAxisSettingComponent } from '../common/x-axis-setting/x-a
   selector: 'zeppelin-area-chart-visualization',
   templateUrl: './area-chart-visualization.component.html',
   styleUrls: ['./area-chart-visualization.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class AreaChartVisualizationComponent extends G2VisualizationComponentBase implements OnInit, AfterViewInit {
   @ViewChild('container', { static: false }) container!: ElementRef<HTMLDivElement>;

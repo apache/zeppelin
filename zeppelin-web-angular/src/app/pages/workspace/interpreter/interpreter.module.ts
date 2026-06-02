@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzAnimationCollapseDirective } from 'ng-zorro-antd/core/animation';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -23,14 +24,13 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 
@@ -47,10 +47,11 @@ import { InterpreterItemComponent } from './item/item.component';
     ReactiveFormsModule,
     InterpreterRoutingModule,
     ShareModule,
+    NzAnimationCollapseDirective,
     NzFormModule,
     NzSelectModule,
     NzSwitchModule,
-    NzToolTipModule,
+    NzTooltipModule,
     NzCheckboxModule,
     NzRadioModule,
     NzBadgeModule,
@@ -63,7 +64,6 @@ import { InterpreterItemComponent } from './item/item.component';
     NzDropDownModule,
     NzIconModule,
     NzTableModule,
-    NzMessageModule,
     NzAlertModule
   ]
 })

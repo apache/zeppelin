@@ -10,8 +10,8 @@
  * limitations under the License.
  */
 
-import { CdkPortalOutlet, ComponentPortal, ComponentType, PortalInjector } from '@angular/cdk/portal';
-import { ComponentFactoryResolver, InjectionToken, ViewContainerRef } from '@angular/core';
+import { CdkPortalOutlet, ComponentPortal, ComponentType } from '@angular/cdk/portal';
+import { InjectionToken, Injector, ViewContainerRef } from '@angular/core';
 
 import { Visualization } from './visualization';
 
@@ -22,20 +22,20 @@ export class VisualizationComponentPortal<T extends Visualization, C> {
     private visualization: T,
     private component: ComponentType<C>,
     private portalOutlet: CdkPortalOutlet,
-    private viewContainerRef: ViewContainerRef,
-    private componentFactoryResolver?: ComponentFactoryResolver
+    private viewContainerRef: ViewContainerRef
   ) {}
 
   createInjector() {
     const userInjector = this.viewContainerRef && this.viewContainerRef.injector;
-    // eslint-disable-next-line
-    const injectionTokens = new WeakMap<any, any>([[VISUALIZATION, this.visualization]]);
-    return new PortalInjector(userInjector, injectionTokens);
+    return Injector.create({
+      providers: [{ provide: VISUALIZATION, useValue: this.visualization }],
+      parent: userInjector
+    });
   }
 
   getComponentPortal() {
     const injector = this.createInjector();
-    return new ComponentPortal(this.component, null, injector, this.componentFactoryResolver);
+    return new ComponentPortal(this.component, null, injector);
   }
 
   attachComponentPortal() {

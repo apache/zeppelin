@@ -16,7 +16,8 @@ import { ConfigurationService } from '@zeppelin/services';
   selector: 'zeppelin-configuration',
   templateUrl: './configuration.component.html',
   styleUrls: ['./configuration.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ConfigurationComponent implements OnInit {
   configEntries: Array<[string, string]> = [];

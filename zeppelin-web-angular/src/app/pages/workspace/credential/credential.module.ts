@@ -14,6 +14,7 @@ import { NgModule } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShareModule } from '@zeppelin/share';
+import { NzAnimationCollapseDirective } from 'ng-zorro-antd/core/animation';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -22,10 +23,9 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { CredentialRoutingModule } from './credential-routing.module';
 import { CredentialComponent } from './credential.component';
 
@@ -37,6 +37,7 @@ import { CredentialComponent } from './credential.component';
     FormsModule,
     ShareModule,
     ReactiveFormsModule,
+    NzAnimationCollapseDirective,
     NzFormModule,
     NzAutocompleteModule,
     NzButtonModule,
@@ -44,11 +45,10 @@ import { CredentialComponent } from './credential.component';
     NzIconModule,
     NzDividerModule,
     NzInputModule,
-    NzMessageModule,
     NzTableModule,
     NzPopconfirmModule,
     NzGridModule,
-    NzToolTipModule
+    NzTooltipModule
   ]
 })
 export class CredentialModule {}

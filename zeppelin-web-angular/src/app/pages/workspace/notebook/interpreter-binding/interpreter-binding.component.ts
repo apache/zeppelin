@@ -22,7 +22,8 @@ import { InterpreterService, MessageService } from '@zeppelin/services';
   selector: 'zeppelin-notebook-interpreter-binding',
   templateUrl: './interpreter-binding.component.html',
   styleUrls: ['./interpreter-binding.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookInterpreterBindingComponent {
   private restarting = false;

@@ -101,6 +101,27 @@ export class HeaderPage extends BasePage {
     await this.userMenuItems.configuration.click();
   }
 
+  /** The <li nz-menu-item> row for a user-menu entry, scoped to this dropdown's overlay. */
+  getUserMenuItemRow(label: string): Locator {
+    return this.page.locator('.zeppelin-user-menu .ant-dropdown-menu-item').filter({ hasText: label });
+  }
+
+  /**
+   * Click the empty padding area near the right edge of a user-menu row, away from the
+   * link text. This is the dead zone that only navigates when the inner <a> fills the
+   * whole row; clicking here regresses to "dropdown closes, no navigation" if the
+   * full-row click fix is missing.
+   */
+  async clickUserMenuItemEdge(label: string): Promise<void> {
+    const row = this.getUserMenuItemRow(label);
+    await row.waitFor({ state: 'visible', timeout: 10000 });
+    const box = await row.boundingBox();
+    if (!box) {
+      throw new Error(`User menu item "${label}" has no bounding box`);
+    }
+    await row.click({ position: { x: box.width - 8, y: box.height / 2 } });
+  }
+
   async getUsernameText(): Promise<string> {
     return (await this.userBadge.textContent()) || '';
   }

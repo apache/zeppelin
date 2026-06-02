@@ -31,7 +31,8 @@ import { SecurityService, TicketService } from '@zeppelin/services';
   selector: 'zeppelin-notebook-permissions',
   templateUrl: './permissions.component.html',
   styleUrls: ['./permissions.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class NotebookPermissionsComponent implements OnInit, OnChanges {
   @Input() permissions!: Permissions;

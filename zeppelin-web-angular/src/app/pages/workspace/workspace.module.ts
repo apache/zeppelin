@@ -11,28 +11,20 @@
  */
 
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { ShareModule } from '@zeppelin/share';
 
-import { NzMessageModule } from 'ng-zorro-antd/message';
 import { WorkspaceComponent } from './workspace.component';
 
 import { WorkspaceRoutingModule } from './workspace-routing.module';
 
 @NgModule({
   declarations: [WorkspaceComponent],
-  imports: [
-    CommonModule,
-    WorkspaceRoutingModule,
-    FormsModule,
-    HttpClientModule,
-    ShareModule,
-    RouterModule,
-    NzMessageModule
-  ]
+  imports: [CommonModule, WorkspaceRoutingModule, FormsModule, ShareModule, RouterModule],
+  providers: [provideHttpClient(withInterceptorsFromDi())]
 })
 export class WorkspaceModule {}

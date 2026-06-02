@@ -40,7 +40,8 @@ import { environment } from '../../../../../environments/environment';
   selector: 'zeppelin-publish-paragraph',
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.less'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PublishedParagraphComponent extends ParagraphBase implements Published, OnDestroy {
   readonly [publishedSymbol] = true;
