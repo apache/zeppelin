@@ -27,7 +27,8 @@ test.describe('Copy table result to clipboard', () => {
   let paragraphPage: NotebookParagraphPage;
   let testNotebook: { noteId: string; paragraphId: string };
 
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page, context }, testInfo) => {
+    testInfo.skip(!!process.env.CI, 'Requires a running shell interpreter — skipped on CI');
     // Grant clipboard permissions so navigator.clipboard.writeText works in tests
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
@@ -58,8 +59,6 @@ test.describe('Copy table result to clipboard', () => {
   });
 
   test('export dropdown should contain Copy as TSV and Copy as CSV options', async ({ page }) => {
-    test.skip(!!process.env.CI, 'Requires a running shell interpreter — skipped on CI');
-
     // Open the export dropdown (down-arrow button next to the download icon)
     const exportDropdownTrigger = page
       .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
@@ -77,8 +76,6 @@ test.describe('Copy table result to clipboard', () => {
   });
 
   test('Copy as TSV should write tab-delimited data with headers to clipboard', async ({ page }) => {
-    test.skip(!!process.env.CI, 'Requires a running shell interpreter — skipped on CI');
-
     const exportDropdownTrigger = page
       .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
       .first();
@@ -101,8 +98,6 @@ test.describe('Copy table result to clipboard', () => {
   });
 
   test('Copy as CSV should write comma-delimited data with headers to clipboard', async ({ page }) => {
-    test.skip(!!process.env.CI, 'Requires a running shell interpreter — skipped on CI');
-
     const exportDropdownTrigger = page
       .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
       .first();

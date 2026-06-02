@@ -129,11 +129,6 @@ describe('Controller: ResultCtrl', function() {
         $controller('ResultCtrl', {$scope: specialScope, $route: route});
         specialScope.init(specialResultMock, tableConfigMock, specialParagraphMock, 0);
 
-        spyOn(navigator.clipboard, 'writeText').and.callFake(function(text) {
-          clipboardText = text;
-          return Promise.resolve();
-        });
-
         specialScope.copyToClipboard(',');
         setTimeout(function() {
           let lines = clipboardText.split('\n').filter(function(l) {
@@ -164,11 +159,6 @@ describe('Controller: ResultCtrl', function() {
         quoteScope.$parent.paragraph = quoteParagraphMock;
         $controller('ResultCtrl', {$scope: quoteScope, $route: route});
         quoteScope.init(quoteResultMock, tableConfigMock, quoteParagraphMock, 0);
-
-        spyOn(navigator.clipboard, 'writeText').and.callFake(function(text) {
-          clipboardText = text;
-          return Promise.resolve();
-        });
 
         quoteScope.copyToClipboard('\t');
         setTimeout(function() {
