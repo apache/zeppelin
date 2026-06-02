@@ -42,8 +42,11 @@
     </nz-space-compact>
     <nz-dropdown-menu #exportMenu="nzDropdownMenu">
       <ul nz-menu>
-        <li nz-menu-item (click)="exportFile('csv')">CSV</li>
-        <li nz-menu-item (click)="exportFile('tsv')">TSV</li>
+        <li nz-menu-item (click)="exportFile('csv')">Download as CSV</li>
+        <li nz-menu-item (click)="exportFile('tsv')">Download as TSV</li>
+        <li nz-menu-divider></li>
+        <li nz-menu-item (click)="copyToClipboard('tsv')">Copy as TSV</li>
+        <li nz-menu-item (click)="copyToClipboard('csv')">Copy as CSV</li>
       </ul>
     </nz-dropdown-menu>
     <a class="setting-trigger" tabindex="-1" (click)="switchSetting()">

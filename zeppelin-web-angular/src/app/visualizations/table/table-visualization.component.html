@@ -28,6 +28,19 @@
     <li nz-menu-item>
       <a (click)="exportFile('xlsx', false)">Export visible data as excel</a>
     </li>
+    <li nz-menu-divider></li>
+    <li nz-menu-item>
+      <a (click)="copyToClipboard('tsv')">Copy all data as TSV</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="copyToClipboard('csv')">Copy all data as CSV</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="copyToClipboard('tsv', false)">Copy visible data as TSV</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="copyToClipboard('csv', false)">Copy visible data as CSV</a>
+    </li>
   </ul>
 </nz-dropdown-menu>
 <nz-table
