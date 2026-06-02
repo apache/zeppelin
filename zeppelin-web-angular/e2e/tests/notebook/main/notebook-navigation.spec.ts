@@ -13,7 +13,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { HeaderPage } from '../../../models/header-page';
 import { HomePage } from '../../../models/home-page';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 const noteIdFromUrl = (url: string): string => {
   const match = url.match(/\/notebook\/([^/?]+)/);
@@ -37,7 +37,6 @@ test.describe('Notebook Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   // Regression: ZEPPELIN-6387 moved the note fetch onto the WebSocket connectedStatus$
