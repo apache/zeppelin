@@ -22,8 +22,8 @@ import {
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
-import { Subject } from 'rxjs';
-import { distinctUntilKeyChanged, startWith, takeUntil } from 'rxjs/operators';
+import { combineLatest, Subject } from 'rxjs';
+import { distinctUntilChanged, distinctUntilKeyChanged, startWith, takeUntil } from 'rxjs/operators';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 
@@ -439,25 +439,31 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     });
     this.revisionView = !!this.activatedRoute.snapshot.params.revisionId;
 
-    // Fetch note when WebSocket connects or reconnects
-    this.messageService.connectedStatus$
-      .pipe(startWith(this.messageService.connectedStatus), takeUntil(this.destroy$))
-      .subscribe(connected => {
-        console.log('connectedStatus$ changed to ', connected ? 'connected' : 'disconnected');
-        if (connected) {
-          const { noteId, revisionId } = this.activatedRoute.snapshot.params;
-          if (!noteId) {
-            throw new Error('Route parameter `noteId` is required.');
-          }
-          if (revisionId) {
-            this.messageService.noteRevision(noteId, revisionId);
-          } else {
-            this.messageService.getNote(noteId);
-          }
-          this.cdr.markForCheck();
-          this.messageService.listRevisionHistory(noteId);
-          // TODO(hsuanxyz) scroll to current paragraph
+    // Fetch the note whenever the WebSocket (re)connects OR the route's noteId/revisionId changes.
+    // Navigating between notes reuses this component (ngOnInit does not re-run) and keeps the socket
+    // connected, so the fetch must be driven by route params too — connection status alone would
+    // leave the page showing the previously loaded note after navigation.
+    combineLatest([
+      this.messageService.connectedStatus$.pipe(startWith(this.messageService.connectedStatus), distinctUntilChanged()),
+      this.activatedRoute.params
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([connected, params]) => {
+        if (!connected) {
+          return;
         }
+        const { noteId, revisionId } = params;
+        if (!noteId) {
+          throw new Error('Route parameter `noteId` is required.');
+        }
+        if (revisionId) {
+          this.messageService.noteRevision(noteId, revisionId);
+        } else {
+          this.messageService.getNote(noteId);
+        }
+        this.cdr.markForCheck();
+        this.messageService.listRevisionHistory(noteId);
+        // TODO(hsuanxyz) scroll to current paragraph
       });
   }
 
