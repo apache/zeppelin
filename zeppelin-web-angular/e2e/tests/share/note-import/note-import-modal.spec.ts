@@ -13,7 +13,7 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../models/home-page';
 import { NoteImportModal } from '../../../models/note-import-modal';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Note Import Modal', () => {
   let homePage: HomePage;
@@ -27,7 +27,6 @@ test.describe('Note Import Modal', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     await homePage.clickImportNote();
     await page.waitForSelector('input[name="noteImportName"]');

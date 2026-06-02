@@ -13,15 +13,12 @@
 import { test, expect } from '@playwright/test';
 import { NoteTocPage } from '../../../models/note-toc-page';
 import { NoteTocPageUtil } from '../../../models/note-toc-page.util';
-import {
-  addPageAnnotationBeforeEach,
-  PAGES,
-  performLoginIfRequired,
-  waitForZeppelinReady,
-  createTestNotebook
-} from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady, createTestNotebook } from '../../../utils';
 
 test.describe('Note Table of Contents', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   let noteTocPage: NoteTocPage;
   let noteTocUtil: NoteTocPageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
@@ -34,7 +31,6 @@ test.describe('Note Table of Contents', () => {
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     testNotebook = await createTestNotebook(page);
 
@@ -56,7 +52,7 @@ test.describe('Note Table of Contents', () => {
   test('Given TOC panel is open, When checking panel title, Then title should display "Table of Contents"', async () => {
     await noteTocUtil.verifyTocPanelOpens();
     await expect(noteTocPage.tocTitle).toBeVisible();
-    expect(await noteTocPage.tocTitle.textContent()).toBe('Table of Contents');
+    await expect(noteTocPage.tocTitle).toHaveText('Table of Contents');
   });
 
   test('Given TOC panel is open with no headings, When checking content, Then empty message should be displayed', async () => {

@@ -12,7 +12,7 @@
 
 import { test, expect } from '@playwright/test';
 import { HeaderPage } from '../../../models/header-page';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Header Search Functionality', () => {
   let headerPage: HeaderPage;
@@ -24,7 +24,6 @@ test.describe('Header Search Functionality', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test('Given user is on home page, When entering search query and pressing Enter, Then user should navigate to search results page', async ({
@@ -32,9 +31,9 @@ test.describe('Header Search Functionality', () => {
   }) => {
     const searchQuery = 'test';
     await headerPage.searchNote(searchQuery);
-    await page.waitForURL(/search/);
-    expect(page.url()).toContain('search');
-    expect(page.url()).toContain(searchQuery);
+    await expect(page).toHaveURL(/search/);
+    // searchQuery is alphanumeric test data ('test'); safe for new RegExp without escaping.
+    await expect(page).toHaveURL(new RegExp(searchQuery));
   });
 
   test('Given user is on home page, When viewing search input, Then search input should be visible and accessible', async () => {

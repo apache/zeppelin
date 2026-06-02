@@ -12,7 +12,9 @@
 
 import { expect, test } from '@playwright/test';
 import { BasePage } from '../models/base-page';
-import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES, performLoginIfRequired } from '../utils';
+import { LoginPage } from '../models/login-page';
+import { LoginTestUtil, TestCredentials } from '../models/login-page.util';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../utils';
 
 test.describe('Zeppelin App Component', () => {
   addPageAnnotationBeforeEach(PAGES.APP);
@@ -23,7 +25,6 @@ test.describe('Zeppelin App Component', () => {
 
     await page.goto('/', { waitUntil: 'load' });
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test('should have correct component selector and structure', async ({ page }) => {
@@ -85,7 +86,7 @@ test.describe('Zeppelin App Component', () => {
     await expect(loadingSpinner).toBeHidden();
   });
 
-  test('should show logout spinner when logging out', async ({ page }) => {
+  test('should show logout spinner when logging out', async ({ page, browser, baseURL }) => {
     await waitForZeppelinReady(page);
 
     // Only test logout flow for authenticated (non-anonymous) users — skip before any assertions
@@ -94,27 +95,52 @@ test.describe('Zeppelin App Component', () => {
     const statusText = await statusElement.textContent();
     test.skip(statusText?.includes('anonymous') ?? false, 'Logout spinner only applies to authenticated users');
 
-    const logoutSpinner = page.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
+    const credentials = await LoginTestUtil.getTestCredentials();
+    const logoutUser = getIsolatedLogoutUser(credentials);
+    test.skip(!logoutUser, 'No non-shared logout test user available');
 
-    // Initially logout spinner should be hidden
-    await expect(logoutSpinner).toBeHidden();
+    // The default auth storage state is shared by the whole parallel suite. Logging
+    // out from that shared user invalidates the server-side Shiro session for many
+    // still-running tests, so exercise logout from a throwaway user/session instead.
+    const context = await browser.newContext({
+      baseURL: baseURL ?? 'http://localhost:4200',
+      storageState: { cookies: [], origins: [] }
+    });
 
-    await statusElement.click();
-    const logoutButton = page.getByRole('link', { name: 'Logout' });
+    try {
+      const logoutPage = await context.newPage();
+      const loginPage = new LoginPage(logoutPage);
+      await loginPage.navigate();
+      await loginPage.login(logoutUser!.username, logoutUser!.password);
+      await logoutPage.waitForURL('/#/', { timeout: 30000 });
+      await waitForZeppelinReady(logoutPage);
 
-    // If the dropdown has no Logout link, auth is not configured — skip gracefully
-    const logoutCount = await logoutButton.count();
-    test.skip(logoutCount === 0, 'Logout option not available — auth not configured in this environment');
+      const isolatedStatusElement = logoutPage.locator('.status');
+      const logoutSpinner = logoutPage.locator('zeppelin-spin').filter({ hasText: 'Logging out' });
 
-    await logoutButton.click();
+      await expect(logoutSpinner).toBeHidden();
 
-    await expect(logoutSpinner).toBeVisible();
-    await expect(logoutSpinner).toContainText('Logging out ...');
+      await isolatedStatusElement.click();
+      const logoutButton = logoutPage.getByRole('link', { name: 'Logout' });
+
+      // If the dropdown has no Logout link, auth is not configured — skip gracefully
+      const logoutCount = await logoutButton.count();
+      test.skip(logoutCount === 0, 'Logout option not available — auth not configured in this environment');
+
+      await logoutButton.click();
+
+      // `toBeVisible` can resolve briefly before the spinner mounts then misses the
+      // narrow visibility window. `toHaveCount(1)` polls the DOM for the spinner's
+      // presence which is more tolerant of the transient mount.
+      await expect(logoutSpinner).toHaveCount(1, { timeout: 10000 });
+      await expect(logoutSpinner).toContainText('Logging out ...');
+    } finally {
+      await context.close();
+    }
   });
 
   test('should maintain component integrity during navigation', async ({ page }) => {
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     // Navigate to different pages and ensure component remains intact
     const testPaths = ['/#/notebook', '/#/jobmanager', '/#/configuration'];
@@ -132,3 +158,8 @@ test.describe('Zeppelin App Component', () => {
     await waitForZeppelinReady(page);
   });
 });
+
+const getIsolatedLogoutUser = (credentials: Record<string, TestCredentials>): TestCredentials | undefined =>
+  Object.values(credentials).find(
+    credential => credential.username && credential.password && credential.username !== 'user1'
+  );

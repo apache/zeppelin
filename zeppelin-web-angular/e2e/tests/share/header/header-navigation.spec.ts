@@ -13,7 +13,7 @@
 import { test, expect } from '@playwright/test';
 import { HeaderPage } from '../../../models/header-page';
 import { NodeListPage } from '../../../models/node-list-page';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Header Navigation', () => {
   let headerPage: HeaderPage;
@@ -25,7 +25,6 @@ test.describe('Header Navigation', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test('Given user is on any page, When viewing the header, Then all header elements should be visible', async () => {
@@ -42,16 +41,14 @@ test.describe('Header Navigation', () => {
     page
   }) => {
     await headerPage.clickBrandLogo();
-    await page.waitForURL(/\/(#\/)?$/);
-    expect(page.url()).toMatch(/\/(#\/)?$/);
+    await expect(page).toHaveURL(/\/(#\/)?$/);
   });
 
   test('Given user is on home page, When clicking the Job menu item, Then user should navigate to Job Manager page', async ({
     page
   }) => {
     await headerPage.clickJobMenu();
-    await page.waitForURL(/jobmanager/);
-    expect(page.url()).toContain('jobmanager');
+    await expect(page).toHaveURL(/jobmanager/);
   });
 
   test('Given user is on home page, When clicking the Notebook dropdown, Then dropdown with node list should open', async ({
@@ -89,8 +86,7 @@ test.describe('Header Navigation', () => {
   }) => {
     await headerPage.clickUserDropdown();
     await headerPage.clickInterpreter();
-    await page.waitForURL(/interpreter/);
-    expect(page.url()).toContain('interpreter');
+    await expect(page).toHaveURL(/interpreter/);
   });
 
   test('Given user opens user dropdown, When clicking Notebook Repos menu item, Then user should navigate to Notebook Repos page', async ({
@@ -98,8 +94,7 @@ test.describe('Header Navigation', () => {
   }) => {
     await headerPage.clickUserDropdown();
     await headerPage.clickNotebookRepos();
-    await page.waitForURL(/notebook-repos/);
-    expect(page.url()).toContain('notebook-repos');
+    await expect(page).toHaveURL(/notebook-repos/);
   });
 
   test('Given user opens user dropdown, When clicking Credential menu item, Then user should navigate to Credential page', async ({
@@ -107,8 +102,7 @@ test.describe('Header Navigation', () => {
   }) => {
     await headerPage.clickUserDropdown();
     await headerPage.clickCredential();
-    await page.waitForURL(/credential/);
-    expect(page.url()).toContain('credential');
+    await expect(page).toHaveURL(/credential/);
   });
 
   test('Given user opens user dropdown, When clicking Configuration menu item, Then user should navigate to Configuration page', async ({
@@ -116,7 +110,6 @@ test.describe('Header Navigation', () => {
   }) => {
     await headerPage.clickUserDropdown();
     await headerPage.clickConfiguration();
-    await page.waitForURL(/configuration/);
-    expect(page.url()).toContain('configuration');
+    await expect(page).toHaveURL(/configuration/);
   });
 });

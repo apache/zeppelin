@@ -48,7 +48,7 @@ export class NoteImportModal extends BasePage {
   }
 
   async setImportAsName(name: string): Promise<void> {
-    await this.importAsInput.fill(name);
+    await this.fillAndVerifyInput(this.importAsInput, name);
   }
 
   async getImportAsName(): Promise<string> {
@@ -60,7 +60,7 @@ export class NoteImportModal extends BasePage {
   }
 
   async setImportUrl(url: string): Promise<void> {
-    await this.urlInput.fill(url);
+    await this.fillAndVerifyInput(this.urlInput, url);
   }
 
   async clickImportNote(): Promise<void> {

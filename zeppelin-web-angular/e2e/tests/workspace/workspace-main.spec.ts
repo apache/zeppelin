@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { BasePage } from 'e2e/models/base-page';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.MAIN);
 
@@ -22,7 +22,6 @@ test.describe('Workspace Main Component', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     basePage = new BasePage(page);
   });

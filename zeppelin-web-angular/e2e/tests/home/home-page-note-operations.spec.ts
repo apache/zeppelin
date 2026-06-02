@@ -12,24 +12,30 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
+import { addPageAnnotationBeforeEach, createTestNotebookWithName, waitForZeppelinReady, PAGES } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
 test.describe('Home Page Note Operations', () => {
+  // JUSTIFIED: homePage and testNoteName are describe-scoped; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   let homePage: HomePage;
   let testNoteName: string;
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
-    testNoteName = `_e2e_ops_test_${Date.now()}`;
-
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
-    // Create a test note so all operation tests have a real target
-    await homePage.createNote(testNoteName);
+    // Create the operation target through the REST API so setup is not coupled to
+    // the UI create-note modal, which this suite exercises separately below.
+    const testNote = await createTestNotebookWithName(page, {
+      folderPath: null,
+      namePrefix: '_e2e_ops_test'
+    });
+    testNoteName = testNote.notebookName;
+
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 
@@ -161,7 +167,18 @@ test.describe('Home Page Note Operations', () => {
       const maxLengthAttr = await notebookNameInput.getAttribute('maxlength');
       const longName = `_e2e_ml_${'a'.repeat(300)}`;
 
-      await notebookNameInput.fill(longName);
+      await expect(async () => {
+        await notebookNameInput.click();
+        await notebookNameInput.fill(longName);
+        await notebookNameInput.evaluate((el: HTMLInputElement) => {
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        const value = await notebookNameInput.inputValue();
+        if (value.length === 0 || value === 'Untitled Note 1') {
+          throw new Error(`note name fill retry: got "${value}"`);
+        }
+      }).toPass({ timeout: 15000, intervals: [200, 500, 1000, 2000] });
       const actualValue = await notebookNameInput.inputValue();
 
       // Must have content — input did not silently reject the fill

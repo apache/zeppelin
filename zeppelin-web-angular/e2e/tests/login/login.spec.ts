@@ -12,19 +12,30 @@
 
 import { expect, test } from '@playwright/test';
 import { LoginPage } from '../../models/login-page';
-import { LoginTestUtil } from '../../models/login-page.util';
+import { LoginTestUtil, TestCredentials } from '../../models/login-page.util';
 import { addPageAnnotationBeforeEach, PAGES } from '../../utils';
 
 test.describe('Login Page', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   addPageAnnotationBeforeEach(PAGES.PAGES.LOGIN);
   let loginPage: LoginPage;
-  let testCredentials: Record<string, any>;
+  let testCredentials: Record<string, TestCredentials>;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ request }) => {
     const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
     if (!isShiroEnabled) {
       test.skip(true, 'Skipping all login tests - shiro.ini not found');
     }
+
+    const ticketResponse = await request.get('/api/security/ticket', { failOnStatusCode: false });
+    if (ticketResponse.ok()) {
+      const ticket = await ticketResponse.json();
+      if (ticket?.body?.principal === 'anonymous') {
+        test.skip(true, 'Skipping all login tests - Zeppelin server is running in anonymous mode');
+      }
+    }
+
     testCredentials = await LoginTestUtil.getTestCredentials();
   });
 

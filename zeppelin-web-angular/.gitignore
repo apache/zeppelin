@@ -48,6 +48,7 @@ Thumbs.db
 /playwright-coverage/
 /test-results/
 /playwright/.cache/
+/playwright/.auth/
 
 #
 .env

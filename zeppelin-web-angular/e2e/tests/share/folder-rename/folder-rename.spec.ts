@@ -10,16 +10,16 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { FolderRenamePage } from '../../../models/folder-rename-page';
 import { FolderRenamePageUtil } from '../../../models/folder-rename-page.util';
-import {
-  addPageAnnotationBeforeEach,
-  PAGES,
-  performLoginIfRequired,
-  waitForZeppelinReady,
-  createTestNotebook
-} from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady, createTestNotebook } from '../../../utils';
+
+const refreshHomeAndWaitForFolder = async (page: Page, folderName: string): Promise<void> => {
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await waitForZeppelinReady(page);
+  await expect(page.getByTestId(`folder-${folderName}`)).toBeVisible({ timeout: 60000 });
+};
 
 // JUSTIFIED: rename/delete ops mutate shared state; parallel runs cause folder-not-found races
 test.describe.serial('Folder Rename', () => {
@@ -35,19 +35,18 @@ test.describe.serial('Folder Rename', () => {
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     // Create a test notebook with folder structure
     testFolderName = `TestFolder_${Date.now()}`;
     await createTestNotebook(page, testFolderName);
-    await page.goto('/#/');
+    await refreshHomeAndWaitForFolder(page, testFolderName);
   });
 
   test('Given folder exists in notebook list, When hovering over folder, Then context menu should appear with Rename option', async () => {
     await folderRenamePage.hoverOverFolder(testFolderName);
     const folderNode = folderRenamePage.page
       .locator('.node')
-      .filter({ has: folderRenamePage.page.locator('.folder .name', { hasText: testFolderName }) })
+      .filter({ has: folderRenamePage.page.getByTestId(`folder-${testFolderName}`) })
       // JUSTIFIED: filter already narrows to target folder; first() handles nested .node structure
       .first();
     const renameButton = folderNode.locator('.folder .operation a[nz-tooltip][nztooltiptitle="Rename folder"]');
@@ -79,13 +78,13 @@ test.describe.serial('Folder Rename', () => {
     await folderRenamePage.clickConfirm();
 
     await expect(folderRenamePage.renameModal).not.toBeVisible({ timeout: 10000 });
-    await expect(page.locator('.folder .name', { hasText: testFolderName })).not.toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId(`folder-${testFolderName}`)).not.toBeVisible({ timeout: 10000 });
 
     await page.reload();
     await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
 
     const baseNewName = renamedFolderName.split('/').pop() ?? renamedFolderName;
-    await expect(page.locator('.folder .name', { hasText: baseNewName })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId(`folder-${baseNewName}`)).toBeVisible({ timeout: 30000 });
   });
 
   test('Given rename modal is open, When submitting empty name, Then empty name should not be allowed', async () => {
@@ -97,7 +96,7 @@ test.describe.serial('Folder Rename', () => {
 
     await folderRenamePage.clickCancel();
     await expect(folderRenamePage.renameModal).not.toBeVisible({ timeout: 5000 });
-    await expect(folderRenamePage.page.locator('.folder .name', { hasText: testFolderName })).toBeVisible({
+    await expect(folderRenamePage.page.getByTestId(`folder-${testFolderName}`)).toBeVisible({
       timeout: 5000
     });
   });
@@ -106,7 +105,7 @@ test.describe.serial('Folder Rename', () => {
     await folderRenamePage.hoverOverFolder(testFolderName);
     const folderNode = folderRenamePage.page
       .locator('.node')
-      .filter({ has: folderRenamePage.page.locator('.folder .name', { hasText: testFolderName }) })
+      .filter({ has: folderRenamePage.page.getByTestId(`folder-${testFolderName}`) })
       // JUSTIFIED: filter already narrows to target folder; first() handles nested .node structure
       .first();
     await expect(folderNode.locator('.folder .operation a[nztooltiptitle*="Move folder to Trash"]')).toBeVisible();
@@ -129,7 +128,7 @@ test.describe.serial('Folder Rename', () => {
     // Create a second folder to use as a name collision target
     const existingFolderName = `ExistingFolder_${Date.now()}`;
     await createTestNotebook(page, existingFolderName);
-    await page.goto('/#/'); // Refresh to see the new folder
+    await refreshHomeAndWaitForFolder(page, existingFolderName);
 
     // Attempt to rename the first folder to the name of the second folder
     await folderRenamePage.hoverOverFolder(testFolderName);
@@ -139,8 +138,8 @@ test.describe.serial('Folder Rename', () => {
     await folderRenamePage.clickConfirm();
 
     // Wait for the source folder to disappear (as it's merged into target)
-    await expect(page.locator('.folder .name', { hasText: testFolderName })).toHaveCount(0, { timeout: 10000 });
+    await expect(page.getByTestId(`folder-${testFolderName}`)).toHaveCount(0, { timeout: 10000 });
     // Wait for the target folder to remain visible
-    await expect(page.locator('.folder .name', { hasText: existingFolderName })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId(`folder-${existingFolderName}`)).toBeVisible({ timeout: 10000 });
   });
 });

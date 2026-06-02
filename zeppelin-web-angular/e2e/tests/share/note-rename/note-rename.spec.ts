@@ -15,13 +15,16 @@ import { NoteRenamePage } from '../../../models/note-rename-page';
 import { NoteRenamePageUtil } from '../../../models/note-rename-page.util';
 import {
   addPageAnnotationBeforeEach,
+  createTestNotebook,
+  navigateToNotebookWithFallback,
   PAGES,
-  performLoginIfRequired,
-  waitForZeppelinReady,
-  createTestNotebook
+  waitForZeppelinReady
 } from '../../../utils';
 
 test.describe('Note Rename', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   let noteRenamePage: NoteRenamePage;
   let noteRenameUtil: NoteRenamePageUtil;
   let testNotebook: { noteId: string; paragraphId: string };
@@ -34,14 +37,14 @@ test.describe('Note Rename', () => {
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     // Create a test notebook for each test
     testNotebook = await createTestNotebook(page);
 
-    // Navigate to the test notebook
-    await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    // Navigate to the test notebook and wait for the notebook component to bind
+    // to backend data. Hash-route navigation can leave the home shell visible
+    // for a short time in auth mode, which makes the title locator race.
+    await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
   test('Given notebook page is loaded, When checking note title, Then title should be displayed', async () => {

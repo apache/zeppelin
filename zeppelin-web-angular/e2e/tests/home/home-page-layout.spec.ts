@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Home Page - Layout and Grid', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
@@ -23,7 +23,6 @@ test.describe('Home Page - Layout and Grid', () => {
     homePage = new HomePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test.describe('Responsive Grid Layout', () => {

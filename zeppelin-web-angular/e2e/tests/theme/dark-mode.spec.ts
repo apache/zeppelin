@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { DarkModePage } from '../../models/dark-mode-page';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../utils';
 
 test.describe('Dark Mode Theme Switching', () => {
   addPageAnnotationBeforeEach(PAGES.SHARE.THEME_TOGGLE);
@@ -28,7 +28,6 @@ test.describe('Dark Mode Theme Switching', () => {
     await waitForZeppelinReady(page);
 
     // Handle authentication if shiro.ini exists
-    await performLoginIfRequired(page);
 
     // Ensure a clean localStorage for each test
     await darkModePage.clearLocalStorage();
@@ -100,8 +99,8 @@ test.describe('Dark Mode Theme Switching', () => {
       await waitForZeppelinReady(page);
       // When no explicit theme is set, it defaults to 'system' mode
       // Even in system mode with light preference, the icon should be robot
-      await expect(darkModePage.rootElement).toHaveClass(/light/);
-      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light');
+      await expect(darkModePage.rootElement).toHaveClass(/light/, { timeout: 15000 });
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light', { timeout: 15000 });
       await darkModePage.assertSystemTheme(); // Should show robot icon
     });
 
@@ -125,8 +124,8 @@ test.describe('Dark Mode Theme Switching', () => {
       await page.emulateMedia({ colorScheme: 'light' });
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await expect(darkModePage.rootElement).toHaveClass(/light/);
-      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light');
+      await expect(darkModePage.rootElement).toHaveClass(/light/, { timeout: 15000 });
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'light', { timeout: 15000 });
       await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
 
@@ -135,8 +134,8 @@ test.describe('Dark Mode Theme Switching', () => {
       await page.emulateMedia({ colorScheme: 'dark' });
       await page.goto('/');
       await waitForZeppelinReady(page);
-      await expect(darkModePage.rootElement).toHaveClass(/dark/);
-      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'dark');
+      await expect(darkModePage.rootElement).toHaveClass(/dark/, { timeout: 15000 });
+      await expect(darkModePage.rootElement).toHaveAttribute('data-theme', 'dark', { timeout: 15000 });
       await darkModePage.assertSystemTheme(); // Robot icon for system theme
     });
   });

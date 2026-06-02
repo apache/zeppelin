@@ -14,13 +14,16 @@ import { expect, test } from '@playwright/test';
 import { NotebookPage } from '../../../models/notebook-page';
 import {
   addPageAnnotationBeforeEach,
-  performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook
+  createTestNotebook,
+  navigateToNotebookWithFallback
 } from '../../../utils';
 
 test.describe('Notebook Container Component', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
 
   let notebookPage: NotebookPage;
@@ -29,13 +32,11 @@ test.describe('Notebook Container Component', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     testNotebook = await createTestNotebook(page);
     notebookPage = new NotebookPage(page);
 
-    await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
   test('should display notebook container with proper structure', async () => {

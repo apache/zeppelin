@@ -58,21 +58,26 @@ export class NotebookRepoItemPage extends BasePage {
 
   async clickEdit(): Promise<void> {
     await this.editButton.click({ timeout: 15000 });
+    // Wait for Angular to swap to edit mode before returning. Without this,
+    // a follow-up assertion like `expect(editButton).not.toBeVisible()` races
+    // against the re-render and intermittently sees the button still present.
+    await this.saveButton.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async clickSave(): Promise<void> {
     await this.saveButton.click({ timeout: 15000 });
+    await this.editButton.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async clickCancel(): Promise<void> {
     await this.cancelButton.click({ timeout: 15000 });
+    await this.editButton.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async fillSettingInput(settingName: string, value: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
     const input = row.locator('input[nz-input]');
-    await input.clear();
-    await input.fill(value);
+    await this.fillAndVerifyInput(input, value);
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
