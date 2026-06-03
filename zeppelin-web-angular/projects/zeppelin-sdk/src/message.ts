@@ -52,6 +52,7 @@ export class Message {
   private wsUrl?: string;
   private ticket?: Ticket;
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
+  // TODO: Clean up this variable with `msgId` in server-side. See ZEPPELIN-6419, ZEPPELIN-4985
   private lastMsgIdSeqSent = 0;
   private readonly normalCloseCode = 1000;
 
@@ -174,27 +175,6 @@ export class Message {
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
     return this.received$.pipe(
       filter(message => message.op === op),
-      filter(message => {
-        if (!message.msgId) {
-          // when msgId is not specified, it is not response to client request.
-          // always process them
-          return true;
-        }
-        const uniqueClientId = message.msgId.split('-')[0];
-        const msgIdSeqReceived = parseInt(message.msgId.split('-')[1], 10);
-        const isResponseForRequestFromThisClient = uniqueClientId === this.uniqueClientId;
-
-        if (message.op === OP.PARAGRAPH) {
-          if (isResponseForRequestFromThisClient && this.lastMsgIdSeqSent > msgIdSeqReceived) {
-            console.log('PARAPGRAPH is already updated by shortcircuit');
-            return false;
-          } else {
-            return true;
-          }
-        } else {
-          return true;
-        }
-      }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
