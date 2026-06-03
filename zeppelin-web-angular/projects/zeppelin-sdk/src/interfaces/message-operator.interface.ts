@@ -10,7 +10,6 @@
  * limitations under the License.
  */
 
-/* eslint-disable jsdoc/no-types */
 /**
  * Representation of event type.
  */

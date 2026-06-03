@@ -28,7 +28,6 @@ export class AppHttpInterceptor implements HttpInterceptor {
   intercept(httpRequest: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let httpRequestUpdated = httpRequest.clone({ withCredentials: true });
     if (environment.production) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       httpRequestUpdated = httpRequest.clone({ setHeaders: { 'X-Requested-With': 'XMLHttpRequest' } });
     }
     return next.handle(httpRequestUpdated).pipe(

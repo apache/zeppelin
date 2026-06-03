@@ -21,7 +21,6 @@ import { Visualization } from './visualization';
   template: '',
   standalone: false
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class G2VisualizationComponentBase implements OnDestroy {
   abstract container: ElementRef<HTMLDivElement>;
   chart?: G2.Chart | null;

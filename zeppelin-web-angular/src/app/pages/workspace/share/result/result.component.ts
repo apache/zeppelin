@@ -596,7 +596,6 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.destroy$.complete();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private commitClassicVizConfigChange(configForMode: GraphConfig, mode: string) {
     if (this.isPending) {
       return;
