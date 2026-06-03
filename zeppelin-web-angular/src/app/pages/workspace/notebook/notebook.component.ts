@@ -157,6 +157,18 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
     definedNote.paragraphs[paragraphIndex].focus = true;
     this.cdr.markForCheck();
+
+    // Focus the editor only for a clone/insert initiated by this client (not auto-append on run or remote inserts).
+    // Defer a tick so the new paragraph's editor child exists, since `focus = true` alone misses it.
+    if (this.messageService.localAddFocusPending) {
+      this.messageService.localAddFocusPending = false;
+      const addedId = data.paragraph.id;
+      setTimeout(() => {
+        const added = this.listOfNotebookParagraphComponent?.find(e => e.paragraph.id === addedId);
+        added?.focusEditor();
+        added?.notebookParagraphCodeEditorComponent?.setRestorePosition();
+      });
+    }
   }
 
   @MessageListener(OP.SAVE_NOTE_FORMS)

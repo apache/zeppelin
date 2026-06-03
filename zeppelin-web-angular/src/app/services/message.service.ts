@@ -38,6 +38,10 @@ import { TicketService } from './ticket.service';
   providedIn: 'root'
 })
 export class MessageService extends Message implements OnDestroy {
+  // Set by a local clone/insert so the PARAGRAPH_ADDED handler focuses the new
+  // paragraph's editor — not on auto-append or other clients' inserts.
+  localAddFocusPending = false;
+
   constructor(
     private baseUrlService: BaseUrlService,
     private ticketService: TicketService,
@@ -167,6 +171,7 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   insertParagraph(newIndex: number): void {
+    this.localAddFocusPending = true;
     super.insertParagraph(newIndex);
   }
 
@@ -177,6 +182,7 @@ export class MessageService extends Message implements OnDestroy {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
   ): void {
+    this.localAddFocusPending = true;
     super.copyParagraph(newIndex, paragraphTitle, paragraphData, paragraphConfig, paragraphParams);
   }
 
