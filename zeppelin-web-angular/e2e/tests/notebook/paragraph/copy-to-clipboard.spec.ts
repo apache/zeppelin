@@ -115,4 +115,31 @@ test.describe('Copy table result to clipboard', () => {
     expect(lines[1]).toBe('a,12');
     expect(lines[2]).toBe('b,24');
   });
+
+  test('Copy as CSV should quote cell values that contain double quotes', async ({ page }) => {
+    // Re-run the paragraph with a value containing a double quote
+    const codeEditor = page.locator('.monaco-editor .input-area, textarea').first();
+    await codeEditor.focus();
+    const keyboard = new NotebookKeyboardPage(page);
+    await keyboard.pressSelectAll();
+    await page.keyboard.type('%sh\nprintf "col1\\tcol2\\nsay \\"hi\\"\\t1\\n"');
+    await new NotebookParagraphPage(page).runParagraph();
+    await page.waitForLoadState('networkidle');
+
+    const exportDropdownTrigger = page
+      .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
+      .first();
+    await expect(exportDropdownTrigger).toBeVisible({ timeout: 10000 });
+    await exportDropdownTrigger.click();
+
+    const menu = page.locator('.ant-dropdown-menu');
+    await expect(menu).toBeVisible({ timeout: 5000 });
+    await menu.locator('li:has-text("Copy as CSV")').click();
+
+    const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
+    const lines = clipboardText.split('\n').filter(l => l.trim().length > 0);
+
+    // 'say "hi"' contains double quotes — must be RFC 4180 quoted in CSV output
+    expect(lines[1]).toBe('"say ""hi""",1');
+  });
 });

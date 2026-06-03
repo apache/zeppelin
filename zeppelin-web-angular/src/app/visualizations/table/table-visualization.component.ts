@@ -87,7 +87,8 @@ export class TableVisualizationComponent implements OnInit {
       ...sourceRows.map(row => this.columns.map(col => escape(row[col])).join(delimiter))
     ];
     const text = lines.join('\n');
-    navigator.clipboard.writeText(text).catch(() => {
+    // TODO: Refactor the duplicated copy-to-clipboard logics
+    const fallbackCopy = () => {
       const el = document.createElement('textarea');
       el.value = text;
       el.style.position = 'absolute';
@@ -96,7 +97,14 @@ export class TableVisualizationComponent implements OnInit {
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-    });
+    };
+    // navigator.clipboard is undefined in non-secure contexts (e.g. plain HTTP),
+    // where writeText would throw synchronously before the catch could run.
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
   }
 
   onChangeType(type: ColType, col: string) {

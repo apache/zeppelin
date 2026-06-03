@@ -915,29 +915,30 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.copyToClipboard = function(delimiter) {
-    let text = '';
+    const escape = function(value) {
+      let stringValue = (value === null || value === undefined) ? '' : String(value);
+      let hasDelimiter = stringValue.indexOf(delimiter) > -1;
+      let hasQuote = stringValue.indexOf('"') > -1;
+      let hasNewline = stringValue.indexOf('\n') > -1;
+      if (hasDelimiter || hasQuote || hasNewline) {
+        return '"' + stringValue.replaceAll('"', '""') + '"';
+      }
+      return stringValue;
+    };
+    let headerParts = [];
     for (let titleIndex in tableData.columns) {
       if (tableData.columns.hasOwnProperty(titleIndex)) {
-        text += tableData.columns[titleIndex].name + delimiter;
+        headerParts.push(escape(tableData.columns[titleIndex].name));
       }
     }
-    text = text.substring(0, text.length - 1) + '\n';
+    let text = headerParts.join(delimiter) + '\n';
     for (let r in tableData.rows) {
       if (tableData.rows.hasOwnProperty(r)) {
         let row = tableData.rows[r];
         let dsvRow = '';
         for (let index in row) {
           if (row.hasOwnProperty(index)) {
-            let stringValue = (row[index]).toString();
-            let hasDelimiter = stringValue.indexOf(delimiter) > -1;
-            let hasQuote = stringValue.indexOf('"') > -1;
-            let hasNewline = stringValue.indexOf('\n') > -1;
-            if (hasDelimiter || hasQuote || hasNewline) {
-              stringValue = stringValue.replaceAll('"', '""');
-              dsvRow += '"' + stringValue + '"' + delimiter;
-            } else {
-              dsvRow += row[index] + delimiter;
-            }
+            dsvRow += escape(row[index]) + delimiter;
           }
         }
         text += dsvRow.substring(0, dsvRow.length - 1) + '\n';

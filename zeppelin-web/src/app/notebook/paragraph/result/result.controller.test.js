@@ -170,5 +170,35 @@ describe('Controller: ResultCtrl', function() {
         }, 0);
       });
     });
+
+    it('should quote header values that contain double quotes', function(done) {
+      let headerQuoteResultMock = {
+        type: 'TABLE',
+        data: 'col "A"\tcol2\nval1\t1\n',
+      };
+      let headerQuoteParagraphMock = {
+        id: 'p5',
+        results: {
+          msg: [headerQuoteResultMock],
+        },
+      };
+
+      inject(function($controller, $rootScope) {
+        let headerScope = $rootScope.$new();
+        headerScope.$parent = $rootScope.$new(true, $rootScope);
+        headerScope.$parent.paragraph = headerQuoteParagraphMock;
+        $controller('ResultCtrl', {$scope: headerScope, $route: route});
+        headerScope.init(headerQuoteResultMock, tableConfigMock, headerQuoteParagraphMock, 0);
+
+        headerScope.copyToClipboard('\t');
+        setTimeout(function() {
+          let lines = clipboardText.split('\n').filter(function(l) {
+            return l.length > 0;
+          });
+          expect(lines[0]).toBe('"col ""A"""\tcol2');
+          done();
+        }, 0);
+      });
+    });
   });
 });
