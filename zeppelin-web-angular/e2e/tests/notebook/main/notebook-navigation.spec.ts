@@ -64,6 +64,10 @@ test.describe('Notebook Navigation', () => {
 
     // In-app navigation to note A via the header notebook list — this reuses the
     // already-mounted NotebookComponent, which is exactly what the regression broke.
+    // JUSTIFIED: the notebook dropdown lists every workspace note and overflows the default
+    // Playwright viewport; growing the page height before opening the menu lets Playwright's
+    // auto-scroll bring the target link into view for the click.
+    await page.setViewportSize({ width: 1280, height: 2400 });
     await headerPage.clickNotebookMenu();
     const noteALink = page.locator(`a[href*="/notebook/${noteIdA}"]`).first();
     await noteALink.waitFor({ state: 'visible', timeout: 10000 });
