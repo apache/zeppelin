@@ -66,6 +66,12 @@ import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.
 
 type Mode = 'edit' | 'command';
 
+const shallowEquals = (a: Record<string, unknown>, b: Record<string, unknown>): boolean => {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  return aKeys.length === bKeys.length && aKeys.every(key => Object.is(a[key], b[key]));
+};
+
 @Component({
   selector: 'zeppelin-notebook-paragraph',
   templateUrl: './paragraph.component.html',
@@ -107,19 +113,29 @@ export class NotebookParagraphComponent
     this.cdr.markForCheck();
   };
 
+  private lastReactFooterProps: Record<string, unknown> | null = null;
+
+  // Memoized so the template binding keeps a stable object identity when
+  // nothing changed; otherwise every change-detection pass would hand
+  // ReactMountDirective a fresh object and trigger handle.update().
   get reactFooterProps(): Record<string, unknown> {
-    if (!this.paragraph) {
-      return { onError: this.onReactFooterError };
+    const next: Record<string, unknown> = !this.paragraph
+      ? { onError: this.onReactFooterError }
+      : {
+          dateStarted: this.paragraph.dateStarted,
+          dateFinished: this.paragraph.dateFinished,
+          dateUpdated: this.paragraph.dateUpdated,
+          showExecutionTime: !this.paragraph.config.tableHide && !this.viewOnly,
+          showElapsedTime: this.paragraph.status === 'RUNNING',
+          user: this.paragraph.user,
+          onError: this.onReactFooterError
+        };
+    const prev = this.lastReactFooterProps;
+    if (prev !== null && shallowEquals(prev, next)) {
+      return prev;
     }
-    return {
-      dateStarted: this.paragraph.dateStarted,
-      dateFinished: this.paragraph.dateFinished,
-      dateUpdated: this.paragraph.dateUpdated,
-      showExecutionTime: !this.paragraph.config.tableHide && !this.viewOnly,
-      showElapsedTime: this.paragraph.status === 'RUNNING',
-      user: this.paragraph.user,
-      onError: this.onReactFooterError
-    };
+    this.lastReactFooterProps = next;
+    return next;
   }
 
   @Output() readonly saveNoteTimer = new EventEmitter();
