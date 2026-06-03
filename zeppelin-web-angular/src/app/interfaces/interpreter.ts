@@ -65,11 +65,46 @@ interface SnapshotPolicy {
 interface Properties {
   [key: string]: {
     name: string;
-    value: boolean;
-    type: string;
+    value: string | number | boolean | null;
+    type: InterpreterPropertyTypes;
     defaultValue?: string;
     description?: string;
   };
+}
+
+export interface InterpreterPropertyValue {
+  name: string;
+  value: string | boolean;
+  type: InterpreterPropertyTypes;
+}
+
+/**
+ * Request shape for creating/updating an interpreter setting.
+ * Mirrors the fields the server actually reads (InterpreterOption.java) —
+ * UI-only state such as `session`/`process` must not be sent.
+ */
+export interface InterpreterSettingOption {
+  isExistingProcess: boolean;
+  isUserImpersonate: boolean;
+  owners: string[];
+  perNote: string;
+  perUser: string;
+  /** null is accepted by the server and kept as the default -1 (unset) */
+  port: number | null;
+  host: string;
+  remote: boolean;
+  setPermission: boolean;
+}
+
+export interface InterpreterSettingRequest {
+  name: string;
+  group: string;
+  option: InterpreterSettingOption;
+  properties: Record<string, InterpreterPropertyValue>;
+  dependencies: Array<{
+    groupArtifactVersion: string;
+    exclusions: string[];
+  }>;
 }
 
 interface InterpreterGroupItem {
@@ -91,14 +126,19 @@ interface DependenciesItem {
   exclusions: string[];
 }
 
+/**
+ * Response shape of InterpreterOption.java serialized by Gson.
+ * Primitive boolean/int fields are always present; String/List fields
+ * are omitted when null (e.g. fresh option templates from GET /interpreter).
+ */
 interface Option {
   remote: boolean;
   port: number;
   isExistingProcess: boolean;
   setPermission: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  owners: any[];
   isUserImpersonate: boolean;
+  host?: string;
+  owners?: string[];
   perNote?: string;
   perUser?: string;
 }

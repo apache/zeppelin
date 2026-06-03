@@ -18,7 +18,8 @@ import {
   Interpreter,
   InterpreterMap,
   InterpreterPropertyTypes,
-  InterpreterRepository
+  InterpreterRepository,
+  InterpreterSettingRequest
 } from '@zeppelin/interfaces';
 import { InterpreterItem } from '@zeppelin/sdk';
 
@@ -60,13 +61,15 @@ export class InterpreterService extends BaseRest {
     return this.http.get<InterpreterPropertyTypes[]>(this.restUrl`/interpreter/property/types`);
   }
 
-  addInterpreterSetting(interpreter: Interpreter) {
-    return this.http.post<Interpreter>(this.restUrl`/interpreter/setting`, interpreter);
+  addInterpreterSetting(setting: InterpreterSettingRequest) {
+    return this.http.post<Interpreter>(this.restUrl`/interpreter/setting`, setting);
   }
 
-  updateInterpreter(interpreter: Interpreter) {
-    const { option, properties, dependencies } = interpreter;
-    return this.http.put<Interpreter>(this.restUrl`/interpreter/setting/${interpreter.name}`, {
+  updateInterpreter(setting: InterpreterSettingRequest) {
+    // PUT only accepts option/properties/dependencies; name is used as the path id
+    // and group is immutable after creation (see UpdateInterpreterSettingRequest.java).
+    const { option, properties, dependencies } = setting;
+    return this.http.put<Interpreter>(this.restUrl`/interpreter/setting/${setting.name}`, {
       option,
       properties,
       dependencies
