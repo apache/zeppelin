@@ -10,6 +10,4 @@
  * limitations under the License.
  */
 
-export * from './react-mount-handle';
-export * from './react-mount.directive';
-export * from './react-remote-loader.service';
+export * from './public-api';
