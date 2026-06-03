@@ -8,8 +8,8 @@
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack serve --config webpack.config.js --mode development",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"
   },
   "dependencies": {
     "@ant-design/icons": "5.4.0",
@@ -23,6 +23,7 @@
     "xlsx-js-style": "1.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.28.0",
     "@types/file-saver": "2.0.7",
     "@types/node": "18.19.64",
     "@types/react": "18.3.26",
@@ -30,13 +31,15 @@
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "css-loader": "6.8.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.28.0",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
     "html-webpack-plugin": "5.5.0",
     "style-loader": "3.3.0",
     "ts-loader": "9.4.0",
     "typescript": "4.9.5",
+    "typescript-eslint": "^8.33.1",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.2.4"
