@@ -14,13 +14,16 @@ import { expect, test } from '@playwright/test';
 import { NotebookActionBarPage } from '../../../models/notebook-action-bar-page';
 import {
   addPageAnnotationBeforeEach,
-  performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook
+  createTestNotebook,
+  navigateToNotebookWithFallback
 } from '../../../utils';
 
 test.describe('Notebook Action Bar Functionality', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_ACTION_BAR);
 
   let actionBarPage: NotebookActionBarPage;
@@ -29,13 +32,11 @@ test.describe('Notebook Action Bar Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     testNotebook = await createTestNotebook(page);
     actionBarPage = new NotebookActionBarPage(page);
 
-    await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
   test('should display and allow title editing with tooltip', async ({ page }) => {
@@ -45,8 +46,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     await actionBarPage.titleEditor.click();
 
     const titleInputField = actionBarPage.titleEditor.locator('input');
-    await expect(titleInputField).toBeVisible();
-    await titleInputField.fill(notebookName);
+    await actionBarPage.fillAndVerifyInput(titleInputField, notebookName);
     await page.keyboard.press('Enter');
 
     await expect(actionBarPage.titleEditor).toHaveText(notebookName, { timeout: 10000 });

@@ -14,13 +14,16 @@ import { expect, test } from '@playwright/test';
 import { NotebookSidebarPage } from '../../../models/notebook-sidebar-page';
 import {
   addPageAnnotationBeforeEach,
-  performLoginIfRequired,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook
+  createTestNotebook,
+  navigateToNotebookWithFallback
 } from '../../../utils';
 
 test.describe('Notebook Sidebar Functionality', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_SIDEBAR);
 
   let sidebar: NotebookSidebarPage;
@@ -29,13 +32,11 @@ test.describe('Notebook Sidebar Functionality', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/', { waitUntil: 'load', timeout: 60000 });
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     sidebar = new NotebookSidebarPage(page);
     testNotebook = await createTestNotebook(page);
 
-    await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
   test('should display navigation buttons', async ({ page }) => {

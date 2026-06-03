@@ -140,3 +140,14 @@
     }
   }
 }
+
+// Cap the dropdown so workspaces with many notes don't overflow the viewport.
+// ::ng-deep escapes view encapsulation since the overlay renders in a body-level CDK overlay.
+// Scoped via nzOverlayClassName so no other dropdown is affected.
+::ng-deep .zeppelin-notebook-dropdown {
+  zeppelin-node-list {
+    display: block;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+}

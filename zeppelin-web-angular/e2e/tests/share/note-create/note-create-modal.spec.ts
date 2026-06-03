@@ -13,7 +13,7 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../models/home-page';
 import { NoteCreateModal } from '../../../models/note-create-modal';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Note Create Modal', () => {
   let homePage: HomePage;
@@ -27,7 +27,6 @@ test.describe('Note Create Modal', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     await homePage.clickCreateNewNote();
     await page.waitForSelector('input[name="noteName"]');
@@ -39,7 +38,7 @@ test.describe('Note Create Modal', () => {
     await expect(noteCreateModal.createButton).toBeVisible();
     await expect(noteCreateModal.interpreterDropdown).toBeVisible();
     await expect(noteCreateModal.folderInfoAlert).toBeVisible();
-    expect(await noteCreateModal.folderInfoAlert.textContent()).toContain('/');
+    await expect(noteCreateModal.folderInfoAlert).toContainText('/');
   });
 
   test('Given Create Note modal is open, When checking default note name, Then auto-generated name should follow pattern', async () => {
@@ -57,8 +56,7 @@ test.describe('Note Create Modal', () => {
     // Wait for modal to disappear
     await expect(noteCreateModal.modal).not.toBeVisible();
 
-    await page.waitForURL(/notebook\//);
-    expect(page.url()).toContain('notebook/');
+    await expect(page).toHaveURL(/notebook\//);
 
     // Verify the note was created with the correct name
     const notebookTitle = page.locator('[data-testid="notebook-title"]');
@@ -85,8 +83,7 @@ test.describe('Note Create Modal', () => {
     // Wait for modal to disappear
     await expect(noteCreateModal.modal).not.toBeVisible();
 
-    await page.waitForURL(/notebook\//);
-    expect(page.url()).toContain('notebook/');
+    await expect(page).toHaveURL(/notebook\//);
 
     // Verify the note was created with the correct name (without folder path)
     const notebookTitle = page.locator('[data-testid="notebook-title"]');

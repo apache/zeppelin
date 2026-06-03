@@ -31,7 +31,7 @@ export class NoteRenamePage extends BasePage {
 
   async enterTitle(title: string): Promise<void> {
     await this.ensureEditMode();
-    await this.noteTitleInput.fill(title, { timeout: 15000 });
+    await this.fillAndVerifyInput(this.noteTitleInput, title);
   }
 
   async clearTitle(): Promise<void> {

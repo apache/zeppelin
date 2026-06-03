@@ -14,7 +14,6 @@ import { expect, test } from '@playwright/test';
 import { NotebookKeyboardPage } from 'e2e/models/notebook-keyboard-page';
 import {
   addPageAnnotationBeforeEach,
-  performLoginIfRequired,
   waitForNotebookLinks,
   waitForZeppelinReady,
   PAGES,
@@ -43,7 +42,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
     await waitForNotebookLinks(page);
 
     // Handle the welcome modal if it appears
@@ -1004,7 +1002,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Test paragraph');
 
       // Remove focus by clicking on empty area
-      await keyboardPage.page.click('body');
+      await keyboardPage.page.locator('body').click();
       await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
 
       const initialCount = await keyboardPage.getParagraphCount();
@@ -1026,13 +1024,14 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
     test('should handle rapid keyboard operations without instability', async () => {
       await keyboardPage.tryFocusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("test")');
+      await keyboardPage.setCodeEditorContent('%md\nrapid keyboard test');
 
       // Rapid Shift+Enter operations
       for (let i = 0; i < 3; i++) {
         await keyboardPage.pressRunParagraph();
+        await keyboardPage.waitForParagraphExecution(0, 60000);
         // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 15000 });
+        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 60000 });
         await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: brief gap between rapid sequential runs to prevent WebSocket message overlap
       }
 

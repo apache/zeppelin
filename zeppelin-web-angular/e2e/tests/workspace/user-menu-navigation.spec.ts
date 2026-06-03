@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { HeaderPage } from '../../models/header-page';
-import { performLoginIfRequired, waitForZeppelinReady } from '../../utils';
+import { waitForZeppelinReady } from '../../utils';
 
 /**
  * Regression guard for the header user-menu navigation.
@@ -41,7 +41,6 @@ test.describe('Header user menu - full-row navigation', () => {
     header = new HeaderPage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   for (const item of MENU_ITEMS) {

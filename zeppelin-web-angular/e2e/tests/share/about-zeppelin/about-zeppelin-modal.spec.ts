@@ -13,7 +13,7 @@
 import { test, expect } from '@playwright/test';
 import { HeaderPage } from '../../../models/header-page';
 import { AboutZeppelinModal } from '../../../models/about-zeppelin-modal';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('About Zeppelin Modal', () => {
   let headerPage: HeaderPage;
@@ -27,7 +27,6 @@ test.describe('About Zeppelin Modal', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
 
     await headerPage.clickUserDropdown();
     await headerPage.clickAboutZeppelin();

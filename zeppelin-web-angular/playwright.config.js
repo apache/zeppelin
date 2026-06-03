@@ -20,7 +20,7 @@ module.exports = defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 2 : 5,
+  workers: 5,
   timeout: 300000,
   expect: {
     timeout: 60000
@@ -43,17 +43,39 @@ module.exports = defineConfig({
     navigationTimeout: 180000
   },
   projects: [
+    // Auth setup runs once and writes playwright/.auth/user.json, which the browser
+    // projects consume via storageState — replaces the per-test login that raced
+    // under parallel workers.
+    {
+      name: 'setup',
+      testMatch: /global\.setup\.ts/
+    },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], permissions: ['clipboard-read', 'clipboard-write'] }
+      use: {
+        ...devices['Desktop Chrome'],
+        permissions: ['clipboard-read', 'clipboard-write'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     },
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome', permissions: ['clipboard-read', 'clipboard-write'] }
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        permissions: ['clipboard-read', 'clipboard-write'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     },
     {
       name: 'webkit',
@@ -61,12 +83,20 @@ module.exports = defineConfig({
         ...devices['Desktop Safari'],
         launchOptions: {
           slowMo: 200
-        }
-      }
+        },
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     },
     {
       name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge', permissions: ['clipboard-read', 'clipboard-write'] }
+      use: {
+        ...devices['Desktop Edge'],
+        channel: 'msedge',
+        permissions: ['clipboard-read', 'clipboard-write'],
+        storageState: 'playwright/.auth/user.json'
+      },
+      dependencies: ['setup']
     }
   ],
   webServer: process.env.CI

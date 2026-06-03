@@ -11,7 +11,7 @@
  */
 
 import { expect, Page } from '@playwright/test';
-import { performLoginIfRequired, waitForZeppelinReady } from '../utils';
+import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 import { HomePage } from './home-page';
 
@@ -26,9 +26,7 @@ export class NotebookUtil extends BasePage {
   async createNotebook(notebookName: string): Promise<void> {
     await this.homePage.navigateToHome();
 
-    // Perform login if required
-    await performLoginIfRequired(this.page);
-
+    // Auth is handled by the `setup` Playwright project + storageState; no per-call login here.
     // Wait for Zeppelin to be fully ready
     await waitForZeppelinReady(this.page);
 

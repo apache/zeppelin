@@ -31,7 +31,7 @@ export class FolderRenamePageUtil {
     return this.folderRenamePage.page
       .locator('.node')
       .filter({
-        has: this.folderRenamePage.page.locator('.folder .name', { hasText: folderName })
+        has: this.folderRenamePage.page.getByTestId(`folder-${folderName}`)
       })
       .first();
   }

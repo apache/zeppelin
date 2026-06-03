@@ -104,10 +104,22 @@ export class BasePage {
     await expect(locator).toBeVisible({ timeout });
     await expect(locator).toBeEnabled({ timeout: 5000 });
 
-    // Click first so Angular's form control is focused and its initial setValue cycle
-    // has completed before we overwrite it.  Then fill() atomically sets the value.
-    await locator.click();
-    await locator.fill(value);
-    await expect(locator).toHaveValue(value, { timeout: 10000 });
+    // Ant-modal autofocus + Angular form initialization race: any of fill / type /
+    // pressSequentially can land BEFORE the form-control's initial value sync,
+    // after which Angular silently resets the input back to the model's initial
+    // value (placeholder). ng-dirty is set but the visible value is wrong.
+    await expect(async () => {
+      await locator.click();
+      await locator.fill(value);
+      await locator.evaluate((el: HTMLInputElement) => {
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      // Verify the value stuck — if Angular reset it, this throws and toPass retries.
+      const actual = await locator.inputValue();
+      if (actual !== value) {
+        throw new Error(`fillAndVerifyInput retry: expected "${value}" got "${actual}"`);
+      }
+    }).toPass({ timeout: 15000, intervals: [200, 500, 1000, 2000] });
   }
 }

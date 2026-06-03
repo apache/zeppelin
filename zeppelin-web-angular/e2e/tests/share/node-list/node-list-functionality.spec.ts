@@ -13,9 +13,12 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../models/home-page';
 import { NodeListPage } from '../../../models/node-list-page';
-import { addPageAnnotationBeforeEach, PAGES, performLoginIfRequired, waitForZeppelinReady } from '../../../utils';
+import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 test.describe('Node List Functionality', () => {
+  // JUSTIFIED: page objects are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   let nodeListPage: NodeListPage;
 
   addPageAnnotationBeforeEach(PAGES.SHARE.NODE_LIST);
@@ -25,7 +28,6 @@ test.describe('Node List Functionality', () => {
 
     await page.goto('/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test('Given user is on home page, When viewing node list, Then node list should display tree structure', async () => {
@@ -81,22 +83,17 @@ test.describe('Node List Functionality', () => {
     page
   }) => {
     const homePage = new HomePage(page);
+    const noteName = `_e2e_nav_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    await expect(nodeListPage.treeView).toBeVisible();
-    let notes = await nodeListPage.getAllVisibleNoteNames();
+    // Seed a unique note so the click target is deterministic even when other
+    // parallel specs leave many notes/folders in the shared test workspace.
+    await homePage.createNote(noteName);
+    await page.goto('/');
+    await waitForZeppelinReady(page);
 
-    if (notes.length === 0) {
-      // Seed a note so the test always runs — critical navigation path must not be skipped
-      await homePage.createNote(`_e2e_nav_${Date.now()}`);
-      await page.goto('/');
-      await waitForZeppelinReady(page);
-      notes = await nodeListPage.getAllVisibleNoteNames();
-    }
-
-    const noteName = notes[0].trim();
+    await expect(nodeListPage.noteLinkByName(noteName)).toBeVisible({ timeout: 15000 });
     await nodeListPage.clickNote(noteName);
-    await page.waitForURL(/notebook\//);
-    expect(page.url()).toContain('notebook/');
+    await expect(page).toHaveURL(/notebook\//, { timeout: 45000 });
   });
 
   test('Given user clicks Create New Note button, When modal opens, Then note create modal should be displayed', async ({

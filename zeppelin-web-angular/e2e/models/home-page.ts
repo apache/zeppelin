@@ -122,8 +122,9 @@ export class HomePage extends BasePage {
     await expect(this.createNoteButton).toBeEnabled({ timeout: 5000 });
     await this.createNoteButton.click({ timeout: 15000 });
     // Wait for navigation to the notebook page — confirms the note was created server-side.
-    // waitForPageLoad() (domcontentloaded) fires instantly on SPA routing and does not guarantee this.
-    await this.page.waitForURL(/\/notebook\//, { timeout: 45000 });
+    // This is an Angular hash-route transition, so polling the URL is more reliable than
+    // waitForURL()'s default "load" wait, which can hang on same-document SPA navigation.
+    await expect(this.page).toHaveURL(/\/notebook\//, { timeout: 45000 });
   }
 
   async clickImportNote(): Promise<void> {

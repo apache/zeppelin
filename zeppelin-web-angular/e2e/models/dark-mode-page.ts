@@ -40,6 +40,11 @@ export class DarkModePage extends BasePage {
   }
 
   async assertSystemTheme() {
+    // After page reload, Angular re-bootstraps and reads theme from localStorage. The
+    // toggle-button icon refresh races against that bootstrap window. Wait for the
+    // root element's data-theme attribute to be set first — that guarantees Angular's
+    // theme-init has completed — then assert the icon.
+    await expect(this.rootElement).toHaveAttribute('data-theme', /light|dark/, { timeout: 15000 });
     await expect(this.themeToggleButton).toHaveText('smart_toy', { timeout: 60000 });
   }
 

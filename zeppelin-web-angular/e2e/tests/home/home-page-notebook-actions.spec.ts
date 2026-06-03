@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { HomePage } from '../../models/home-page';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../utils';
 
 addPageAnnotationBeforeEach(PAGES.WORKSPACE.HOME);
 
@@ -23,7 +23,6 @@ test.describe('Home Page Notebook Actions', () => {
     homePage = new HomePage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
   });
 
   test.describe('Given notebook list is displayed', () => {
@@ -54,7 +53,7 @@ test.describe('Home Page Notebook Actions', () => {
 
       // When: User types special characters that could break regex or URL encoding
       for (const specialInput of ['[test]', '*.note', '/folder/sub', 'a?b=c']) {
-        await homePage.nodeList.filterInput.fill(specialInput);
+        await homePage.fillAndVerifyInput(homePage.nodeList.filterInput, specialInput);
         // Then: The page must still render without crashing — no blank screen, input remains editable.
         // Note: nz-tree may be hidden when the filter returns 0 results; that is valid behavior.
         await expect(page.locator('zeppelin-node-list')).toBeVisible();
@@ -64,7 +63,7 @@ test.describe('Home Page Notebook Actions', () => {
       }
 
       // Clean up: clear the filter so other tests start fresh
-      await homePage.nodeList.filterInput.fill('');
+      await homePage.nodeList.filterInput.clear();
     });
   });
 });

@@ -31,23 +31,12 @@ export class FolderRenamePage extends BasePage {
     this.deleteConfirmation = page.locator('.ant-popover').filter({ hasText: 'This folder will be moved to trash.' });
   }
 
-  private getFolderNode(folderName: string): Locator {
-    return this.page
-      .locator('.folder')
-      .filter({
-        has: this.page.locator('a.name', {
-          hasText: new RegExp(`^\\s*${folderName}\\s*$`, 'i')
-        })
-      })
-      .first();
-  }
-
   async hoverOverFolder(folderName: string): Promise<void> {
     await this.page.waitForSelector('zeppelin-node-list', { state: 'visible' });
-    const folderNode = this.getFolderNode(folderName);
     // Hover a.name (not .folder) — CSS :hover on .operation is triggered by the text link, same as clickRenameMenuItem()
-    const nameLink = folderNode.locator('a.name');
-    await nameLink.scrollIntoViewIfNeeded();
+    const nameLink = this.getFolderNameLink(folderName);
+    await expect(nameLink).toBeVisible({ timeout: 60000 });
+    await nameLink.scrollIntoViewIfNeeded({ timeout: 10000 });
     await nameLink.hover({ force: true }); // JUSTIFIED: .operation buttons are CSS-:hover-revealed; force required to trigger the hover event on the text link that activates the context menu
   }
 
@@ -63,9 +52,10 @@ export class FolderRenamePage extends BasePage {
 
   async clickRenameMenuItem(folderName: string): Promise<void> {
     const folderNode = this.getFolderNode(folderName);
-    const nameLink = folderNode.locator('a.name');
+    const nameLink = this.getFolderNameLink(folderName);
 
-    await nameLink.scrollIntoViewIfNeeded();
+    await expect(nameLink).toBeVisible({ timeout: 60000 });
+    await nameLink.scrollIntoViewIfNeeded({ timeout: 10000 });
     await nameLink.hover({ force: true }); // JUSTIFIED: .operation buttons are CSS-:hover-revealed; force required to trigger the hover event on the text link that activates the context menu
 
     const renameIcon = folderNode.locator('.operation a[nztooltiptitle="Rename folder"]');
@@ -77,12 +67,11 @@ export class FolderRenamePage extends BasePage {
   }
 
   async enterNewName(name: string): Promise<void> {
-    await this.renameInput.fill(name);
+    await this.fillAndVerifyInput(this.renameInput, name);
   }
 
   async clearNewName(): Promise<void> {
-    await this.renameInput.clear();
-    await expect(this.renameInput).toHaveValue('');
+    await this.fillAndVerifyInput(this.renameInput, '');
   }
 
   async clickConfirm(): Promise<void> {
@@ -96,5 +85,18 @@ export class FolderRenamePage extends BasePage {
 
   async clickCancel(): Promise<void> {
     await this.cancelButton.click();
+  }
+
+  private getFolderNameLink(folderName: string): Locator {
+    return this.page.getByTestId(`folder-${folderName}`).first();
+  }
+
+  private getFolderNode(folderName: string): Locator {
+    return this.page
+      .locator('.node')
+      .filter({
+        has: this.getFolderNameLink(folderName)
+      })
+      .first();
   }
 }

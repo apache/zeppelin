@@ -40,8 +40,7 @@ export class NoteCreateModal extends BasePage {
   }
 
   async setNoteName(name: string): Promise<void> {
-    await this.noteNameInput.clear();
-    await this.noteNameInput.fill(name);
+    await this.fillAndVerifyInput(this.noteNameInput, name);
   }
 
   async clickCreate(): Promise<void> {

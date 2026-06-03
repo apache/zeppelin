@@ -15,7 +15,6 @@ import { PublishedParagraphPage } from 'e2e/models/published-paragraph-page';
 import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import {
   addPageAnnotationBeforeEach,
-  performLoginIfRequired,
   waitForNotebookLinks,
   waitForZeppelinReady,
   PAGES,
@@ -23,6 +22,9 @@ import {
 } from '../../../utils';
 
 test.describe('Published Paragraph', () => {
+  // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
+  test.describe.configure({ mode: 'default' });
+
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
 
   let publishedParagraphPage: PublishedParagraphPage;
@@ -33,7 +35,6 @@ test.describe('Published Paragraph', () => {
     publishedParagraphPage = new PublishedParagraphPage(page);
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
     await waitForNotebookLinks(page);
 
     if ((await publishedParagraphPage.cancelButton.count()) > 0) {
@@ -91,8 +92,7 @@ test.describe('Published Paragraph', () => {
     test('should enter published paragraph by clicking link', async ({ page }) => {
       const { noteId, paragraphId } = testNotebook;
 
-      await page.goto(`/#/notebook/${noteId}`);
-      await page.waitForLoadState('networkidle');
+      await publishedParagraphPage.navigateToNotebook(noteId);
 
       // JUSTIFIED: createTestNotebook creates a single paragraph; first() is deterministic
       const paragraphElement = page.locator('zeppelin-notebook-paragraph').first();

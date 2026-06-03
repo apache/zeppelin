@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
-import { addPageAnnotationBeforeEach, performLoginIfRequired, waitForZeppelinReady, PAGES } from '../../../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../../utils';
 
 test.describe('Notebook Repository Item - Form Validation', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS_ITEM);
@@ -24,7 +24,6 @@ test.describe('Notebook Repository Item - Form Validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
-    await performLoginIfRequired(page);
     notebookReposPage = new NotebookReposPage(page);
     await notebookReposPage.navigate();
 
