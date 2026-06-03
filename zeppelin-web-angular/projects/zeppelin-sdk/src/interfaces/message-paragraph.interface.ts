@@ -77,10 +77,10 @@ export interface ParagraphConfig {
 }
 
 export interface ParagraphResults {
+  [index: number]: Record<string, unknown>;
+
   code?: string;
   msg?: ParagraphIResultsMsgItem[];
-
-  [index: number]: Record<string, unknown>;
 }
 
 export enum DatasetType {
