@@ -13,14 +13,24 @@
 <nz-card class="result-card" (click)="navigateToResult()">
   <div class="result-header">
     <a [routerLink]="routerLink" [queryParams]="queryParams" (click)="$event.stopPropagation()">{{ displayName }}</a>
-    <span *ngIf="interpreter" class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
+    @if (interpreter) {
+      <span class="badge" [ngClass]="interpreter">{{ interpreter }}</span>
+    }
   </div>
-  <div *ngIf="titleHtml" class="title-block" [innerHTML]="titleHtml"></div>
-  <div *ngIf="codeHtml" class="code-block">
-    <pre [innerHTML]="codeHtml"></pre>
-  </div>
-  <div *ngIf="outputText" class="output-block">
-    <pre>{{ outputText }}</pre>
-  </div>
-  <div *ngIf="tablesText" class="tables-block">Tables: {{ tablesText }}</div>
+  @if (titleHtml) {
+    <div class="title-block" [innerHTML]="titleHtml"></div>
+  }
+  @if (codeHtml) {
+    <div class="code-block">
+      <pre [innerHTML]="codeHtml"></pre>
+    </div>
+  }
+  @if (outputText) {
+    <div class="output-block">
+      <pre>{{ outputText }}</pre>
+    </div>
+  }
+  @if (tablesText) {
+    <div class="tables-block">Tables: {{ tablesText }}</div>
+  }
 </nz-card>

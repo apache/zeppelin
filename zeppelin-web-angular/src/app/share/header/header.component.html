@@ -94,7 +94,9 @@
       />
     </nz-input-group>
     <datalist id="search-history">
-      <option *ngFor="let item of searchHistory" [value]="item"></option>
+      @for (item of searchHistory; track item) {
+        <option [value]="item"></option>
+      }
     </datalist>
   </div>
   <zeppelin-theme-toggle class="theme-toggle"></zeppelin-theme-toggle>
