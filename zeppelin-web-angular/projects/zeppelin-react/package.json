@@ -9,7 +9,9 @@
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack serve --config webpack.config.js --mode development",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
-    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix"
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ant-design/icons": "5.4.0",
@@ -25,6 +27,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.2",
     "@types/file-saver": "2.0.7",
     "@types/node": "18.19.64",
     "@types/react": "18.3.26",
@@ -37,10 +41,12 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
     "html-webpack-plugin": "5.5.0",
+    "jsdom": "29.1.1",
     "style-loader": "3.3.0",
     "ts-loader": "9.4.0",
     "typescript": "4.9.5",
     "typescript-eslint": "^8.33.1",
+    "vitest": "3.2.6",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.2.4"
