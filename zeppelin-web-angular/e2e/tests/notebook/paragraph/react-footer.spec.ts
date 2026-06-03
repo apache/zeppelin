@@ -64,6 +64,21 @@ test.describe('React Paragraph Footer', () => {
     await expect(page.locator('[data-testid="react-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
   });
 
+  test('when the remote fails to load, paragraphs fall back to the Angular footer', async ({ page }) => {
+    const { noteId } = testNotebook;
+
+    // Simulate a dead remote: every remoteEntry.js request fails
+    await page.route('**/remoteEntry.js', route => route.abort());
+
+    await page.goto(`/#/notebook/${noteId}?reactFooter=true`);
+    await waitForZeppelinReady(page);
+
+    // The loader rejection reaches each paragraph's onError, which flips
+    // reactFooterFailed and re-renders the Angular footer
+    await expect(page.locator('[data-testid="angular-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('[data-testid="react-paragraph-footer"]')).toHaveCount(0);
+  });
+
   test('navigating away during remoteEntry load does not throw', async ({ page }) => {
     const { noteId } = testNotebook;
 
