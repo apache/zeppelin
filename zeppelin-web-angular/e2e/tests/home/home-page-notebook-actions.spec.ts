@@ -53,20 +53,7 @@ test.describe('Home Page Notebook Actions', () => {
 
       // When: User types special characters that could break regex or URL encoding
       for (const specialInput of ['[test]', '*.note', '/folder/sub', 'a?b=c']) {
-        // Retry fill+dispatch until value sticks.
-        const input = homePage.nodeList.filterInput;
-        await expect(async () => {
-          await input.click();
-          await input.fill(specialInput);
-          await input.evaluate((el: HTMLInputElement) => {
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-          });
-          const actual = await input.inputValue();
-          if (actual !== specialInput) {
-            throw new Error(`filterInput retry: got "${actual}"`);
-          }
-        }).toPass({ timeout: 15000, intervals: [200, 500, 1000, 2000] });
+        await homePage.fillAndVerifyInput(homePage.nodeList.filterInput, specialInput);
         // Then: The page must still render without crashing — no blank screen, input remains editable.
         // Note: nz-tree may be hidden when the filter returns 0 results; that is valid behavior.
         await expect(page.locator('zeppelin-node-list')).toBeVisible();

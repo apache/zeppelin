@@ -46,20 +46,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     await actionBarPage.titleEditor.click();
 
     const titleInputField = actionBarPage.titleEditor.locator('input');
-    await expect(titleInputField).toBeVisible();
-    // Retry fill+dispatch until value sticks.
-    await expect(async () => {
-      await titleInputField.click();
-      await titleInputField.fill(notebookName);
-      await titleInputField.evaluate((el: HTMLInputElement) => {
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      const actual = await titleInputField.inputValue();
-      if (actual !== notebookName) {
-        throw new Error(`titleInput retry: got "${actual}"`);
-      }
-    }).toPass({ timeout: 15000, intervals: [200, 500, 1000, 2000] });
+    await actionBarPage.fillAndVerifyInput(titleInputField, notebookName);
     await page.keyboard.press('Enter');
 
     await expect(actionBarPage.titleEditor).toHaveText(notebookName, { timeout: 10000 });
