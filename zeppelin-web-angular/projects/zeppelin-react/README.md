@@ -58,7 +58,7 @@ From `projects/zeppelin-react/`, run `npm run build`. Output goes to `dist/`. In
 
 ## Linting
 
-From `projects/zeppelin-react/`, run `npm run lint` to check, `npm run lint:fix` to auto-fix. See `.eslintrc.json` for rules.
+From `projects/zeppelin-react/`, run `npm run lint` to check, `npm run lint:fix` to auto-fix. See `eslint.config.js` for rules.
 
 ## Project structure
 
