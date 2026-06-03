@@ -119,13 +119,14 @@ df.collect()
 - Shares the Spark session with `SparkConnectInterpreter`
 
 ### PySparkConnectInterpreter
-- Bridges Java `SparkSession` to Python via Py4j
-- Uses custom Python wrapper classes (`SparkConnectDataFrame`, `SparkConnectSession`)
-- Supports same Python executable resolution as Spark's own PySpark
+- Uses PySpark's native Spark Connect client (`SparkSession.builder.remote(...)`)
+- Forwards the connection URI to Python via the `SPARK_REMOTE` env var; no Py4j bridge to the Java SparkSession
+- Python opens an **independent** Spark Connect session against the same gRPC server as the Java/SQL interpreter — cross-language sharing flows through catalog tables/views, not in-memory session state
+- Supports the same Python executable resolution as Spark's own PySpark
 
 ### IPySparkConnectInterpreter
 - IPython variant of PySpark
-- Uses the same shared session model
+- Same native-client model as `PySparkConnectInterpreter`
 
 ### SparkConnectUtils
 - Stateless utilities for:
@@ -175,6 +176,7 @@ Only integration tests are executed when `SPARK_CONNECT_TEST_REMOTE` is set.
 3. **No ZeppelinContext** — `z.show()`, Angular widgets, and other Zeppelin-specific features return `null`
 4. **Spark 3.5.x only** — The gRPC protocol is version-locked to Spark 3.5
 5. **No progress tracking** — Job progress API always returns 0
+6. **Python and Java/SQL use separate Spark Connect sessions** — they connect to the same Spark Connect server, so data is shared through catalog tables (e.g. `createOrReplaceTempView` on a Hive/managed table, or persisting via `spark.sql("CREATE TABLE ...")`), but **session-local** temp views created in Python are not visible to `%spark-connect` SQL paragraphs, and vice versa
 
 ## Dependency Shading
 

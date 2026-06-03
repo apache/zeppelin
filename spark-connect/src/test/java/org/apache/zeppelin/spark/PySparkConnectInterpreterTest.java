@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -101,12 +100,6 @@ public class PySparkConnectInterpreterTest {
   }
 
   @Test
-  void testSparkSessionCreated() {
-    assertNotNull(interpreter.getSparkConnectInterpreter());
-    assertNotNull(interpreter.getSparkConnectInterpreter().getSparkSession());
-  }
-
-  @Test
   void testSimpleQuery() throws InterpreterException, IOException {
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret(
@@ -124,8 +117,8 @@ public class PySparkConnectInterpreterTest {
         "df = spark.sql(\"SELECT 1 AS id, 'test' AS name\")\nprint(type(df))", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     String output = context.out.toInterpreterResultMessage().get(0).getData();
-    assertTrue(output.contains("DataFrame") || output.contains("pyspark"),
-        "Output should indicate DataFrame type: " + output);
+    assertTrue(output.contains("DataFrame") || output.contains("pyspark.sql.connect"),
+        "Output should indicate native PySpark Connect DataFrame type: " + output);
   }
 
   @Test
