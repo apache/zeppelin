@@ -914,6 +914,50 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     saveAsService.saveAs(dsv, exportedFileName, extension);
   };
 
+  $scope.copyToClipboard = function(delimiter) {
+    const escape = function(value) {
+      let stringValue = (value === null || value === undefined) ? '' : String(value);
+      let hasDelimiter = stringValue.indexOf(delimiter) > -1;
+      let hasQuote = stringValue.indexOf('"') > -1;
+      let hasNewline = stringValue.indexOf('\n') > -1;
+      if (hasDelimiter || hasQuote || hasNewline) {
+        return '"' + stringValue.replaceAll('"', '""') + '"';
+      }
+      return stringValue;
+    };
+    let headerParts = [];
+    for (let titleIndex in tableData.columns) {
+      if (tableData.columns.hasOwnProperty(titleIndex)) {
+        headerParts.push(escape(tableData.columns[titleIndex].name));
+      }
+    }
+    let text = headerParts.join(delimiter) + '\n';
+    for (let r in tableData.rows) {
+      if (tableData.rows.hasOwnProperty(r)) {
+        let row = tableData.rows[r];
+        let dsvRow = '';
+        for (let index in row) {
+          if (row.hasOwnProperty(index)) {
+            dsvRow += escape(row[index]) + delimiter;
+          }
+        }
+        text += dsvRow.substring(0, dsvRow.length - 1) + '\n';
+      }
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    } else {
+      let el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+  };
+
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,' + base64Data;
   };

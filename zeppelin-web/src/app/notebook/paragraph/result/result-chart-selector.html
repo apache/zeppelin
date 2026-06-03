@@ -87,9 +87,12 @@ limitations under the License.
     <span class="caret" style="margin: 0px;"></span>
     <span class="sr-only">Toggle Dropdown</span>
   </button>
-  <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
-    <li ng-click="exportToDSV(',')"><a>CSV</a></li>
-    <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
+  <ul class="dropdown-menu" role="menu" style="min-width: 120px;">
+    <li ng-click="exportToDSV(',')"><a>Download as CSV</a></li>
+    <li ng-click="exportToDSV('\t')"><a>Download as TSV</a></li>
+    <li class="divider"></li>
+    <li ng-click="copyToClipboard('\t')"><a>Copy as TSV</a></li>
+    <li ng-click="copyToClipboard(',')"><a>Copy as CSV</a></li>
   </ul>
 </div>
 

@@ -271,6 +271,41 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     }
   }
 
+  copyToClipboard(type: 'tsv' | 'csv'): void {
+    if (!this.tableData || !this.tableData.rows) {
+      return;
+    }
+    const delimiter = type === 'tsv' ? '\t' : ',';
+    const { columns, rows } = this.tableData;
+    const escape = (value: unknown): string => {
+      const str = String(value ?? '');
+      return str.includes(delimiter) || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+    const lines = [
+      columns.map(escape).join(delimiter),
+      ...rows.map(row => columns.map(col => escape(row[col])).join(delimiter))
+    ];
+    const text = lines.join('\n');
+    // TODO: Refactor the duplicated copy-to-clipboard logics
+    const fallbackCopy = () => {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    };
+    // navigator.clipboard is undefined in non-secure contexts (e.g. plain HTTP),
+    // where writeText would throw synchronously before the catch could run.
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }
+
   switchMode(mode: VisualizationMode) {
     if (!this.config) {
       throw new Error('config is not defined');
