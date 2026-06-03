@@ -17,7 +17,12 @@ import { debounceTime } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
-import { Interpreter, InterpreterPropertyTypes, InterpreterRepository, InterpreterSettingRequest } from '@zeppelin/interfaces';
+import {
+  Interpreter,
+  InterpreterPropertyTypes,
+  InterpreterRepository,
+  InterpreterSettingRequest
+} from '@zeppelin/interfaces';
 import { InterpreterService } from '@zeppelin/services';
 
 import { InterpreterCreateRepositoryModalComponent } from './create-repository-modal/create-repository-modal.component';
