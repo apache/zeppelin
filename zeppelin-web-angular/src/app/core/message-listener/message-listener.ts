@@ -50,7 +50,6 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
       this.__zeppelinMessageListeners$__.add(
         this.messageService.receive(op).subscribe(data => {
           // @ts-ignore
-
           oldValue.apply(this, [data]);
         })
       );
