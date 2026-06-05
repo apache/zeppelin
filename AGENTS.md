@@ -558,3 +558,16 @@ Key conventions:
 - **Testing**: JUnit 5 (Jupiter) + Mockito (Java; a small number of legacy JUnit 4 tests still exist), Playwright (frontend E2E)
 - **Logging**: SLF4J + Log4j2
 - **License**: Apache License 2.0 — all new files need the ASF header
+
+## Security
+
+Security model: [SECURITY.md](./SECURITY.md), which links to the project's
+threat model at [THREAT_MODEL.md](./THREAT_MODEL.md).
+
+Agents that scan this repository should consult `THREAT_MODEL.md` for the
+project's in-scope / out-of-scope declarations, the security properties it
+provides and disclaims, the configuration knobs whose defaults change the
+security envelope, and the known non-findings (recurring false positives)
+before reporting issues. In particular, Apache Zeppelin executes user-supplied
+notebook code through its interpreters by design — that is the product's
+function, not a vulnerability; see `THREAT_MODEL.md` §3, §9, and §11a.
