@@ -32,6 +32,14 @@ module.exports = tseslint.config(
     ignores: ['dist/**', 'node_modules/**', 'webpack.config.js']
   },
   {
+    // Fail (not just warn) on eslint-disable directives that no longer suppress
+    // anything. The flat-config default is 'warn', and `npm run lint:react`
+    // (plain `eslint`, no --max-warnings) exits 0 on warnings, so stale
+    // directives would otherwise accumulate unnoticed -- mirrors the root
+    // zeppelin-web-angular config (ZEPPELIN-6426).
+    linterOptions: { reportUnusedDisableDirectives: 'error' }
+  },
+  {
     files: ['src/**/*.{ts,tsx}'],
     // == legacy `extends`: eslint:recommended + @typescript-eslint/recommended
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
