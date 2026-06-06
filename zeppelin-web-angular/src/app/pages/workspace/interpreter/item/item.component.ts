@@ -146,7 +146,10 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       properties,
       dependencies: formData.dependencies.map(({ groupArtifactVersion, exclusions }) => ({
         groupArtifactVersion,
-        exclusions: exclusions.split(',').filter(s => s !== '')
+        exclusions: exclusions
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s !== '')
       }))
     };
 
