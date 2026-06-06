@@ -65,7 +65,11 @@ interface SnapshotPolicy {
 interface Properties {
   [key: string]: {
     name: string;
-    value: string | number | boolean | null;
+    // The server serializes every property value as a string or boolean.
+    // `type: 'number'` props are still sent as quoted strings (e.g. "1000") —
+    // the type is only a UI hint, not the JSON type. null is never sent either:
+    // Gson omits null values, so an unset value arrives as undefined (key absent).
+    value: string | boolean;
     type: InterpreterPropertyTypes;
     defaultValue?: string | boolean;
     description?: string;
