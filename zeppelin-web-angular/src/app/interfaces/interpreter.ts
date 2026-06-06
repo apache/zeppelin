@@ -67,7 +67,7 @@ interface Properties {
     name: string;
     value: string | number | boolean | null;
     type: InterpreterPropertyTypes;
-    defaultValue?: string;
+    defaultValue?: string | boolean;
     description?: string;
   };
 }
