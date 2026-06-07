@@ -167,6 +167,7 @@ export interface ImportNoteReceived {
 
 export interface ParagraphAdded {
   index: number;
+  msgId?: string;
   paragraph: ParagraphItem;
 }
 

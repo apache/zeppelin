@@ -692,16 +692,17 @@ public class NotebookServer implements AngularObjectRegistryListener,
     inlineBroadcastParagraphs(userParagraphMap, msgId);
   }
 
-  private void inlineBroadcastNewParagraph(Note note, Paragraph para) {
+  private void inlineBroadcastNewParagraph(Note note, Paragraph para, String msgId) {
     LOGGER.info("Broadcasting paragraph on run call instead of note.");
     int paraIndex = note.getParagraphs().indexOf(para);
 
-    Message message = new Message(OP.PARAGRAPH_ADDED).put("paragraph", para).put("index", paraIndex);
+    Message message =
+        new Message(OP.PARAGRAPH_ADDED).withMsgId(msgId).put("paragraph", para).put("index", paraIndex);
     connectionManager.broadcast(note.getId(), message);
   }
 
-  private void broadcastNewParagraph(Note note, Paragraph para) {
-    inlineBroadcastNewParagraph(note, para);
+  private void broadcastNewParagraph(Note note, Paragraph para, String msgId) {
+    inlineBroadcastNewParagraph(note, para, msgId);
   }
 
   private void inlineBroadcastNoteList() {
@@ -1451,7 +1452,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           @Override
           public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
             super.onSuccess(p, context);
-            broadcastNewParagraph(p.getNote(), p);
+            broadcastNewParagraph(p.getNote(), p, fromMessage.msgId);
           }
         });
 
@@ -1555,7 +1556,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
                 StringUtils.isEmpty(p.getScriptText())) &&
                   isTheLastParagraph) {
                 Paragraph newPara = p.getNote().addNewParagraph(p.getAuthenticationInfo());
-                broadcastNewParagraph(p.getNote(), newPara);
+                broadcastNewParagraph(p.getNote(), newPara, fromMessage.msgId);
               }
             }
           });
