@@ -12,6 +12,7 @@
 
 import { Inject, Injectable, OnDestroy, Optional } from '@angular/core';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
@@ -22,6 +23,7 @@ import {
   MessageSendDataTypeMap,
   Note,
   NoteConfig,
+  OP,
   ParagraphConfig,
   ParagraphParams,
   PersonalizedMode,
@@ -38,6 +40,8 @@ import { TicketService } from './ticket.service';
   providedIn: 'root'
 })
 export class MessageService extends Message implements OnDestroy {
+  private readonly localAddFocusMsgIds = new Set<string>();
+
   constructor(
     private baseUrlService: BaseUrlService,
     private ticketService: TicketService,
@@ -47,7 +51,11 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
-    return this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
+    const received = this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
+    if (received.op === OP.PARAGRAPH_ADDED && received.data && received.msgId) {
+      (received.data as MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]).msgId = received.msgId;
+    }
+    return received;
   }
 
   bootstrap(): void {
@@ -76,6 +84,30 @@ export class MessageService extends Message implements OnDestroy {
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
     return super.receive<K>(op);
+  }
+
+  consumeLocalAddFocusMsgId(msgId: string | undefined): boolean {
+    if (!msgId) {
+      return false;
+    }
+    return this.localAddFocusMsgIds.delete(msgId);
+  }
+
+  private captureLocalAddFocusMsgId(sendMessage: () => void): void {
+    const subscription = super
+      .sent()
+      .pipe(take(1))
+      .subscribe(message => {
+        if (message.msgId) {
+          this.localAddFocusMsgIds.add(message.msgId);
+        }
+      });
+    try {
+      sendMessage();
+    } catch (error) {
+      subscription.unsubscribe();
+      throw error;
+    }
   }
 
   opened(): Observable<Event> {
@@ -167,7 +199,7 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   insertParagraph(newIndex: number): void {
-    super.insertParagraph(newIndex);
+    this.captureLocalAddFocusMsgId(() => super.insertParagraph(newIndex));
   }
 
   copyParagraph(
@@ -177,7 +209,9 @@ export class MessageService extends Message implements OnDestroy {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
   ): void {
-    super.copyParagraph(newIndex, paragraphTitle, paragraphData, paragraphConfig, paragraphParams);
+    this.captureLocalAddFocusMsgId(() =>
+      super.copyParagraph(newIndex, paragraphTitle, paragraphData, paragraphConfig, paragraphParams)
+    );
   }
 
   angularObjectUpdate(
