@@ -94,20 +94,19 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   private captureLocalAddFocusMsgId(sendMessage: () => void): void {
-    let msgId: string | undefined;
     const subscription = super
       .sent()
       .pipe(take(1))
       .subscribe(message => {
-        msgId = message.msgId;
+        if (message.msgId) {
+          this.localAddFocusMsgIds.add(message.msgId);
+        }
       });
     try {
       sendMessage();
-    } finally {
+    } catch (error) {
       subscription.unsubscribe();
-    }
-    if (msgId) {
-      this.localAddFocusMsgIds.add(msgId);
+      throw error;
     }
   }
 

@@ -105,13 +105,13 @@ export class NotebookParagraphCodeEditorComponent
           setTimeout(() => {
             this.autoAdjustEditorHeight();
           });
+          this.setParagraphMode(true);
           // A flush is a programmatic setValue (editor init, remote content update, patch), not a user edit.
           // Such changes must not mark the paragraph dirty.
           if (e.isFlush) {
             return;
           }
           this.textChanged.emit(this.text);
-          this.setParagraphMode(true);
         });
       })
     );
