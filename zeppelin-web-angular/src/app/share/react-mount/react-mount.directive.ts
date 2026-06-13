@@ -118,7 +118,10 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
         }
       });
     } catch (err) {
-      this.reportError(err);
+      // Mirror the success-path guard: don't report a load that failed after destroy.
+      if (!this.destroyed) {
+        this.reportError(err);
+      }
     } finally {
       this.loading = false;
     }

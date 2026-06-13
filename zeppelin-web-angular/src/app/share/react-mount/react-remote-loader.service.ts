@@ -44,16 +44,22 @@ export class ReactRemoteLoaderService {
       const script = document.createElement('script');
       script.src = environment.reactRemoteEntryUrl;
       script.async = true;
+
+      // Remove the tag on *any* failure (network error or loaded-but-unregistered):
+      // containerPromise resets on rejection, so each retry would otherwise leak a tag.
+      const fail = (message: string) => {
+        script.remove();
+        reject(new Error(message));
+      };
+
       script.onload = () => {
         if (!window.reactApp) {
-          reject(new Error('window.reactApp not registered after script load'));
+          fail('window.reactApp not registered after script load');
           return;
         }
         resolve(window.reactApp);
       };
-      script.onerror = () => {
-        reject(new Error(`Failed to load React remote at ${script.src}`));
-      };
+      script.onerror = () => fail(`Failed to load React remote at ${script.src}`);
       document.head.appendChild(script);
     });
 

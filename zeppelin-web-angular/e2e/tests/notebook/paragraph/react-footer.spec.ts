@@ -49,7 +49,9 @@ test.describe('React Paragraph Footer', () => {
     await page.goto(`/#/notebook/${noteId}?reactFooter=true`);
     await waitForZeppelinReady(page);
 
-    await expect(page.locator('[data-testid="react-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('[data-testid="react-paragraph-footer-content"]').first()).toBeAttached({
+      timeout: 15000
+    });
     await expect(page.locator('[data-testid="angular-paragraph-footer"]')).toHaveCount(0);
   });
 
@@ -61,7 +63,9 @@ test.describe('React Paragraph Footer', () => {
 
     await expect(page).toHaveURL(/reactFooter=true/);
     await expect(page).toHaveURL(new RegExp(`paragraph=${paragraphId}`));
-    await expect(page.locator('[data-testid="react-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
+    await expect(page.locator('[data-testid="react-paragraph-footer-content"]').first()).toBeAttached({
+      timeout: 15000
+    });
   });
 
   test('when the remote fails to load, paragraphs fall back to the Angular footer', async ({ page }) => {
@@ -91,9 +95,10 @@ test.describe('React Paragraph Footer', () => {
     const consoleErrors: string[] = [];
     page.on('pageerror', err => consoleErrors.push(err.message));
 
+    // Navigate away only once the request is in-flight, so destroy-while-loading is exercised.
+    const remoteRequested = page.waitForRequest('**/remoteEntry.js');
     await page.goto(`/#/notebook/${noteId}?reactFooter=true`);
-    // Navigate away before the remote can possibly mount
-    await page.waitForTimeout(100);
+    await remoteRequested;
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 

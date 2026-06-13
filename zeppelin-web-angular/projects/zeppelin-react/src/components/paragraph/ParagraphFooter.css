@@ -15,3 +15,7 @@
   font-size: 12px;
   margin-top: 12px;
 }
+
+html.dark .zeppelin-react-paragraph-footer {
+  color: rgba(255, 255, 255, 0.65);
+}
