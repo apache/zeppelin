@@ -47,9 +47,6 @@
         <spark.src.download.url>
             https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}.tgz?action=download
         </spark.src.download.url>
-        <spark.bin.download.url>
-            https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
-        </spark.bin.download.url>
     </properties>
 
     <modules>

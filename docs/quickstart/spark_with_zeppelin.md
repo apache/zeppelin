@@ -28,13 +28,13 @@ limitations under the License.
 For a brief overview of Apache Spark fundamentals with Apache Zeppelin, see the following guide:
 
 - **built-in** Apache Spark integration.
-- With [Spark Scala](https://spark.apache.org/docs/latest/quick-start.html) [SparkSQL](http://spark.apache.org/sql/), [PySpark](https://spark.apache.org/docs/latest/api/python/), [SparkR](https://spark.apache.org/docs/latest/sparkr.html)
+- With [Spark Scala](https://spark.apache.org/docs/latest/quick-start.html) [SparkSQL](http://spark.apache.org/sql/), [PySpark](https://spark.apache.org/docs/latest/api/python/).
 - Inject [SparkContext](https://spark.apache.org/docs/latest/api/java/org/apache/spark/SparkContext.html), [SQLContext](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [SparkSession](https://spark.apache.org/docs/latest/sql-programming-guide.html) automatically
 - Canceling job and displaying its progress 
 - Supports different modes: local, standalone, yarn(client & cluster), k8s
 - Dependency management
 - Supports [different context per user / note](../usage/interpreter/interpreter_binding_mode.html) 
-- Sharing variables among PySpark, SparkR and Spark through [ZeppelinContext](../interpreter/spark.html#zeppelincontext)
+- Sharing variables among PySpark and Spark through [ZeppelinContext](../interpreter/spark.html#zeppelincontext)
 - [Livy Interpreter](../interpreter/livy.html)
 
 <br/>

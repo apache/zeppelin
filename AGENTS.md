@@ -80,7 +80,7 @@ zeppelin-interpreter → zeppelin-interpreter-shaded → zeppelin-server
 
 All interpreter modules build after `zeppelin-interpreter-shaded`. A second shading chain exists for Jupyter:
 ```
-zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python, rlang
+zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python
 ```
 
 ## Module Architecture
@@ -163,7 +163,6 @@ Each interpreter is an independent Maven module inheriting from `zeppelin-interp
 | `bigquery/` | Google BigQuery |
 | `cassandra/` | Apache Cassandra CQL |
 | `hbase/` | Apache HBase |
-| `rlang/` | R language |
 | `livy/` | Apache Livy (remote Spark) |
 | `sparql/` | SPARQL queries |
 | `influxdb/` | InfluxDB |

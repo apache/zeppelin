@@ -142,10 +142,8 @@ class SparkInterpreterLauncherTest {
       assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
       String sparkJars = "jar_1";
-      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1";
-      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
-        "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
+      String expected = "--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
         "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn-client";
       assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
         Arrays.asList(interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF").split("\\|"))));
@@ -176,10 +174,8 @@ class SparkInterpreterLauncherTest {
       assertEquals(sparkHome, interpreterProcess.getEnv().get("SPARK_HOME"));
 
       String sparkJars = "jar_1";
-      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1";
-      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
-        "|--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
+      String expected = "--conf|spark.files=" + sparkFiles + "|--conf|spark.jars=" + sparkJars +
         "|--conf|spark.submit.deployMode=client" +
         "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId|--conf|spark.master=yarn";
       assertTrue(CollectionUtils.isEqualCollection(Arrays.asList(expected.split("\\|")),
@@ -214,10 +210,8 @@ class SparkInterpreterLauncherTest {
         zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
         + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-      String expected = "--conf|spark.yarn.dist.archives=" + sparkrZip +
-                      "|--conf|spark.yarn.maxAppAttempts=1" +
+      String expected = "--conf|spark.yarn.maxAppAttempts=1" +
                       "|--conf|spark.files=" + sparkFiles +
                       "|--conf|spark.jars=" + sparkJars +
                       "|--conf|spark.yarn.isPython=true" +
@@ -263,9 +257,8 @@ class SparkInterpreterLauncherTest {
         zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
         + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       String sparkFiles = "file_1," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
-      String expected = "--proxy-user|user1|--conf|spark.yarn.dist.archives=" + sparkrZip +
+      String expected = "--proxy-user|user1" +
               "|--conf|spark.yarn.isPython=true|--conf|spark.app.name=intpGroupId" +
               "|--conf|spark.yarn.maxAppAttempts=1" +
               "|--conf|spark.master=yarn" +
@@ -313,11 +306,9 @@ class SparkInterpreterLauncherTest {
         zeppelinHome + "/interpreter/spark/scala-2.12/spark-scala-2.12-" + Util.getVersion()
         + ".jar," +
               zeppelinHome + "/interpreter/zeppelin-interpreter-shaded-" + Util.getVersion() + ".jar";
-      String sparkrZip = sparkHome + "/R/lib/sparkr.zip#sparkr";
       // escape special characters
       String sparkFiles = "{}," + zeppelinHome + "/conf/log4j_yarn_cluster.properties";
       String expected = "--proxy-user|user1" +
-                      "|--conf|spark.yarn.dist.archives=" + sparkrZip +
                       "|--conf|spark.yarn.isPython=true" +
                       "|--conf|spark.app.name=intpGroupId" +
                       "|--conf|spark.yarn.maxAppAttempts=1" +
