@@ -257,6 +257,7 @@
         <nz-form-control>
           <input
             nz-input
+            type="number"
             formControlName="port"
             placeholder=""
             pattern="^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$"
@@ -355,7 +356,7 @@
                       ******
                     }
                     @case ('url') {
-                      <a [href]="control.get('value')?.value || ''" target="_blank">
+                      <a [href]="(control.get('value')?.value ?? '').toString()" target="_blank">
                         {{ control.get('value')?.value || '' }}
                       </a>
                     }

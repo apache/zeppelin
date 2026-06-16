@@ -17,7 +17,12 @@ import { debounceTime } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
-import { Interpreter, InterpreterPropertyTypes, InterpreterRepository } from '@zeppelin/interfaces';
+import {
+  Interpreter,
+  InterpreterPropertyTypes,
+  InterpreterRepository,
+  InterpreterSettingRequest
+} from '@zeppelin/interfaces';
 import { InterpreterService } from '@zeppelin/services';
 
 import { InterpreterCreateRepositoryModalComponent } from './create-repository-modal/create-repository-modal.component';
@@ -75,7 +80,7 @@ export class InterpreterComponent implements OnInit, OnDestroy {
     });
   }
 
-  addInterpreterSetting(data: Interpreter): void {
+  addInterpreterSetting(data: InterpreterSettingRequest): void {
     this.interpreterService.addInterpreterSetting(data).subscribe(res => {
       this.interpreterSettings.push(res);
       this.showCreateSetting = false;
@@ -84,7 +89,7 @@ export class InterpreterComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateInterpreter(data: Interpreter): void {
+  updateInterpreter(data: InterpreterSettingRequest): void {
     this.interpreterService.updateInterpreter(data).subscribe(res => {
       const current = this.interpreterSettings.find(e => e.name === res.name);
       if (current) {

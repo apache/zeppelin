@@ -11,21 +11,57 @@
  */
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  UntypedFormArray,
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  ValidationErrors,
-  Validators,
-  ValidatorFn
-} from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { DestroyHookComponent } from '@zeppelin/core';
-import { Interpreter } from '@zeppelin/interfaces';
+import {
+  Interpreter,
+  InterpreterPropertyTypes,
+  InterpreterPropertyValue,
+  InterpreterSettingRequest
+} from '@zeppelin/interfaces';
 import { InterpreterService, SecurityService, TicketService } from '@zeppelin/services';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { debounceTime, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { InterpreterComponent } from '../interpreter.component';
+
+type PropertyValue = string | number | boolean | null;
+
+interface PropertyFormGroup {
+  key: FormControl<string>;
+  value: FormControl<PropertyValue>;
+  description: FormControl<string | null>;
+  type: FormControl<InterpreterPropertyTypes>;
+}
+
+interface DependencyFormGroup {
+  groupArtifactVersion: FormControl<string>;
+  exclusions: FormControl<string>;
+}
+
+interface OptionFormGroup {
+  isExistingProcess: FormControl<boolean>;
+  isUserImpersonate: FormControl<boolean>;
+  owners: FormControl<string[]>;
+  perNote: FormControl<string>;
+  perUser: FormControl<string>;
+  port: FormControl<number | null>;
+  host: FormControl<string>;
+  remote: FormControl<boolean>;
+  setPermission: FormControl<boolean>;
+  // TODO: `session`/`process` are write-only leftovers from the pre-0.7 boolean isolation
+  // model, superseded by the perNote/perUser modes in ZEPPELIN-1210. They are never read
+  // by the template, never sent to the server, and should be removed in a follow-up.
+  session: FormControl<boolean>;
+  process: FormControl<boolean>;
+}
+
+interface InterpreterFormGroup {
+  name: FormControl<string>;
+  group: FormControl<string>;
+  option: FormGroup<OptionFormGroup>;
+  properties: FormArray<FormGroup<PropertyFormGroup>>;
+  dependencies: FormArray<FormGroup<DependencyFormGroup>>;
+}
 
 @Component({
   selector: 'zeppelin-interpreter-item',
@@ -38,12 +74,12 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   @Input() mode: 'create' | 'view' | 'edit' = 'view';
   @Input() interpreter?: Interpreter;
 
-  formGroup!: UntypedFormGroup;
-  optionFormGroup!: UntypedFormGroup;
-  editingPropertiesFormGroup?: UntypedFormGroup;
-  editingDependenceFormGroup?: UntypedFormGroup;
-  propertiesFormArray!: UntypedFormArray;
-  dependenciesFormArray!: UntypedFormArray;
+  formGroup!: FormGroup<InterpreterFormGroup>;
+  optionFormGroup!: FormGroup<OptionFormGroup>;
+  editingPropertiesFormGroup?: FormGroup<PropertyFormGroup>;
+  editingDependenceFormGroup?: FormGroup<DependencyFormGroup>;
+  propertiesFormArray!: FormArray<FormGroup<PropertyFormGroup>>;
+  dependenciesFormArray!: FormArray<FormGroup<DependencyFormGroup>>;
   userList$?: Observable<string[]>;
   userSearchChange$: BehaviorSubject<string> | null = new BehaviorSubject('');
   runningOptionMap = {
@@ -86,31 +122,41 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     this.addProperties();
     this.addDependence();
     const formData = this.formGroup.getRawValue();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const properties: Record<any, any> = {};
+    const properties: Record<string, InterpreterPropertyValue> = {};
 
-    formData.properties
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .sort((e: any) => e.key)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .forEach((e: any) => {
-        const { key, value, type } = e;
-        properties[key] = {
-          value,
-          type,
-          name: key
-        };
-      });
-    formData.properties = properties;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    formData.dependencies.forEach((e: any) => {
-      e.exclusions = e.exclusions.split(',').filter((s: string) => s !== '');
+    formData.properties.forEach(({ key, value, type }) => {
+      properties[key] = {
+        // Numeric inputs hold JS numbers, which Gson would deserialize as Double
+        // (e.g. 60000 -> "60000.0") and break Long/Integer parsing (ZEPPELIN-6395),
+        // so send them as strings. Checkboxes stay real booleans, as in the classic UI.
+        value: type === 'checkbox' ? value === true || value === 'true' : String(value ?? ''),
+        type,
+        name: key
+      };
     });
 
+    // session/process are UI-only state derived from perNote/perUser;
+    // the server-side InterpreterOption has no such fields, so they are not sent.
+    const { isExistingProcess, isUserImpersonate, owners, perNote, perUser, port, host, remote, setPermission } =
+      formData.option;
+    const setting: InterpreterSettingRequest = {
+      name: formData.name,
+      group: formData.group,
+      option: { isExistingProcess, isUserImpersonate, owners, perNote, perUser, port, host, remote, setPermission },
+      properties,
+      dependencies: formData.dependencies.map(({ groupArtifactVersion, exclusions }) => ({
+        groupArtifactVersion,
+        exclusions: exclusions
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s !== '')
+      }))
+    };
+
     if (this.mode === 'create') {
-      this.parent.addInterpreterSetting(formData);
+      this.parent.addInterpreterSetting(setting);
     } else {
-      this.parent.updateInterpreter(formData);
+      this.parent.updateInterpreter(setting);
       this.mode = 'view';
     }
   }
@@ -146,11 +192,11 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     this.cdr.markForCheck();
   }
 
-  onTypeChange(type: string) {
+  onTypeChange(type: InterpreterPropertyTypes) {
     if (!this.editingPropertiesFormGroup) {
       throw new Error("'editingPropertiesFormGroup' is not defined. Please check if it is initialized properly.");
     }
-    let valueSet: string | boolean | number;
+    let valueSet: PropertyValue;
     switch (type) {
       case 'number':
         valueSet = 0;
@@ -161,7 +207,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       default:
         valueSet = '';
     }
-    this.editingPropertiesFormGroup.get('value')!.setValue(valueSet);
+    this.editingPropertiesFormGroup.controls.value.setValue(valueSet);
   }
 
   addDependence(): void {
@@ -172,17 +218,12 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     if (this.editingDependenceFormGroup.valid) {
       const data = this.editingDependenceFormGroup.getRawValue();
       const current = this.dependenciesFormArray.controls.find(
-        control => control.get('groupArtifactVersion')!.value === data.groupArtifactVersion
+        control => control.controls.groupArtifactVersion.value === data.groupArtifactVersion
       );
       if (current) {
-        current.get('exclusions')!.setValue(data.exclusions);
+        current.controls.exclusions.setValue(data.exclusions);
       } else {
-        this.dependenciesFormArray.push(
-          this.formBuilder.group({
-            groupArtifactVersion: [data.groupArtifactVersion, [Validators.required]],
-            exclusions: data.exclusions
-          })
-        );
+        this.dependenciesFormArray.push(this.createDependencyFormGroup(data));
       }
       this.editingDependenceFormGroup.reset({
         exclusions: '',
@@ -199,19 +240,12 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     if (this.editingPropertiesFormGroup.valid) {
       const data = this.editingPropertiesFormGroup.getRawValue();
 
-      const current = this.propertiesFormArray.controls.find(control => control.get('key')!.value === data.key);
+      const current = this.propertiesFormArray.controls.find(control => control.controls.key.value === data.key);
       if (current) {
-        current.get('value')!.setValue(data.value);
-        current.get('type')!.setValue(data.type);
+        current.controls.value.setValue(data.value);
+        current.controls.type.setValue(data.type);
       } else {
-        this.propertiesFormArray.push(
-          this.formBuilder.group({
-            key: [data.key, [Validators.required]],
-            value: data.value || '',
-            description: null,
-            type: data.type
-          })
-        );
+        this.propertiesFormArray.push(this.createPropertyFormGroup({ ...data, value: data.value ?? '' }));
       }
       this.editingPropertiesFormGroup.reset({
         key: '',
@@ -225,8 +259,8 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   setInterpreterRunningOption(perNote: string, perUser: string) {
     const { sharedModeName, globallyModeName, perNoteModeName, perUserModeName } = this.runningOptionMap;
 
-    this.optionFormGroup.get('perNote')!.setValue(perNote);
-    this.optionFormGroup.get('perUser')!.setValue(perUser);
+    this.optionFormGroup.controls.perNote.setValue(perNote);
+    this.optionFormGroup.controls.perUser.setValue(perUser);
 
     // Globally == shared_perNote + shared_perUser
     if (perNote === sharedModeName && perUser === sharedModeName) {
@@ -252,34 +286,34 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       }
     }
 
-    this.optionFormGroup.get('perNote')!.setValue(sharedModeName);
-    this.optionFormGroup.get('perUser')!.setValue(sharedModeName);
+    this.optionFormGroup.controls.perNote.setValue(sharedModeName);
+    this.optionFormGroup.controls.perUser.setValue(sharedModeName);
     this.interpreterRunningOption = globallyModeName;
   }
 
   setPerNoteOrUserOption(type: 'perNote' | 'perUser', value: string) {
-    this.optionFormGroup.get(type)!.setValue(value);
+    this.optionFormGroup.controls[type].setValue(value);
     switch (value) {
       case this.sessionOptionMap.isolated:
-        this.optionFormGroup.get('session')!.setValue(false);
-        this.optionFormGroup.get('process')!.setValue(true);
+        this.optionFormGroup.controls.session.setValue(false);
+        this.optionFormGroup.controls.process.setValue(true);
         break;
       case this.sessionOptionMap.scoped:
-        this.optionFormGroup.get('session')!.setValue(true);
-        this.optionFormGroup.get('process')!.setValue(false);
+        this.optionFormGroup.controls.session.setValue(true);
+        this.optionFormGroup.controls.process.setValue(false);
         break;
       case this.sessionOptionMap.shared:
-        this.optionFormGroup.get('session')!.setValue(false);
-        this.optionFormGroup.get('process')!.setValue(false);
+        this.optionFormGroup.controls.session.setValue(false);
+        this.optionFormGroup.controls.process.setValue(false);
         break;
     }
   }
 
-  nameValidator(control: AbstractControl): ValidationErrors | null {
+  nameValidator(control: AbstractControl<string>): ValidationErrors | null {
     if (this.mode !== 'create') {
       return null;
     }
-    const name = (control.value as string).trim();
+    const name = control.value.trim();
     const exist = this.parent.interpreterSettings.find(e => e.name === name);
     if (exist) {
       return { exist: true, message: `Name '${name}' already exists` };
@@ -291,25 +325,24 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
   buildForm(): void {
     let name = '';
     let group = '';
-    this.optionFormGroup = this.formBuilder.group({
-      isExistingProcess: false,
-      isUserImpersonate: false,
-      owners: [[]],
-      perNote: '',
-      perUser: '',
-      port: [
-        null,
-        [Validators.pattern('^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$')]
-      ],
-      host: '',
-      remote: true,
-      setPermission: false,
-      session: false,
-      process: false
+    this.optionFormGroup = new FormGroup<OptionFormGroup>({
+      isExistingProcess: new FormControl(false, { nonNullable: true }),
+      isUserImpersonate: new FormControl(false, { nonNullable: true }),
+      owners: new FormControl<string[]>([], { nonNullable: true }),
+      perNote: new FormControl('', { nonNullable: true }),
+      perUser: new FormControl('', { nonNullable: true }),
+      port: new FormControl<number | null>(null, [
+        Validators.pattern('^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$')
+      ]),
+      host: new FormControl('', { nonNullable: true }),
+      remote: new FormControl(true, { nonNullable: true }),
+      setPermission: new FormControl(false, { nonNullable: true }),
+      session: new FormControl(false, { nonNullable: true }),
+      process: new FormControl(false, { nonNullable: true })
     });
 
-    this.propertiesFormArray = this.formBuilder.array([]);
-    this.dependenciesFormArray = this.formBuilder.array([]);
+    this.propertiesFormArray = new FormArray<FormGroup<PropertyFormGroup>>([]);
+    this.dependenciesFormArray = new FormArray<FormGroup<DependencyFormGroup>>([]);
 
     if (this.mode === 'view' && this.interpreter) {
       name = this.interpreter.name;
@@ -324,18 +357,18 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       // set dependencies fields
       this.interpreter.dependencies.forEach(e => {
         const exclusions = Array.isArray(e.exclusions) ? e.exclusions : [];
-        this.dependenciesFormArray!.push(
-          this.formBuilder.group({
-            exclusions: [exclusions.join(',')],
-            groupArtifactVersion: [e.groupArtifactVersion, [Validators.required]]
+        this.dependenciesFormArray.push(
+          this.createDependencyFormGroup({
+            exclusions: exclusions.join(','),
+            groupArtifactVersion: e.groupArtifactVersion
           })
         );
       });
 
       // set properties fields
       Object.entries(this.interpreter.properties).forEach(([key, item]) => {
-        this.propertiesFormArray!.push(
-          this.formBuilder.group({
+        this.propertiesFormArray.push(
+          this.createPropertyFormGroup({
             key,
             value: item.value,
             description: null,
@@ -345,9 +378,12 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       });
     }
 
-    this.formGroup = this.formBuilder.group({
-      name: [name, [Validators.required, (c: Parameters<ValidatorFn>[0]) => this.nameValidator(c)]],
-      group: [group, [Validators.required]],
+    this.formGroup = new FormGroup<InterpreterFormGroup>({
+      name: new FormControl(name, {
+        nonNullable: true,
+        validators: [Validators.required, control => this.nameValidator(control)]
+      }),
+      group: new FormControl(group, { nonNullable: true, validators: [Validators.required] }),
       option: this.optionFormGroup,
       properties: this.propertiesFormArray,
       dependencies: this.dependenciesFormArray
@@ -368,43 +404,40 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
       })
     );
 
-    this.editingPropertiesFormGroup = this.formBuilder.group({
-      key: ['', [Validators.required]],
+    this.editingPropertiesFormGroup = this.createPropertyFormGroup({
+      key: '',
       value: '',
       description: null,
       type: 'string'
     });
 
-    this.editingDependenceFormGroup = this.formBuilder.group({
-      groupArtifactVersion: ['', [Validators.required]],
-      exclusions: ['']
+    this.editingDependenceFormGroup = this.createDependencyFormGroup({
+      groupArtifactVersion: '',
+      exclusions: ''
     });
 
     if (this.mode === 'create') {
-      this.formGroup
-        .get('group')!
-        .valueChanges.pipe(takeUntil(this.destroy$))
-        .subscribe(value => {
-          // remove all controls
-          while (this.propertiesFormArray!.length) {
-            this.propertiesFormArray!.removeAt(0);
-          }
+      this.formGroup.controls.group.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
+        // remove all controls
+        while (this.propertiesFormArray.length) {
+          this.propertiesFormArray.removeAt(0);
+        }
 
-          const interpreters = this.parent.availableInterpreters.filter(e => e.group === value);
-          interpreters.forEach(interpreter => {
-            Object.entries(interpreter.properties).forEach(([key, item]) => {
-              this.propertiesFormArray!.push(
-                this.formBuilder.group({
-                  key: [key, [Validators.required]],
-                  value: item.defaultValue,
-                  description: item.description,
-                  type: item.type
-                })
-              );
-            });
+        const interpreters = this.parent.availableInterpreters.filter(e => e.group === value);
+        interpreters.forEach(interpreter => {
+          Object.entries(interpreter.properties).forEach(([key, item]) => {
+            this.propertiesFormArray.push(
+              this.createPropertyFormGroup({
+                key,
+                value: item.defaultValue ?? '',
+                description: item.description ?? null,
+                type: item.type
+              })
+            );
           });
-          this.cdr.markForCheck();
         });
+        this.cdr.markForCheck();
+      });
     }
   }
 
@@ -413,7 +446,6 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     public ticketService: TicketService,
     private securityService: SecurityService,
     private interpreterService: InterpreterService,
-    private formBuilder: UntypedFormBuilder,
     private cdr: ChangeDetectorRef
   ) {
     super();
@@ -421,7 +453,7 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
 
   ngOnInit() {
     this.buildForm();
-    const option = this.optionFormGroup!.getRawValue();
+    const option = this.optionFormGroup.getRawValue();
     this.setInterpreterRunningOption(option.perNote, option.perUser);
 
     if (this.mode !== 'view') {
@@ -436,5 +468,32 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
     this.userSearchChange$?.complete();
     this.userSearchChange$ = null;
     super.ngOnDestroy();
+  }
+
+  private createPropertyFormGroup(property: {
+    key: string;
+    value: PropertyValue;
+    description: string | null;
+    type: InterpreterPropertyTypes;
+  }): FormGroup<PropertyFormGroup> {
+    return new FormGroup<PropertyFormGroup>({
+      key: new FormControl(property.key, { nonNullable: true, validators: [Validators.required] }),
+      value: new FormControl<PropertyValue>(property.value),
+      description: new FormControl(property.description),
+      type: new FormControl(property.type, { nonNullable: true })
+    });
+  }
+
+  private createDependencyFormGroup(dependency: {
+    groupArtifactVersion: string;
+    exclusions: string;
+  }): FormGroup<DependencyFormGroup> {
+    return new FormGroup<DependencyFormGroup>({
+      groupArtifactVersion: new FormControl(dependency.groupArtifactVersion, {
+        nonNullable: true,
+        validators: [Validators.required]
+      }),
+      exclusions: new FormControl(dependency.exclusions, { nonNullable: true })
+    });
   }
 }
