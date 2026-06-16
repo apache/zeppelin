@@ -10,13 +10,12 @@
  * limitations under the License.
  */
 
-export * from './code-editor';
-export * from './folder-rename';
-export * from './note-create';
-export * from './note-import';
-export * from './note-rename';
-export * from './pipes';
-export * from './react-mount';
-export * from './resize-handle';
-export * from './share.module';
-export * from './shortcut';
+.zeppelin-react-paragraph-footer {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+html.dark .zeppelin-react-paragraph-footer {
+  color: rgba(255, 255, 255, 0.65);
+}

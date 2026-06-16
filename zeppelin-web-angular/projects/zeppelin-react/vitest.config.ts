@@ -10,13 +10,12 @@
  * limitations under the License.
  */
 
-export * from './code-editor';
-export * from './folder-rename';
-export * from './note-create';
-export * from './note-import';
-export * from './note-rename';
-export * from './pipes';
-export * from './react-mount';
-export * from './resize-handle';
-export * from './share.module';
-export * from './shortcut';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.spec.{ts,tsx}'],
+    setupFiles: ['./src/test-setup.ts']
+  }
+});

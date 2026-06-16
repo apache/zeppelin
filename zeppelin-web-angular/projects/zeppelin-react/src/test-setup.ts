@@ -10,13 +10,13 @@
  * limitations under the License.
  */
 
-export * from './code-editor';
-export * from './folder-rename';
-export * from './note-create';
-export * from './note-import';
-export * from './note-rename';
-export * from './pipes';
-export * from './react-mount';
-export * from './resize-handle';
-export * from './share.module';
-export * from './shortcut';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+// Tests drive React roots directly (the Module Federation mount contract),
+// so opt into act()-aware scheduling globally.
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+// Vitest globals are disabled, so Testing Library cannot self-register its
+// auto-cleanup hook; without this, rendered DOM leaks between tests.
+afterEach(cleanup);
