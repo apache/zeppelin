@@ -19,7 +19,6 @@ import { Message, MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppe
   template: '',
   standalone: false
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class MessageListenersManager implements OnDestroy {
   __zeppelinMessageListeners__?: Array<() => void>;
   __zeppelinMessageListeners$__: Subscriber<unknown> | null = new Subscriber();
@@ -43,18 +42,14 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
   ) {
     const oldValue = descriptor.value as ReceiveArgumentsType<K>;
 
-    // eslint-disable-next-line no-invalid-this
     const fn = function (this: MessageListenersManager) {
-      // eslint-disable-next-line no-invalid-this
       if (!this.__zeppelinMessageListeners$__) {
         throw new Error('__zeppelinMessageListeners$__ is not defined');
       }
-      // eslint-disable-next-line no-invalid-this
+
       this.__zeppelinMessageListeners$__.add(
-        // eslint-disable-next-line no-invalid-this
         this.messageService.receive(op).subscribe(data => {
           // @ts-ignore
-          // eslint-disable-next-line no-invalid-this
           oldValue.apply(this, [data]);
         })
       );

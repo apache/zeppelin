@@ -91,7 +91,6 @@ export class HeliumService extends BaseRest {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)._heliumBundles = [] as HeliumBundle[];
       availableBundles.forEach(bundle => {
-        // eslint-disable-next-line no-eval
         eval(bundle);
       });
 

@@ -26,6 +26,13 @@ module.exports = tseslint.config(
     ignores: ['dist/**', 'target/**', '.angular/**', 'coverage/**', 'node/**', 'projects/zeppelin-react/**']
   },
   {
+    // Fail (not just warn) on eslint-disable directives that no longer suppress
+    // anything. The flat-config default is 'warn', and `ng lint` exits 0 on
+    // warnings, so stale directives would otherwise accumulate unnoticed --
+    // promoting to 'error' keeps the ZEPPELIN-6426 cleanup enforced.
+    linterOptions: { reportUnusedDisableDirectives: 'error' }
+  },
+  {
     files: ['**/*.ts'],
     // == legacy `plugin:@angular-eslint/recommended` (sets the TS parser and
     // the @angular-eslint plugin). The @typescript-eslint plugin is registered

@@ -14,7 +14,6 @@ import { GraphConfig } from '@zeppelin/sdk';
 import { TableData } from './table-data';
 import { Transformation } from './transformation';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class TableTransformation extends Transformation {
   constructor(config: GraphConfig) {
     super(config);
