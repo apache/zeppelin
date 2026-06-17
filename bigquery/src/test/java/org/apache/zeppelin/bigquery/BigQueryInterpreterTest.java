@@ -19,6 +19,7 @@ package org.apache.zeppelin.bigquery;
 import com.google.gson.Gson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
@@ -26,6 +27,7 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,9 +54,11 @@ class BigQueryInterpreterTest {
   protected static Constants constants = null;
 
   @BeforeAll
-  public static void initConstants() {
-    InputStream is = ClassLoader.class.getResourceAsStream("/constants.json");
-    constants = (new Gson()).<Constants> fromJson(new InputStreamReader(is), Constants.class);
+  public static void initConstants() throws IOException {
+    try (InputStream is = BigQueryInterpreterTest.class.getResourceAsStream("/constants.json");
+         InputStreamReader reader = new InputStreamReader(is)) {
+      constants = (new Gson()).<Constants> fromJson(reader, Constants.class);
+    }
   }
 
   private InterpreterGroup intpGroup;
@@ -75,6 +79,10 @@ class BigQueryInterpreterTest {
     bqInterpreter = new BigQueryInterpreter(p);
     bqInterpreter.setInterpreterGroup(intpGroup);
     bqInterpreter.open();
+
+    context = InterpreterContext.builder()
+        .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
+        .build();
   }
 
   @Test
