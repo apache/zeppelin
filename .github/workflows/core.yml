@@ -138,6 +138,7 @@ jobs:
       matrix:
         python: [ 3.9 ]
         java: [ 11 ]
+        r: [ 3.6, 4.0 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -159,11 +160,11 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python ${{ matrix.python }} and R
+      - name: Setup conda environment with python ${{ matrix.python }} and R ${{ matrix.r }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: python_3_with_R
-          environment-file: testing/env_python_${{ matrix.python }}_with_R.yml
+          environment-file: testing/env_python_${{ matrix.python }}_with_R_${{ matrix.r }}.yml
           python-version: ${{ matrix.python }}
           channels: conda-forge,defaults
           channel-priority: strict
@@ -175,9 +176,13 @@ jobs:
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl python,rlang,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
-      - name: run tests with ${{ matrix.python }}
+      - name: run tests with Python ${{ matrix.python }} and R ${{ matrix.r }}
         run: |
-          ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
+          if [ "${{ matrix.r }}" = "3.6" ]; then
+            ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -Dtest=IRInterpreterTest36,RInterpreterTest,ShinyInterpreterTest -DfailIfNoTests=false ${MAVEN_ARGS}
+          else
+            ./mvnw test -pl python,rlang,zeppelin-jupyter-interpreter -Dtest=IRInterpreterTest,RInterpreterTest,ShinyInterpreterTest -DfailIfNoTests=false ${MAVEN_ARGS}
+          fi
 
   # zeppelin integration test except Spark & Flink
   zeppelin-integration-test:
