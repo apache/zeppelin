@@ -1,0 +1,17 @@
+[
+  {
+    "group": "storch",
+    "name": "storch",
+    "className": "org.apache.zeppelin.storch.Scala3Interpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+
+  }
+]
