@@ -42,8 +42,8 @@ public class SparqlInterpreter extends Interpreter {
 
   public static final String ENGINE_TYPE_JENA = "jena";
 
-  public SparqlEngine engine;
-  
+  private SparqlEngine engine;
+
   /**
    * Sparql Engine Type.
    */
@@ -73,7 +73,7 @@ public class SparqlInterpreter extends Interpreter {
 
     if (SparqlEngineType.JENA.toString().equals(engineType)) {
       engine = new JenaInterpreter(serviceEndpoint, replaceURIs, removeDatatypes);
-    } 
+    }
   }
 
   @Override
