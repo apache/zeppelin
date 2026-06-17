@@ -4,29 +4,55 @@ channels:
   - defaults
 dependencies:
   - python >=3.9,<3.10
-  - pyspark=3.5.3
+  - pyspark=3.5
   - pycodestyle
-  - scipy
+  # --- Core data libraries ---
+  - pandas
   - numpy
+  - scipy
+  - pyarrow
+  # --- Spark Connect protocol ---
   - grpcio
   - protobuf
+  # --- HTTP / networking ---
+  - requests
+  - urllib3
+  # --- File format support ---
+  - openpyxl
+  - xlrd
+  - pyyaml
+  - tabulate
+  # --- GCP access ---
+  - google-cloud-storage
+  - google-auth
+  - gcsfs
+  # --- Visualization ---
+  - matplotlib
+  - seaborn
+  - plotly
+  - plotnine
+  - altair
+  - vega_datasets
+  - hvplot
+  # --- SQL on pandas ---
   - pandasql
+  # --- ML ---
+  - scikit-learn
+  - xgboost
+  # --- IPython / kernel ---
   - ipython
   - ipykernel
   - jupyter_client
-  - hvplot
-  - plotnine
-  - seaborn
+  # --- Data connectors ---
   - intake
   - intake-parquet
   - intake-xarray
-  - altair
-  - vega_datasets
-  - plotly
+  # --- pip-only packages ---
   - pip
   - pip:
-    # works for regular pip packages
     - bkzep==0.6.1
+    - delta-spark==3.2.1
+  # --- R support ---
   - r-base=3
   - r-data.table
   - r-evaluate
