@@ -147,14 +147,29 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
   private static final String MAX_ROWS_KEY = "zeppelin.jdbc.maxRows";
 
-  private static final Set<String> PRESTO_PROPERTIES = new HashSet<>(Arrays.asList(
-          "user", "password",
-          "socksProxy", "httpProxy", "clientTags", "applicationNamePrefix", "accessToken",
-          "SSL", "SSLKeyStorePath", "SSLKeyStorePassword", "SSLTrustStorePath",
-          "SSLTrustStorePassword", "KerberosRemoteServiceName", "KerberosPrincipal",
-          "KerberosUseCanonicalHostname", "KerberosServicePrincipalPattern",
-          "KerberosConfigPath", "KerberosKeytabPath", "KerberosCredentialCachePath",
-          "extraCredentials", "roles", "sessionProperties"));
+  /**
+   * Properties that Zeppelin consumes internally (or hands to the DBCP connection
+   * pool) and therefore must NOT be forwarded to the JDBC driver as connection
+   * properties.
+   *
+   * Note: "user" and "password" are deliberately excluded from this set because
+   * they are standard JDBC connection properties and must reach the driver.
+   */
+  private static final Set<String> NON_DRIVER_PROPERTIES = new HashSet<>(Arrays.asList(
+          // connection metadata consumed by the interpreter itself
+          DRIVER_KEY, URL_KEY,
+          // SQL hooks executed by the interpreter, not the driver
+          PRECODE_KEY, STATEMENT_PRECODE_KEY,
+          // auto-completion settings
+          COMPLETER_TTL_KEY, COMPLETER_SCHEMA_FILTERS_KEY,
+          // proxy / credential settings handled by the interpreter
+          "proxy.user.property", JDBC_JCEKS_FILE, JDBC_JCEKS_CREDENTIAL_KEY,
+          // DBCP connection-pool settings applied in configConnectionPool()
+          "validationQuery", "testOnBorrow", "testOnCreate", "testOnReturn",
+          "testWhileIdle", "timeBetweenEvictionRunsMillis", "maxWaitMillis",
+          "maxIdle", "minIdle", "maxTotal"));
+
+  static final String DRIVER_EXCLUDE_PROPERTIES_KEY = "zeppelin.jdbc.driver.excludeProperties";
 
   private static final String ALLOW_LOAD_LOCAL = "allowLoadLocal";
 
@@ -485,28 +500,42 @@ public class JDBCInterpreter extends KerberosInterpreter {
     connectionPool.setMaxWaitMillis(maxWaitMillis);
   }
 
+  /**
+   * Builds the property set handed to the JDBC driver: a copy of {@code properties}
+   * with all Zeppelin-internal and connection-pool keys ({@link #NON_DRIVER_PROPERTIES})
+   * removed. The original is left untouched so it can still be used for pool
+   * configuration and lookups. Additional keys can be excluded via
+   * {@value #DRIVER_EXCLUDE_PROPERTIES_KEY} (comma-separated).
+   */
+  // package private for testing purposes
+  Properties toDriverProperties(Properties properties) {
+    Set<String> excludes = new HashSet<>(NON_DRIVER_PROPERTIES);
+    String userExcludes = getProperty(DRIVER_EXCLUDE_PROPERTIES_KEY);
+    if (StringUtils.isNotBlank(userExcludes)) {
+      for (String key : userExcludes.split(",")) {
+        excludes.add(key.trim());
+      }
+    }
+
+    Properties driverProperties = new Properties();
+    for (String key : properties.stringPropertyNames()) {
+      if (!excludes.contains(key)) {
+        driverProperties.setProperty(key, properties.getProperty(key));
+      }
+    }
+    return driverProperties;
+  }
+
   private void createConnectionPool(String url, String user,
       Properties properties) throws SQLException, ClassNotFoundException {
 
     LOGGER.info("Creating connection pool for url: {}, user: {}", url, user);
 
-    /* Remove properties that is not valid properties for presto/trino by checking driver key.
-     * - Presto: com.facebook.presto.jdbc.PrestoDriver
-     * - Trino(ex. PrestoSQL): io.trino.jdbc.TrinoDriver / io.prestosql.jdbc.PrestoDriver
-     */
     String driverClass = properties.getProperty(DRIVER_KEY);
-    if (driverClass != null && (driverClass.equals("com.facebook.presto.jdbc.PrestoDriver")
-            || driverClass.equals("io.prestosql.jdbc.PrestoDriver")
-            || driverClass.equals("io.trino.jdbc.TrinoDriver"))) {
-      for (String key : properties.stringPropertyNames()) {
-        if (!PRESTO_PROPERTIES.contains(key)) {
-          properties.remove(key);
-        }
-      }
-    }
+    Properties driverProperties = toDriverProperties(properties);
 
     ConnectionFactory connectionFactory =
-            new DriverManagerConnectionFactory(url, properties);
+            new DriverManagerConnectionFactory(url, driverProperties);
 
     PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
             connectionFactory, null);
