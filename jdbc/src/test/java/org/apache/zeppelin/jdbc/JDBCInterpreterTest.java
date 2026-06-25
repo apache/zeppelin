@@ -57,12 +57,14 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DRIVER_EXCLUDE_PROPERTIES_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
 /**
@@ -185,6 +187,146 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("gpadmin", jdbcInterpreter.getProperty(DEFAULT_USER));
     assertEquals("", jdbcInterpreter.getProperty(DEFAULT_PASSWORD));
     assertEquals("1000", jdbcInterpreter.getProperty(COMMON_MAX_LINE));
+  }
+
+  @Test
+  void testToDriverProperties() {
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
+
+    Properties properties = new Properties();
+    // genuine JDBC driver properties, must be kept
+    properties.setProperty("user", "trino_user");
+    properties.setProperty("password", "secret");
+    properties.setProperty("SSL", "true");
+    // Zeppelin-internal / pool properties, must be removed (ZEPPELIN-6208)
+    properties.setProperty("driver", "io.trino.jdbc.TrinoDriver");
+    properties.setProperty("url", "jdbc:trino://localhost:8080");
+    properties.setProperty("precode", "set time zone 'UTC'");
+    properties.setProperty("statementPrecode", "set time zone 'UTC'");
+    properties.setProperty("completer.ttlInSeconds", "120");
+    properties.setProperty("completer.schemaFilters", "public");
+    properties.setProperty("validationQuery", "show databases");
+    properties.setProperty("maxIdle", "8");
+
+    Properties driverProperties = jdbcInterpreter.toDriverProperties(properties);
+
+    assertEquals(3, driverProperties.size());
+    assertEquals("trino_user", driverProperties.getProperty("user"));
+    assertEquals("secret", driverProperties.getProperty("password"));
+    assertEquals("true", driverProperties.getProperty("SSL"));
+    assertFalse(driverProperties.containsKey("driver"));
+    assertFalse(driverProperties.containsKey("url"));
+    assertFalse(driverProperties.containsKey("precode"));
+    assertFalse(driverProperties.containsKey("statementPrecode"));
+    assertFalse(driverProperties.containsKey("completer.ttlInSeconds"));
+    assertFalse(driverProperties.containsKey("completer.schemaFilters"));
+    assertFalse(driverProperties.containsKey("validationQuery"));
+    assertFalse(driverProperties.containsKey("maxIdle"));
+
+    // the original properties must not be mutated
+    assertTrue(properties.containsKey("driver"));
+    assertTrue(properties.containsKey("url"));
+  }
+
+  @Test
+  void testToDriverPropertiesWithUserDefinedExcludes() {
+    Properties config = new Properties();
+    config.setProperty(DRIVER_EXCLUDE_PROPERTIES_KEY, "SSL, customKey");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(config);
+
+    Properties properties = new Properties();
+    properties.setProperty("user", "trino_user");
+    properties.setProperty("SSL", "true");
+    properties.setProperty("customKey", "customValue");
+
+    Properties driverProperties = jdbcInterpreter.toDriverProperties(properties);
+
+    assertEquals(1, driverProperties.size());
+    assertEquals("trino_user", driverProperties.getProperty("user"));
+    assertFalse(driverProperties.containsKey("SSL"));
+    assertFalse(driverProperties.containsKey("customKey"));
+  }
+
+  /**
+   * End-to-end check that a strict JDBC driver (DuckDB) can connect even though
+   * Zeppelin-internal properties are present in the interpreter configuration.
+   * Before ZEPPELIN-6208 those keys were forwarded to the driver and DuckDB
+   * rejected the connection. DuckDB runs in-process, so no external server is
+   * needed.
+   */
+  @Test
+  void testDuckDbConnectionWithInternalProperties()
+      throws IOException, InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "org.duckdb.DuckDBDriver");
+    properties.setProperty("default.url", "jdbc:duckdb:");
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    // Internal keys that DuckDB's strict driver would reject if forwarded
+    properties.setProperty("default.completer.ttlInSeconds", "120");
+    properties.setProperty("default.completer.schemaFilters", "");
+    properties.setProperty("common.max_count", "1000");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "CREATE TABLE pokes (id INTEGER, name VARCHAR); " +
+        "INSERT INTO pokes VALUES (1, 'a'), (2, 'b'); " +
+        "SELECT * FROM pokes ORDER BY id;";
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    InterpreterResultMessage tableMessage = resultMessages.stream()
+        .filter(m -> m.getType() == InterpreterResult.Type.TABLE)
+        .reduce((first, second) -> second)
+        .orElseThrow(() -> new AssertionError("No TABLE result produced"));
+    assertEquals("id\tname\n1\ta\n2\tb\n", tableMessage.getData());
+  }
+
+  private static boolean isTrinoAvailable(String host, int port) {
+    try (java.net.Socket socket = new java.net.Socket()) {
+      socket.connect(new java.net.InetSocketAddress(host, port), 1000);
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * End-to-end check against a real Trino coordinator. Like DuckDB, Trino has a
+   * strict driver that rejects unknown connection properties; before ZEPPELIN-6208
+   * these were stripped by a driver-specific whitelist, now by the generic filter.
+   * Skipped automatically when no Trino server is reachable on localhost:8080.
+   */
+  @Test
+  void testTrinoConnectionWithInternalProperties()
+      throws IOException, InterpreterException {
+    assumeTrue(isTrinoAvailable("localhost", 8080),
+        "Trino coordinator not reachable on localhost:8080, skipping");
+
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "io.trino.jdbc.TrinoDriver");
+    properties.setProperty("default.url", "jdbc:trino://localhost:8080");
+    properties.setProperty("default.user", "test");
+    properties.setProperty("default.password", "");
+    // Internal keys that Trino's strict driver would reject if forwarded
+    properties.setProperty("default.completer.ttlInSeconds", "120");
+    properties.setProperty("default.completer.schemaFilters", "");
+    properties.setProperty("common.max_count", "1000");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery =
+        "SELECT nationkey AS id, name FROM tpch.tiny.nation ORDER BY nationkey LIMIT 2;";
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    InterpreterResultMessage tableMessage = resultMessages.stream()
+        .filter(m -> m.getType() == InterpreterResult.Type.TABLE)
+        .reduce((first, second) -> second)
+        .orElseThrow(() -> new AssertionError("No TABLE result produced"));
+    assertEquals("id\tname\n0\tALGERIA\n1\tARGENTINA\n", tableMessage.getData());
   }
 
   @Test
