@@ -23,9 +23,10 @@ limitations under the License.
 - **Modeled against:** `master` HEAD as of 2026-06-05 (latest released docs line).
 - **Authors:** ASF Security team (v0 draft, generated via the
   `threat-model-producer` rubric), for the Apache Zeppelin PMC to review.
-- **Status:** **DRAFT v0 — draft-first, not yet maintainer-ratified.** Most
-  claims are *(inferred)* from public documentation and the codebase and
-  must be confirmed; see §14.
+- **Status:** **v0 — PMC-reviewed.** The Apache Zeppelin PMC has reviewed the
+  framing (confirmed) and answered the §14 questions; the answers are recorded
+  inline in §14 and folded into the sections below, with confirmed claims
+  re-tagged *(maintainer)*.
 - **Version binding:** this model is versioned with the project. A report
   against Zeppelin release *N* is triaged against the model as it stood at *N*.
 - **Reporting cross-reference:** findings that violate a §8 property should be
@@ -35,7 +36,9 @@ limitations under the License.
 - **Provenance legend:** *(documented)* = stated in Zeppelin's own docs/site;
   *(maintainer)* = confirmed by a Zeppelin PMC member; *(inferred)* = reasoned
   from code/docs/domain knowledge, not yet confirmed (each has a §14 question).
-- **Draft confidence:** ~18 documented / 0 maintainer / ~24 inferred.
+- **Confidence:** ~18 documented; the §14 answers fold the bulk of the former
+  *(inferred)* claims to *(maintainer)*; a few loose environmental assumptions
+  remain *(inferred)*.
 
 **What Zeppelin is.** Apache Zeppelin is a web-based, multi-user notebook
 server for interactive data analytics. Users open notebooks in a browser and
@@ -65,7 +68,7 @@ about preventing code execution.
     whatever level the deployment's authorization grants anonymous, which by
     default is full access.
 
-**Component-family table** *(inferred — confirm in §14)*:
+**Component-family table** *(maintainer — §14.8)*:
 
 | Family | Entry point | Touches outside process? | In model? |
 | --- | --- | --- | --- |
@@ -75,14 +78,14 @@ about preventing code execution.
 | Interpreter-executed user code | `%spark`, `%sh`, `%python`, `%jdbc`, … | arbitrary (by design) | **boundary only** — the *code* is by-design; reaching/isolating it is in model |
 | Credentials / datasource auth | `CredentialRestApi`, credential injection | filesystem, backends | **yes** |
 | Notebook storage / repos | `NotebookRepo` (local FS, S3, Git, etc.) | filesystem / cloud | **yes** |
-| Bundled interpreters / examples / web UI assets | `*-interpreter` modules, demos | varies | **per-interpreter** — confirm which are supported (§14) |
+| Bundled interpreters / examples / web UI assets | `*-interpreter` modules, demos | varies | **all bundled interpreters first-class** for security purposes (§14.8); demo/example notebooks are a separate category |
 
 ## §3 Out of scope (explicit non-goals)
 
 - **Sandboxing the code a permitted user runs.** A user with run permission on
   a notebook can execute arbitrary code (`%sh`, Spark driver code, etc.) by
   design; Zeppelin does not attempt to confine what that code does on the host
-  or backend. *(inferred — §14)*
+  or backend. *(maintainer — §14.3)*
 - **Defending a deployment that disables authentication and is exposed to an
   untrusted network.** The docs direct operators to enable Shiro *or* deploy
   only in a secured/trusted environment *(documented)*; an unauthenticated,
@@ -92,9 +95,10 @@ about preventing code execution.
 - **Security of third-party interpreter backends** (the Spark cluster, the
   JDBC database, the host shell) — Zeppelin brokers access; it does not own
   those systems' security. *(inferred)*
-- **Bundled examples / demo notebooks / unsupported interpreters** — threat-
-  modeled separately if at all; integrators should not extend core guarantees
-  to them. *(inferred — §14: which interpreters are first-class?)*
+- **Bundled demo / example notebooks** — a separate category from the
+  interpreters, threat-modeled separately if at all; integrators should not
+  extend core guarantees to them. (All bundled *interpreters* are first-class;
+  see §2 and §14.8.) *(maintainer — §14.8)*
 
 ## §4 Trust boundaries and data flow
 
@@ -147,20 +151,20 @@ value**, so the model is ambiguous until the PMC rules on each (see §14 wave 1)
 
 | Knob | Default | Effect on model | Maintainer stance |
 | --- | --- | --- | --- |
-| Shiro authentication (`conf/shiro.ini`) | **absent → anonymous** *(documented)* | No auth boundary at all; every §8 authn/authz property is void | **?** supported posture vs dev-only — §14.1 |
-| `zeppelin.notebook.public` / `ZEPPELIN_NOTEBOOK_PUBLIC` | **`true` → new notes public** *(documented)* | Empty-ACL note is readable/runnable by any authenticated (or anonymous) user | **?** §14.2 |
-| Interpreter user impersonation | **off → runs as server OS user** *(documented)* | Without it, every run-capable user's code shares the *server's* OS identity/privileges and filesystem | **?** §14.3 |
-| Interpreter binding mode (shared / scoped / isolated) | **shared** *(inferred)* | Process-level separation between users/notes; "isolated" is a *stability/resource* boundary, **not** a security sandbox | **?** §14.4 |
-| URL ACLs (`[urls]` in shiro.ini) gating `/interpreter`, `/credential`, `/configurations` | **not restricted unless operator adds them** *(documented)* | Sensitive admin endpoints open to any authenticated role absent explicit `[urls]` rules | **?** §14.5 |
-| HTTPS / security headers (`http_security_headers`) | **off/plain unless configured** *(documented)* | Credentials + session over plaintext; missing CSP/XFO | operator responsibility (§10) |
+| Shiro authentication (`conf/shiro.ini`) | **absent → anonymous** *(documented)* | No auth boundary at all; every §8 authn/authz property is void | **dev-convenience** *(maintainer — §14.1)*: anonymous is *not* the supported posture; reports against an exposed anonymous instance are `OUT-OF-MODEL: non-default-build` |
+| `zeppelin.notebook.public` / `ZEPPELIN_NOTEBOOK_PUBLIC` | **`true` → new notes public** *(documented)* | Empty-ACL note is readable/runnable by any authenticated (or anonymous) user | **by-design** *(maintainer — §14.2)*: public-by-default is intended; an empty-ACL note being readable/runnable is not a bug |
+| Interpreter user impersonation | **off → runs as server OS user** *(documented)* | Without it, every run-capable user's code shares the *server's* OS identity/privileges and filesystem | **by-design** *(maintainer — §14.3)*: running as the server OS user is the documented default; OS isolation requires enabling impersonation |
+| Interpreter binding mode (shared / scoped / isolated) | **shared** *(maintainer — §14.4)* | Process-level separation between users/notes; "isolated" is a *stability/resource* boundary, **not** a security sandbox | **maintainer — §14.4**: default is `shared`; no binding mode is a security sandbox |
+| URL ACLs (`[urls]` in shiro.ini) gating `/interpreter`, `/credential`, `/configurations` | **not restricted unless operator adds them** *(documented)* | Sensitive admin endpoints open to any authenticated role absent explicit `[urls]` rules | **maintainer — §14.5**: no built-in admin gate; protection relies entirely on `shiro.ini [urls]` |
+| HTTPS / security headers (`http_security_headers`) | **off/plain unless configured** *(documented)* | Credentials + session over plaintext; missing CSP/XFO | operator responsibility (§10); no CSP and Origin-based CSRF only — `VALID-HARDENING` *(maintainer — §14.10)* |
 
-**Insecure-default ruling needed.** For each row whose default is the less-
-secure value, the PMC must rule: is the default the *supported production
-posture* (→ a report against it is `VALID`), or a *dev-convenience operators
-must change* (→ `OUT-OF-MODEL: non-default-build`, and the requirement moves to
-§10)? The public docs lean toward the latter ("strongly recommended… or only
-deploy… in a secured and trusted environment"), but this needs an explicit PMC
-call because it reshapes §8/§10/§11a/§13 at once.
+**Insecure-default ruling (recorded).** The PMC has ruled that every insecure
+§5a default above is a *dev-convenience / by-design* choice, not the supported
+production posture: Zeppelin's stance is "open by default, secure by
+configuration" (enable Shiro, or deploy only in a secured/trusted network). A
+report that only manifests under one of these defaults is therefore
+`OUT-OF-MODEL: non-default-build` (or `BY-DESIGN`), with the requirement living
+in §10. See §14 wave 1 for the per-knob answers.
 
 ## §6 Assumptions about inputs
 
@@ -170,15 +174,15 @@ Inputs and their trust (network-service shape — rows are endpoints/messages):
 | --- | --- | --- | --- |
 | `POST` login / Shiro filter | credentials | **yes** (pre-auth) | strong realm config; lockout/rate-limit at proxy *(inferred)* |
 | Websocket ops (run/edit/move paragraph) | notebook + paragraph payload | **yes** (authenticated user) | notebook ACL + run permission enforced server-side *(documented)* |
-| `NotebookRestApi` / `InterpreterRestApi` | note id, interpreter settings | **yes** (authenticated user) | URL ACL + ownership checks *(inferred — §14.6)* |
-| `CredentialRestApi` | per-user credentials | **yes** (authenticated user) | per-user credential isolation *(inferred — §14.7)* |
+| `NotebookRestApi` / `InterpreterRestApi` | note id, interpreter settings | **yes** (authenticated user) | URL ACL + ownership checks, enforced server-side *(maintainer — §14.6)* |
+| `CredentialRestApi` | per-user credentials | **yes** (authenticated user) | per-user credential isolation *(maintainer — §14.7)* |
 | Paragraph code body | arbitrary code | **yes — by design** | this is the granted capability, not validated input |
 | `shiro.ini`, `zeppelin-site.xml`, interpreter JSON | config | **no — operator-trusted** | filesystem perms on config/secret files *(inferred)* |
 | Notebook storage backend contents | persisted notes | **mostly trusted** (written via the app) | integrity of the repo (S3/Git/FS) *(inferred)* |
 
-Size/shape/rate: *(inferred — §14)* no documented limits on paragraph size,
-result size, or websocket message rate; resource exhaustion via large
-results / many interpreter launches is plausible and needs a §8 resource line.
+Size/shape/rate: *(maintainer — §14.9)* there is no rate limit and no
+concurrent-interpreter-launch cap today; the PMC treats this as
+`VALID-HARDENING` and welcomes the scan surfacing concrete limits.
 
 ## §7 Adversary model
 
@@ -206,32 +210,35 @@ config/secret files or the host outside what their interpreter identity grants.
 
 ## §8 Security properties the project provides
 
-Each conditional on the relevant §5a knob being set securely. *(All
-*(inferred)* pending §14 — Zeppelin documents the mechanisms but does not
-publish them as committed "properties".)*
+Each conditional on the relevant §5a knob being set securely. The PMC has
+confirmed properties 1–5 below as committed properties (§14.5–§14.7), now
+tagged *(maintainer)*; property 6 (resource/availability) is **not** a committed
+property today (§14.9).
 
 1. **Authentication of the web/REST/websocket surface** *when Shiro is
    configured*. Violation symptom: an unauthenticated client performs an
-   operation requiring a session. Severity: **critical**. *(inferred)*
+   operation requiring a session. Severity: **critical**. *(maintainer —
+   §14.6)*
 2. **Authorization of notebook operations per the owner/reader/writer/runner
    ACL** *when auth is on*. Violation symptom: a user reads/edits/runs a note
-   they lack permission for. Severity: **critical**. *(documented mechanism /
-   inferred as a committed property)*
+   they lack permission for. Severity: **critical**. *(maintainer — §14.6:
+   enforced server-side for every websocket/REST op, not client-side only)*
 3. **URL-level access control** for sensitive endpoints via `[urls]`.
    Violation symptom: a non-admin reaches `/interpreter`, `/credential`, or
    `/configurations` despite a restricting rule. Severity: **high**.
-   *(documented mechanism)*
+   *(documented mechanism; maintainer — §14.5: no built-in admin gate, so this
+   property holds only when the operator adds `[urls]` rules)*
 4. **Per-user credential isolation** (one user cannot read another's injected
    datasource credentials). Violation symptom: cross-user credential read.
-   Severity: **critical**. *(inferred — §14.7)*
+   Severity: **critical**. *(maintainer — §14.7)*
 5. **Impersonation confinement** *when enabled*: interpreter code runs as the
    logged-in user, not the server user, and not as another user. Violation
    symptom: code runs as a different identity than the session's. Severity:
-   **high**. *(documented mechanism / inferred property)*
-6. **Resource/availability** *(inferred — §14)*: **needs a line.** Is an
-   unauthenticated request able to spawn interpreters / exhaust memory a bug?
-   Propose: pre-auth resource exhaustion is in-model; an authenticated user
-   running an expensive query is not. Confirm threshold in §14.
+   **high**. *(maintainer — §14.3)*
+6. **Resource/availability** — **not a committed property today** *(maintainer —
+   §14.9)*. There is no rate limit or concurrent-launch cap. The PMC treats
+   hardening here as `VALID-HARDENING` and welcomes concrete recommendations
+   from the scan rather than suppressing them.
 
 ## §9 Security properties the project does *not* provide
 
@@ -250,17 +257,18 @@ publish them as committed "properties".)*
   each user/note a separate interpreter *process* for stability and resource
   separation; it does **not** confine what the code in that process can do to
   the host or to shared backends, and absent impersonation all those processes
-  still run as the **same server OS user**. *(inferred — §14.4)*
+  still run as the **same server OS user**. *(maintainer — §14.4)*
 - **Notebook permissions are an application-layer ACL, not OS isolation.** A
   user denied *read* on a note in the UI may still reach data through an
   interpreter they *can* run if backends aren't separately access-controlled.
-  *(inferred — §14)*
+  *(maintainer)*
 
 **Well-known attack classes left to the operator/integrator:** SSRF from
 interpreter code reaching internal services; secrets-in-notebooks; XSS/CSRF on
-the notebook web UI (mitigated only if `http_security_headers` + CSRF defenses
-are enabled — confirm coverage in §14); websocket cross-origin. One line each;
-the point is to put integrators on notice.
+the notebook web UI — *(maintainer — §14.10)* there is **no Content-Security-
+Policy** and CSRF protection is **Origin-header-based only**, so strengthening
+these (CSP, stronger CSRF) is welcome `VALID-HARDENING`; websocket cross-origin.
+The point is to put integrators on notice.
 
 ## §10 Downstream / operator responsibilities
 
@@ -297,18 +305,18 @@ The highest-leverage section for keeping scan output signal-heavy:
 
 - **"`%sh` / interpreter executes arbitrary shell or driver code → RCE."**
   By design for a run-capable user; `OUT-OF-MODEL` / `BY-DESIGN` unless it
-  crosses a tenant or the operator boundary. (§3, §9) *(inferred — §14.3)*
+  crosses a tenant or the operator boundary. (§3, §9) *(maintainer — §14.3)*
 - **"Interpreter process runs as the Zeppelin server OS user / can read server
   files."** Documented default behavior without impersonation; operator config,
-  not a defect. (§5a, §10) *(documented)*
+  not a defect. (§5a, §10) *(documented; maintainer — §14.3)*
 - **"Anonymous user can do X"** reported against a deployment with **no
   `shiro.ini`.** Out of model — auth is operator-enabled. (§5a, §9)
-  *(documented)*
+  *(maintainer — §14.1)*
 - **"No TLS / credentials in plaintext"** against a deployment the operator did
   not configure for HTTPS. Operator responsibility. (§10) *(documented)*
 - **Static-analysis "command injection / code execution" hits on the
   interpreter execution path.** That path *is* the feature; in-model only if it
-  bypasses the authn/authz gate. (§4 reachability test) *(inferred)*
+  bypasses the authn/authz gate. (§4 reachability test) *(maintainer)*
 
 ## §12 Conditions that would change this model
 
@@ -334,47 +342,66 @@ The highest-leverage section for keeping scan output signal-heavy:
 
 ## §14 Open questions for the maintainers
 
-Grouped in waves; each states a **proposed answer** to confirm/correct/strike.
-Every *(inferred)* tag above maps to one of these.
+Grouped in waves; each states the **proposed answer** followed by the **PMC
+answer** (recorded by the Apache Zeppelin PMC, 2026-06-11). The core framing —
+RBAC (Shiro + notebook ACL + URL ACL + impersonation) is the trust boundary,
+not a sandbox, and a `%sh` from a run-capable user is the product working, not
+RCE — was confirmed by the PMC and is kept.
 
 **Wave 1 — scope & the insecure defaults (these reshape everything):**
 1. **Anonymous default.** Proposed: anonymous/no-`shiro.ini` is a *dev-
    convenience*; the supported production posture requires Shiro **or** a
    trusted isolated network. So reports against an internet-exposed anonymous
    instance are `OUT-OF-MODEL: non-default-build`. Correct? (→ §5a, §3, §11a)
+   **→ PMC: confirmed.**
 2. **`notebook.public=true` default.** Proposed: public-by-default is intended
    convenience; operators needing isolation set it false. A "any user can read
    an empty-ACL note" report is by-design, not a bug. Correct? (→ §5a, §2)
+   **→ PMC: confirmed — by-design.**
 3. **Impersonation off by default.** Proposed: without impersonation, all
    interpreter code legitimately runs as the **server** OS user; this is the
    documented default and not a vulnerability; multi-tenant OS isolation
    requires enabling impersonation. Correct? (→ §3, §5a, §9, §11a)
+   **→ PMC: confirmed.**
 4. **Binding mode as boundary.** Proposed: shared/scoped/isolated are
    stability/resource controls, **not** security sandboxes; we should state
    that explicitly in §9. Agree? Which is the default? (→ §5a, §9)
+   **→ PMC: agreed — the default is `shared`, and no binding mode is a security
+   sandbox.**
 
 **Wave 2 — properties & enforcement:**
 5. **URL ACL default.** Are `/interpreter`, `/credential`, `/configurations`
    open to any authenticated role unless `[urls]` restricts them, or is there a
    built-in admin gate? (→ §5a, §8)
+   **→ PMC: no built-in admin gate — it relies on `shiro.ini [urls]`.**
 6. **Server-side ACL enforcement.** Are notebook ACLs + role checks enforced on
    the **server** for every websocket/REST op (not just hidden in the UI)? Any
    ops that check only client-side? (→ §6, §8)
+   **→ PMC: enforced server-side; there are no client-side-only checks.**
 7. **Credential isolation.** Does the credential store guarantee one user
    cannot read another user's injected credentials, including via a shared
    interpreter process? (→ §8, §9)
+   **→ PMC: yes — per-user credentials are isolated.**
 
 **Wave 3 — surfaces & limits:**
 8. **First-class interpreters.** Which interpreters/modules are supported for
    security purposes vs. community/unsupported (→ §2/§3 carve-out)?
+   **→ PMC: all bundled interpreters are supported for security purposes
+   (first-class).**
 9. **Resource limits.** Any limits on paragraph/result size, websocket rate, or
    concurrent interpreter launches? Where's the line between in-model pre-auth
    exhaustion and by-design expensive queries? (→ §6, §8)
+   **→ PMC: `VALID-HARDENING` — please surface. No rate limit or
+   concurrent-launch cap today; this is an area we would like the scan to flag
+   and recommend improvements for.**
 10. **Web-UI hardening.** Does enabling `http_security_headers` give CSRF + XSS
     + clickjacking coverage, or are those partly the operator's job? (→ §9)
+    **→ PMC: `VALID-HARDENING` — please surface. No CSP, and CSRF is
+    Origin-based only; concrete improvements from the scan are welcome.**
 11. **Coexistence.** This is a new `THREAT_MODEL.md`; `SECURITY.md` (currently a
     stub) should point at it as canonical, and the website security pages stay
     the operator how-to. Agree? (→ meta)
+    **→ PMC: agreed.**
 
 ## §15 Machine-readable companion
 
