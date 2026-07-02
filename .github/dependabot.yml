@@ -101,17 +101,6 @@ updates:
           - "*"
 
   - package-ecosystem: "maven"
-    directory: "/rlang"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 0
-    groups:
-      rlang-security-updates:
-        applies-to: security-updates
-        patterns:
-          - "*"
-
-  - package-ecosystem: "maven"
     directory: "/shell"
     schedule:
       interval: "weekly"

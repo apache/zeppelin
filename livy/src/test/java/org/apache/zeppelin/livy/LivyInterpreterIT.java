@@ -539,83 +539,6 @@ public class LivyInterpreterIT extends WithLivyServer {
   }
 
   @Test
-  void testSparkRInterpreter() throws InterpreterException {
-    if (!checkPreCondition()) {
-      return;
-    }
-
-    final LivySparkRInterpreter sparkRInterpreter = new LivySparkRInterpreter(properties);
-    sparkRInterpreter.setInterpreterGroup(mock(InterpreterGroup.class));
-
-    try {
-      sparkRInterpreter.getLivyVersion();
-    } catch (APINotFoundException e) {
-      // don't run sparkR test for livy 0.2 as there's some issues for livy 0.2
-      return;
-    }
-    AuthenticationInfo authInfo = new AuthenticationInfo("user1");
-    MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
-    InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setAuthenticationInfo(authInfo)
-        .setInterpreterOut(output)
-        .build();
-    sparkRInterpreter.open();
-
-    try {
-      // only test it in livy newer than 0.2.0
-      boolean isSpark2 = isSpark2(sparkRInterpreter, context);
-      InterpreterResult result = null;
-      // test DataFrame api
-      if (isSpark2) {
-        result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
-        assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
-
-        // cancel
-        Thread cancelThread = new Thread() {
-          @Override
-          public void run() {
-            // invoke cancel after 1 millisecond to wait job starting
-            try {
-              Thread.sleep(1);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-            }
-            sparkRInterpreter.cancel(context);
-          }
-        };
-        cancelThread.start();
-        result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\n" +
-            "df1 <- dapplyCollect(df, function(x) " +
-            "{ Sys.sleep(10); x <- cbind(x, x$waiting * 60) })", context);
-        assertEquals(InterpreterResult.Code.ERROR, result.code());
-        String message = result.message().get(0).getData();
-        // 2 possibilities, sometimes livy doesn't return the real cancel exception
-        assertTrue(message.contains("cancelled part of cancelled job group") ||
-            message.contains("Job is cancelled"));
-      } else {
-        result = sparkRInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)" +
-            "\nhead(df)", context);
-        assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
-      }
-
-      // error
-      result = sparkRInterpreter.interpret("cat(a)", context);
-      assertEquals(InterpreterResult.Code.ERROR, result.code());
-      assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
-      assertTrue(result.message().get(0).getData().contains("object 'a' not found"));
-    } finally {
-      sparkRInterpreter.close();
-    }
-  }
-
-  @Test
   void testLivyParams() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -718,11 +641,6 @@ public class LivyInterpreterIT extends WithLivyServer {
     interpreterGroup.get("session_1").add(pysparkInterpreter);
     pysparkInterpreter.setInterpreterGroup(interpreterGroup);
 
-    LazyOpenInterpreter sparkRInterpreter = new LazyOpenInterpreter(
-        new LivySparkRInterpreter(properties));
-    interpreterGroup.get("session_1").add(sparkRInterpreter);
-    sparkRInterpreter.setInterpreterGroup(interpreterGroup);
-
     LazyOpenInterpreter sharedInterpreter = new LazyOpenInterpreter(
         new LivySharedInterpreter(properties));
     interpreterGroup.get("session_1").add(sharedInterpreter);
@@ -731,7 +649,6 @@ public class LivyInterpreterIT extends WithLivyServer {
     sparkInterpreter.open();
     sqlInterpreter.open();
     pysparkInterpreter.open();
-    sparkRInterpreter.open();
 
     try {
       AuthenticationInfo authInfo = new AuthenticationInfo("user1");
@@ -772,13 +689,6 @@ public class LivyInterpreterIT extends WithLivyServer {
                 "+-----+-----+\n" +
                 "|hello|   20|\n" +
                 "+-----+-----+"));
-
-        // access table from sparkr
-        result = sparkRInterpreter.interpret("head(sql(sqlContext, \"select * from df\"))",
-            context);
-        assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
       } else {
         result = sparkInterpreter.interpret(
             "val df=spark.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
@@ -799,12 +709,6 @@ public class LivyInterpreterIT extends WithLivyServer {
                 "+-----+-----+\n" +
                 "|hello|   20|\n" +
                 "+-----+-----+"));
-
-        // access table from sparkr
-        result = sparkRInterpreter.interpret("head(sql(\"select * from df\"))", context);
-        assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-        assertEquals(1, result.message().size());
-        assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
       }
 
       // test plotting of python
@@ -815,13 +719,6 @@ public class LivyInterpreterIT extends WithLivyServer {
               "plt.figure()\n" +
               "plt.plot(data)\n" +
               "%matplot plt", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
-      assertEquals(1, result.message().size());
-      assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());
-
-      // test plotting of R
-      result = sparkRInterpreter.interpret(
-          "hist(mtcars$mpg)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code(), result.toString());
       assertEquals(1, result.message().size());
       assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());
@@ -839,14 +736,8 @@ public class LivyInterpreterIT extends WithLivyServer {
   }
 
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
-    if (interpreter instanceof LivySparkRInterpreter) {
-      InterpreterResult result = interpreter.interpret("sparkR.session()", context);
-      // SparkRInterpreter would always return SUCCESS, it is due to bug of LIVY-313
-      return !result.message().get(0).getData().contains("Error");
-    } else {
-      InterpreterResult result = interpreter.interpret("spark", context);
-      return result.code() == InterpreterResult.Code.SUCCESS;
-    }
+    InterpreterResult result = interpreter.interpret("spark", context);
+    return result.code() == InterpreterResult.Code.SUCCESS;
   }
 
   public static class MyInterpreterOutputListener implements InterpreterOutputListener {

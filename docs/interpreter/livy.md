@@ -220,17 +220,6 @@ sc.version
 print "1"
 ```
 
-**sparkR**
-
-```r
-%livy.sparkr
-hello <- function( name ) {
-    sprintf( "Hello, %s", name );
-}
-
-hello("livy")
-```
-
 ## Impersonation
 When Zeppelin server is running with authentication enabled,
 then this interpreter utilizes Livy’s user impersonation feature
@@ -249,7 +238,7 @@ And creating dynamic format programmatically is not feasible in livy interpreter
 
 ## Shared SparkContext
 Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.
-That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`, `$livy.sparkr`.
+That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`.
 
 ## FAQ
 

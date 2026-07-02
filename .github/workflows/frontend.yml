@@ -122,7 +122,7 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: strict
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl python,rlang,zeppelin-jupyter-interpreter,zeppelin-web-angular ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl python,zeppelin-jupyter-interpreter,zeppelin-web-angular ${MAVEN_ARGS}
       - name: Setup Zeppelin Server (Shiro.ini)
         run: |
           export ZEPPELIN_CONF_DIR=./conf
@@ -184,19 +184,16 @@ jobs:
           key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-zeppelin-
-      - name: Setup conda environment with python 3.9 and R
+      - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: python_3_with_R
-          environment-file: testing/env_python_3_with_R.yml
+          activate-environment: python_3
+          environment-file: testing/env_python_3.yml
           python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
           auto-activate: false
           use-mamba: true
-      - name: Make IRkernel available to Jupyter
-        run: |
-          R -e "IRkernel::installspec()"
       - name: Install Environment
         run: |
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}

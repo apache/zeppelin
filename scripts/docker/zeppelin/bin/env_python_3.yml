@@ -1,8 +1,9 @@
-name: python_3_with_R
+name: python_3
 channels:
   - conda-forge
   - defaults
 dependencies:
+  - python=3.7
   - pycodestyle
   - scipy
   - numpy=1.19.5
@@ -10,11 +11,9 @@ dependencies:
   - protobuf
   - pandasql
   - ipython
-  - ipython_genutils
   - ipykernel
-  - jupyter_client=5
+  - jupyter_client
   - hvplot
-  - holoviews=1.16
   - plotnine
   - seaborn
   - intake
@@ -23,14 +22,4 @@ dependencies:
   - altair
   - vega_datasets
   - plotly
-  - jinja2=3.0.3
   - pip
-  - r-base=3.6
-  - r-data.table
-  - r-evaluate
-  - r-base64enc
-  - r-knitr
-  - r-ggplot2
-  - r-irkernel
-  - r-shiny
-  - r-googlevis

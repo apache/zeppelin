@@ -1,4 +1,4 @@
-name: python_3_with_R
+name: python_3
 channels:
   - conda-forge
   - defaults
@@ -9,7 +9,6 @@ dependencies:
   - grpcio
   - protobuf
   - pandasql
-  - sqlalchemy=1.4.46
   - ipython
   - ipython_genutils
   - ipykernel
@@ -26,12 +25,3 @@ dependencies:
   - plotly
   - jinja2=3.0.3
   - pip
-  - r-base=3.6
-  - r-data.table
-  - r-evaluate
-  - r-base64enc
-  - r-knitr
-  - r-ggplot2
-  - r-irkernel
-  - r-shiny
-  - r-googlevis

@@ -85,10 +85,6 @@ public class SparkExample {
       System.out.println("Matplotlib result, type: " + result.getResults().get(0).getType() +
               ", data: " + result.getResults().get(0).getData());
 
-      // sparkr
-      result = session.execute("r", "df <- as.DataFrame(faithful)\nhead(df)");
-      System.out.println("Sparkr dataframe: " + result.getResults().get(0).getData());
-
       // spark sql
       result = session.execute("sql", "select * from df");
       System.out.println("Spark Sql dataframe: " + result.getResults().get(0).getData());

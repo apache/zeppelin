@@ -73,7 +73,6 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   /**
    * In some cases we need to redirect process output to paragraph's InterpreterOutput.
-   * e.g. In %r.shiny for shiny app
    * @param redirectedContext
    */
   public void setRedirectedContext(InterpreterContext redirectedContext) {

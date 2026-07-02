@@ -170,7 +170,6 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are a few
  * [Flink support in Zeppelin](./flink_with_zeppelin.html), to know more about deep integration with [Apache Flink](http://flink.apache.org/).
  * [SQL support in Zeppelin](./sql_with_zeppelin.html) for SQL support
  * [Python support in Zeppelin](./python_with_zeppelin.html), for Matplotlib, Pandas, Conda/Docker integration.
- * [R support in Zeppelin](./r_with_zeppelin.html)
  * [All Available Interpreters](../#available-interpreters)
 
 #### Multi-user support ...

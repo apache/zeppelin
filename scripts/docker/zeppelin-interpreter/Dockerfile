@@ -49,13 +49,13 @@ COPY --from=zeppelin-distribution /opt/zeppelin/interpreter ${ZEPPELIN_HOME}/int
 ### COPY --from=zeppelin-distribution /opt/zeppelin/interpreter/${interpreter_name}  ${ZEPPELIN_HOME}/interpreter/${interpreter_name}
 
 
-# Decide: Install conda to manage python and R packages. Maybe adjust the packages env_python_3_with_R
-# Install python and R packages via conda
-COPY env_python_3_with_R.yml /env_python_3_with_R.yml
+# Decide: Install conda to manage python packages. Maybe adjust the packages env_python_3
+# Install python packages via conda
+COPY env_python_3.yml /env_python_3.yml
 # To improve the build time, the Zeppelin team recommends a conda proxy
 # COPY condarc /etc/conda/condarc
 RUN set -ex && \
-    micromamba create -y -p /opt/conda -f env_python_3_with_R.yml && \
+    micromamba create -y -p /opt/conda -f env_python_3.yml && \
     micromamba clean -ay
 
 ENV PATH=/opt/conda/bin:$PATH \

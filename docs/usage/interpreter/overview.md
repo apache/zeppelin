@@ -87,7 +87,7 @@ If the context parameter is null, then it is replaced by an empty string. The fo
 
 ## What are Interpreter Groups ?
 Every interpreter belongs to an **Interpreter Group**. Interpreter Groups are units of interpreters that run in one single JVM process and can be started/stopped together.
-By default, every interpreter belongs to a separate group, but the group might contain more interpreters. For example, the Spark interpreter group includes Scala Spark, PySpark, IPySpark, SparkR and Spark SQL.
+By default, every interpreter belongs to a separate group, but the group might contain more interpreters. For example, the Spark interpreter group includes Scala Spark, PySpark, IPySpark and Spark SQL.
 
 Technically, Zeppelin interpreters from the same group run within the same JVM. For more information about this, please consult [the documentation on writing interpreters](../development/writing_zeppelin_interpreter.html).
 
