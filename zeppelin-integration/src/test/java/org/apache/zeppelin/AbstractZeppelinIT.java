@@ -26,7 +26,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
-import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
@@ -52,34 +51,20 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void authenticationUser(String userName, String password) {
-    WebElement navbarLoginBtn = clickableWait(
+    clickableWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC);
-    try {
-      navbarLoginBtn.click();
-    } catch (ElementNotInteractableException e) {
-      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
-    }
+        MAX_BROWSER_TIMEOUT_SEC).click();
 
     visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    // Trigger Angular digest to commit pending ng-model $viewValue changes
-    // before the login button click, so login() reads the correct model values.
-    ((JavascriptExecutor) manager.getWebDriver()).executeScript(
-        "angular.element('#loginModal').scope().$apply();");
-    WebElement modalLoginBtn = clickableWait(
+    clickableWait(
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC);
-    try {
-      modalLoginBtn.click();
-    } catch (ElementNotInteractableException e) {
-      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", modalLoginBtn);
-    }
+        MAX_BROWSER_TIMEOUT_SEC).click();
 
     // Wait for the logged-in navbar user dropdown to appear (indicates login completed
     // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
     visibilityWait(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle')]"),
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript(

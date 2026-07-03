@@ -63,7 +63,6 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "[urls]\n" +
       "/api/version = anon\n" +
       "/api/cluster/address = anon\n" +
-      "/api/login = anon\n" +
       "/** = authc";
 
   private final static String CMD_PS_PYTHON =
