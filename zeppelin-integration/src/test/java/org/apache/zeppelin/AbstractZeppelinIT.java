@@ -57,7 +57,7 @@ abstract public class AbstractZeppelinIT {
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       navbarLoginBtn.click();
-    } catch (ElementClickInterceptedException | ElementNotInteractableException e) {
+    } catch (ElementNotInteractableException e) {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
     }
 
@@ -68,7 +68,7 @@ abstract public class AbstractZeppelinIT {
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       modalLoginBtn.click();
-    } catch (ElementClickInterceptedException | ElementNotInteractableException e) {
+    } catch (ElementNotInteractableException e) {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", modalLoginBtn);
     }
 
