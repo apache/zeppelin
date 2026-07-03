@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,16 +10,10 @@
  * limitations under the License.
  */
 
-export type EditorMode =
-  | 'ace/mode/scala'
-  | 'ace/mode/python'
-  | 'ace/mode/r'
-  | 'ace/mode/sql'
-  | 'ace/mode/markdown'
-  | 'ace/mode/sh';
+export type EditorMode = 'ace/mode/scala' | 'ace/mode/python' | 'ace/mode/sql' | 'ace/mode/markdown' | 'ace/mode/sh';
 
 export type EditorCompletionKey = 'TAB' | string;
-export type EditorLanguage = 'scala' | 'python' | 'r' | 'sql' | 'markdown' | 'sh' | string;
+export type EditorLanguage = 'scala' | 'python' | 'sql' | 'markdown' | 'sh' | string;
 
 export interface Ticket {
   principal: string;
