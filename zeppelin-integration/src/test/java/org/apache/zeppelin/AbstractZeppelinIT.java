@@ -51,15 +51,25 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void authenticationUser(String userName, String password) {
-    clickableWait(
+    WebElement navbarLoginBtn = clickableWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
+        MAX_BROWSER_TIMEOUT_SEC);
+    try {
+      navbarLoginBtn.click();
+    } catch (ElementClickInterceptedException e) {
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
+    }
 
     visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
     visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    clickableWait(
+    WebElement modalLoginBtn = clickableWait(
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
+        MAX_BROWSER_TIMEOUT_SEC);
+    try {
+      modalLoginBtn.click();
+    } catch (ElementClickInterceptedException e) {
+      ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", modalLoginBtn);
+    }
 
     // Wait for the logged-in navbar user dropdown to appear (indicates login completed
     // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
