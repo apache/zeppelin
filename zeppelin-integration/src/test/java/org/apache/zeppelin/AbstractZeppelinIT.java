@@ -79,7 +79,7 @@ abstract public class AbstractZeppelinIT {
     // Wait for the logged-in navbar user dropdown to appear (indicates login completed
     // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
     visibilityWait(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle')]"),
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript(
