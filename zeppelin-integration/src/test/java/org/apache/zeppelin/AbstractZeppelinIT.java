@@ -61,15 +61,12 @@ abstract public class AbstractZeppelinIT {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
     }
 
-    WebElement userNameEl = visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC);
-    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC);
+    visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
+    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
+    // Trigger Angular digest to commit pending ng-model $viewValue changes
+    // before the login button click, so login() reads the correct model values.
     ((JavascriptExecutor) manager.getWebDriver()).executeScript(
-        "var scope = angular.element(arguments[0]).scope();"
-            + "while (scope && !scope.loginParams) { scope = scope.$parent; }"
-            + "scope.loginParams.userName = arguments[1];"
-            + "scope.loginParams.password = arguments[2];"
-            + "scope.$apply();",
-        userNameEl, userName, password);
+        "angular.element('#loginModal').scope().$apply();");
     WebElement modalLoginBtn = clickableWait(
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC);
