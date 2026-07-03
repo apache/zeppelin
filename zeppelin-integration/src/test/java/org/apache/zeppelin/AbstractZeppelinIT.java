@@ -61,8 +61,15 @@ abstract public class AbstractZeppelinIT {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
     }
 
-    visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
+    WebElement userNameEl = visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC);
+    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC);
+    ((JavascriptExecutor) manager.getWebDriver()).executeScript(
+        "var scope = angular.element(arguments[0]).scope();"
+            + "while (scope && !scope.loginParams) { scope = scope.$parent; }"
+            + "scope.loginParams.userName = arguments[1];"
+            + "scope.loginParams.password = arguments[2];"
+            + "scope.$apply();",
+        userNameEl, userName, password);
     WebElement modalLoginBtn = clickableWait(
         By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
         MAX_BROWSER_TIMEOUT_SEC);
