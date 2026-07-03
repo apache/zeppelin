@@ -53,6 +53,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       "[urls]\n" +
       "/api/version = anon\n" +
       "/api/cluster/address = anon\n" +
+      "/api/login = anon\n" +
       "/** = authc";
 
   static String originalShiro = "";

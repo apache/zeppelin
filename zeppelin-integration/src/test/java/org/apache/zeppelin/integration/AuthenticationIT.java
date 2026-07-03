@@ -64,6 +64,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       "[urls]\n" +
       "/api/version = anon\n" +
       "/api/cluster/address = anon\n" +
+      "/api/login = anon\n" +
       "/api/interpreter/** = authc, anyofrolesuser[admin, finance]\n" +
       "/** = authc";
 
