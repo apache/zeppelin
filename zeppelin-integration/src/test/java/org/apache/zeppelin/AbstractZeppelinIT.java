@@ -26,6 +26,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
@@ -56,7 +57,7 @@ abstract public class AbstractZeppelinIT {
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       navbarLoginBtn.click();
-    } catch (ElementClickInterceptedException e) {
+    } catch (ElementClickInterceptedException | ElementNotInteractableException e) {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", navbarLoginBtn);
     }
 
@@ -67,7 +68,7 @@ abstract public class AbstractZeppelinIT {
         MAX_BROWSER_TIMEOUT_SEC);
     try {
       modalLoginBtn.click();
-    } catch (ElementClickInterceptedException e) {
+    } catch (ElementClickInterceptedException | ElementNotInteractableException e) {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript("arguments[0].click();", modalLoginBtn);
     }
 
