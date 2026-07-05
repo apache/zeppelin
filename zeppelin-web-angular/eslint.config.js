@@ -19,6 +19,10 @@ const importPlugin = require('eslint-plugin-import');
 const jsdoc = require('eslint-plugin-jsdoc');
 const preferArrow = require('eslint-plugin-prefer-arrow');
 const prettier = require('eslint-config-prettier');
+// Local plugin: the Angular-specific constructor-params-order rule reimplemented
+// from the former TSLint rule (ZEPPELIN-6372).
+const localRules = require('./eslint-rules');
+const perfectionist = require('eslint-plugin-perfectionist');
 
 module.exports = tseslint.config(
   {
@@ -50,7 +54,8 @@ module.exports = tseslint.config(
       '@typescript-eslint': tseslint.plugin,
       import: importPlugin,
       jsdoc,
-      'prefer-arrow': preferArrow
+      'prefer-arrow': preferArrow,
+      local: localRules
     },
     rules: {
       '@angular-eslint/component-selector': [
@@ -104,6 +109,11 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-unsafe-function-type': 'error',
 
       '@typescript-eslint/member-ordering': 'warn',
+
+      // Custom rule (reimplemented from TSLint, ZEPPELIN-6372): keep the New UI
+      // constructor parameter order consistent as public -> protected -> private.
+      'local/constructor-params-order': 'error',
+
       '@typescript-eslint/explicit-member-accessibility': ['off', { accessibility: 'explicit' }],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'off',
@@ -144,6 +154,16 @@ module.exports = tseslint.config(
     rules: {
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'lib', style: 'kebab-case' }],
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'lib', style: 'camelCase' }]
+    }
+  },
+  {
+    // ZEPPELIN-6325 / ZEPPELIN-6372: keep public-api.ts barrels alphabetically
+    // ordered by module specifier. Delegated to eslint-plugin-perfectionist
+    // rather than owning a custom statement-reordering fixer.
+    files: ['**/public-api.ts'],
+    plugins: { perfectionist },
+    rules: {
+      'perfectionist/sort-exports': 'error'
     }
   },
   {
