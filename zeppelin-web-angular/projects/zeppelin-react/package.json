@@ -50,5 +50,8 @@
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.2.4"
+  },
+  "overrides": {
+    "linkify-it": "^5.0.2"
   }
 }
