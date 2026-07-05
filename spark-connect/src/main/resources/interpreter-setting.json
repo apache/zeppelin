@@ -1,0 +1,187 @@
+[
+  {
+    "group": "spark-connect",
+    "name": "spark-connect",
+    "className": "org.apache.zeppelin.spark.SparkConnectInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "spark.remote": {
+        "envName": "SPARK_REMOTE",
+        "propertyName": "spark.remote",
+        "defaultValue": "sc://localhost:15002",
+        "description": "Spark Connect server URI (e.g. sc://localhost:15002 or sc://dataproc-master:8080)",
+        "type": "string"
+      },
+      "spark.app.name": {
+        "envName": null,
+        "propertyName": "spark.app.name",
+        "defaultValue": "Zeppelin Spark Connect",
+        "description": "Spark application name",
+        "type": "string"
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of rows to display",
+        "type": "number"
+      },
+      "zeppelin.spark.sql.stacktrace": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.stacktrace",
+        "defaultValue": true,
+        "description": "Show full exception stacktrace for SQL errors",
+        "type": "checkbox"
+      },
+      "spark.connect.grpc.maxMessageSize": {
+        "envName": null,
+        "propertyName": "spark.connect.grpc.maxMessageSize",
+        "defaultValue": "134217728",
+        "description": "Max gRPC message size in bytes (default 128MB). Increase for large result sets.",
+        "type": "number"
+      },
+      "zeppelin.spark.connect.streamResults": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.connect.streamResults",
+        "defaultValue": false,
+        "description": "Stream query results row-by-row instead of building full result in memory. Recommended for large result sets.",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.connect.maxSessionsPerUser": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.connect.maxSessionsPerUser",
+        "defaultValue": "5",
+        "description": "Maximum number of Spark Connect sessions (SparkSession instances) per user. Each interpreter instance creates one session.",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": false
+    }
+  },
+  {
+    "group": "spark-connect",
+    "name": "sql",
+    "className": "org.apache.zeppelin.spark.SparkConnectSqlInterpreter",
+    "properties": {
+      "zeppelin.spark.concurrentSQL": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.concurrentSQL",
+        "defaultValue": true,
+        "description": "Execute multiple SQL concurrently",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.concurrentSQL.max": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.concurrentSQL.max",
+        "defaultValue": "10",
+        "description": "Max concurrent SQL executions",
+        "type": "number"
+      },
+      "zeppelin.spark.sql.stacktrace": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.stacktrace",
+        "defaultValue": true,
+        "description": "Show full exception stacktrace for SQL errors",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": false
+    }
+  },
+  {
+    "group": "spark-connect",
+    "name": "pyspark",
+    "className": "org.apache.zeppelin.spark.PySparkConnectInterpreter",
+    "properties": {
+      "spark.remote": {
+        "envName": "SPARK_REMOTE",
+        "propertyName": "spark.remote",
+        "defaultValue": "sc://localhost:15002",
+        "description": "Spark Connect server URI (e.g. sc://localhost:15002 or sc://dataproc-master:8080)",
+        "type": "string"
+      },
+      "spark.connect.token": {
+        "envName": "SPARK_CONNECT_TOKEN",
+        "propertyName": "spark.connect.token",
+        "defaultValue": "",
+        "description": "Authentication token for Spark Connect (optional)",
+        "type": "string"
+      },
+      "spark.connect.use_ssl": {
+        "envName": "SPARK_CONNECT_USE_SSL",
+        "propertyName": "spark.connect.use_ssl",
+        "defaultValue": false,
+        "description": "Use SSL for Spark Connect connection",
+        "type": "checkbox"
+      },
+      "spark.app.name": {
+        "envName": null,
+        "propertyName": "spark.app.name",
+        "defaultValue": "Zeppelin Spark Connect",
+        "description": "Spark application name",
+        "type": "string"
+      },
+      "spark.pyspark.driver.python": {
+        "envName": "PYSPARK_DRIVER_PYTHON",
+        "propertyName": "spark.pyspark.driver.python",
+        "defaultValue": "",
+        "description": "Python executable to use for PySpark driver (highest priority). Follows Spark's PySpark detection pattern.",
+        "type": "string"
+      },
+      "spark.pyspark.python": {
+        "envName": "PYSPARK_PYTHON",
+        "propertyName": "spark.pyspark.python",
+        "defaultValue": "",
+        "description": "Python executable to use for PySpark (second priority). Can also be set via PYSPARK_PYTHON environment variable.",
+        "type": "string"
+      },
+      "zeppelin.python": {
+        "envName": "ZEPPELIN_PYTHON",
+        "propertyName": "zeppelin.python",
+        "defaultValue": "",
+        "description": "Python executable command (optional fallback). If not set, defaults to 'python' and uses system PATH (matching Spark's PySpark behavior).",
+        "type": "string"
+      },
+      "zeppelin.pyspark.connect.useIPython": {
+        "envName": null,
+        "propertyName": "zeppelin.pyspark.connect.useIPython",
+        "defaultValue": true,
+        "description": "Use IPython if available",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of rows to display",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark-connect",
+    "name": "ipyspark",
+    "className": "org.apache.zeppelin.spark.IPySparkConnectInterpreter",
+    "properties": {},
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  }
+]
