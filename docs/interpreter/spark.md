@@ -50,21 +50,6 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>Provides a IPython environment</td>
   </tr>
   <tr>
-    <td>%spark.r</td>
-    <td>SparkRInterpreter</td>
-    <td>Provides an vanilla R environment with SparkR support</td>
-  </tr>
-  <tr>
-    <td>%spark.ir</td>
-    <td>SparkIRInterpreter</td>
-    <td>Provides an R environment with SparkR support based on Jupyter IRKernel</td>
-  </tr>
-  <tr>
-    <td>%spark.shiny</td>
-    <td>SparkShinyInterpreter</td>
-    <td>Used to create R shiny app with SparkR support</td>
-  </tr>
-  <tr>
     <td>%spark.sql</td>
     <td>SparkSQLInterpreter</td>
     <td>Provides a SQL environment</td>
@@ -101,7 +86,7 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 
   <tr>
     <td>Inline Visualization</td>
-    <td>You can visualize Spark Dataset/DataFrame vis Python/R's plotting libraries, and even you can make SparkR Shiny app in Zeppelin</td>
+    <td>You can visualize Spark Dataset/DataFrame vis Python's plotting libraries.</td>
   </tr>
 
   </tr>
@@ -119,8 +104,8 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 
 For beginner, we would suggest you to play Spark in Zeppelin docker.
 In the Zeppelin docker image, we have already installed
-miniconda and lots of [useful python and R libraries](https://github.com/apache/zeppelin/blob/branch-0.10/scripts/docker/zeppelin/bin/env_python_3_with_R.yml)
-including IPython and IRkernel prerequisites, so `%spark.pyspark` would use IPython and `%spark.ir` is enabled.
+miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/branch-0.10/scripts/docker/zeppelin/bin/env_python_3_with_R.yml)
+including IPython prerequisites, so `%spark.pyspark` would use IPython.
 Without any extra configuration, you can run most of tutorial notes under folder `Spark Tutorial` directly.
 
 First you need to download Spark, because there's no Spark binary distribution shipped with Zeppelin.
@@ -219,11 +204,6 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>false</td>
     <td>Whether use IPython when the ipython prerequisites are met in `%spark.pyspark`</td>
   </tr>
-  <tr>
-    <td>zeppelin.R.cmd</td>
-    <td>R</td>
-    <td>R binary executable path.</td>
-  </tr>  
   <tr>
     <td>zeppelin.spark.concurrentSQL</td>
     <td>false</td>
@@ -388,7 +368,7 @@ You can also choose `scoped` mode. For `scoped` per note mode, Zeppelin creates 
 SparkContext, SparkSession and ZeppelinContext are automatically created and exposed as variable names `sc`, `spark` and `z` respectively, in Scala, Python and R environments.
 
 
-> Note that Scala/Python/R environment shares the same SparkContext, SQLContext, SparkSession and ZeppelinContext instance.
+> Note that Scala/Python environment shares the same SparkContext, SQLContext, SparkSession and ZeppelinContext instance.
 
 ## Yarn Mode
 
@@ -418,55 +398,6 @@ By default, Zeppelin would use IPython in `%spark.pyspark` when IPython is avail
 
 You can use `IPySpark` explicitly via `%spark.ipyspark`. IPySpark interpreter is almost the same as IPython interpreter except Spark interpreter inject SparkContext, SQLContext, SparkSession via variables `sc`, `sqlContext`, `spark`.
 For the IPython features, you can refer doc [Python Interpreter](python.html#ipython-interpreter-pythonipython-recommended)
-
-## SparkR
-
-Zeppelin support SparkR via `%spark.r`, `%spark.ir` and `%spark.shiny`. Here's configuration for SparkR Interpreter.
-
-<table class="table-configuration">
-  <tr>
-    <th>Spark Property</th>
-    <th>Default</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>zeppelin.R.cmd</td>
-    <td>R</td>
-    <td>R binary executable path.</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.knitr</td>
-    <td>true</td>
-    <td>Whether use knitr or not. (It is recommended to install knitr and use it in Zeppelin)</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.image.width</td>
-    <td>100%</td>
-    <td>R plotting image width.</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.render.options</td>
-    <td>out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F, fig.retina = 2</td>
-    <td>R plotting options.</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.shiny.iframe_width</td>
-    <td>100%</td>
-    <td>IFrame width of Shiny App</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.shiny.iframe_height</td>
-    <td>500px</td>
-    <td>IFrame height of Shiny App</td>
-  </tr>
-  <tr>
-    <td>zeppelin.R.shiny.portRange</td>
-    <td>:</td>
-    <td>Shiny app would launch a web app at some port, this property is to specify the portRange via format '<start>:<end>', e.g. '5000:5001'. By default it is ':' which means any port</td>
-  </tr>
-</table>
-
-Refer [R doc](r.html) for how to use R in Zeppelin.
 
 ## SparkSql
 
@@ -502,7 +433,7 @@ But sql statements in different paragraphs can run concurrently by the following
  sql statement
  ```
 
-This pool feature is also available for all versions of scala Spark, PySpark. For SparkR, it is only available starting from 2.3.0.
+This pool feature is also available for all versions of scala Spark, PySpark.
 
 ## Dependency Management
 

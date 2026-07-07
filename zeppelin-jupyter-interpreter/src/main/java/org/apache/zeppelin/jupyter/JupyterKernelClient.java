@@ -45,8 +45,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Grpc client for Jupyter kernel
@@ -54,9 +52,6 @@ import java.util.regex.Pattern;
 public class JupyterKernelClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelClient.class.getName());
-  // used for matching shiny url
-  private static final Pattern SHINY_LISTENING_PATTERN =
-          Pattern.compile(".*Listening on (http:\\S*).*", Pattern.DOTALL);
 
   private final ManagedChannel channel;
   private final JupyterKernelGrpc.JupyterKernelBlockingStub blockingStub;
@@ -100,39 +95,6 @@ public class JupyterKernelClient {
     this.context = context;
   }
 
-  /**
-   * This is for shiny interpreter. It's better not to put this in the general
-   * JupyterKernelClient, we may need to create a specififc JupyterKernelClient for R Kernel.
-   * @param response
-   * @return true if shiny url is matched
-   * @throws IOException
-   */
-  private boolean checkForShinyApp(String response) throws IOException {
-    String intpClassName = context.getInterpreterClassName();
-    if (intpClassName != null &&
-            (intpClassName.equals("org.apache.zeppelin.r.ShinyInterpreter") ||
-                    intpClassName.equals("org.apache.zeppelin.spark.SparkShinyInterpreter"))) {
-      Matcher matcher = SHINY_LISTENING_PATTERN.matcher(response);
-      if (matcher.matches()) {
-        String url = matcher.group(1);
-        LOGGER.info("Matching shiny app url: {}", url);
-        context.out.clear();
-        String defaultHeight = properties.getProperty("zeppelin.R.shiny.iframe_height", "500px");
-        String height = context.getLocalProperties().getOrDefault("height", defaultHeight);
-        String defaultWidth = properties.getProperty("zeppelin.R.shiny.iframe_width", "100%");
-        String width = context.getLocalProperties().getOrDefault("width", defaultWidth);
-        context.out.write("\n%html " + "<iframe src=\"" + url + "\" height =\"" +
-                height + "\" width=\"" + width + "\" frameBorder=\"0\"></iframe>");
-        context.out.flush();
-        context.out.write("\n%text ");
-        context.getIntpEventClient().checkpointOutput(context.getNoteId(),
-                context.getParagraphId());
-        return true;
-      }
-    }
-    return false;
-  }
-
   // execute the code and make the output as streaming by writing it to InterpreterOutputStream
   // one by one.
   public ExecuteResponse stream_execute(ExecuteRequest request,
@@ -152,9 +114,6 @@ public class JupyterKernelClient {
         switch (executeResponse.getType()) {
           case TEXT:
             try {
-              if (checkForShinyApp(executeResponse.getOutput())) {
-                break;
-              }
               if (executeResponse.getOutput().startsWith("%")) {
                 // the output from jupyter kernel maybe specify format already.
                 interpreterOutput.write((executeResponse.getOutput()).getBytes());

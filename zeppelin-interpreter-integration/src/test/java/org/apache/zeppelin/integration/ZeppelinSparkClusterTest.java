@@ -365,15 +365,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
           assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
 
-          // get resource from sparkr
-          p = note.addNewParagraph(anonymous);
-          p.setText("%spark.r df=z.getAsDataFrame('table_result')\ndf");
-          note.run(p.getId(), true);
-          assertEquals(Status.FINISHED, p.getStatus());
-          assertEquals(InterpreterResult.Type.TEXT, p.getReturn().message().get(0).getType());
-          assertTrue(p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"),
-            p.getReturn().toString());
-
           // test display DataSet
           p = note.addNewParagraph(anonymous);
           p.setText("%spark val ds=spark.createDataset(Seq((\"hello\",20)))\n" +
@@ -382,34 +373,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           assertEquals(Status.FINISHED, p.getStatus());
           assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
           assertEquals("_1\t_2\nhello\t20\n", p.getReturn().message().get(0).getData());
-          return null;
-        });
-    } finally {
-      if (null != noteId) {
-        zepServer.getService(Notebook.class).removeNote(noteId, anonymous);
-      }
-    }
-  }
-
-  @Test
-  public void sparkRTest() throws IOException {
-    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
-
-    String noteId = null;
-    try {
-      noteId = zepServer.getService(Notebook.class).createNote("note1", anonymous);
-      zepServer.getService(Notebook.class).processNote(noteId,
-        note -> {
-          Paragraph p = note.addNewParagraph(anonymous);
-
-          p.setText("%spark.r localDF <- data.frame(name=c(\"a\", \"b\", \"c\"), age=c(19, 23, 18))\n" +
-                  "df <- createDataFrame(localDF)\n" +
-                  "count(df)"
-          );
-
-          note.run(p.getId(), true);
-          assertEquals(Status.FINISHED, p.getStatus());
-          assertEquals("[1] 3", p.getReturn().message().get(0).getData().trim());
           return null;
         });
     } finally {
@@ -585,18 +548,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           Paragraph p3 = note.addNewParagraph(anonymous);
           p3.setText("%spark.pyspark print(z.get(\"var_1\"))");
 
-          Paragraph p4 = note.addNewParagraph(anonymous);
-          p4.setText("%spark.r z.get(\"var_1\")");
-
           // resources across interpreter processes (via DistributedResourcePool)
-          Paragraph p5 = note.addNewParagraph(anonymous);
-          p5.setText("%python print(z.get('var_1'))");
+          Paragraph p4 = note.addNewParagraph(anonymous);
+          p4.setText("%python print(z.get('var_1'))");
 
           note.run(p1.getId(), true);
           note.run(p2.getId(), true);
           note.run(p3.getId(), true);
           note.run(p4.getId(), true);
-          note.run(p5.getId(), true);
 
           assertEquals(Status.FINISHED, p1.getStatus());
           assertEquals(Status.FINISHED, p2.getStatus());
@@ -604,10 +563,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           assertEquals(Status.FINISHED, p3.getStatus());
           assertEquals("hello world\n", p3.getReturn().message().get(0).getData());
           assertEquals(Status.FINISHED, p4.getStatus());
-          assertTrue(p4.getReturn().message().get(0).getData().contains("hello world"),
-            p4.getReturn().toString());
-          assertEquals(Status.FINISHED, p5.getStatus());
-          assertEquals("hello world\n", p5.getReturn().message().get(0).getData());
+          assertEquals("hello world\n", p4.getReturn().message().get(0).getData());
           return null;
         });
     } finally {
@@ -1031,42 +987,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           note.run(p2.getId(), true);
           assertEquals(Status.FINISHED, p2.getStatus());
           assertTrue(p2.getReturn().toString().contains("hello java,scala"), p2.getReturn().toString());
-          return null;
-        });
-    } finally {
-      if (null != noteId) {
-        zepServer.getService(Notebook.class).removeNote(noteId, anonymous);
-      }
-    }
-  }
-
-  @Test
-  public void testRNoteDynamicForms() throws IOException {
-    assumeTrue(isHadoopVersionMatch(), "Hadoop version mismatch, skip test");
-
-    String noteId = null;
-    try {
-      noteId = zepServer.getService(Notebook.class).createNote("note1", anonymous);
-      zepServer.getService(Notebook.class).processNote(noteId,
-        note -> {
-          Paragraph p1 = note.addNewParagraph(anonymous);
-
-          // create TextBox
-          p1.setText("%spark.r z.noteTextbox(\"name\", \"world\")");
-          note.run(p1.getId(), true);
-          assertEquals(Status.FINISHED, p1.getStatus());
-          Input input = p1.getNote().getNoteForms().get("name");
-          assertTrue(input instanceof TextBox);
-          TextBox inputTextBox = (TextBox) input;
-          assertEquals("name", inputTextBox.getDisplayName());
-          assertEquals("world", inputTextBox.getDefaultValue());
-          assertEquals("world", p1.getNote().getNoteParams().get("name"));
-
-          Paragraph p2 = note.addNewParagraph(anonymous);
-          p2.setText("%md hello $${name}");
-          note.run(p2.getId(), true);
-          assertEquals(Status.FINISHED, p2.getStatus());
-          assertTrue(p2.getReturn().toString().contains("hello world"), p2.getReturn().toString());
           return null;
         });
     } finally {

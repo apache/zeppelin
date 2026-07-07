@@ -15,15 +15,14 @@ limitations under the License.
   
 This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
-For SparkR users, this script includes several helpful [R Libraries](#r-extras).
- 
-####Installing the required components to launch a virtual machine.
+
+#### Installing the required components to launch a virtual machine.
 
 This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
 
 ### Create a Zeppelin Ready VM in 4 Steps (5 on Windows)
 
-*If you are running Windows and don't yet have python installed, install Python 2.7.x*  [Python Windows Installer](https://www.python.org/downloads/release/python-2710/)
+* If you are running Windows and don't yet have python installed, install Python 2.7.x*  [Python Windows Installer](https://www.python.org/downloads/release/python-2710/)
 
 1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
@@ -33,7 +32,7 @@ This script requires three applications, [Ansible](http://docs.ansible.com/ansib
 3. Install Virtual Box: [Virtual Box Downloads](https://www.virtualbox.org/ "Virtual Box")
 4. Type `vagrant up`  from within the `/scripts/vagrant/zeppelin-dev` directory
 
-Thats it!
+That's it!
 
 You can now run `vagrant ssh` and this will place you into the guest machines terminal prompt.
 
@@ -79,11 +78,10 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-8-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
- - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
  
 ### How to build & run Zeppelin
 
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
+This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python support via PySpark:
 
 ```
 cd /zeppelin
@@ -162,8 +160,3 @@ plt.title('How fast do you want to go today?')
 
 show(plt)
 ``` 
-
-### R Extras
-
-With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
-The installed R Packages include: Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table

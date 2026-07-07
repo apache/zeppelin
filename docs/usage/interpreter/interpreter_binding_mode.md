@@ -88,7 +88,7 @@ In the case of the **per user** scope (available in a multi-user environment), Z
 
 Each Interpreter implementation may have different characteristics depending on the back end system that they integrate. And 3 interpreter modes can be used differently.
 Let’s take a look how Spark Interpreter implementation uses these 3 interpreter modes with **per note** scope, as an example.
-Spark Interpreter implementation includes 4 different interpreters in the group: Spark, SparkSQL, Pyspark and SparkR. 
+Spark Interpreter implementation includes 3 different interpreters in the group: Spark, SparkSQL and PySpark. 
 SparkInterpreter instance embeds Scala REPL for interactive Spark API execution.
 
 <br/>

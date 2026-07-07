@@ -10,16 +10,10 @@
  * limitations under the License.
  */
 
-export type EditorMode =
-  | 'ace/mode/scala'
-  | 'ace/mode/python'
-  | 'ace/mode/r'
-  | 'ace/mode/sql'
-  | 'ace/mode/markdown'
-  | 'ace/mode/sh';
+export type EditorMode = 'ace/mode/scala' | 'ace/mode/python' | 'ace/mode/sql' | 'ace/mode/markdown' | 'ace/mode/sh';
 
 export type EditorCompletionKey = 'TAB' | string;
-export type EditorLanguage = 'scala' | 'python' | 'r' | 'sql' | 'markdown' | 'sh' | string;
+export type EditorLanguage = 'scala' | 'python' | 'sql' | 'markdown' | 'sh' | string;
 
 export interface Ticket {
   principal: string;

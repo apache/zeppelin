@@ -64,28 +64,6 @@ plt.plot([1, 2, 3])
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ipython_kernel.png" width="80%"/>
 
-## Jupyter R kernel
-
-In order to use [IRKernel](https://github.com/IRkernel/IRkernel), you need to first install `IRkernel` package in R.
-
-```r
-install.packages('IRkernel')
-IRkernel::installspec()  # to register the kernel in the current R installation
-```
-
-Then you can run r code in Jupyter interpreter like following. 
-
-```r
-%jupyter(kernel=ir)
-
-library(ggplot2)
-ggplot(mpg, aes(x = displ, y = hwy)) +
-  geom_point()
-```
-
-<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ir_kernel.png" width="80%"/>
-
-
 ## Jupyter Julia kernel
 
 In order to use Julia in Zeppelin, you first need to install [IJulia](https://github.com/JuliaLang/IJulia.jl) first

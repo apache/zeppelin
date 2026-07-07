@@ -225,14 +225,6 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
               "+---+---+", result.getResults().get(0).getData().trim());
       assertTrue(result.getJobUrls().size() > 0);
 
-      // sparkr
-      result = session.execute("r", "df <- as.DataFrame(faithful)\nhead(df)");
-      assertEquals(Status.FINISHED, result.getStatus());
-      assertEquals(1, result.getResults().size());
-      assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("eruptions waiting"), result.getResults().get(0).getData());
-      assertTrue(result.getJobUrls().size() > 0);
-
       // spark sql
       result = session.execute("sql", "select * from df");
       assertEquals(Status.FINISHED, result.getStatus());
@@ -293,15 +285,6 @@ public class ZSessionIntegrationTest extends AbstractTestRestApi {
               "|  1|  a|\n" +
               "|  2|  b|\n" +
               "+---+---+", result.getResults().get(0).getData().trim());
-      assertTrue(result.getJobUrls().size() > 0);
-
-      // sparkr
-      result = session.submit("r", "df <- as.DataFrame(faithful)\nhead(df)");
-      result = session.waitUntilFinished(result.getStatementId());
-      assertEquals(Status.FINISHED, result.getStatus());
-      assertEquals(1, result.getResults().size());
-      assertEquals("TEXT", result.getResults().get(0).getType());
-      assertTrue(result.getResults().get(0).getData().contains("eruptions waiting"), result.getResults().get(0).getData());
       assertTrue(result.getJobUrls().size() > 0);
 
       // spark sql

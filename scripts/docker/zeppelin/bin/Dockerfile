@@ -36,12 +36,12 @@ RUN echo "$LOG_TAG install basic packages" && \
     apt-get autoclean && \
     apt-get clean
 
-# Install conda to manage python and R packages
+# Install conda to manage python packages
 ARG miniconda_version="py39_24.1.2-0"
 # Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
 ARG miniconda_sha256="2ec135e4ae2154bb41e8df9ecac7ef23a7d6ca59fc1c8071cfe5298505c19140"
-# Install python and R packages via conda
-COPY env_python_3_with_R.yml /env_python_3_with_R.yml
+# Install python packages via conda
+COPY env_python_3.yml /env_python_3.yml
 
 RUN set -ex && \
     wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
@@ -52,7 +52,7 @@ RUN set -ex && \
     conda config --set always_yes yes --set changeps1 no && \
     conda info -a && \
     conda install mamba -c conda-forge && \
-    mamba env update -f /env_python_3_with_R.yml --prune && \
+    mamba env update -f /env_python_3.yml --prune && \
     # Cleanup
     rm -v miniconda.sh anaconda.sha256  && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
@@ -61,7 +61,7 @@ RUN set -ex && \
     mamba clean -ay
     # Allow to modify conda packages. This allows malicious code to be injected into other interpreter sessions, therefore it is disabled by default
     # chmod -R ug+rwX /opt/conda
-ENV PATH /opt/conda/envs/python_3_with_R/bin:/opt/conda/bin:$PATH
+ENV PATH /opt/conda/envs/python_3/bin:/opt/conda/bin:$PATH
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     mkdir -p ${ZEPPELIN_HOME} && \

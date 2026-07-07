@@ -40,7 +40,7 @@
     <wagon.version>2.7</wagon.version>
 
     <!-- spark versions -->
-    <spark.version>3.5.3</spark.version>
+    <spark.version>3.5.8</spark.version>
     <protobuf.version>3.21.12</protobuf.version>
     <py4j.version>0.10.9.7</py4j.version>
     <spark.scala.version>2.12.20</spark.scala.version>
@@ -50,9 +50,6 @@
     <spark.src.download.url>
       https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}.tgz?action=download
     </spark.src.download.url>
-    <spark.bin.download.url>
-      https://www.apache.org/dyn/closer.lua/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz?action=download
-    </spark.bin.download.url>
 
     <scala.compile.version>${spark.scala.version}</scala.compile.version>
     <!-- settings -->
@@ -113,20 +110,6 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>r</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-core_2.12</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-jupyter-interpreter</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
@@ -135,18 +118,6 @@
         <exclusion>
           <groupId>net.sf.py4j</groupId>
           <artifactId>py4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>r</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -283,22 +254,6 @@
               <outputFileName>${spark.archive}.tgz</outputFileName>
             </configuration>
           </execution>
-          <!-- include sparkr by default -->
-          <execution>
-            <id>download-sparkr-files</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>wget</goal>
-            </goals>
-            <configuration>
-              <readTimeOut>60000</readTimeOut>
-              <retries>5</retries>
-              <url>${spark.bin.download.url}</url>
-              <unpack>true</unpack>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <outputFileName>${spark.archive}-bin-without-hadoop.tgz</outputFileName>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
@@ -326,23 +281,6 @@
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
-          <execution>
-            <id>copy-sparkr-files</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../../interpreter/spark/R/lib</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>
-                    ${project.build.directory}/spark-${spark.version}-bin-without-hadoop/R/lib
-                  </directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
           <execution>
             <id>copy-interpreter-setting</id>
             <phase>package</phase>
@@ -580,7 +518,7 @@
     <profile>
       <id>spark-3.5</id>
       <properties>
-        <spark.version>3.5.3</spark.version>
+        <spark.version>3.5.8</spark.version>
         <protobuf.version>3.21.12</protobuf.version>
         <py4j.version>0.10.9.7</py4j.version>
       </properties>

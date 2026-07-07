@@ -314,7 +314,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     boolean checkEmptyConfig =
             (Boolean) config.getOrDefault(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY, true);
     // don't skip paragraph when local properties is not empty.
-    // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
+    // local properties can customize the behavior of interpreter. e.g. %spark(pool=pool1)
     return checkEmptyConfig && StringUtils.isEmpty(scriptText) && localProperties.isEmpty();
   }
 

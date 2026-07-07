@@ -4,21 +4,26 @@ channels:
   - defaults
 dependencies:
   - pycodestyle
-  - numpy=1.19.5
-  - pandas=1.4.4
   - scipy
+  - numpy=1.19.5
   - grpcio
-  - hvplot
-  - protobuf
+  - protobuf<4
   - pandasql
+  - sqlalchemy=1.4.46
   - ipython
-  - matplotlib
+  - ipython_genutils
   - ipykernel
   - jupyter_client=5
-  - bokeh=2.4
-  - panel=0.6.0
+  - hvplot
   - holoviews=1.16
+  - plotnine
+  - seaborn
+  - bokeh=2.4
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - plotly
   - jinja2=3.0.3
   - pip
-  - pip:
-    - bkzep==0.6.1

@@ -32,7 +32,7 @@ echo
 echo 'cd /vagrant/zeppelin'
 echo 'mvn clean package -DskipTests'
 echo
-echo '# or for a specific Spark/Hadoop build with additional options such as python and R support'
+echo '# or for a specific Spark/Hadoop build with additional options such as python support'
 echo
 echo 'mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests'
 echo './bin/zeppelin-daemon.sh start'
