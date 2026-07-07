@@ -35,7 +35,7 @@ environments is described below.
 
 ## Usage in Programming Language Cells
 
-In many programming-language interpreters (e.g. Apache Spark, Python, R) the zeppelin-context is available
+In many programming-language interpreters (e.g. Apache Spark and Python) the zeppelin-context is available
 as a predefined variable `z` that can be used by directly invoking its methods.
 The methods available on the `z` object are described below.
 Other interpreters based on programming languages. also provide the predefined variable `z`.
@@ -86,24 +86,6 @@ df = z.getAsDataFrame("table_name")
 {% endhighlight %}
 
   </div>
-  
-<div data-lang="R" markdown="1">
-
-{% highlight python %}
-# Get/Put object from R
-%spark.r
-
-z.put("objName", myObject)
-myObject <- z.get("objName")
-
-# df is R DataFrame
-# "table_name" must be table type. Currently only sql interpreter (%spark.sql or %jdbc) result is supported.
-df <- z.getAsDataFrame("table_name")
-
-{% endhighlight %}
-
-  </div>
-  
 </div>
 
 Currently, there're two types of data could be shared across interpreters:
@@ -303,6 +285,5 @@ At present only the SparkSQL, JDBC, and Shell interpreters support object interp
 
 Some interpreters use a subclass of `BaseZepplinContext` augmented with interpreter-specific functions.
 Such interpreter-specific functions are described within each interpreter's documentation.
-
 
 
