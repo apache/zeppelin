@@ -24,10 +24,10 @@ limitations under the License.
 
 Apache Zeppelin is a web-based notebook for interactive data analytics. It provides a unified interface to multiple data processing backends (Spark, Flink, Python, JDBC, etc.) through a pluggable interpreter architecture. Each interpreter runs in its own JVM process and communicates with the server via Apache Thrift RPC.
 
-- **Language**: Java 11, Scala 2.12
+- **Language**: Java, Scala — versions in root `pom.xml` (`java.version`, `scala.binary.version`)
 - **Build**: Maven multi-module (wrapper: `./mvnw`)
-- **Frontend**: Angular 13 (Node 18) in `zeppelin-web-angular/`
-- **Version**: 0.13.0-SNAPSHOT
+- **Frontend**: Angular + TypeScript in `zeppelin-web-angular/` — versions in its `package.json`
+- **Version**: see `<version>` in root `pom.xml`
 
 ## Build & Test
 
@@ -191,7 +191,7 @@ Each interpreter is an independent Maven module inheriting from `zeppelin-interp
 
 ### Frontend
 
-- `zeppelin-web-angular/` — Angular 13, Node 18 (active frontend)
+- `zeppelin-web-angular/` — active frontend (Angular; versions in `package.json`, Node build pin in `pom.xml` `node.version`)
 - `zeppelin-web/` — Legacy AngularJS (activated with `-Pweb-classic`)
 
 ### Configuration Files
@@ -441,9 +441,9 @@ REST API classes use `@Inject` to receive these singletons.
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| JDK | 11 | Required. Not 8, not 17 |
-| Maven | 3.6.3+ | Use the wrapper `./mvnw` — no separate install needed |
-| Node.js | 18.x | Only for frontend (`zeppelin-web-angular/`) |
+| JDK | pinned in `pom.xml` (`java.version`) | Required — use exactly that major, not a newer/older JDK |
+| Maven | provided by `./mvnw` (pinned in `.mvn/wrapper/maven-wrapper.properties`) | No separate install needed |
+| Node.js | see `zeppelin-web-angular/package.json` (`engines.node`) | Only for frontend (`zeppelin-web-angular/`) |
 
 ### Initial Setup
 
