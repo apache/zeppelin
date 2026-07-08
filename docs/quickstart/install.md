@@ -165,7 +165,7 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are a few
  * And then, try run Tutorial Notebooks shipped with your Zeppelin distribution.
  * And see how to change [configurations](../setup/operation/configuration.html) like port number, etc.
 
-#### Spark, Flink, SQL, Python, R and more 
+#### Spark, Flink, SQL, Python and more
  * [Spark support in Zeppelin](./spark_with_zeppelin.html), to know more about deep integration with [Apache Spark](http://spark.apache.org/). 
  * [Flink support in Zeppelin](./flink_with_zeppelin.html), to know more about deep integration with [Apache Flink](http://flink.apache.org/).
  * [SQL support in Zeppelin](./sql_with_zeppelin.html) for SQL support
@@ -174,5 +174,3 @@ Congratulations, you have successfully installed Apache Zeppelin! Here are a few
 
 #### Multi-user support ...
  * Check [Multi-user support](../setup/basics/multi_user_support.html)
-
-

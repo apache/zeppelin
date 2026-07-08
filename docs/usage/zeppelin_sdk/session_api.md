@@ -154,5 +154,3 @@ For more detailed usage of session api, you can check the examples in module `ze
 * [FlinkAdvancedExample2](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/FlinkAdvancedExample2.java)
 * [HiveExample](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/HiveExample.java)
 * [PythonExample](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/PythonExample.java)
-* [RExample](https://github.com/apache/zeppelin/blob/master/zeppelin-client-examples/src/main/java/org/apache/zeppelin/client/examples/RExample.java)
-

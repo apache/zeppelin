@@ -79,7 +79,7 @@ Zeppelin supports python language which is very popular in data analytics and ma
 
 For beginner, we would suggest you to play Python in Zeppelin docker first.
 In the Zeppelin docker image, we have already installed
-miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/branch-0.10/scripts/docker/zeppelin/bin/env_python_3_with_R.yml)
+miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/master/scripts/docker/zeppelin/bin/env_python_3.yml)
 including IPython's prerequisites, so `%python` would use IPython.
 
 Without any extra configuration, you can run most of tutorial notes under folder `Python Tutorial` directly.

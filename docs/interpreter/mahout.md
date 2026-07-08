@@ -159,7 +159,7 @@ val Xty = drmXty.collect(::, 0)
 val beta = solve(XtX, Xty)
 ```
 
-## Leveraging Resource Pools and R for Visualization
+## Leveraging Resource Pools for Visualization
 
 Resource Pools are a powerful Zeppelin feature that lets us share information between interpreters. A fun trick is to take the output of our work in Mahout and analyze it in other languages.
 
@@ -184,39 +184,3 @@ val z = InterpreterContext.get().getResourcePool()
 ```
 
 Now we can access the resource pool in a consistent manner from the `%flinkMahout` interpreter.
-
-
-### Passing a variable from Mahout to R and Plotting
-
-In this simple example, we use Mahout (on Flink or Spark, the code is the same) to create a random matrix and then take the Sin of each element. We then randomly sample the matrix and create a tab separated string. Finally we pass that string to R where it is read as a .tsv file, and a DataFrame is created and plotted using native R plotting libraries.
-
-```scala
-val mxRnd = Matrices.symmetricUniformView(5000, 2, 1234)
-val drmRand = drmParallelize(mxRnd)
-
-
-val drmSin = drmRand.mapBlock() {case (keys, block) =>  
-  val blockB = block.like()
-  for (i <- 0 until block.nrow) {
-    blockB(i, 0) = block(i, 0)
-    blockB(i, 1) = Math.sin((block(i, 0) * 8))
-  }
-  keys -> blockB
-}
-
-z.put("sinDrm", org.apache.mahout.math.drm.drmSampleToTSV(drmSin, 0.85))
-```
-
-And then in an R paragraph...
-
-```r
-%spark.r {"imageWidth": "400px"}
-
-library("ggplot2")
-
-sinStr = z.get("flinkSinDrm")
-
-data <- read.table(text= sinStr, sep="\t", header=FALSE)
-
-plot(data,  col="red")
-```

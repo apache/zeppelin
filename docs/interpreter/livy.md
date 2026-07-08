@@ -26,7 +26,7 @@ limitations under the License.
 ## Overview
 [Livy](http://livy.io/) is an open source REST interface for interacting with Spark from anywhere. It supports executing snippets of code or programs in a Spark context that runs locally or in YARN.
 
-* Interactive Scala, Python and R shells
+* Interactive Scala and Python shells
 * Batch submissions in Scala, Java, Python
 * Multi users can share the same server (impersonation support)
 * Can be used for submitting jobs from anywhere with REST
@@ -237,7 +237,7 @@ select * from products where ${product_id=1}
 And creating dynamic format programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
 
 ## Shared SparkContext
-Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.
+Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python and sql.
 That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`.
 
 ## FAQ

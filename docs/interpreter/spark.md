@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Spark Interpreter for Apache Zeppelin"
-description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution engine."
+description: "Apache Spark is a fast and general-purpose cluster computing system. It provides high-level APIs including Java, Scala and Python, and an optimized engine that supports general execution engine."
 group: interpreter
 ---
 <!--
@@ -25,7 +25,7 @@ limitations under the License.
 
 ## Overview
 [Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
-It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
+It provides high-level APIs including Java, Scala and Python, and an optimized engine that supports general execution graphs.
 Apache Spark is supported in Zeppelin with Spark interpreter group which consists of following interpreters.
 
 <table class="table-configuration">
@@ -73,7 +73,7 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
   </tr>
   <tr>
     <td>Support multiple languages</td>
-    <td>Scala, SQL, Python, R are supported, besides that you can also collaborate across languages, e.g. you can write Scala UDF and use it in PySpark</td>
+    <td>Scala, SQL and Python are supported, besides that you can also collaborate across languages, e.g. you can write Scala UDF and use it in PySpark</td>
   </tr>
   <tr>
     <td>Support multiple execution modes</td>
@@ -104,7 +104,7 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
 
 For beginner, we would suggest you to play Spark in Zeppelin docker.
 In the Zeppelin docker image, we have already installed
-miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/branch-0.10/scripts/docker/zeppelin/bin/env_python_3_with_R.yml)
+miniconda and lots of [useful python libraries](https://github.com/apache/zeppelin/blob/master/scripts/docker/zeppelin/bin/env_python_3.yml)
 including IPython prerequisites, so `%spark.pyspark` would use IPython.
 Without any extra configuration, you can run most of tutorial notes under folder `Spark Tutorial` directly.
 
@@ -365,7 +365,7 @@ You can also choose `scoped` mode. For `scoped` per note mode, Zeppelin creates 
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 
-SparkContext, SparkSession and ZeppelinContext are automatically created and exposed as variable names `sc`, `spark` and `z` respectively, in Scala, Python and R environments.
+SparkContext, SparkSession and ZeppelinContext are automatically created and exposed as variable names `sc`, `spark` and `z` respectively, in Scala and Python environments.
 
 
 > Note that Scala/Python environment shares the same SparkContext, SQLContext, SparkSession and ZeppelinContext instance.

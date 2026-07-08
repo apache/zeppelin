@@ -98,7 +98,6 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
- - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
 
 ## How to build & run Zeppelin
 
