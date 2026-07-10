@@ -78,7 +78,7 @@ public class TerminalSocket {
           terminalService.onTerminalResize(messageMap.get("columns"), messageMap.get("rows"));
           break;
         default:
-          LOGGER.error("Unrecodnized action: {}", message);
+          LOGGER.error("Unrecognized action: {}", message);
       }
     }
   }

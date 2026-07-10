@@ -71,16 +71,16 @@ public class TerminalManager {
     if (terminalSocket2Service.containsKey(terminalSocketHashcode)) {
       terminalSocket2Service.remove(terminalSocketHashcode);
     } else {
-      LOGGER.error("Cann't find TerminalSocket: " + terminalSocketHashcode);
+      LOGGER.error("Can't find TerminalSocket: " + terminalSocketHashcode);
       LOGGER.error(terminalSocket2Service.toString());
     }
   }
 
-  public void cleanIntpContext(String nodeId) {
-    String keyPrex = nodeId + "@";
+  public void cleanIntpContext(String noteId) {
+    String keyPrefix = noteId + "@";
     for (Map.Entry<String, InterpreterContext> entity : noteParagraphId2IntpContext.entrySet()) {
       String key = entity.getKey();
-      if (key.contains(keyPrex)) {
+      if (key.contains(keyPrefix)) {
         LOGGER.info("cleanIntpContext : " + key);
         noteParagraphId2IntpContext.remove(key);
       }
@@ -109,7 +109,7 @@ public class TerminalManager {
       intpContext.getAngularObjectRegistry().add(TERMINAL_SOCKET_STATUS, TERMINAL_SOCKET_CONNECT,
           intpContext.getNoteId(), intpContext.getParagraphId());
     } else {
-      LOGGER.error("Cann't find InterpreterContext from : " + id);
+      LOGGER.error("Can't find InterpreterContext from : " + id);
       LOGGER.error(noteParagraphId2IntpContext.toString());
     }
   }
@@ -121,7 +121,7 @@ public class TerminalManager {
       intpContext.getAngularObjectRegistry().add(TERMINAL_SOCKET_STATUS, TERMINAL_SOCKET_CLOSE,
           intpContext.getNoteId(), intpContext.getParagraphId());
     } else {
-      LOGGER.error("Cann't find InterpreterContext from : " + id);
+      LOGGER.error("Can't find InterpreterContext from : " + id);
       LOGGER.error(noteParagraphId2IntpContext.toString());
     }
 
@@ -136,7 +136,7 @@ public class TerminalManager {
       intpContext.getAngularObjectRegistry().add(TERMINAL_SOCKET_STATUS, TERMINAL_SOCKET_ERROR,
           intpContext.getNoteId(), intpContext.getParagraphId());
     } else {
-      LOGGER.error("Cann't find InterpreterContext from : " + id);
+      LOGGER.error("Can't find InterpreterContext from : " + id);
       LOGGER.error(noteParagraphId2IntpContext.toString());
     }
   }
