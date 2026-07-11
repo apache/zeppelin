@@ -20,14 +20,12 @@ export const NOTEBOOK_PATTERNS = {
   LINK_SELECTOR: 'a[href*="/notebook/"]'
 } as const;
 
+// Coverage denominator. Structural/shared components
+// (lifecycle hooks, spin, resize-handle, page-header) are intentionally omitted;
+// they have no page-level behavior and are exercised transitively.
 export const PAGES = {
   // Main App
   APP: 'src/app/app.component',
-
-  // Core
-  CORE: {
-    DESTROY_HOOK: 'src/app/core/destroy-hook/destroy-hook.component'
-  },
 
   // Pages
   PAGES: {
@@ -81,10 +79,7 @@ export const PAGES = {
     NOTE_IMPORT: 'src/app/share/note-import/note-import.component',
     NOTE_RENAME: 'src/app/share/note-rename/note-rename.component',
     NOTE_TOC: 'src/app/share/note-toc/note-toc.component',
-    PAGE_HEADER: 'src/app/share/page-header/page-header.component',
-    RESIZE_HANDLE: 'src/app/share/resize-handle/resize-handle.component',
     SHORTCUT: 'src/app/share/shortcut/shortcut.component',
-    SPIN: 'src/app/share/spin/spin.component',
     THEME_TOGGLE: 'src/app/share/theme-toggle/theme-toggle.component'
   },
 
