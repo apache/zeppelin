@@ -328,6 +328,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
           LOGGER.warn("Error close connection", e1);
         }
       }
+      Thread.currentThread().interrupt();
     }
     return completer;
   }
