@@ -18,12 +18,20 @@
 package org.apache.zeppelin.notebook.repo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -433,5 +441,58 @@ class NotebookRepoSyncTest {
     assertEquals(0, authorizationService.getReaders(noteId).size());
     assertEquals(0, authorizationService.getRunners(noteId).size());
     assertEquals(0, authorizationService.getWriters(noteId).size());
+  }
+
+  @Test
+  void testRemoveSucceedsWhenSecondaryRepoFails() throws IOException {
+    NotebookRepo primaryRepo = mock(NotebookRepo.class);
+    NotebookRepo secondaryRepo = mock(NotebookRepo.class);
+    doThrow(new IOException("secondary remove failed"))
+        .when(secondaryRepo).remove("noteId", "notePath", anonymous);
+
+    try (NotebookRepoSync repoSync = newSyncWithRepos(primaryRepo, secondaryRepo)) {
+      // secondary storage failure must not fail the whole operation
+      repoSync.remove("noteId", "notePath", anonymous);
+
+      verify(primaryRepo, times(1)).remove("noteId", "notePath", anonymous);
+      verify(secondaryRepo, times(1)).remove("noteId", "notePath", anonymous);
+    }
+  }
+
+  @Test
+  void testRemoveFailsWhenPrimaryRepoFails() throws IOException {
+    NotebookRepo primaryRepo = mock(NotebookRepo.class);
+    NotebookRepo secondaryRepo = mock(NotebookRepo.class);
+    doThrow(new IOException("primary remove failed"))
+        .when(primaryRepo).remove("noteId", "notePath", anonymous);
+
+    try (NotebookRepoSync repoSync = newSyncWithRepos(primaryRepo, secondaryRepo)) {
+      // primary storage failure must stop the operation and propagate the exception
+      assertThrows(IOException.class,
+          () -> repoSync.remove("noteId", "notePath", anonymous));
+
+      verify(primaryRepo, times(1)).remove("noteId", "notePath", anonymous);
+      verify(secondaryRepo, never()).remove("noteId", "notePath", anonymous);
+    }
+  }
+
+  /**
+   * Builds a NotebookRepoSync backed by the two given repos, injected through a mocked
+   * PluginManager so the real init() path is exercised without touching internal fields.
+   */
+  private NotebookRepoSync newSyncWithRepos(NotebookRepo primaryRepo, NotebookRepo secondaryRepo)
+      throws IOException {
+    PluginManager mockPluginManager = mock(PluginManager.class);
+    when(mockPluginManager.loadNotebookRepo("primaryRepo")).thenReturn(primaryRepo);
+    when(mockPluginManager.loadNotebookRepo("secondaryRepo")).thenReturn(secondaryRepo);
+    // list() is queried during the init-time anonymous sync; keep it a no-op
+    when(primaryRepo.list(any())).thenReturn(new HashMap<>());
+    when(secondaryRepo.list(any())).thenReturn(new HashMap<>());
+
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
+        "primaryRepo,secondaryRepo");
+    NotebookRepoSync repoSync = new NotebookRepoSync(mockPluginManager);
+    repoSync.init(zConf, noteParser);
+    return repoSync;
   }
 }
