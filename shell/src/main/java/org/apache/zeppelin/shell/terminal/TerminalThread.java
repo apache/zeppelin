@@ -40,11 +40,11 @@ public class TerminalThread extends Thread {
   private Server jettyServer = new Server();
 
   private int port = 0;
-  private String allwedOrigin;
+  private String allowedOrigin;
 
-  public TerminalThread(int port, String allwedOrigin) {
+  public TerminalThread(int port, String allowedOrigin) {
     this.port = port;
-    this.allwedOrigin = allwedOrigin;
+    this.allowedOrigin = allowedOrigin;
   }
 
   @Override
@@ -80,7 +80,7 @@ public class TerminalThread extends Thread {
           (servletContext, container) ->
             container.addEndpoint(
                 ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
-                  .configurator(new TerminalSessionConfigurator(allwedOrigin))
+                  .configurator(new TerminalSessionConfigurator(allowedOrigin))
                   .build()));
       jettyServer.start();
       jettyServer.join();
