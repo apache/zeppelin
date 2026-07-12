@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -52,6 +53,7 @@ import net.jodah.concurrentunit.Waiter;
 import static java.lang.String.format;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE;
@@ -508,6 +510,35 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(1, completionList.size());
     assertEquals(true, completionList.contains(correctCompletionKeyword));
+  }
+
+  @Test
+  void testCreateOrUpdateSqlCompleterRestoresInterruptStatusOnTimeout() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
+
+    // createOrUpdateSqlCompleter is private, so invoke it via reflection.
+    Method createOrUpdateSqlCompleter = JDBCInterpreter.class.getDeclaredMethod(
+        "createOrUpdateSqlCompleter", SqlCompleter.class, Connection.class, String.class,
+        String.class, int.class);
+    createOrUpdateSqlCompleter.setAccessible(true);
+
+    // Entering already interrupted makes awaitTermination throw InterruptedException
+    // immediately, deterministically hitting the catch block under test.
+    Thread.currentThread().interrupt();
+    try {
+      createOrUpdateSqlCompleter.invoke(jdbcInterpreter, null, null, DEFAULT_KEY, "sel", 3);
+      assertTrue(Thread.currentThread().isInterrupted());
+    } finally {
+      // Clear the interrupt flag so it doesn't leak into subsequent tests.
+      Thread.interrupted();
+    }
   }
 
   private Properties getDBProperty(String dbPrefix,
