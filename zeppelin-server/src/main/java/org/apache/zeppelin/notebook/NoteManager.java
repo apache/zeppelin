@@ -289,6 +289,17 @@ public class NoteManager {
   }
 
   /**
+   * Returns the NoteInfo of all notes under the given folder, without removing them.
+   *
+   * @param folderPath
+   * @return
+   * @throws IOException
+   */
+  public List<NoteInfo> getNoteInfoRecursively(String folderPath) throws IOException {
+    return getFolder(folderPath).getNoteInfoRecursively();
+  }
+
+  /**
    * Remove the folder from the tree and returns the affected NoteInfo under this folder.
    *
    * @param folderPath
