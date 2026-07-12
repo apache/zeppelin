@@ -208,10 +208,15 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    for (NotebookRepo repo : repos) {
-      repo.remove(noteId, notePath, subject);
+    getRepo(0).remove(noteId, notePath, subject);
+    if (getRepoCount() > 1) {
+      try {
+        getRepo(1).remove(noteId, notePath, subject);
+      }
+      catch (IOException e) {
+        LOGGER.info("{}: Failed to remove from secondary storage", e.getMessage());
+      }
     }
-    /* TODO(khalid): handle case when removing from secondary storage fails */
   }
 
   @Override
