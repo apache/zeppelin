@@ -998,7 +998,6 @@
               <exclude>**/.bowerrc</exclude>
               <exclude>.editorconfig</exclude>
               <exclude>**/.eslintrc</exclude>
-              <exclude>**/protractor.conf.js</exclude>
               <exclude>**/.tmp/**</exclude>
               <exclude>**/target/**</exclude>
               <exclude>**/node/**</exclude>

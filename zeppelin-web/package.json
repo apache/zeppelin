@@ -19,8 +19,6 @@
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server lint:watch dev:watch",
     "test:watch": "karma start karma.conf.js --single-run=false",
-    "pree2e": "webdriver-manager update --gecko false --versions.chrome=2.35",
-    "e2e": "protractor protractor.conf.js",
     "karma-test": "karma start karma.conf.js"
   },
   "dependencies": {
@@ -130,7 +128,6 @@
     "ng-annotate-loader": "^0.2.0",
     "npm-run-all": "^4.1.5",
     "postcss-loader": "^3.0.0",
-    "protractor": "^5.4.1",
     "raw-loader": "^0.5.1",
     "rimraf": "^3.0.2",
     "string-replace-webpack-plugin": "^0.1.3",
