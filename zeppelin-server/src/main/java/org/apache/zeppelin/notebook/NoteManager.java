@@ -305,9 +305,10 @@ public class NoteManager {
     Folder folder = getFolder(folderPath);
     List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
 
-    // update notesInfo
+    // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
     for (NoteInfo noteInfo : noteInfos) {
       this.notesInfo.remove(noteInfo.getId());
+      this.noteCache.removeNote(noteInfo.getId());
     }
 
     return noteInfos;
