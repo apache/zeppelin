@@ -17,6 +17,15 @@
 # * limitations under the License.
 # */
 
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if [[ ! -f java_license_header.txt ]]; then
+  echo "java_license_header.txt not found in $(pwd)" >&2
+  exit 1
+fi
+
 rm -rf gen-java
 rm -rf ../java/org/apache/zeppelin/interpreter/thrift
 thrift --gen java RemoteInterpreterService.thrift
