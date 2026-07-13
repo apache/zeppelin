@@ -117,7 +117,7 @@ public class GroovyInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
-    return null;
+    return Collections.emptyList();
   }
 
   @SuppressWarnings("unchecked")
