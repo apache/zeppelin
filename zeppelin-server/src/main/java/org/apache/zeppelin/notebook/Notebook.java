@@ -552,11 +552,22 @@ public class Notebook {
 
   public void removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove folder {}", folderPath);
-    // TODO(zjffdu) NotebookRepo.remove is called twice here
-    List<NoteInfo> noteInfos = noteManager.removeFolder(folderPath, subject);
+    // Notes must be loaded and their remove listeners fired before the folder (and its
+    // underlying repo storage) is deleted, otherwise the note content is no longer
+    // available to run the same per-note cleanup as removeNote(String, AuthenticationInfo).
+    List<NoteInfo> noteInfos = noteManager.getNoteInfoRecursively(folderPath);
     for (NoteInfo noteInfo : noteInfos) {
-      removeNote(noteInfo.getId(), subject);
+      processNote(noteInfo.getId(),
+        note -> {
+          if (note != null) {
+            note.setRemoved(true);
+            authorizationService.removeNoteAuth(note.getId());
+            fireNoteRemoveEvent(note, subject);
+          }
+          return null;
+        });
     }
+    noteManager.removeFolder(folderPath, subject);
   }
 
   public void emptyTrash(AuthenticationInfo subject) throws IOException {
