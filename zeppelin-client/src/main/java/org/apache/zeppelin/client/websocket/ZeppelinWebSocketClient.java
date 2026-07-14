@@ -33,8 +33,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -45,8 +48,8 @@ import java.util.concurrent.TimeUnit;
 public class ZeppelinWebSocketClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinWebSocketClient.class);
   private static final Gson GSON = new Gson();
+  private static final long DEFAULT_CONNECT_TIMEOUT_MS = 30_000;
 
-  private CountDownLatch connectLatch = new CountDownLatch(1);
   private CountDownLatch closeLatch = new CountDownLatch(1);
 
   private Session session;
@@ -63,8 +66,18 @@ public class ZeppelinWebSocketClient {
     URI echoUri = new URI(url);
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader("Origin", "*");
-    wsClient.connect(this, echoUri, request);
-    connectLatch.await();
+    CompletableFuture<Session> future = wsClient.connect(this, echoUri, request);
+    try {
+      future.get(DEFAULT_CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException e) {
+      stopQuietly();
+      throw new IOException("Timeout(" + DEFAULT_CONNECT_TIMEOUT_MS
+              + "ms) establishing websocket connection to " + url, e);
+    } catch (ExecutionException e) {
+      stopQuietly();
+      throw new IOException("Failed to establish websocket connection to " + url,
+              e.getCause());
+    }
     LOGGER.info("WebSocket connect established");
   }
 
@@ -93,7 +106,6 @@ public class ZeppelinWebSocketClient {
   public void onConnect(Session session) {
     LOGGER.info("Got connect: {}", session.getRemote());
     this.session = session;
-    connectLatch.countDown();
   }
 
   @OnWebSocketMessage
@@ -103,21 +115,24 @@ public class ZeppelinWebSocketClient {
 
   @OnWebSocketError
   public void onError(Throwable cause) {
-    LOGGER.info("WebSocket Error: " + cause.getMessage());
-    cause.printStackTrace(System.out);
+    LOGGER.error("WebSocket error", cause);
   }
 
   public void send(Message message) throws IOException {
     session.getRemote().sendString(GSON.toJson(message));
   }
 
-  public CountDownLatch getConnectLatch() {
-    return connectLatch;
-  }
-
   public void stop() throws Exception {
     if (this.wsClient != null) {
       this.wsClient.stop();
+    }
+  }
+
+  private void stopQuietly() {
+    try {
+      stop();
+    } catch (Exception e) {
+      LOGGER.warn("Failed to stop websocket client after connection failure", e);
     }
   }
 
