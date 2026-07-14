@@ -175,6 +175,20 @@ class NoteManagerTest {
   }
 
   @Test
+  void testRemoveFolderEvictsNoteCache() throws IOException {
+    // add 2 notes under the same folder
+    Note note1 = createNote("/folder1/note1");
+    Note note2 = createNote("/folder1/note2");
+    noteManager.addNote(note1, AuthenticationInfo.ANONYMOUS);
+    noteManager.addNote(note2, AuthenticationInfo.ANONYMOUS);
+    assertEquals(2, noteManager.getCacheSize());
+
+    // remove folder should evict its notes from the cache as well
+    noteManager.removeFolder("/folder1", AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, noteManager.getCacheSize());
+  }
+
+  @Test
   void testConcurrentOperation() throws Exception {
     int threshold = 10, noteNum = 150;
     Map<Integer, String> notes = new ConcurrentHashMap<>();
