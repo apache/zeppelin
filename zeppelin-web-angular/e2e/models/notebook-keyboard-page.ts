@@ -58,7 +58,7 @@ export class NotebookKeyboardPage extends BasePage {
     this.settingsButton = page.locator('a[nz-dropdown]');
     this.clearOutputOption = page.locator('li.list-item:has-text("Clear output")');
     this.deleteButton = page.locator('button:has-text("Delete"), .delete-paragraph-button');
-    this.addParagraphComponent = page.locator('zeppelin-notebook-add-paragraph').last(); // last() — the add-paragraph strip at the bottom of the notebook; the first() is the top strip and is less reliable for insertions
+    this.addParagraphComponent = page.locator('zeppelin-notebook-add-paragraph').last(); // last() — bottom add-paragraph strip; first() is the top strip
     this.searchDialog = page.locator(
       '.dropdown-menu.search-code, .search-widget, .find-widget, [role="dialog"]:has-text("Find")'
     );
@@ -113,9 +113,7 @@ export class NotebookKeyboardPage extends BasePage {
     }).toPass({ timeout: 10000 });
   }
 
-  // Dispatch a paragraph-scoped shortcut from the host, retrying focus+press if a server echo
-  // re-renders and steals focus before the keydown lands. `isSettled` guards a non-idempotent
-  // toggle so an already-applied press is not undone by a retry.
+  // Dispatch a paragraph-scoped shortcut and retry only until its effect is observed.
   async pressShortcutFromHostUntil(
     paragraphIndex: number,
     press: () => Promise<void>,
@@ -230,7 +228,7 @@ export class NotebookKeyboardPage extends BasePage {
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
-      expectedCount => document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount, // JUSTIFIED: waitForFunction polls DOM count — Playwright toHaveCount() requires exact match, not minimum
+      expectedCount => document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount, // JUSTIFIED: waitForFunction polls DOM count; Playwright toHaveCount() requires exact match, not minimum
       currentCount,
       { timeout: 10000 }
     );
@@ -371,7 +369,7 @@ export class NotebookKeyboardPage extends BasePage {
     return this.readEditorText(this.paragraphContainer.first());
   }
 
-  // Reconstruct editor text from Monaco's absolutely-positioned `.view-line` divs sorted by top (DOM order need not match line order), via textContent — innerText is "" for off-layout lines in headless Chromium.
+  // Reconstruct editor text from Monaco's absolutely-positioned `.view-line` divs sorted by top (DOM order need not match line order), via textContent; innerText is "" for off-layout lines in headless Chromium.
   private async readEditorText(paragraph: Locator): Promise<string> {
     const monaco = paragraph.locator('.monaco-editor').first();
     if ((await monaco.count()) > 0) {
@@ -430,18 +428,17 @@ export class NotebookKeyboardPage extends BasePage {
         await this.page.keyboard.press('Backspace');
       }
 
-      await this.page.keyboard.type(content);
+      // JUSTIFIED: Monaco textarea can be covered by editor overlays during fixture setup.
+      await editorInput.fill(content, { force: true });
     } else {
       // Standard clearing for other browsers
       await this.pressSelectAll();
       await this.page.keyboard.press('Delete');
-      await editorInput.fill(content, { force: true }); // Monaco textarea can be overlaid by decorations after select+delete; force the programmatic fill
+      // JUSTIFIED: Monaco textarea can be overlaid after select+delete during fixture setup.
+      await editorInput.fill(content, { force: true });
     }
 
-    // Wait until the editor's whitespace-stripped text contains the content, so we never proceed
-    // on a stale render (checking the full content, not one token, defeats a directive like
-    // `%python` that persists across sets). Stripping whitespace neutralizes Monaco's
-    // line-order/word-wrap rendering. Empty content waits for an empty editor.
+    // Wait for the full normalized editor content to avoid stale Monaco renders.
     const expected = content.replace(/\s+/g, '');
     if (expected.length === 0) {
       await expect.poll(async () => (await this.readEditorText(paragraph)).trim(), { timeout: 10000 }).toBe('');

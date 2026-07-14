@@ -78,7 +78,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Paragraph should execute (reach a terminal state — interpreter availability varies by env)
+      // Then: Paragraph should execute (reach a terminal state; interpreter availability varies by env)
       await keyboardPage.waitForParagraphExecution(0);
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusEl = keyboardPage.paragraphContainer.first().locator('.status');
@@ -156,7 +156,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('ParagraphActions.Cancel: Control+Alt+C', () => {
     test('should cancel running paragraph with Control+Alt+C', async () => {
-      test.skip(!!process.env.CI, 'Requires Python interpreter with running indicator — not available in CI');
+      test.skip(!!process.env.CI, 'Requires Python interpreter with running indicator; not available in CI');
       // Given: A long-running paragraph
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%python\nimport time;time.sleep(3)\nprint("Should be cancelled")');
@@ -309,10 +309,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
 
-      // And: the new paragraph at index 0 holds no user content — empty or just an interpreter directive (poll so the async insert/render settles).
+      // And: the new paragraph at index 0 holds no user content; empty or just an interpreter directive (poll so the async insert/render settles).
       await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(0).then(c => c.trim())).toMatch(/^(%\w+)?$/);
 
-      // And the original content moved to index 1 (normalize whitespace — Monaco reflows).
+      // And the original content moved to index 1 (normalize whitespace; Monaco reflows).
       const normalizedOriginalContent = originalContent.replace(/\s+/g, ' ').trim();
       await expect
         .poll(() => keyboardPage.getCodeEditorContentByIndex(1).then(c => c.replace(/\s+/g, ' ').trim()))
@@ -347,7 +347,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
     });
   });
 
-  // The clone-content bug (ZEPPELIN-6419) is fixed on master, so this runs.
   test.describe('ParagraphActions.InsertCopyOfParagraphBelow: Control+Shift+C', () => {
     test('should insert copy of paragraph below with Control+Shift+C', async () => {
       // Given: A paragraph with content
@@ -497,8 +496,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
       await expect(resultLocator).toBeVisible();
 
-      // When: User presses Control+Alt+O (editor hidden after %md run — dispatch from the host,
-      // retrying if a server echo steals focus before the keydown lands)
+      // When: User presses Control+Alt+O from the paragraph host
       await keyboardPage.pressShortcutFromHostUntil(
         0,
         () => keyboardPage.pressSwitchOutputShow(),
@@ -543,7 +541,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Alt+T
       await keyboardPage.pressSwitchTitleShow();
 
-      // Then: title visibility toggles (poll — the DOM updates asynchronously)
+      // Then: title visibility toggles (poll; the DOM updates asynchronously)
       await expect.poll(() => keyboardPage.isTitleVisible(0), { timeout: 10000 }).toBe(!initialTitleVisibility);
     });
   });
@@ -561,7 +559,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const statusElBefore = keyboardPage.paragraphContainer.first().locator('.status');
       await expect(statusElBefore).toHaveText(/FINISHED|ERROR|PENDING|RUNNING/);
 
-      // When: User presses Control+Alt+L (editor hidden after %md run — dispatch from the host)
+      // When: User presses Control+Alt+L (editor hidden after %md run; dispatch from the host)
       const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
       await keyboardPage.pressShortcutFromHostUntil(
         0,
@@ -619,7 +617,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+-
       await keyboardPage.pressReduceWidth();
 
-      // Then: paragraph width reduces (poll — the layout updates asynchronously)
+      // Then: paragraph width reduces (poll; the layout updates asynchronously)
       await expect.poll(() => keyboardPage.getParagraphWidth(0), { timeout: 10000 }).toBeLessThan(initialWidth);
     });
   });
@@ -641,7 +639,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Control+Shift+=
       await keyboardPage.pressIncreaseWidth();
 
-      // Then: paragraph width increases (poll — the layout updates asynchronously)
+      // Then: paragraph width increases (poll; the layout updates asynchronously)
       await expect.poll(() => keyboardPage.getParagraphWidth(0), { timeout: 10000 }).toBeGreaterThan(initialWidth);
     });
   });
@@ -662,20 +660,23 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Additional wait and focus for Firefox compatibility
       const browserName = test.info().project.name;
       if (browserName === 'firefox') {
-        await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+        // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+        await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
         // Ensure Monaco editor is properly focused
         // JUSTIFIED: single Monaco editor per paragraph; first() picks the active textarea
         const editorTextarea = keyboardPage.page.locator('.monaco-editor textarea').first();
         await editorTextarea.click();
         await editorTextarea.focus();
-        await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+        // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+        await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
       }
 
       // When: User presses Control+K (cut to end of line)
       await keyboardPage.pressCutLine();
 
       // Then: First line content should be cut (cut from cursor position to end of line)
-      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+      // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
       const finalContent = await keyboardPage.getCodeEditorContent();
       expect(finalContent).toBeDefined();
       expect(typeof finalContent).toBe('string');
@@ -697,13 +698,15 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent(originalContent);
 
       // Wait for content to be properly set and verify it
-      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+      // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
       const initialContent = await keyboardPage.getCodeEditorContent();
       expect(initialContent.replace(/\s+/g, ' ').trim()).toContain(originalContent);
 
       // When: User presses Control+K to cut the line
       await keyboardPage.pressCutLine();
-      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+      // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
 
       // Then: Content should be reduced (line was cut)
       const afterCutContent = await keyboardPage.getCodeEditorContent();
@@ -711,13 +714,15 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Clear the editor to verify paste works from clipboard
       await keyboardPage.setCodeEditorContent('');
-      await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+      // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+      await keyboardPage.page.waitForTimeout(200); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
       const emptyContent = await keyboardPage.getCodeEditorContent();
       expect(emptyContent.trim()).toBe('');
 
       // When: User presses Control+Y to paste
       await keyboardPage.pressPasteLine();
-      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle — cursor/focus state not observable via DOM
+      // JUSTIFIED: wait for Monaco focus/cursor state after editor shortcut
+      await keyboardPage.page.waitForTimeout(500); // JUSTIFIED: Monaco editor internal state settle; cursor/focus state not observable via DOM
 
       // Then: Original content should be restored from clipboard
       const finalContent = await keyboardPage.getCodeEditorContent();
@@ -769,11 +774,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User presses Control+Space to trigger autocomplete
       await keyboardPage.pressControlSpace();
-      // Give the suggest widget a bounded chance to appear; its absence (no kernel) is a
-      // valid outcome handled by the branch below, so don't fail if it never shows.
       await keyboardPage.autocompletePopup.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
 
-      // Then: Editor must remain functional after shortcut (baseline — always asserts)
+      // Then: Editor must remain functional after shortcut (baseline; always asserts)
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.codeEditor.first()).toBeVisible();
 
@@ -836,7 +839,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Tab for indentation
       await keyboardPage.pressTab();
 
-      // Then: Content should be longer (indentation added) — poll until CodeMirror processes the Tab asynchronously
+      // Then: Content should be longer (indentation added); poll until CodeMirror processes the Tab asynchronously
       let contentAfterTab = '';
       await expect(async () => {
         contentAfterTab = await keyboardPage.getCodeEditorContent();
@@ -942,8 +945,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Recovery Test\nShortcuts work after error', newParagraphIndex);
       await keyboardPage.pressRunParagraph();
 
-      // Then: New paragraph should execute (FINISHED or ERROR is acceptable — the key assertion is
-      // that execution completed, proving shortcuts are functional after an error occurred)
+      // Then: Shortcut execution still reaches a terminal state
       await keyboardPage.waitForParagraphExecution(newParagraphIndex);
       // JUSTIFIED: newParagraphIndex is dynamically computed from getParagraphCount(); nth() is the only way to address this specific paragraph
       const statusElNew = keyboardPage.paragraphContainer.nth(newParagraphIndex).locator('.status');
@@ -970,7 +972,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Then: Either the shortcut works (creates new paragraph) or is gracefully ignored
       expect(afterShortcut === initialCount || afterShortcut === initialCount + 1).toBe(true);
 
-      // System must remain stable — editor still accessible
+      // Editor remains usable after error recovery.
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       await expect(keyboardPage.codeEditor.first()).toBeVisible();
     });
