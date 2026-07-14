@@ -169,12 +169,17 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
 
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
 
     if (this.client == null) {
+      String token = getProperty(INFLUXDB_TOKEN_PROPERTY);
+      if (token == null || token.trim().isEmpty()) {
+        throw new InterpreterException("influxdb.token property is not set. Please configure the InfluxDB auth token.");
+      }
+
       InfluxDBClientOptions opt = InfluxDBClientOptions.builder()
           .url(getProperty(INFLUXDB_API_URL_PROPERTY))
-          .authenticateToken(getProperty(INFLUXDB_TOKEN_PROPERTY).toCharArray())
+          .authenticateToken(token.toCharArray())
           .logLevel(LogLevel.valueOf(
               getProperty(INFLUXDB_LOGLEVEL_PROPERTY, LogLevel.NONE.toString())))
           .org(getProperty(INFLUXDB_ORG_PROPERTY))
