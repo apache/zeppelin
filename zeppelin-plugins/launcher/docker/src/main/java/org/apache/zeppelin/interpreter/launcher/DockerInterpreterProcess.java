@@ -163,7 +163,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public void start(String userName) throws IOException {
-    docker = DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+    docker = createDockerClient(dockerHost);
 
     removeExistContainer(containerName);
 
@@ -227,7 +227,17 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           }
         }
       });
+    } catch (DockerException e) {
+      throw new IOException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Docker preparations were interrupted.", e);
+    }
 
+    // Create, start and prepare the container. If anything fails after the
+    // container has been created/started, roll it back so we don't leak an
+    // orphaned container holding resources until the next launch reuses the name.
+    try {
       final ContainerCreation containerCreation
           = docker.createContainer(containerConfig, containerName);
       String containerId = containerCreation.id();
@@ -239,10 +249,15 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       execInContainer(containerId, dockerCommand, false);
     } catch (DockerException e) {
+      cleanupContainerQuietly();
       throw new IOException(e);
+    } catch (IOException e) {
+      cleanupContainerQuietly();
+      throw e;
     } catch (InterruptedException e) {
       // Restore interrupted state...
       Thread.currentThread().interrupt();
+      cleanupContainerQuietly();
       throw new IOException("Docker preparations were interrupted.", e);
     }
 
@@ -370,10 +385,22 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       Thread.currentThread().interrupt();
     } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      docker.close();
     }
+  }
 
-    // Close the docker client
-    docker.close();
+  // Best-effort removal of a container that was (partially) created during start().
+  private void cleanupContainerQuietly() {
+    try {
+      docker.killContainer(containerName);
+      docker.removeContainer(containerName);
+    } catch (InterruptedException e) {
+      LOGGER.warn("Interrupted while cleaning up container {}", containerName, e);
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
+      LOGGER.warn("Failed to clean up container {} after start failure", containerName, e);
+    }
   }
 
   // Because docker can't create a container with the same name, it will cause the creation to fail.
