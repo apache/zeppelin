@@ -79,7 +79,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   private AtomicBoolean dockerStarted = new AtomicBoolean(false);
 
-  private DockerClient docker = null;
+  @VisibleForTesting
+  DockerClient docker;
   private final String containerName;
   private String containerHost = "";
   private int containerPort = 0;
@@ -152,6 +153,12 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   @Override
   public String getInterpreterSettingName() {
     return interpreterSettingName;
+  }
+
+  // allows a mock DockerClient to be injected in unit tests.
+  @VisibleForTesting
+  DockerClient createDockerClient(String dockerHost) {
+    return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
   }
 
   @Override
