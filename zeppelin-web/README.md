@@ -41,7 +41,7 @@ $ WEB_PORT=YOUR_WEB_DEV_PORT npm run dev
 $ npm run karma-test
 
 # running classic UI e2e tests: make sure that a Zeppelin instance started (localhost:8080)
-$ cd ../zeppelin-web-angular && npm run e2e -- --project=classic
+$ cd ../zeppelin-web-angular && npm run e2e:classic
 ```
 
 - to write unit tests, please refer [Angular Test Patterns](https://github.com/daniellmb/angular-test-patterns)

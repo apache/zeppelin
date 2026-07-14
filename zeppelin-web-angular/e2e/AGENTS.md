@@ -117,6 +117,7 @@ exercised transitively and are not counted.
 | --- | --- |
 | `npm run e2e` | Full suite |
 | `npm run e2e:fast` | Chromium only (fast) |
+| `npm run e2e:classic` | Classic `/classic` UI suite against `:8080` (needs `-Pweb-classic`) |
 | `npm run e2e:ui` | Playwright Test UI |
 | `npm run e2e:headed` | Headed run |
 | `npm run e2e:debug` | Step-by-step debugger |
@@ -184,3 +185,31 @@ route being reimplemented, but do not build parity infrastructure ahead of need.
 - Keep the composed suite focused on real cross-seam user flows. Behavior that
   lives entirely inside one fragment belongs in that fragment's own tests; do not
   grow the composed suite into a per-fragment unit suite.
+
+## Classic UI Tests (`e2e/tests/classic/`)
+
+`e2e/tests/classic/` runs Playwright against the legacy AngularJS app served at
+`/classic`, ported from the retired `zeppelin-web` Protractor suite. Treat it as
+a frozen legacy surface: keep it at parity coverage and test new features only in
+the Angular/React suites.
+
+- **Locators (classic exception):** the classic templates predate roles and
+  `data-testid`, so the role/label/text-first rule cannot apply. Sanctioned here:
+  element ids (`#findInput`), `ng-click="..."` / `ng-controller="..."` attribute
+  selectors, and Ace/Select2 internals. Do not add `data-testid` to the frozen
+  `zeppelin-web` sources.
+- **Readiness:** `waitForZeppelinReady` is Angular-specific (`[ng-version]`) and
+  does not resolve on `/classic`; gate on a classic-visible signal instead (e.g.
+  the first `ParagraphCtrl` paragraph, or `.ace_text-input` attached).
+- **Coverage:** `PAGES` is the Angular coverage denominator; classic pages are
+  intentionally outside it, so `addPageAnnotationBeforeEach` is not used here.
+- **Running:** the `classic` project targets `http://localhost:8080` (Desktop
+  Chrome only) and needs a Zeppelin server built with `-Pweb-classic` — the
+  `:4200` dev server does not serve `/classic`. Run it with `npm run e2e:classic`
+  (sets `E2E_CLASSIC=1`); running a `tests/classic/*` file path directly is also
+  detected. In CI the classic project runs only in the anonymous matrix leg
+  (`E2E_MODE`), matching the anonymous-only legacy Protractor suite.
+- **POM:** inlining locators/helpers is acceptable while the suite is this small;
+  if it grows, move them behind `models/classic-*.ts` / `*.util.ts`.
+- The React-migration / framework-neutral-spec guidance does not apply to
+  `tests/classic/`.

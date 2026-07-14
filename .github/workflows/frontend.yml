@@ -105,6 +105,8 @@ jobs:
           mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
+        env:
+          E2E_MODE: ${{ matrix.mode }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4

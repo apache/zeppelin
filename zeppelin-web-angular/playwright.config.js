@@ -13,7 +13,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 const classicTests = /tests\/classic\/.*\.spec\.ts/;
-const isClassicOnlyRun = process.argv.some(arg => arg.includes('--project=classic') || arg.includes('tests/classic'));
+const isClassicOnlyRun = process.env.E2E_CLASSIC === '1' || process.argv.some(arg => arg.includes('tests/classic'));
 const defaultBaseURL = process.env.CI || isClassicOnlyRun ? 'http://localhost:8080' : 'http://localhost:4200';
 process.env.PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || defaultBaseURL;
 
@@ -36,7 +36,7 @@ module.exports = defineConfig({
     ['./e2e/reporter.coverage.ts']
   ],
   use: {
-    baseURL: defaultBaseURL,
+    baseURL: process.env.PLAYWRIGHT_BASE_URL,
     trace: 'on-first-retry', // https://playwright.dev/docs/trace-viewer
     screenshot: process.env.CI ? 'off' : 'only-on-failure',
     video: process.env.CI ? 'off' : 'retain-on-failure',
@@ -55,16 +55,21 @@ module.exports = defineConfig({
       name: 'setup',
       testMatch: /global\.setup\.ts/
     },
-    {
-      name: 'classic',
-      testMatch: classicTests,
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: 'http://localhost:8080',
-        storageState: 'playwright/.auth/user.json'
-      },
-      dependencies: ['setup']
-    },
+    // skip classic in the auth CI leg (its Protractor predecessor was anonymous-only)
+    ...(process.env.E2E_MODE === 'auth'
+      ? []
+      : [
+          {
+            name: 'classic',
+            testMatch: classicTests,
+            use: {
+              ...devices['Desktop Chrome'],
+              baseURL: 'http://localhost:8080',
+              storageState: 'playwright/.auth/user.json'
+            },
+            dependencies: ['setup']
+          }
+        ]),
     {
       name: 'chromium',
       testIgnore: classicTests,
