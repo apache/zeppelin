@@ -174,9 +174,7 @@ public class BigQueryInterpreter extends Interpreter {
       throws IOException, InterruptedException {
     Job job = request.execute();
     while (!job.getStatus().getState().equals("DONE")) {
-      System.out.println("Job is " 
-          + job.getStatus().getState() 
-          + " waiting " + interval + " milliseconds...");
+      LOGGER.info("Job is {} waiting {} milliseconds...", job.getStatus().getState(), interval);
       Thread.sleep(interval);
       job = request.execute();
     }

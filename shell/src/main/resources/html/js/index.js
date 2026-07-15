@@ -113,12 +113,8 @@ function setupHterm() {
 }
 
 function getParams(key) {
-    var reg = new RegExp("(^|&)" + key + "=([^&]*)(&|$)");
-    var r = location.search.substr(1).match(reg);
-    if (r != null) {
-        return unescape(r[2]);
-    }
-    return null;
+    var params = new URLSearchParams(location.search);
+    return params.get(key);
 };
 
 // This will be whatever normal entry/initialization point your project uses.

@@ -1702,6 +1702,48 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   }
 
   @Test
+  void testRemoveFolderFiresNoteRemoveEventForEachNote() throws IOException {
+    final AtomicInteger onNoteRemove = new AtomicInteger(0);
+    notebook.addNotebookEventListener(new NoteEventListener() {
+      @Override
+      public void onNoteRemove(Note note, AuthenticationInfo subject) {
+        onNoteRemove.incrementAndGet();
+      }
+
+      @Override
+      public void onNoteCreate(Note note, AuthenticationInfo subject) {
+      }
+
+      @Override
+      public void onNoteUpdate(Note note, AuthenticationInfo subject) {
+      }
+
+      @Override
+      public void onParagraphRemove(Paragraph p) {
+      }
+
+      @Override
+      public void onParagraphCreate(Paragraph p) {
+      }
+
+      @Override
+      public void onParagraphUpdate(Paragraph p) {
+      }
+
+      @Override
+      public void onParagraphStatusChange(Paragraph p, Status status) {
+      }
+    });
+
+    notebook.createNote("/folder1/note1", anonymous);
+    notebook.createNote("/folder1/note2", anonymous);
+
+    notebook.removeFolder("/folder1", anonymous);
+
+    assertEquals(2, onNoteRemove.get());
+  }
+
+  @Test
   void testGetAllNotes() throws Exception {
     String note1Id = notebook.createNote("note1", anonymous);
     String note2Id = notebook.createNote("note2", anonymous);

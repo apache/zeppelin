@@ -289,6 +289,17 @@ public class NoteManager {
   }
 
   /**
+   * Returns the NoteInfo of all notes under the given folder, without removing them.
+   *
+   * @param folderPath
+   * @return
+   * @throws IOException
+   */
+  public List<NoteInfo> getNoteInfoRecursively(String folderPath) throws IOException {
+    return getFolder(folderPath).getNoteInfoRecursively();
+  }
+
+  /**
    * Remove the folder from the tree and returns the affected NoteInfo under this folder.
    *
    * @param folderPath
@@ -305,9 +316,10 @@ public class NoteManager {
     Folder folder = getFolder(folderPath);
     List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
 
-    // update notesInfo
+    // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
     for (NoteInfo noteInfo : noteInfos) {
       this.notesInfo.remove(noteInfo.getId());
+      this.noteCache.removeNote(noteInfo.getId());
     }
 
     return noteInfos;
