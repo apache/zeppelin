@@ -19,7 +19,7 @@ const testData = {
 };
 
 const countSubstringOccurrence = (text: string, substring: string): number =>
-  (text.match(new RegExp(substring, 'g')) || []).length;
+  substring ? text.split(substring).length - 1 : 0;
 
 const expectedMatchCount = (substring: string): number =>
   countSubstringOccurrence(testData.textInFirstP, substring) +
