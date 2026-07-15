@@ -51,7 +51,7 @@ test.describe('Home Page - External Links', () => {
 
       await test.step('Then it should have the correct href', async () => {
         const href = await homePage.externalLinks.mailingList.getAttribute('href');
-        expect(href).toBe('http://zeppelin.apache.org/community.html');
+        expect(href).toBe('https://zeppelin.apache.org/community.html');
       });
 
       await test.step('And it should open in a new tab', async () => {
