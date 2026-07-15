@@ -173,7 +173,7 @@ public class InfluxDBInterpreter extends AbstractInterpreter {
 
     if (this.client == null) {
       String token = getProperty(INFLUXDB_TOKEN_PROPERTY);
-      if (token == null || token.trim().isEmpty()) {
+      if (token == null || token.isBlank()) {
         throw new InterpreterException("influxdb.token property is not set. Please configure the InfluxDB auth token.");
       }
 
