@@ -109,6 +109,26 @@ class DockerInterpreterProcessTest {
   }
 
   @Test
+  void start_removesContainer_evenWhenKillFailsDuringCleanup() throws Exception {
+    DockerInterpreterProcess intp = spy(newProcess());
+    DockerClient mockDocker = mock(DockerClient.class);
+    doReturn(mockDocker).when(intp).createDockerClient(anyString());
+
+    when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
+    // Container is created...
+    when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
+        .thenReturn(ContainerCreation.builder().id("test-container-id").build());
+    // ...but fails to start, so it is created-but-not-running.
+    doThrow(new DockerException("start failed")).when(mockDocker).startContainer(anyString());
+    // Killing a non-running container fails, but removeContainer must still fire.
+    doThrow(new DockerException("not running")).when(mockDocker).killContainer(anyString());
+
+    assertThrows(IOException.class, () -> intp.start("user1"));
+
+    verify(mockDocker).removeContainer(anyString());
+  }
+
+  @Test
   void testCreateIntpProcess() throws IOException {
     DockerInterpreterLauncher launcher
         = new DockerInterpreterLauncher(zConf, null);

@@ -394,12 +394,20 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   private void cleanupContainerQuietly() {
     try {
       docker.killContainer(containerName);
-      docker.removeContainer(containerName);
     } catch (InterruptedException e) {
-      LOGGER.warn("Interrupted while cleaning up container {}", containerName, e);
+      LOGGER.warn("Interrupted while killing container {} during cleanup", containerName, e);
       Thread.currentThread().interrupt();
     } catch (DockerException e) {
-      LOGGER.warn("Failed to clean up container {} after start failure", containerName, e);
+      LOGGER.warn("Failed to kill container {} during cleanup", containerName, e);
+    }
+
+    try {
+      docker.removeContainer(containerName);
+    } catch (InterruptedException e) {
+      LOGGER.warn("Interrupted while removing container {} during cleanup", containerName, e);
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
+      LOGGER.warn("Failed to remove container {} during cleanup", containerName, e);
     }
   }
 
