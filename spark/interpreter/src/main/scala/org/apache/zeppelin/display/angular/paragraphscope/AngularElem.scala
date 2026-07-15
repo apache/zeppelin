@@ -66,6 +66,8 @@ class AngularElem(override val interpreterContext: InterpreterContext,
 }
 
 object AngularElem {
+  import scala.language.implicitConversions
+
   implicit def Elem2AngularDisplayElem(elem: Elem): AbstractAngularElem = {
     new AngularElem(InterpreterContext.get(), null,
       Map[String, AngularObject[Any]](),
