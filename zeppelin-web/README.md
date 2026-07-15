@@ -40,6 +40,9 @@ $ WEB_PORT=YOUR_WEB_DEV_PORT npm run dev
 # running unit tests
 $ npm run karma-test
 
+# running unit tests through Maven (requires node_modules from a prior build)
+$ (cd .. && ./mvnw test -pl zeppelin-web -Pweb-classic,web-unit-test)
+
 # running classic UI e2e tests: make sure that a Zeppelin instance started (localhost:8080)
 $ cd ../zeppelin-web-angular && npm run e2e:classic
 ```

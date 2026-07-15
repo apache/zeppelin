@@ -92,6 +92,10 @@ jobs:
           channel-priority: strict
       - name: Install application
         run: ./mvnw clean install -DskipTests -am -pl python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic ${MAVEN_ARGS}
+      # Keeps the Karma coverage previously run by the removed zeppelin-web e2e job
+      - name: Run zeppelin-web unit tests
+        if: matrix.mode == 'anonymous'
+        run: ./mvnw test -pl zeppelin-web -Pweb-classic,web-unit-test ${MAVEN_ARGS}
       - name: Setup Zeppelin Server (Shiro.ini)
         run: |
           export ZEPPELIN_CONF_DIR=./conf
