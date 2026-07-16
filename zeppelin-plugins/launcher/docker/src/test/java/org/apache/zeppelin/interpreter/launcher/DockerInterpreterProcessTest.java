@@ -16,11 +16,13 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
+import com.spotify.docker.client.DockerClient;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +32,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DockerInterpreterProcessTest {
@@ -141,5 +149,38 @@ class DockerInterpreterProcessTest {
     assertTrue(mapEnv.containsKey("ZEPPELIN_FORCE_STOP"));
     assertTrue(mapEnv.containsKey("SPARK_HOME"));
     assertTrue(mapEnv.containsKey("MY_ENV1"));
+  }
+
+  @Test
+  void testStopClosesDockerClientEvenWhenKillContainerThrows() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
+    HashMap<String, String> envs = new HashMap<String, String>();
+    envs.put("MY_ENV1", "V1");
+
+    DockerInterpreterProcess intp = spy(new DockerInterpreterProcess(
+        zConf,
+        "interpreter-container:1.0",
+        "shared_process",
+        "sh",
+        "shell",
+        properties,
+        envs,
+        "zeppelin.server.hostname",
+        12320,
+        5000, 10));
+
+    DockerClient mockDocker = mock(DockerClient.class);
+    Field dockerField = DockerInterpreterProcess.class.getDeclaredField("docker");
+    dockerField.setAccessible(true);
+    dockerField.set(intp, mockDocker);
+
+    doReturn(false).when(intp).isRunning();
+    doThrow(new RuntimeException("kill failed")).when(mockDocker).killContainer(anyString());
+
+    assertThrows(RuntimeException.class, intp::stop);
+
+    verify(mockDocker).close();
   }
 }

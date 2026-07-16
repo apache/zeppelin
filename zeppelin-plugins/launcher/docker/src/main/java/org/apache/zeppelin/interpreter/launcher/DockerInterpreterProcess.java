@@ -363,10 +363,10 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       Thread.currentThread().interrupt();
     } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      // Close the docker client
+      docker.close();
     }
-
-    // Close the docker client
-    docker.close();
   }
 
   // Because docker can't create a container with the same name, it will cause the creation to fail.
