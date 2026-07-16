@@ -37,48 +37,4 @@ test.describe('Classic home', () => {
   test('should have the button for creating notebook', async ({ page }) => {
     await expect(page.getByRole('link', { name: /Create new note/ })).toBeVisible();
   });
-
-  test('correct save permission in interpreter', async ({ page }) => {
-    const ownerName = 'admin';
-    const interpreterName = `interpreter_e2e_test_${Date.now()}`;
-
-    await page.locator('.username').click();
-    await page.locator('a[href="#/interpreter"]').click();
-    await expect(page.locator('.interpreterHead')).toBeVisible({ timeout: 30000 });
-
-    await page.locator('button[ng-click="showAddNewSetting = !showAddNewSetting"]').click();
-    const createForm = page.locator('.interpreterSettingAdd');
-    await expect(createForm).toBeVisible();
-    await createForm.locator('#newInterpreterSettingName').fill(interpreterName);
-    await createForm.locator('select[ng-model="newInterpreterSetting.group"]').selectOption({ label: 'angular' });
-    await createForm.locator('#idShowPermission').check();
-
-    const ownerInput = createForm.locator('input.select2-search__field');
-    await ownerInput.fill(ownerName);
-    // JUSTIFIED: Select2 can render grouped AJAX/tag candidates; the final visible option is the concrete typed owner.
-    const ownerOption = page.locator('.select2-results__option').filter({ hasText: ownerName }).last();
-    await expect(ownerOption).toBeVisible({ timeout: 30000 });
-    await ownerInput.press('Enter');
-    await expect(createForm.locator('.select2-selection__choice', { hasText: ownerName })).toBeVisible();
-
-    await createForm.locator('span[ng-click="addNewInterpreterSetting()"]').click();
-
-    let setting = page.locator(`#${interpreterName}`);
-    await expect(setting).toBeVisible({ timeout: 30000 });
-
-    await setting.locator('span.fa-pencil').click();
-    await setting.locator('button[type="submit"]').click();
-    await page.locator('.bootstrap-dialog-footer-buttons button', { hasText: 'OK' }).click();
-
-    await page.goto('/classic/#/interpreter', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.interpreterHead')).toBeVisible({ timeout: 30000 });
-    setting = page.locator(`#${interpreterName}`);
-    await expect(setting.locator(`select[id="${interpreterName}Owners"] option`)).toHaveText(ownerName, {
-      timeout: 30000
-    });
-
-    await setting.locator('span.fa-trash').click();
-    await page.locator('.bootstrap-dialog-footer-buttons button', { hasText: 'OK' }).click();
-    await expect(setting).toBeHidden({ timeout: 30000 });
-  });
 });

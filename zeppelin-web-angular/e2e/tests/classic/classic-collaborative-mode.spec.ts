@@ -12,11 +12,9 @@
 
 import { test } from '@playwright/test';
 
-test.describe.skip('Classic collaborative mode', () => {
-  test('propagates edits across browser sessions', async () => {
-    // TODO: Port the disabled Protractor collaborative editing scenario from
-    // zeppelin-web/e2e/collaborativeMode.spec.js when collaborative mode coverage is restored.
-    // See https://issues.apache.org/jira/browse/ZEPPELIN-5674.
-    await Promise.resolve();
-  });
+test.describe('Classic collaborative mode', () => {
+  // TODO: Port the disabled Protractor collaborative editing scenario from
+  // zeppelin-web/e2e/collaborativeMode.spec.js when collaborative mode coverage is restored.
+  // See https://issues.apache.org/jira/browse/ZEPPELIN-5674.
+  test.fixme('propagates edits across browser sessions', async () => {});
 });

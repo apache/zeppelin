@@ -196,8 +196,9 @@ the Angular/React suites.
 - **Locators (classic exception):** the classic templates predate roles and
   `data-testid`, so the role/label/text-first rule cannot apply. Sanctioned here:
   element ids (`#findInput`), `ng-click="..."` / `ng-controller="..."` attribute
-  selectors, and Ace/Select2 internals. Do not add `data-testid` to the frozen
-  `zeppelin-web` sources.
+  selectors, class selectors the legacy templates already expose (`.username`,
+  `.interpreterHead`), and Ace/Select2 internals. Do not add `data-testid` to the
+  frozen `zeppelin-web` sources.
 - **Readiness:** `waitForZeppelinReady` is Angular-specific (`[ng-version]`) and
   does not resolve on `/classic`; gate on a classic-visible signal instead (e.g.
   the first `ParagraphCtrl` paragraph, or `.ace_text-input` attached).
