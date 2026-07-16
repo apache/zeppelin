@@ -12,7 +12,7 @@
 
 import { Injectable } from '@angular/core';
 import { editor, languages, Position } from 'monaco-editor';
-import { Subject } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
@@ -35,7 +35,6 @@ export class CompletionService extends MessageListenersManager {
 
   @MessageListener(OP.COMPLETION_LIST)
   onCompletion(data: CompletionReceived): void {
-    console.log('on receive!', data.id);
     this.completionItem$.next(data);
   }
 
@@ -72,8 +71,8 @@ export class CompletionService extends MessageListenersManager {
 
           that.messageService.completion(id, model.getValue(), model.getOffsetAt(position));
 
-          return that.completionItem$
-            .pipe(
+          return firstValueFrom(
+            that.completionItem$.pipe(
               filter(d => d.id === id),
               take(1),
               map(d => ({
@@ -92,7 +91,7 @@ export class CompletionService extends MessageListenersManager {
                 )
               }))
             )
-            .toPromise();
+          );
         }
       });
     });
