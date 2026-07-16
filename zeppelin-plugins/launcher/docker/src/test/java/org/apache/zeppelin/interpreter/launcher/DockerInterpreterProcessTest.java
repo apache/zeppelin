@@ -16,11 +16,16 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerCreation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +35,98 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DockerInterpreterProcessTest {
 
   protected static ZeppelinConfiguration zConf = spy(ZeppelinConfiguration.load());
+
+  private DockerInterpreterProcess newProcess() {
+    ZeppelinConfiguration conf = spy(ZeppelinConfiguration.load());
+    Properties properties = new Properties();
+    properties.setProperty(
+        ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
+    return new DockerInterpreterProcess(
+        conf,
+        "interpreter-container:1.0",
+        "test_intp_group",
+        "sh",
+        "shell",
+        properties,
+        new HashMap<>(),
+        "zeppelin.server.hostname",
+        12320,
+        5000, 10);
+  }
+
+  // stop() must always close the DockerClient, even when killing the container
+  // fails, so the underlying HTTP socket / file descriptors are never leaked.
+  @Test
+  void stop_alwaysClosesDockerClient_evenWhenKillContainerFails() throws Exception {
+    DockerInterpreterProcess intp = newProcess();
+    DockerClient mockDocker = mock(DockerClient.class);
+    intp.docker = mockDocker;
+    doThrow(new RuntimeException("unexpected")).when(mockDocker).killContainer(anyString());
+
+    assertThrows(RuntimeException.class, intp::stop);
+
+    verify(mockDocker, times(1)).close();
+  }
+
+  // When start() fails after the container has been started (e.g. file copy / exec
+  // fails), the container must be cleaned up instead of being left orphaned.
+  @Test
+  void start_removesContainer_whenContainerPreparationFails() throws Exception {
+    DockerInterpreterProcess intp = spy(newProcess());
+    DockerClient mockDocker = mock(DockerClient.class);
+    doReturn(mockDocker).when(intp).createDockerClient(anyString());
+
+    // No pre-existing container to remove.
+    when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
+    // Container is created and started successfully...
+    when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
+        .thenReturn(ContainerCreation.builder().id("test-container-id").build());
+    // ...but preparing it (the first exec inside the container) fails.
+    doThrow(new DockerException("exec failed"))
+        .when(mockDocker).execCreate(anyString(), any(String[].class), any());
+
+    assertThrows(IOException.class, () -> intp.start("user1"));
+
+    // The container was started, so start() must roll it back before returning.
+    verify(mockDocker).startContainer("test-container-id");
+    verify(mockDocker).killContainer(anyString());
+    verify(mockDocker).removeContainer(anyString());
+  }
+
+  @Test
+  void start_removesContainer_evenWhenKillFailsDuringCleanup() throws Exception {
+    DockerInterpreterProcess intp = spy(newProcess());
+    DockerClient mockDocker = mock(DockerClient.class);
+    doReturn(mockDocker).when(intp).createDockerClient(anyString());
+
+    when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
+    // Container is created...
+    when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
+        .thenReturn(ContainerCreation.builder().id("test-container-id").build());
+    // ...but fails to start, so it is created-but-not-running.
+    doThrow(new DockerException("start failed")).when(mockDocker).startContainer(anyString());
+    // Killing a non-running container fails, but removeContainer must still fire.
+    doThrow(new DockerException("not running")).when(mockDocker).killContainer(anyString());
+
+    assertThrows(IOException.class, () -> intp.start("user1"));
+
+    verify(mockDocker).removeContainer(anyString());
+  }
 
   @Test
   void testCreateIntpProcess() throws IOException {

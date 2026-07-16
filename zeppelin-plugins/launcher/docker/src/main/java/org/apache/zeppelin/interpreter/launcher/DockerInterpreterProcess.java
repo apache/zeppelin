@@ -79,7 +79,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   private AtomicBoolean dockerStarted = new AtomicBoolean(false);
 
-  private DockerClient docker = null;
+  @VisibleForTesting
+  DockerClient docker;
   private final String containerName;
   private String containerHost = "";
   private int containerPort = 0;
@@ -154,9 +155,15 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     return interpreterSettingName;
   }
 
+  // allows a mock DockerClient to be injected in unit tests.
+  @VisibleForTesting
+  DockerClient createDockerClient(String dockerHost) {
+    return DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+  }
+
   @Override
   public void start(String userName) throws IOException {
-    docker = DefaultDockerClient.builder().uri(URI.create(dockerHost)).build();
+    docker = createDockerClient(dockerHost);
 
     removeExistContainer(containerName);
 
@@ -220,7 +227,17 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           }
         }
       });
+    } catch (DockerException e) {
+      throw new IOException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Docker preparations were interrupted.", e);
+    }
 
+    // Create, start and prepare the container. If anything fails after the
+    // container has been created/started, roll it back so we don't leak an
+    // orphaned container holding resources until the next launch reuses the name.
+    try {
       final ContainerCreation containerCreation
           = docker.createContainer(containerConfig, containerName);
       String containerId = containerCreation.id();
@@ -232,10 +249,15 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       execInContainer(containerId, dockerCommand, false);
     } catch (DockerException e) {
+      cleanupContainerQuietly();
       throw new IOException(e);
+    } catch (IOException e) {
+      cleanupContainerQuietly();
+      throw e;
     } catch (InterruptedException e) {
       // Restore interrupted state...
       Thread.currentThread().interrupt();
+      cleanupContainerQuietly();
       throw new IOException("Docker preparations were interrupted.", e);
     }
 
@@ -363,10 +385,30 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       Thread.currentThread().interrupt();
     } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
+    } finally {
+      docker.close();
+    }
+  }
+
+  // Best-effort removal of a container that was (partially) created during start().
+  private void cleanupContainerQuietly() {
+    try {
+      docker.killContainer(containerName);
+    } catch (InterruptedException e) {
+      LOGGER.warn("Interrupted while killing container {} during cleanup", containerName, e);
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
+      LOGGER.warn("Failed to kill container {} during cleanup", containerName, e);
     }
 
-    // Close the docker client
-    docker.close();
+    try {
+      docker.removeContainer(containerName);
+    } catch (InterruptedException e) {
+      LOGGER.warn("Interrupted while removing container {} during cleanup", containerName, e);
+      Thread.currentThread().interrupt();
+    } catch (DockerException e) {
+      LOGGER.warn("Failed to remove container {} during cleanup", containerName, e);
+    }
   }
 
   // Because docker can't create a container with the same name, it will cause the creation to fail.
