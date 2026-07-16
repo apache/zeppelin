@@ -26,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 /**
@@ -90,4 +92,19 @@ class ResourceTest {
     Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
     assertEquals(true, r.invokeMethod("startsWith", new Class[]{ java.lang.String.class }, new Object[]{"obj"}));
   }
+
+  @Test
+  void testSerializeObject_shouldPropagateIOException() {
+    IOException exception = assertThrows(IOException.class, () -> Resource.serializeObject(new FailingSerializable()));
+    assertEquals("Serialization failed", exception.getMessage());
+  }
+  
+  private static class FailingSerializable implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+      throw new IOException("Serialization failed");
+    }
+  }
+
 }
