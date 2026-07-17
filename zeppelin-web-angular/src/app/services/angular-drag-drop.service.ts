@@ -74,8 +74,8 @@ export class AngularDragDropService {
               const identifierTokens = argsString ? argsString.split(',') : [];
               const args = identifierTokens.map(item => $parse(item.trim())(scope));
 
-              const constructorName =
-                _callbackStr.indexOf('.') !== -1 ? _callbackStr.substr(0, _callbackStr.indexOf('.')) : null;
+              const dotIndex = _callbackStr.indexOf('.');
+              const constructorName = dotIndex !== -1 ? _callbackStr.slice(0, dotIndex) : null;
               // @ts-ignore
               const constructorCandid = constructorName && scope[constructorName];
               const constructor =
