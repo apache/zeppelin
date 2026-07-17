@@ -363,7 +363,7 @@ export const navigateToNotebookWithFallback = async (
     // Strategy 1: Direct navigation
     await page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle', timeout: 30000 });
     navigationSuccessful = true;
-  } catch (error) {
+  } catch {
     // Strategy 2: Wait for loading completion and check URL
     await page.waitForFunction(
       () => {
@@ -485,7 +485,10 @@ export const createTestNotebookWithName = async (
   options: CreateTestNotebookWithNameOptions = {}
 ): Promise<{ noteId: string; paragraphId: string; notebookName: string; notebookPath: string }> => {
   const isRetryableError = (message: string): boolean =>
-    /REST request failed: (404|409|500)\b/.test(message) || message.includes('Fetch notebook REST request failed');
+    /REST request failed: (404|409|500)\b/.test(message) ||
+    message.includes('Fetch notebook REST request failed') ||
+    // TODO: transient WebKit-on-Linux crash (microsoft/playwright#34450); drop once fixed upstream.
+    /WebKit encountered an internal error|Target crashed/.test(message);
 
   const tryCreate = async () => {
     const prefix = options.namePrefix ?? 'TestNotebook';
