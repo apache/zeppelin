@@ -16,6 +16,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } 
 import { GraphConfig } from '@zeppelin/sdk';
 import { TableData, Visualization } from '@zeppelin/visualization';
 
+import { AggregationType } from '../util/aggregation-type';
+
 @Component({
   selector: 'zeppelin-visualization-pivot-setting',
   templateUrl: './pivot-setting.component.html',
@@ -28,7 +30,7 @@ export class VisualizationPivotSettingComponent implements OnInit {
 
   config!: GraphConfig;
   columns: Array<{ name: string; index: number; aggr: string }> = [];
-  aggregates = ['sum', 'count', 'avg', 'min', 'max'];
+  aggregates: readonly AggregationType[] = ['sum', 'count', 'avg', 'min', 'max'];
 
   // eslint-disable-next-line
   drop(event: CdkDragDrop<any[]>) {
