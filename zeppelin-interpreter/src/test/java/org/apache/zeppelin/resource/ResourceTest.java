@@ -98,7 +98,6 @@ class ResourceTest {
     IOException exception = assertThrows(IOException.class, () -> Resource.serializeObject(new FailingSerializable()));
     assertEquals("Serialization failed", exception.getMessage());
   }
-  
   private static class FailingSerializable implements Serializable {
     private static final long serialVersionUID = 1L;
 
