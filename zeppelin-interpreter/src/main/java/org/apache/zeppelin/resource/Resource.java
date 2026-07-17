@@ -390,7 +390,6 @@ public class Resource implements JsonSerializable, Serializable {
     if (o == null || !(o instanceof Serializable)) {
       return null;
     }
-    
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
       oos.writeObject(o);
