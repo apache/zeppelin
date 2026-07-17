@@ -16,6 +16,8 @@
 package org.apache.zeppelin.influxdb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -214,6 +216,42 @@ class InfluxDBInterpeterTest {
     if (mockServer != null) {
       mockServer.shutdown();
     }
+  }
+
+  @Test
+  void testOpenWithoutToken() {
+    properties.remove("influxdb.token");
+
+    InfluxDBInterpreter interpreter = new InfluxDBInterpreter(properties);
+
+    InterpreterException exception = assertThrows(InterpreterException.class, interpreter::open);
+
+    assertTrue(exception.getMessage().contains("influxdb.token"));
+    assertTrue(exception.getMessage().contains("not set"));
+  }
+
+  @Test
+  void testOpenWithEmptyToken() {
+    properties.setProperty("influxdb.token","");
+
+    InfluxDBInterpreter interpreter = new InfluxDBInterpreter(properties);
+
+    InterpreterException exception = assertThrows(InterpreterException.class, interpreter::open);
+    
+    assertTrue(exception.getMessage().contains("influxdb.token"));
+    assertTrue(exception.getMessage().contains("not set"));
+  }
+
+  @Test
+  void testOpenWithBlankToken() {
+    properties.setProperty("influxdb.token","    ");
+
+    InfluxDBInterpreter interpreter = new InfluxDBInterpreter(properties);
+
+    InterpreterException exception = assertThrows(InterpreterException.class, interpreter::open);
+
+    assertTrue(exception.getMessage().contains("influxdb.token"));
+    assertTrue(exception.getMessage().contains("not set"));
   }
 
   @Test

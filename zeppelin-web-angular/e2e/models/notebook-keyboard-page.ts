@@ -58,7 +58,7 @@ export class NotebookKeyboardPage extends BasePage {
     this.settingsButton = page.locator('a[nz-dropdown]');
     this.clearOutputOption = page.locator('li.list-item:has-text("Clear output")');
     this.deleteButton = page.locator('button:has-text("Delete"), .delete-paragraph-button');
-    this.addParagraphComponent = page.locator('zeppelin-notebook-add-paragraph').last(); // last() — the add-paragraph strip at the bottom of the notebook; the first() is the top strip and is less reliable for insertions
+    this.addParagraphComponent = page.locator('zeppelin-notebook-add-paragraph').last(); // last() — bottom add-paragraph strip; first() is the top strip
     this.searchDialog = page.locator(
       '.dropdown-menu.search-code, .search-widget, .find-widget, [role="dialog"]:has-text("Find")'
     );
@@ -100,13 +100,32 @@ export class NotebookKeyboardPage extends BasePage {
     // Wait for any loading/rendering to complete
     await this.page.waitForLoadState('domcontentloaded');
 
-    const browserName = this.page.context().browser()?.browserType().name();
-    if (browserName === 'firefox' || browserName === 'chromium') {
-      // Additional wait for Firefox to ensure editor is fully ready
-      await this.page.waitForTimeout(200); // JUSTIFIED: Monaco editor requires extra settle time in Firefox before focus dispatch
-    }
-
     await this.focusEditorElement(paragraph, paragraphIndex);
+  }
+
+  // Focus the paragraph host: it carries the shortcut bindings (tabindex=-1) and works even when the editor is hidden (a %md paragraph collapses its editor after running).
+  async focusParagraphHost(paragraphIndex: number = 0): Promise<void> {
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
+    // Retry: toggling output re-renders the paragraph, so a single focus() can miss.
+    await expect(async () => {
+      await paragraph.evaluate((el: HTMLElement) => el.focus());
+      await expect(paragraph).toBeFocused({ timeout: 1000 });
+    }).toPass({ timeout: 10000 });
+  }
+
+  // Dispatch a paragraph-scoped shortcut and retry only until its effect is observed.
+  async pressShortcutFromHostUntil(
+    paragraphIndex: number,
+    press: () => Promise<void>,
+    isSettled: () => Promise<boolean>
+  ): Promise<void> {
+    await expect(async () => {
+      if (!(await isSettled())) {
+        await this.focusParagraphHost(paragraphIndex);
+        await press();
+      }
+      expect(await isSettled()).toBe(true);
+    }).toPass({ timeout: 15000 });
   }
 
   async typeInEditor(text: string): Promise<void> {
@@ -209,7 +228,7 @@ export class NotebookKeyboardPage extends BasePage {
 
     // Wait for paragraph count to increase
     await this.page.waitForFunction(
-      expectedCount => document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount, // JUSTIFIED: waitForFunction polls DOM count — Playwright toHaveCount() requires exact match, not minimum
+      expectedCount => document.querySelectorAll('zeppelin-notebook-paragraph').length > expectedCount, // JUSTIFIED: waitForFunction polls DOM count; Playwright toHaveCount() requires exact match, not minimum
       currentCount,
       { timeout: 10000 }
     );
@@ -347,40 +366,29 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async getCodeEditorContent(): Promise<string> {
-    // Fallback to Angular scope
-    const angularContent = await this.page.evaluate(() => {
-      const paragraphElement = document.querySelector('zeppelin-notebook-paragraph'); // JUSTIFIED: accesses AngularJS $scope via window.angular — not accessible via Playwright locator API
-      if (paragraphElement) {
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        const angular = (window as any).angular;
-        if (angular) {
-          const scope = angular.element(paragraphElement).scope();
-          if (scope && scope.$ctrl && scope.$ctrl.paragraph) {
-            return scope.$ctrl.paragraph.text || '';
-          }
-        }
-      }
-      return null;
-    });
+    return this.readEditorText(this.paragraphContainer.first());
+  }
 
-    if (angularContent !== null) {
-      return angularContent;
-    }
-
-    // Fallback to DOM-based approaches
-    const selectors = ['.monaco-editor .view-lines', '.CodeMirror-line', '.ace_line', 'textarea'];
-
-    for (const selector of selectors) {
-      const element = this.page.locator(selector).first();
-      if (await element.isVisible({ timeout: 1000 })) {
-        if (selector === 'textarea') {
-          return await element.inputValue();
-        } else {
-          return (await element.textContent()) || '';
-        }
+  // Reconstruct editor text from Monaco's absolutely-positioned `.view-line` divs sorted by top (DOM order need not match line order), via textContent; innerText is "" for off-layout lines in headless Chromium.
+  private async readEditorText(paragraph: Locator): Promise<string> {
+    const monaco = paragraph.locator('.monaco-editor').first();
+    if ((await monaco.count()) > 0) {
+      const text = await monaco.evaluate((el: Element) => {
+        const lines = Array.from(el.querySelectorAll('.view-line')) as HTMLElement[];
+        lines.sort((a, b) => parseInt(a.style.top || '0', 10) - parseInt(b.style.top || '0', 10));
+        return lines.map(l => (l.textContent || '').replace(/\u00a0/g, ' ')).join('\n');
+      });
+      if (text.trim().length > 0) {
+        return text;
       }
     }
-
+    const textarea = paragraph.locator('.monaco-editor textarea').first();
+    if ((await textarea.count()) > 0) {
+      const value = await textarea.inputValue().catch(() => '');
+      if (value) {
+        return value;
+      }
+    }
     return '';
   }
 
@@ -419,19 +427,26 @@ export class NotebookKeyboardPage extends BasePage {
       for (let i = 0; i < contentLength; i++) {
         await this.page.keyboard.press('Backspace');
       }
-      await this.page.waitForTimeout(100); // JUSTIFIED: Monaco content state settle between backspaces and new input
 
-      await this.page.keyboard.type(content);
-
-      await this.page.waitForTimeout(300); // JUSTIFIED: Monaco content state settle after keystroke sequence
+      // JUSTIFIED: Monaco textarea can be covered by editor overlays during fixture setup.
+      await editorInput.fill(content, { force: true });
     } else {
       // Standard clearing for other browsers
       await this.pressSelectAll();
       await this.page.keyboard.press('Delete');
-      await editorInput.fill(content, { force: true }); // JUSTIFIED: Monaco textarea may be overlaid by editor decorations after select+delete; force required for programmatic fill
+      // JUSTIFIED: Monaco textarea can be overlaid after select+delete during fixture setup.
+      await editorInput.fill(content, { force: true });
     }
 
-    await this.page.waitForTimeout(200); // JUSTIFIED: Monaco content state settle after fill completes
+    // Wait for the full normalized editor content to avoid stale Monaco renders.
+    const expected = content.replace(/\s+/g, '');
+    if (expected.length === 0) {
+      await expect.poll(async () => (await this.readEditorText(paragraph)).trim(), { timeout: 10000 }).toBe('');
+    } else {
+      await expect
+        .poll(async () => (await this.readEditorText(paragraph)).replace(/\s+/g, ''), { timeout: 10000 })
+        .toContain(expected);
+    }
   }
 
   // Helper methods for verifying shortcut effects
@@ -496,41 +511,7 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async getCodeEditorContentByIndex(paragraphIndex: number): Promise<string> {
-    const paragraph = this.getParagraphByIndex(paragraphIndex);
-
-    const editorTextarea = paragraph.locator('.monaco-editor textarea');
-    if (await editorTextarea.isVisible()) {
-      const textContent = await editorTextarea.inputValue();
-      if (textContent) {
-        return textContent;
-      }
-    }
-
-    const viewLines = paragraph.locator('.monaco-editor .view-lines');
-    if (await viewLines.isVisible()) {
-      const text = await viewLines.evaluate((el: Element) => (el as HTMLElement).innerText || '');
-      if (text && text.trim().length > 0) {
-        return text;
-      }
-    }
-
-    const scopeContent = await paragraph.evaluate(el => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const angular = (window as any).angular;
-      if (angular) {
-        const scope = angular.element(el).scope();
-        if (scope && scope.$ctrl && scope.$ctrl.paragraph) {
-          return scope.$ctrl.paragraph.text || '';
-        }
-      }
-      return '';
-    });
-
-    if (scopeContent) {
-      return scopeContent;
-    }
-
-    return '';
+    return this.readEditorText(this.getParagraphByIndex(paragraphIndex));
   }
 
   async waitForParagraphCountChange(expectedCount: number, timeout: number = 30000): Promise<void> {
@@ -650,9 +631,9 @@ export class NotebookKeyboardPage extends BasePage {
 
     const editor = paragraph.locator('.monaco-editor, .CodeMirror, .ace_editor, textarea').first();
 
-    await editor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}); // JUSTIFIED: UI stabilization — editor may not be visible yet; click attempt follows
-    await editor.click({ force: true, trial: true }).catch(async () => {
-      // JUSTIFIED: UI stabilization — falls back to textarea focus if click fails
+    await editor.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {}); // editor may not be visible yet; the click/focus below retries
+    // A `trial` click only runs actionability checks and never focuses; do a real click, falling back to focusing the textarea if it is intercepted.
+    await editor.click({ force: true }).catch(async () => {
       const textArea = editor.locator('textarea').first();
       if ((await textArea.count()) > 0) {
         await textArea.focus({ timeout: 1000 });
@@ -669,6 +650,8 @@ export class NotebookKeyboardPage extends BasePage {
     if (hasTextArea) {
       await textArea.focus();
       await expect(textArea).toBeFocused({ timeout: 3000 });
+      // Monaco sets the `focused` class only after processing the focus event; activeElement can be set earlier, dropping the shortcut. Gate on the class so focus is real.
+      await expect(editor).toHaveClass(/\bfocused\b/, { timeout: 10000 });
     } else {
       await expect(editor).toHaveClass(/focused|focus|active/, { timeout: 30000 });
     }
@@ -676,9 +659,8 @@ export class NotebookKeyboardPage extends BasePage {
 
   private async executePlatformShortcut(shortcut: string | string[]): Promise<void> {
     const shortcuts = Array.isArray(shortcut) ? shortcut : [shortcut];
-    const isMac = process.platform === 'darwin';
-    const selected = isMac && shortcuts.length > 1 ? shortcuts[1] : shortcuts[0];
-    await this.page.keyboard.press(this.formatKey(selected));
+    // Playwright presses by physical key code, so the primary variant works on every platform; the macOS special-character variant (e.g. control.alt.∂) is unpressable via keyboard.press.
+    await this.page.keyboard.press(this.formatKey(shortcuts[0]));
   }
 
   private formatKey(shortcut: string): string {

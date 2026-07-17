@@ -49,7 +49,7 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     this.noteListService.notes.flatList.forEach(note => {
       const noteName = note.path;
       if (noteName.match(/^\/Untitled Note [0-9]*$/)) {
-        const lastCount = +noteName.substr(15);
+        const lastCount = +noteName.slice(15);
         if (newCount <= lastCount) {
           newCount = lastCount + 1;
         }
@@ -63,13 +63,13 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     let newCloneName = '';
     const lastIndex = cloneNote.name.lastIndexOf(' ');
     const endsWithNumber = !!cloneNote.name.match('^.+?\\s\\d$');
-    const noteNamePrefix = endsWithNumber ? cloneNote.name.substr(0, lastIndex) : cloneNote.name;
+    const noteNamePrefix = endsWithNumber ? cloneNote.name.slice(0, lastIndex) : cloneNote.name;
     const regexp = new RegExp(`^${noteNamePrefix}.+`);
 
     this.noteListService.notes.flatList.forEach(note => {
       const noteName = note.path;
       if (noteName.match(regexp)) {
-        const lastCopyCount = parseInt(noteName.substr(lastIndex).trim(), 10);
+        const lastCopyCount = parseInt(noteName.slice(lastIndex).trim(), 10);
         newCloneName = noteNamePrefix;
         if (copyCount <= lastCopyCount) {
           copyCount = lastCopyCount + 1;
