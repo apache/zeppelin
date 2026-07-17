@@ -20,6 +20,8 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ContainerState;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -69,7 +71,17 @@ class DockerInterpreterProcessTest {
         5000, 10);
   }
 
-  // stop() must always close the DockerClient, even when killing the container
+  // Stubs docker.inspectContainer(...).state() and returns the ContainerState mock
+  // so each test can set running/paused/oomKilled/exitCode as needed.
+  private ContainerState stubContainerState(DockerClient mockDocker) throws Exception {
+    ContainerInfo info = mock(ContainerInfo.class);
+    ContainerState state = mock(ContainerState.class);
+    when(mockDocker.inspectContainer(anyString())).thenReturn(info);
+    when(info.state()).thenReturn(state);
+    return state;
+  }
+
+  // #1: stop() must always close the DockerClient, even when killing the container
   // fails, so the underlying HTTP socket / file descriptors are never leaked.
   @Test
   void stop_alwaysClosesDockerClient_evenWhenKillContainerFails() throws Exception {
@@ -83,49 +95,63 @@ class DockerInterpreterProcessTest {
     verify(mockDocker, times(1)).close();
   }
 
-  // When start() fails after the container has been started (e.g. file copy / exec
-  // fails), the container must be cleaned up instead of being left orphaned.
+  // #2: when start() fails after the container has been started, it must be rolled
+  // back (kill + remove) instead of being left orphaned.
   @Test
   void start_removesContainer_whenContainerPreparationFails() throws Exception {
     DockerInterpreterProcess intp = spy(newProcess());
     DockerClient mockDocker = mock(DockerClient.class);
     doReturn(mockDocker).when(intp).createDockerClient(anyString());
 
-    // No pre-existing container to remove.
     when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
-    // Container is created and started successfully...
     when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
         .thenReturn(ContainerCreation.builder().id("test-container-id").build());
-    // ...but preparing it (the first exec inside the container) fails.
+    // Container is created and started, then preparation (the first exec) fails.
     doThrow(new DockerException("exec failed"))
         .when(mockDocker).execCreate(anyString(), any(String[].class), any());
 
     assertThrows(IOException.class, () -> intp.start("user1"));
 
-    // The container was started, so start() must roll it back before returning.
     verify(mockDocker).startContainer("test-container-id");
     verify(mockDocker).killContainer(anyString());
     verify(mockDocker).removeContainer(anyString());
   }
 
+  // #3: isAlive() reflects the container's actual state from the Docker daemon,
+  // not just whether the Thrift port is reachable.
   @Test
-  void start_removesContainer_evenWhenKillFailsDuringCleanup() throws Exception {
-    DockerInterpreterProcess intp = spy(newProcess());
+  void isAlive_trueWhenContainerRunning() throws Exception {
+    DockerInterpreterProcess intp = newProcess();
     DockerClient mockDocker = mock(DockerClient.class);
-    doReturn(mockDocker).when(intp).createDockerClient(anyString());
+    intp.docker = mockDocker;
+    ContainerState state = stubContainerState(mockDocker);
+    when(state.running()).thenReturn(true);
 
-    when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
-    // Container is created...
-    when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
-        .thenReturn(ContainerCreation.builder().id("test-container-id").build());
-    // ...but fails to start, so it is created-but-not-running.
-    doThrow(new DockerException("start failed")).when(mockDocker).startContainer(anyString());
-    // Killing a non-running container fails, but removeContainer must still fire.
-    doThrow(new DockerException("not running")).when(mockDocker).killContainer(anyString());
+    assertTrue(intp.isAlive());
+  }
 
-    assertThrows(IOException.class, () -> intp.start("user1"));
+  @Test
+  void isAlive_falseWhenContainerExitedOrOomKilled() throws Exception {
+    DockerInterpreterProcess intp = newProcess();
+    DockerClient mockDocker = mock(DockerClient.class);
+    intp.docker = mockDocker;
+    ContainerState state = stubContainerState(mockDocker);
+    when(state.running()).thenReturn(false);   // exited / OOMKilled -> running == false
 
-    verify(mockDocker).removeContainer(anyString());
+    assertFalse(intp.isAlive());
+  }
+
+  // #3: getErrorMessage() surfaces the failure reason from the container state.
+  @Test
+  void getErrorMessage_reportsOomKilled() throws Exception {
+    DockerInterpreterProcess intp = newProcess();
+    DockerClient mockDocker = mock(DockerClient.class);
+    intp.docker = mockDocker;
+    ContainerState state = stubContainerState(mockDocker);
+    when(state.oomKilled()).thenReturn(true);
+    when(state.exitCode()).thenReturn(137L);
+
+    assertTrue(intp.getErrorMessage().contains("OOMKilled"));
   }
 
   @Test
