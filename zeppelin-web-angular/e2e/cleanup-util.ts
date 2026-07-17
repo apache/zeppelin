@@ -12,12 +12,14 @@
 
 import { BASE_URL, E2E_TEST_FOLDER } from './models/base-page';
 
+const cleanupBaseUrl = process.env.PLAYWRIGHT_BASE_URL || BASE_URL;
+
 export const cleanupTestNotebooks = async () => {
   try {
     console.log('Cleaning up test folder via API...');
 
     // Get all notebooks and folders
-    const response = await fetch(`${BASE_URL}/api/notebook`);
+    const response = await fetch(`${cleanupBaseUrl}/api/notebook`);
     const data = await response.json();
     if (!data.body || !Array.isArray(data.body)) {
       console.log('No notebooks found or invalid response format');
@@ -47,7 +49,7 @@ export const cleanupTestNotebooks = async () => {
         try {
           console.log(`Deleting test folder: ${testFolder.id} (${testFolder.path})`);
 
-          const deleteResponse = await fetch(`${BASE_URL}/api/notebook/${testFolder.id}`, {
+          const deleteResponse = await fetch(`${cleanupBaseUrl}/api/notebook/${testFolder.id}`, {
             method: 'DELETE'
           });
 
@@ -70,7 +72,7 @@ export const cleanupTestNotebooks = async () => {
     if (error instanceof Error && error.message.includes('ECONNREFUSED')) {
       console.error('Failed to connect to local server. Please start the frontend server first:');
       console.error('  npm start');
-      console.error(`  or make sure ${BASE_URL} is running`);
+      console.error(`  or make sure ${cleanupBaseUrl} is running`);
     } else {
       console.warn('Failed to cleanup test folder:', error);
     }

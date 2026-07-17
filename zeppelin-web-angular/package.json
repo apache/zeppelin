@@ -21,6 +21,7 @@
     "test:eslint-rules": "node --test eslint-rules/",
     "e2e": "playwright test",
     "e2e:fast": "playwright test --project=chromium",
+    "e2e:classic": "cross-env E2E_CLASSIC=1 playwright test --project=classic",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "e2e:debug": "playwright test --debug",
