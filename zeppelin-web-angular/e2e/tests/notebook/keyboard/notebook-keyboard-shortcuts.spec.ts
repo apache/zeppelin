@@ -309,7 +309,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalCount = await keyboardPage.getParagraphCount();
       expect(finalCount).toBe(initialCount + 1);
 
-      // And: the new paragraph at index 0 holds no user content; empty or just an interpreter directive (poll so the async insert/render settles).
+      // And: the new paragraph at index 0 holds no user content; empty or just an interpreter directive.
+      // Render gate: an unrendered editor reads as '' and would vacuously match.
+      await keyboardPage.waitForEditorRendered(0);
       await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(0).then(c => c.trim())).toMatch(/^(%\w+)?$/);
 
       // And the original content moved to index 1 (normalize whitespace; Monaco reflows).
@@ -343,6 +345,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       expect(originalParagraphContent).toMatch(/Content\s+for\s+insert\s+below\s+test/);
 
       // And: a new paragraph exists at index 1 holding no user content.
+      // Render gate: an unrendered editor reads as '' and would vacuously match.
+      await keyboardPage.waitForEditorRendered(1);
       await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(1).then(c => c.trim())).toMatch(/^(%\w+)?$/);
     });
   });
@@ -354,7 +358,10 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Copy Test\nContent to be copied below');
 
       const initialCount = await keyboardPage.getParagraphCount();
-      const originalContent = await keyboardPage.getCodeEditorContentByIndex(0);
+      // Compare persisted server text, not the editor DOM: the clone's correctness is
+      // that the copied paragraph is stored identically, and reading from the server
+      // avoids Monaco's non-deterministic whitespace rendering.
+      const originalContent = await keyboardPage.getParagraphTextByIndex(0);
 
       // When: User presses Control+Shift+C
       await keyboardPage.pressInsertCopy();
@@ -362,8 +369,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Then: a copy is inserted below carrying the same text, and the original is unchanged
       await keyboardPage.waitForParagraphCountChange(initialCount + 1);
       expect(await keyboardPage.getParagraphCount()).toBe(initialCount + 1);
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(0)).toBe(originalContent);
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(1)).toBe(originalContent);
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(0)).toBe(originalContent);
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(1)).toBe(originalContent);
     });
   });
 
@@ -389,9 +396,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const paragraphCount = await keyboardPage.getParagraphCount();
       expect(paragraphCount).toBe(2);
 
-      // Verify initial content before move
-      const initialFirst = await keyboardPage.getCodeEditorContentByIndex(0);
-      const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
+      // Capture server-persisted text (avoids Monaco DOM whitespace non-determinism)
+      const initialFirst = await keyboardPage.getParagraphTextByIndex(0);
+      const initialSecond = await keyboardPage.getParagraphTextByIndex(1);
 
       // Focus on second paragraph for move operation
       await keyboardPage.tryFocusCodeEditor(1);
@@ -403,9 +410,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalParagraphCount = await keyboardPage.getParagraphCount();
       expect(finalParagraphCount).toBe(2);
 
-      // And: Paragraph positions should be swapped (poll until the move lands in the DOM)
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(0)).toBe(initialSecond);
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(1)).toBe(initialFirst);
+      // And: positions are swapped (poll the server until the move persists)
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(0)).toBe(initialSecond);
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(1)).toBe(initialFirst);
+      // And the visible order reflects the swap. Containment on a distinctive marker
+      // proves the user-visible reorder without an exact Monaco whitespace match.
+      await expect(keyboardPage.getParagraphByIndex(0).locator('.view-lines')).toContainText('Second Paragraph');
+      await expect(keyboardPage.getParagraphByIndex(1).locator('.view-lines')).toContainText('First Paragraph');
     });
   });
 
@@ -431,9 +442,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const paragraphCount = await keyboardPage.getParagraphCount();
       expect(paragraphCount).toBe(2);
 
-      // Verify initial content before move
-      const initialFirst = await keyboardPage.getCodeEditorContentByIndex(0);
-      const initialSecond = await keyboardPage.getCodeEditorContentByIndex(1);
+      // Capture server-persisted text (avoids Monaco DOM whitespace non-determinism)
+      const initialFirst = await keyboardPage.getParagraphTextByIndex(0);
+      const initialSecond = await keyboardPage.getParagraphTextByIndex(1);
 
       // Focus first paragraph for move operation
       await keyboardPage.tryFocusCodeEditor(0);
@@ -445,9 +456,13 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const finalParagraphCount = await keyboardPage.getParagraphCount();
       expect(finalParagraphCount).toBe(2);
 
-      // And: Paragraph positions should be swapped (poll until the move lands in the DOM)
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(0)).toBe(initialSecond);
-      await expect.poll(() => keyboardPage.getCodeEditorContentByIndex(1)).toBe(initialFirst);
+      // And: positions are swapped (poll the server until the move persists)
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(0)).toBe(initialSecond);
+      await expect.poll(() => keyboardPage.getParagraphTextByIndex(1)).toBe(initialFirst);
+      // And the visible order reflects the swap. Containment on a distinctive marker
+      // proves the user-visible reorder without an exact Monaco whitespace match.
+      await expect(keyboardPage.getParagraphByIndex(0).locator('.view-lines')).toContainText('Second Paragraph');
+      await expect(keyboardPage.getParagraphByIndex(1).locator('.view-lines')).toContainText('First Paragraph');
     });
   });
 
@@ -559,8 +574,11 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       const statusElBefore = keyboardPage.paragraphContainer.first().locator('.status');
       await expect(statusElBefore).toHaveText(/FINISHED|ERROR|PENDING|RUNNING/);
 
-      // When: User presses Control+Alt+L (editor hidden after %md run; dispatch from the host)
+      // Gate: without visible output, isSettled starts true and the helper would skip the press entirely.
       const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
+      await expect(resultLocator).toBeVisible();
+
+      // When: User presses Control+Alt+L (editor hidden after %md run; dispatch from the host)
       await keyboardPage.pressShortcutFromHostUntil(
         0,
         () => keyboardPage.pressClearOutput(),
@@ -932,7 +950,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Verify error result exists (invalid syntax produces a final ERROR or FINISHED with error output)
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
       const statusElError = keyboardPage.paragraphContainer.first().locator('.status');
-      await expect(statusElError).toHaveText(/FINISHED|ERROR/, { timeout: 30000 });
+      await expect(statusElError).toHaveText(/FINISHED|ERROR/, { timeout: 60000 });
 
       // When: User continues with shortcuts (insert new paragraph)
       const initialCount = await keyboardPage.getParagraphCount();
@@ -945,11 +963,12 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Recovery Test\nShortcuts work after error', newParagraphIndex);
       await keyboardPage.pressRunParagraph();
 
-      // Then: Shortcut execution still reaches a terminal state
-      await keyboardPage.waitForParagraphExecution(newParagraphIndex);
+      // Then: Shortcut execution still reaches a terminal state (real interpreter run;
+      // allow extra time as a cold interpreter under CI load can stay RUNNING past 30s)
+      await keyboardPage.waitForParagraphExecution(newParagraphIndex, 60000);
       // JUSTIFIED: newParagraphIndex is dynamically computed from getParagraphCount(); nth() is the only way to address this specific paragraph
       const statusElNew = keyboardPage.paragraphContainer.nth(newParagraphIndex).locator('.status');
-      await expect(statusElNew).toHaveText(/FINISHED|ERROR/, { timeout: 30000 });
+      await expect(statusElNew).toHaveText(/FINISHED|ERROR/, { timeout: 60000 });
     });
 
     test('should gracefully handle shortcuts when no paragraph is focused', async () => {

@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import test, { expect, Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { navigateToNotebookWithFallback } from '../utils';
 import { ShortcutsMap } from '../../src/app/key-binding/shortcuts-map';
 import { ParagraphActions } from '../../src/app/key-binding/paragraph-actions';
@@ -123,6 +123,8 @@ export class NotebookKeyboardPage extends BasePage {
       if (!(await isSettled())) {
         await this.focusParagraphHost(paragraphIndex);
         await press();
+        // Wait for this press's effect before retrying — an immediate recheck would double-press a slow toggle. The wait must comfortably exceed legitimate settle latency so only a genuinely dropped press is retried.
+        await expect.poll(isSettled, { timeout: 10000 }).toBe(true);
       }
       expect(await isSettled()).toBe(true);
     }).toPass({ timeout: 15000 });
@@ -369,27 +371,30 @@ export class NotebookKeyboardPage extends BasePage {
     return this.readEditorText(this.paragraphContainer.first());
   }
 
+  // Gate for emptiness assertions — an empty Monaco model still renders one (empty) .view-line.
+  async waitForEditorRendered(paragraphIndex: number): Promise<void> {
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
+    await expect(paragraph.locator('.monaco-editor .view-line').first()).toBeAttached({ timeout: 10000 });
+  }
+
   // Reconstruct editor text from Monaco's absolutely-positioned `.view-line` divs sorted by top (DOM order need not match line order), via textContent; innerText is "" for off-layout lines in headless Chromium.
+  // Constraints: Monaco virtualizes lines (keep fixtures short); returns '' for both an empty and a not-yet-rendered editor.
   private async readEditorText(paragraph: Locator): Promise<string> {
     const monaco = paragraph.locator('.monaco-editor').first();
-    if ((await monaco.count()) > 0) {
-      const text = await monaco.evaluate((el: Element) => {
-        const lines = Array.from(el.querySelectorAll('.view-line')) as HTMLElement[];
-        lines.sort((a, b) => parseInt(a.style.top || '0', 10) - parseInt(b.style.top || '0', 10));
-        return lines.map(l => (l.textContent || '').replace(/\u00a0/g, ' ')).join('\n');
-      });
-      if (text.trim().length > 0) {
-        return text;
-      }
+    if ((await monaco.count()) === 0) {
+      return '';
     }
-    const textarea = paragraph.locator('.monaco-editor textarea').first();
-    if ((await textarea.count()) > 0) {
-      const value = await textarea.inputValue().catch(() => '');
-      if (value) {
-        return value;
-      }
-    }
-    return '';
+    // Reconstruct from view-lines only. The hidden textarea holds Monaco's IME buffer
+    // (a fragment, not the full model), so falling back to it returns partial text and
+    // makes reads non-deterministic. Callers poll, so '' while lines render is fine.
+    return monaco.evaluate((el: Element) => {
+      const lines = Array.from(el.querySelectorAll('.view-line')) as HTMLElement[];
+      lines.sort((a, b) => parseInt(a.style.top || '0', 10) - parseInt(b.style.top || '0', 10));
+      // Normalize all Unicode space separators (NBSP etc. that Monaco renders for
+      // whitespace) to a plain space, but keep line structure so exact-match assertions
+      // still verify it.
+      return lines.map(l => (l.textContent || '').replace(/\p{Zs}/gu, ' ')).join('\n');
+    });
   }
 
   async setCodeEditorContent(content: string, paragraphIndex: number = 0): Promise<void> {
@@ -398,55 +403,74 @@ export class NotebookKeyboardPage extends BasePage {
       return;
     }
 
+    // Seed via REST, not the editor: per-keystroke seeding fights the collaborative
+    // patch loop, merging a fresh note's "%python" prefix into the content on Firefox.
+    await this.seedParagraphViaRest(paragraphIndex, content);
+
     await this.tryFocusCodeEditor(paragraphIndex);
-    if (this.page.isClosed()) {
-      console.warn('Cannot set code editor content: page closed after focusing');
-      return;
-    }
 
-    const paragraph = this.getParagraphByIndex(paragraphIndex);
-    const editorInput = paragraph.locator('.monaco-editor .inputarea, .monaco-editor textarea').first();
-
-    const browserName = test.info().project.name;
-    if (browserName !== 'firefox') {
-      await editorInput.waitFor({ state: 'visible', timeout: 30000 });
-      await editorInput.click();
-      await editorInput.clear();
-    }
-
-    // Clear existing content with keyboard shortcuts for better reliability
-    await editorInput.focus();
-
-    if (browserName === 'firefox') {
-      // Clear by backspacing existing content length
-      const currentContent = await editorInput.inputValue();
-      const contentLength = currentContent.length;
-
-      // Position cursor at end and backspace all content
-      await this.page.keyboard.press('End');
-      for (let i = 0; i < contentLength; i++) {
-        await this.page.keyboard.press('Backspace');
-      }
-
-      // JUSTIFIED: Monaco textarea can be covered by editor overlays during fixture setup.
-      await editorInput.fill(content, { force: true });
-    } else {
-      // Standard clearing for other browsers
+    // The REST flush resets the cursor to (1,1); restore end-of-content so tests that
+    // seed then press End/Enter start from the right line. Keymap-independent.
+    if (content) {
       await this.pressSelectAll();
-      await this.page.keyboard.press('Delete');
-      // JUSTIFIED: Monaco textarea can be overlaid after select+delete during fixture setup.
-      await editorInput.fill(content, { force: true });
+      await this.page.keyboard.press('ArrowRight');
+    }
+  }
+
+  private noteIdFromUrl(): string {
+    const match = /\/notebook\/([^/?#]+)/.exec(this.page.url());
+    if (!match) {
+      throw new Error(`No noteId in URL ${this.page.url()}`);
+    }
+    return match[1];
+  }
+
+  // Read a paragraph's persisted text from the server. Use this instead of the editor
+  // DOM when asserting content equality: Monaco reconstructs the same text with
+  // different whitespace codepoints across reads, which breaks byte-exact matches.
+  async getParagraphTextByIndex(paragraphIndex: number): Promise<string> {
+    const noteId = this.noteIdFromUrl();
+    const response = await this.page.request.get(`/api/notebook/${noteId}`, { failOnStatusCode: false });
+    if (!response.ok()) {
+      throw new Error(`Fetch notebook REST request failed: ${response.status()} ${await response.text()}`);
+    }
+    const json = (await response.json()) as { body?: { paragraphs?: Array<{ text?: string }> } };
+    return json.body?.paragraphs?.[paragraphIndex]?.text ?? '';
+  }
+
+  private async seedParagraphViaRest(paragraphIndex: number, content: string): Promise<void> {
+    const noteId = this.noteIdFromUrl();
+    const paragraph = this.getParagraphByIndex(paragraphIndex);
+
+    const paragraphId = await this.resolveParagraphId(noteId, paragraphIndex);
+    const response = await this.page.request.put(`/api/notebook/${noteId}/paragraph/${paragraphId}`, {
+      data: { text: content },
+      failOnStatusCode: false
+    });
+    if (!response.ok()) {
+      throw new Error(`Seed paragraph REST request failed: ${response.status()} ${await response.text()}`);
     }
 
-    // Wait for the full normalized editor content to avoid stale Monaco renders.
+    // The PUT broadcasts the paragraph; wait for the flush to render the exact content.
     const expected = content.replace(/\s+/g, '');
-    if (expected.length === 0) {
-      await expect.poll(async () => (await this.readEditorText(paragraph)).trim(), { timeout: 10000 }).toBe('');
-    } else {
-      await expect
-        .poll(async () => (await this.readEditorText(paragraph)).replace(/\s+/g, ''), { timeout: 10000 })
-        .toContain(expected);
-    }
+    await expect
+      .poll(async () => (await this.readEditorText(paragraph)).replace(/\s+/g, ''), { timeout: 15000 })
+      .toBe(expected);
+  }
+
+  private async resolveParagraphId(noteId: string, paragraphIndex: number): Promise<string> {
+    // Retry: a paragraph just inserted through the UI may not be persisted server-side yet.
+    let id: string | undefined;
+    await expect(async () => {
+      const response = await this.page.request.get(`/api/notebook/${noteId}`, { failOnStatusCode: false });
+      if (!response.ok()) {
+        throw new Error(`Fetch notebook REST request failed: ${response.status()} ${await response.text()}`);
+      }
+      const json = (await response.json()) as { body?: { paragraphs?: Array<{ id?: string }> } };
+      id = json.body?.paragraphs?.[paragraphIndex]?.id;
+      expect(id, `No paragraph at index ${paragraphIndex} in note ${noteId}`).toBeTruthy();
+    }).toPass({ timeout: 10000, intervals: [200, 400, 800] });
+    return id!;
   }
 
   // Helper methods for verifying shortcut effects
