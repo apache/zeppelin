@@ -25,11 +25,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -43,8 +44,9 @@ class IndexHtmlServletTest {
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
 
     private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web/dist/index.html";
-    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR = "../zeppelin-web-angular/dist/zeppelin/index.html";
-
+    
+    @TempDir
+    Path tempDir;
 
     @Test
     void testZeppelinWebHtmlAddon() throws IOException, ServletException {
@@ -80,16 +82,24 @@ class IndexHtmlServletTest {
     }
 
     @Test
-    @Disabled("ignored due to zeppelin-web-angular not build for core tests")
     void testZeppelinWebAngularHtmlAddon() throws IOException, ServletException {
       ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
       when(zConf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
       when(zConf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
 
+      Path indexHtml = tempDir.resolve("index.html");
+      Files.writeString(
+        indexHtml,
+        "<!doctype html>\n"
+          + "<html>\n"
+          + "  <head><title>Zeppelin</title></head>\n"
+          + "  <body><zeppelin-root></zeppelin-root></body>\n"
+          + "</html>\n");
+
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
       when(ctx.getResource("/index.html"))
-        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB_ANGULAR));
+        .thenReturn(indexHtml.toUri().toURL());
       when(sc.getServletContext()).thenReturn(ctx);
 
       IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
@@ -106,8 +116,7 @@ class IndexHtmlServletTest {
       // Get Content
       String content = new String(out.toString());
 
-      assertThat(content, containsString(TEST_BODY_ADDON));
-      assertThat(content, containsString(TEST_HEAD_ADDON));
-
+      assertThat(content, containsString(TEST_HEAD_ADDON + "</head>"));
+      assertThat(content, containsString(TEST_BODY_ADDON + "</body>"));
     }
 }
