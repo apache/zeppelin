@@ -11,41 +11,24 @@
  */
 
 const { defineConfig, devices } = require('@playwright/test');
+const { baseConfig } = require('./playwright.shared');
 
-const classicTests = /tests\/classic\/.*\.spec\.ts/;
-const isClassicOnlyRun = process.env.E2E_CLASSIC === '1' || process.argv.some(arg => arg.includes('tests/classic'));
-const defaultBaseURL = process.env.CI || isClassicOnlyRun ? 'http://localhost:8080' : 'http://localhost:4200';
+const defaultBaseURL = process.env.CI ? 'http://localhost:8080' : 'http://localhost:4200';
 process.env.PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || defaultBaseURL;
 
 // https://playwright.dev/docs/test-configuration
 module.exports = defineConfig({
-  testDir: './e2e',
-  globalSetup: require.resolve('./e2e/global-setup'),
-  globalTeardown: require.resolve('./e2e/global-teardown'),
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1,
-  workers: 5,
-  timeout: 300000,
-  expect: {
-    timeout: 60000
-  },
+  ...baseConfig,
+  // The legacy classic UI suite runs separately via playwright.classic.config.js.
+  testIgnore: /tests\/classic\/.*\.spec\.ts/,
   reporter: [
     [!!process.env.CI ? 'github' : 'list'],
     ['html', { open: !!process.env.CI ? 'never' : 'always' }],
     ['./e2e/reporter.coverage.ts']
   ],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL,
-    trace: 'on-first-retry', // https://playwright.dev/docs/trace-viewer
-    screenshot: process.env.CI ? 'off' : 'only-on-failure',
-    video: process.env.CI ? 'off' : 'retain-on-failure',
-    launchOptions: {
-      args: ['--disable-dev-shm-usage']
-    },
-    headless: true,
-    actionTimeout: 60000,
-    navigationTimeout: 180000
+    ...baseConfig.use,
+    baseURL: process.env.PLAYWRIGHT_BASE_URL
   },
   projects: [
     // Auth setup runs once and writes playwright/.auth/user.json, which the browser
@@ -55,24 +38,8 @@ module.exports = defineConfig({
       name: 'setup',
       testMatch: /global\.setup\.ts/
     },
-    // skip classic in the auth CI leg (its Protractor predecessor was anonymous-only)
-    ...(process.env.E2E_MODE === 'auth'
-      ? []
-      : [
-          {
-            name: 'classic',
-            testMatch: classicTests,
-            use: {
-              ...devices['Desktop Chrome'],
-              baseURL: 'http://localhost:8080',
-              storageState: 'playwright/.auth/user.json'
-            },
-            dependencies: ['setup']
-          }
-        ]),
     {
       name: 'chromium',
-      testIgnore: classicTests,
       use: {
         ...devices['Desktop Chrome'],
         permissions: ['clipboard-read', 'clipboard-write'],
@@ -82,7 +49,6 @@ module.exports = defineConfig({
     },
     {
       name: 'Google Chrome',
-      testIgnore: classicTests,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
@@ -93,7 +59,6 @@ module.exports = defineConfig({
     },
     {
       name: 'firefox',
-      testIgnore: classicTests,
       use: {
         ...devices['Desktop Firefox'],
         storageState: 'playwright/.auth/user.json'
@@ -102,7 +67,6 @@ module.exports = defineConfig({
     },
     {
       name: 'webkit',
-      testIgnore: classicTests,
       use: {
         ...devices['Desktop Safari'],
         launchOptions: {
@@ -114,7 +78,6 @@ module.exports = defineConfig({
     },
     {
       name: 'Microsoft Edge',
-      testIgnore: classicTests,
       use: {
         ...devices['Desktop Edge'],
         channel: 'msedge',
@@ -124,13 +87,12 @@ module.exports = defineConfig({
       dependencies: ['setup']
     }
   ],
-  webServer:
-    process.env.CI || isClassicOnlyRun
-      ? undefined
-      : {
-          command: 'npm run start',
-          url: 'http://localhost:4200',
-          reuseExistingServer: true,
-          timeout: 2 * 60 * 1000
-        }
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'npm run start',
+        url: 'http://localhost:4200',
+        reuseExistingServer: true,
+        timeout: 2 * 60 * 1000
+      }
 });

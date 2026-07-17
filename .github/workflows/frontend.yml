@@ -109,15 +109,16 @@ jobs:
           mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
-        env:
-          E2E_MODE: ${{ matrix.mode }}
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e ${MAVEN_ARGS}
+        # Classic UI e2e runs only on the anonymous leg, like the legacy Protractor suite
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-report-${{ matrix.mode }}
-          path: zeppelin-web-angular/playwright-report/
+          path: |
+            zeppelin-web-angular/playwright-report/
+            zeppelin-web-angular/playwright-report-classic/
           retention-days: 3
       - name: Print Zeppelin logs
         if: always()

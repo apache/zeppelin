@@ -21,8 +21,10 @@ limitations under the License.
 > to the repository-root AGENTS.md, loaded only when working under `e2e/`.
 > See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
 
-Config: `zeppelin-web-angular/playwright.config.js`. This file is the shared source
-of truth for E2E conventions; Codex and agents.md-native tools read it directly.
+Config: `zeppelin-web-angular/playwright.config.js` (Angular UI) and
+`playwright.classic.config.js` (legacy classic UI), sharing `playwright.shared.js`.
+This document is the shared source of truth for E2E conventions; Codex and
+agents.md-native tools read it directly.
 Claude Code / Gemini users can symlink `CLAUDE.md` / `GEMINI.md` to it locally
 (both gitignored, personal, not committed).
 
@@ -122,7 +124,8 @@ exercised transitively and are not counted.
 | `npm run e2e:headed` | Headed run |
 | `npm run e2e:debug` | Step-by-step debugger |
 | `npm run e2e:report` | Open last HTML report |
-| `npm run e2e:ci` | CI mode (`CI=true`, baseURL `:8080`) |
+| `npm run e2e:report:classic` | Open last classic HTML report |
+| `npm run e2e:ci` | CI mode (`CI=true`, baseURL `:8080`), main then classic suite |
 | `npm run e2e:codegen` | Record against `:4200` |
 | `npm run e2e:cleanup` | Delete leftover test notebooks (`e2e/cleanup-util.ts`) |
 
@@ -204,12 +207,14 @@ the Angular/React suites.
   the first `ParagraphCtrl` paragraph, or `.ace_text-input` attached).
 - **Coverage:** `PAGES` is the Angular coverage denominator; classic pages are
   intentionally outside it, so `addPageAnnotationBeforeEach` is not used here.
-- **Running:** the `classic` project targets `http://localhost:8080` (Desktop
-  Chrome only) and needs a Zeppelin server built with `-Pweb-classic` — the
-  `:4200` dev server does not serve `/classic`. Run it with `npm run e2e:classic`
-  (sets `E2E_CLASSIC=1`); running a `tests/classic/*` file path directly is also
-  detected. In CI the classic project runs only in the anonymous matrix leg
-  (`E2E_MODE`), matching the anonymous-only legacy Protractor suite.
+- **Running:** the classic suite has its own config, `playwright.classic.config.js`
+  (Desktop Chrome only, targets `http://localhost:8080`), and needs a Zeppelin
+  server built with `-Pweb-classic` — the `:4200` dev server does not serve
+  `/classic`, so a plain `npm run e2e` never includes it. Run it with
+  `npm run e2e:classic` (single spec: `npm run e2e:classic -- tests/classic/<spec>`).
+  In CI the workflow enables it on the anonymous matrix leg only
+  (`-Dweb.e2e.classic.disabled=false`), matching the anonymous-only legacy
+  Protractor suite.
 - **POM:** inlining locators/helpers is acceptable while the suite is this small;
   if it grows, move them behind `models/classic-*.ts` / `*.util.ts`.
 - The React-migration / framework-neutral-spec guidance does not apply to
