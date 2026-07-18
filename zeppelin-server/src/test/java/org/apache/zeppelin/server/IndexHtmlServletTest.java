@@ -44,7 +44,6 @@ class IndexHtmlServletTest {
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
 
     private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web/dist/index.html";
-    
     @TempDir
     Path tempDir;
 
