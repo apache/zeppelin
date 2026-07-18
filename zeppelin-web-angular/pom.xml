@@ -33,6 +33,8 @@
   <properties>
     <web.e2e.disabled>true</web.e2e.disabled>
     <web.e2e.enabled>false</web.e2e.enabled>
+    <!-- Classic UI e2e runs opt-in: CI enables it on the anonymous leg only. -->
+    <web.e2e.classic.disabled>true</web.e2e.classic.disabled>
     <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -125,6 +127,18 @@
             <configuration>
               <skip>${web.e2e.disabled}</skip>
               <arguments>run e2e</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm e2e classic</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.classic.disabled}</skip>
+              <arguments>run e2e:classic</arguments>
             </configuration>
           </execution>
 

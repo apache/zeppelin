@@ -45,8 +45,10 @@ Thumbs.db
 
 # Playwright
 /playwright-report/
+/playwright-report-classic/
 /playwright-coverage/
 /test-results/
+/test-results-classic/
 /playwright/.cache/
 /playwright/.auth/
 
