@@ -158,7 +158,6 @@
     <plugin.avro.version>1.7.7</plugin.avro.version>
     <plugin.buildhelper.version>1.7</plugin.buildhelper.version>
     <plugin.buildnumber.version>1.4</plugin.buildnumber.version>
-    <plugin.checkstyle.version>2.17</plugin.checkstyle.version>
     <plugin.cobertura.version>2.7</plugin.cobertura.version>
     <plugin.download.version>1.6.0</plugin.download.version>
     <plugin.exec.version>1.6.0</plugin.exec.version>
