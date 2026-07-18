@@ -194,7 +194,7 @@ public class JobManagerService {
         }
         // get data for the job manager.
         ParagraphJobInfo paragraphItem = new ParagraphJobInfo(paragraph);
-        lastRunningUnixTime = getUnixTimeLastRunParagraph(paragraph);
+        lastRunningUnixTime = Math.max(lastRunningUnixTime, getUnixTimeLastRunParagraph(paragraph));
         paragraphs.add(paragraphItem);
       }
 
