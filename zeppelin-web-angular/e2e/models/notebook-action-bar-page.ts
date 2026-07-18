@@ -22,9 +22,6 @@ export class NotebookActionBarPage extends BasePage {
   readonly cloneButton: Locator;
   readonly exportButton: Locator;
   readonly reloadButton: Locator;
-  readonly collaborationModeToggle: Locator;
-  readonly personalModeButton: Locator;
-  readonly collaborationModeButton: Locator;
   readonly commitButton: Locator;
   readonly setRevisionButton: Locator;
   readonly compareRevisionsButton: Locator;
@@ -49,9 +46,6 @@ export class NotebookActionBarPage extends BasePage {
     this.cloneButton = page.locator('button[nzTooltipTitle="Clone this note"]');
     this.exportButton = page.locator('button[nzTooltipTitle="Export this note"]');
     this.reloadButton = page.locator('button[nzTooltipTitle="Reload from note file"]');
-    this.collaborationModeToggle = page.locator('ng-container[ngSwitch="note.config.personalizedMode"]');
-    this.personalModeButton = page.getByRole('button', { name: 'Personal' });
-    this.collaborationModeButton = page.getByRole('button', { name: 'Collaboration' });
     this.commitButton = page.getByRole('button', { name: 'Commit' });
     this.setRevisionButton = page.getByRole('button', { name: 'Set as default revision' });
     this.compareRevisionsButton = page.getByRole('button', { name: 'Compare with current revision' });
@@ -81,14 +75,6 @@ export class NotebookActionBarPage extends BasePage {
 
   async clickClearOutput(): Promise<void> {
     await this.clearOutputButton.click();
-  }
-
-  async switchToPersonalMode(): Promise<void> {
-    await this.personalModeButton.click();
-  }
-
-  async switchToCollaborationMode(): Promise<void> {
-    await this.collaborationModeButton.click();
   }
 
   async openRevisionDropdown(): Promise<void> {
