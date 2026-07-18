@@ -98,7 +98,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     this.listOfMenu = [
       {
         label: 'Run',
-        show: !this.first,
+        show: true,
         disabled: this.isEntireNoteRunning,
         icon: 'play-circle',
         trigger: () => this.trigger(this.runParagraph),
