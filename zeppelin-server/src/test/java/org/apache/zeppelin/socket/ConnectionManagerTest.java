@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -289,5 +290,24 @@ class ConnectionManagerTest {
     
     // Verify it's completely removed
     assertFalse(manager.watcherSockets.contains(socket));
+  }
+
+  @Test
+  void removeUserConnectionWithNullUserDoesNotThrow() {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+    NotebookSocket socket = mock(NotebookSocket.class);
+
+    assertDoesNotThrow(() -> manager.removeUserConnection(null, socket));
+  }
+
+  @Test
+  void removeUserConnectionBeforeUserAssignment() {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+    NotebookSocket socket = mock(NotebookSocket.class);
+
+    assertDoesNotThrow(() -> manager.removeUserConnection("", socket));
+    assertTrue(manager.userSocketMap.isEmpty());
   }
 }

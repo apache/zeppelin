@@ -164,6 +164,10 @@ public class ConnectionManager {
 
   public void removeUserConnection(String user, NotebookSocket conn) {
     LOGGER.debug("Remove user connection {} for user: {}", conn, user);
+    if (user == null) {
+      LOGGER.warn("Closing connection for null user");
+      return;
+    }
     boolean[] wasPresent = {false};
     userSocketMap.computeIfPresent(user, (k, connections) -> {
       wasPresent[0] = true;
