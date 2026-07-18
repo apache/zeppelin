@@ -272,7 +272,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   onParagraphSearch(term: string) {
-    this.listOfNotebookParagraphComponent.forEach(comp => comp.highlightMatches(term || ''));
+    this.listOfNotebookParagraphComponent?.forEach(comp => comp.highlightMatches(term || ''));
   }
 
   saveParagraph(id: string) {

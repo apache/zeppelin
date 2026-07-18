@@ -64,7 +64,8 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
     const lastIndex = cloneNote.name.lastIndexOf(' ');
     const endsWithNumber = !!cloneNote.name.match('^.+?\\s\\d$');
     const noteNamePrefix = endsWithNumber ? cloneNote.name.slice(0, lastIndex) : cloneNote.name;
-    const regexp = new RegExp(`^${noteNamePrefix}.+`);
+    const escapedNoteNamePrefix = noteNamePrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexp = new RegExp(`^${escapedNoteNamePrefix}.+`);
 
     this.noteListService.notes.flatList.forEach(note => {
       const noteName = note.path;
