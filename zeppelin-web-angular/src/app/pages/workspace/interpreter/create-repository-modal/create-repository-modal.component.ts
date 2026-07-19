@@ -73,7 +73,6 @@ export class InterpreterCreateRepositoryModalComponent extends DestroyHookCompon
       ],
       proxyLogin: '',
       proxyPassword: ''
-      // TODO: Change 'as' to 'satisfies' when typescript version is over 4.9 to detect unsupported editor options at compile time.
-    } as Record<keyof CreateInterpreterRepositoryForm, unknown>);
+    } satisfies Record<keyof CreateInterpreterRepositoryForm, unknown>);
   }
 }

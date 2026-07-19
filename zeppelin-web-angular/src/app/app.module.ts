@@ -60,8 +60,7 @@ registerLocaleData(en);
       useValue: {
         defaultEditorOption: {
           scrollBeyondLastLine: false
-          // TODO: Change 'as' to 'satisfies' when typescript version is over 4.9 to detect unsupported editor options at compile time.
-        } as JoinedEditorOptions,
+        } satisfies JoinedEditorOptions,
         onLoad: loadMonaco
       }
     },
