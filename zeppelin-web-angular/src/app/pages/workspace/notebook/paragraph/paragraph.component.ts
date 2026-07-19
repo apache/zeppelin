@@ -775,5 +775,7 @@ export class NotebookParagraphComponent
 
   ngOnDestroy(): void {
     super.ngOnDestroy();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
