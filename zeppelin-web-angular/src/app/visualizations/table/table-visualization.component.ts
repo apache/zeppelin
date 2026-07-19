@@ -18,8 +18,9 @@ import { utils, writeFile, WorkSheet } from 'xlsx';
 
 import { TableData, Visualization, VISUALIZATION } from '@zeppelin/visualization';
 
+import { AggregationType } from '../common/util/aggregation-type';
+
 type ColType = 'string' | 'date' | 'number';
-type AggregationType = 'count' | 'sum' | 'min' | 'max' | 'avg';
 
 class FilterOption {
   sort: 'desc' | 'asc' | '' = '';
@@ -59,7 +60,7 @@ export class TableVisualizationComponent implements OnInit {
   columns: string[] = [];
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
-  aggregations: AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
+  aggregations: readonly AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   @ViewChild(NzTableComponent, { static: false }) nzTable!: NzTableComponent<any>;
 
