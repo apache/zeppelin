@@ -123,7 +123,7 @@ This approach works, but is not convenient. Inline generic configuration can pro
 
 `ConfInterpreter` is a generic interpreter that can be used by any interpreter. You can use it just like defining a java property file.
 It can be used to make custom settings for any interpreter. However, `ConfInterpreter` needs to run before that interpreter process is launched. When that interpreter process is launched is determined by the interpreter binding mode setting.
-So users need to understand the [interpreter binding mode setting](./interpreter_bindings_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g., if we set the Spark interpreter setting as isolated per note, then under this setting, each note will launch one interpreter process. 
+So users need to understand the [interpreter binding mode setting](./interpreter_binding_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g., if we set the Spark interpreter setting as isolated per note, then under this setting, each note will launch one interpreter process. 
 In this scenario, users need to put `ConfInterpreter` as the first paragraph as in the below example. Otherwise, the customized setting cannot be applied (actually it would report `ERROR`).
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/conf_interpreter.png" width="600px">
