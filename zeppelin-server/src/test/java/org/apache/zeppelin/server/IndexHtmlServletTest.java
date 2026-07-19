@@ -17,6 +17,7 @@
 package org.apache.zeppelin.server;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,7 +25,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -43,7 +43,6 @@ class IndexHtmlServletTest {
     private final static String TEST_BODY_ADDON = "<!-- foo -->";
     private final static String TEST_HEAD_ADDON = "<!-- bar -->";
 
-    private final static String FILE_PATH_INDEX_HTML_ZEPPELIN_WEB = "../zeppelin-web/dist/index.html";
     @TempDir
     Path tempDir;
 
@@ -53,10 +52,18 @@ class IndexHtmlServletTest {
       when(zConf.getHtmlBodyAddon()).thenReturn(TEST_BODY_ADDON);
       when(zConf.getHtmlHeadAddon()).thenReturn(TEST_HEAD_ADDON);
 
+      Path indexHtml = tempDir.resolve("index.html");
+      Files.writeString(
+        indexHtml,
+        "<!doctype html>\n"
+          + "<html>\n"
+          + "  <head><title>Zeppelin</title>\n"
+          + "  <body>\n");
+
       ServletConfig sc = mock(ServletConfig.class);
       ServletContext ctx = mock(ServletContext.class);
       when(ctx.getResource("/index.html"))
-        .thenReturn(new URL("file:" + FILE_PATH_INDEX_HTML_ZEPPELIN_WEB));
+        .thenReturn(indexHtml.toUri().toURL());
       when(sc.getServletContext()).thenReturn(ctx);
 
       IndexHtmlServlet servlet = new IndexHtmlServlet(zConf, null);
@@ -75,8 +82,8 @@ class IndexHtmlServletTest {
       // Get Content
       String content = new String(out.toString());
 
-      assertThat(content, containsString(TEST_BODY_ADDON));
-      assertThat(content, containsString(TEST_HEAD_ADDON));
+      assertThat(content, containsString(TEST_HEAD_ADDON + "<body>"));
+      assertThat(content, endsWith(TEST_BODY_ADDON));
 
     }
 
