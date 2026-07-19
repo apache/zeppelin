@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -50,5 +51,24 @@ public class HiveUtilsTest {
                     "(Executing on YARN cluster with App id application_1612885840821_260263)");
     assertTrue(appId.isPresent());
     assertEquals("application_1612885840821_260263", appId.get());
+  }
+
+  @Test
+  public void testIsProgressBarSupported() {
+    // null / blank versions
+    assertFalse(HiveUtils.isProgressBarSupported(null));
+    assertFalse(HiveUtils.isProgressBarSupported(""));
+    // supported only from Hive 2.3 (HIVE-16045)
+    assertFalse(HiveUtils.isProgressBarSupported("2"));
+    assertFalse(HiveUtils.isProgressBarSupported("2.2"));
+    assertTrue(HiveUtils.isProgressBarSupported("2.3"));
+    assertTrue(HiveUtils.isProgressBarSupported("3.1.3"));
+    assertFalse(HiveUtils.isProgressBarSupported("1.2.1"));
+    // versions with a trailing qualifier or a missing minor segment
+    assertTrue(HiveUtils.isProgressBarSupported("2.3-dev"));
+    assertTrue(HiveUtils.isProgressBarSupported("3-cdh"));
+    // real-world releases up to 2026 (both on Maven Central)
+    assertTrue(HiveUtils.isProgressBarSupported("4.2.0"));         // latest Apache Hive
+    assertTrue(HiveUtils.isProgressBarSupported("4.0.0-beta-1"));  // Hive 4 pre-release
   }
 }
