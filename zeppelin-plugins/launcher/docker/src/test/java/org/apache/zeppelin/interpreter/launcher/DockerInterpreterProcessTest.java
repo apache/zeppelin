@@ -117,7 +117,29 @@ class DockerInterpreterProcessTest {
     verify(mockDocker).removeContainer(anyString());
   }
 
-  // #3: isAlive() reflects the container's actual state from the Docker daemon,
+  @Test
+  void start_removesContainer_evenWhenKillFailsDuringCleanup() throws Exception {
+    DockerInterpreterProcess intp = spy(newProcess());
+    DockerClient mockDocker = mock(DockerClient.class);
+    doReturn(mockDocker).when(intp).createDockerClient(anyString());
+
+    when(mockDocker.listContainers(any())).thenReturn(Collections.emptyList());
+    when(mockDocker.createContainer(any(ContainerConfig.class), anyString()))
+        .thenReturn(ContainerCreation.builder().id("test-container-id").build());
+    // Container is created and started, then preparation (the first exec) fails.
+    doThrow(new DockerException("exec failed"))
+        .when(mockDocker).execCreate(anyString(), any(String[].class), any());
+    // ...and killing the container during cleanup fails too.
+    doThrow(new DockerException("kill failed")).when(mockDocker).killContainer(anyString());
+
+    assertThrows(IOException.class, () -> intp.start("user1"));
+
+    // removeContainer must still fire despite the kill failure.
+    verify(mockDocker).killContainer(anyString());
+    verify(mockDocker).removeContainer(anyString());
+  }
+
+  // isAlive() reflects the container's actual state from the Docker daemon,
   // not just whether the Thrift port is reachable.
   @Test
   void isAlive_trueWhenContainerRunning() throws Exception {
@@ -131,17 +153,16 @@ class DockerInterpreterProcessTest {
   }
 
   @Test
-  void isAlive_falseWhenContainerExitedOrOomKilled() throws Exception {
+  void isAlive_falseWhenContainerNotRunning() throws Exception {
     DockerInterpreterProcess intp = newProcess();
     DockerClient mockDocker = mock(DockerClient.class);
     intp.docker = mockDocker;
     ContainerState state = stubContainerState(mockDocker);
-    when(state.running()).thenReturn(false);   // exited / OOMKilled -> running == false
+    when(state.running()).thenReturn(false);
 
     assertFalse(intp.isAlive());
   }
 
-  // #3: getErrorMessage() surfaces the failure reason from the container state.
   @Test
   void getErrorMessage_reportsOomKilled() throws Exception {
     DockerInterpreterProcess intp = newProcess();
