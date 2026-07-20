@@ -209,8 +209,9 @@ export class TableVisualizationComponent implements OnInit {
         sortKeys.push((row: any) => typeCoercion(row[key], value.type));
         sortTypes.push(value.sort);
       }
+      const term = value.term.trim();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      terms.push((row: any) => String(row[key]).search(value.term) !== -1);
+      terms.push((row: any) => String(row[key]).includes(term));
     });
     this.rows = filter(this.tableData.rows, row => terms.every(term => term(row)));
     this.rows = orderBy(this.rows, sortKeys, sortTypes);
