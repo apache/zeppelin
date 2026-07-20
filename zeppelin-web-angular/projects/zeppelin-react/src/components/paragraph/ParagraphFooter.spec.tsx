@@ -96,6 +96,20 @@ describe('ParagraphFooter mount contract', () => {
     }
   });
 
+  it('renders a neutral "Running…" label while running without a dateStarted', () => {
+    mountFooter({
+      ...baseProps,
+      dateStarted: undefined,
+      showExecutionTime: false,
+      showElapsedTime: true
+    });
+
+    // A missing dateStarted must not produce a misleading "Started 0 seconds ago" message.
+    const elapsedTime = host!.querySelector('.elapsed-time')!;
+    expect(elapsedTime.textContent).toBe('Running…');
+    expect(elapsedTime.textContent).not.toMatch(/Started/);
+  });
+
   it('update() re-renders in place with new props', () => {
     mountFooter(baseProps);
     expect(host!.querySelector('.execution-time')).not.toBeNull();

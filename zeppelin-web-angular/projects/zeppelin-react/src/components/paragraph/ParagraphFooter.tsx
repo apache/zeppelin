@@ -26,11 +26,7 @@ export interface ParagraphFooterProps {
 }
 
 const isOutdated = (dateUpdated?: string, dateStarted?: string): boolean => {
-  return (
-    dateUpdated !== undefined &&
-    dateStarted !== undefined &&
-    Date.parse(dateUpdated) > Date.parse(dateStarted)
-  );
+  return dateUpdated !== undefined && dateStarted !== undefined && Date.parse(dateUpdated) > Date.parse(dateStarted);
 };
 
 const computeExecutionTime = (props: ParagraphFooterProps): string => {
@@ -43,10 +39,7 @@ const computeExecutionTime = (props: ParagraphFooterProps): string => {
     return isOutdated(dateUpdated, dateStarted) ? 'outdated' : '';
   }
 
-  const durationFormat = formatDistanceStrict(
-    new Date(dateStarted),
-    new Date(dateFinished)
-  );
+  const durationFormat = formatDistanceStrict(new Date(dateStarted), new Date(dateFinished));
   const endFormat = format(new Date(dateFinished), 'MMMM dd yyyy, h:mm:ss a');
   const userLabel = user === undefined || user === null ? 'anonymous' : user;
   let desc = `Took ${durationFormat}. Last updated by ${userLabel} at ${endFormat}.`;
@@ -57,8 +50,13 @@ const computeExecutionTime = (props: ParagraphFooterProps): string => {
 };
 
 const computeElapsedTime = (dateStarted?: string): string => {
-  const base = dateStarted ? new Date(dateStarted) : new Date();
-  return `Started ${formatDistanceToNow(base)} ago.`;
+  // A running paragraph may not have a dateStarted yet (e.g. queued/pending on the
+  // interpreter). Fall back to a neutral label instead of measuring from "now", which
+  // would render a misleading "Started less than a minute ago." message.
+  if (!dateStarted) {
+    return 'Running…';
+  }
+  return `Started ${formatDistanceToNow(new Date(dateStarted))} ago.`;
 };
 
 export const ParagraphFooter = (props: ParagraphFooterProps) => {
@@ -79,10 +77,7 @@ export interface ParagraphFooterMountHandle {
   unmount: () => void;
 }
 
-export const mount = (
-  element: HTMLElement,
-  initialProps: ParagraphFooterProps
-): ParagraphFooterMountHandle => {
+export const mount = (element: HTMLElement, initialProps: ParagraphFooterProps): ParagraphFooterMountHandle => {
   if (!element) {
     throw new Error('Mount element is required');
   }
