@@ -219,11 +219,25 @@ public class HiveUtils {
   }
 
   // Hive progress bar is supported from hive 2.3 (HIVE-16045)
-  private static boolean isProgressBarSupported(String hiveVersion) {
-    String[] tokens = hiveVersion.split("\\.");
-    int majorVersion = Integer.parseInt(tokens[0]);
-    int minorVersion = Integer.parseInt(tokens[1]);
-    return majorVersion > 2 || ((majorVersion == 2) && minorVersion >= 3);
+  static boolean isProgressBarSupported(String hiveVersion) {
+    if (StringUtils.isBlank(hiveVersion)) {
+      return false;                                       // null / blank -> unsupported
+    }
+    // Drop any qualifier after the numeric version: "3-cdh" -> "3", "2.3-dev" -> "2.3"
+    String[] tokens = hiveVersion.replaceAll("[^0-9.].*$", "").split("\\.");
+    try {
+      int majorVersion = Integer.parseInt(tokens[0]);
+      if (majorVersion >= 3) {
+        return true;                                      // 3.x and above -> always supported
+      }
+      if (majorVersion <= 1) {
+        return false;                                     // 1.x and below -> unsupported
+      }
+      // major == 2 -> supported from 2.3 onward
+      return tokens.length > 1 && Integer.parseInt(tokens[1]) >= 3;
+    } catch (NumberFormatException e) {
+      return false;                                       // unparsable version -> unsupported
+    }
   }
 
   // extract hive job url from logs, it only works for MR engine.
