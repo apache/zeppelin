@@ -40,14 +40,17 @@ public class ProcessData {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ProcessData.class);
 
-  // Patterns to filter out download-related messages from error stream
+  // Patterns to identify download-related messages in the error stream.
+  // Anchored to the start of a (single, already-split) line to avoid matching
+  // error messages that merely mention a size or percentage figure.
   private static final Pattern[] DOWNLOAD_PATTERNS = {
-    Pattern.compile(".*\\[INFO\\]\\s+(Downloading|Downloaded):.*"),     // Maven download messages
-    Pattern.compile(".*Downloading\\s+.*"),                              // Generic downloading messages
-    Pattern.compile(".*Downloaded\\s+.*"),                               // Generic downloaded messages
-    Pattern.compile(".*progress:\\s*\\d+%.*", Pattern.CASE_INSENSITIVE), // Progress indicators
-    Pattern.compile(".*\\d+/\\d+\\s*(KB|MB|GB|bytes).*"),               // Size progress (e.g., 1024/2048 KB)
-    Pattern.compile(".*\\d+\\.\\d+\\s*(KB|MB|GB)\\s+(downloaded|transferred).*", Pattern.CASE_INSENSITIVE) // Size with downloaded/transferred
+    Pattern.compile("^\\[INFO\\]\\s+(Downloading|Downloaded):.*"),  // Maven download messages
+    Pattern.compile("^Downloading\\s+.*"),                          // Generic downloading messages
+    Pattern.compile("^Downloaded\\s+.*"),                           // Generic downloaded messages
+    Pattern.compile("^Progress\\s*(\\(\\d+\\))?:?\\s*\\d+%.*",
+        Pattern.CASE_INSENSITIVE),                                  // Progress indicators, e.g. "Progress (1): 45%"
+    Pattern.compile("^[\\d.]+/[\\d.]+\\s*(KB|MB|GB|bytes|kB)\\b.*",
+        Pattern.CASE_INSENSITIVE)                                   // Size progress (e.g., "1024/2048 KB")
   };
 
   private Process checked_process;
@@ -161,24 +164,48 @@ public class ProcessData {
   }
 
   /**
-   * Filters out download-related messages from error stream output.
-   * This method checks if the given message matches common download patterns
-   * (Maven downloads, progress indicators, size information, etc.)
+   * Checks whether a single (already trimmed) line looks like a download-related
+   * message (Maven downloads, progress indicators, size information, etc.).
    *
-   * @param message The message to check
-   * @return true if the message should be filtered out (is a download message), false otherwise
+   * <p>This is only used to decide the console log level for a line - a line that
+   * matches is still logged (at TRACE), never dropped, so a misclassified line is
+   * merely quieter rather than lost. Callers must check for "error"/"failed" content
+   * before calling this, since that check always takes precedence.
+   *
+   * @param line The single line to check
+   * @return true if the line looks like a download message, false otherwise
    */
-  private boolean isDownloadMessage(String message) {
-    if (message == null || message.trim().isEmpty()) {
+  boolean isDownloadMessage(String line) {
+    if (line == null || line.isEmpty()) {
       return false;
     }
 
     for (Pattern pattern : DOWNLOAD_PATTERNS) {
-      if (pattern.matcher(message).matches()) {
+      if (pattern.matcher(line).matches()) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Classifies and logs a single, complete line of error-stream output to the console.
+   * A line is never dropped: real error/failed lines always win at WARN, and only lines
+   * that look like download noise are downgraded to TRACE instead of being discarded.
+   */
+  private void logErrorLine(String line) {
+    String trimmedLine = line.trim();
+    if (trimmedLine.isEmpty()) {
+      return;
+    }
+    String lowerLine = trimmedLine.toLowerCase();
+    if (lowerLine.contains("error") || lowerLine.contains("failed")) {
+      LOGGER.warn(trimmedLine);
+    } else if (isDownloadMessage(trimmedLine)) {
+      LOGGER.trace(trimmedLine);
+    } else {
+      LOGGER.debug(trimmedLine);
+    }
   }
 
   @Override
@@ -193,6 +220,10 @@ public class ProcessData {
   private void buildOutputAndErrorStreamData() throws IOException {
     StringBuilder sbInStream = new StringBuilder();
     StringBuilder sbErrorStream = new StringBuilder();
+    // Carries an incomplete trailing line across chunk reads, since a single line of
+    // output can be split across two BUFFER_LEN-sized reads (or even two outer-loop
+    // iterations). Only complete lines are ever classified/logged from this buffer.
+    StringBuilder pendingErrorLine = new StringBuilder();
 
     try {
       InputStream in = this.checked_process.getInputStream();
@@ -235,18 +266,25 @@ public class ProcessData {
             break;
           }
           tempSB.append(charBuffer, 0, readCount);
+          // The full, unfiltered chunk is always kept here, so getErrorStream() always
+          // returns the complete error output. Download-message filtering below only
+          // affects the verbosity of the console log, not the returned stream content.
           sbErrorStream.append(tempSB);
           if (tempSB.length() > 0) {
             outputProduced = true;
             String temp = new String(tempSB);
             temp = temp.replaceAll("Pseudo-terminal will not be allocated because stdin is not a terminal.", "");
             if (printToConsole) {
-              if (!temp.trim().equals("") && !isDownloadMessage(temp)) {
-                if (temp.toLowerCase().contains("error") || temp.toLowerCase().contains("failed")) {
-                  LOGGER.warn(temp.trim());
-                } else {
-                  LOGGER.debug(temp.trim());
-                }
+              // Buffer chunks can hold several lines, and a line can itself be split
+              // across chunks/iterations, so accumulate into pendingErrorLine and only
+              // classify/log complete lines. The trailing remainder (no newline yet)
+              // stays buffered until more data (or stream close) completes it.
+              pendingErrorLine.append(temp);
+              int newlineIndex;
+              while ((newlineIndex = pendingErrorLine.indexOf("\n")) >= 0) {
+                String line = pendingErrorLine.substring(0, newlineIndex);
+                pendingErrorLine.delete(0, newlineIndex + 1);
+                logErrorLine(line);
               }
             }
           }
@@ -275,6 +313,14 @@ public class ProcessData {
           }
           break;
         }
+      }
+
+      // Stream ended (or we gave up waiting) - the process will send no more data, so
+      // whatever is left in pendingErrorLine is a final, unterminated line. Flush it
+      // rather than silently dropping it.
+      if (printToConsole && pendingErrorLine.length() > 0) {
+        logErrorLine(pendingErrorLine.toString());
+        pendingErrorLine.setLength(0);
       }
 
       in.close();
