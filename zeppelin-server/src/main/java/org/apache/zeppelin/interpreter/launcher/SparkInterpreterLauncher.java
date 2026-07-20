@@ -285,7 +285,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       } else if (scalaVersion.startsWith("2.13")) {
         return "2.13";
       } else {
-        throw new Exception("Unsupported scala version: " + scalaVersion);
+        throw new IllegalArgumentException("Unsupported scala version: " + scalaVersion);
       }
     } else {
       return detectSparkScalaVersionByReplClass(sparkHome);
