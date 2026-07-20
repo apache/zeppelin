@@ -46,6 +46,7 @@ import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerState;
 import com.spotify.docker.client.messages.ExecCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
@@ -466,8 +467,20 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public boolean isAlive() {
-    //TODO(ZEPPELIN-5876): Implement it more accurately
-    return isRunning();
+    DockerClient client = docker;
+    if (client == null) {
+      return false;
+    }
+    try {
+      ContainerState state = client.inspectContainer(containerName).state();
+      return Boolean.TRUE.equals(state.running()) || Boolean.TRUE.equals(state.paused());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    } catch (Exception e) {
+      LOGGER.warn("Failed to inspect container {} for liveness", containerName, e);
+      return false;
+    }
   }
 
   @Override
@@ -480,6 +493,36 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public String getErrorMessage() {
+    DockerClient client = docker;
+    if (client == null) {
+      return null;
+    }
+    try {
+      ContainerState state = client.inspectContainer(containerName).state();
+      return describeContainerFailure(state);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return null;
+    } catch (Exception e) {
+      LOGGER.warn("Failed to inspect container {} for error message", containerName, e);
+      return null;
+    }
+  }
+
+  // Returns null when the container is still running or exited cleanly,
+  // otherwise a human-readable reason for the failure.
+  private String describeContainerFailure(ContainerState state) {
+    if (Boolean.TRUE.equals(state.running())) {
+      return null;
+    }
+    if (Boolean.TRUE.equals(state.oomKilled())) {
+      return "Interpreter container " + containerName
+          + " was OOMKilled (exitCode=" + state.exitCode() + ")";
+    }
+    Long exitCode = state.exitCode();
+    if (exitCode != null && exitCode != 0) {
+      return "Interpreter container " + containerName + " exited with code " + exitCode;
+    }
     return null;
   }
 
