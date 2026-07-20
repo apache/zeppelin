@@ -834,7 +834,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                   <div class="panel-body">
                     <p>
                         Instead of hard-coding your CQL queries, it is possible to use <strong>
-                        <a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html" target="_blank" rel="noopener noreferrer">Zeppelin dynamic form</a>
+                        <a href="https://zeppelin.apache.org/docs/latest/usage/dynamic_form/intro.html" target="_blank" rel="noopener noreferrer">Zeppelin dynamic form</a>
                         </strong> syntax to inject simple value or multiple choices forms.
 
                         The legacy mustache syntax (  <strong>{{ }}</strong> ) to bind input text and select form is still supported but is deprecated and will be removed in future releases.
@@ -1050,7 +1050,7 @@ select id, double, float, text, date, time, timestamp from zep.test_format;</pre
                It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using synchronous queries. <em>Asynchronous execution</em> is only possible when it is possible to return a <strong>Future</strong> value in the <strong>InterpreterResult</strong>. It may be an interesting proposal for the <strong>Zeppelin</strong> project.
                <br/><br/>
                Recently, <strong>Zeppelin</strong> allows you to choose the level of isolation for your interpreters (see
-               <strong><a href="http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/interpreters.html" target="_blank" rel="noopener noreferrer">Interpreter Binding Mode</a></strong> ).
+               <strong><a href="https://zeppelin.apache.org/docs/latest/usage/interpreter/interpreter_binding_mode.html" target="_blank" rel="noopener noreferrer">Interpreter Binding Mode</a></strong> ).
                <br/><br/>
                Long story short, you have 3 available bindings:
 
