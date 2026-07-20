@@ -101,22 +101,29 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
    * Close all interpreter instances in this session
    * @param sessionId
    */
-  public synchronized void close(String sessionId) {
-    LOGGER.info("Close Session: {} for interpreter setting: {}", sessionId, interpreterSetting.getName());
-    close(sessions.remove(sessionId));
+  public void close(String sessionId) {
+    LOGGER.info("Close Session: {} for interpreter setting: {}",
+        sessionId, interpreterSetting.getName());
+
+    Collection<Interpreter> interpreters = sessions.remove(sessionId);
+    close(interpreters);
+
     //TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
-    if (sessions.isEmpty() && interpreterSetting != null) {
-      LOGGER.info("Remove this InterpreterGroup: {} as all the sessions are closed", id);
-      interpreterSetting.removeInterpreterGroup(id);
-      if (remoteInterpreterProcess != null) {
-        LOGGER.info("Kill RemoteInterpreterProcess");
-        remoteInterpreterProcess.stop();
-        try {
-          interpreterSetting.getRecoveryStorage().onInterpreterClientStop(remoteInterpreterProcess);
-        } catch (IOException e) {
-          LOGGER.error("Fail to store recovery data", e);
+    synchronized (this) {
+      if (sessions.isEmpty() && interpreterSetting != null) {
+        LOGGER.info("Remove this InterpreterGroup: {} as all the sessions are closed", id);
+        interpreterSetting.removeInterpreterGroup(id);
+        if (remoteInterpreterProcess != null) {
+          LOGGER.info("Kill RemoteInterpreterProcess");
+          remoteInterpreterProcess.stop();
+          try {
+            interpreterSetting.getRecoveryStorage()
+                .onInterpreterClientStop(remoteInterpreterProcess);
+          } catch (IOException e) {
+            LOGGER.error("Fail to store recovery data", e);
+          }
+          remoteInterpreterProcess = null;
         }
-        remoteInterpreterProcess = null;
       }
     }
   }
