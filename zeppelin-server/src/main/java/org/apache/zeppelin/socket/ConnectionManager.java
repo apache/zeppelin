@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -71,7 +72,7 @@ public class ConnectionManager {
   // noteId -> connection
   final Map<String, Set<NotebookSocket>> noteSocketMap = Metrics.gaugeMapSize("zeppelin_note_sockets", Tags.empty(), new HashMap<>());
   // user -> connection
-  final Map<String, Queue<NotebookSocket>> userSocketMap = Metrics.gaugeMapSize("zeppelin_user_sockets", Tags.empty(), new HashMap<>());
+  final Map<String, Queue<NotebookSocket>> userSocketMap = Metrics.gaugeMapSize("zeppelin_user_sockets", Tags.empty(), new ConcurrentHashMap<>());
 
   /**
    * This is a special endpoint in the notebook websocket, Every connection in this Queue
@@ -153,24 +154,27 @@ public class ConnectionManager {
   public void addUserConnection(String user, NotebookSocket conn) {
     LOGGER.debug("Add user connection {} for user: {}", conn, user);
     conn.setUser(user);
-    if (userSocketMap.containsKey(user)) {
-      userSocketMap.get(user).add(conn);
-    } else {
-      Queue<NotebookSocket> socketQueue = new ConcurrentLinkedQueue<>();
-      socketQueue.add(conn);
-      userSocketMap.put(user, socketQueue);
-    }
+    userSocketMap.compute(user, (k, connections) -> {
+      Queue<NotebookSocket> queue =
+          (connections == null) ? new ConcurrentLinkedQueue<>() : connections;
+      queue.add(conn);
+      return queue;
+    });
   }
 
   public void removeUserConnection(String user, NotebookSocket conn) {
     LOGGER.debug("Remove user connection {} for user: {}", conn, user);
-    if (userSocketMap.containsKey(user)) {
-      Queue<NotebookSocket> connections = userSocketMap.get(user);
+    if (user == null) {
+      LOGGER.warn("Closing connection for null user");
+      return;
+    }
+    boolean[] wasPresent = {false};
+    userSocketMap.computeIfPresent(user, (k, connections) -> {
+      wasPresent[0] = true;
       connections.remove(conn);
-      if (connections.isEmpty()) {
-        userSocketMap.remove(user);
-      }
-    } else {
+      return connections.isEmpty() ? null : connections;
+    });
+    if (!wasPresent[0]) {
       LOGGER.warn("Closing connection that is absent in user connections");
     }
   }
@@ -330,12 +334,13 @@ public class ConnectionManager {
 
 
   public void multicastToUser(String user, Message m) {
-    if (!userSocketMap.containsKey(user)) {
+    Queue<NotebookSocket> connections = userSocketMap.get(user);
+    if (connections == null) {
       LOGGER.warn("Multicasting to user {} that is not in connections map", user);
       return;
     }
 
-    for (NotebookSocket conn : userSocketMap.get(user)) {
+    for (NotebookSocket conn : connections) {
       unicast(m, conn);
     }
   }
@@ -354,12 +359,13 @@ public class ConnectionManager {
       return;
     }
 
-    if (!userSocketMap.containsKey(user)) {
+    Queue<NotebookSocket> connections = userSocketMap.get(user);
+    if (connections == null) {
       LOGGER.warn("Failed to send unicast. user {} that is not in connections map", user);
       return;
     }
 
-    for (NotebookSocket conn : userSocketMap.get(user)) {
+    for (NotebookSocket conn : connections) {
       Message m = new Message(Message.OP.PARAGRAPH).withMsgId(msgId).put("paragraph", p);
       unicast(m, conn);
     }

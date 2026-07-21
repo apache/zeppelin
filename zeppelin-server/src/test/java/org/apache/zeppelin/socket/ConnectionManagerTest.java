@@ -16,18 +16,25 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
@@ -143,6 +150,122 @@ class ConnectionManagerTest {
   }
 
   @Test
+  void userSocketMapConcurrentAccessTest() throws InterruptedException {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    when(authService.getRoles(anyString())).thenAnswer(invocation -> new HashSet<>());
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+
+    int writerCount = 8;
+    int readerCount = 2;
+    int iterations = 1000;
+
+    List<String> users = new ArrayList<>();
+    List<NotebookSocket> sockets = new ArrayList<>();
+    for (int i = 0; i < writerCount; i++) {
+      users.add("user-" + i);
+      sockets.add(mock(NotebookSocket.class));
+    }
+
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    CountDownLatch startLatch = new CountDownLatch(1);
+    CountDownLatch doneLatch = new CountDownLatch(writerCount + readerCount);
+    ExecutorService executor = Executors.newFixedThreadPool(writerCount + readerCount);
+
+    for (int i = 0; i < writerCount; i++) {
+      String user = users.get(i);
+      NotebookSocket socket = sockets.get(i);
+      executor.submit(() -> {
+        try {
+          startLatch.await();
+          for (int j = 0; j < iterations; j++) {
+            manager.addUserConnection(user, socket);
+            manager.removeUserConnection(user, socket);
+          }
+        } catch (Throwable t) {
+          failure.compareAndSet(null, t);
+        } finally {
+          doneLatch.countDown();
+        }
+      });
+    }
+
+    for (int i = 0; i < readerCount; i++) {
+      executor.submit(() -> {
+        try {
+          startLatch.await();
+          for (int j = 0; j < iterations; j++) {
+            manager.forAllUsers((user, userAndRoles) -> { });
+          }
+        } catch (Throwable t) {
+          failure.compareAndSet(null, t);
+        } finally {
+          doneLatch.countDown();
+        }
+      });
+    }
+
+    startLatch.countDown();
+    assertTrue(doneLatch.await(30, TimeUnit.SECONDS));
+    executor.shutdown();
+
+    assertNull(failure.get(),
+        "Concurrent access to userSocketMap should not throw, but got: " + failure.get());
+  }
+
+  @Test
+  void userSocketMapConcurrentAddPreservesAllConnectionsTest() throws InterruptedException {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+
+    String user = "shared-user";
+    int threadCount = 16;
+    int iterationsPerThread = 500;
+
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    List<NotebookSocket> addedSockets = new CopyOnWriteArrayList<>();
+
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    CountDownLatch startLatch = new CountDownLatch(1);
+    CountDownLatch doneLatch = new CountDownLatch(threadCount);
+    for (int i = 0; i < threadCount; i++) {
+      executor.submit(() -> {
+        try {
+          startLatch.await();
+          for (int j = 0; j < iterationsPerThread; j++) {
+            NotebookSocket socket = mock(NotebookSocket.class);
+            manager.addUserConnection(user, socket);
+            addedSockets.add(socket);
+          }
+        } catch (Throwable t) {
+          failure.compareAndSet(null, t);
+        } finally {
+          doneLatch.countDown();
+        }
+      });
+    }
+
+    startLatch.countDown();
+    assertTrue(doneLatch.await(30, TimeUnit.SECONDS));
+    executor.shutdown();
+
+    assertNull(failure.get(), "Concurrent add should not throw, but got: " + failure.get());
+
+    Queue<NotebookSocket> finalConnections = manager.userSocketMap.get(user);
+    assertEquals(threadCount * iterationsPerThread, addedSockets.size());
+    List<NotebookSocket> missing = new ArrayList<>();
+    for (NotebookSocket socket : addedSockets) {
+      if (finalConnections == null || !finalConnections.contains(socket)) {
+        missing.add(socket);
+      }
+    }
+
+    assertTrue(missing.isEmpty(),
+        missing.size() + " of " + addedSockets.size()
+            + " concurrently added connections were lost from userSocketMap");
+    assertEquals(addedSockets.size(), finalConnections.size());
+  }
+
+  @Test
   void switchConnectionToWatcherAndRemove() {
     AuthorizationService authService = mock(AuthorizationService.class);
     ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
@@ -167,5 +290,24 @@ class ConnectionManagerTest {
     
     // Verify it's completely removed
     assertFalse(manager.watcherSockets.contains(socket));
+  }
+
+  @Test
+  void removeUserConnectionWithNullUserDoesNotThrow() {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+    NotebookSocket socket = mock(NotebookSocket.class);
+
+    assertDoesNotThrow(() -> manager.removeUserConnection(null, socket));
+  }
+
+  @Test
+  void removeUserConnectionBeforeUserAssignment() {
+    AuthorizationService authService = mock(AuthorizationService.class);
+    ConnectionManager manager = new ConnectionManager(authService, ZeppelinConfiguration.load());
+    NotebookSocket socket = mock(NotebookSocket.class);
+
+    assertDoesNotThrow(() -> manager.removeUserConnection("", socket));
+    assertTrue(manager.userSocketMap.isEmpty());
   }
 }
