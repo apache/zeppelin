@@ -67,8 +67,13 @@ export class NotebookParagraphFooterComponent implements OnChanges {
   }
 
   getElapsedTime() {
-    // TODO(hsuanxyz) dateStarted undefined after start
-    return `Started ${formatDistanceToNow(this.dateStarted ? new Date(this.dateStarted) : new Date())} ago.`;
+    // A running paragraph may not have a dateStarted yet (e.g. queued/pending on the
+    // interpreter). Fall back to a neutral label instead of measuring from "now", which
+    // would render a misleading "Started less than a minute ago." message.
+    if (!this.dateStarted) {
+      return 'Running…';
+    }
+    return `Started ${formatDistanceToNow(new Date(this.dateStarted))} ago.`;
   }
 
   constructor() {}
