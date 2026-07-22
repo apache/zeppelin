@@ -19,14 +19,10 @@ import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { ImportNote, MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
+import { isRecord } from '@zeppelin/utility';
 
-const isImportNote = (value: unknown): value is ImportNote['note'] => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const { paragraphs } = value as { paragraphs?: unknown };
-  return Array.isArray(paragraphs) && paragraphs.length > 0;
-};
+const isImportNote = (value: unknown): value is ImportNote['note'] =>
+  isRecord(value) && Array.isArray(value.paragraphs) && value.paragraphs.length > 0;
 
 @Component({
   selector: 'zeppelin-note-import',
