@@ -95,6 +95,7 @@
             <button
               nz-tooltip
               nzTooltipTitle="Switch to collaboration mode"
+              aria-label="Switch to collaboration mode"
               [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
               nz-button
               nzType="primary"
@@ -107,6 +108,7 @@
             <button
               nz-tooltip
               nzTooltipTitle="Switch to personal mode"
+              aria-label="Switch to personal mode"
               nz-button
               [disabled]="revisionView || !isOwner || isNoteParagraphRunning"
               (click)="toggleNotePersonalizedMode()"

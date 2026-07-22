@@ -140,24 +140,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     await expect(actionBarPage.reloadButton).toBeEnabled();
   });
 
-  test('should handle collaboration mode toggle when available', async () => {
-    test.skip(
-      !(await actionBarPage.collaborationModeToggle.isVisible()),
-      'Collaboration mode not available in this environment'
-    );
-
-    const personalVisible = await actionBarPage.personalModeButton.isVisible();
-    const collaborationVisible = await actionBarPage.collaborationModeButton.isVisible();
-    expect(personalVisible || collaborationVisible).toBe(true);
-
-    if (personalVisible) {
-      await actionBarPage.switchToPersonalMode();
-      await expect(actionBarPage.collaborationModeButton).toBeVisible({ timeout: 5000 });
-    } else if (collaborationVisible) {
-      await actionBarPage.switchToCollaborationMode();
-      await expect(actionBarPage.personalModeButton).toBeVisible({ timeout: 5000 });
-    }
-  });
+  // Toggle coverage lives in collaboration/collaborative-mode.spec.ts.
 
   test('should handle revision controls when supported', async () => {
     test.skip(!(await actionBarPage.commitButton.isVisible()), 'Revision controls not supported in this environment');

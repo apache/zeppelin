@@ -281,6 +281,14 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   return false;
 };
 
+export const skipWhenAuthenticationIsStillRequired = async (page: Page): Promise<void> => {
+  const loginStillVisible = await page
+    .locator('zeppelin-login')
+    .isVisible()
+    .catch(() => false);
+  test.skip(loginStillVisible, 'Authentication is enabled but no E2E test credentials are configured');
+};
+
 export const waitForZeppelinReady = async (page: Page, options: WaitForZeppelinReadyOptions = {}): Promise<void> => {
   try {
     // Enhanced wait for network idle with longer timeout for CI environments
