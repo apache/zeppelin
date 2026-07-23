@@ -112,7 +112,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   void testGloballyAction() throws Exception {
     try {
       //step 1: (admin) login, set 'globally in shared' mode of python interpreter, logout
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
@@ -135,7 +135,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       By locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebElement element =
@@ -144,8 +144,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         createNewNote();
       }
-      String user1noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String user1noteId = extractNoteIdFromCurrentUrl();
       waitForParagraph(1, "READY");
       setPythonParagraph(1, "user=\"user1\"");
       waitForParagraph(2, "READY");
@@ -171,7 +170,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user2' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       element =
@@ -202,7 +201,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user2' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -267,7 +266,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   void testPerUserScopedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
@@ -297,7 +296,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       By locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebElement element =
@@ -306,8 +305,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         createNewNote();
       }
-      String user1noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String user1noteId = extractNoteIdFromCurrentUrl();
 
       waitForParagraph(1, "READY");
       setPythonParagraph(1, "user=\"user1\"");
@@ -333,7 +331,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //                paragraph: Check if the result is 'user2' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '2'
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       element =
@@ -342,8 +340,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         createNewNote();
       }
-      String user2noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String user2noteId = extractNoteIdFromCurrentUrl();
       waitForParagraph(1, "READY");
       setPythonParagraph(1, "user=\"user2\"");
       waitForParagraph(2, "READY");
@@ -367,7 +364,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -421,7 +418,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //step 5: (user2) login, come back note user2 made, restart python interpreter in note, check process, logout
       //System: Check if the number of python interpreter process is '0'
       //System: Check if the number of python process is '0'
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -464,7 +461,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //        (user2) login, come back note user2 made, run first paragraph, check process, logout
       //System: Check if the number of python process is '2'
       //System: Check if the number of python interpreter process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -483,7 +480,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       }
       logoutUser("user1");
 
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -512,7 +509,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //step 7: (admin) login, restart python interpreter in interpreter tab, check process, logout
       //System: Check if the number of python interpreter process is 0
       //System: Check if the number of python process is 0
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
@@ -556,7 +553,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   void testPerUserIsolatedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
       clickAndWait(By.xpath("//li/a[contains(@href, '#/interpreter')]"));
@@ -582,7 +579,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       By locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       WebElement element =
@@ -591,8 +588,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         createNewNote();
       }
-      String user1noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String user1noteId = extractNoteIdFromCurrentUrl();
       waitForParagraph(1, "READY");
       setPythonParagraph(1, "user=\"user1\"");
       waitForParagraph(2, "READY");
@@ -616,7 +612,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //                paragraph: Check if the result is 'user2' in the second paragraph
       //System: Check if the number of python interpreter process is '2'
       //System: Check if the number of python process is '2'
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//div[contains(@class, 'col-md-4')]/div/h5/a[contains(.,'Create new" +
           " note')]");
       element =
@@ -625,8 +621,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       if (element.isDisplayed()) {
         createNewNote();
       }
-      String user2noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String user2noteId = extractNoteIdFromCurrentUrl();
       waitForParagraph(1, "READY");
       setPythonParagraph(1, "user=\"user2\"");
       waitForParagraph(2, "READY");
@@ -651,7 +646,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //paragraph: Check if the result is 'user1' in the second paragraph
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -706,7 +701,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //step 5: (user2) login, come back note user2 made, restart python interpreter in note, check process, logout
       //System: Check if the number of python interpreter process is '0'
       //System: Check if the number of python process is '0'
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -750,7 +745,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //        (user2) login, come back note user2 made, run first paragraph, check process, logout
       //System: Check if the number of python process is '2'
       //System: Check if the number of python interpreter process is '2'
-      authenticationUser("user1", "password2");
+      authenticationUserViaRest("user1", "password2");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -769,7 +764,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       }
       logoutUser("user1");
 
-      authenticationUser("user2", "password3");
+      authenticationUserViaRest("user2", "password3");
       locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
       element =
         (new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC)))
@@ -798,7 +793,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //step 7: (admin) login, restart python interpreter in interpreter tab, check process, logout
       //System: Check if the number of python interpreter process is 0
       //System: Check if the number of python process is 0
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
 
