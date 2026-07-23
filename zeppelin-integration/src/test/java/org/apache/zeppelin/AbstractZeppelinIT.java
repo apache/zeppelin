@@ -30,6 +30,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -51,15 +52,45 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
 
   protected void authenticationUser(String userName, String password) {
-    clickableWait(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
+    WebElement loginModal = manager.getWebDriver().findElement(By.id("loginModal"));
+    if (!loginModal.isDisplayed()) {
+      try {
+        clickableWait(
+            By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
+            MAX_BROWSER_TIMEOUT_SEC).click();
+      } catch (ElementClickInterceptedException e) {
+        // Authentication-required pages can open the modal between the visibility check
+        // and the click. Continue only when that modal is now actually visible.
+        if (!manager.getWebDriver().findElement(By.id("loginModal")).isDisplayed()) {
+          throw e;
+        }
+      }
+    }
 
-    visibilityWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    visibilityWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    clickableWait(
-        By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
+    By userNameLocator = By.id("userName");
+    By passwordLocator = By.id("password");
+    WebElement userNameInput = angularModelWait(userNameLocator);
+    WebElement passwordInput = angularModelWait(passwordLocator);
+    WebElement loginButton = manager.getWebDriver().findElement(
+        By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"));
+
+    // Send both input events and click in one browser task. Bootstrap can finish a stale
+    // modal transition between separate WebDriver commands and reset loginParams.
+    ((JavascriptExecutor) manager.getWebDriver()).executeScript(
+        "function update(element, value) {"
+            + "element.value = value;"
+            + "element.dispatchEvent(new Event('input', {bubbles: true}));"
+            + "}"
+            + "update(arguments[0], arguments[3]);"
+            + "update(arguments[1], arguments[4]);"
+            + "if (angular.element(arguments[0]).controller('ngModel').$viewValue"
+            + " !== arguments[3] ||"
+            + " angular.element(arguments[1]).controller('ngModel').$viewValue"
+            + " !== arguments[4]) {"
+            + "throw new Error('Login form model did not receive credentials');"
+            + "}"
+            + "arguments[2].click();",
+        userNameInput, passwordInput, loginButton, userName, password);
 
     // Wait for the logged-in navbar user dropdown to appear (indicates login completed
     // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
@@ -73,6 +104,19 @@ abstract public class AbstractZeppelinIT {
       // ignore if jQuery/Bootstrap not ready
     }
     ZeppelinITUtils.sleep(500, false);
+  }
+
+  private WebElement angularModelWait(By locator) {
+    WebDriverWait wait = new WebDriverWait(manager.getWebDriver(),
+        Duration.ofSeconds(MAX_BROWSER_TIMEOUT_SEC));
+    wait.ignoring(StaleElementReferenceException.class);
+    return wait.until(driver -> {
+      WebElement element = driver.findElement(locator);
+      Boolean modelReady = (Boolean) ((JavascriptExecutor) driver).executeScript(
+          "return !!(window.angular && angular.element(arguments[0]).controller('ngModel'));",
+          element);
+      return element.isDisplayed() && Boolean.TRUE.equals(modelReady) ? element : null;
+    });
   }
 
   protected void logoutUser(String userName) throws URISyntaxException {
