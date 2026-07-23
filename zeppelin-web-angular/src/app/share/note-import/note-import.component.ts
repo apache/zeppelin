@@ -19,6 +19,10 @@ import { NzUploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { ImportNote, MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
+import { isRecord } from '@zeppelin/utility';
+
+const isImportNote = (value: unknown): value is ImportNote['note'] =>
+  isRecord(value) && Array.isArray(value.paragraphs) && value.paragraphs.length > 0;
 
 @Component({
   selector: 'zeppelin-note-import',
@@ -83,16 +87,13 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
         return;
       }
     }
-    // @ts-ignore
-    if (result.paragraphs && result.paragraphs.length > 0) {
+    if (isImportNote(result)) {
       if (!this.noteImportName) {
-        // @ts-ignore
         this.noteImportName = result.name;
       } else {
-        // @ts-ignore
         result.name = this.noteImportName;
       }
-      this.messageService.importNote(result as ImportNote['note']);
+      this.messageService.importNote(result);
     } else {
       this.errorText = 'Invalid JSON';
     }
