@@ -49,10 +49,22 @@ export class EditorSearchPage extends BasePage {
     this.showHideCodeButton = page
       .locator('zeppelin-notebook-paragraph-control a[nzTooltipTitle="Show/hide the code"]')
       .first();
-    this.nextMatchButton = this.findWidget.locator('.button.next, [title^="Next Match"]').first();
-    this.previousMatchButton = this.findWidget.locator('.button.previous, [title^="Previous Match"]').first();
-    this.toggleReplaceButton = this.findWidget.locator('.button.toggle, [title^="Toggle Replace"]').first();
-    this.replaceAllButton = this.findWidget.locator('.button.replace-all, [title^="Replace All"]').first();
+    this.nextMatchButton = this.findWidget
+      .locator('.button.next, .button.codicon-find-next-match, [aria-label^="Next Match"], [title^="Next Match"]')
+      .first();
+    this.previousMatchButton = this.findWidget
+      .locator(
+        '.button.previous, .button.codicon-find-previous-match, [aria-label^="Previous Match"], [title^="Previous Match"]'
+      )
+      .first();
+    this.toggleReplaceButton = this.findWidget
+      .locator('.button.toggle, [aria-label^="Toggle Replace"], [title^="Toggle Replace"]')
+      .first();
+    this.replaceAllButton = this.findWidget
+      .locator(
+        '.button.replace-all, .button.codicon-find-replace-all, [aria-label^="Replace All"], [title^="Replace All"]'
+      )
+      .first();
   }
 
   async openNotebook(noteId: string): Promise<void> {

@@ -161,7 +161,7 @@ export class NotebookParagraphCodeEditorComponent
 
   handleShowFind() {
     if (this.editor) {
-      this.editor.getAction('actions.find').run();
+      this.editor.getAction('actions.find')?.run();
 
       // Focus on the find widget input field
       const findInput = document.querySelector('.find-widget .input') as HTMLInputElement;
