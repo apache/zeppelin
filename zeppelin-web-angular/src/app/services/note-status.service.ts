@@ -33,8 +33,10 @@ export class NoteStatusService {
   }
 
   isTrash(note: Exclude<Note['note'], undefined>) {
-    // TODO(hsuanxyz) https://github.com/apache/zeppelin/pull/3365/files
-    return note.name.split('/')[1] === this.TRASH_FOLDER_ID;
+    // Detect trash by note.path, not note.name: the trash folder is the second
+    // path segment (see apache/zeppelin#3365), and since ZEPPELIN-4041 note.name
+    // holds only the last path segment. Mirrors NoteListService.
+    return note.path.split('/')[1] === this.TRASH_FOLDER_ID;
   }
 
   viewOnly(note: Exclude<Note['note'], undefined>): boolean {
