@@ -61,7 +61,9 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
     data.noteRunningJobs.jobs.forEach(updateJob => {
       const currentJobIndex = this.jobs.findIndex(job => job.noteId === updateJob.noteId);
       if (currentJobIndex === -1) {
-        this.jobs.push(updateJob);
+        if (!updateJob.isRemoved) {
+          this.jobs.push(updateJob);
+        }
       } else {
         if (updateJob.isRemoved) {
           this.jobs.splice(currentJobIndex, 1);
@@ -89,7 +91,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnDe
         const noteNameReg = new RegExp(escapedString, 'gi');
         return (
           (filterData.interpreter === '*' || job.interpreter === filterData.interpreter) &&
-          job.noteName.match(noteNameReg)
+          job.noteName?.match(noteNameReg)
         );
       })
       .sort((x, y) => (isSortByAsc ? x.unixTimeLastRun - y.unixTimeLastRun : y.unixTimeLastRun - x.unixTimeLastRun));
