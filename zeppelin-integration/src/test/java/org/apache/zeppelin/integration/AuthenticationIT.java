@@ -107,7 +107,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   void testAnyOfRolesUser() throws Exception {
     try {
-      authenticationUser("admin", "password1");
+      authenticationUserViaRest("admin", "password1");
 
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -119,7 +119,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       logoutUser("admin");
 
-      authenticationUser("finance1", "finance1");
+      authenticationUserViaRest("finance1", "finance1");
 
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -131,7 +131,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       logoutUser("finance1");
 
-      authenticationUser("hr1", "hr1");
+      authenticationUserViaRest("hr1", "hr1");
 
       clickableWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -155,11 +155,10 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   void testGroupPermission() throws Exception {
     try {
-      authenticationUser("finance1", "finance1");
+      authenticationUserViaRest("finance1", "finance1");
       createNewNote();
 
-      String noteId = manager.getWebDriver().getCurrentUrl()
-        .substring(manager.getWebDriver().getCurrentUrl().lastIndexOf("/") + 1);
+      String noteId = extractNoteIdFromCurrentUrl();
 
       clickableWait(By.xpath("//span[@uib-tooltip='Note permissions']"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -179,7 +178,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
           MAX_BROWSER_TIMEOUT_SEC).click();
       logoutUser("finance1");
 
-      authenticationUser("hr1", "hr1");
+      authenticationUserViaRest("hr1", "hr1");
       try {
         WebElement element = visibilityWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);
@@ -200,7 +199,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               "//div[@class='modal-footer']//button[2]")).click();
       logoutUser("hr1");
 
-      authenticationUser("finance2", "finance2");
+      authenticationUserViaRest("finance2", "finance2");
       try {
         WebElement element = visibilityWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC);

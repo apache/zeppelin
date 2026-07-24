@@ -50,6 +50,7 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_IMPLICIT_WAIT = 30;
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
+  private static final String CLASSIC_LOGIN_PATH = "/classic/api/login";
 
   protected void authenticationUser(String userName, String password) {
     WebElement loginModal = manager.getWebDriver().findElement(By.id("loginModal"));
@@ -117,6 +118,52 @@ abstract public class AbstractZeppelinIT {
           element);
       return element.isDisplayed() && Boolean.TRUE.equals(modelReady) ? element : null;
     });
+  }
+
+  // Logs in by issuing a synchronous XHR POST to the REST login endpoint from inside the
+  // browser's own JS context, so the browser's own session (not a separate HTTP client
+  // session) becomes authenticated. Refreshing afterwards lets app.js's pre-bootstrap
+  // ticket check find that same authenticated session. Skips the login modal entirely, so
+  // none of its fade/WebSocket-reopen races apply. Intended for tests where login is only
+  // a precondition, not the behavior under test.
+  protected void authenticationUserViaRest(String userName, String password) {
+    String script = "var xhr = new XMLHttpRequest();"
+        + "xhr.open('POST', arguments[0], false);"
+        + "xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');"
+        + "xhr.send('userName=' + encodeURIComponent(arguments[1]) + "
+        + "'&password=' + encodeURIComponent(arguments[2]));"
+        + "return xhr.status;";
+    Object result = ((JavascriptExecutor) manager.getWebDriver())
+        .executeScript(script, CLASSIC_LOGIN_PATH, userName, password);
+    int status = ((Number) result).intValue();
+    if (status != 200) {
+      throw new IllegalStateException("REST login failed with status " + status);
+    }
+    manager.getWebDriver().navigate().refresh();
+    visibilityWait(loggedInUserMenuLocator(), MAX_BROWSER_TIMEOUT_SEC);
+  }
+
+  // Shared locator for the logged-in navbar user menu button. Uses a class-order-agnostic
+  // partial match since AngularJS may render the class attribute in a different order.
+  protected static By loggedInUserMenuLocator() {
+    return By.xpath("//button[contains(@class, 'nav-btn') and contains(@class, 'dropdown-toggle')]");
+  }
+
+  // Extracts the note id segment from the current URL, stripping any trailing query string
+  // or fragment (e.g. the "?ref=%2F" a post-refresh SPA URL appends), so callers get a clean
+  // note id instead of one polluted by a query string/fragment.
+  protected String extractNoteIdFromCurrentUrl() {
+    String url = manager.getWebDriver().getCurrentUrl();
+    String noteId = url.substring(url.lastIndexOf("/") + 1);
+    int queryIndex = noteId.indexOf("?");
+    if (queryIndex != -1) {
+      noteId = noteId.substring(0, queryIndex);
+    }
+    int fragmentIndex = noteId.indexOf("#");
+    if (fragmentIndex != -1) {
+      noteId = noteId.substring(0, fragmentIndex);
+    }
+    return noteId;
   }
 
   protected void logoutUser(String userName) throws URISyntaxException {
