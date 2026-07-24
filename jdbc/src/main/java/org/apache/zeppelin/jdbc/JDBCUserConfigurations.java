@@ -19,9 +19,9 @@ import org.apache.zeppelin.user.UsernamePassword;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * UserConfigurations for JDBC impersonation.
@@ -33,7 +33,7 @@ public class JDBCUserConfigurations {
   private Boolean isSuccessful;
 
   public JDBCUserConfigurations() {
-    paragraphIdStatementMap = new HashMap<>();
+    paragraphIdStatementMap = new ConcurrentHashMap<>();
   }
 
   public void initStatementMap() throws SQLException {
@@ -67,14 +67,26 @@ public class JDBCUserConfigurations {
   }
 
   public void saveStatement(String paragraphId, Statement statement) throws SQLException {
+    if (paragraphId == null) {
+      return;
+    }
     paragraphIdStatementMap.put(paragraphId, statement);
   }
 
   public void cancelStatement(String paragraphId) throws SQLException {
-    paragraphIdStatementMap.get(paragraphId).cancel();
+    if (paragraphId == null) {
+      return;
+    }
+    Statement statement = paragraphIdStatementMap.get(paragraphId);
+    if (statement != null) {
+      statement.cancel();
+    }
   }
 
   public void removeStatement(String paragraphId) {
+    if (paragraphId == null) {
+      return;
+    }
     paragraphIdStatementMap.remove(paragraphId);
   }
 
