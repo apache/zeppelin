@@ -21,13 +21,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.eclipse.aether.RepositoryException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 class ManagedInterpreterGroupTest {
@@ -88,5 +95,107 @@ class ManagedInterpreterGroupTest {
     // close InterpreterGroup
     interpreterGroup.close();
     assertEquals(0, interpreterGroup.getSessionNum());
+  }
+
+  @Test
+  @Timeout(30)
+  void close_doesNotDeadlockWithConcurrentOpen() throws Exception {
+    ManagedInterpreterGroup group =
+        new ManagedInterpreterGroup("g1", interpreterSetting, zConf);
+
+    LockProbeInterpreter probe = new LockProbeInterpreter(new Properties());
+    probe.setInterpreterGroup(group);
+    List<Interpreter> s1 = new ArrayList<>();
+    s1.add(probe);
+    group.sessions.put("s1", s1);
+
+    CountDownLatch openerHasIntp = new CountDownLatch(1);
+
+    // "opener": mirrors open() lock ordering (interpreter -> group).
+    Thread opener = new Thread(() -> {
+      synchronized (probe) {                        // interpreter monitor
+        openerHasIntp.countDown();
+        try {
+          // wait until the close worker is blocked trying to take the interpreter monitor, which
+          // means the closer is holding the group monitor inside close(String).
+          probe.closeReached.await();
+          Thread w;
+          while ((w = probe.worker) == null || w.getState() != Thread.State.BLOCKED) {
+            Thread.onSpinWait();
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+        group.getOrCreateSession("u", "s2");        // needs the group monitor
+      }
+    }, "deadlock-opener");
+    opener.setDaemon(true);
+
+    // "closer": the real method under test.
+    Thread closer = new Thread(() -> group.close("s1"), "deadlock-closer");
+    closer.setDaemon(true);
+
+    opener.start();
+    assertTrue(openerHasIntp.await(5, TimeUnit.SECONDS),
+        "opener failed to acquire the interpreter monitor");
+    closer.start();
+
+    opener.join(TimeUnit.SECONDS.toMillis(10));
+    closer.join(TimeUnit.SECONDS.toMillis(10));
+
+    if (opener.isAlive() || closer.isAlive()) {
+      long[] deadlocked = ManagementFactory.getThreadMXBean().findDeadlockedThreads();
+      fail("Deadlock: ManagedInterpreterGroup.close() holds the group monitor while joining the "
+          + "close-worker thread, which needs the interpreter monitor held by the concurrent "
+          + "open(). opener.alive=" + opener.isAlive() + ", closer.alive=" + closer.isAlive()
+          + ", jvmDetectedMonitorDeadlock=" + (deadlocked != null));
+    }
+  }
+
+  /**
+   * Minimal interpreter whose close() takes its own monitor, like RemoteInterpreter does via
+   * getOrCreateInterpreterProcess(). It signals when the close worker reaches the monitor so the
+   * test can force the interleaving deterministically.
+   */
+  private static class LockProbeInterpreter extends Interpreter {
+
+    final CountDownLatch closeReached = new CountDownLatch(1);
+    volatile Thread worker;
+
+    LockProbeInterpreter(Properties properties) {
+      super(properties);
+    }
+
+    @Override
+    public void close() {
+      worker = Thread.currentThread();
+      closeReached.countDown();
+      synchronized (this) {
+      }
+    }
+
+    @Override
+    public void open() {
+    }
+
+    @Override
+    public InterpreterResult interpret(String st, InterpreterContext context) {
+      return null;
+    }
+
+    @Override
+    public void cancel(InterpreterContext context) {
+    }
+
+    @Override
+    public FormType getFormType() {
+      return FormType.NATIVE;
+    }
+
+    @Override
+    public int getProgress(InterpreterContext context) {
+      return 0;
+    }
   }
 }
