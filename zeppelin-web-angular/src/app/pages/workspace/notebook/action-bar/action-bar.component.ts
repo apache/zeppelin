@@ -268,6 +268,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
 
   deleteNote() {
     this.messageService.deleteNote(this.note.id);
+    this.router.navigate(['/']);
   }
 
   moveNoteToTrash() {
