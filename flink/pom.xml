@@ -47,4 +47,16 @@
         <flink.scala.version>2.12.7</flink.scala.version>
         <flink.scala.binary.version>2.12</flink.scala.binary.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>jdk17+</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <properties>
+                <flink.scala.version>2.12.21</flink.scala.version>
+            </properties>
+        </profile>
+    </profiles>
 </project>
