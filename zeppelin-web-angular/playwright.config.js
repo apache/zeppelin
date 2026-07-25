@@ -48,16 +48,6 @@ module.exports = defineConfig({
       dependencies: ['setup']
     },
     {
-      name: 'Google Chrome',
-      use: {
-        ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        permissions: ['clipboard-read', 'clipboard-write'],
-        storageState: 'playwright/.auth/user.json'
-      },
-      dependencies: ['setup']
-    },
-    {
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
@@ -72,16 +62,6 @@ module.exports = defineConfig({
         launchOptions: {
           slowMo: 200
         },
-        storageState: 'playwright/.auth/user.json'
-      },
-      dependencies: ['setup']
-    },
-    {
-      name: 'Microsoft Edge',
-      use: {
-        ...devices['Desktop Edge'],
-        channel: 'msedge',
-        permissions: ['clipboard-read', 'clipboard-write'],
         storageState: 'playwright/.auth/user.json'
       },
       dependencies: ['setup']
