@@ -42,6 +42,10 @@ module.exports = defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // Monaco reads the UA to pick its keybinding platform; the faked Windows string
+        // breaks Ctrl+P/N and Meta+A on macOS. https://playwright.dev/docs/emulation#devices
+        // webkit must keep its mac UA — the page objects' Meta+A branch relies on it.
+        userAgent: undefined,
         permissions: ['clipboard-read', 'clipboard-write'],
         storageState: 'playwright/.auth/user.json'
       },
