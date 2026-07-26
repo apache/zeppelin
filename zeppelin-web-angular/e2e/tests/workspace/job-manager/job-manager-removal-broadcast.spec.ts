@@ -24,6 +24,7 @@ import { addPageAnnotationBeforeEach, PAGES } from '../../../utils';
 const ALPHA_NOTE_NAME = 'JobManagerRemovalAlpha';
 const BETA_NOTE_NAME = 'JobManagerRemovalBeta';
 const GAMMA_NOTE_NAME = 'JobManagerRemovalGamma';
+const SENTINEL_NOTE_NAME = 'JobManagerRemovalSentinel';
 const UNLISTED_NOTE_ID = 'notOwnedByThisViewer';
 
 // ZEPPELIN-6551: deleting a note broadcasts a field-less removal stub to every Job Manager
@@ -51,17 +52,27 @@ test.describe('Job Manager removal broadcast', () => {
     await expect(jobManagerPage.jobItems).toHaveCount(2);
   });
 
+  // A removal stub for an unlisted note is a no-op, so asserting right after the broadcast passes on
+  // the pre-broadcast state, and a regressed build freezes the list in that same state, so such an
+  // assertion can never fail. A job sent afterwards rides the same socket FIFO, so its appearance
+  // proves the removal ran first; on a regressed build `filterJobs` throws and it never appears.
+  const awaitRemovalProcessed = async () => {
+    socketStub.broadcastUpdate([buildNoteJob(SENTINEL_NOTE_NAME)]);
+    await expect(jobManagerPage.jobItemByName(SENTINEL_NOTE_NAME)).toBeVisible();
+  };
+
   test('Given a note absent from the list When its removal is broadcast Then no runtime error is raised', async () => {
     socketStub.broadcastRemoval(UNLISTED_NOTE_ID);
+    await awaitRemovalProcessed();
 
     // The stub carries no `noteName`, so rendering it would throw; it must not reach the list.
-    await expect(jobManagerPage.jobItems).toHaveCount(2);
+    // Only the sentinel joins the two jobs the viewer already had.
+    await expect(jobManagerPage.jobItems).toHaveCount(3);
     expectNoNoteNameAccessError(runtimeErrors);
   });
 
   test('Given a note absent from the list When its removal is broadcast Then the note name filter keeps working', async () => {
     socketStub.broadcastRemoval(UNLISTED_NOTE_ID);
-    await expect(jobManagerPage.jobItems).toHaveCount(2);
 
     // Before the fix the appended stub made every later `filterJobs` throw, so the rendered
     // list froze and stopped reacting to the search box.
@@ -76,10 +87,12 @@ test.describe('Job Manager removal broadcast', () => {
 
   test('Given a note absent from the list When its removal is broadcast Then no listed job is dropped', async () => {
     socketStub.broadcastRemoval(UNLISTED_NOTE_ID);
+    await awaitRemovalProcessed();
 
     // Guarding the removal inside the `currentJobIndex === -1` branch matters: folding the
     // guard into that condition would send the stub to the `else` branch and have it
     // `splice(-1, 1)` the last job out of the list.
+    await expect(jobManagerPage.jobItems).toHaveCount(3);
     await expect(jobManagerPage.jobItemByName(ALPHA_NOTE_NAME)).toBeVisible();
     await expect(jobManagerPage.jobItemByName(BETA_NOTE_NAME)).toBeVisible();
   });
