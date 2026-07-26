@@ -20,6 +20,7 @@ package org.apache.zeppelin.file;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.Gson;
 
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -181,6 +183,26 @@ class HDFSFileInterpreterTest {
     assertEquals("No such File or directory", result.message().get(0).getData());
 
     t.close();
+  }
+
+  @Test
+  void testListDateFormatsInGmtToMatchLabel() {
+    // ZEPPELIN-6483: the timestamp must be formatted in GMT to match the trailing
+    // "GMT" label, regardless of the JVM default time zone.
+    TimeZone original = TimeZone.getDefault();
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
+      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      t.open();
+      InterpreterResult result = t.interpret("ls -l /", null);
+      String out = result.message().get(0).getData();
+      // modificationTime 1438548219672 == 2015-08-02 20:43 GMT (2015-08-03 05:43 in KST)
+      assertTrue(out.contains("2015-08-02 20:43GMT"),
+          "modification time should be shown in GMT to match the label, but was:\n" + out);
+      t.close();
+    } finally {
+      TimeZone.setDefault(original);
+    }
   }
 
 }
