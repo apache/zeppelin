@@ -42,7 +42,7 @@ test.describe('Home Page Notebook Actions', () => {
     test('When filter is used Then should filter notebook list', async ({ page }) => {
       test.skip(true, 'ZEPPELIN-6386: Notebook search filter in the New UI is too slow — re-enable when fixed');
       await homePage.filterNotes('test');
-      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      await expect(page.locator('nz-tree .node').first()).toBeVisible({ timeout: 15000 });
       const filteredResults = await page.locator('nz-tree .node').count();
       expect(filteredResults).toBeGreaterThan(0);
     });

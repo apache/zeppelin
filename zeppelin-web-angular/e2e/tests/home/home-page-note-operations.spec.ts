@@ -85,10 +85,14 @@ test.describe('Home Page Note Operations', () => {
   test.describe('Given rename note functionality', () => {
     test('When rename button is clicked Then should open rename dialog', async ({ page }) => {
       const testNote = page.locator('.node .file').filter({ hasText: testNoteName });
+      // WebSocket note updates re-render the list and can detach a hovered row mid-interaction.
+      // Re-confirm the row and re-hover right before revealing the action.
+      await expect(testNote).toBeVisible({ timeout: 15000 });
       await testNote.hover();
 
       const renameButton = testNote.locator('.operation a[nztooltiptitle="Rename note"]');
       await expect(renameButton).toBeVisible();
+      await testNote.hover();
       await renameButton.click();
 
       // JUSTIFIED: compound selector targets rename dialog; first() picks the visible modal instance
@@ -240,13 +244,13 @@ test.describe('Home Page Note Operations', () => {
 
     test('When empty trash is clicked Then should show permanent deletion warning', async ({ page }) => {
       const trashFolder = page.locator('.node .folder').filter({ hasText: 'Trash' });
-      await trashFolder.hover();
-      await trashFolder.locator('.operation').waitFor({ state: 'visible' });
-
       const emptyButton = trashFolder.locator('.operation a[nztooltiptitle*="Empty all"]');
-      await expect(emptyButton).toBeVisible();
-      await emptyButton.hover();
-      await emptyButton.click();
+
+      // The anchor collapses to zero size when the row loses hover, so reveal and click must be one step.
+      await expect(async () => {
+        await trashFolder.hover();
+        await emptyButton.click({ timeout: 5000 });
+      }).toPass({ timeout: 30000 });
 
       await expect(page.locator('text=This cannot be undone. Are you sure?')).toBeVisible();
     });

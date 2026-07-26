@@ -44,20 +44,26 @@ export class HeaderPage extends BasePage {
     this.notebookMenuItem = page.locator('[nz-menu-item]').filter({ hasText: 'Notebook' });
     this.notebookDropdownTrigger = page.locator('.node-list-trigger');
     this.notebookDropdown = page.locator('zeppelin-node-list.ant-dropdown-menu');
-    this.jobMenuItem = page.getByRole('link', { name: 'Job' });
+    // A global getByRole('link', { name: 'Job' }) matches by substring.
+    // It also picks up note-list links (e.g. a note named "...Job..."), which is a strict-mode violation.
+    // Scoping to the menu item and matching exactly selects the single header entry.
+    this.jobMenuItem = page.locator('[nz-menu-item]').getByRole('link', { name: 'Job', exact: true });
     this.userDropdownTrigger = page.locator('.header .user .status');
     this.userBadge = page.locator('.header .user nz-badge');
     this.searchInput = page.locator('.header .search input[type="text"]');
     this.themeToggleButton = page.locator('zeppelin-theme-toggle button');
 
+    // Same substring and strict-mode risk as jobMenuItem above.
+    // Scope these links to the dropdown overlay and match exactly.
+    const userMenu = page.locator('.zeppelin-user-menu');
     this.userMenuItems = {
-      aboutZeppelin: page.getByText('About Zeppelin', { exact: true }),
-      interpreter: page.getByRole('link', { name: 'Interpreter' }),
-      notebookRepos: page.getByRole('link', { name: 'Notebook Repos' }),
-      credential: page.getByRole('link', { name: 'Credential' }),
-      configuration: page.getByRole('link', { name: 'Configuration' }),
-      logout: page.getByText('Logout', { exact: true }),
-      switchToClassicUI: page.getByRole('link', { name: 'Switch to Classic UI' })
+      aboutZeppelin: userMenu.getByText('About Zeppelin', { exact: true }),
+      interpreter: userMenu.getByRole('link', { name: 'Interpreter', exact: true }),
+      notebookRepos: userMenu.getByRole('link', { name: 'Notebook Repos', exact: true }),
+      credential: userMenu.getByRole('link', { name: 'Credential', exact: true }),
+      configuration: userMenu.getByRole('link', { name: 'Configuration', exact: true }),
+      logout: userMenu.getByText('Logout', { exact: true }),
+      switchToClassicUI: userMenu.getByRole('link', { name: 'Switch to Classic UI', exact: true })
     };
   }
 

@@ -60,7 +60,7 @@ test.describe('Notebook Container Component', () => {
 
   test('should display paragraph container with grid layout', async () => {
     await expect(notebookPage.paragraphInner).toBeVisible();
-    expect(await notebookPage.paragraphInner.getAttribute('class')).toContain('paragraph-inner');
+    await expect(notebookPage.paragraphInner).toHaveClass(/paragraph-inner/);
     await expect(notebookPage.paragraphInner).toHaveAttribute('nz-row');
   });
 

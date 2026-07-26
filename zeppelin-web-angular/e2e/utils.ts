@@ -269,7 +269,6 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
     try {
       await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
       await page.waitForSelector('text=Welcome to Zeppelin!', { timeout: 30000 });
-      await page.waitForLoadState('networkidle');
       await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
       await waitForZeppelinReady(page);
       return true;
@@ -369,7 +368,8 @@ export const navigateToNotebookWithFallback = async (
 
   try {
     // Strategy 1: Direct navigation
-    await page.goto(`/#/notebook/${noteId}`, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(`/#/notebook/${noteId}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.locator('zeppelin-notebook-paragraph').first().waitFor({ state: 'visible', timeout: 30000 });
     navigationSuccessful = true;
   } catch {
     // Strategy 2: Wait for loading completion and check URL
@@ -389,7 +389,6 @@ export const navigateToNotebookWithFallback = async (
     // Strategy 3: Navigate through home page if notebook name is provided
     if (!navigationSuccessful && notebookName) {
       await page.goto('/#/');
-      await page.waitForLoadState('networkidle', { timeout: 15000 });
       await page.waitForSelector('zeppelin-node-list', { timeout: 15000 });
 
       // The link text in the UI is the base name of the note, not the full path.

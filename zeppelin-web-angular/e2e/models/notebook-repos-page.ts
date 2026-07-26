@@ -28,7 +28,6 @@ export class NotebookReposPage extends BasePage {
     await this.navigateToRoute('/notebook-repos', { timeout: 60000 });
     await this.page.waitForURL('**/#/notebook-repos', { timeout: 60000 });
     await waitForZeppelinReady(this.page);
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
     await Promise.race([
       this.zeppelinPageHeader.filter({ hasText: 'Notebook Repository' }).waitFor({ state: 'visible' }),
       this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
