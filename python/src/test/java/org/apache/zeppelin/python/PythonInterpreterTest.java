@@ -24,6 +24,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,8 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -173,5 +178,43 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
       String stacktrace = ExceptionUtils.getStackTrace(e);
       assertTrue(stacktrace.contains("No such file or directory"), stacktrace);
     }
+  }
+
+  @Test
+  public void testSigintDefaultHandlerRestoredWhenInheritedIgnored()
+      throws IOException, InterpreterException {
+    tearDown();
+
+    File wrapper = File.createTempFile("python-sigint-wrapper", ".sh");
+    wrapper.deleteOnExit();
+    Files.write(wrapper.toPath(), Arrays.asList(
+        "#!/bin/sh",
+        "trap '' INT",
+        "exec python \"$@\""));
+    wrapper.setExecutable(true);
+
+    intpGroup = new InterpreterGroup();
+
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.python", wrapper.getAbsolutePath());
+    properties.setProperty("zeppelin.python.useIPython", "false");
+    properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+
+    interpreter = new LazyOpenInterpreter(new PythonInterpreter(properties));
+
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(interpreter);
+    interpreter.setInterpreterGroup(intpGroup);
+
+    InterpreterContext.set(getInterpreterContext());
+
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(
+        "import signal\nprint(signal.getsignal(signal.SIGINT))", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
+    String output = interpreterResultMessages.get(0).getData();
+    assertTrue(output.contains("default_int_handler"), output);
   }
 }
