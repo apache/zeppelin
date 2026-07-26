@@ -52,6 +52,8 @@
     "webpack-dev-server": "6.0.0"
   },
   "overrides": {
-    "linkify-it": "^5.0.2"
+    "linkify-it": "^5.0.2",
+    "minimatch": "^10.2.4",
+    "brace-expansion": "^5.0.8"
   }
 }
