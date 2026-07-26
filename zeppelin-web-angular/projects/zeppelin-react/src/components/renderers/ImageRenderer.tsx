@@ -17,7 +17,5 @@ export interface ImageRendererProps {
 export const ImageRenderer = ({ imageData }: ImageRendererProps) => {
   const imgSrc = `data:image/png;base64,${imageData}`;
 
-  return (
-    <img src={imgSrc} alt="Result" style={{ maxWidth: '100%', height: 'auto' }} />
-  );
+  return <img src={imgSrc} alt="Result" style={{ maxWidth: '100%', height: 'auto' }} />;
 };

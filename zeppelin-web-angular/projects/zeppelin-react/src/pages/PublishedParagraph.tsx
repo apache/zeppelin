@@ -65,4 +65,3 @@ export const mount = (element: HTMLElement, props?: PublishedParagraphProps) => 
     root.unmount();
   };
 };
-

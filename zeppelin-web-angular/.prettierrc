@@ -6,6 +6,7 @@
   "htmlWhitespaceSensitivity": "ignore",
   "trailingComma": "none",
   "arrowParens": "avoid",
+  "endOfLine": "lf",
   "overrides": [
     {
       "files": ".prettierrc",
