@@ -23,6 +23,7 @@ const prettier = require('eslint-config-prettier');
 // from the former TSLint rule (ZEPPELIN-6372).
 const localRules = require('./eslint-rules');
 const perfectionist = require('eslint-plugin-perfectionist');
+const playwright = require('eslint-plugin-playwright');
 
 module.exports = tseslint.config(
   {
@@ -164,6 +165,26 @@ module.exports = tseslint.config(
     plugins: { perfectionist },
     rules: {
       'perfectionist/sort-exports': 'error'
+    }
+  },
+  {
+    files: ['e2e/**/*.ts'],
+    ...playwright.configs['flat/recommended'],
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      // Conditionals here gate setup actions for dual-mode UI (auth vs anonymous, an optional welcome modal).
+      // no-conditional-expect stays on: an assertion reached on only one branch passes without running.
+      'playwright/no-conditional-in-test': 'off',
+      // Interpreter-backed specs skip on process.env.CI deliberately; only an unconditional skip is a leak.
+      'playwright/no-skipped-test': ['error', { allowConditional: true }],
+      // Autofixable, and the pre-commit hook applies fixes without review.
+      // It rewrites `.not.toBeVisible()` into `.toBeHidden()`; both pass when the locator matches nothing,
+      // but the rewrite reads as a deliberate check, so a dead selector gets harder to spot.
+      'playwright/no-useless-not': 'off',
+      // Lowered from the preset's error: 13 networkidle waits and 9 extracted-value assertions already exist,
+      // and `ng lint` exits 0 on warnings.
+      'playwright/prefer-web-first-assertions': 'warn',
+      'playwright/no-networkidle': 'warn'
     }
   },
   {

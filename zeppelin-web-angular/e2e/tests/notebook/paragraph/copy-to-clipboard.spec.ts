@@ -22,7 +22,7 @@ import {
 } from '../../../utils';
 
 test.describe('Copy table result to clipboard', () => {
-  addPageAnnotationBeforeEach(PAGES.SHARE.SHARE_RESULT);
+  addPageAnnotationBeforeEach(PAGES.WORKSPACE.SHARE_RESULT);
 
   let paragraphPage: NotebookParagraphPage;
   let testNotebook: { noteId: string; paragraphId: string };

@@ -25,7 +25,7 @@ import {
  * (src/app/key-binding/shortcuts-map.ts). The page object gates on Monaco's `focused`
  * class before dispatching shortcuts; effects are asserted with web-first expectations.
  */
-// Serial ordering prevents cross-test editor state corruption within the shared notebook.
+// JUSTIFIED: serial ordering prevents cross-test editor state corruption within the shared notebook.
 test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
   addPageAnnotationBeforeEach(PAGES.SHARE.SHORTCUT);
@@ -89,7 +89,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.RunAbove: Control+Shift+ArrowUp', () => {
+    // eslint-disable-next-line playwright/no-skipped-test -- tracked by ZEPPELIN-6379
     test.skip();
+
     test('should run all paragraphs above current with Control+Shift+ArrowUp', async () => {
       // Given: Multiple paragraphs
       await keyboardPage.tryFocusCodeEditor(0);
@@ -121,7 +123,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.RunBelow: Control+Shift+ArrowDown', () => {
+    // eslint-disable-next-line playwright/no-skipped-test -- tracked by ZEPPELIN-6379
     test.skip();
+
     test('should run current and all paragraphs below with Control+Shift+ArrowDown', async () => {
       // Given: Multiple paragraphs with content
       await keyboardPage.tryFocusCodeEditor(0);
@@ -666,7 +670,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.CutLine: Control+K', () => {
+    // eslint-disable-next-line playwright/no-skipped-test -- tracked by ZEPPELIN-6379
     test.skip();
+
     test('should cut line with Control+K', async () => {
       // Given: Code editor with content
       await keyboardPage.tryFocusCodeEditor();
@@ -708,7 +714,9 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   // TODO: Fix the previously skipped tests - ZEPPELIN-6379
   test.describe('ParagraphActions.PasteLine: Control+Y', () => {
+    // eslint-disable-next-line playwright/no-skipped-test -- tracked by ZEPPELIN-6379
     test.skip();
+
     test('should paste line with Control+Y', async () => {
       // Given: Content in the editor
       await keyboardPage.tryFocusCodeEditor();

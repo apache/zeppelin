@@ -12,7 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { HeaderPage } from '../../models/header-page';
-import { waitForZeppelinReady } from '../../utils';
+import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../utils';
 
 /**
  * Regression guard for the header user-menu navigation.
@@ -35,6 +35,8 @@ const MENU_ITEMS = [
 ];
 
 test.describe('Header user menu - full-row navigation', () => {
+  addPageAnnotationBeforeEach(PAGES.SHARE.HEADER);
+
   let header: HeaderPage;
 
   test.beforeEach(async ({ page }) => {

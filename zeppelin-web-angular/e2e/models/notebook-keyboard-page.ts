@@ -574,7 +574,7 @@ export class NotebookKeyboardPage extends BasePage {
       .waitForFunction(
         // waitForFunction executes in browser context, not Node.js context.
         // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- args cross the browser boundary untyped
         ([index, selector]: any[]) => {
           const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
           const targetParagraph = paragraphs[index];
@@ -622,7 +622,7 @@ export class NotebookKeyboardPage extends BasePage {
       .waitForFunction(
         // waitForFunction executes in browser context, not Node.js context.
         // Browser cannot access Node.js variables like PARAGRAPH_RESULT_SELECTOR.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- args cross the browser boundary untyped
         ([index, selector]: any[]) => {
           const paragraphs = document.querySelectorAll('zeppelin-notebook-paragraph'); // JUSTIFIED: index-based paragraph lookup with sub-element checks not expressible via Playwright locator API
           const targetParagraph = paragraphs[index];
