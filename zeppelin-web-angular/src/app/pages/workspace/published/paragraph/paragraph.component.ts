@@ -30,6 +30,7 @@ import {
   ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
 import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
+import { RemoteContainer } from '@zeppelin/share';
 import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -222,8 +223,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     }
 
     const loadModule = async () => {
-      // @ts-ignore
-      const container = window.reactApp;
+      const container: RemoteContainer | undefined = window.reactApp;
       if (!container) {
         throw new Error('window.reactApp not available');
       }
