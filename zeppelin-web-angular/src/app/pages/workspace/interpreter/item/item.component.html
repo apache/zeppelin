@@ -213,11 +213,11 @@
       mode !== 'view'
     ) {
       @if (optionFormGroup.get('perNote')?.value === sessionOptionMap.shared) {
-        <button nz-button (click)="setPerNoteOrUserOption('perNote', 'scoped')">
+        <button nz-button aria-label="Add per-note process" (click)="setPerNoteOrUserOption('perNote', 'scoped')">
           <i nz-icon nzType="plus" nzTheme="outline"></i>
         </button>
       } @else {
-        <button nz-button (click)="setPerNoteOrUserOption('perNote', 'shared')">
+        <button nz-button aria-label="Remove per-note process" (click)="setPerNoteOrUserOption('perNote', 'shared')">
           <i nz-icon nzType="minus" nzTheme="outline"></i>
         </button>
       }
@@ -373,6 +373,7 @@
                 <td>
                   <button
                     class="transparent-button"
+                    aria-label="Remove property"
                     (click)="removeProperty(i)"
                     nz-button
                     nzShape="circle"
@@ -429,7 +430,14 @@
                 <td>N/A</td>
               }
               <td>
-                <button class="transparent-button" (click)="addProperties()" nz-button nzShape="circle" nzSize="small">
+                <button
+                  class="transparent-button"
+                  aria-label="Add property"
+                  (click)="addProperties()"
+                  nz-button
+                  nzShape="circle"
+                  nzSize="small"
+                >
                   <i nz-icon nzType="plus" nzTheme="outline"></i>
                 </button>
               </td>
@@ -471,6 +479,7 @@
                 <td>
                   <button
                     class="transparent-button"
+                    aria-label="Remove dependency"
                     (click)="removeDependence(i)"
                     nz-button
                     nzShape="circle"
@@ -503,7 +512,14 @@
                 ></textarea>
               </td>
               <td>
-                <button class="transparent-button" (click)="addDependence()" nz-button nzShape="circle" nzSize="small">
+                <button
+                  class="transparent-button"
+                  aria-label="Add dependency"
+                  (click)="addDependence()"
+                  nz-button
+                  nzShape="circle"
+                  nzSize="small"
+                >
                   <i nz-icon nzType="plus" nzTheme="outline"></i>
                 </button>
               </td>
