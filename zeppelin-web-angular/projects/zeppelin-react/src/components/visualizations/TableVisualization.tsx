@@ -101,11 +101,13 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
             type: 'bar',
             data: {
               labels: data.map(d => d.category),
-              datasets: [{
-                label: 'Value',
-                data: data.map(d => d.value),
-                backgroundColor: '#1890ff'
-              }]
+              datasets: [
+                {
+                  label: 'Value',
+                  data: data.map(d => d.value),
+                  backgroundColor: '#1890ff'
+                }
+              ]
             },
             options: {
               responsive: true,
@@ -118,13 +120,15 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
             type: 'line',
             data: {
               labels: data.map(d => d.category),
-              datasets: [{
-                label: 'Value',
-                data: data.map(d => d.value),
-                borderColor: '#1890ff',
-                backgroundColor: 'rgba(24, 144, 255, 0.1)',
-                tension: 0.1
-              }]
+              datasets: [
+                {
+                  label: 'Value',
+                  data: data.map(d => d.value),
+                  borderColor: '#1890ff',
+                  backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                  tension: 0.1
+                }
+              ]
             },
             options: {
               responsive: true,
@@ -137,12 +141,21 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
             type: 'pie',
             data: {
               labels: data.map(d => d.category),
-              datasets: [{
-                data: data.map(d => d.value),
-                backgroundColor: [
-                  '#1890ff', '#2fc25b', '#facc14', '#223273', '#8543e0', '#13c2c2', '#3436c7', '#f04864'
-                ]
-              }]
+              datasets: [
+                {
+                  data: data.map(d => d.value),
+                  backgroundColor: [
+                    '#1890ff',
+                    '#2fc25b',
+                    '#facc14',
+                    '#223273',
+                    '#8543e0',
+                    '#13c2c2',
+                    '#3436c7',
+                    '#f04864'
+                  ]
+                }
+              ]
             },
             options: {
               responsive: true,
@@ -154,11 +167,13 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
           chartConfig = {
             type: 'scatter',
             data: {
-              datasets: [{
-                label: 'Value',
-                data: data.map(d => ({ x: d.x, y: d.y })),
-                backgroundColor: '#1890ff'
-              }]
+              datasets: [
+                {
+                  label: 'Value',
+                  data: data.map(d => ({ x: d.x, y: d.y })),
+                  backgroundColor: '#1890ff'
+                }
+              ]
             },
             options: {
               responsive: true,
@@ -174,14 +189,16 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
             type: 'line',
             data: {
               labels: data.map(d => d.category),
-              datasets: [{
-                label: 'Value',
-                data: data.map(d => d.value),
-                borderColor: '#1890ff',
-                backgroundColor: 'rgba(24, 144, 255, 0.2)',
-                fill: true,
-                tension: 0.1
-              }]
+              datasets: [
+                {
+                  label: 'Value',
+                  data: data.map(d => d.value),
+                  borderColor: '#1890ff',
+                  backgroundColor: 'rgba(24, 144, 255, 0.2)',
+                  fill: true,
+                  tension: 0.1
+                }
+              ]
             },
             options: {
               responsive: true,
