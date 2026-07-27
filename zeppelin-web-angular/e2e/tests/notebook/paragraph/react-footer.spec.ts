@@ -102,6 +102,8 @@ test.describe('React Paragraph Footer', () => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 
+    // JUSTIFIED: outlives the 1500 ms stub so a destroy-time error has room to surface.
+    // The assertion is that nothing happened, so there is no UI state to wait on.
     await page.waitForTimeout(2500);
 
     expect(consoleErrors).toEqual([]);

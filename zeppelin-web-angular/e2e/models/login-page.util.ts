@@ -42,7 +42,7 @@ export class LoginTestUtil {
     try {
       await access(this.SHIRO_CONFIG_PATH);
       this._isShiroEnabled = true;
-    } catch (error) {
+    } catch {
       this._isShiroEnabled = false;
     }
 

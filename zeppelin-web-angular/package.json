@@ -97,6 +97,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsdoc": "^50.8.0",
     "eslint-plugin-perfectionist": "^5.10.0",
+    "eslint-plugin-playwright": "^2.10.5",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "https-proxy-agent": "^2.2.1",
     "husky": "9.1.7",

@@ -517,6 +517,7 @@ export const createTestNotebookWithName = async (
       if (attempt === 3 || !isRetryableError(message)) {
         throw new Error(`Failed to create test notebook: ${message}. Current URL: ${page.url()}`);
       }
+      // JUSTIFIED: backoff between REST create retries; no UI state to wait on.
       await page.waitForTimeout(1000 * attempt);
     }
   }
