@@ -783,7 +783,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User presses Control+Space to trigger autocomplete
       await keyboardPage.pressControlSpace();
-      await keyboardPage.autocompletePopup.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await expect(keyboardPage.autocompletePopup).toBeVisible({ timeout: 3000 });
 
       // Then: Editor must remain functional after shortcut (baseline; always asserts)
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
@@ -810,7 +810,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User triggers autocomplete and selects an option
       await keyboardPage.pressControlSpace();
-      await keyboardPage.autocompletePopup.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await expect(keyboardPage.autocompletePopup).toBeVisible({ timeout: 3000 });
 
       const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
       if (isAutocompleteVisible) {

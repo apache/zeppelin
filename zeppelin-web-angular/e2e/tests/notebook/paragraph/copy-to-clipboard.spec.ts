@@ -41,7 +41,7 @@ test.describe('Copy table result to clipboard', () => {
     paragraphPage = new NotebookParagraphPage(page);
 
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await expect(page.locator('zeppelin-notebook-paragraph').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('zeppelin-notebook-paragraph')).toHaveCount(1, { timeout: 15000 });
 
     // Without the %table marker the output renders as TEXT and no export control exists.
     keyboard = new NotebookKeyboardPage(page);
