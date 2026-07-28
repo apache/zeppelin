@@ -32,7 +32,12 @@ export class AppHttpInterceptor implements HttpInterceptor {
     }
     return next.handle(httpRequestUpdated).pipe(
       map(event => {
-        if (event instanceof HttpResponse) {
+        if (
+          event instanceof HttpResponse &&
+          !isNil(event.body) &&
+          typeof event.body === 'object' &&
+          'body' in event.body
+        ) {
           return event.clone({ body: event.body.body });
         } else {
           return event;
