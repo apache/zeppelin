@@ -701,6 +701,18 @@ public class InterpreterSettingManager implements NoteEventListener {
     return interpreterGroups;
   }
 
+  /**
+   * Snapshot the status of every running interpreter group. Uses in-memory state only (no remote
+   * probe) so a stuck interpreter cannot block this call.
+   */
+  public List<InterpreterProcessStatus> getInterpreterProcessStatuses() {
+    List<InterpreterProcessStatus> statuses = new ArrayList<>();
+    for (ManagedInterpreterGroup group : getAllInterpreterGroup()) {
+      statuses.add(new InterpreterProcessStatus(group));
+    }
+    return statuses;
+  }
+
   // TODO(zjffdu) Current approach is not optimized. we have to iterate all interpreter settings.
   public void removeInterpreterGroup(String intpGroupId) {
     for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {

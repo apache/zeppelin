@@ -107,6 +107,17 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testGetInterpreterProcessStatus() throws IOException {
+    // when
+    CloseableHttpResponse get = httpGet("/interpreter/status");
+    // then
+    assertThat(get, isAllowed());
+    JsonArray body = getArrayBodyFieldFromResponse(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8));
+    assertNotNull(body);
+    get.close();
+  }
+
+  @Test
   void testGetNonExistInterpreterSetting() throws IOException {
     // when
     String nonExistInterpreterSettingId = "apache_.zeppelin_1s_.aw3some$";

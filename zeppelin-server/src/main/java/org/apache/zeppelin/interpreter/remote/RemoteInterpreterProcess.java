@@ -43,6 +43,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   protected int intpEventServerPort;
   private PooledRemoteClient<Client> remoteClient;
   private String startTime;
+  private final long startTimeMs;
 
   public RemoteInterpreterProcess(int connectTimeout,
                                   int connectionPoolSize,
@@ -52,6 +53,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
     this.intpEventServerHost = intpEventServerHost;
     this.intpEventServerPort = intpEventServerPort;
     this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    this.startTimeMs = System.currentTimeMillis();
     this.remoteClient = new PooledRemoteClient<>(() -> {
       TSocket transport = new TSocket(getHost(), getPort());
       try {
@@ -70,6 +72,13 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
 
   public String getStartTime() {
     return startTime;
+  }
+
+  /**
+   * Epoch millis captured at construction, used to compute uptime without a remote call.
+   */
+  public long getStartTimeMs() {
+    return startTimeMs;
   }
 
   @Override

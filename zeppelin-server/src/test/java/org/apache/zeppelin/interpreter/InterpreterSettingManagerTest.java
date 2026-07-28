@@ -40,7 +40,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -260,6 +262,28 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     interpreterSettingManager.restart(interpreterSetting.getId(), "user1", note1Id);
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  void testGetInterpreterProcessStatuses() throws InterpreterException {
+    // no interpreter group has been created yet
+    assertTrue(interpreterSettingManager.getInterpreterProcessStatuses().isEmpty());
+
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
+    interpreterSetting.getOption().setPerUser("shared");
+    interpreterSetting.getOption().setPerNote("shared");
+    interpreterSetting.getOrCreateSession("user1", note1Id);
+
+    List<InterpreterProcessStatus> statuses =
+        interpreterSettingManager.getInterpreterProcessStatuses();
+    assertEquals(1, statuses.size());
+    InterpreterProcessStatus status = statuses.get(0);
+    assertEquals("test", status.getSettingName());
+    assertEquals(1, status.getNumSessions());
+    // process starts lazily on first interpret, so it is not started at this point
+    assertFalse(status.isStarted());
+    assertNull(status.getHost());
+    assertEquals(-1, status.getPort());
   }
 
   @Test
