@@ -37,7 +37,9 @@ test.describe('Notebook Paragraph Functionality', () => {
     paragraphPage = new NotebookParagraphPage(page);
 
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    // Paragraphs arrive over the WebSocket, so 'networkidle' can resolve before they render.
+    // Wait for the paragraph to mount so tests do not act on a bare page.
+    await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 30000 });
   });
 
   test('should display paragraph container with proper structure', async () => {
@@ -173,14 +175,16 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
 
     await paragraphPage.runParagraph();
 
-    const cancelButton = page.locator(
-      '.cancel-para, [nz-tooltip*="Cancel"], [title*="Cancel"], button:has-text("Cancel"), i[nz-icon="pause-circle"], .anticon-pause-circle'
-    );
-    await expect(cancelButton).toBeVisible({ timeout: 5000 });
+    // The control also renders while the paragraph is PENDING, so wait for the run to start
+    // before cancelling it.
+    await expect(paragraphPage.cancelButton).toBeVisible({ timeout: 10000 });
+    await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 30000 });
 
-    await cancelButton.click();
+    await paragraphPage.cancelButton.click();
 
-    // Then: Execution should stop — running spinner disappears
-    await expect(page.locator('.paragraph-control .fa-spin')).not.toBeVisible({ timeout: 15000 });
+    // Waiting for the button to disappear would also pass on natural completion, since the
+    // control is hidden once the paragraph leaves PENDING or RUNNING. Only cancelling reaches
+    // ABORT. The interpreter finishes the statement it is on first, so allow for the sleep.
+    await expect(paragraphPage.status).toHaveText('ABORT', { timeout: 30000 });
   });
 });

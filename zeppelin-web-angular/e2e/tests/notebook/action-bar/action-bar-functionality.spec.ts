@@ -117,7 +117,6 @@ test.describe('Notebook Action Bar Functionality', () => {
     }
 
     await expect(actionBarPage.clearOutputButton).toBeEnabled();
-    await page.waitForLoadState('networkidle');
 
     const paragraphResults = page.locator('zeppelin-notebook-paragraph-result');
     const resultCount = await paragraphResults.count();

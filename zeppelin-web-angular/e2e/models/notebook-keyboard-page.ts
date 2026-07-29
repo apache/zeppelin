@@ -330,6 +330,10 @@ export class NotebookKeyboardPage extends BasePage {
     return this.paragraphContainer.nth(index);
   }
 
+  getParagraphStatus(index: number): Locator {
+    return this.getParagraphByIndex(index).locator('.status');
+  }
+
   async isAutocompleteVisible(): Promise<boolean> {
     return await this.autocompletePopup.isVisible();
   }
@@ -482,16 +486,14 @@ export class NotebookKeyboardPage extends BasePage {
 
     const paragraph = this.getParagraphByIndex(paragraphIndex);
 
-    // Step 1: Wait for execution to start
     await this.waitForExecutionStart(paragraphIndex);
 
-    // Step 2: Wait for execution to complete
-    const runningIndicator = paragraph.locator(
-      '.paragraph-control .fa-spin, .running-indicator, .paragraph-status-running'
-    );
-    await this.waitForExecutionComplete(runningIndicator, paragraphIndex, timeout);
+    // The spinner classes this used to wait on are not rendered by the new UI, so the wait
+    // resolved immediately. The status text is the observable signal.
+    // On a fast re-run that text can still read the previous terminal state, so tight re-run
+    // loops get a stability gate here, not proof that this particular run finished.
+    await expect(paragraph.locator('.status')).toHaveText(/FINISHED|ERROR|ABORT/, { timeout });
 
-    // Step 3: Wait for result to be visible
     await this.waitForResultVisible(paragraphIndex, timeout);
   }
 
@@ -562,7 +564,12 @@ export class NotebookKeyboardPage extends BasePage {
     for (let i = 0; i < count; i++) {
       const button = this.okButtons.nth(i);
       await button.waitFor({ state: 'visible', timeout });
-      await button.click({ delay: 100 });
+      // A click landed during the dialog's open animation can fail to register at all,
+      // so retry until the button actually goes away.
+      await expect(async () => {
+        await button.click({ delay: 100 });
+        await expect(button).toBeHidden({ timeout: 2000 });
+      }).toPass({ timeout: 15000 });
       await this.modal.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {}); // JUSTIFIED: UI stabilization — next iteration or detach check handles remaining modals
     }
 
@@ -582,7 +589,8 @@ export class NotebookKeyboardPage extends BasePage {
             return false;
           }
 
-          const hasRunning = targetParagraph.querySelector('.fa-spin, .running-indicator, .paragraph-status-running');
+          const status = targetParagraph.querySelector('.status');
+          const hasRunning = !!status && /PENDING|RUNNING/.test(status.textContent || '');
           const hasResult = targetParagraph.querySelector(selector);
 
           return hasRunning || hasResult;
@@ -599,18 +607,6 @@ export class NotebookKeyboardPage extends BasePage {
         console.log(`Warning: Could not detect execution start for paragraph ${paragraphIndex}`);
       }
     }
-  }
-
-  private async waitForExecutionComplete(
-    runningIndicator: Locator,
-    paragraphIndex: number,
-    timeout: number
-  ): Promise<void> {
-    if (this.page.isClosed()) {
-      return;
-    }
-
-    await runningIndicator.waitFor({ state: 'detached', timeout: timeout / 2 }).catch(() => {}); // JUSTIFIED: UI stabilization — paragraph may have completed before indicator appeared
   }
 
   private async waitForResultVisible(paragraphIndex: number, timeout: number): Promise<void> {

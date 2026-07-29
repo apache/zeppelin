@@ -57,8 +57,7 @@ test.describe('Header user menu - full-row navigation', () => {
       });
 
       await test.step(`Then the app navigates to ${item.route}`, async () => {
-        await page.waitForURL(url => url.hash.includes(item.route), { timeout: 10000 });
-        expect(page.url()).toContain(item.route);
+        await expect(page).toHaveURL(new RegExp(item.route));
       });
     });
   }

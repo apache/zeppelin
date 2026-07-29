@@ -25,6 +25,7 @@ test.describe('Copy table result to clipboard', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.SHARE_RESULT);
 
   let paragraphPage: NotebookParagraphPage;
+  let keyboard: NotebookKeyboardPage;
   let testNotebook: { noteId: string; paragraphId: string };
 
   test.beforeEach(async ({ page, context }, testInfo) => {
@@ -40,34 +41,19 @@ test.describe('Copy table result to clipboard', () => {
     paragraphPage = new NotebookParagraphPage(page);
 
     await page.goto(`/#/notebook/${testNotebook.noteId}`);
-    await page.waitForLoadState('networkidle');
+    await expect(page.locator('zeppelin-notebook-paragraph')).toHaveCount(1, { timeout: 15000 });
 
-    // Type a paragraph that outputs a TABLE result using the %sh interpreter
-    await paragraphPage.doubleClickToEdit();
-    await expect(paragraphPage.codeEditor).toBeVisible();
-
-    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
-    await expect(codeEditor).toBeAttached({ timeout: 10000 });
-    await codeEditor.focus();
-
-    const keyboard = new NotebookKeyboardPage(page);
-    await keyboard.pressSelectAll();
-    await page.keyboard.type('%sh\nprintf "name\\tcount\\na\\t12\\nb\\t24\\n"');
+    // Without the %table marker the output renders as TEXT and no export control exists.
+    keyboard = new NotebookKeyboardPage(page);
+    await keyboard.setCodeEditorContent('%sh\nprintf "%%table name\\tcount\\na\\t12\\nb\\t24\\n"');
 
     await paragraphPage.runParagraph();
     await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 30000 });
   });
 
-  test('export dropdown should contain Copy as TSV and Copy as CSV options', async ({ page }) => {
-    // Open the export dropdown (down-arrow button next to the download icon)
-    const exportDropdownTrigger = page
-      .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
-      .first();
-    await expect(exportDropdownTrigger).toBeVisible({ timeout: 10000 });
-    await exportDropdownTrigger.click();
-
-    const menu = page.locator('.ant-dropdown-menu');
-    await expect(menu).toBeVisible({ timeout: 5000 });
+  test('export dropdown should contain Copy as TSV and Copy as CSV options', async () => {
+    await paragraphPage.openExportMenu();
+    const menu = paragraphPage.exportMenu;
 
     await expect(menu.locator('li:has-text("Download as CSV")')).toBeVisible();
     await expect(menu.locator('li:has-text("Download as TSV")')).toBeVisible();
@@ -76,14 +62,8 @@ test.describe('Copy table result to clipboard', () => {
   });
 
   test('Copy as TSV should write tab-delimited data with headers to clipboard', async ({ page }) => {
-    const exportDropdownTrigger = page
-      .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
-      .first();
-    await expect(exportDropdownTrigger).toBeVisible({ timeout: 10000 });
-    await exportDropdownTrigger.click();
-
-    const menu = page.locator('.ant-dropdown-menu');
-    await expect(menu).toBeVisible({ timeout: 5000 });
+    await paragraphPage.openExportMenu();
+    const menu = paragraphPage.exportMenu;
     await menu.locator('li:has-text("Copy as TSV")').click();
 
     // Read back what was written to the clipboard
@@ -98,14 +78,8 @@ test.describe('Copy table result to clipboard', () => {
   });
 
   test('Copy as CSV should write comma-delimited data with headers to clipboard', async ({ page }) => {
-    const exportDropdownTrigger = page
-      .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
-      .first();
-    await expect(exportDropdownTrigger).toBeVisible({ timeout: 10000 });
-    await exportDropdownTrigger.click();
-
-    const menu = page.locator('.ant-dropdown-menu');
-    await expect(menu).toBeVisible({ timeout: 5000 });
+    await paragraphPage.openExportMenu();
+    const menu = paragraphPage.exportMenu;
     await menu.locator('li:has-text("Copy as CSV")').click();
 
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
@@ -118,22 +92,14 @@ test.describe('Copy table result to clipboard', () => {
 
   test('Copy as CSV should quote cell values that contain double quotes', async ({ page }) => {
     // Re-run the paragraph with a value containing a double quote
-    const codeEditor = page.locator('.monaco-editor .input-area, textarea').first();
-    await codeEditor.focus();
-    const keyboard = new NotebookKeyboardPage(page);
-    await keyboard.pressSelectAll();
-    await page.keyboard.type('%sh\nprintf "col1\\tcol2\\nsay \\"hi\\"\\t1\\n"');
-    await new NotebookParagraphPage(page).runParagraph();
-    await page.waitForLoadState('networkidle');
+    await keyboard.setCodeEditorContent('%sh\nprintf "%%table col1\\tcol2\\nsay \\"hi\\"\\t1\\n"');
+    await paragraphPage.runParagraph();
+    // runParagraph only clicks Run, and the previous table result is still rendered, so wait for
+    // the new output before exporting or the clipboard reads the stale table.
+    await expect(paragraphPage.resultDisplay).toContainText('col2', { timeout: 30000 });
 
-    const exportDropdownTrigger = page
-      .locator('.export-dropdown .export-dropdown-icon-btn, .export-dropdown button:last-child')
-      .first();
-    await expect(exportDropdownTrigger).toBeVisible({ timeout: 10000 });
-    await exportDropdownTrigger.click();
-
-    const menu = page.locator('.ant-dropdown-menu');
-    await expect(menu).toBeVisible({ timeout: 5000 });
+    await paragraphPage.openExportMenu();
+    const menu = paragraphPage.exportMenu;
     await menu.locator('li:has-text("Copy as CSV")').click();
 
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText());

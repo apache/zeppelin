@@ -37,9 +37,6 @@ test.describe('Note Table of Contents', () => {
     // Use the more robust navigation method from parent class
     await noteTocPage.navigateToNotebook(testNotebook.noteId);
 
-    // Wait for notebook to fully load
-    await page.waitForLoadState('networkidle');
-
     // Verify we're actually in a notebook with more specific checks
     await expect(page).toHaveURL(new RegExp(`#/notebook/${testNotebook.noteId}`));
     // JUSTIFIED: test notebook always has exactly one paragraph

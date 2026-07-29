@@ -71,7 +71,6 @@ test.describe('Notebook Sidebar Functionality', () => {
   });
 
   test('should close sidebar functionality work properly', async ({ page }) => {
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
     await expect(sidebar.sidebarContainer).toBeVisible({ timeout: 10000 });
 
     // Try to open TOC, but accept FILE_TREE if TOC isn't available

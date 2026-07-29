@@ -78,12 +78,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // When: User presses Shift+Enter
       await keyboardPage.pressRunParagraph();
 
-      // Then: Paragraph should execute (reach a terminal state; interpreter availability varies by env)
+      // waitForParagraphExecution gates on the status text, so it is the assertion and throws if the run never settles.
       await keyboardPage.waitForParagraphExecution(0);
-      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-      const statusEl = keyboardPage.paragraphContainer.first().locator('.status');
-      const statusText = (await statusEl.textContent({ timeout: 30000 }))?.trim();
-      expect(statusText === 'FINISHED' || statusText === 'ERROR' || statusText === 'ABORT').toBe(true);
     });
   });
 
@@ -104,10 +100,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Second Paragraph\nTest content for second paragraph', 1);
       await keyboardPage.tryFocusCodeEditor(1); // Ensure focus on the second paragraph
 
-      // Add an explicit wait for the page to be completely stable and the notebook UI to be interactive
-      await keyboardPage.page.waitForLoadState('networkidle', { timeout: 30000 }); // Wait for network to be idle
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-      await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 15000 }); // Ensure a paragraph is visible
+      await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 15000 });
 
       // When: User presses Control+Shift+ArrowUp from second paragraph
       await keyboardPage.pressRunAbove();
@@ -168,20 +162,14 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       // Start execution
       await keyboardPage.pressRunParagraph();
 
-      // Wait for execution to start by checking if paragraph is running
-      // JUSTIFIED: compound selector; first() picks any visible running indicator
-      const runningIndicator = keyboardPage.page
-        .locator('zeppelin-notebook-paragraph .fa-spin, .running-indicator')
-        .first();
-      await expect(runningIndicator).toBeVisible({ timeout: 30000 });
+      const paragraphStatus = keyboardPage.getParagraphStatus(0);
+      await expect(paragraphStatus).toHaveText(/PENDING|RUNNING/, { timeout: 30000 });
 
       // When: User presses Control+Alt+C quickly
       await keyboardPage.pressCancel();
 
       // Then: The execution should be cancelled or completed
-      await expect(
-        keyboardPage.getParagraphByIndex(0).locator('.paragraph-control .fa-spin, .running-indicator')
-      ).not.toBeVisible();
+      await expect(paragraphStatus).toHaveText(/ABORT|FINISHED|ERROR/, { timeout: 30000 });
     });
   });
 
@@ -573,11 +561,6 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.pressRunParagraph();
       await keyboardPage.waitForParagraphExecution(0);
 
-      // Verify there is output to clear
-      // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-      const statusElBefore = keyboardPage.paragraphContainer.first().locator('.status');
-      await expect(statusElBefore).toHaveText(/FINISHED|ERROR|PENDING|RUNNING/);
-
       // Gate: without visible output, isSettled starts true and the helper would skip the press entirely.
       const resultLocator = keyboardPage.getParagraphByIndex(0).locator('[data-testid="paragraph-result"]');
       await expect(resultLocator).toBeVisible();
@@ -614,7 +597,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // Then: A new tab should be opened with paragraph link
       const newPage = await newPagePromise;
-      await newPage.waitForLoadState('networkidle');
+      await newPage.waitForURL(/\/paragraph\/paragraph_\d+_\d+/);
 
       // Verify the new tab URL contains the notebook ID and paragraph reference
       const newUrl = newPage.url();
@@ -800,7 +783,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User presses Control+Space to trigger autocomplete
       await keyboardPage.pressControlSpace();
-      await keyboardPage.autocompletePopup.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await expect(keyboardPage.autocompletePopup).toBeVisible({ timeout: 3000 });
 
       // Then: Editor must remain functional after shortcut (baseline; always asserts)
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
@@ -827,7 +810,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // When: User triggers autocomplete and selects an option
       await keyboardPage.pressControlSpace();
-      await keyboardPage.autocompletePopup.waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await expect(keyboardPage.autocompletePopup).toBeVisible({ timeout: 3000 });
 
       const isAutocompleteVisible = await keyboardPage.isAutocompleteVisible();
       if (isAutocompleteVisible) {
@@ -953,7 +936,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('invalid python syntax here');
       await keyboardPage.pressRunParagraph();
-      await keyboardPage.waitForParagraphExecution(0);
+      // Real interpreter run: a cold interpreter under CI load can stay RUNNING past the 30s default.
+      await keyboardPage.waitForParagraphExecution(0, 60000);
 
       // Verify error result exists (invalid syntax produces a final ERROR or FINISHED with error output)
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
@@ -971,12 +955,8 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.setCodeEditorContent('%md\n# Recovery Test\nShortcuts work after error', newParagraphIndex);
       await keyboardPage.pressRunParagraph();
 
-      // Then: Shortcut execution still reaches a terminal state (real interpreter run;
-      // allow extra time as a cold interpreter under CI load can stay RUNNING past 30s)
+      // Allow extra time; a cold interpreter under CI load can stay RUNNING past the 30s default.
       await keyboardPage.waitForParagraphExecution(newParagraphIndex, 60000);
-      // JUSTIFIED: newParagraphIndex is dynamically computed from getParagraphCount(); nth() is the only way to address this specific paragraph
-      const statusElNew = keyboardPage.paragraphContainer.nth(newParagraphIndex).locator('.status');
-      await expect(statusElNew).toHaveText(/FINISHED|ERROR/, { timeout: 60000 });
     });
 
     test('should gracefully handle shortcuts when no paragraph is focused', async () => {
@@ -1008,17 +988,18 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\nrapid keyboard test');
 
-      // Rapid Shift+Enter operations
+      // On a fast re-run the status can still read the previous FINISHED, so this checks stability, not each run.
+      // The result element re-renders and briefly detaches on every %md re-run, so do not assert on it.
       for (let i = 0; i < 3; i++) {
         await keyboardPage.pressRunParagraph();
         await keyboardPage.waitForParagraphExecution(0, 60000);
-        // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-        await expect(keyboardPage.paragraphResult.first()).toBeVisible({ timeout: 60000 });
       }
 
-      // Then: System should remain stable
+      // Running a %md paragraph collapses it to rendered mode and detaches the Monaco editor,
+      // so assert on the rendered output instead. It survives the re-render and proves the runs
+      // produced a result, which the container being visible does not.
       // JUSTIFIED: single-paragraph test notebook; first() is deterministic
-      await expect(keyboardPage.codeEditor.first()).toBeVisible();
+      await expect(keyboardPage.paragraphResult.first()).toContainText('rapid keyboard test', { timeout: 30000 });
     });
   });
 });

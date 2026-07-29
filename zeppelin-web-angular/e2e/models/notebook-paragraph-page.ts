@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export class NotebookParagraphPage extends BasePage {
@@ -24,6 +24,10 @@ export class NotebookParagraphPage extends BasePage {
   readonly footerInfo: Locator;
   readonly runButton: Locator;
   readonly settingsDropdown: Locator;
+  readonly status: Locator;
+  readonly cancelButton: Locator;
+  readonly exportDropdownTrigger: Locator;
+  readonly exportMenu: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -47,6 +51,18 @@ export class NotebookParagraphPage extends BasePage {
       .first()
       .locator('zeppelin-notebook-paragraph-control a[nz-dropdown]')
       .first();
+    this.status = this.controlPanel.locator('.status');
+    // The control renders the cancel icon only while the paragraph is PENDING or RUNNING.
+    this.cancelButton = this.controlPanel.locator('.cancel-para');
+    // The export controls render only for a TABLE result.
+    this.exportDropdownTrigger = this.resultDisplay.locator('.export-dropdown-icon-btn');
+    this.exportMenu = page.locator('.ant-dropdown-menu');
+  }
+
+  // The export dropdown is declared without nzTrigger, so ng-zorro opens it on hover, not click.
+  async openExportMenu(): Promise<void> {
+    await this.exportDropdownTrigger.hover();
+    await expect(this.exportMenu).toBeVisible();
   }
 
   async doubleClickToEdit(): Promise<void> {

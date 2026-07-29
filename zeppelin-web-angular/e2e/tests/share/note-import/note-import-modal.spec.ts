@@ -78,8 +78,8 @@ test.describe('Note Import Modal', () => {
   });
 
   test('Given JSON File tab is selected, When viewing file size limit, Then limit should be displayed', async () => {
-    const fileSizeLimit = await noteImportModal.getFileSizeLimit();
-    expect(fileSizeLimit).toMatch(/\d+\s*(MB|KB|GB)/i);
+    // The limit is fetched asynchronously and renders as "-" until it arrives.
+    await expect(noteImportModal.fileSizeLimit).toHaveText(/\d+\s*(MB|KB|GB)/i);
   });
 
   test('Given Import Note modal is open, When clicking close button, Then modal should close', async () => {
