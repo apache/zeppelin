@@ -353,7 +353,7 @@ public class ZeppelinConfiguration {
 
   public String getKeyStorePath() {
     String path = getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && (path.startsWith("/") || isWindowsPath(path))) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -385,7 +385,7 @@ public class ZeppelinConfiguration {
     if (path == null) {
       path = getKeyStorePath();
     }
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && (path.startsWith("/") || isWindowsPath(path))) {
       return path;
     } else {
       return getAbsoluteDir(
@@ -667,7 +667,7 @@ public class ZeppelinConfiguration {
   }
 
   public boolean isWindowsPath(String path){
-    return path.matches("^[A-Za-z]:\\\\.*");
+    return path != null && path.matches("^[A-Za-z]:\\\\.*");
   }
 
   public boolean isPathWithScheme(String path){

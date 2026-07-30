@@ -73,6 +73,14 @@ class ZeppelinConfigurationTest {
   }
 
   @Test
+  void isWindowsPathTestNull() {
+
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    Boolean isIt = zConf.isWindowsPath(null);
+    assertFalse(isIt);
+  }
+
+  @Test
   void isPathWithSchemeTestTrue() {
 
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
