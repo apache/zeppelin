@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -173,7 +174,11 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   private String listDate(OneFileStatus fs) {
-    return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    // Format in GMT so the value matches the "GMT" label appended in listOne(),
+    // regardless of the JVM default time zone.
+    sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+    return sdf.format(new Date(fs.modificationTime));
   }
 
   private String listOne(String path, OneFileStatus fs) {
