@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -66,13 +67,28 @@ public class MongoDbInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     try (final Scanner scanner = new Scanner(MongoDbInterpreter.class.getResourceAsStream("/shell_extension.js"),
             "UTF-8").useDelimiter("\\A")) {
         shellExtension = scanner.next();
     }
-    commandTimeout = Long.parseLong(getProperty("mongo.shell.command.timeout"));
-    maxConcurrency = Integer.parseInt(getProperty("mongo.interpreter.concurrency.max"));
+
+    final String commandTimeoutValue = getProperty("mongo.shell.command.timeout");
+    try {
+      commandTimeout = Long.parseLong(commandTimeoutValue);
+    } catch (NumberFormatException e) {
+      throw new InterpreterException("Invalid value for property "
+          + "'mongo.shell.command.timeout': " + commandTimeoutValue, e);
+    }
+
+    final String maxConcurrencyValue = getProperty("mongo.interpreter.concurrency.max");
+    try {
+      maxConcurrency = Integer.parseInt(maxConcurrencyValue);
+    } catch (NumberFormatException e) {
+      throw new InterpreterException("Invalid value for property "
+          + "'mongo.interpreter.concurrency.max': " + maxConcurrencyValue, e);
+    }
+
     dbAddress = getProperty("mongo.server.host") + ":" + getProperty("mongo.server.port");
     prepareShellExtension();
   }

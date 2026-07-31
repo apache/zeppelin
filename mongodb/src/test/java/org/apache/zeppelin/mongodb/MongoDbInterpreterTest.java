@@ -19,6 +19,8 @@ package org.apache.zeppelin.mongodb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -80,7 +83,7 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
   }
 
   @BeforeEach
-  public void init() {
+  public void init() throws InterpreterException {
     buffer = ByteBuffer.allocate(10000);
     props.put("mongo.shell.path", (IS_WINDOWS ? "" : "sh ") + MONGO_SHELL);
     props.put("mongo.shell.command.table.limit", "10000");
@@ -135,6 +138,60 @@ public class MongoDbInterpreterTest implements InterpreterOutputListener {
     final InterpreterResult res = interpreter.interpret("print('hello')", context);
 
     assertSame(Code.ERROR, res.code());
+  }
+
+  @Test
+  void testInvalidCommandTimeout() {
+    props.setProperty("mongo.shell.command.timeout", "not-a-number");
+
+    final InterpreterException e =
+        assertThrows(InterpreterException.class, () -> interpreter.open());
+
+    assertTrue(e.getMessage().contains("mongo.shell.command.timeout"),
+        "The message must name the offending property: " + e.getMessage());
+    assertTrue(e.getMessage().contains("not-a-number"),
+        "The message must show the invalid value: " + e.getMessage());
+    assertTrue(e.getCause() instanceof NumberFormatException,
+        "The original NumberFormatException must be preserved as the cause");
+  }
+
+  @Test
+  void testMissingCommandTimeout() {
+    props.remove("mongo.shell.command.timeout");
+
+    final InterpreterException e =
+        assertThrows(InterpreterException.class, () -> interpreter.open());
+
+    assertTrue(e.getMessage().contains("mongo.shell.command.timeout"),
+        "The message must name the offending property: " + e.getMessage());
+    assertTrue(e.getCause() instanceof NumberFormatException,
+        "The original NumberFormatException must be preserved as the cause");
+  }
+
+  @Test
+  void testEmptyMaxConcurrency() {
+    props.setProperty("mongo.interpreter.concurrency.max", "");
+
+    final InterpreterException e =
+        assertThrows(InterpreterException.class, () -> interpreter.open());
+
+    assertTrue(e.getMessage().contains("mongo.interpreter.concurrency.max"),
+        "The message must name the offending property: " + e.getMessage());
+    assertTrue(e.getCause() instanceof NumberFormatException,
+        "The original NumberFormatException must be preserved as the cause");
+  }
+
+  @Test
+  void testMissingMaxConcurrency() {
+    props.remove("mongo.interpreter.concurrency.max");
+
+    final InterpreterException e =
+        assertThrows(InterpreterException.class, () -> interpreter.open());
+
+    assertTrue(e.getMessage().contains("mongo.interpreter.concurrency.max"),
+        "The message must name the offending property: " + e.getMessage());
+    assertTrue(e.getCause() instanceof NumberFormatException,
+        "The original NumberFormatException must be preserved as the cause");
   }
 
   @Override
