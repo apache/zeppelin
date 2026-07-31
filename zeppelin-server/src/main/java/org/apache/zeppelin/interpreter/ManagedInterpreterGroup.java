@@ -19,6 +19,7 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.lifecycle.IdleInterpreterReclaimer;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -43,6 +44,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private RemoteInterpreterProcess remoteInterpreterProcess; // attached remote interpreter process
   private Object interpreterProcessCreationLock = new Object();
   private final ZeppelinConfiguration zConf;
+  private volatile long lastUsedTimeInMillis = System.currentTimeMillis();
+  private volatile boolean launchingInterpreterProcess;
 
   /**
    * Create InterpreterGroup with given id and interpreterSetting, used in ZeppelinServer
@@ -64,17 +67,52 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
                                                                 Properties properties)
       throws IOException {
     synchronized (interpreterProcessCreationLock) {
-      if (remoteInterpreterProcess == null) {
-        LOGGER.info("Create InterpreterProcess for InterpreterGroup: {}", getId());
-        remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
-                properties);
-        remoteInterpreterProcess.start(userName);
-        remoteInterpreterProcess.init(zConf);
-        getInterpreterSetting().getRecoveryStorage()
-                .onInterpreterClientStart(remoteInterpreterProcess);
+      try {
+        if (remoteInterpreterProcess == null) {
+          LOGGER.info("Create InterpreterProcess for InterpreterGroup: {}", getId());
+          launchingInterpreterProcess = true;
+          remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+                  properties);
+          remoteInterpreterProcess.start(userName);
+          remoteInterpreterProcess.init(zConf,
+                  IdleInterpreterReclaimer.processConfigurationOverrides(zConf,
+                          interpreterSetting));
+          getInterpreterSetting().getRecoveryStorage()
+                  .onInterpreterClientStart(remoteInterpreterProcess);
+        }
+        return remoteInterpreterProcess;
+      } finally {
+        // Reset the idle clock before dropping the flag, so that this group is never momentarily
+        // visible as idle with a timestamp from before the launch.
+        onInterpreterUse();
+        launchingInterpreterProcess = false;
       }
-      return remoteInterpreterProcess;
     }
+  }
+
+  /**
+   * A launch takes a while - minutes for Spark on YARN - and counts as activity rather than as
+   * idle time.
+   *
+   * @return whether a process is currently being launched for this group
+   */
+  public boolean isLaunchingInterpreterProcess() {
+    return launchingInterpreterProcess;
+  }
+
+  /**
+   * Records that this group has just been used, so that server side idle reclaim does not consider
+   * it idle. A single volatile write on purpose: while a paragraph runs this is called on every
+   * status poll of that paragraph.
+   *
+   * @see org.apache.zeppelin.interpreter.lifecycle.IdleInterpreterReclaimer
+   */
+  public void onInterpreterUse() {
+    lastUsedTimeInMillis = System.currentTimeMillis();
+  }
+
+  public long getLastUsedTimeInMillis() {
+    return lastUsedTimeInMillis;
   }
 
   public RemoteInterpreterProcess getInterpreterProcess() {

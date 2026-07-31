@@ -29,7 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract class for interpreter process
@@ -101,8 +104,20 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   }
 
   public void init(ZeppelinConfiguration zConf) {
+    init(zConf, Collections.emptyMap());
+  }
+
+  /**
+   * Pushes the server configuration into the interpreter process.
+   *
+   * @param overrides entries to put on top of the global configuration, for settings that are
+   *                  resolved per interpreter setting rather than globally
+   */
+  public void init(ZeppelinConfiguration zConf, Map<String, String> overrides) {
+    Map<String, String> properties = new HashMap<>(zConf.getCompleteConfiguration());
+    properties.putAll(overrides);
     callRemoteFunction(client -> {
-      client.init(zConf.getCompleteConfiguration());
+      client.init(properties);
       return null;
     });
   }

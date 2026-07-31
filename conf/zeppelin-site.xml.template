@@ -576,7 +576,9 @@
   <name>zeppelin.interpreter.lifecyclemanager.class</name>
   <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
   <description>LifecycleManager class for managing the lifecycle of interpreters, by default interpreter will
-  be closed after timeout</description>
+  be closed after timeout. With TimeoutLifecycleManager, Zeppelin server tracks the last use of each
+  interpreter group and closes the idle ones itself, so the threshold below can be overridden per
+  interpreter setting</description>
 </property>
 
 <property>
@@ -588,7 +590,9 @@
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
   <value>1h</value>
-  <description>Interpreter timeout threshold, by default it is 1 hour</description>
+  <description>Interpreter timeout threshold, by default it is 1 hour. Set the same property on an
+  individual interpreter setting to override it for that interpreter only, or set it to 0 there to
+  keep that interpreter from ever being reclaimed</description>
 </property>
 -->
 

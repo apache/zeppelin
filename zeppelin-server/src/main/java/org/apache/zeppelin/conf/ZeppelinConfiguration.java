@@ -780,6 +780,38 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
   }
 
+  /**
+   * Shared with {@code TimeoutLifecycleManager} so that both ways of reclaiming an idle
+   * interpreter check at the same cadence.
+   *
+   * @return interval in milliseconds between two idle checks
+   */
+  public long getInterpreterIdleCheckInterval() {
+    return getTimeMillis(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
+  }
+
+  /**
+   * Global idle threshold, which an interpreter setting can override with its own
+   * {@code zeppelin.interpreter.lifecyclemanager.timeout.threshold} property.
+   *
+   * @return threshold in milliseconds
+   */
+  public long getInterpreterIdleTimeoutThreshold() {
+    return getTimeMillis(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
+  }
+
+  /**
+   * Reads a time valued property. {@link #getString(ConfVars)} returns null for a ConfVars
+   * declared with a numeric default, so the declared default is used when nothing is configured.
+   */
+  private long getTimeMillis(ConfVars c) {
+    String value = getString(c);
+    if (StringUtils.isBlank(value)) {
+      return c.getLongValue();
+    }
+    return parseTimeMillis(value);
+  }
+
   public boolean getZeppelinImpersonateSparkProxyUser() {
       return getBoolean(ConfVars.ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER);
   }
@@ -1237,6 +1269,22 @@ public class ZeppelinConfiguration {
       return Long.parseLong(timeStrWithUnit.substring(0, timeStrWithUnit.length() - 2));
     }
     return Duration.parse("PT" + timeStrWithUnit).toMillis();
+  }
+
+  /**
+   * Parses a time value that is either a plain millisecond number or carries a unit suffix,
+   * e.g. {@code 600000}, {@code 10m} or {@code 500ms}.
+   *
+   * @throws NumberFormatException if the value carries no unit and is not a number
+   * @throws java.time.format.DateTimeParseException if the unit suffix is not understood
+   */
+  public static long parseTimeMillis(String timeStr) {
+    String trimmed = timeStr.trim();
+    try {
+      return Long.parseLong(trimmed);
+    } catch (NumberFormatException e) {
+      return timeUnitToMill(trimmed);
+    }
   }
 
 }
