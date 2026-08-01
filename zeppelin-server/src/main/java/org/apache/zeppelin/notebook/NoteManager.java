@@ -59,54 +59,62 @@ import io.micrometer.core.instrument.Tags;
 public class NoteManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(NoteManager.class);
   public static final String TRASH_FOLDER = "~Trash";
-  private Folder root;
-  private Folder trash;
-
   private NotebookRepo notebookRepo;
   private NoteCache noteCache;
-  // noteId -> notePath
-  private Map<String, String> notesInfo;
   private final ZeppelinConfiguration zConf;
+
+  /**
+   * The folder tree and the noteId -> notePath mapping. They are held together in one
+   * immutable reference so that a reload publishes both at once and concurrent note
+   * operations never observe a tree and a mapping that belong to different generations.
+   */
+  private volatile NoteTree noteTree;
 
   @Inject
   public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration zConf) throws IOException {
     this.zConf = zConf;
     this.notebookRepo = notebookRepo;
     this.noteCache = new NoteCache(zConf.getNoteCacheThreshold());
-    this.root = new Folder("/", notebookRepo, noteCache, zConf);
-    this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
-    init();
-  }
-
-
-  // build the tree structure of notes
-  private void init() throws IOException {
-    this.notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
-        .collect(Collectors.toConcurrentMap(NoteInfo::getId, NoteInfo::getPath));
-    this.notesInfo.entrySet().stream()
-        .forEach(entry ->
-        {
-          try {
-            addOrUpdateNoteNode(new NoteInfo(entry.getKey(), entry.getValue()));
-          } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-          }
-        });
-  }
-
-  public Map<String, String> getNotesInfo() {
-    return notesInfo;
+    this.noteTree = buildNoteTree();
   }
 
 
   /**
+   * Build the tree structure of notes from the NotebookRepo. The tree is fully populated
+   * before it is returned, and it is not reachable by other threads until the caller
+   * publishes it to {@link #noteTree}.
+   */
+  private NoteTree buildNoteTree() throws IOException {
+    Folder newRoot = new Folder("/", notebookRepo, noteCache, zConf);
+    Folder newTrash = newRoot.getOrCreateFolder(TRASH_FOLDER);
+    Map<String, String> newNotesInfo =
+        notebookRepo.list(AuthenticationInfo.ANONYMOUS).values().stream()
+            .collect(Collectors.toConcurrentMap(NoteInfo::getId, NoteInfo::getPath));
+    NoteTree newNoteTree = new NoteTree(newRoot, newTrash, newNotesInfo);
+    for (Map.Entry<String, String> entry : newNotesInfo.entrySet()) {
+      try {
+        addOrUpdateNoteNode(newNoteTree, new NoteInfo(entry.getKey(), entry.getValue()), false);
+      } catch (IOException e) {
+        LOGGER.warn(e.getMessage());
+      }
+    }
+    return newNoteTree;
+  }
+
+  public Map<String, String> getNotesInfo() {
+    return this.noteTree.notesInfo;
+  }
+
+
+  /**
+   * Rebuild the notebook metadata from the NotebookRepo. The new tree is built completely
+   * before it replaces the current one, so a concurrent note operation sees either the
+   * previous tree or the new one, never a partially rebuilt tree.
    *
    * @throws IOException
    */
   public void reloadNotes() throws IOException {
-    this.root = new Folder("/", notebookRepo, noteCache, zConf);
-    this.trash = this.root.getOrCreateFolder(TRASH_FOLDER);
-    init();
+    this.noteTree = buildNoteTree();
   }
 
   /**
@@ -117,15 +125,16 @@ public class NoteManager {
     return this.noteCache.getSize();
   }
 
-  private void addOrUpdateNoteNode(NoteInfo noteInfo, boolean checkDuplicates) throws IOException {
+  private void addOrUpdateNoteNode(NoteTree tree, NoteInfo noteInfo, boolean checkDuplicates)
+      throws IOException {
     String notePath = noteInfo.getPath();
 
-    if (checkDuplicates && !isNotePathAvailable(notePath)) {
+    if (checkDuplicates && !isNotePathAvailable(tree, notePath)) {
       throw new NotePathAlreadyExistsException("Note '" + notePath + "' existed");
     }
 
     String[] tokens = notePath.split("/");
-    Folder curFolder = root;
+    Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getOrCreateFolder(tokens[i]);
@@ -133,11 +142,7 @@ public class NoteManager {
     }
 
     curFolder.addNote(tokens[tokens.length -1], noteInfo);
-    this.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
-  }
-
-  private void addOrUpdateNoteNode(NoteInfo noteInfo) throws IOException {
-    addOrUpdateNoteNode(noteInfo, false);
+    tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
   }
 
   /**
@@ -182,7 +187,7 @@ public class NoteManager {
     if (note.isRemoved()) {
       LOGGER.warn("Try to save note: {} when it is removed", note.getId());
     } else {
-      addOrUpdateNoteNode(new NoteInfo(note));
+      addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), false);
       noteCache.putNote(note);
       // Make sure to execute `notebookRepo.save()` successfully in concurrent context
       // Otherwise, the NullPointerException will be thrown when invoking notebookRepo.get() in the following operations.
@@ -193,7 +198,7 @@ public class NoteManager {
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(new NoteInfo(note), true);
+    addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), true);
     noteCache.putNote(note);
   }
 
@@ -215,8 +220,9 @@ public class NoteManager {
    * @throws IOException
    */
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
-    String notePath = this.notesInfo.remove(noteId);
-    Folder folder = getOrCreateFolder(getFolderName(notePath));
+    NoteTree tree = this.noteTree;
+    String notePath = tree.notesInfo.remove(noteId);
+    Folder folder = getOrCreateFolder(tree, getFolderName(notePath));
     folder.removeNote(getNoteName(notePath));
     noteCache.removeNote(noteId);
     this.notebookRepo.remove(noteId, notePath, subject);
@@ -229,21 +235,22 @@ public class NoteManager {
       throw new IOException("No metadata found for this note: " + noteId);
     }
 
-    if (!isNotePathAvailable(newNotePath)) {
+    NoteTree tree = this.noteTree;
+    if (!isNotePathAvailable(tree, newNotePath)) {
       throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
     }
 
     // move the old NoteNode from notePath to newNotePath
-    String notePath = this.notesInfo.get(noteId);
-    NoteNode noteNode = getNoteNode(notePath);
+    String notePath = tree.notesInfo.get(noteId);
+    NoteNode noteNode = getNoteNode(tree, notePath);
     noteNode.getParent().removeNote(getNoteName(notePath));
     noteNode.setNotePath(newNotePath);
     String newParent = getFolderName(newNotePath);
-    Folder newFolder = getOrCreateFolder(newParent);
+    Folder newFolder = getOrCreateFolder(tree, newParent);
     newFolder.addNoteNode(noteNode);
 
     // update noteInfo mapping
-    this.notesInfo.put(noteId, newNotePath);
+    tree.notesInfo.put(noteId, newNotePath);
 
     // update notebookrepo
     this.notebookRepo.move(noteId, notePath, newNotePath, subject);
@@ -277,14 +284,15 @@ public class NoteManager {
     this.notebookRepo.move(folderPath, newFolderPath, subject);
 
     // update filesystem tree
-    Folder folder = getFolder(folderPath);
+    NoteTree tree = this.noteTree;
+    Folder folder = getFolder(tree, folderPath);
     folder.getParent().removeFolder(folder.getName(), subject);
-    Folder newFolder = getOrCreateFolder(newFolderPath);
+    Folder newFolder = getOrCreateFolder(tree, newFolderPath);
     newFolder.getParent().addFolder(newFolder.getName(), folder);
 
     // update notesInfo
     for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
-      notesInfo.put(noteInfo.getId(), noteInfo.getPath());
+      tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
     }
   }
 
@@ -313,12 +321,13 @@ public class NoteManager {
     this.notebookRepo.remove(folderPath, subject);
 
     // update filesystem tree
-    Folder folder = getFolder(folderPath);
+    NoteTree tree = this.noteTree;
+    Folder folder = getFolder(tree, folderPath);
     List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
 
     // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
     for (NoteInfo noteInfo : noteInfos) {
-      this.notesInfo.remove(noteInfo.getId());
+      tree.notesInfo.remove(noteInfo.getId());
       this.noteCache.removeNote(noteInfo.getId());
     }
 
@@ -336,11 +345,14 @@ public class NoteManager {
    */
   public <T> T processNote(String noteId, boolean reload, NoteProcessor<T> noteProcessor)
       throws IOException {
-    if (this.notesInfo == null || noteId == null || !this.notesInfo.containsKey(noteId)) {
+    // Read the tree once, so that the mapping lookup below and the tree traversal that
+    // follows it are both resolved against the same generation of the metadata.
+    NoteTree tree = this.noteTree;
+    if (tree == null || noteId == null || !tree.notesInfo.containsKey(noteId)) {
       return noteProcessor.process(null);
     }
-    String notePath = this.notesInfo.get(noteId);
-    NoteNode noteNode = getNoteNode(notePath);
+    String notePath = tree.notesInfo.get(noteId);
+    NoteNode noteNode = getNoteNode(tree, notePath);
     return noteNode.loadAndProcessNote(reload, noteProcessor);
   }
 
@@ -362,8 +374,12 @@ public class NoteManager {
    * @return
    */
   public Folder getOrCreateFolder(String folderName) {
+    return getOrCreateFolder(this.noteTree, folderName);
+  }
+
+  private static Folder getOrCreateFolder(NoteTree tree, String folderName) {
     String[] tokens = folderName.split("/");
-    Folder curFolder = root;
+    Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getOrCreateFolder(tokens[i]);
@@ -373,8 +389,12 @@ public class NoteManager {
   }
 
   private NoteNode getNoteNode(String notePath) throws IOException {
+    return getNoteNode(this.noteTree, notePath);
+  }
+
+  private static NoteNode getNoteNode(NoteTree tree, String notePath) throws IOException {
     String[] tokens = notePath.split("/");
-    Folder curFolder = root;
+    Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getFolder(tokens[i]);
@@ -391,8 +411,12 @@ public class NoteManager {
   }
 
   private Folder getFolder(String folderPath) throws IOException {
+    return getFolder(this.noteTree, folderPath);
+  }
+
+  private static Folder getFolder(NoteTree tree, String folderPath) throws IOException {
     String[] tokens = folderPath.split("/");
-    Folder curFolder = root;
+    Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getFolder(tokens[i]);
@@ -405,7 +429,7 @@ public class NoteManager {
   }
 
   public Folder getTrashFolder() {
-    return this.trash;
+    return this.noteTree.trash;
   }
 
   private String getFolderName(String notePath) {
@@ -418,9 +442,9 @@ public class NoteManager {
     return notePath.substring(pos + 1);
   }
 
-  private boolean isNotePathAvailable(String notePath) {
+  private static boolean isNotePathAvailable(NoteTree tree, String notePath) {
     String[] tokens = notePath.split("/");
-    Folder curFolder = root;
+    Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
         curFolder = curFolder.getFolder(tokens[i]);
@@ -439,6 +463,25 @@ public class NoteManager {
   public String getNoteIdByPath(String notePath) throws IOException {
     NoteNode noteNode = getNoteNode(notePath);
     return noteNode.getNoteId();
+  }
+
+  /**
+   * The two indexes that together locate a note: the folder tree and the noteId -> notePath
+   * mapping. A note lookup resolves the id through the mapping and then walks the tree, so
+   * the two must belong to the same generation. Holding them in one immutable reference lets
+   * a reload replace both of them in a single assignment.
+   */
+  private static class NoteTree {
+    private final Folder root;
+    private final Folder trash;
+    // noteId -> notePath
+    private final Map<String, String> notesInfo;
+
+    NoteTree(Folder root, Folder trash, Map<String, String> notesInfo) {
+      this.root = root;
+      this.trash = trash;
+      this.notesInfo = notesInfo;
+    }
   }
 
   /**

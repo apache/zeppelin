@@ -25,15 +25,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -206,6 +211,60 @@ class NoteManagerTest {
     ConcurrentTask removeNote = new ConcurrentTaskRemoveNote(threadPool, noteNum, notes, null);
     removeNote.exec();
     threadPool.shutdown();
+  }
+
+  @Test
+  void testConcurrentReloadAndProcessNote() throws Exception {
+    int noteNum = 50, readerNum = 4, reloadRounds = 30;
+    Map<Integer, String> notes = new ConcurrentHashMap<>();
+    for (int i = 0; i < noteNum; i++) {
+      Note note = createNote(String.format("/prod/note_%s", i));
+      noteManager.saveNote(note);
+      notes.put(i, note.getId());
+    }
+
+    List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+    AtomicBoolean reloading = new AtomicBoolean(true);
+    ExecutorService threadPool = Executors.newFixedThreadPool(readerNum + 1);
+    CountDownLatch done = new CountDownLatch(readerNum + 1);
+
+    // Reload the whole note tree repeatedly while other threads read the notes
+    threadPool.execute(() -> {
+      try {
+        for (int i = 0; i < reloadRounds; i++) {
+          noteManager.reloadNotes();
+        }
+      } catch (Throwable t) {
+        failures.add(t);
+      } finally {
+        reloading.set(false);
+        done.countDown();
+      }
+    });
+
+    for (int i = 0; i < readerNum; i++) {
+      threadPool.execute(() -> {
+        try {
+          while (reloading.get()) {
+            for (String noteId : notes.values()) {
+              assertNotNull(noteManager.processNote(noteId, note -> note),
+                  "processNote() found no note for an existing noteId during reload");
+            }
+          }
+        } catch (Throwable t) {
+          failures.add(t);
+        } finally {
+          done.countDown();
+        }
+      });
+    }
+
+    assertTrue(done.await(60, TimeUnit.SECONDS), "Concurrent reload did not finish in time");
+    threadPool.shutdown();
+    if (!failures.isEmpty()) {
+      throw new AssertionError(failures.size()
+          + " note operation(s) failed while the note tree was being reloaded", failures.get(0));
+    }
   }
 
   abstract class ConcurrentTask {
