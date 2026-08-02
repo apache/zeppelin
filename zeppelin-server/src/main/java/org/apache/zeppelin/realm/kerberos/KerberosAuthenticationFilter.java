@@ -76,7 +76,7 @@ public class KerberosAuthenticationFilter extends PassThruAuthenticationFilter {
       kerberosRealm.doKerberosAuth(request, response, filterChain);
     } else {
       LOGGER.error("Looks like this filter is enabled without enabling KerberosRealm, please refer"
-          + " to https://zeppelin.apache.org/docs/latest/security/shiroauthentication.html"
+          + " to https://zeppelin.apache.org/docs/latest/setup/security/shiro_authentication.html"
           + "#kerberos-auth");
     }
   }
