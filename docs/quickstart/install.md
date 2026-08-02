@@ -88,16 +88,18 @@ Make sure that [docker](https://www.docker.com/community-edition) is installed i
 Use this command to launch Apache Zeppelin in a container.
 
 ```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.10.0
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.12.1
 
 ```
+
+The examples below pin the image to `0.12.1`. You can find the latest available tag on the [apache/zeppelin tags page](https://hub.docker.com/r/apache/zeppelin/tags) on Docker Hub.
 
 To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
 
 ```bash
 docker run -u $(id -u) -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook \
            -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' \
-           --name zeppelin apache/zeppelin:0.10.0
+           --name zeppelin apache/zeppelin:0.12.1
 ```
 
 `-u $(id -u)` is to make sure you have the permission to write logs and notebooks. 
@@ -108,7 +110,7 @@ and Flink interpreter requires Flink binary distribution. You can also mount the
 ```bash
 docker run -u $(id -u) -p 8080:8080 --rm -v /mnt/disk1/notebook:/notebook \
 -v /usr/lib/spark-current:/opt/spark -v /mnt/disk1/flink-1.12.2:/opt/flink -e FLINK_HOME=/opt/flink  \
--e SPARK_HOME=/opt/spark  -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.10.0
+-e SPARK_HOME=/opt/spark  -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.12.1
 ```
 
 If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
