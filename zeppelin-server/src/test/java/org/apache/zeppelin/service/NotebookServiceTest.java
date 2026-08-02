@@ -589,6 +589,63 @@ class NotebookServiceTest {
   }
 
   @Test
+  void testRunParagraphInPersonalizedModeDoesNotPolluteMasterParagraph() throws IOException {
+    String note1Id = notebookService.createNote("/note_personalized", "test", true, context, callback);
+    Map<String, Object> masterParams = new HashMap<>();
+    masterParams.put("name", "master");
+    String paragraphId = notebook.processNote(note1Id,
+      note1 -> {
+        note1.setPersonalizedMode(true);
+        Paragraph p = note1.getParagraph(0);
+        p.setText("1+1");
+        p.settings.setParams(masterParams);
+        return p.getId();
+      });
+
+    ServiceContext user1Context =
+        new ServiceContext(new AuthenticationInfo("user1"), new HashSet<>());
+    Map<String, Object> user1Params = new HashMap<>();
+    user1Params.put("name", "user1");
+
+    reset(callback);
+    boolean runStatus = notebook.processNote(note1Id,
+      note1 -> {
+        return notebookService.runParagraph(note1, paragraphId, "user1_title", "1+1",
+          user1Params, new HashMap<>(), null, false, true, user1Context, callback);
+      });
+    assertTrue(runStatus);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1Params, user1Paragraph.settings.getParams());
+        assertEquals("user1_title", user1Paragraph.getTitle());
+        return null;
+      });
+
+    // updateParagraph must not pollute the master paragraph either
+    reset(callback);
+    Map<String, Object> user1UpdatedParams = new HashMap<>();
+    user1UpdatedParams.put("name", "user1_updated");
+    notebookService.updateParagraph(note1Id, paragraphId, "user1_updated_title", "1+1",
+        user1UpdatedParams, new HashMap<>(), user1Context, callback);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
+        assertEquals("user1_updated_title", user1Paragraph.getTitle());
+        return null;
+      });
+  }
+
+  @Test
   void testNormalizeNotePath() throws IOException {
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(" "));
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(null));

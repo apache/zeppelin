@@ -452,6 +452,9 @@ public class NotebookService {
       callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
+    if (note.isPersonalizedMode()) {
+      p = p.getUserParagraph(context.getAutheInfo().getUser());
+    }
     p.setText(text);
     p.setTitle(title);
     p.setAuthenticationInfo(context.getAutheInfo());
@@ -460,19 +463,6 @@ public class NotebookService {
     }
     if (config != null && !config.isEmpty()) {
       p.mergeConfig(config);
-    }
-
-    if (note.isPersonalizedMode()) {
-      p = p.getUserParagraph(context.getAutheInfo().getUser());
-      p.setText(text);
-      p.setTitle(title);
-      p.setAuthenticationInfo(context.getAutheInfo());
-      if (params != null && !params.isEmpty()) {
-        p.settings.setParams(params);
-      }
-      if (config != null && !config.isEmpty()) {
-        p.mergeConfig(config);
-      }
     }
 
     try {
@@ -761,17 +751,13 @@ public class NotebookService {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
           return null;
         }
+        if (note.isPersonalizedMode()) {
+          p = p.getUserParagraph(context.getAutheInfo().getUser());
+        }
         p.settings.setParams(params);
         p.mergeConfig(config);
         p.setTitle(title);
         p.setText(text);
-        if (note.isPersonalizedMode()) {
-          p = p.getUserParagraph(context.getAutheInfo().getUser());
-          p.settings.setParams(params);
-          p.mergeConfig(config);
-          p.setTitle(title);
-          p.setText(text);
-        }
         notebook.saveNote(note, context.getAutheInfo());
         callback.onSuccess(p, context);
         return null;
@@ -1393,22 +1379,16 @@ public class NotebookService {
                                              String text, String title, Map<String, Object> params,
                                              Map<String, Object> config) {
     Paragraph p = note.getParagraph(paragraphId);
-    p.setText(text);
-    p.setTitle(title);
     AuthenticationInfo subject =
         new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
+    if (note.isPersonalizedMode()) {
+      p = p.getUserParagraph(subject.getUser());
+    }
+    p.setText(text);
+    p.setTitle(title);
     p.setAuthenticationInfo(subject);
     p.settings.setParams(params);
     p.setConfig(config);
-
-    if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
-      p.setText(text);
-      p.setTitle(title);
-      p.setAuthenticationInfo(subject);
-      p.settings.setParams(params);
-      p.setConfig(config);
-    }
 
     return p;
   }
