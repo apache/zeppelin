@@ -25,28 +25,30 @@ import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Get maven repository instance.
  */
 public class RepositorySystemFactory {
+  private static final Logger LOGGER = LoggerFactory.getLogger(RepositorySystemFactory.class);
+
   public static RepositorySystem newRepositorySystem() {
     DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
     locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class );
     locator.addService(TransporterFactory.class, FileTransporterFactory.class);
     locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-    locator.setErrorHandler( new DefaultServiceLocator.ErrorHandler()
-    {
-        @Override
-        public void serviceCreationFailed( Class<?> type, Class<?> impl, Throwable exception )
-        {
-            exception.printStackTrace();
-        }
-    } );
+    locator.setErrorHandler(new DefaultServiceLocator.ErrorHandler() {
+      @Override
+      public void serviceCreationFailed(Class<?> type, Class<?> impl, Throwable exception) {
+        LOGGER.error("Service creation failed for type {} impl {}", type, impl, exception);
+      }
+    });
     RepositorySystem system = locator.getService(RepositorySystem.class);
     if (system == null) {
-        throw new RuntimeException();
+      throw new RuntimeException(
+          "Cannot create RepositorySystem (locator.getService returned null)");
     }
     return system;
   }
