@@ -15,12 +15,19 @@
 # limitations under the License.
 #
 
-import os, sys, traceback, json, re
+import os, signal, sys, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
 
 import ast
+
+# When Zeppelin is started via zeppelin-daemon.sh (nohup ... &), this process
+# inherits SIGINT=SIG_IGN and CPython keeps it ignored instead of installing the
+# KeyboardInterrupt handler, so PythonInterpreter.cancel()'s SIGINT would be a
+# no-op. Restore the default handler to keep paragraph cancellation working.
+if signal.getsignal(signal.SIGINT) == signal.SIG_IGN:
+  signal.signal(signal.SIGINT, signal.default_int_handler)
 
 class Logger(object):
   def __init__(self):
