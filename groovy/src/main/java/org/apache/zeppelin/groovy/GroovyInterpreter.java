@@ -76,7 +76,7 @@ public class GroovyInterpreter extends Interpreter {
                 .getPath());
         classes = new File(jar.getParentFile(), "classes").toString();
       } catch (Exception e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error("Failed to resolve Groovy classpath", e);
       }
     }
     LOGGER.info("groovy classes classpath: " + classes);
