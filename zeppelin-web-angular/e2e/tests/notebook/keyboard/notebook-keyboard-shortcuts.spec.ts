@@ -461,18 +461,22 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== UI TOGGLE SHORTCUTS =====
 
   test.describe('ParagraphActions.SwitchEditor: Control+Alt+E', () => {
-    test('should toggle editor visibility with Control+Alt+E', async () => {
-      // Given: A paragraph with visible editor
-      await keyboardPage.tryFocusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("Test editor toggle")');
+    test('should toggle the focused editor with Control+Alt+E', async () => {
+      await keyboardPage.tryFocusCodeEditor(0);
+      await keyboardPage.setCodeEditorContent('%python\nprint("First paragraph")', 0);
+      await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
+      await keyboardPage.tryFocusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%python\nprint("Second paragraph")', 1);
+      await keyboardPage.tryFocusCodeEditor(0);
 
       const initialEditorVisibility = await keyboardPage.isEditorVisible(0);
+      const secondEditorVisibility = await keyboardPage.isEditorVisible(1);
 
-      // When: User presses Control+Alt+E
       await keyboardPage.pressSwitchEditor();
 
-      // Then: editor visibility toggles
       await expect.poll(() => keyboardPage.isEditorVisible(0), { timeout: 10000 }).toBe(!initialEditorVisibility);
+      expect(await keyboardPage.isEditorVisible(1)).toBe(secondEditorVisibility);
     });
   });
 
