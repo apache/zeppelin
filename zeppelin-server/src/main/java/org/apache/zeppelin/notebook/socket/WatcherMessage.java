@@ -40,6 +40,7 @@ public class WatcherMessage implements JsonSerializable {
     this.subject = builder.subject;
   }
   
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }

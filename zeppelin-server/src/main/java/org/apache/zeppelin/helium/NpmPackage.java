@@ -31,6 +31,7 @@ public class NpmPackage implements JsonSerializable {
   public String version;
   public Map<String, String> dependencies;
 
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }
