@@ -257,10 +257,9 @@ public class NoteManager {
       // update notebookrepo
       this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
-      // Update path of the note. Access the cache directly instead of going
-      // through processNote/loadAndProcessNote, which would acquire the note's
-      // readLock while holding this monitor and invert the fixed lock order
-      // (readLock -> monitor).
+      // Update path of the note. Access the cache directly to avoid the readLock and the
+      // disk load that processNote would add while we hold this monitor. The reverse edge
+      // via noteCache.putNote() -> LRU eviction is safe: NoteCache only ever tryLock()s.
       if (!StringUtils.equals(notePath, newNotePath)) {
         Note cachedNote = noteCache.getNote(noteId);
         if (cachedNote != null) {
@@ -270,18 +269,24 @@ public class NoteManager {
     }
 
     // save note if note name is changed, because we need to update the note field in note json.
-    // Done outside the monitor: processNote acquires the readLock and saveNote then
-    // acquires the monitor, matching the fixed lock order (readLock -> monitor).
     String oldNoteName = getNoteName(notePath);
     String newNoteName = getNoteName(newNotePath);
     if (!StringUtils.equals(oldNoteName, newNoteName)) {
       processNote(noteId,
         note -> {
-          // A note evicted from the cache is reloaded from disk here, and the on-disk
-          // JSON still carries the pre-move name, so realign the reloaded note with
-          // the move target before persisting it.
-          note.setPath(newNotePath);
-          saveNote(note, subject);
+          // null when the noteId already left the mapping, e.g. a concurrent remove.
+          if (note == null) {
+            return null;
+          }
+          // newNotePath was fixed at method entry, so re-read the current path and save
+          // it under the same monitor to keep a concurrent move out of the gap.
+          synchronized (this) {
+            String currentPath = this.noteTree.notesInfo.get(noteId);
+            if (currentPath != null) {
+              note.setPath(currentPath);
+              saveNote(note, subject);
+            }
+          }
           return null;
         });
     }
