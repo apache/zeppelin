@@ -42,14 +42,22 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.EnumSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import jakarta.inject.Singleton;
 import javax.management.remote.JMXServiceURL;
 import jakarta.servlet.DispatcherType;
@@ -131,6 +139,15 @@ public class ZeppelinServer implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinServer.class);
   private static final String NON_DEFAULT_NEW_UI_WEB_APP_CONTEXT_PATH = "/new";
   private static final String NON_DEFAULT_CLASSIC_UI_WEB_APP_CONTEXT_PATH = "/classic";
+  private static final String HADOOP_GROUP_RESOLVER =
+      "org.apache.zeppelin.realm.hadoop.HadoopGroupResolver";
+  private static final String HADOOP_SECRET_RESOLVER =
+      "org.apache.zeppelin.realm.hadoop.HadoopCredentialProviderSecretResolver";
+  private static final Pattern SHIRO_CLASS_ASSIGNMENT = Pattern.compile(
+      "(?m)^\\s*([A-Za-z_$][\\w$]*)\\s*=\\s*"
+          + "([A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)+)\\s*$");
+  private static final Pattern SHIRO_SECTION_HEADER =
+      Pattern.compile("^\\s*\\[([^]]+)]\\s*$");
   public static final String DEFAULT_SERVICE_LOCATOR_NAME = "shared-locator";
 
   private final AtomicBoolean duringShutdown = new AtomicBoolean(false);
@@ -138,6 +155,7 @@ public class ZeppelinServer implements AutoCloseable {
   private final Optional<PrometheusMeterRegistry> promMetricRegistry;
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
+  private final PluginManager pluginManager;
   private final ConfigStorage storage;
 
   public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
@@ -154,7 +172,8 @@ public class ZeppelinServer implements AutoCloseable {
     }
     jettyWebServer = setupJettyServer();
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create(serviceLocatorName);
-    storage = ConfigStorage.createConfigStorage(zConf);
+    pluginManager = new PluginManager(zConf);
+    storage = ConfigStorage.createConfigStorage(zConf, pluginManager);
   }
 
   public void startZeppelin() {
@@ -177,7 +196,7 @@ public class ZeppelinServer implements AutoCloseable {
           @Override
           protected void configure() {
             bind(storage).to(ConfigStorage.class);
-            bindAsContract(PluginManager.class).in(Singleton.class);
+            bind(pluginManager).to(PluginManager.class);
             bind(GsonNoteParser.class).to(NoteParser.class).in(Singleton.class);
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
@@ -562,12 +581,128 @@ public class ZeppelinServer implements AutoCloseable {
 
     String shiroIniPath = zConf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
+      configureShiroPluginClasspath(webapp, shiroIniPath);
       webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
       webapp
           .addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
           .setInitParameter("staticSecurityManagerEnabled", "true");
       webapp.addEventListener(new EnvironmentLoaderListener());
     }
+  }
+
+  private void configureShiroPluginClasspath(WebAppContext webapp, String shiroIniPath) {
+    try {
+      String shiroConfig = new String(
+          Files.readAllBytes(new File(shiroIniPath).toPath()), StandardCharsets.UTF_8);
+      String activeConfig = String.join("\n", shiroConfig.lines()
+          .filter(line -> !line.trim().startsWith("#") && !line.trim().startsWith(";"))
+          .toArray(String[]::new));
+      Set<File> pluginClasspath = new LinkedHashSet<>();
+
+      for (Map.Entry<String, String> assignment
+          : findShiroClassAssignments(activeConfig).entrySet()) {
+        String beanName = assignment.getKey();
+        String className = assignment.getValue();
+        addPluginClasspathIfRequired(className, pluginClasspath);
+        if (className.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
+          String groupResolverClass = findNonBlankAssignment(
+              activeConfig, beanName + ".groupResolverClass");
+          if (groupResolverClass == null) {
+            addRequiredPluginClasspath(HADOOP_GROUP_RESOLVER, pluginClasspath);
+          } else {
+            addPluginClasspathIfRequired(groupResolverClass, pluginClasspath);
+          }
+        }
+      }
+      if (hasNonBlankAssignment(activeConfig, ".hadoopSecurityCredentialPath")) {
+        addRequiredPluginClasspath(HADOOP_SECRET_RESOLVER, pluginClasspath);
+      }
+
+      if (!pluginClasspath.isEmpty()) {
+        configurePluginClassLoading(webapp, pluginClasspath);
+        LOGGER.info("Added {} optional security plugin files to the web application classpath",
+            pluginClasspath.size());
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Unable to configure optional security plugins from " + shiroIniPath, e);
+    }
+  }
+
+  static Map<String, String> findShiroClassAssignments(String config) {
+    Map<String, String> assignments = new LinkedHashMap<>();
+    Matcher matcher = SHIRO_CLASS_ASSIGNMENT.matcher(findShiroMainSection(config));
+    while (matcher.find()) {
+      assignments.put(matcher.group(1), matcher.group(2));
+    }
+    return assignments;
+  }
+
+  static String findNonBlankAssignment(String config, String propertyName) {
+    for (String line : findShiroMainSection(config).split("\\R")) {
+      int separator = line.indexOf('=');
+      if (separator > 0 && line.substring(0, separator).trim().equals(propertyName)) {
+        String value = line.substring(separator + 1).trim();
+        return StringUtils.isBlank(value) ? null : value;
+      }
+    }
+    return null;
+  }
+
+  private static String findShiroMainSection(String config) {
+    StringBuilder mainSection = new StringBuilder();
+    boolean inMainSection = false;
+    for (String line : config.split("\\R")) {
+      Matcher sectionMatcher = SHIRO_SECTION_HEADER.matcher(line);
+      if (sectionMatcher.matches()) {
+        inMainSection = "main".equalsIgnoreCase(sectionMatcher.group(1).trim());
+      } else if (inMainSection) {
+        mainSection.append(line).append('\n');
+      }
+    }
+    return mainSection.toString();
+  }
+
+  static void configurePluginClassLoading(WebAppContext webapp, Set<File> pluginClasspath)
+      throws IOException {
+    // Security plugins are loaded by Jetty's child-first WebAppClassLoader. Keep SLF4J on the
+    // server classloader so a plugin cannot pair its own API with the server's logger binding.
+    webapp.getSystemClassMatcher().add("org.slf4j.");
+    List<String> paths = new ArrayList<>();
+    for (File file : pluginClasspath) {
+      paths.add(file.getAbsolutePath());
+    }
+    webapp.setExtraClasspath(String.join(",", paths));
+  }
+
+  private void addPluginClasspathIfRequired(String className, Set<File> pluginClasspath)
+      throws IOException {
+    try {
+      Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+    } catch (ClassNotFoundException e) {
+      addRequiredPluginClasspath(className, pluginClasspath);
+    }
+  }
+
+  private void addRequiredPluginClasspath(String className, Set<File> pluginClasspath)
+      throws IOException {
+    List<File> classpath = pluginManager.getPluginClasspath(className);
+    if (classpath.isEmpty()) {
+      throw new IOException("Configured security extension is not installed: " + className);
+    }
+    pluginClasspath.addAll(classpath);
+  }
+
+  private boolean hasNonBlankAssignment(String config, String propertySuffix) {
+    for (String line : findShiroMainSection(config).split("\\R")) {
+      int separator = line.indexOf('=');
+      if (separator > 0
+          && line.substring(0, separator).trim().endsWith(propertySuffix)
+          && StringUtils.isNotBlank(line.substring(separator + 1))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void setupPrometheusContextHandler(WebAppContext webapp) {

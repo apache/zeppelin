@@ -82,6 +82,7 @@ public class FileSystemStorage {
   public FileSystemStorage(ZeppelinConfiguration zConf, String path) throws IOException {
     this.zConf = zConf;
     this.hadoopConf = new Configuration();
+    this.hadoopConf.setClassLoader(FileSystemStorage.class.getClassLoader());
     URI zepConfigURI;
     URI defaultFSURI;
 
@@ -169,7 +170,7 @@ public class FileSystemStorage {
     });
   }
 
-  // recursive search path, (TODO zjffdu, list folder in sub folder on demand, instead of load all
+  // recursive search path, (TODO(zjffdu): list folder in sub folder on demand, instead of load all
   // data when zeppelin server start)
   public List<Path> listAll(final Path path) throws IOException {
     return callHdfsOperation(new HdfsOperation<List<Path>>() {
@@ -213,17 +214,19 @@ public class FileSystemStorage {
         LOGGER.debug("Read from file: {}", file);
         ByteArrayOutputStream noteBytes = new ByteArrayOutputStream();
         IOUtils.copyBytes(fs.open(file), noteBytes, hadoopConf);
-        return noteBytes.toString(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
+        return noteBytes.toString(
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
       }
     });
   }
 
   public void writeFile(final String content, final Path file, boolean writeTempFileFirst)
       throws IOException {
-      writeFile(content, file, writeTempFileFirst, null);
+    writeFile(content, file, writeTempFileFirst, null);
   }
 
-  public void writeFile(final String content, final Path file, boolean writeTempFileFirst, Set<PosixFilePermission> permissions)
+  public void writeFile(final String content, final Path file, boolean writeTempFileFirst,
+                        Set<PosixFilePermission> permissions)
       throws IOException {
     FsPermission fsPermission;
     if (permissions == null || permissions.isEmpty()) {

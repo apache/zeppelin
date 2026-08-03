@@ -82,7 +82,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo =
           pluginManager.loadNotebookRepo(storageClassNames[i].trim());
-      notebookRepo.init(zConf, noteParser);
+      initNotebookRepo(notebookRepo, zConf, noteParser);
       repos.add(notebookRepo);
     }
 
@@ -90,7 +90,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     if (getRepoCount() == 0) {
       LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
       NotebookRepo defaultNotebookRepo = pluginManager.loadNotebookRepo(DEFAULT_STORAGE);
-      defaultNotebookRepo.init(zConf, noteParser);
+      initNotebookRepo(defaultNotebookRepo, zConf, noteParser);
       repos.add(defaultNotebookRepo);
     }
     // sync for anonymous mode on start
@@ -100,6 +100,19 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       } catch (IOException e) {
         LOGGER.error("Couldn't sync anonymous mode on start ", e);
       }
+    }
+  }
+
+  private void initNotebookRepo(
+      NotebookRepo notebookRepo, ZeppelinConfiguration zConf, NoteParser noteParser)
+      throws IOException {
+    Thread thread = Thread.currentThread();
+    ClassLoader previousClassLoader = thread.getContextClassLoader();
+    try {
+      thread.setContextClassLoader(notebookRepo.getClass().getClassLoader());
+      notebookRepo.init(zConf, noteParser);
+    } finally {
+      thread.setContextClassLoader(previousClassLoader);
     }
   }
 

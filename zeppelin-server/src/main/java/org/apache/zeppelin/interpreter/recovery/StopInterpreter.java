@@ -23,7 +23,6 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.storage.ConfigStorage;
-import org.apache.zeppelin.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +40,15 @@ public class StopInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(StopInterpreter.class);
 
   public StopInterpreter(ZeppelinConfiguration zConf) throws IOException {
-    ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     PluginManager pluginManager = new PluginManager(zConf);
+    ConfigStorage storage = ConfigStorage.createConfigStorage(zConf, pluginManager);
     InterpreterSettingManager interpreterSettingManager =
         new InterpreterSettingManager(zConf, null, null, null, storage, pluginManager);
 
-    RecoveryStorage recoveryStorage =
-        ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
-            new Class[] { ZeppelinConfiguration.class, InterpreterSettingManager.class },
-            new Object[] { zConf, interpreterSettingManager });
+    RecoveryStorage recoveryStorage = pluginManager.createPluginInstance(
+        zConf.getRecoveryStorageClass(),
+        new Class[] { ZeppelinConfiguration.class, InterpreterSettingManager.class },
+        new Object[] { zConf, interpreterSettingManager });
 
     LOGGER.info("Using RecoveryStorage: {}", recoveryStorage.getClass().getName());
     Map<String, InterpreterClient> restoredClients = recoveryStorage.restore();

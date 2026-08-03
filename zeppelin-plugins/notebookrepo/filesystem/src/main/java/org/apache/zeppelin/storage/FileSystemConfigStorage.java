@@ -51,14 +51,18 @@ public class FileSystemConfigStorage extends ConfigStorage {
     super(zConf);
     String configDir = zConf.getConfigFSDir(false);
     this.fs = new FileSystemStorage(zConf, configDir);
-    LOGGER.info("Creating FileSystem: {} for Zeppelin Config", this.fs.getFs().getClass().getName());
+    LOGGER.info("Creating FileSystem: {} for Zeppelin Config",
+        this.fs.getFs().getClass().getName());
     Path configPath = this.fs.makeQualified(new Path(configDir));
     this.fs.tryMkDir(configPath);
     LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
-    this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath(false)));
-    this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath(false)));
+    this.interpreterSettingPath =
+        fs.makeQualified(new Path(zConf.getInterpreterSettingPath(false)));
+    this.authorizationPath =
+        fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath(false)));
     this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath(false)));
-    HealthChecks.getHealthCheckLivenessRegistry().register(STORAGE_HEALTHCHECK_NAME, new HdfsHealthCheck(this.fs, configPath));
+    HealthChecks.getHealthCheckLivenessRegistry().register(
+        STORAGE_HEALTHCHECK_NAME, new HdfsHealthCheck(this.fs, configPath));
   }
 
   @Override
@@ -108,7 +112,8 @@ public class FileSystemConfigStorage extends ConfigStorage {
   @Override
   public void saveCredentials(String credentials) throws IOException {
     LOGGER.info("Save Credentials to file: {}", credentialPath);
-    Set<PosixFilePermission> permissions = EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
+    Set<PosixFilePermission> permissions =
+        EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
     fs.writeFile(credentials, credentialPath, false, permissions);
   }
 

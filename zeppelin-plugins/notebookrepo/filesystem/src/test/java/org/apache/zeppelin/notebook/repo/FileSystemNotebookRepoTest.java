@@ -53,7 +53,8 @@ class FileSystemNotebookRepoTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
+    notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest")
+        .toFile().getAbsolutePath();
     zConf = ZeppelinConfiguration.load();
     noteParser = new GsonNoteParser(zConf);
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
@@ -131,7 +132,8 @@ class FileSystemNotebookRepoTest {
 
   @Test
   void testComplicatedScenarios() throws IOException {
-    // scenario_1: notebook_dir is not clean. There're some unrecognized dir and file under notebook_dir
+    // scenario_1: notebook_dir is not clean. There're some unrecognized dir and file under
+    // notebook_dir
     fs.mkdirs(new Path(notebookDir, "1/2"));
     OutputStream out = fs.create(new Path(notebookDir, "1/a.json"));
     out.close();

@@ -14,37 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.healthcheck;
+package org.apache.zeppelin.realm.hadoop;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.zeppelin.notebook.FileSystemStorage;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.Groups;
+import org.apache.zeppelin.realm.GroupResolver;
 
-import com.codahale.metrics.health.HealthCheck;
+/** Hadoop-backed group resolver for realms that support Hadoop group mappings. */
+public class HadoopGroupResolver implements GroupResolver {
 
-public class HdfsHealthCheck extends HealthCheck {
-  private final FileSystemStorage fs;
-  private final Path path;
+  private final Groups groups;
 
-  /**
-   *
-   * @param fs used file system
-   * @param path checked path, which should always be present
-   */
-  public HdfsHealthCheck(FileSystemStorage fs, Path path) {
-    this.fs = fs;
-    this.path= path;
+  public HadoopGroupResolver() {
+    Configuration configuration = new Configuration();
+    configuration.setClassLoader(HadoopGroupResolver.class.getClassLoader());
+    groups = new Groups(configuration);
   }
+
   @Override
-  protected Result check() throws Exception {
-    try {
-      if (fs.exists(path)) {
-        return Result.healthy("Filesystem okay");
-      }
-    } catch (IOException e) {
-      return Result.unhealthy("Filesystem unhealthy", e);
-    }
-    return Result.unhealthy("Filesystem unhealthy");
+  public Set<String> resolve(String principal) throws IOException {
+    return new HashSet<>(groups.getGroups(principal));
   }
 }

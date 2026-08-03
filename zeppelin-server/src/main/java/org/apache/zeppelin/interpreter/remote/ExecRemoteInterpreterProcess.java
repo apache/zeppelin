@@ -19,13 +19,9 @@ package org.apache.zeppelin.interpreter.remote;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
-import org.apache.zeppelin.interpreter.YarnAppMonitor;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +32,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ExecRemoteInterpreterProcess.class);
 
-  private static final Pattern YARN_APP_PATTER = Pattern.compile("Submitted application (\\w+)");
-
   private final String interpreterRunner;
+  private final ProcessLaunchObserver processLaunchObserver;
   private InterpreterProcessLauncher interpreterProcessLauncher;
 
   public ExecRemoteInterpreterProcess(
@@ -54,9 +49,50 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       String interpreterGroupId,
       boolean isUserImpersonated,
       String intpRunner) {
-    super(intpEventServerPort, intpEventServerHost, interpreterPortRange, intpDir, localRepoDir, env, connectTimeout,
-        connectionPoolSize, interpreterSettingName, interpreterGroupId, isUserImpersonated);
+    this(
+        intpEventServerPort,
+        intpEventServerHost,
+        interpreterPortRange,
+        intpDir,
+        localRepoDir,
+        env,
+        connectTimeout,
+        connectionPoolSize,
+        interpreterSettingName,
+        interpreterGroupId,
+        isUserImpersonated,
+        intpRunner,
+        ProcessLaunchObserver.NO_OP);
+  }
+
+  public ExecRemoteInterpreterProcess(
+      int intpEventServerPort,
+      String intpEventServerHost,
+      String interpreterPortRange,
+      String intpDir,
+      String localRepoDir,
+      Map<String, String> env,
+      int connectTimeout,
+      int connectionPoolSize,
+      String interpreterSettingName,
+      String interpreterGroupId,
+      boolean isUserImpersonated,
+      String intpRunner,
+      ProcessLaunchObserver processLaunchObserver) {
+    super(
+        intpEventServerPort,
+        intpEventServerHost,
+        interpreterPortRange,
+        intpDir,
+        localRepoDir,
+        env,
+        connectTimeout,
+        connectionPoolSize,
+        interpreterSettingName,
+        interpreterGroupId,
+        isUserImpersonated);
     this.interpreterRunner = intpRunner;
+    this.processLaunchObserver = processLaunchObserver;
   }
 
   @Override
@@ -87,34 +123,23 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     interpreterProcessLauncher.waitForReady(getConnectTimeout());
     if (interpreterProcessLauncher.isLaunchTimeout()) {
       throw new IOException(
-          String.format("Interpreter Process creation is time out in %d seconds", getConnectTimeout() / 1000) + "\n"
+          String.format(
+                  "Interpreter Process creation is time out in %d seconds",
+                  getConnectTimeout() / 1000)
+              + "\n"
               + "You can increase timeout threshold via "
               + "setting zeppelin.interpreter.connect.timeout of this interpreter.\n"
               + interpreterProcessLauncher.getErrorMessage());
     }
 
     if (!interpreterProcessLauncher.isRunning()) {
-      throw new IOException("Fail to launch interpreter process:\n" + interpreterProcessLauncher.getErrorMessage());
+      throw new IOException(
+          "Fail to launch interpreter process:\n"
+              + interpreterProcessLauncher.getErrorMessage());
     }
 
-    if (isHadoopClientAvailable()) {
-      String launchOutput = interpreterProcessLauncher.getProcessLaunchOutput();
-      Matcher m = YARN_APP_PATTER.matcher(launchOutput);
-      if (m.find()) {
-        String appId = m.group(1);
-        LOGGER.info("Detected yarn app: {}, add it to YarnAppMonitor", appId);
-        YarnAppMonitor.get().addYarnApp(ConverterUtils.toApplicationId(appId), this);
-      }
-    }
-  }
-
-  private boolean isHadoopClientAvailable() {
-    try {
-      Class.forName("org.apache.hadoop.yarn.conf.YarnConfiguration");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
+    processLaunchObserver.onProcessLaunch(
+        interpreterProcessLauncher.getProcessLaunchOutput(), this);
   }
 
   @Override
@@ -129,15 +154,20 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     if (isRunning()) {
       super.stop();
       // wait for a clean shutdown
-      this.interpreterProcessLauncher.waitForShutdown(RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500);
+      this.interpreterProcessLauncher.waitForShutdown(
+          RemoteInterpreterServer.DEFAULT_SHUTDOWN_TIMEOUT + 500);
       // kill process
       this.interpreterProcessLauncher.stop();
       this.interpreterProcessLauncher = null;
-      LOGGER.info("Remote exec process of interpreter group: {} is terminated", getInterpreterGroupId());
+      LOGGER.info(
+          "Remote exec process of interpreter group: {} is terminated",
+          getInterpreterGroupId());
     } else {
       // Shutdown connection
       super.close();
-      LOGGER.warn("Try to stop a not running interpreter process of interpreter group: {}", getInterpreterGroupId());
+      LOGGER.warn(
+          "Try to stop a not running interpreter process of interpreter group: {}",
+          getInterpreterGroupId());
     }
   }
 
@@ -165,7 +195,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   private class InterpreterProcessLauncher extends ProcessLauncher {
 
-    public InterpreterProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
+    InterpreterProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
       super(commandLine, envs);
     }
 

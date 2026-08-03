@@ -27,7 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.LocalRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.StopInterpreter;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -71,7 +71,7 @@ class RecoveryTest extends AbstractTestRestApi {
     zepServer.copyBinDir();
     zepServer.getZeppelinConfiguration().setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
-        FileSystemRecoveryStorage.class.getName());
+        LocalRecoveryStorage.class.getName());
     recoveryDir = Files.createTempDirectory("recovery").toFile();
     zepServer.getZeppelinConfiguration().setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),

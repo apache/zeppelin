@@ -39,7 +39,6 @@
     <libpam4j.version>1.11</libpam4j.version>
     <jna.version>4.1.0</jna.version>
     <nimbus.version>9.37.4</nimbus.version>
-    <kerberos.version>2.0.0-M15</kerberos.version>
     <guava.version>32.0.0-jre</guava.version>
     <lucene.version>8.7.0</lucene.version>
     <onnxruntime.version>1.18.0</onnxruntime.version>
@@ -69,6 +68,14 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client-runtime</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>javax.inject</groupId>
           <artifactId>javax.inject</artifactId>
@@ -219,7 +226,7 @@
       <artifactId>commons-vfs2</artifactId>
       <version>${commons.vfs2.version}</version>
       <exclusions>
-        <!-- use hadoop-client-runtime to mount hadoop filesystems -->
+        <!-- Keep the optional Hadoop filesystem provider off the server classpath. -->
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-hdfs-client</artifactId>
@@ -445,12 +452,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.directory.server</groupId>
-      <artifactId>apacheds-kerberos-codec</artifactId>
-      <version>${kerberos.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-test</artifactId>
       <version>${project.version}</version>
@@ -551,11 +552,6 @@
         <version>1.1</version>
       </dependency>
 
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client-runtime</artifactId>
-      <scope>${hadoop.deps.scope}</scope>
-    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -638,6 +634,27 @@
                     ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-*.jar). Mixing the shaded
                     and unshaded org.eclipse.aether.* on the server classpath causes ClassCastException
                     in InterpreterSettingManager. See ZEPPELIN-6416.
+                  </message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-no-hadoop-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.apache.hadoop:*</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>
+                    Hadoop integrations belong in optional plugins and must not appear on the
+                    zeppelin-server classpath.
                   </message>
                 </bannedDependencies>
               </rules>

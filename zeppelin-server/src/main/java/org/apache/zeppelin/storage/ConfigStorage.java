@@ -24,7 +24,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
-import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.plugin.PluginManager;
 
 import java.io.IOException;
 
@@ -45,9 +45,14 @@ public abstract class ConfigStorage {
   protected ZeppelinConfiguration zConf;
 
   public static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
+    return createConfigStorage(zConf, new PluginManager(zConf));
+  }
+
+  public static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf,
+                                                  PluginManager pluginManager) throws IOException {
     String configStorageClass =
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS);
-    return ReflectionUtils.createClazzInstance(configStorageClass,
+    return pluginManager.createPluginInstance(configStorageClass,
         new Class[] {ZeppelinConfiguration.class}, new Object[] {zConf});
   }
 

@@ -16,12 +16,33 @@
  */
 package org.apache.zeppelin.realm.jwt;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+
+import jakarta.servlet.ServletException;
+import jakarta.ws.rs.core.Cookie;
+
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.Groups;
+import org.apache.shiro.ShiroException;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAccount;
@@ -29,35 +50,21 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.realm.ExternalLoginRealm;
+import org.apache.zeppelin.realm.GroupResolver;
+import org.apache.zeppelin.realm.SecurityProviderLoader;
+import org.apache.zeppelin.realm.ZeppelinRoleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import jakarta.servlet.ServletException;
-
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
 
 /**
  * Created for org.apache.zeppelin.server.
  */
-public class KnoxJwtRealm extends AuthorizingRealm {
+public class KnoxJwtRealm extends AuthorizingRealm
+    implements ExternalLoginRealm, ZeppelinRoleProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(KnoxJwtRealm.class);
+  private static final String HADOOP_GROUP_RESOLVER =
+      "org.apache.zeppelin.realm.hadoop.HadoopGroupResolver";
 
   private String providerUrl;
   private String redirectParam;
@@ -66,21 +73,19 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   private String login;
   private String logout;
   private Boolean logoutAPI;
+  private String groupResolverClass = HADOOP_GROUP_RESOLVER;
 
-  /**
-   * Hadoop Groups implementation.
-   */
-  private Groups hadoopGroups;
+  private GroupResolver groupResolver = principal -> Collections.emptySet();
 
   @Override
   protected void onInit() {
     super.onInit();
 
     try {
-      Configuration hadoopConfig = new Configuration();
-      hadoopGroups = new Groups(hadoopConfig);
+      groupResolver = SecurityProviderLoader.load(groupResolverClass, GroupResolver.class);
     } catch (final Exception e) {
-      LOGGER.error("Exception in onInit", e);
+      throw new ShiroException(
+          "Unable to load the Knox group resolver: " + groupResolverClass, e);
     }
   }
 
@@ -215,22 +220,17 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   }
 
   /**
-   * Query the Hadoop implementation of {@link Groups} to retrieve groups for provided user.
+   * Query the configured resolver to retrieve groups for the provided user.
    */
   public Set<String> mapGroupPrincipals(final String mappedPrincipalName) {
-    /* return the groups as seen by Hadoop */
-    Set<String> groups;
     try {
-      final List<String> groupList = hadoopGroups
-          .getGroups(mappedPrincipalName);
+      Set<String> groups = groupResolver.resolve(mappedPrincipalName);
 
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug(String.format("group found %s, %s",
-            mappedPrincipalName, groupList.toString()));
+            mappedPrincipalName, groups.toString()));
       }
-
-      groups = new HashSet<>(groupList);
-
+      return groups;
     } catch (final IOException e) {
       if (e.toString().contains("No groups found for user")) {
         /* no groups found move on */
@@ -240,9 +240,49 @@ public class KnoxJwtRealm extends AuthorizingRealm {
         /* Log the error and return empty group */
         LOGGER.info(String.format("errorGettingUserGroups for %s", mappedPrincipalName));
       }
-      groups = new HashSet<>();
+      return Collections.emptySet();
     }
-    return groups;
+  }
+
+  void setGroupResolver(GroupResolver groupResolver) {
+    this.groupResolver = groupResolver;
+  }
+
+  @Override
+  public AuthenticationToken getLoginAuthenticationToken(
+      Map<String, Cookie> cookies) {
+    Cookie cookie = cookies.get(cookieName);
+    if (cookie == null || cookie.getValue() == null) {
+      return null;
+    }
+    return new JWTAuthenticationToken(null, cookie.getValue());
+  }
+
+  @Override
+  public String getLoginPrincipal(AuthenticationToken token) throws AuthenticationException {
+    try {
+      return getName((JWTAuthenticationToken) token);
+    } catch (ParseException e) {
+      throw new AuthenticationException("Unable to parse the Knox JWT", e);
+    }
+  }
+
+  @Override
+  public boolean shouldRedirectOnMissingToken() {
+    return true;
+  }
+
+  @Override
+  public int getLoginPriority() {
+    return 100;
+  }
+
+  public String getGroupResolverClass() {
+    return groupResolverClass;
+  }
+
+  public void setGroupResolverClass(String groupResolverClass) {
+    this.groupResolverClass = groupResolverClass;
   }
 
   public String getProviderUrl() {
