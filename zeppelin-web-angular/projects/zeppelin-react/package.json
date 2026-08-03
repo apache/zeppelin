@@ -54,6 +54,6 @@
   "overrides": {
     "linkify-it": "^5.0.2",
     "minimatch": "^10.2.4",
-    "brace-expansion": "^5.0.8"
+    "brace-expansion": "^5.0.9"
   }
 }
