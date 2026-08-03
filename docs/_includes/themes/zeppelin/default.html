@@ -9,11 +9,6 @@
     <!-- Enable responsive viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
     <link href="{{ ASSET_PATH }}/font-awesome-4.2.0/font-awesome.min.css" rel="stylesheet">
 
     <!-- Le styles -->
@@ -37,9 +32,9 @@
     <script src="{{ ASSET_PATH }}/js/lunr-0.7.0.min.js"></script>
     <script src="{{ ASSET_PATH }}/js/search.js"></script>    
 
-    <!-- atom & rss feed -->
-    <link href="{{ BASE_PATH }}{{ site.JB.atom_path }}" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
-    <link href="{{ BASE_PATH }}{{ site.JB.rss_path }}" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+    {% if site.safe %}
+      {% include JB/matomo %}
+    {% endif %}
   </head>
 
   <body>
@@ -54,6 +49,5 @@
       </footer>
     </div>
 
-    {% include JB/analytics %}
   </body>
 </html>
