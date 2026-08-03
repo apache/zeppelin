@@ -148,19 +148,317 @@ class NoteManagerTest {
   }
 
   @Test
-  void testMoveFolderRejectsExistingDestination() throws IOException {
-    Note source = createNote("/source/note");
-    Note destination = createNote("/destination/note");
+  void testMoveFolderMergesExistingDestination() throws IOException {
+    Note source = createNote("/source/source-note");
+    Note destination = createNote("/destination/destination-note");
     noteManager.saveNote(source);
     noteManager.saveNote(destination);
+    long versionBeforeMove = noteManager.getNotesInfoSnapshot().getVersion();
+
+    noteManager.moveFolder("/source", "/destination", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals("/destination/source-note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals(
+        "/destination/destination-note", noteManager.getNotesInfo().get(destination.getId()));
+    assertEquals("/destination/source-note", source.getPath());
+    assertEquals("/destination/destination-note", destination.getPath());
+    assertFalse(noteManager.containsFolder("/source"));
+    assertTrue(noteManager.containsNote("/destination/source-note"));
+    assertTrue(noteManager.containsNote("/destination/destination-note"));
+    assertEquals(versionBeforeMove + 1, noteManager.getNotesInfoSnapshot().getVersion());
+  }
+
+  @Test
+  void testMoveFolderRejectsExistingNoteInDestination() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(0, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note source = createNote("/source/note");
+    Note destination = createNote("/destination/note");
+    manager.saveNote(source);
+    manager.saveNote(destination);
+    long versionBeforeMove = manager.getNotesInfoSnapshot().getVersion();
 
     assertThrows(
         NotePathAlreadyExistsException.class,
-        () -> noteManager.moveFolder(
+        () -> manager.moveFolder(
             "/source", "/destination", AuthenticationInfo.ANONYMOUS));
 
-    assertEquals("/source/note", noteManager.getNotesInfo().get(source.getId()));
-    assertEquals("/destination/note", noteManager.getNotesInfo().get(destination.getId()));
+    assertEquals(0, repo.moveAttempts);
+    assertEquals(versionBeforeMove, manager.getNotesInfoSnapshot().getVersion());
+    assertEquals("/source/note", manager.getNotesInfo().get(source.getId()));
+    assertEquals("/destination/note", manager.getNotesInfo().get(destination.getId()));
+  }
+
+  @Test
+  void testMoveFolderRecursivelyMergesExistingDestinationFolders() throws IOException {
+    Note source = createNote("/source/shared/source-note");
+    Note destination = createNote("/destination/shared/destination-note");
+    noteManager.saveNote(source);
+    noteManager.saveNote(destination);
+
+    noteManager.moveFolder("/source", "/destination", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals(
+        "/destination/shared/source-note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals(
+        "/destination/shared/destination-note",
+        noteManager.getNotesInfo().get(destination.getId()));
+    assertEquals("/destination/shared/source-note", source.getPath());
+    assertEquals("/destination/shared/destination-note", destination.getPath());
+    assertFalse(noteManager.containsFolder("/source"));
+  }
+
+  @Test
+  void testMoveFolderRejectsNoteFolderTypeCollisionsBeforeMovingNotes() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(0, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note sourceNote = createNote("/source/shared");
+    Note destinationNote = createNote("/destination/shared/destination-note");
+    manager.saveNote(sourceNote);
+    manager.saveNote(destinationNote);
+
+    assertThrows(
+        NotePathAlreadyExistsException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals(0, repo.moveAttempts);
+    assertEquals("/source/shared", manager.getNotesInfo().get(sourceNote.getId()));
+    assertEquals(
+        "/destination/shared/destination-note",
+        manager.getNotesInfo().get(destinationNote.getId()));
+  }
+
+  @Test
+  void testMoveFolderRejectsFolderNoteTypeCollisionsBeforeMovingNotes() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(0, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note sourceNote = createNote("/source/shared/source-note");
+    Note destinationNote = createNote("/destination/shared");
+    manager.saveNote(sourceNote);
+    manager.saveNote(destinationNote);
+
+    assertThrows(
+        NotePathAlreadyExistsException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals(0, repo.moveAttempts);
+    assertEquals("/source/shared/source-note", manager.getNotesInfo().get(sourceNote.getId()));
+    assertEquals("/destination/shared", manager.getNotesInfo().get(destinationNote.getId()));
+  }
+
+  @Test
+  void failedFolderMergeRollsBackDurableMovesAndKeepsMetadataUnchanged() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(2, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note firstSource = createNote("/source/a-note");
+    Note secondSource = createNote("/source/b-note");
+    Note destination = createNote("/destination/destination-note");
+    manager.saveNote(firstSource);
+    manager.saveNote(secondSource);
+    manager.saveNote(destination);
+    long versionBeforeMove = manager.getNotesInfoSnapshot().getVersion();
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals(4, repo.moveAttempts);
+    assertEquals(
+        Set.of("/source/a-note", "/source/b-note", "/destination/destination-note"),
+        repo.persistedPaths);
+    assertEquals(versionBeforeMove, manager.getNotesInfoSnapshot().getVersion());
+    assertEquals("/source/a-note", manager.getNotesInfo().get(firstSource.getId()));
+    assertEquals("/source/b-note", manager.getNotesInfo().get(secondSource.getId()));
+    assertEquals("/source/a-note", firstSource.getPath());
+    assertEquals("/source/b-note", secondSource.getPath());
+    assertTrue(manager.containsFolder("/source"));
+    assertFalse(manager.containsNote("/destination/a-note"));
+  }
+
+  @Test
+  void failedFolderMergeReconcilesMetadataWhenCompensationFails() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(2, 4);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note firstSource = createNote("/source/a-note");
+    Note secondSource = createNote("/source/b-note");
+    Note destination = createNote("/destination/destination-note");
+    manager.saveNote(firstSource);
+    manager.saveNote(secondSource);
+    manager.saveNote(destination);
+    long versionBeforeMove = manager.getNotesInfoSnapshot().getVersion();
+
+    IllegalStateException failure = assertThrows(
+        IllegalStateException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals(1, failure.getSuppressed().length);
+    assertEquals(4, repo.moveAttempts);
+    assertEquals(
+        Set.of("/destination/a-note", "/source/b-note", "/destination/destination-note"),
+        repo.persistedPaths);
+    assertTrue(manager.getNotesInfoSnapshot().getVersion() > versionBeforeMove);
+    assertEquals("/destination/a-note", manager.getNotesInfo().get(firstSource.getId()));
+    assertEquals("/source/b-note", manager.getNotesInfo().get(secondSource.getId()));
+    assertEquals(
+        firstSource.getId(),
+        manager.processNote(firstSource.getId(), note -> note.getId()));
+  }
+
+  @Test
+  void failedFolderMergeFailsClosedUntilMetadataCanBeReloaded() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(2, 4, true);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note firstSource = createNote("/source/a-note");
+    Note secondSource = createNote("/source/b-note");
+    Note destination = createNote("/destination/destination-note");
+    manager.saveNote(firstSource);
+    manager.saveNote(secondSource);
+    manager.saveNote(destination);
+
+    IllegalStateException failure = assertThrows(
+        IllegalStateException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals(2, failure.getSuppressed().length);
+    assertEquals(4, repo.moveAttempts);
+    IOException unavailable = assertThrows(IOException.class, manager::getNotesInfoSnapshot);
+    assertEquals(
+        "Notebook metadata is unavailable after repository recovery failed",
+        unavailable.getMessage());
+    assertThrows(
+        IOException.class,
+        () -> manager.processNote(firstSource.getId(), note -> note));
+    assertThrows(
+        IOException.class,
+        () -> manager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+    assertEquals(4, repo.moveAttempts);
+    assertThrows(IllegalStateException.class, manager::getNotesInfo);
+
+    repo.allowList();
+    manager.reloadNotes();
+
+    assertEquals(
+        Set.of("/destination/a-note", "/source/b-note", "/destination/destination-note"),
+        repo.persistedPaths);
+    assertEquals("/destination/a-note", manager.getNotesInfo().get(firstSource.getId()));
+    assertEquals("/source/b-note", manager.getNotesInfo().get(secondSource.getId()));
+    assertEquals(
+        firstSource.getId(),
+        manager.processNote(firstSource.getId(), note -> note.getId()));
+  }
+
+  @Test
+  void testMoveFolderMergeUsesCanonicalFolderPaths() throws IOException {
+    Note source = createNote("/source/note");
+    Note destination = createNote("/destination/destination-note");
+    noteManager.saveNote(source);
+    noteManager.saveNote(destination);
+
+    noteManager.moveFolder("/source/", "/destination", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals("/destination/note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals("/destination/note", source.getPath());
+    assertFalse(noteManager.containsFolder("/source"));
+    assertTrue(noteManager.containsNote("/destination/note"));
+  }
+
+  @Test
+  void testMoveFolderRejectsOwnDescendantWithTrailingSlashAlias() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(0, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note source = createNote("/source/source-note");
+    Note child = createNote("/source/child/child-note");
+    manager.saveNote(source);
+    manager.saveNote(child);
+
+    IOException existingChildFailure = assertThrows(
+        IOException.class,
+        () -> manager.moveFolder(
+            "/source/", "/source/child", AuthenticationInfo.ANONYMOUS));
+    assertEquals(
+        "Can not move folder '/source' into its own descendant",
+        existingChildFailure.getMessage());
+
+    assertThrows(
+        IOException.class,
+        () -> manager.moveFolder(
+            "/source/", "/source/new-child", AuthenticationInfo.ANONYMOUS));
+    assertEquals(0, repo.moveAttempts);
+    assertEquals("/source/source-note", manager.getNotesInfo().get(source.getId()));
+    assertEquals("/source/child/child-note", manager.getNotesInfo().get(child.getId()));
+    assertTrue(manager.containsFolder("/source/child"));
+  }
+
+  @Test
+  void testMoveFolderRejectsMovingTheRootBeforeRepositoryMutation() throws IOException {
+    TrackingFolderMergeRepo repo = new TrackingFolderMergeRepo(0, 0);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note rootNote = createNote("/root-note");
+    manager.saveNote(rootNote);
+    long versionBeforeMove = manager.getNotesInfoSnapshot().getVersion();
+
+    IOException failure = assertThrows(
+        IOException.class,
+        () -> manager.moveFolder("/", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals("Can not move the root folder", failure.getMessage());
+    assertEquals(0, repo.moveAttempts);
+    assertEquals(versionBeforeMove, manager.getNotesInfoSnapshot().getVersion());
+    assertEquals("/root-note", manager.getNotesInfo().get(rootNote.getId()));
+  }
+
+  @Test
+  void testMoveFolderIntoAncestorPreservesNoteIdentityWhenAPathIsReused() throws IOException {
+    Note first = createNote("/a/b/x");
+    Note second = createNote("/a/b/b/x");
+    noteManager.saveNote(first);
+    noteManager.saveNote(second);
+
+    noteManager.moveFolder("/a/b", "/a", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals("/a/x", noteManager.getNotesInfo().get(first.getId()));
+    assertEquals("/a/b/x", noteManager.getNotesInfo().get(second.getId()));
+    assertEquals(first.getId(), noteManager.processNote(first.getId(), note -> note.getId()));
+    assertEquals(second.getId(), noteManager.processNote(second.getId(), note -> note.getId()));
+  }
+
+  @Test
+  void testMoveFolderMergesIntoTheRootWithoutCreatingDoubleSlashPaths() throws IOException {
+    Note source = createNote("/source/source-note");
+    Note destination = createNote("/destination-note");
+    noteManager.saveNote(source);
+    noteManager.saveNote(destination);
+
+    noteManager.moveFolder("/source", "/", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals("/source-note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals("/destination-note", noteManager.getNotesInfo().get(destination.getId()));
+    assertEquals("/source-note", source.getPath());
+    assertFalse(noteManager.containsFolder("/source"));
+    assertTrue(noteManager.containsNote("/source-note"));
+  }
+
+  @Test
+  void processNoteFailsClosedWhenPathMetadataResolvesToAnotherNote() throws IOException {
+    Note first = createNote("/shared/path");
+    Note second = createNote("/shared/path");
+    noteManager.saveNote(first);
+    noteManager.saveNote(second);
+
+    IOException failure = assertThrows(
+        IOException.class,
+        () -> noteManager.processNote(first.getId(), note -> note));
+
+    assertEquals(
+        "Note metadata changed while resolving note: " + first.getId(),
+        failure.getMessage());
+    assertEquals(second, noteManager.processNote(second.getId(), note -> note));
   }
 
   @Test
@@ -391,6 +689,76 @@ class NoteManagerTest {
         String newNotePath,
         AuthenticationInfo subject) {
       throw new IllegalStateException("Failed to move note");
+    }
+  }
+
+  private static final class TrackingFolderMergeRepo extends InMemoryNotebookRepo {
+    private final int failAfterMutationAttempt;
+    private final int failBeforeMutationAttempt;
+    private boolean failListAfterMove;
+    private final Map<String, String> persistedPathsById = new ConcurrentHashMap<>();
+    private final Set<String> persistedPaths = ConcurrentHashMap.newKeySet();
+    private int moveAttempts;
+
+    private TrackingFolderMergeRepo(
+        int failAfterMutationAttempt, int failBeforeMutationAttempt) {
+      this(failAfterMutationAttempt, failBeforeMutationAttempt, false);
+    }
+
+    private TrackingFolderMergeRepo(
+        int failAfterMutationAttempt,
+        int failBeforeMutationAttempt,
+        boolean failListAfterMove) {
+      this.failAfterMutationAttempt = failAfterMutationAttempt;
+      this.failBeforeMutationAttempt = failBeforeMutationAttempt;
+      this.failListAfterMove = failListAfterMove;
+    }
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+      super.save(note, subject);
+      persistedPathsById.put(note.getId(), note.getPath());
+      persistedPaths.add(note.getPath());
+    }
+
+    @Override
+    public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
+      if (failListAfterMove && moveAttempts > 0) {
+        throw new IOException("Failed to reload notebook metadata");
+      }
+      Map<String, NoteInfo> noteInfos = super.list(subject);
+      for (Map.Entry<String, String> entry : persistedPathsById.entrySet()) {
+        noteInfos.put(entry.getKey(), new NoteInfo(entry.getKey(), entry.getValue()));
+      }
+      return noteInfos;
+    }
+
+    private void allowList() {
+      failListAfterMove = false;
+    }
+
+    @Override
+    public void move(
+        String noteId,
+        String notePath,
+        String newNotePath,
+        AuthenticationInfo subject) {
+      moveAttempts++;
+      if (failBeforeMutationAttempt == moveAttempts) {
+        throw new IllegalStateException("Failed to move note " + noteId);
+      }
+      if (!persistedPaths.remove(notePath)) {
+        throw new IllegalStateException("Missing source note at " + notePath);
+      }
+      if (!persistedPaths.add(newNotePath)) {
+        persistedPaths.add(notePath);
+        throw new IllegalStateException("Destination note exists at " + newNotePath);
+      }
+      persistedPathsById.put(noteId, newNotePath);
+      super.move(noteId, notePath, newNotePath, subject);
+      if (failAfterMutationAttempt == moveAttempts) {
+        throw new IllegalStateException("Failed after moving note " + noteId);
+      }
     }
   }
 

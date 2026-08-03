@@ -745,7 +745,8 @@ public class NotebookService {
                 normalizedFolderPath,
                 destFolderPath,
                 context.getAutheInfo(),
-                authorization.getMetadata().getVersion());
+                authorization.getMetadata().getVersion(),
+                false);
             return null;
           });
       callback.onSuccess(null, context);

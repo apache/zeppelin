@@ -559,8 +559,22 @@ public class Notebook {
       String newFolderPath,
       AuthenticationInfo subject,
       long expectedMetadataVersion) throws IOException {
+    moveFolder(folderPath, newFolderPath, subject, expectedMetadataVersion, true);
+  }
+
+  public void moveFolder(
+      String folderPath,
+      String newFolderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion,
+      boolean mergeExistingDestination) throws IOException {
     LOGGER.info("Move folder from {} to {}", folderPath, newFolderPath);
-    noteManager.moveFolder(folderPath, newFolderPath, subject, expectedMetadataVersion);
+    noteManager.moveFolder(
+        folderPath,
+        newFolderPath,
+        subject,
+        expectedMetadataVersion,
+        mergeExistingDestination);
   }
 
   public void removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {

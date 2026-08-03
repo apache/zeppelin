@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class VFSNotebookRepoTest {
 
@@ -158,6 +159,53 @@ class VFSNotebookRepoTest {
     assertEquals(
         "/Case-folder/note",
         notebookRepo.list(AuthenticationInfo.ANONYMOUS).get(note.getId()).getPath());
+  }
+
+  @Test
+  void testNoteMoveIntoExistingFolderPreservesBothNotes() throws IOException {
+    Note source = new Note();
+    source.setPath("/source/source-note");
+    source.setNoteParser(noteParser);
+    notebookRepo.save(source, AuthenticationInfo.ANONYMOUS);
+
+    Note destination = new Note();
+    destination.setPath("/destination/destination-note");
+    destination.setNoteParser(noteParser);
+    notebookRepo.save(destination, AuthenticationInfo.ANONYMOUS);
+
+    notebookRepo.move(
+        source.getId(),
+        source.getPath(),
+        "/destination/source-note",
+        AuthenticationInfo.ANONYMOUS);
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(2, noteInfos.size());
+    assertEquals("/destination/source-note", noteInfos.get(source.getId()).getPath());
+    assertEquals("/destination/destination-note", noteInfos.get(destination.getId()).getPath());
+  }
+
+  @Test
+  void testFolderMoveRejectsExistingDestinationWithoutDeletingNotes() throws IOException {
+    Note source = new Note();
+    source.setPath("/source/source-note");
+    source.setNoteParser(noteParser);
+    notebookRepo.save(source, AuthenticationInfo.ANONYMOUS);
+
+    Note destination = new Note();
+    destination.setPath("/destination/destination-note");
+    destination.setNoteParser(noteParser);
+    notebookRepo.save(destination, AuthenticationInfo.ANONYMOUS);
+
+    assertThrows(
+        IOException.class,
+        () -> notebookRepo.move(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+    assertEquals(2, noteInfos.size());
+    assertEquals("/source/source-note", noteInfos.get(source.getId()).getPath());
+    assertEquals("/destination/destination-note", noteInfos.get(destination.getId()).getPath());
   }
 
   @Test

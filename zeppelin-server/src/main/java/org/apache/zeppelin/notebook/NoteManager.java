@@ -21,10 +21,12 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
@@ -71,6 +73,7 @@ public class NoteManager {
    */
   private volatile NoteTree noteTree;
   private long metadataVersion;
+  private volatile Throwable metadataUnavailableCause;
 
   @Inject
   public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration zConf) throws IOException {
@@ -104,11 +107,13 @@ public class NoteManager {
   }
 
   public Map<String, String> getNotesInfo() {
+    assertMetadataAvailableUnchecked();
     return this.noteTree.notesInfo;
   }
 
   /** Capture one immutable generation of the note-id/path index for authorization preflight. */
-  public synchronized NoteMetadataSnapshot getNotesInfoSnapshot() {
+  public synchronized NoteMetadataSnapshot getNotesInfoSnapshot() throws IOException {
+    assertMetadataAvailable();
     return new NoteMetadataSnapshot(
         metadataVersion,
         Collections.unmodifiableMap(new LinkedHashMap<>(noteTree.notesInfo)));
@@ -123,7 +128,9 @@ public class NoteManager {
    * @throws IOException
    */
   public synchronized void reloadNotes() throws IOException {
-    this.noteTree = buildNoteTree();
+    NoteTree reloadedTree = buildNoteTree();
+    this.noteTree = reloadedTree;
+    metadataUnavailableCause = null;
     metadataVersion++;
   }
 
@@ -162,6 +169,7 @@ public class NoteManager {
    * @return
    */
   public boolean containsNote(String notePath) {
+    assertMetadataAvailableUnchecked();
     try {
       getNoteNode(notePath);
       return true;
@@ -177,6 +185,7 @@ public class NoteManager {
    * @return
    */
   public boolean containsFolder(String folderPath) {
+    assertMetadataAvailableUnchecked();
     try {
       getFolder(folderPath);
       return true;
@@ -194,6 +203,7 @@ public class NoteManager {
    * @throws IOException
    */
   public synchronized void saveNote(Note note, AuthenticationInfo subject) throws IOException {
+    assertMetadataAvailable();
     if (note.isRemoved()) {
       LOGGER.warn("Try to save note: {} when it is removed", note.getId());
     } else {
@@ -210,6 +220,7 @@ public class NoteManager {
   }
 
   public synchronized void addNote(Note note, AuthenticationInfo subject) throws IOException {
+    assertMetadataAvailable();
     addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), true);
     noteCache.putNote(note);
     metadataVersion++;
@@ -234,6 +245,7 @@ public class NoteManager {
       String notePath,
       String revisionId,
       AuthenticationInfo subject) throws IOException {
+    assertMetadataAvailable();
     String currentPath = noteTree.notesInfo.get(noteId);
     if (currentPath == null) {
       throw new IOException("No metadata found for this note: " + noteId);
@@ -258,6 +270,7 @@ public class NoteManager {
    * @throws IOException
    */
   public synchronized void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
+    assertMetadataAvailable();
     NoteTree tree = this.noteTree;
     String notePath = tree.notesInfo.remove(noteId);
     Folder folder = getOrCreateFolder(tree, getFolderName(notePath));
@@ -276,6 +289,7 @@ public class NoteManager {
 
     String notePath;
     synchronized (this) {
+      assertMetadataAvailable();
       NoteTree tree = this.noteTree;
       if (!isNotePathAvailable(tree, newNotePath)) {
         throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
@@ -334,28 +348,57 @@ public class NoteManager {
       String newFolderPath,
       AuthenticationInfo subject,
       long expectedMetadataVersion) throws IOException {
+    moveFolder(folderPath, newFolderPath, subject, expectedMetadataVersion, true);
+  }
+
+  public synchronized void moveFolder(
+      String folderPath,
+      String newFolderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion,
+      boolean mergeExistingDestination) throws IOException {
 
     assertMetadataVersion(expectedMetadataVersion);
 
     NoteTree tree = this.noteTree;
     Folder folder = getFolder(tree, folderPath);
-    if (StringUtils.equals(folderPath, newFolderPath)) {
+    String sourceFolderPath = folder.getPath();
+    String destinationFolderPath = normalizeFolderPath(newFolderPath);
+    if (StringUtils.equals(sourceFolderPath, destinationFolderPath)) {
       return;
     }
-    if (newFolderPath.startsWith(folderPath + "/")) {
-      throw new IOException(
-          "Can not move folder '" + folderPath + "' into its own descendant");
+    if (folder == tree.root) {
+      throw new IOException("Can not move the root folder");
     }
-    if (containsNote(newFolderPath) || containsFolder(newFolderPath)) {
-      throw new NotePathAlreadyExistsException("Path '" + newFolderPath + "' existed");
+    if (destinationFolderPath.startsWith(sourceFolderPath + "/")) {
+      throw new IOException(
+          "Can not move folder '" + sourceFolderPath + "' into its own descendant");
+    }
+    if (containsNote(destinationFolderPath)) {
+      throw new NotePathAlreadyExistsException(
+          "Path '" + destinationFolderPath + "' existed");
+    }
+
+    if (containsFolder(destinationFolderPath)) {
+      if (!mergeExistingDestination) {
+        throw new NotePathAlreadyExistsException(
+            "Path '" + destinationFolderPath + "' existed");
+      }
+      Folder destinationFolder = getFolder(tree, destinationFolderPath);
+      if (isSameOrDescendantFolder(destinationFolder, folder)) {
+        throw new IOException(
+            "Can not move folder '" + sourceFolderPath + "' into its own descendant");
+      }
+      mergeFolder(tree, folder, destinationFolder, subject);
+      return;
     }
 
     // update notebookrepo
-    this.notebookRepo.move(folderPath, newFolderPath, subject);
+    this.notebookRepo.move(sourceFolderPath, destinationFolderPath, subject);
 
     // update filesystem tree
     folder.getParent().removeFolder(folder.getName(), subject);
-    Folder newFolder = getOrCreateFolder(tree, newFolderPath);
+    Folder newFolder = getOrCreateFolder(tree, destinationFolderPath);
     newFolder.getParent().addFolder(newFolder.getName(), folder);
 
     // update notesInfo
@@ -366,6 +409,194 @@ public class NoteManager {
     metadataVersion++;
   }
 
+  private static String normalizeFolderPath(String folderPath) {
+    StringBuilder normalized = new StringBuilder();
+    for (String token : folderPath.split("/")) {
+      if (!StringUtils.isBlank(token)) {
+        normalized.append('/').append(token);
+      }
+    }
+    return normalized.length() == 0 ? "/" : normalized.toString();
+  }
+
+  private static boolean isSameOrDescendantFolder(Folder folder, Folder possibleAncestor) {
+    for (Folder current = folder; current != null; current = current.parent) {
+      if (current == possibleAncestor) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void mergeFolder(
+      NoteTree tree,
+      Folder sourceFolder,
+      Folder destinationFolder,
+      AuthenticationInfo subject) throws IOException {
+    String sourceFolderPath = sourceFolder.getPath();
+    String destinationFolderPath = destinationFolder.getPath();
+    List<FolderNoteMove> noteMoves = new ArrayList<>();
+    for (NoteInfo noteInfo : sourceFolder.getNoteInfoRecursively()) {
+      noteMoves.add(
+          new FolderNoteMove(
+              noteInfo.getId(),
+              noteInfo.getPath(),
+              rebasePath(noteInfo.getPath(), sourceFolderPath, destinationFolderPath)));
+    }
+    noteMoves.sort((first, second) -> first.sourcePath.compareTo(second.sourcePath));
+
+    assertFolderMergeDoesNotOverwrite(tree, sourceFolder, noteMoves, destinationFolderPath);
+    moveFolderNotesWithRollback(noteMoves, subject);
+
+    // Publish the in-memory change only after every durable note move succeeds.
+    sourceFolder.getParent().getFolders().remove(sourceFolder.getName());
+    mergeFolderTrees(sourceFolder, destinationFolder);
+    for (FolderNoteMove noteMove : noteMoves) {
+      tree.notesInfo.put(noteMove.noteId, noteMove.destinationPath);
+      updateCachedNotePath(noteMove.noteId, noteMove.destinationPath);
+    }
+    metadataVersion++;
+  }
+
+  private void assertFolderMergeDoesNotOverwrite(
+      NoteTree tree,
+      Folder sourceFolder,
+      List<FolderNoteMove> noteMoves,
+      String destinationFolderPath) throws IOException {
+    Set<String> sourceNoteIds = new HashSet<>();
+    for (FolderNoteMove noteMove : noteMoves) {
+      sourceNoteIds.add(noteMove.noteId);
+    }
+    Set<String> remainingNotePaths = new HashSet<>();
+    for (Map.Entry<String, String> entry : tree.notesInfo.entrySet()) {
+      if (!sourceNoteIds.contains(entry.getKey())) {
+        remainingNotePaths.add(entry.getValue());
+      }
+    }
+
+    Set<String> remainingFolderPaths = new HashSet<>();
+    collectFolderPathsExcept(tree.root, sourceFolder, remainingFolderPaths);
+
+    Set<String> destinationFolderPaths = new HashSet<>();
+    collectRebasedFolderPaths(
+        sourceFolder, sourceFolder.getPath(), destinationFolderPath, destinationFolderPaths);
+    for (String folderPath : destinationFolderPaths) {
+      if (remainingNotePaths.contains(folderPath)) {
+        throw new NotePathAlreadyExistsException("Path '" + folderPath + "' existed");
+      }
+    }
+
+    Set<String> destinationNotePaths = new HashSet<>();
+    for (FolderNoteMove noteMove : noteMoves) {
+      if (!destinationNotePaths.add(noteMove.destinationPath)
+          || remainingNotePaths.contains(noteMove.destinationPath)
+          || remainingFolderPaths.contains(noteMove.destinationPath)
+          || destinationFolderPaths.contains(noteMove.destinationPath)) {
+        throw new NotePathAlreadyExistsException(
+            "Path '" + noteMove.destinationPath + "' existed");
+      }
+    }
+  }
+
+  private static void collectFolderPathsExcept(
+      Folder folder, Folder excludedFolder, Set<String> folderPaths) {
+    if (folder == excludedFolder) {
+      return;
+    }
+    folderPaths.add(folder.getPath());
+    for (Folder child : folder.getFolders().values()) {
+      collectFolderPathsExcept(child, excludedFolder, folderPaths);
+    }
+  }
+
+  private static void collectRebasedFolderPaths(
+      Folder folder,
+      String sourceFolderPath,
+      String destinationFolderPath,
+      Set<String> folderPaths) {
+    folderPaths.add(rebasePath(folder.getPath(), sourceFolderPath, destinationFolderPath));
+    for (Folder child : folder.getFolders().values()) {
+      collectRebasedFolderPaths(
+          child, sourceFolderPath, destinationFolderPath, folderPaths);
+    }
+  }
+
+  private static String rebasePath(
+      String path, String sourceFolderPath, String destinationFolderPath) {
+    String relativePath = path.substring(sourceFolderPath.length());
+    if ("/".equals(destinationFolderPath)) {
+      return relativePath.isEmpty() ? "/" : relativePath;
+    }
+    return destinationFolderPath + relativePath;
+  }
+
+  private void moveFolderNotesWithRollback(
+      List<FolderNoteMove> noteMoves, AuthenticationInfo subject) throws IOException {
+    List<FolderNoteMove> attemptedMoves = new ArrayList<>();
+    try {
+      for (FolderNoteMove noteMove : noteMoves) {
+        // A repository move may copy or update part of its state before reporting failure.
+        // Record the attempt first so compensation also covers that ambiguous current move.
+        attemptedMoves.add(noteMove);
+        notebookRepo.move(
+            noteMove.noteId, noteMove.sourcePath, noteMove.destinationPath, subject);
+      }
+    } catch (IOException | RuntimeException failure) {
+      boolean rollbackFailed = false;
+      for (int i = attemptedMoves.size() - 1; i >= 0; i--) {
+        FolderNoteMove attemptedMove = attemptedMoves.get(i);
+        try {
+          notebookRepo.move(
+              attemptedMove.noteId,
+              attemptedMove.destinationPath,
+              attemptedMove.sourcePath,
+              subject);
+        } catch (IOException | RuntimeException rollbackFailure) {
+          failure.addSuppressed(rollbackFailure);
+          rollbackFailed = true;
+        }
+      }
+
+      if (rollbackFailed) {
+        // A failed compensation means the durable paths are no longer known. Poison metadata
+        // before attempting a reload so lock-free readers cannot use the stale tree meanwhile.
+        metadataUnavailableCause = failure;
+        for (FolderNoteMove noteMove : noteMoves) {
+          noteCache.removeNote(noteMove.noteId);
+        }
+        try {
+          reloadNotes();
+        } catch (IOException | RuntimeException reloadFailure) {
+          failure.addSuppressed(reloadFailure);
+        }
+      }
+      throw failure;
+    }
+  }
+
+  private static void mergeFolderTrees(Folder sourceFolder, Folder destinationFolder) {
+    for (Map.Entry<String, NoteNode> entry : sourceFolder.getNotes().entrySet()) {
+      NoteNode noteNode = entry.getValue();
+      destinationFolder.getNotes().put(entry.getKey(), noteNode);
+      noteNode.setParent(destinationFolder);
+      noteNode.updateNotePath();
+    }
+
+    for (Map.Entry<String, Folder> entry : sourceFolder.getFolders().entrySet()) {
+      Folder sourceChild = entry.getValue();
+      Folder destinationChild = destinationFolder.getFolder(entry.getKey());
+      if (destinationChild == null) {
+        destinationFolder.getFolders().put(entry.getKey(), sourceChild);
+        sourceChild.setParent(destinationFolder);
+        for (NoteNode noteNode : sourceChild.getNoteNodeRecursively()) {
+          noteNode.updateNotePath();
+        }
+      } else {
+        mergeFolderTrees(sourceChild, destinationChild);
+      }
+    }
+  }
+
   /**
    * Returns the NoteInfo of all notes under the given folder, without removing them.
    *
@@ -374,6 +605,7 @@ public class NoteManager {
    * @throws IOException
    */
   public List<NoteInfo> getNoteInfoRecursively(String folderPath) throws IOException {
+    assertMetadataAvailable();
     return getFolder(folderPath).getNoteInfoRecursively();
   }
 
@@ -519,8 +751,25 @@ public class NoteManager {
   }
 
   private void assertMetadataVersion(long expectedMetadataVersion) throws IOException {
+    assertMetadataAvailable();
     if (expectedMetadataVersion >= 0 && metadataVersion != expectedMetadataVersion) {
       throw new IOException("Notebook metadata changed while authorizing the folder operation");
+    }
+  }
+
+  private void assertMetadataAvailable() throws IOException {
+    Throwable cause = metadataUnavailableCause;
+    if (cause != null) {
+      throw new IOException(
+          "Notebook metadata is unavailable after repository recovery failed", cause);
+    }
+  }
+
+  private void assertMetadataAvailableUnchecked() {
+    Throwable cause = metadataUnavailableCause;
+    if (cause != null) {
+      throw new IllegalStateException(
+          "Notebook metadata is unavailable after repository recovery failed", cause);
     }
   }
 
@@ -542,6 +791,7 @@ public class NoteManager {
    */
   public <T> T processNote(String noteId, boolean reload, NoteProcessor<T> noteProcessor)
       throws IOException {
+    assertMetadataAvailable();
     // Read the tree once, so that the mapping lookup below and the tree traversal that
     // follows it are both resolved against the same generation of the metadata.
     NoteTree tree = this.noteTree;
@@ -550,6 +800,9 @@ public class NoteManager {
     }
     String notePath = tree.notesInfo.get(noteId);
     NoteNode noteNode = getNoteNode(tree, notePath);
+    if (!StringUtils.equals(noteId, noteNode.getNoteId())) {
+      throw new IOException("Note metadata changed while resolving note: " + noteId);
+    }
     return noteNode.loadAndProcessNote(reload, noteProcessor);
   }
 
@@ -571,6 +824,7 @@ public class NoteManager {
    * @return
    */
   public Folder getOrCreateFolder(String folderName) {
+    assertMetadataAvailableUnchecked();
     return getOrCreateFolder(this.noteTree, folderName);
   }
 
@@ -591,6 +845,9 @@ public class NoteManager {
 
   private static NoteNode getNoteNode(NoteTree tree, String notePath) throws IOException {
     String[] tokens = notePath.split("/");
+    if (tokens.length == 0) {
+      throw new IOException("Can not find note: " + notePath);
+    }
     Folder curFolder = tree.root;
     for (int i = 0; i < tokens.length - 1; ++i) {
       if (!StringUtils.isBlank(tokens[i])) {
@@ -626,6 +883,7 @@ public class NoteManager {
   }
 
   public Folder getTrashFolder() {
+    assertMetadataAvailableUnchecked();
     return this.noteTree.trash;
   }
 
@@ -658,6 +916,7 @@ public class NoteManager {
   }
 
   public String getNoteIdByPath(String notePath) throws IOException {
+    assertMetadataAvailable();
     NoteNode noteNode = getNoteNode(notePath);
     return noteNode.getNoteId();
   }
@@ -697,6 +956,18 @@ public class NoteManager {
       this.root = root;
       this.trash = trash;
       this.notesInfo = notesInfo;
+    }
+  }
+
+  private static final class FolderNoteMove {
+    private final String noteId;
+    private final String sourcePath;
+    private final String destinationPath;
+
+    private FolderNoteMove(String noteId, String sourcePath, String destinationPath) {
+      this.noteId = noteId;
+      this.sourcePath = sourcePath;
+      this.destinationPath = destinationPath;
     }
   }
 
