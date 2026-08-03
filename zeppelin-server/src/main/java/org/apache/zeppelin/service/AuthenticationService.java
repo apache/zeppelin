@@ -30,6 +30,13 @@ import org.apache.shiro.realm.Realm;
 public interface AuthenticationService {
 
   /**
+   * Capture the current principal, roles and session handle as one identity snapshot.
+   *
+   * @return the identity bound to the current request
+   */
+  AuthenticatedIdentity getAuthenticatedIdentity();
+
+  /**
    * Get current principal/username.
    * @return
    */

@@ -14,7 +14,6 @@ import { interval, Observable, Subject, Subscription } from 'rxjs';
 import { delay, filter, map, mergeMap, retryWhen, take } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
-import { Ticket } from './interfaces/message-common.interface';
 import {
   MessageDataTypeMap,
   MessageReceiveDataTypeMap,
@@ -50,11 +49,11 @@ export class Message {
   private received$ = new Subject<WebSocketMessage<MessageReceiveDataTypeMap>>();
   private pingIntervalSubscription = new Subscription();
   private wsUrl?: string;
-  private ticket?: Ticket;
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
   // TODO: Clean up this variable with `msgId` in server-side. See ZEPPELIN-6419, ZEPPELIN-4985
   private lastMsgIdSeqSent = 0;
   private readonly normalCloseCode = 1000;
+  private readonly policyViolationCloseCode = 1008;
 
   constructor() {
     this.open$.subscribe(() => {
@@ -68,15 +67,14 @@ export class Message {
       this.connectedStatus$.next(this.connectedStatus);
       this.pingIntervalSubscription.unsubscribe();
 
-      if (event.code !== this.normalCloseCode) {
+      if (this.shouldReconnect(event.code)) {
         console.log('WebSocket closed unexpectedly. Reconnecting...');
         this.connect();
       }
     });
   }
 
-  bootstrap(ticket: Ticket, wsUrl: string) {
-    this.setTicket(ticket);
+  bootstrap(wsUrl: string) {
     this.setWsUrl(wsUrl);
     this.connect();
   }
@@ -87,10 +85,6 @@ export class Message {
 
   setWsUrl(wsUrl: string): void {
     this.wsUrl = wsUrl;
-  }
-
-  setTicket(ticket: Ticket): void {
-    this.ticket = ticket;
   }
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
@@ -123,7 +117,17 @@ export class Message {
     this.wsSubscription = this.ws
       .pipe(
         // reconnect
-        retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
+        retryWhen(errors =>
+          errors.pipe(
+            mergeMap(() =>
+              this.close$.pipe(
+                filter(event => this.shouldReconnect(event.code)),
+                take(1),
+                delay(4000)
+              )
+            )
+          )
+        )
       )
       .subscribe(e => {
         console.log('Receive:', e);
@@ -163,8 +167,7 @@ export class Message {
     const message = {
       op,
       msgId: `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
-      data,
-      ...this.ticket
+      data
     };
     console.log('Send:', message);
 
@@ -551,5 +554,9 @@ export class Message {
       noteId: note.id,
       formName
     });
+  }
+
+  private shouldReconnect(closeCode: number): boolean {
+    return closeCode !== this.normalCloseCode && closeCode !== this.policyViolationCloseCode;
   }
 }

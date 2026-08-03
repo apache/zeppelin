@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,9 +190,19 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         buildNoteFileName(noteId, notePath), NameScope.DESCENDENT);
     FileObject destFileObject = rootNotebookFileObject.resolveFile(
         buildNoteFileName(noteId, newNotePath), NameScope.DESCENDENT);
+    if (destFileObject.exists() && !isSameLocalFile(fileObject, destFileObject)) {
+      throw new IOException("Destination note already exists: " + newNotePath);
+    }
     // create parent folder first, otherwise move operation will fail
     destFileObject.getParent().createFolder();
     fileObject.moveTo(destFileObject);
+  }
+
+  private static boolean isSameLocalFile(FileObject source, FileObject destination)
+      throws IOException {
+    return "file".equalsIgnoreCase(source.getName().getScheme())
+        && "file".equalsIgnoreCase(destination.getName().getScheme())
+        && Files.isSameFile(source.getPath(), destination.getPath());
   }
 
   @Override
@@ -202,6 +213,9 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         folderPath.substring(1), NameScope.DESCENDENT);
     FileObject destFileObject = rootNotebookFileObject.resolveFile(
         newFolderPath.substring(1), NameScope.DESCENDENT);
+    if (destFileObject.exists() && !isSameLocalFile(fileObject, destFileObject)) {
+      throw new IOException("Destination folder already exists: " + newFolderPath);
+    }
     // create parent folder first, otherwise move operation will fail
     destFileObject.getParent().createFolder();
     fileObject.moveTo(destFileObject);
@@ -266,4 +280,3 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     }
   }
 }
-

@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -70,6 +71,7 @@ public abstract class AbstractTestRestApi {
           "[main]\n" +
           "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
           "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.rememberMeManager = null\n" +
           "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
           "shiro.loginUrl = /api/login\n" +
           "[roles]\n" +
@@ -80,6 +82,7 @@ public abstract class AbstractTestRestApi {
           "[urls]\n" +
           "/api/version = anon\n" +
           "/api/cluster/address = anon\n" +
+          "/ws = authc\n" +
           "/** = authc";
 
   protected static final String ZEPPELIN_SHIRO_KNOX =
@@ -94,6 +97,7 @@ public abstract class AbstractTestRestApi {
           "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
           "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
           "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.rememberMeManager = null\n" +
           "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
           "shiro.loginUrl = /api/login\n" +
           "[roles]\n" +
@@ -101,6 +105,7 @@ public abstract class AbstractTestRestApi {
           "[urls]\n" +
           "/api/version = anon\n" +
           "/api/cluster/address = anon\n" +
+          "/ws = authc\n" +
           "/** = authc";
 
   protected static final String KNOW_SSO_PEM_CERTIFICATE =
@@ -131,7 +136,19 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static String getUrlToTest(ZeppelinConfiguration zConf) {
-    return "http://localhost:" + zConf.getServerPort() + REST_API_URL;
+    return getOriginToTest(zConf) + REST_API_URL;
+  }
+
+  protected static String getOriginToTest(ZeppelinConfiguration zConf) {
+    return "http://localhost:" + zConf.getServerPort();
+  }
+
+  protected static String getRequestOriginToTest(ZeppelinConfiguration zConf) {
+    List<String> allowedOrigins = zConf.getAllowedOrigins();
+    if (!allowedOrigins.isEmpty() && !allowedOrigins.contains("*")) {
+      return allowedOrigins.get(0);
+    }
+    return getOriginToTest(zConf);
   }
 
   public CloseableHttpResponse httpGet(String path)
@@ -148,7 +165,7 @@ public abstract class AbstractTestRestApi {
     throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + path);
-    httpGet.addHeader("Origin", getUrlToTest(zConf));
+    httpGet.addHeader("Origin", getRequestOriginToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpGet.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -169,7 +186,7 @@ public abstract class AbstractTestRestApi {
       throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpDelete httpDelete = new HttpDelete(getUrlToTest(zConf) + path);
-    httpDelete.addHeader("Origin", getUrlToTest(zConf));
+    httpDelete.addHeader("Origin", getRequestOriginToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpDelete.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -210,7 +227,7 @@ public abstract class AbstractTestRestApi {
       throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpPut httpPut = new HttpPut(getUrlToTest(zConf) + path);
-    httpPut.addHeader("Origin", getUrlToTest(zConf));
+    httpPut.addHeader("Origin", getRequestOriginToTest(zConf));
     httpPut.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
@@ -220,10 +237,10 @@ public abstract class AbstractTestRestApi {
     return response;
   }
 
-  private String getCookie(String user, String password)
+  protected String getCookie(String user, String password)
       throws IOException {
     HttpPost httpPost = new HttpPost(getUrlToTest(zConf) + "/login");
-    httpPost.addHeader("Origin", getUrlToTest(zConf));
+    httpPost.addHeader("Origin", getRequestOriginToTest(zConf));
     ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
     postParameters.add(new BasicNameValuePair("password", password));
     postParameters.add(new BasicNameValuePair("userName", user));

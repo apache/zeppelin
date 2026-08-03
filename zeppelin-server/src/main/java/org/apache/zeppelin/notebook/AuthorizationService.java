@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthorizationService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
-  private static final Set<String> EMPTY_SET = new HashSet<>();
+  private static final Set<String> EMPTY_SET = Collections.emptySet();
 
   private final ZeppelinConfiguration zConf;
   private final ConfigStorage configStorage;
@@ -48,6 +49,16 @@ public class AuthorizationService {
 
   // cached note permission info. (noteId --> NoteAuth)
   private Map<String, NoteAuth> notesAuth = new ConcurrentHashMap<>();
+
+  /**
+   * Monotonic generation for every effective ACL or cached-role change.
+   *
+   * <p>Folder operations authorize a metadata snapshot outside this monitor, then reacquire the
+   * monitor through {@link #runWithAuthorizationVersion(long, AuthorizationOperation)} before
+   * mutating the repository. This prevents an ACL or role change from being interleaved between
+   * descendant authorization and a destructive folder mutation.
+   */
+  private long authorizationVersion;
 
   @Inject
   public AuthorizationService(NoteManager noteManager, ZeppelinConfiguration zConf,
@@ -84,9 +95,10 @@ public class AuthorizationService {
    * @param subject
    * @throws IOException
    */
-  public void createNoteAuth(String noteId, AuthenticationInfo subject) {
+  public synchronized void createNoteAuth(String noteId, AuthenticationInfo subject) {
     NoteAuth noteAuth = new NoteAuth(noteId, subject, zConf);
     this.notesAuth.put(noteId, noteAuth);
+    authorizationVersion++;
   }
 
   /**
@@ -98,8 +110,40 @@ public class AuthorizationService {
     configStorage.save(new NotebookAuthorizationInfoSaving(this.notesAuth));
   }
 
-  public void removeNoteAuth(String noteId) {
-    this.notesAuth.remove(noteId);
+  public synchronized void removeNoteAuth(String noteId) {
+    if (this.notesAuth.remove(noteId) != null) {
+      authorizationVersion++;
+    }
+  }
+
+  public synchronized long getAuthorizationVersion() {
+    return authorizationVersion;
+  }
+
+  public synchronized boolean isAuthorizationVersionCurrent(long expectedVersion) {
+    return authorizationVersion == expectedVersion;
+  }
+
+  /**
+   * Run one operation only if its authorization preflight still belongs to the current ACL
+   * generation. ACL and cached-role mutations use the same monitor and therefore cannot be
+   * interleaved with the guarded operation.
+   */
+  public synchronized <T> T runWithAuthorizationVersion(
+      long expectedVersion, AuthorizationOperation<T> operation) throws IOException {
+    if (authorizationVersion != expectedVersion) {
+      throw new IOException("Notebook authorization changed while authorizing the operation");
+    }
+    return operation.run();
+  }
+
+  @FunctionalInterface
+  public interface AuthorizationOperation<T> {
+    T run() throws IOException;
+  }
+
+  public boolean hasNoteAuth(String noteId) {
+    return this.notesAuth.containsKey(noteId);
   }
 
   // skip empty user and remove the white space around user name.
@@ -129,6 +173,15 @@ public class AuthorizationService {
     setRunners(noteId, entities, true);
   }
 
+  public void setPermissions(
+      String noteId,
+      Set<String> readers,
+      Set<String> runners,
+      Set<String> writers,
+      Set<String> owners) throws IOException {
+    setPermissions(noteId, readers, runners, writers, owners, true);
+  }
+
   public void setRoles(String user, Set<String> roles) {
     setRoles(user, roles, true);
   }
@@ -137,61 +190,105 @@ public class AuthorizationService {
     clearPermission(noteId, true);
   }
 
-  public void setOwners(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+  public synchronized void setOwners(
+      String noteId, Set<String> entities, boolean broadcast) throws IOException {
     entities = normalizeUsers(entities);
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
-    noteAuth.setOwners(entities);
+    if (!noteAuth.getOwners().equals(entities)) {
+      noteAuth.setOwners(entities);
+      authorizationVersion++;
+    }
   }
 
-  public void setReaders(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+  public synchronized void setReaders(
+      String noteId, Set<String> entities, boolean broadcast) throws IOException {
     entities = normalizeUsers(entities);
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
-    noteAuth.setReaders(entities);
+    if (!noteAuth.getReaders().equals(entities)) {
+      noteAuth.setReaders(entities);
+      authorizationVersion++;
+    }
   }
 
-  public void setRunners(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+  public synchronized void setRunners(
+      String noteId, Set<String> entities, boolean broadcast) throws IOException {
     entities = normalizeUsers(entities);
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
-    noteAuth.setRunners(entities);
+    if (!noteAuth.getRunners().equals(entities)) {
+      noteAuth.setRunners(entities);
+      authorizationVersion++;
+    }
   }
 
-  public void setWriters(String noteId, Set<String> entities, boolean broadcast) throws IOException {
+  public synchronized void setWriters(
+      String noteId, Set<String> entities, boolean broadcast) throws IOException {
     entities = normalizeUsers(entities);
     NoteAuth noteAuth = notesAuth.get(noteId);
     if (noteAuth == null) {
       throw new IOException("No noteAuth found for noteId: " + noteId);
     }
-    noteAuth.setWriters(entities);
+    if (!noteAuth.getWriters().equals(entities)) {
+      noteAuth.setWriters(entities);
+      authorizationVersion++;
+    }
   }
 
-  public void setRoles(String user, Set<String> roles, boolean broadcast) {
+  public synchronized void setPermissions(
+      String noteId,
+      Set<String> readers,
+      Set<String> runners,
+      Set<String> writers,
+      Set<String> owners,
+      boolean broadcast) throws IOException {
+    Set<String> normalizedReaders = normalizeUsers(readers);
+    Set<String> normalizedRunners = normalizeUsers(runners);
+    Set<String> normalizedWriters = normalizeUsers(writers);
+    Set<String> normalizedOwners = normalizeUsers(owners);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      throw new IOException("No noteAuth found for noteId: " + noteId);
+    }
+    NoteAuth.Permissions current = noteAuth.getPermissions();
+    if (!current.getReaders().equals(normalizedReaders)
+        || !current.getRunners().equals(normalizedRunners)
+        || !current.getWriters().equals(normalizedWriters)
+        || !current.getOwners().equals(normalizedOwners)) {
+      noteAuth.setPermissions(
+          normalizedReaders, normalizedRunners, normalizedWriters, normalizedOwners);
+      authorizationVersion++;
+    }
+  }
+
+  public synchronized void setRoles(String user, Set<String> roles, boolean broadcast) {
     if (StringUtils.isBlank(user)) {
       LOGGER.warn("Setting roles for empty user");
       return;
     }
     roles = normalizeUsers(roles);
-    userRoles.put(user, roles);
+    Set<String> immutableRoles = Collections.unmodifiableSet(new HashSet<>(roles));
+    Set<String> previousRoles = userRoles.put(user, immutableRoles);
+    if (!immutableRoles.equals(previousRoles)) {
+      authorizationVersion++;
+    }
   }
 
   public void clearPermission(String noteId, boolean broadcast) throws IOException {
-    NoteAuth noteAuth = notesAuth.get(noteId);
-    if (noteAuth == null) {
-      throw new IOException("No noteAuth found for noteId: " + noteId);
-    }
-    noteAuth.setReaders(new HashSet<>());
-    noteAuth.setRunners(new HashSet<>());
-    noteAuth.setWriters(new HashSet<>());
-    noteAuth.setOwners(new HashSet<>());
-
+    setPermissions(
+        noteId,
+        Set.of(),
+        Set.of(),
+        Set.of(),
+        Set.of(),
+        broadcast);
   }
 
   public Set<String> getOwners(String noteId) {
@@ -231,32 +328,52 @@ public class AuthorizationService {
   }
 
   public Set<String> getRoles(String user) {
-    return userRoles.getOrDefault(user, new HashSet<>());
+    return new HashSet<>(userRoles.getOrDefault(user, EMPTY_SET));
   }
 
   public boolean isOwner(String noteId, Set<String> entities) {
-    return isMember(entities, getOwners(noteId)) || isAdmin(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      return false;
+    }
+    NoteAuth.Permissions permissions = noteAuth.getPermissions();
+    return isMember(entities, permissions.getOwners()) || isAdmin(entities);
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      return false;
+    }
+    NoteAuth.Permissions permissions = noteAuth.getPermissions();
+    return isMember(entities, permissions.getWriters())
+        || isMember(entities, permissions.getOwners())
+        || isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
-    return isMember(entities, getReaders(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getRunners(noteId)) ||
-            isAdmin(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      return false;
+    }
+    NoteAuth.Permissions permissions = noteAuth.getPermissions();
+    return isMember(entities, permissions.getReaders())
+        || isMember(entities, permissions.getOwners())
+        || isMember(entities, permissions.getWriters())
+        || isMember(entities, permissions.getRunners())
+        || isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
-    return isMember(entities, getRunners(noteId)) ||
-            isMember(entities, getWriters(noteId)) ||
-            isMember(entities, getOwners(noteId)) ||
-            isAdmin(entities);
+    NoteAuth noteAuth = notesAuth.get(noteId);
+    if (noteAuth == null) {
+      return false;
+    }
+    NoteAuth.Permissions permissions = noteAuth.getPermissions();
+    return isMember(entities, permissions.getRunners())
+        || isMember(entities, permissions.getWriters())
+        || isMember(entities, permissions.getOwners())
+        || isAdmin(entities);
   }
 
   private boolean isAdmin(Set<String> entities) {
@@ -275,6 +392,9 @@ public class AuthorizationService {
   }
 
   public boolean isOwner(Set<String> userAndRoles, String noteId) {
+    if (!hasNoteAuth(noteId)) {
+      return false;
+    }
     if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is owner");
       return true;
@@ -287,6 +407,9 @@ public class AuthorizationService {
 
   //TODO(zjffdu) merge this hasWritePermission with isWriter ?
   public boolean hasWritePermission(Set<String> userAndRoles, String noteId) {
+    if (!hasNoteAuth(noteId)) {
+      return false;
+    }
     if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is writer");
       return true;
@@ -298,6 +421,9 @@ public class AuthorizationService {
   }
 
   public boolean hasReadPermission(Set<String> userAndRoles, String noteId) {
+    if (!hasNoteAuth(noteId)) {
+      return false;
+    }
     if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;
@@ -309,6 +435,9 @@ public class AuthorizationService {
   }
 
   public boolean hasRunPermission(Set<String> userAndRoles, String noteId) {
+    if (!hasNoteAuth(noteId)) {
+      return false;
+    }
     if (zConf.isAnonymousAllowed()) {
       LOGGER.debug("Zeppelin runs in anonymous mode, everybody is reader");
       return true;

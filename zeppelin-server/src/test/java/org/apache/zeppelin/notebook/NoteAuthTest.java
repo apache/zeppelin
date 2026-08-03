@@ -22,6 +22,8 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -135,6 +137,43 @@ class NoteAuthTest {
     assertEquals(2, auth.getWriters().size());
     assertTrue(auth.getWriters().contains("TestUser"));
     assertTrue(auth.getWriters().contains("TestGroup"));
+  }
+
+  @Test
+  void permissionUpdatesPublishOneImmutableDefensiveSnapshot() {
+    NoteAuth auth = new NoteAuth("note1", zConf);
+    Set<String> readers = new HashSet<>(Set.of("reader"));
+    Set<String> runners = new HashSet<>(Set.of("runner"));
+    Set<String> writers = new HashSet<>(Set.of("writer"));
+    Set<String> owners = new HashSet<>(Set.of("owner"));
+
+    auth.setPermissions(readers, runners, writers, owners);
+    NoteAuth.Permissions firstSnapshot = auth.getPermissions();
+    Map<String, Set<String>> firstMap = auth.toMap();
+    readers.add("late-reader");
+    runners.add("late-runner");
+    writers.add("late-writer");
+    owners.add("late-owner");
+
+    assertEquals(Set.of("reader"), firstSnapshot.getReaders());
+    assertEquals(Set.of("runner"), firstSnapshot.getRunners());
+    assertEquals(Set.of("writer"), firstSnapshot.getWriters());
+    assertEquals(Set.of("owner"), firstSnapshot.getOwners());
+    assertEquals(Set.of("reader"), firstMap.get("readers"));
+    assertThrows(UnsupportedOperationException.class,
+        () -> auth.getReaders().add("mutated-reader"));
+
+    auth.setPermissions(
+        Set.of("next-reader"),
+        Set.of("next-runner"),
+        Set.of("next-writer"),
+        Set.of("next-owner"));
+
+    assertFalse(firstSnapshot.getReaders().contains("next-reader"));
+    assertEquals(Set.of("next-reader"), auth.getReaders());
+    assertEquals(Set.of("next-runner"), auth.getRunners());
+    assertEquals(Set.of("next-writer"), auth.getWriters());
+    assertEquals(Set.of("next-owner"), auth.getOwners());
   }
 
   private static Map<String, Set<String>> getTestMap(String user, String group) {

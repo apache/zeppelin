@@ -47,6 +47,13 @@ public class ConfigurationService {
     return Integer.parseInt(zConf.getWebsocketMaxTextMessageSize());
   }
 
+  /** Properties safe to expose to every authenticated notebook client. */
+  public Map<String, String> getClientProperties() {
+    return Map.of(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE.getVarName(),
+        zConf.getWebsocketMaxTextMessageSize());
+  }
+
   public Map<String, String> getPropertiesWithPrefix(String prefix,
                                                      ServiceContext context,
                                                      ServiceCallback<Map<String, String>> callback)

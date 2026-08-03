@@ -32,24 +32,46 @@ public class CorsUtils {
   public static final String HEADER_ORIGIN = "Origin";
   public static boolean isValidOrigin(String sourceHost, ZeppelinConfiguration zConf)
       throws UnknownHostException, URISyntaxException {
-
-    String sourceUriHost = "";
-
-    if (sourceHost != null && !sourceHost.isEmpty()) {
-      sourceUriHost = new URI(sourceHost).getHost();
-      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase(Locale.ROOT);
+    if (sourceHost == null || sourceHost.isEmpty()) {
+      return false;
     }
 
-    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
-    // getAllowedOrigins() returns lowercased entries; normalize sourceHost the same way
-    // before the membership check so case differences in the Origin header do not produce
-    // false rejections of explicitly configured origins.
-    String normalizedOrigin =
-        sourceHost == null ? "" : sourceHost.toLowerCase(Locale.ROOT);
+    URI origin = new URI(sourceHost);
+    String originHost = origin.getHost();
+    if (originHost == null
+        || origin.getScheme() == null
+        || origin.getUserInfo() != null
+        || origin.getQuery() != null
+        || origin.getFragment() != null
+        || (origin.getPath() != null && !origin.getPath().isEmpty())) {
+      return false;
+    }
 
-    return zConf.getAllowedOrigins().contains("*")
-        || currentHost.equals(sourceUriHost)
-        || "localhost".equals(sourceUriHost)
-        || zConf.getAllowedOrigins().contains(normalizedOrigin);
+    String normalizedOrigin = sourceHost.toLowerCase(Locale.ROOT);
+    if (zConf.getAllowedOrigins().contains("*")
+        || zConf.getAllowedOrigins().contains(normalizedOrigin)) {
+      return true;
+    }
+    if (!zConf.getAllowedOrigins().isEmpty()) {
+      return false;
+    }
+
+    String expectedScheme = zConf.useSsl() ? "https" : "http";
+    int expectedPort = zConf.useSsl() ? zConf.getServerSslPort() : zConf.getServerPort();
+    int originPort = origin.getPort();
+    if (originPort < 0) {
+      originPort = "https".equalsIgnoreCase(origin.getScheme()) ? 443 : 80;
+    }
+
+    String normalizedHost = originHost.toLowerCase(Locale.ROOT);
+    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
+    boolean localOrigin = currentHost.equals(normalizedHost)
+        || "localhost".equals(normalizedHost)
+        || "127.0.0.1".equals(normalizedHost)
+        || "::1".equals(normalizedHost)
+        || "[::1]".equals(normalizedHost);
+    return localOrigin
+        && expectedScheme.equalsIgnoreCase(origin.getScheme())
+        && expectedPort == originPort;
   }
 }

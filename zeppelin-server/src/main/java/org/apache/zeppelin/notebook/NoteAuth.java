@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,10 +35,7 @@ public class NoteAuth {
   private final String noteId;
   private final ZeppelinConfiguration zConf;
 
-  private Set<String> readers = new HashSet<>();
-  private Set<String> writers = new HashSet<>();
-  private Set<String> runners = new HashSet<>();
-  private Set<String> owners = new HashSet<>();
+  private volatile Permissions permissions = Permissions.empty();
 
   public NoteAuth(String noteId, ZeppelinConfiguration zConf) {
     this(noteId, AuthenticationInfo.ANONYMOUS, zConf);
@@ -60,62 +58,112 @@ public class NoteAuth {
   public NoteAuth(String noteId, Map<String, Set<String>> permissions, ZeppelinConfiguration zConf) {
     this.noteId = noteId;
     this.zConf = zConf;
-    this.readers = permissions.getOrDefault("readers", new HashSet<>());
-    this.writers = permissions.getOrDefault("writers", new HashSet<>());
-    this.runners = permissions.getOrDefault("runners", new HashSet<>());
-    this.owners = permissions.getOrDefault("owners", new HashSet<>());
+    this.permissions =
+        new Permissions(
+            immutableLoadedEntities(
+                permissions.getOrDefault("readers", Collections.emptySet())),
+            immutableLoadedEntities(
+                permissions.getOrDefault("runners", Collections.emptySet())),
+            immutableLoadedEntities(
+                permissions.getOrDefault("writers", Collections.emptySet())),
+            immutableLoadedEntities(
+                permissions.getOrDefault("owners", Collections.emptySet())));
   }
 
   // used when creating new note
-  public void initPermissions(AuthenticationInfo subject) {
+  public synchronized void initPermissions(AuthenticationInfo subject) {
+    Set<String> readers = Collections.emptySet();
+    Set<String> writers = Collections.emptySet();
+    Set<String> runners = Collections.emptySet();
+    Set<String> owners = Collections.emptySet();
     if (!AuthenticationInfo.isAnonymous(subject)) {
+      Set<String> owner = Collections.singleton(checkCaseAndConvert(subject.getUser()));
       if (zConf.isNotebookPublic()) {
         // add current user to owners - can be public
-        this.owners.add(checkCaseAndConvert(subject.getUser()));
+        owners = owner;
       } else {
         // add current user to owners, readers, runners, writers - private note
-        this.owners.add(checkCaseAndConvert(subject.getUser()));
-        this.readers.add(checkCaseAndConvert(subject.getUser()));
-        this.writers.add(checkCaseAndConvert(subject.getUser()));
-        this.runners.add(checkCaseAndConvert(subject.getUser()));
+        owners = owner;
+        readers = owner;
+        writers = owner;
+        runners = owner;
       }
     }
+    setPermissions(readers, runners, writers, owners);
   }
 
   public String getNoteId() {
     return noteId;
   }
 
-  public void setOwners(Set<String> entities) {
-    this.owners = checkCaseAndConvert(entities);
+  public synchronized void setOwners(Set<String> entities) {
+    Permissions current = permissions;
+    permissions =
+        new Permissions(
+            current.getReaders(),
+            current.getRunners(),
+            current.getWriters(),
+            immutableEntities(entities));
   }
 
-  public void setReaders(Set<String> entities) {
-    this.readers = checkCaseAndConvert(entities);
+  public synchronized void setReaders(Set<String> entities) {
+    Permissions current = permissions;
+    permissions =
+        new Permissions(
+            immutableEntities(entities),
+            current.getRunners(),
+            current.getWriters(),
+            current.getOwners());
   }
 
-  public void setWriters(Set<String> entities) {
-    this.writers = checkCaseAndConvert(entities);
+  public synchronized void setWriters(Set<String> entities) {
+    Permissions current = permissions;
+    permissions =
+        new Permissions(
+            current.getReaders(),
+            current.getRunners(),
+            immutableEntities(entities),
+            current.getOwners());
   }
 
-  public void setRunners(Set<String> entities) {
-    this.runners = checkCaseAndConvert(entities);
+  public synchronized void setRunners(Set<String> entities) {
+    Permissions current = permissions;
+    permissions =
+        new Permissions(
+            current.getReaders(),
+            immutableEntities(entities),
+            current.getWriters(),
+            current.getOwners());
+  }
+
+  public synchronized void setPermissions(
+      Set<String> readers, Set<String> runners, Set<String> writers, Set<String> owners) {
+    permissions =
+        new Permissions(
+            immutableEntities(readers),
+            immutableEntities(runners),
+            immutableEntities(writers),
+            immutableEntities(owners));
   }
 
   public Set<String> getOwners() {
-    return this.owners;
+    return permissions.getOwners();
   }
 
   public Set<String> getReaders() {
-    return this.readers;
+    return permissions.getReaders();
   }
 
   public Set<String> getWriters() {
-    return this.writers;
+    return permissions.getWriters();
   }
 
   public Set<String> getRunners() {
-    return this.runners;
+    return permissions.getRunners();
+  }
+
+  Permissions getPermissions() {
+    return permissions;
   }
 
   /*
@@ -129,8 +177,16 @@ public class NoteAuth {
       }
       return set2;
     } else {
-      return entities;
+      return new HashSet<>(entities);
     }
+  }
+
+  private Set<String> immutableEntities(Set<String> entities) {
+    return Collections.unmodifiableSet(checkCaseAndConvert(entities));
+  }
+
+  private Set<String> immutableLoadedEntities(Set<String> entities) {
+    return Collections.unmodifiableSet(new HashSet<>(entities));
   }
 
   private String checkCaseAndConvert(String entity) {
@@ -142,11 +198,54 @@ public class NoteAuth {
   }
 
   public Map<String, Set<String>> toMap() {
-    Map<String, Set<String>> map = new HashMap<>();
-    map.put("readers", readers);
-    map.put("writers", writers);
-    map.put("runners", runners);
-    map.put("owners", owners);
-    return map;
+    return permissions.toMap();
+  }
+
+  static final class Permissions {
+    private final Set<String> readers;
+    private final Set<String> runners;
+    private final Set<String> writers;
+    private final Set<String> owners;
+
+    private Permissions(
+        Set<String> readers, Set<String> runners, Set<String> writers, Set<String> owners) {
+      this.readers = readers;
+      this.runners = runners;
+      this.writers = writers;
+      this.owners = owners;
+    }
+
+    private static Permissions empty() {
+      return new Permissions(
+          Collections.emptySet(),
+          Collections.emptySet(),
+          Collections.emptySet(),
+          Collections.emptySet());
+    }
+
+    Set<String> getReaders() {
+      return readers;
+    }
+
+    Set<String> getRunners() {
+      return runners;
+    }
+
+    Set<String> getWriters() {
+      return writers;
+    }
+
+    Set<String> getOwners() {
+      return owners;
+    }
+
+    Map<String, Set<String>> toMap() {
+      Map<String, Set<String>> map = new HashMap<>();
+      map.put("readers", readers);
+      map.put("writers", writers);
+      map.put("runners", runners);
+      map.put("owners", owners);
+      return map;
+    }
   }
 }

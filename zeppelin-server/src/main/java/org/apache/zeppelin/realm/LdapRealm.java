@@ -48,7 +48,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.ShiroException;
+import org.apache.shiro.lang.ShiroException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -59,6 +59,7 @@ import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
 import org.apache.shiro.crypto.hash.HashService;
+import org.apache.shiro.crypto.hash.SimpleHashProvider;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
@@ -66,7 +67,7 @@ import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.MutablePrincipalCollection;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.util.StringUtils;
+import org.apache.shiro.lang.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +144,9 @@ public class LdapRealm extends DefaultLdapRealm {
 
   private static final String DEFAULT_PRINCIPAL_REGEX = "(.*)";
   private static final String MEMBER_SUBSTITUTION_TOKEN = "{0}";
-  private static final String HASHING_ALGORITHM = "SHA-1";
+  private static final String HASHING_ALGORITHM = "SHA-256";
+  private static final int HASHING_ITERATIONS =
+      SimpleHashProvider.Parameters.DEFAULT_ITERATIONS;
   private static final Logger LOGGER = LoggerFactory.getLogger(LdapRealm.class);
 
   static {
@@ -200,6 +203,7 @@ public class LdapRealm extends DefaultLdapRealm {
 
   public LdapRealm() {
     HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher(HASHING_ALGORITHM);
+    credentialsMatcher.setHashIterations(HASHING_ITERATIONS);
     setCredentialsMatcher(credentialsMatcher);
   }
 
@@ -1029,7 +1033,10 @@ public class LdapRealm extends DefaultLdapRealm {
     HashRequest.Builder builder = new HashRequest.Builder();
     Hash credentialsHash = hashService
         .computeHash(builder.setSource(token.getCredentials())
-            .setAlgorithmName(HASHING_ALGORITHM).build());
+            .setAlgorithmName(HASHING_ALGORITHM)
+            .addParameter(
+                SimpleHashProvider.Parameters.PARAMETER_ITERATIONS, HASHING_ITERATIONS)
+            .build());
     return new SimpleAuthenticationInfo(token.getPrincipal(),
         credentialsHash.toHex(), credentialsHash.getSalt(),
         getName());

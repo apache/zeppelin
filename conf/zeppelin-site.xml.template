@@ -531,8 +531,8 @@
 
 <property>
   <name>zeppelin.server.allowed.origins</name>
-  <value>*</value>
-  <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
+  <value></value>
+  <description>Exact allowed origins for credentialed REST and WebSocket requests (i.e. http://onehost:8080,https://otherhost.com). Empty allows only the configured local server origin. Use * only for an intentionally public deployment.</description>
 </property>
 
 <property>
@@ -557,6 +557,12 @@
   <name>zeppelin.websocket.max.text.message.size</name>
   <value>10240000</value>
   <description>Size in characters of the maximum text message to be received by websocket. Defaults to 10240000</description>
+</property>
+
+<property>
+  <name>zeppelin.websocket.authorization.roles.refresh.interval.ms</name>
+  <value>1000</value>
+  <description>Maximum age in milliseconds of a role snapshot reused for WebSocket broadcasts. The Shiro session is still validated before every delivery. Use 0 to refresh roles for every broadcast.</description>
 </property>
 
 <property>

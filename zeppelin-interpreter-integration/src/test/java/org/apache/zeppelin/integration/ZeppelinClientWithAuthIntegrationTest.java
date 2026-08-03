@@ -58,7 +58,13 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
 
   @AfterAll
   static void destroy() throws Exception {
-    zepServer.destroy();
+    try {
+      if (zeppelinClient != null) {
+        zeppelinClient.close();
+      }
+    } finally {
+      zepServer.destroy();
+    }
   }
 
   @BeforeEach
@@ -109,4 +115,3 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
     }
   }
 }
-

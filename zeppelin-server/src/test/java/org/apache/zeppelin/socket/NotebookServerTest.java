@@ -26,17 +26,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -71,6 +69,7 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.NotebookService;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterAll;
@@ -119,8 +118,8 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  void checkOrigin() throws UnknownHostException {
-    String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
+  void checkOrigin() {
+    String origin = getRequestOriginToTest(zConf);
     assertTrue(notebookServer.checkOrigin(origin),
       "Origin " + origin + " is not allowed. Please check your hostname.");
   }
@@ -155,7 +154,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
     try {
       assertDoesNotThrow(() -> {
-        notebookServer.broadcastUpdateNoteJobInfo(mockNote, System.currentTimeMillis());
+        notebookServer.broadcastUpdateNoteJobInfo(mockNote);
       }, "broadcastUpdateNoteJobInfo should not throw exception when job manager is disabled");
     } finally {
       restoreJobManagerFlag(originalFlag);
@@ -274,24 +273,24 @@ class NotebookServerTest extends AbstractTestRestApi {
 
     int sock1SendCount = 0;
     int sock2SendCount = 0;
-    reset(sock1);
-    reset(sock2);
-    patchParagraph(sock1, paragraphId, patches[0]);
+    clearInvocations(sock1);
+    clearInvocations(sock2);
+    patchParagraph(sock1, createdNoteInfo.getId(), paragraphId, patches[0]);
     assertEquals("ABC", paragraph.getText());
     verify(sock1, times(sock1SendCount)).send(anyString());
     verify(sock2, times(++sock2SendCount)).send(anyString());
 
-    patchParagraph(sock2, paragraphId, patches[1]);
+    patchParagraph(sock2, createdNoteInfo.getId(), paragraphId, patches[1]);
     assertEquals("ABC\n", paragraph.getText());
     verify(sock1, times(++sock1SendCount)).send(anyString());
     verify(sock2, times(sock2SendCount)).send(anyString());
 
-    patchParagraph(sock1, paragraphId, patches[2]);
+    patchParagraph(sock1, createdNoteInfo.getId(), paragraphId, patches[2]);
     assertEquals("ABC\nabc", paragraph.getText());
     verify(sock1, times(sock1SendCount)).send(anyString());
     verify(sock2, times(++sock2SendCount)).send(anyString());
 
-    patchParagraph(sock2, paragraphId, patches[3]);
+    patchParagraph(sock2, createdNoteInfo.getId(), paragraphId, patches[3]);
     assertEquals("ABC ssss\nabc ssss", paragraph.getText());
     verify(sock1, times(++sock1SendCount)).send(anyString());
     verify(sock2, times(sock2SendCount)).send(anyString());
@@ -299,10 +298,12 @@ class NotebookServerTest extends AbstractTestRestApi {
     notebook.removeNote(createdNoteInfo.getId(), anonymous);
   }
 
-  private void patchParagraph(NotebookSocket noteSocket, String paragraphId, String patch) {
+  private void patchParagraph(
+      NotebookSocket noteSocket, String noteId, String paragraphId, String patch) {
     Message message = new Message(OP.PATCH_PARAGRAPH);
     message.put("patch", patch);
     message.put("id", paragraphId);
+    message.put("noteId", noteId);
     notebookServer.onMessage(noteSocket, message.toJson());
   }
 
@@ -363,8 +364,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
       notebookServer.onMessage(sock2, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
-      reset(sock1);
-      reset(sock2);
+      clearInvocations(sock1);
+      clearInvocations(sock2);
 
       // update object from sock1
       notebookServer.onMessage(sock1,
@@ -433,7 +434,7 @@ class NotebookServerTest extends AbstractTestRestApi {
       // open the same notebook from sockets
       notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
-      reset(sock1);
+      clearInvocations(sock1);
 
       // bind object from sock1
       notebookServer.onMessage(sock1,
@@ -654,6 +655,7 @@ class NotebookServerTest extends AbstractTestRestApi {
             .put("value", value)
             .put("paragraphId", "paragraphId");
 
+    authorizationService.createNoteAuth("noteId", anonymous);
     try {
       final Notebook notebook = mock(Notebook.class);
       notebookServer.setNotebook(() -> notebook);
@@ -676,8 +678,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId"))
               .thenReturn(ao1);
 
-      NotebookSocket conn = mock(NotebookSocket.class);
-      NotebookSocket otherConn = mock(NotebookSocket.class);
+      NotebookSocket conn = createWebSocket();
+      NotebookSocket otherConn = createWebSocket();
 
       final String mdMsg1 = notebookServer.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
               .put("angularObject", ao1)
@@ -691,7 +693,10 @@ class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
-      notebookServer.angularObjectClientBind(conn, messageReceived);
+      notebookServer.angularObjectClientBind(
+          conn,
+          new ServiceContext(AuthenticationInfo.ANONYMOUS, Set.of("anonymous")),
+          messageReceived);
 
       // Then
       verify(mdRegistry, never()).addAndNotifyRemoteProcess(varName, value, "noteId", null);
@@ -699,6 +704,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       verify(otherConn).send(mdMsg1);
     } finally {
       // reset these so that it won't affect other tests
+      notebookServer.getConnectionManager().noteSocketMap.remove("noteId");
+      authorizationService.removeNoteAuth("noteId");
       notebookServer.setNotebook(() -> NotebookServerTest.notebook);
       notebookServer.setNotebookService(() -> NotebookServerTest.notebookService);
     }
@@ -714,6 +721,7 @@ class NotebookServerTest extends AbstractTestRestApi {
             .put("name", varName)
             .put("paragraphId", "paragraphId");
 
+    authorizationService.createNoteAuth("noteId", anonymous);
     try {
       final Notebook notebook = mock(Notebook.class);
       notebookServer.setNotebook(() -> notebook);
@@ -732,8 +740,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
               "paragraphId");
       when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
-      NotebookSocket conn = mock(NotebookSocket.class);
-      NotebookSocket otherConn = mock(NotebookSocket.class);
+      NotebookSocket conn = createWebSocket();
+      NotebookSocket otherConn = createWebSocket();
 
       final String mdMsg1 = notebookServer.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
               .put("angularObject", ao1)
@@ -747,7 +755,10 @@ class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.getConnectionManager().noteSocketMap.put("noteId", sockets);
 
       // When
-      notebookServer.angularObjectClientUnbind(conn, messageReceived);
+      notebookServer.angularObjectClientUnbind(
+          conn,
+          new ServiceContext(AuthenticationInfo.ANONYMOUS, Set.of("anonymous")),
+          messageReceived);
 
       // Then
       verify(mdRegistry, never()).removeAndNotifyRemoteProcess(varName, "noteId", null);
@@ -755,6 +766,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       verify(otherConn).send(mdMsg1);
     } finally {
       // reset these so that it won't affect other tests
+      notebookServer.getConnectionManager().noteSocketMap.remove("noteId");
+      authorizationService.removeNoteAuth("noteId");
       notebookServer.setNotebook(() -> NotebookServerTest.notebook);
       notebookServer.setNotebookService(() -> NotebookServerTest.notebookService);
     }
@@ -966,6 +979,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
+    when(sock.getAuthenticatedIdentity()).thenReturn(AuthenticatedIdentity.anonymous());
     return sock;
   }
 

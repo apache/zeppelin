@@ -131,6 +131,36 @@ class VFSNotebookRepoTest {
   }
 
   @Test
+  void testCaseOnlyNoteRename() throws IOException {
+    Note note = new Note();
+    note.setPath("/case-note");
+    note.setNoteParser(noteParser);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+
+    notebookRepo.move(
+        note.getId(), note.getPath(), "/Case-note", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals(
+        "/Case-note",
+        notebookRepo.list(AuthenticationInfo.ANONYMOUS).get(note.getId()).getPath());
+  }
+
+  @Test
+  void testCaseOnlyFolderRename() throws IOException {
+    Note note = new Note();
+    note.setPath("/case-folder/note");
+    note.setNoteParser(noteParser);
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+
+    notebookRepo.move(
+        "/case-folder", "/Case-folder", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals(
+        "/Case-folder/note",
+        notebookRepo.list(AuthenticationInfo.ANONYMOUS).get(note.getId()).getPath());
+  }
+
+  @Test
   void testUpdateSettings() throws IOException {
     List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, repoSettings.size());

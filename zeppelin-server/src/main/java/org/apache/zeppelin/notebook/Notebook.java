@@ -51,8 +51,6 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.notebook.NoteManager.Folder;
-import org.apache.zeppelin.notebook.NoteManager.NoteNode;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
@@ -312,9 +310,16 @@ public class Notebook {
             new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
                     paragraphJobListener, credentials, noteEventListeners, zConf,
                     notebookRepo.getNoteParser());
-    noteManager.addNote(note, subject);
-    // init noteMeta
+    // Publish authorization before metadata. A folder operation must never observe a new note
+    // without its ACL and interpret the missing ACL as a public, empty permission set.
     authorizationService.createNoteAuth(note.getId(), subject);
+    try {
+      noteManager.addNote(note, subject);
+    } catch (IOException e) {
+      authorizationService.removeNoteAuth(note.getId());
+      throw e;
+    }
+    // init noteMeta
     authorizationService.saveNoteAuth();
     if (save) {
       noteManager.saveNote(note, subject);
@@ -430,8 +435,8 @@ public class Notebook {
     // Set Remove to true to cancel saving this note
     note.setRemoved(true);
     noteManager.removeNote(note.getId(), subject);
-    authorizationService.removeNoteAuth(note.getId());
     fireNoteRemoveEvent(note, subject);
+    authorizationService.removeNoteAuth(note.getId());
   }
 
   public void removeCorruptedNote(String noteId, AuthenticationInfo subject) throws IOException {
@@ -546,49 +551,73 @@ public class Notebook {
   }
 
   public void moveFolder(String folderPath, String newFolderPath, AuthenticationInfo subject) throws IOException {
+    moveFolder(folderPath, newFolderPath, subject, -1);
+  }
+
+  public void moveFolder(
+      String folderPath,
+      String newFolderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion) throws IOException {
     LOGGER.info("Move folder from {} to {}", folderPath, newFolderPath);
-    noteManager.moveFolder(folderPath, newFolderPath, subject);
+    noteManager.moveFolder(folderPath, newFolderPath, subject, expectedMetadataVersion);
   }
 
   public void removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
+    removeFolder(folderPath, subject, -1);
+  }
+
+  public void removeFolder(
+      String folderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion) throws IOException {
     LOGGER.info("Remove folder {}", folderPath);
-    // Notes must be loaded and their remove listeners fired before the folder (and its
-    // underlying repo storage) is deleted, otherwise the note content is no longer
-    // available to run the same per-note cleanup as removeNote(String, AuthenticationInfo).
+    // Notes must be loaded before the folder (and its underlying repo storage) is deleted,
+    // otherwise the note content is no longer available to run the same per-note cleanup as
+    // removeNote(String, AuthenticationInfo). NoteManager marks these objects removed atomically
+    // with the deletion; listeners run only after the deletion succeeds.
     List<NoteInfo> noteInfos = noteManager.getNoteInfoRecursively(folderPath);
+    Map<String, Note> loadedNotes = new HashMap<>();
     for (NoteInfo noteInfo : noteInfos) {
       processNote(noteInfo.getId(),
         note -> {
           if (note != null) {
-            note.setRemoved(true);
-            authorizationService.removeNoteAuth(note.getId());
-            fireNoteRemoveEvent(note, subject);
+            loadedNotes.put(note.getId(), note);
           }
           return null;
         });
     }
-    noteManager.removeFolder(folderPath, subject);
+    noteManager.removeFolder(
+        folderPath,
+        subject,
+        expectedMetadataVersion,
+        new ArrayList<>(loadedNotes.values()));
+    for (NoteInfo noteInfo : noteInfos) {
+      Note note = loadedNotes.get(noteInfo.getId());
+      if (note != null) {
+        fireNoteRemoveEvent(note, subject);
+      }
+      authorizationService.removeNoteAuth(noteInfo.getId());
+    }
   }
 
   public void emptyTrash(AuthenticationInfo subject) throws IOException {
+    emptyTrash(subject, -1);
+  }
+
+  public void emptyTrash(AuthenticationInfo subject, long expectedMetadataVersion)
+      throws IOException {
     LOGGER.info("Empty Trash");
-    removeFolder("/" + NoteManager.TRASH_FOLDER, subject);
+    removeFolder("/" + NoteManager.TRASH_FOLDER, subject, expectedMetadataVersion);
   }
 
   public void restoreAll(AuthenticationInfo subject) throws IOException {
-    NoteManager.Folder trash = noteManager.getTrashFolder();
-    // restore notes under trash folder
-    // If the value changes in the loop, a concurrent modification exception is thrown.
-    // Collector implementation of collect methods to maintain immutability.
-    List<NoteNode> notes = trash.getNotes().values().stream().collect(Collectors.toList());
-    for (NoteManager.NoteNode noteNode : notes) {
-      moveNote(noteNode.getNoteId(), noteNode.getNotePath().replace("/~Trash", ""), subject);
-    }
-    // restore folders under trash folder
-    List<Folder> folders = trash.getFolders().values().stream().collect(Collectors.toList());
-    for (NoteManager.Folder folder : folders) {
-      moveFolder(folder.getPath(), folder.getPath().replace("/~Trash", ""), subject);
-    }
+    restoreAll(subject, -1);
+  }
+
+  public void restoreAll(AuthenticationInfo subject, long expectedMetadataVersion)
+      throws IOException {
+    noteManager.restoreAllFromTrash(subject, expectedMetadataVersion);
   }
 
   public Revision checkpointNote(String noteId, String notePath, String checkpointMessage,
@@ -615,10 +644,7 @@ public class Notebook {
   public Note setNoteRevision(String noteId, String notePath, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
-      Note note = ((NotebookRepoWithVersionControl) notebookRepo)
-              .setNoteRevision(noteId, notePath, revisionId, subject);
-      noteManager.saveNote(note);
-      return note;
+      return noteManager.setNoteRevision(noteId, notePath, revisionId, subject);
     } else {
       return null;
     }

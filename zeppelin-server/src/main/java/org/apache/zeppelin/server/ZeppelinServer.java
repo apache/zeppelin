@@ -92,6 +92,7 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
+import org.apache.zeppelin.service.AuthenticatedSessionService;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.auth.AuthenticationServiceFactory;
 import org.apache.zeppelin.socket.ConnectionManager;
@@ -147,6 +148,7 @@ public class ZeppelinServer implements AutoCloseable {
   public ZeppelinServer(ZeppelinConfiguration zConf, String serviceLocatorName) throws IOException {
     LOGGER.info("Instantiated ZeppelinServer");
     this.zConf = zConf;
+    this.zConf.initializeAuthenticationMode();
     if (zConf.isPrometheusMetricEnabled()) {
       promMetricRegistry = Optional.of(new PrometheusMeterRegistry(PrometheusConfig.DEFAULT));
     } else {
@@ -193,6 +195,7 @@ public class ZeppelinServer implements AutoCloseable {
             bind(AuthenticationServiceFactory.getAuthServiceClass(zConf))
                     .to(AuthenticationService.class)
                     .in(Singleton.class);
+            bindAsContract(AuthenticatedSessionService.class).in(Singleton.class);
             bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
             bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
             bindAsContract(ConfigurationService.class).in(Singleton.class);
@@ -563,9 +566,16 @@ public class ZeppelinServer implements AutoCloseable {
     String shiroIniPath = zConf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
       webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
-      webapp
-          .addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
-          .setInitParameter("staticSecurityManagerEnabled", "true");
+      FilterHolder shiroFilter =
+          webapp.addFilter(
+              ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      shiroFilter.setInitParameter("staticSecurityManagerEnabled", "true");
+
+      // Jetty's WebSocket initializer otherwise prepends its upgrade filter and bypasses Shiro
+      // after a successful upgrade. Pre-register the default-named filter after Shiro so the
+      // initializer reuses it in this order.
+      JettyWebSocketUpgradeFilterInstaller.installAfterAuthenticationFilter(
+          webapp, shiroFilter);
       webapp.addEventListener(new EnvironmentLoaderListener());
     }
   }

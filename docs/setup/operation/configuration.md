@@ -121,8 +121,8 @@ Sources descending by priority:
   <tr>
     <td><h6 class="properties">ZEPPELIN_ALLOWED_ORIGINS</h6></td>
     <td><h6 class="properties">zeppelin.server.allowed.origins</h6></td>
-    <td>*</td>
-    <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> e.g. http://localhost:8080</td>
+    <td>(empty)</td>
+    <td>Comma-separated exact origins allowed for credentialed REST and WebSocket requests. Empty permits only the configured local server origin. Include scheme and port, e.g. http://localhost:8080.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_CREDENTIALS_PERSIST</h6></td>
@@ -405,6 +405,12 @@ Sources descending by priority:
     <td><h6 class="properties">zeppelin.websocket.max.text.message.size</h6></td>
     <td>1024000</td>
     <td>Size(in characters) of the maximum text message that can be received by websocket.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_AUTHORIZATION_ROLES_REFRESH_INTERVAL_MS</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.authorization.roles.refresh.interval.ms</h6></td>
+    <td>1000</td>
+    <td>Maximum age in milliseconds of a role snapshot reused for WebSocket broadcasts. Session logout and expiry are still validated before every delivery. Use 0 to refresh roles for every broadcast.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</h6></td>

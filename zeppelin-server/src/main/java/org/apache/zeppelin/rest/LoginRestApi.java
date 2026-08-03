@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +40,9 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
@@ -49,6 +52,7 @@ import org.apache.zeppelin.realm.kerberos.KerberosRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosToken;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.socket.ConnectionManager;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,14 +68,17 @@ public class LoginRestApi extends AbstractRestApi {
   private final ZeppelinConfiguration zConf;
 
   private final AuthorizationService authorizationService;
+  private final ConnectionManager connectionManager;
 
   @Inject
   public LoginRestApi(ZeppelinConfiguration zConf,
                       AuthenticationService authenticationService,
-                      AuthorizationService authorizationService) {
+                      AuthorizationService authorizationService,
+                      ConnectionManager connectionManager) {
     super(authenticationService);
     this.zConf = zConf;
     this.authorizationService = authorizationService;
+    this.connectionManager = connectionManager;
   }
 
   @GET
@@ -183,8 +190,11 @@ public class LoginRestApi extends AbstractRestApi {
     JsonResponse<Map<String, String>> response = null;
     try {
       logoutCurrentUser();
-      currentUser.getSession(true);
       currentUser.login(token);
+      // Shiro rotates any pre-authentication session ID on successful login. Only ensure the
+      // session exists after login so the REST response and subsequent WebSocket upgrade use
+      // the final authenticated session rather than a fixation-prone pre-login session.
+      currentUser.getSession(true);
 
       Set<String> roles = authenticationService.getAssociatedRoles();
       String principal = authenticationService.getPrincipal();
@@ -212,10 +222,9 @@ public class LoginRestApi extends AbstractRestApi {
   }
 
   /**
-   * Post Login
-   * Returns userName & password
-   * for anonymous access, username is always anonymous.
-   * After getting this ticket, access through websockets become safe
+   * Authenticate the Shiro session and return legacy UI identity metadata.
+   * For anonymous access, username is always anonymous. The response ticket is not a REST or
+   * WebSocket authentication credential; the resulting Shiro session cookie authenticates both.
    *
    * @return 200 response
    */
@@ -226,17 +235,9 @@ public class LoginRestApi extends AbstractRestApi {
     LOGGER.debug("userName: {}", userName);
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = SecurityUtils.getSubject();
-    if (currentUser.isAuthenticated()) {
-      currentUser.logout();
-    }
     LOGGER.debug("currentUser: {}", currentUser);
-    JsonResponse<Map<String, String>> response = null;
-    if (!currentUser.isAuthenticated()) {
-
-      UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
-
-      response = proceedToLogin(currentUser, token);
-    }
+    UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
+    JsonResponse<Map<String, String>> response = proceedToLogin(currentUser, token);
 
     if (response == null) {
       response = new JsonResponse<>(Response.Status.FORBIDDEN, "", null);
@@ -291,7 +292,13 @@ public class LoginRestApi extends AbstractRestApi {
   private void logoutCurrentUser() {
     Subject currentUser = SecurityUtils.getSubject();
     TicketContainer.instance.removeTicket(authenticationService.getPrincipal());
-    currentUser.getSession().stop();
-    currentUser.logout();
+    Session session = currentUser.getSession(false);
+    Serializable sessionId = session == null ? null : session.getId();
+    org.apache.shiro.mgt.SecurityManager securityManager = ThreadContext.getSecurityManager();
+    try {
+      currentUser.logout();
+    } finally {
+      connectionManager.closeConnectionsForSession(securityManager, sessionId);
+    }
   }
 }

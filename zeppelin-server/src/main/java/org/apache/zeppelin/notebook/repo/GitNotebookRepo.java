@@ -22,6 +22,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -31,6 +32,8 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,38 +78,127 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public void move(String noteId,
-                   String notePath,
-                   String newNotePath,
-                   AuthenticationInfo subject) throws IOException {
+  public synchronized void move(String noteId,
+                                String notePath,
+                                String newNotePath,
+                                AuthenticationInfo subject) throws IOException {
+    ObjectId headBeforeMove = git.getRepository().resolve(Constants.HEAD);
     super.move(noteId, notePath, newNotePath, subject);
     String noteFileName = buildNoteFileName(noteId, notePath);
     String newNoteFileName = buildNoteFileName(noteId, newNotePath);
     try {
-      git.rm().addFilepattern(noteFileName).call();
+      git.rm().setCached(true).addFilepattern(noteFileName).call();
       git.add().addFilepattern(newNoteFileName).call();
       git.commit().setMessage("Move note " + noteId + " from " + noteFileName + " to " +
           newNoteFileName).call();
-    } catch (GitAPIException e) {
-      throw new IOException(e);
+    } catch (GitAPIException | RuntimeException e) {
+      if (headContainsMove(headBeforeMove, noteFileName, newNoteFileName, e)) {
+        LOGGER.warn(
+            "Git committed note move from {} to {} before reporting a hook failure; "
+                + "keeping the committed move",
+            notePath,
+            newNotePath,
+            e);
+        return;
+      }
+      throw rollbackFailedMove(
+          "Failed to commit note move from " + notePath + " to " + newNotePath,
+          e,
+          () -> super.move(noteId, newNotePath, notePath, subject),
+          noteFileName,
+          newNoteFileName);
     }
   }
 
   @Override
-  public void move(String folderPath, String newFolderPath,
-                   AuthenticationInfo subject) throws IOException {
+  public synchronized void move(String folderPath, String newFolderPath,
+                                AuthenticationInfo subject) throws IOException {
+    ObjectId headBeforeMove = git.getRepository().resolve(Constants.HEAD);
     super.move(folderPath, newFolderPath, subject);
+    String folderName = folderPath.substring(1);
+    String newFolderName = newFolderPath.substring(1);
     try {
-      git.rm().addFilepattern(folderPath.substring(1)).call();
-      git.add().addFilepattern(newFolderPath.substring(1)).call();
+      git.rm().setCached(true).addFilepattern(folderName).call();
+      git.add().addFilepattern(newFolderName).call();
       git.commit().setMessage("Move folder " + folderPath + " to " + newFolderPath).call();
-    } catch (GitAPIException e) {
-      throw new IOException(e);
+    } catch (GitAPIException | RuntimeException e) {
+      if (headContainsMove(headBeforeMove, folderName, newFolderName, e)) {
+        LOGGER.warn(
+            "Git committed folder move from {} to {} before reporting a hook failure; "
+                + "keeping the committed move",
+            folderPath,
+            newFolderPath,
+            e);
+        return;
+      }
+      throw rollbackFailedMove(
+          "Failed to commit folder move from " + folderPath + " to " + newFolderPath,
+          e,
+          () -> super.move(newFolderPath, folderPath, subject),
+          folderName,
+          newFolderName);
     }
   }
 
+  private IOException rollbackFailedMove(
+      String message,
+      Throwable cause,
+      IoAction rollback,
+      String... affectedPaths) {
+    IOException failure = new IOException(message, cause);
+    try {
+      rollback.run();
+    } catch (IOException rollbackFailure) {
+      failure.addSuppressed(rollbackFailure);
+    }
+
+    try {
+      ResetCommand reset = git.reset();
+      for (String affectedPath : affectedPaths) {
+        reset.addPath(affectedPath);
+      }
+      reset.call();
+    } catch (GitAPIException | RuntimeException resetFailure) {
+      failure.addSuppressed(resetFailure);
+    }
+    return failure;
+  }
+
+  private boolean headContainsMove(
+      ObjectId previousHead,
+      String sourcePath,
+      String destinationPath,
+      Throwable failure) {
+    try {
+      ObjectId currentHead = git.getRepository().resolve(Constants.HEAD);
+      boolean headChanged = previousHead == null
+          ? currentHead != null
+          : !previousHead.equals(currentHead);
+      if (!headChanged || currentHead == null) {
+        return false;
+      }
+      try (RevWalk revWalk = new RevWalk(git.getRepository())) {
+        RevCommit currentCommit = revWalk.parseCommit(currentHead);
+        try (TreeWalk source = TreeWalk.forPath(
+                 git.getRepository(), sourcePath, currentCommit.getTree());
+             TreeWalk destination = TreeWalk.forPath(
+                 git.getRepository(), destinationPath, currentCommit.getTree())) {
+          return source == null && destination != null;
+        }
+      }
+    } catch (IOException | RuntimeException headInspectionFailure) {
+      failure.addSuppressed(headInspectionFailure);
+      return false;
+    }
+  }
+
+  @FunctionalInterface
+  private interface IoAction {
+    void run() throws IOException;
+  }
+
   @Override
-  public void remove(String noteId, String notePath, AuthenticationInfo subject)
+  public synchronized void remove(String noteId, String notePath, AuthenticationInfo subject)
       throws IOException {
     super.remove(noteId, notePath, subject);
     String noteFileName = buildNoteFileName(noteId, notePath);
@@ -119,7 +211,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+  public synchronized void remove(String folderPath, AuthenticationInfo subject) throws IOException {
     super.remove(folderPath, subject);
     try {
       git.rm().addFilepattern(folderPath.substring(1)).call();
@@ -137,10 +229,10 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
-  public Revision checkpoint(String noteId,
-                             String notePath,
-                             String commitMessage,
-                             AuthenticationInfo subject) throws IOException {
+  public synchronized Revision checkpoint(String noteId,
+                                          String notePath,
+                                          String commitMessage,
+                                          AuthenticationInfo subject) throws IOException {
     String noteFileName = buildNoteFileName(noteId, notePath);
     Revision revision = Revision.EMPTY;
     try {
@@ -229,8 +321,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String notePath, String revId,
-                              AuthenticationInfo subject)
+  public synchronized Note setNoteRevision(String noteId, String notePath, String revId,
+                                           AuthenticationInfo subject)
       throws IOException {
     Note revisionNote = get(noteId, notePath, revId, subject);
     if (revisionNote != null) {

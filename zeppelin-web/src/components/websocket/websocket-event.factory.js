@@ -19,6 +19,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
 
   let websocketCalls = {};
   let pingIntervalId;
+  let reconnectOnOpenCallbacks = [];
   const uniqueClientId = Math.random().toString(36).substring(2, 7);
   let lastMsgIdSeqSent = 0;
 
@@ -28,24 +29,27 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
+    let callbacks = reconnectOnOpenCallbacks;
+    reconnectOnOpenCallbacks = [];
+    callbacks.forEach(function(callback) {
+      callback();
+    });
     pingIntervalId = setInterval(function() {
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
   });
 
-  websocketCalls.sendNewEvent = function(data) {
-    if ($rootScope.ticket !== undefined) {
-      data.principal = $rootScope.ticket.principal;
-      data.ticket = $rootScope.ticket.ticket;
-      data.roles = $rootScope.ticket.roles;
-    } else {
-      data.principal = '';
-      data.ticket = '';
-      data.roles = '';
+  websocketCalls.reconnect = function(onOpen) {
+    if (onOpen) {
+      reconnectOnOpenCallbacks.push(onOpen);
     }
+    websocketCalls.ws.reconnectIfNotNormalClose = true;
+    websocketCalls.ws.reconnect();
+  };
 
+  websocketCalls.sendNewEvent = function(data) {
     data.msgId = uniqueClientId + '-' + ++lastMsgIdSeqSent;
-    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
+    console.log('Send >> %o, %o', data.op, data);
     return websocketCalls.ws.send(JSON.stringify(data));
   };
 
@@ -223,6 +227,12 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
 
   websocketCalls.ws.onClose(function(event) {
     console.log('close message: ', event);
+    if (event.code === 1008) {
+      websocketCalls.ws.reconnectIfNotNormalClose = false;
+      $rootScope.$broadcast('session_logout', {
+        info: event.reason || 'Authenticated session is no longer valid',
+      });
+    }
     if (pingIntervalId !== undefined) {
       clearInterval(pingIntervalId);
       pingIntervalId = undefined;

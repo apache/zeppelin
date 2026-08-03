@@ -16,26 +16,37 @@
  */
 package org.apache.zeppelin.service;
 
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.lang.util.LifecycleUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.service.shiro.AbstractShiroTest;
 import org.h2.jdbcx.JdbcDataSource;
@@ -103,6 +114,47 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
   }
 
   @Test
+  void capturesPrincipalRolesAndSessionFromOneSubject() {
+    setupPrincipalName("TestUser");
+    when(zConf.isUsernameForceLowerCase()).thenReturn(true);
+
+    Session session = mock(Session.class);
+    when(session.getId()).thenReturn("session-id");
+    when(subject.getSession(false)).thenReturn(session);
+
+    KnoxJwtRealm realm = spy(new KnoxJwtRealm());
+    LifecycleUtils.init(realm);
+    doReturn(Set.of("reader")).when(realm).mapGroupPrincipals("testuser");
+    DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+    ThreadContext.bind(securityManager);
+
+    AuthenticatedIdentity identity = shiroSecurityService.getAuthenticatedIdentity();
+
+    assertEquals("testuser", identity.getPrincipal());
+    assertEquals(Set.of("reader"), identity.getRoles());
+    assertEquals("session-id", identity.getSessionId().orElseThrow());
+    assertTrue(identity.isAuthenticated());
+    verify(subject, times(1)).isAuthenticated();
+    verify(subject, times(1)).getPrincipal();
+    verify(subject, times(1)).getSession(false);
+  }
+
+  @Test
+  void capturesAnonymousIdentityWithoutLookingUpRolesOrSession() {
+    when(subject.isAuthenticated()).thenReturn(false);
+
+    AuthenticatedIdentity identity = shiroSecurityService.getAuthenticatedIdentity();
+
+    assertEquals(AuthenticatedIdentity.ANONYMOUS_PRINCIPAL, identity.getPrincipal());
+    assertEquals(Collections.emptySet(), identity.getRoles());
+    assertFalse(identity.isAuthenticated());
+    assertTrue(identity.getSessionId().isEmpty());
+    verify(subject, times(1)).isAuthenticated();
+    verify(subject, times(0)).getPrincipal();
+    verify(subject, times(0)).getSession(false);
+  }
+
+  @Test
   void testKnoxGetRoles() {
     setupPrincipalName("test");
 
@@ -119,6 +171,24 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
 
     Set<String> roles = shiroSecurityService.getAssociatedRoles();
     assertEquals(testRoles, roles);
+  }
+
+  @Test
+  void capturesActiveDirectoryRolesWithOneAuthorizationQuery() throws Exception {
+    setupPrincipalName("test");
+
+    ActiveDirectoryGroupRealm realm = spy(new ActiveDirectoryGroupRealm());
+    LifecycleUtils.init(realm);
+    doReturn(new SimpleAuthorizationInfo(Set.of("role1", "role2")))
+        .when(realm).queryForAuthorizationInfo(any());
+    DefaultSecurityManager securityManager = new DefaultSecurityManager(realm);
+    ThreadContext.bind(securityManager);
+
+    Set<String> roles = shiroSecurityService.getAssociatedRoles();
+
+    assertEquals(Set.of("role1", "role2"), roles);
+    verify(realm, times(1)).queryForAuthorizationInfo(any());
+    verify(subject, never()).hasRole(any());
   }
 
   @AfterEach

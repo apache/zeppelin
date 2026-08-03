@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +30,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -125,6 +128,340 @@ class NoteManagerTest {
               noteManager.moveNote(note2.getId(), "/prod/note-1", AuthenticationInfo.ANONYMOUS);
             },
             "Note '/prod/note-1' existed");
+  }
+
+  @Test
+  void failedNoteMoveKeepsSourceMetadataAndCachedPath() throws IOException {
+    NoteManager manager = new NoteManager(new FailingNoteMoveRepo(), zConf);
+    Note note = createNote("/source/note");
+    manager.saveNote(note);
+
+    assertThrows(
+        IllegalStateException.class,
+        () -> manager.moveNote(
+            note.getId(), "/destination/note", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals("/source/note", manager.getNotesInfo().get(note.getId()));
+    assertEquals("/source/note", note.getPath());
+    assertTrue(manager.containsNote("/source/note"));
+    assertFalse(manager.containsNote("/destination/note"));
+  }
+
+  @Test
+  void testMoveFolderRejectsExistingDestination() throws IOException {
+    Note source = createNote("/source/note");
+    Note destination = createNote("/destination/note");
+    noteManager.saveNote(source);
+    noteManager.saveNote(destination);
+
+    assertThrows(
+        NotePathAlreadyExistsException.class,
+        () -> noteManager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals("/source/note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals("/destination/note", noteManager.getNotesInfo().get(destination.getId()));
+  }
+
+  @Test
+  void testMoveFolderRejectsNoteAtDestination() throws IOException {
+    Note source = createNote("/source/note");
+    Note destination = createNote("/destination");
+    noteManager.saveNote(source);
+    noteManager.saveNote(destination);
+
+    assertThrows(
+        NotePathAlreadyExistsException.class,
+        () -> noteManager.moveFolder(
+            "/source", "/destination", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals("/source/note", noteManager.getNotesInfo().get(source.getId()));
+    assertEquals("/destination", noteManager.getNotesInfo().get(destination.getId()));
+  }
+
+  @Test
+  void testMoveFolderRejectsOwnDescendant() throws IOException {
+    Note source = createNote("/source/note");
+    noteManager.saveNote(source);
+
+    assertThrows(
+        IOException.class,
+        () -> noteManager.moveFolder(
+            "/source", "/source/child", AuthenticationInfo.ANONYMOUS));
+
+    assertEquals("/source/note", noteManager.getNotesInfo().get(source.getId()));
+  }
+
+  @Test
+  void folderMutationRejectsAnAuthorizationSnapshotAfterMembershipChanges() throws IOException {
+    Note original = createNote("/source/original");
+    noteManager.saveNote(original);
+    NoteManager.NoteMetadataSnapshot authorized = noteManager.getNotesInfoSnapshot();
+
+    Note addedAfterAuthorization = createNote("/source/added-later");
+    noteManager.saveNote(addedAfterAuthorization);
+
+    IOException failure = assertThrows(
+        IOException.class,
+        () -> noteManager.moveFolder(
+            "/source",
+            "/destination",
+            AuthenticationInfo.ANONYMOUS,
+            authorized.getVersion()));
+    assertEquals(
+        "Notebook metadata changed while authorizing the folder operation",
+        failure.getMessage());
+    assertEquals("/source/original", noteManager.getNotesInfo().get(original.getId()));
+    assertEquals(
+        "/source/added-later", noteManager.getNotesInfo().get(addedAfterAuthorization.getId()));
+  }
+
+  @Test
+  void folderMoveUpdatesCachedNotePathBeforeASubsequentSave() throws IOException {
+    Note note = createNote("/source/note");
+    noteManager.saveNote(note);
+
+    noteManager.moveFolder("/source", "/destination", AuthenticationInfo.ANONYMOUS);
+
+    assertEquals("/destination/note", note.getPath());
+    noteManager.saveNote(note);
+    assertEquals("/destination/note", noteManager.getNotesInfo().get(note.getId()));
+    assertFalse(noteManager.containsNote("/source/note"));
+  }
+
+  @Test
+  void restoreAllUpdatesDirectAndNestedCachedNotePathsBeforeReturning() throws IOException {
+    Note directNote = createNote("/~Trash/direct-note");
+    Note nestedNote = createNote("/~Trash/folder/nested-note");
+    noteManager.saveNote(directNote);
+    noteManager.saveNote(nestedNote);
+    NoteManager.NoteMetadataSnapshot authorized = noteManager.getNotesInfoSnapshot();
+
+    noteManager.restoreAllFromTrash(AuthenticationInfo.ANONYMOUS, authorized.getVersion());
+
+    assertEquals("/direct-note", directNote.getPath());
+    assertEquals("/folder/nested-note", nestedNote.getPath());
+    noteManager.saveNote(directNote);
+    noteManager.saveNote(nestedNote);
+    assertEquals("/direct-note", noteManager.getNotesInfo().get(directNote.getId()));
+    assertEquals("/folder/nested-note", noteManager.getNotesInfo().get(nestedNote.getId()));
+  }
+
+  @Test
+  void emptyTrashKeepsTheLiveTrashNodeForLaterRestoreAll() throws IOException {
+    Note discardedNote = createNote("/~Trash/discarded-note");
+    noteManager.saveNote(discardedNote);
+    noteManager.removeFolder("/~Trash", AuthenticationInfo.ANONYMOUS);
+
+    Note laterNote = createNote("/~Trash/later-note");
+    noteManager.saveNote(laterNote);
+    NoteManager.NoteMetadataSnapshot authorized = noteManager.getNotesInfoSnapshot();
+    noteManager.restoreAllFromTrash(AuthenticationInfo.ANONYMOUS, authorized.getVersion());
+
+    assertEquals("/later-note", laterNote.getPath());
+    assertEquals("/later-note", noteManager.getNotesInfo().get(laterNote.getId()));
+    assertTrue(noteManager.containsFolder("/~Trash"));
+  }
+
+  @Test
+  void failedFolderRemovalRollsBackRemovedStateBeforeWaitingSaveContinues() throws Exception {
+    BlockingFailingFolderRemoveRepo repo = new BlockingFailingFolderRemoveRepo();
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note note = createNote("/folder/note");
+    manager.saveNote(note);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    CountDownLatch removalFinished = new CountDownLatch(1);
+    CountDownLatch saveStarted = new CountDownLatch(1);
+    CountDownLatch saveFinished = new CountDownLatch(1);
+    List<Throwable> removalFailures = Collections.synchronizedList(new ArrayList<>());
+
+    try {
+      executor.execute(() -> {
+        try {
+          manager.removeFolder(
+              "/folder", AuthenticationInfo.ANONYMOUS, -1, List.of(note));
+        } catch (Throwable t) {
+          removalFailures.add(t);
+        } finally {
+          removalFinished.countDown();
+        }
+      });
+      assertTrue(repo.removeStarted.await(5, TimeUnit.SECONDS));
+
+      executor.execute(() -> {
+        saveStarted.countDown();
+        try {
+          manager.saveNote(note);
+        } catch (Throwable t) {
+          removalFailures.add(t);
+        } finally {
+          saveFinished.countDown();
+        }
+      });
+      assertTrue(saveStarted.await(5, TimeUnit.SECONDS));
+      assertFalse(saveFinished.await(200, TimeUnit.MILLISECONDS));
+
+      repo.allowRemoveToFail.countDown();
+      assertTrue(removalFinished.await(5, TimeUnit.SECONDS));
+      assertTrue(saveFinished.await(5, TimeUnit.SECONDS));
+      assertEquals(1, removalFailures.size());
+      assertTrue(removalFailures.get(0) instanceof IllegalStateException);
+      assertFalse(note.isRemoved());
+      assertEquals("/folder/note", manager.getNotesInfo().get(note.getId()));
+    } finally {
+      repo.allowRemoveToFail.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  @Test
+  void setRevisionAndMovePublishOnePathGeneration() throws Exception {
+    BlockingVersionedRepo repo = new BlockingVersionedRepo();
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note note = createNote("/source/note");
+    manager.saveNote(note);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    CountDownLatch moveStarted = new CountDownLatch(1);
+    CountDownLatch moveFinished = new CountDownLatch(1);
+
+    try {
+      Future<Note> revision = executor.submit(() -> manager.setNoteRevision(
+          note.getId(), "/source/note", "revision", AuthenticationInfo.ANONYMOUS));
+      assertTrue(repo.revisionStarted.await(5, TimeUnit.SECONDS));
+
+      Future<?> move = executor.submit(() -> {
+        moveStarted.countDown();
+        try {
+          manager.moveNote(
+              note.getId(), "/destination/note", AuthenticationInfo.ANONYMOUS);
+        } finally {
+          moveFinished.countDown();
+        }
+        return null;
+      });
+      assertTrue(moveStarted.await(5, TimeUnit.SECONDS));
+      assertFalse(moveFinished.await(200, TimeUnit.MILLISECONDS));
+
+      repo.allowRevisionToReturn.countDown();
+      assertNotNull(revision.get(5, TimeUnit.SECONDS));
+      move.get(5, TimeUnit.SECONDS);
+
+      assertEquals("/destination/note", manager.getNotesInfo().get(note.getId()));
+      assertEquals("/destination/note", note.getPath());
+      assertEquals(Set.of("/destination/note"), repo.persistedPaths);
+      assertFalse(manager.containsNote("/source/note"));
+      assertTrue(manager.containsNote("/destination/note"));
+
+      IOException stalePath = assertThrows(
+          IOException.class,
+          () -> manager.setNoteRevision(
+              note.getId(), "/source/note", "revision", AuthenticationInfo.ANONYMOUS));
+      assertEquals("Note path changed while setting the revision", stalePath.getMessage());
+      assertEquals(Set.of("/destination/note"), repo.persistedPaths);
+    } finally {
+      repo.allowRevisionToReturn.countDown();
+      executor.shutdownNow();
+    }
+  }
+
+  private static final class BlockingFailingFolderRemoveRepo extends InMemoryNotebookRepo {
+    private final CountDownLatch removeStarted = new CountDownLatch(1);
+    private final CountDownLatch allowRemoveToFail = new CountDownLatch(1);
+
+    @Override
+    public void remove(String folderPath, AuthenticationInfo subject) {
+      removeStarted.countDown();
+      try {
+        if (!allowRemoveToFail.await(5, TimeUnit.SECONDS)) {
+          throw new IllegalStateException("Timed out waiting to fail folder removal");
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException("Interrupted while failing folder removal", e);
+      }
+      throw new IllegalStateException("Failed to remove folder");
+    }
+  }
+
+  private static final class FailingNoteMoveRepo extends InMemoryNotebookRepo {
+    @Override
+    public void move(
+        String noteId,
+        String notePath,
+        String newNotePath,
+        AuthenticationInfo subject) {
+      throw new IllegalStateException("Failed to move note");
+    }
+  }
+
+  private static final class BlockingVersionedRepo extends InMemoryNotebookRepo
+      implements NotebookRepoWithVersionControl {
+    private final CountDownLatch revisionStarted = new CountDownLatch(1);
+    private final CountDownLatch allowRevisionToReturn = new CountDownLatch(1);
+    private final Set<String> persistedPaths = ConcurrentHashMap.newKeySet();
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+      super.save(note, subject);
+      persistedPaths.add(note.getPath());
+    }
+
+    @Override
+    public void move(
+        String noteId,
+        String notePath,
+        String newNotePath,
+        AuthenticationInfo subject) {
+      super.move(noteId, notePath, newNotePath, subject);
+      persistedPaths.remove(notePath);
+      persistedPaths.add(newNotePath);
+    }
+
+    @Override
+    public Revision checkpoint(
+        String noteId,
+        String notePath,
+        String checkpointMsg,
+        AuthenticationInfo subject) {
+      return Revision.EMPTY;
+    }
+
+    @Override
+    public Note get(
+        String noteId,
+        String notePath,
+        String revId,
+        AuthenticationInfo subject) throws IOException {
+      return get(noteId, notePath, subject);
+    }
+
+    @Override
+    public List<Revision> revisionHistory(
+        String noteId,
+        String notePath,
+        AuthenticationInfo subject) {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public Note setNoteRevision(
+        String noteId,
+        String notePath,
+        String revId,
+        AuthenticationInfo subject) throws IOException {
+      revisionStarted.countDown();
+      try {
+        if (!allowRevisionToReturn.await(5, TimeUnit.SECONDS)) {
+          throw new IOException("Timed out waiting to return a note revision");
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IOException("Interrupted while returning a note revision", e);
+      }
+      Note note = get(noteId, notePath, subject);
+      save(note, subject);
+      return note;
+    }
   }
 
   private Note createNote(String notePath) {

@@ -29,7 +29,9 @@ limitations under the License.
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
 ## Important Note
-By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Secure the Websocket channel), or only deploy and use Zeppelin in a secured and trusted environment.
+By default, Zeppelin allows anonymous access. It is strongly recommended that you configure
+Apache Shiro for both REST and WebSocket authentication as described below, or only deploy and
+use Zeppelin in a secured and trusted environment.
 
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
@@ -66,6 +68,42 @@ user2 = password3, role3
 user3 = password4, role2
 ```
 You can set the roles for each users next to the password.
+
+### REST and WebSocket authentication
+
+REST requests under `/api/*` and the notebook WebSocket handshake at `/ws` pass through the same
+Shiro filter and use the same Shiro session cookie. The browser sends the `JSESSIONID` cookie during
+the WebSocket HTTP upgrade; identity fields in WebSocket messages are not authentication
+credentials. A logout closes WebSockets for that exact session immediately; an expired session is
+closed when the next WebSocket frame is validated.
+
+The `[urls]` section is the include/exclude policy for both transports. Rules use first-match-wins
+ordering. For example, the following keeps the version endpoint public while requiring one
+authenticated session for all notebook WebSocket connections and remaining REST endpoints:
+
+```
+[urls]
+/api/version = anon
+/ws = authc
+/** = authc
+```
+
+Use `anon` only for paths that are deliberately excluded from authentication. To allow an
+anonymous notebook WebSocket explicitly, configure `/ws = anon`. Shiro sees `/ws` as one upgrade
+URL, so operation-level notebook permissions are still enforced by Zeppelin's notebook ACL and
+service authorization rather than separate Shiro URL patterns.
+
+Origin validation is performed before the WebSocket upgrade. Configure
+`zeppelin.server.allowed.origins` with the exact trusted browser origins; avoid `*` in secured
+deployments.
+
+For streamed output, Zeppelin revalidates the Shiro session before every WebSocket delivery while
+reusing a recent role snapshot to avoid querying remote realms for every output chunk. The default
+`zeppelin.websocket.authorization.roles.refresh.interval.ms` value is `1000`, so Zeppelin's own
+snapshot adds at most one second to directory role-revocation handling for passive WebSocket
+broadcasts. Realm-specific authorization caches can add their own delay. Set the value to `0` to
+refresh roles for every broadcast. This setting does not delay logout or session-expiry detection,
+and direct notebook ACL changes are checked on every broadcast.
 
 ## Groups and permissions (optional)
 In case you want to leverage user groups and permissions, use one of the following configuration for LDAP or AD under `[main]` segment in `shiro.ini`.
@@ -293,18 +331,22 @@ chown hdfs:hadoop /etc/security/http_secret
 chmod 440 /etc/security/http_secret
 ```
 
-## Secure Cookie for Zeppelin Sessions (optional)
-Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
-not be accessed via client side scripts thus preventing majority of Cross-site scripting (XSS) attacks.
+## Secure Cookie for Zeppelin Sessions
+Zeppelin configures `HttpOnly`, `SameSite=Lax`, and HTTPS-aware `Secure` handling for the Shiro
+session cookie by default. `HttpOnly` prevents client-side scripts from reading the cookie. Shiro
+emits the `Secure` attribute only when the servlet request is secure, so local HTTP development
+continues to work while HTTPS deployments keep the cookie off clear-text requests. When TLS is
+terminated at a reverse proxy, configure forwarded request handling so Jetty sees the original
+HTTPS scheme.
 
-To enable secure cookie support via Shiro, add the following lines in `conf/shiro.ini` under `[main]` section, after
-defining a `sessionManager`.
+The default `conf/shiro.ini.template` contains the following settings under `[main]`:
 
 ```
 cookie = org.apache.shiro.web.servlet.SimpleCookie
 cookie.name = JSESSIONID
 cookie.secure = true
 cookie.httpOnly = true
+cookie.sameSite = LAX
 sessionManager.sessionIdCookie = $cookie
 ```
 
@@ -316,6 +358,7 @@ Since Shiro provides **url-based security**, you can hide the information by com
 ```
 [urls]
 
+/ws = authc
 /api/interpreter/** = authc, roles[admin]
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]

@@ -35,6 +35,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook.NoteProcessor;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,7 @@ public class NoteManager {
    * operations never observe a tree and a mapping that belong to different generations.
    */
   private volatile NoteTree noteTree;
+  private long metadataVersion;
 
   @Inject
   public NoteManager(NotebookRepo notebookRepo, ZeppelinConfiguration zConf) throws IOException {
@@ -105,6 +107,13 @@ public class NoteManager {
     return this.noteTree.notesInfo;
   }
 
+  /** Capture one immutable generation of the note-id/path index for authorization preflight. */
+  public synchronized NoteMetadataSnapshot getNotesInfoSnapshot() {
+    return new NoteMetadataSnapshot(
+        metadataVersion,
+        Collections.unmodifiableMap(new LinkedHashMap<>(noteTree.notesInfo)));
+  }
+
 
   /**
    * Rebuild the notebook metadata from the NotebookRepo. The new tree is built completely
@@ -113,8 +122,9 @@ public class NoteManager {
    *
    * @throws IOException
    */
-  public void reloadNotes() throws IOException {
+  public synchronized void reloadNotes() throws IOException {
     this.noteTree = buildNoteTree();
+    metadataVersion++;
   }
 
   /**
@@ -183,23 +193,26 @@ public class NoteManager {
    * @param subject
    * @throws IOException
    */
-  public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
+  public synchronized void saveNote(Note note, AuthenticationInfo subject) throws IOException {
     if (note.isRemoved()) {
       LOGGER.warn("Try to save note: {} when it is removed", note.getId());
     } else {
-      addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), false);
-      noteCache.putNote(note);
       // Make sure to execute `notebookRepo.save()` successfully in concurrent context
       // Otherwise, the NullPointerException will be thrown when invoking notebookRepo.get() in the following operations.
-      synchronized (this) {
-        this.notebookRepo.save(note, subject);
+      String previousPath = noteTree.notesInfo.get(note.getId());
+      addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), false);
+      noteCache.putNote(note);
+      if (!StringUtils.equals(previousPath, note.getPath())) {
+        metadataVersion++;
       }
+      this.notebookRepo.save(note, subject);
     }
   }
 
-  public void addNote(Note note, AuthenticationInfo subject) throws IOException {
+  public synchronized void addNote(Note note, AuthenticationInfo subject) throws IOException {
     addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), true);
     noteCache.putNote(note);
+    metadataVersion++;
   }
 
   /**
@@ -213,18 +226,44 @@ public class NoteManager {
   }
 
   /**
+   * Restore a note revision and publish it to the note cache and path index atomically with
+   * respect to note and folder moves.
+   */
+  public synchronized Note setNoteRevision(
+      String noteId,
+      String notePath,
+      String revisionId,
+      AuthenticationInfo subject) throws IOException {
+    String currentPath = noteTree.notesInfo.get(noteId);
+    if (currentPath == null) {
+      throw new IOException("No metadata found for this note: " + noteId);
+    }
+    if (!StringUtils.equals(currentPath, notePath)) {
+      throw new IOException("Note path changed while setting the revision");
+    }
+
+    Note note = ((NotebookRepoWithVersionControl) notebookRepo)
+        .setNoteRevision(noteId, notePath, revisionId, subject);
+    if (note != null) {
+      saveNote(note, subject);
+    }
+    return note;
+  }
+
+  /**
    * Remove note from NotebookRepo and NoteManager
    *
    * @param noteId
    * @param subject
    * @throws IOException
    */
-  public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
+  public synchronized void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
     NoteTree tree = this.noteTree;
     String notePath = tree.notesInfo.remove(noteId);
     Folder folder = getOrCreateFolder(tree, getFolderName(notePath));
     folder.removeNote(getNoteName(notePath));
     noteCache.removeNote(noteId);
+    metadataVersion++;
     this.notebookRepo.remove(noteId, notePath, subject);
   }
 
@@ -235,57 +274,86 @@ public class NoteManager {
       throw new IOException("No metadata found for this note: " + noteId);
     }
 
-    NoteTree tree = this.noteTree;
-    if (!isNotePathAvailable(tree, newNotePath)) {
-      throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
-    }
+    String notePath;
+    synchronized (this) {
+      NoteTree tree = this.noteTree;
+      if (!isNotePathAvailable(tree, newNotePath)) {
+        throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
+      }
 
-    // move the old NoteNode from notePath to newNotePath
-    String notePath = tree.notesInfo.get(noteId);
-    NoteNode noteNode = getNoteNode(tree, notePath);
-    noteNode.getParent().removeNote(getNoteName(notePath));
-    noteNode.setNotePath(newNotePath);
-    String newParent = getFolderName(newNotePath);
-    Folder newFolder = getOrCreateFolder(tree, newParent);
-    newFolder.addNoteNode(noteNode);
+      notePath = tree.notesInfo.get(noteId);
+      NoteNode noteNode = getNoteNode(tree, notePath);
 
-    // update noteInfo mapping
-    tree.notesInfo.put(noteId, newNotePath);
+      // Move durable state first. If the repository rejects the destination, the in-memory
+      // path index and cached note must remain on the source path.
+      this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
-    // update notebookrepo
-    this.notebookRepo.move(noteId, notePath, newNotePath, subject);
+      // move the old NoteNode from notePath to newNotePath
+      noteNode.getParent().removeNote(getNoteName(notePath));
+      noteNode.setNotePath(newNotePath);
+      String newParent = getFolderName(newNotePath);
+      Folder newFolder = getOrCreateFolder(tree, newParent);
+      newFolder.addNoteNode(noteNode);
 
-    // Update path of the note
-    if (!StringUtils.equals(notePath, newNotePath)) {
-      processNote(noteId,
-        note -> {
-          note.setPath(newNotePath);
-          return null;
-        });
-    }
+      // update noteInfo mapping
+      tree.notesInfo.put(noteId, newNotePath);
+      updateCachedNotePath(noteId, newNotePath);
+      metadataVersion++;
 
-    // save note if note name is changed, because we need to update the note field in note json.
-    String oldNoteName = getNoteName(notePath);
-    String newNoteName = getNoteName(newNotePath);
-    if (!StringUtils.equals(oldNoteName, newNoteName)) {
-      processNote(noteId,
-        note -> {
-          this.notebookRepo.save(note, subject);
-          return null;
-        });
+      // The cache may evict the note while many notes are moved concurrently. Reload it through
+      // the new metadata path so the repository-backed object also receives the updated path.
+      if (!StringUtils.equals(notePath, newNotePath)) {
+        processNote(noteId,
+          note -> {
+            note.setPath(newNotePath);
+            return null;
+          });
+      }
+
+      // save note if note name is changed, because we need to update the note field in note json.
+      String oldNoteName = getNoteName(notePath);
+      String newNoteName = getNoteName(newNotePath);
+      if (!StringUtils.equals(oldNoteName, newNoteName)) {
+        processNote(noteId,
+          note -> {
+            this.notebookRepo.save(note, subject);
+            return null;
+          });
+      }
     }
   }
 
-  public void moveFolder(String folderPath,
-                         String newFolderPath,
-                         AuthenticationInfo subject) throws IOException {
+  public synchronized void moveFolder(String folderPath,
+                                      String newFolderPath,
+                                      AuthenticationInfo subject) throws IOException {
+    moveFolder(folderPath, newFolderPath, subject, -1);
+  }
+
+  public synchronized void moveFolder(
+      String folderPath,
+      String newFolderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion) throws IOException {
+
+    assertMetadataVersion(expectedMetadataVersion);
+
+    NoteTree tree = this.noteTree;
+    Folder folder = getFolder(tree, folderPath);
+    if (StringUtils.equals(folderPath, newFolderPath)) {
+      return;
+    }
+    if (newFolderPath.startsWith(folderPath + "/")) {
+      throw new IOException(
+          "Can not move folder '" + folderPath + "' into its own descendant");
+    }
+    if (containsNote(newFolderPath) || containsFolder(newFolderPath)) {
+      throw new NotePathAlreadyExistsException("Path '" + newFolderPath + "' existed");
+    }
 
     // update notebookrepo
     this.notebookRepo.move(folderPath, newFolderPath, subject);
 
     // update filesystem tree
-    NoteTree tree = this.noteTree;
-    Folder folder = getFolder(tree, folderPath);
     folder.getParent().removeFolder(folder.getName(), subject);
     Folder newFolder = getOrCreateFolder(tree, newFolderPath);
     newFolder.getParent().addFolder(newFolder.getName(), folder);
@@ -293,7 +361,9 @@ public class NoteManager {
     // update notesInfo
     for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
       tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
+      updateCachedNotePath(noteInfo.getId(), noteInfo.getPath());
     }
+    metadataVersion++;
   }
 
   /**
@@ -315,23 +385,150 @@ public class NoteManager {
    * @return
    * @throws IOException
    */
-  public List<NoteInfo> removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
+  public synchronized List<NoteInfo> removeFolder(
+      String folderPath, AuthenticationInfo subject) throws IOException {
+    return removeFolder(folderPath, subject, -1);
+  }
 
-    // update notebookrepo
-    this.notebookRepo.remove(folderPath, subject);
+  public synchronized List<NoteInfo> removeFolder(
+      String folderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion) throws IOException {
 
-    // update filesystem tree
-    NoteTree tree = this.noteTree;
-    Folder folder = getFolder(tree, folderPath);
-    List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
+    return removeFolder(
+        folderPath, subject, expectedMetadataVersion, Collections.emptyList());
+  }
 
-    // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
-    for (NoteInfo noteInfo : noteInfos) {
-      tree.notesInfo.remove(noteInfo.getId());
-      this.noteCache.removeNote(noteInfo.getId());
+  synchronized List<NoteInfo> removeFolder(
+      String folderPath,
+      AuthenticationInfo subject,
+      long expectedMetadataVersion,
+      List<Note> loadedNotes) throws IOException {
+
+    assertMetadataVersion(expectedMetadataVersion);
+
+    List<Note> newlyRemovedNotes = new ArrayList<>();
+    for (Note note : loadedNotes) {
+      if (!note.isRemoved()) {
+        note.setRemoved(true);
+        newlyRemovedNotes.add(note);
+      }
     }
 
-    return noteInfos;
+    try {
+      // update notebookrepo
+      this.notebookRepo.remove(folderPath, subject);
+
+      // update filesystem tree
+      NoteTree tree = this.noteTree;
+      Folder folder = getFolder(tree, folderPath);
+      List<NoteInfo> noteInfos = folder.getNoteInfoRecursively();
+      if (folder == tree.trash) {
+        folder.clear();
+      } else {
+        folder.getParent().removeFolder(folder.getName(), subject);
+      }
+
+      // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
+      for (NoteInfo noteInfo : noteInfos) {
+        tree.notesInfo.remove(noteInfo.getId());
+        this.noteCache.removeNote(noteInfo.getId());
+      }
+      metadataVersion++;
+
+      return noteInfos;
+    } catch (IOException | RuntimeException e) {
+      for (Note note : newlyRemovedNotes) {
+        note.setRemoved(false);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Restore every direct child of the trash against one authorized metadata generation.
+   * Structural changes are blocked for the full preflight and move sequence so a note cannot
+   * be added to the authorized folder after its ACL was checked.
+   *
+   * @return note-id to restored path for callers that need to report the restored entries
+   */
+  public synchronized Map<String, String> restoreAllFromTrash(
+      AuthenticationInfo subject, long expectedMetadataVersion) throws IOException {
+    assertMetadataVersion(expectedMetadataVersion);
+
+    NoteTree tree = this.noteTree;
+    List<NoteNode> notes = new ArrayList<>(tree.trash.getNotes().values());
+    List<Folder> folders = new ArrayList<>(tree.trash.getFolders().values());
+    Map<String, String> restoredPaths = new LinkedHashMap<>();
+    Map<String, Boolean> destinations = new LinkedHashMap<>();
+    String trashPrefix = "/" + TRASH_FOLDER;
+
+    for (NoteNode noteNode : notes) {
+      String destination = noteNode.getNotePath().substring(trashPrefix.length());
+      checkRestoreDestination(destination, destinations);
+    }
+    for (Folder folder : folders) {
+      String destination = folder.getPath().substring(trashPrefix.length());
+      checkRestoreDestination(destination, destinations);
+    }
+
+    boolean mutated = false;
+    try {
+      for (NoteNode noteNode : notes) {
+        String noteId = noteNode.getNoteId();
+        String oldPath = noteNode.getNotePath();
+        String newPath = oldPath.substring(trashPrefix.length());
+        notebookRepo.move(noteId, oldPath, newPath, subject);
+        noteNode.getParent().removeNote(getNoteName(oldPath));
+        noteNode.setNotePath(newPath);
+        getOrCreateFolder(tree, getFolderName(newPath)).addNoteNode(noteNode);
+        tree.notesInfo.put(noteId, newPath);
+        updateCachedNotePath(noteId, newPath);
+        restoredPaths.put(noteId, newPath);
+        mutated = true;
+      }
+      for (Folder folder : folders) {
+        String oldPath = folder.getPath();
+        String newPath = oldPath.substring(trashPrefix.length());
+        notebookRepo.move(oldPath, newPath, subject);
+        folder.getParent().removeFolder(folder.getName(), subject);
+        Folder destination = getOrCreateFolder(tree, newPath);
+        destination.getParent().addFolder(destination.getName(), folder);
+        for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
+          tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
+          updateCachedNotePath(noteInfo.getId(), noteInfo.getPath());
+          restoredPaths.put(noteInfo.getId(), noteInfo.getPath());
+        }
+        mutated = true;
+      }
+    } finally {
+      if (mutated) {
+        metadataVersion++;
+      }
+    }
+    return restoredPaths;
+  }
+
+  private void checkRestoreDestination(
+      String destination, Map<String, Boolean> destinations) throws IOException {
+    if (destinations.put(destination, Boolean.TRUE) != null
+        || containsNote(destination)
+        || containsFolder(destination)) {
+      throw new NotePathAlreadyExistsException("Path '" + destination + "' existed");
+    }
+  }
+
+  private void assertMetadataVersion(long expectedMetadataVersion) throws IOException {
+    if (expectedMetadataVersion >= 0 && metadataVersion != expectedMetadataVersion) {
+      throw new IOException("Notebook metadata changed while authorizing the folder operation");
+    }
+  }
+
+  private void updateCachedNotePath(String noteId, String notePath) {
+    Note note = noteCache.getNote(noteId);
+    if (note != null) {
+      note.setPath(notePath);
+    }
   }
 
   /**
@@ -465,6 +662,25 @@ public class NoteManager {
     return noteNode.getNoteId();
   }
 
+  /** Immutable note metadata generation used to bind authorization to a later mutation. */
+  public static final class NoteMetadataSnapshot {
+    private final long version;
+    private final Map<String, String> notesInfo;
+
+    NoteMetadataSnapshot(long version, Map<String, String> notesInfo) {
+      this.version = version;
+      this.notesInfo = notesInfo;
+    }
+
+    public long getVersion() {
+      return version;
+    }
+
+    public Map<String, String> getNotesInfo() {
+      return notesInfo;
+    }
+  }
+
   /**
    * The two indexes that together locate a note: the folder tree and the noteId -> notePath
    * mapping. A note lookup resolves the id through the mapping and then walks the tree, so
@@ -590,6 +806,11 @@ public class NoteManager {
                                    AuthenticationInfo subject) throws IOException {
       Folder folder = this.subFolders.remove(folderName);
       return folder.getNoteInfoRecursively();
+    }
+
+    private void clear() {
+      notes.clear();
+      subFolders.clear();
     }
 
     public List<NoteInfo> getNoteInfoRecursively() {

@@ -19,11 +19,14 @@
 package org.apache.zeppelin.realm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -43,6 +46,23 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 class LdapRealmTest {
+  private static class TestableLdapRealm extends LdapRealm {
+    AuthenticationInfo createAuthenticationInfo(UsernamePasswordToken token)
+        throws NamingException {
+      return super.createAuthenticationInfo(token, null, null, null);
+    }
+  }
+
+  @Test
+  void generatedLdapCredentialsUseSupportedHash() throws NamingException {
+    TestableLdapRealm realm = new TestableLdapRealm();
+    UsernamePasswordToken token = new UsernamePasswordToken("alice", "secret");
+
+    AuthenticationInfo authenticationInfo = realm.createAuthenticationInfo(token);
+
+    assertTrue(realm.getCredentialsMatcher().doCredentialsMatch(token, authenticationInfo));
+  }
+
   @Test
   void testGetUserDn() {
     LdapRealm realm = new LdapRealm();

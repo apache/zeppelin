@@ -22,8 +22,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,9 +50,17 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.AbortedByHookException;
+import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
@@ -441,11 +455,218 @@ class GitNotebookRepoTest {
     //when
     final String NOTE_DIR = TEST_NOTE_PATH.substring(0, TEST_NOTE_PATH.lastIndexOf("/"));
     final String MOVE_DIR = "/move";
-    new File(notebooksDir + MOVE_DIR).mkdirs();
     notebookRepo.move(NOTE_DIR, MOVE_DIR, null);
 
     //then
     assertFileIsMoved();
+  }
+
+  @Test
+  void caseOnlyNoteMovePreservesFileAndCommitsNewCasing()
+      throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+
+    String newPath = "/my_project/My_note1";
+    notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, newPath, null);
+
+    String newFileName = notebookRepo.buildNoteFileName(TEST_NOTE_ID, newPath);
+    assertTrue(new File(notebooksDir, newFileName).isFile());
+    assertEquals(newPath, notebookRepo.list(null).get(TEST_NOTE_ID).getPath());
+    assertHeadContains(newFileName);
+  }
+
+  @Test
+  void caseOnlyFolderMovePreservesFilesAndCommitsNewCasing()
+      throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null);
+
+    String newFolder = "/My_project";
+    notebookRepo.move("/my_project", newFolder, null);
+
+    String newPath = newFolder + "/my_note1";
+    String newFileName = notebookRepo.buildNoteFileName(TEST_NOTE_ID, newPath);
+    assertTrue(new File(notebooksDir, newFileName).isFile());
+    assertEquals(newPath, notebookRepo.list(null).get(TEST_NOTE_ID).getPath());
+    assertHeadContains(newFileName);
+  }
+
+  @Test
+  void failedNoteMoveCommitRollsBackFileAndIndex() throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    failNextCommit(new NoHeadException("forced commit failure"));
+
+    String movePath = "/move/my_note1";
+    assertThrows(
+        IOException.class,
+        () -> notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, movePath, null));
+
+    String sourceFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, TEST_NOTE_PATH);
+    String destinationFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, movePath);
+    assertTrue(new File(notebooksDir, sourceFile).isFile());
+    assertFalse(new File(notebooksDir, destinationFile).exists());
+    assertTrue(
+        notebookRepo.getGit().status()
+            .addPath(sourceFile)
+            .addPath(destinationFile)
+            .call()
+            .isClean());
+  }
+
+  @Test
+  void failedFolderMoveCommitRollsBackFilesAndIndex() throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    notebookRepo.checkpoint(TEST_NOTE_ID2, TEST_NOTE_PATH2, "second commit, note2", null);
+    failNextCommit(new JGitInternalException("forced internal commit failure"));
+
+    String sourceFolder = "/my_project";
+    String destinationFolder = "/move";
+    assertThrows(
+        IOException.class,
+        () -> notebookRepo.move(sourceFolder, destinationFolder, null));
+
+    assertTrue(new File(notebooksDir, sourceFolder.substring(1)).isDirectory());
+    assertFalse(new File(notebooksDir, destinationFolder.substring(1)).exists());
+    assertTrue(
+        notebookRepo.getGit().status()
+            .addPath(sourceFolder.substring(1))
+            .addPath(destinationFolder.substring(1))
+            .call()
+            .isClean());
+  }
+
+  @Test
+  void failureReportedAfterCommitKeepsCommittedMove() throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    ObjectId headBeforeMove = notebookRepo.getGit().getRepository().resolve(Constants.HEAD);
+    failAfterCommitUpdatesHead();
+
+    String movePath = "/move/my_note1";
+    notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, movePath, null);
+
+    String destinationFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, movePath);
+    ObjectId headAfterMove = notebookRepo.getGit().getRepository().resolve(Constants.HEAD);
+    assertNotEquals(headBeforeMove, headAfterMove);
+    assertTrue(new File(notebooksDir, destinationFile).isFile());
+    assertEquals(movePath, notebookRepo.list(null).get(TEST_NOTE_ID).getPath());
+    assertHeadContains(destinationFile);
+  }
+
+  @Test
+  void unrelatedHeadAdvanceDoesNotMasqueradeAsCommittedMove()
+      throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    Git realGit = notebookRepo.getGit();
+    ObjectId originalHead = realGit.getRepository().resolve(Constants.HEAD);
+    RevCommit unrelatedCommit = realGit.commit()
+        .setAllowEmpty(true)
+        .setMessage("unrelated external commit")
+        .call();
+    realGit.reset()
+        .setMode(ResetCommand.ResetType.HARD)
+        .setRef(originalHead.getName())
+        .call();
+    failNextCommitAfterHeadAdvance(unrelatedCommit.getId());
+
+    String movePath = "/move/my_note1";
+    assertThrows(
+        IOException.class,
+        () -> notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, movePath, null));
+
+    String sourceFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, TEST_NOTE_PATH);
+    String destinationFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, movePath);
+    assertEquals(
+        unrelatedCommit.getId(),
+        notebookRepo.getGit().getRepository().resolve(Constants.HEAD));
+    assertTrue(new File(notebooksDir, sourceFile).isFile());
+    assertFalse(new File(notebooksDir, destinationFile).exists());
+    assertTrue(
+        notebookRepo.getGit().status()
+            .addPath(sourceFile)
+            .addPath(destinationFile)
+            .call()
+            .isClean());
+  }
+
+  @Test
+  void resetRuntimeFailureIsPreservedOnMoveFailure() throws IOException, GitAPIException {
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit, note1", null);
+    Git git = failNextCommit(new NoHeadException("forced commit failure"));
+    doThrow(new RuntimeException("forced reset failure")).when(git).reset();
+
+    String movePath = "/move/my_note1";
+    IOException failure = assertThrows(
+        IOException.class,
+        () -> notebookRepo.move(TEST_NOTE_ID, TEST_NOTE_PATH, movePath, null));
+
+    String sourceFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, TEST_NOTE_PATH);
+    String destinationFile = notebookRepo.buildNoteFileName(TEST_NOTE_ID, movePath);
+    assertTrue(new File(notebooksDir, sourceFile).isFile());
+    assertFalse(new File(notebooksDir, destinationFile).exists());
+    assertEquals(1, failure.getSuppressed().length);
+    assertEquals("forced reset failure", failure.getSuppressed()[0].getMessage());
+  }
+
+  private Git failNextCommit(Throwable failure) throws GitAPIException {
+    Git git = spy(notebookRepo.getGit());
+    CommitCommand commit = mock(CommitCommand.class);
+    when(commit.setMessage(anyString())).thenReturn(commit);
+    when(commit.call()).thenAnswer(invocation -> {
+      throw failure;
+    });
+    doReturn(commit).when(git).commit();
+    notebookRepo.setGit(git);
+    return git;
+  }
+
+  private void failAfterCommitUpdatesHead() throws GitAPIException {
+    Git realGit = notebookRepo.getGit();
+    Git git = spy(realGit);
+    CommitCommand realCommit = realGit.commit();
+    CommitCommand reportedFailure = mock(CommitCommand.class);
+    when(reportedFailure.setMessage(anyString())).thenAnswer(invocation -> {
+      realCommit.setMessage(invocation.getArgument(0));
+      return reportedFailure;
+    });
+    when(reportedFailure.call()).thenAnswer(invocation -> {
+      realCommit.call();
+      throw new AbortedByHookException("simulated failure", "post-commit", 1);
+    });
+    doReturn(reportedFailure).when(git).commit();
+    notebookRepo.setGit(git);
+  }
+
+  private void failNextCommitAfterHeadAdvance(ObjectId newHead) throws GitAPIException {
+    Git realGit = notebookRepo.getGit();
+    Git git = spy(realGit);
+    CommitCommand commit = mock(CommitCommand.class);
+    when(commit.setMessage(anyString())).thenReturn(commit);
+    when(commit.call()).thenAnswer(invocation -> {
+      realGit.reset()
+          .setMode(ResetCommand.ResetType.MIXED)
+          .setRef(newHead.getName())
+          .call();
+      throw new ConcurrentRefUpdateException(
+          "simulated concurrent ref update",
+          realGit.getRepository().exactRef(Constants.HEAD),
+          RefUpdate.Result.LOCK_FAILURE);
+    });
+    doReturn(commit).when(git).commit();
+    notebookRepo.setGit(git);
   }
 
   @Test
@@ -493,6 +714,15 @@ class GitNotebookRepoTest {
         assertNotEquals(treeWalk.getPathString(), previousTreeWalk.getPathString());
         assertEquals(treeWalk.getObjectId(0), previousTreeWalk.getObjectId(0));
       }
+    }
+  }
+
+  private void assertHeadContains(String path) throws IOException, GitAPIException {
+    Git git = notebookRepo.getGit();
+    RevCommit latestCommit = git.log().call().iterator().next();
+    try (TreeWalk treeWalk = TreeWalk.forPath(
+        git.getRepository(), path, latestCommit.getTree())) {
+      assertNotNull(treeWalk);
     }
   }
 

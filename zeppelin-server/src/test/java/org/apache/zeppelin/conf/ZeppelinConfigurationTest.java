@@ -19,8 +19,11 @@ package org.apache.zeppelin.conf;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +31,20 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ZeppelinConfigurationTest {
+
+  @Test
+  void authenticationModeDoesNotChangeAfterStartup(@TempDir Path confDir) throws Exception {
+    Path shiroIni = Files.createFile(confDir.resolve("shiro.ini"));
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    zConf.setProperty(ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.toString());
+
+    zConf.initializeAuthenticationMode();
+    Files.delete(shiroIni);
+
+    assertTrue(zConf.isAuthenticationEnabled());
+    assertFalse(zConf.isAnonymousAllowed());
+    assertEquals(shiroIni.toString(), zConf.getShiroPath());
+  }
 
   @Test
   void getAllowedOrigins2Test() throws MalformedURLException {
@@ -54,6 +71,18 @@ class ZeppelinConfigurationTest {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
     List<String> origins = zConf.getAllowedOrigins();
     assertTrue(origins.isEmpty());
+  }
+
+  @Test
+  void websocketAuthorizationRoleRefreshIntervalDefaultsAndCanBeDisabled() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+
+    assertEquals(1000L, zConf.getWebsocketAuthorizationRolesRefreshIntervalMs());
+
+    zConf.setProperty(
+        ConfVars.ZEPPELIN_WEBSOCKET_AUTHORIZATION_ROLES_REFRESH_INTERVAL_MS.getVarName(),
+        "0");
+    assertEquals(0L, zConf.getWebsocketAuthorizationRolesRefreshIntervalMs());
   }
 
   @Test

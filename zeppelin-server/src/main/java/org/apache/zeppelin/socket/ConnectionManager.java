@@ -25,6 +25,7 @@ import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,6 +57,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import jakarta.websocket.CloseReason;
 
 /**
  * Manager class for managing websocket connections
@@ -86,6 +89,7 @@ public class ConnectionManager {
 
   private final AuthorizationService authorizationService;
   private final ZeppelinConfiguration zConf;
+  private volatile NoteBroadcastHandler noteBroadcastHandler;
 
   @Inject
   public ConnectionManager(AuthorizationService authorizationService, ZeppelinConfiguration zConf) {
@@ -97,8 +101,44 @@ public class ConnectionManager {
     connectedSockets.add(conn);
   }
 
+  /** Return a stable snapshot of every ordinary WebSocket connection. */
+  public List<NotebookSocket> getConnections() {
+    return new ArrayList<>(connectedSockets);
+  }
+
+  public void setNoteBroadcastHandler(NoteBroadcastHandler noteBroadcastHandler) {
+    this.noteBroadcastHandler = noteBroadcastHandler;
+  }
+
   public void removeConnection(NotebookSocket conn) {
     connectedSockets.remove(conn);
+  }
+
+  /** Close every WebSocket associated with one exact Shiro session. */
+  public int closeConnectionsForSession(
+      SecurityManager securityManager, Serializable sessionId) {
+    if (securityManager == null || sessionId == null) {
+      return 0;
+    }
+
+    Set<NotebookSocket> sessionSockets = new HashSet<>(connectedSockets);
+    sessionSockets.addAll(watcherSockets);
+    int closed = 0;
+    CloseReason closeReason = new CloseReason(
+        CloseReason.CloseCodes.VIOLATED_POLICY, "Authenticated session ended");
+    for (NotebookSocket socket : sessionSockets) {
+      if (socket.getAuthenticationSecurityManager() == securityManager
+          && socket.getAuthenticatedIdentity() != null
+          && socket.getAuthenticatedIdentity().getSessionId().filter(sessionId::equals).isPresent()) {
+        try {
+          socket.close(closeReason);
+          closed++;
+        } catch (IOException e) {
+          LOGGER.debug("Failed to close WebSocket for an ended authenticated session", e);
+        }
+      }
+    }
+    return closed;
   }
 
   public void addNoteConnection(String noteId, NotebookSocket socket) {
@@ -130,10 +170,25 @@ public class ConnectionManager {
     }
   }
 
+  /** Return a stable snapshot of the sockets subscribed to a logical note/channel. */
+  public List<NotebookSocket> getNoteConnections(String noteId) {
+    synchronized (noteSocketMap) {
+      Set<NotebookSocket> sockets = noteSocketMap.get(noteId);
+      return sockets == null ? Collections.emptyList() : new ArrayList<>(sockets);
+    }
+  }
+
+  /** Return a stable snapshot of the sockets associated with a user. */
+  public List<NotebookSocket> getUserConnections(String user) {
+    Queue<NotebookSocket> sockets = userSocketMap.get(user);
+    return sockets == null ? Collections.emptyList() : new ArrayList<>(sockets);
+  }
+
   private void removeNoteConnection(String noteId, Set<NotebookSocket> sockets,
-    NotebookSocket socket) {
-    sockets.remove(socket);
-    checkCollaborativeStatus(noteId, sockets);
+                                    NotebookSocket socket) {
+    if (sockets.remove(socket)) {
+      checkCollaborativeStatus(noteId, sockets);
+    }
   }
 
   public void removeConnectionFromAllNote(NotebookSocket socket) {
@@ -220,7 +275,15 @@ public class ConnectionManager {
       }
       message.put("users", userList);
     }
-    broadcast(noteId, message);
+    NoteBroadcastHandler handler = noteBroadcastHandler;
+    if (handler != null) {
+      handler.broadcast(noteId, message);
+    }
+  }
+
+  @FunctionalInterface
+  public interface NoteBroadcastHandler {
+    void broadcast(String noteId, Message message);
   }
 
 
@@ -260,7 +323,7 @@ public class ConnectionManager {
     }
   }
 
-  private void broadcastToWatchers(String noteId, String subject, Message message) {
+  void broadcastToWatchers(String noteId, String subject, Message message) {
     synchronized (watcherSockets) {
       for (NotebookSocket watcher : watcherSockets) {
         try {

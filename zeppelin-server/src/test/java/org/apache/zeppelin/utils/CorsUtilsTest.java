@@ -42,13 +42,21 @@ class CorsUtilsTest {
 
   @Test
   void isLocalhost() throws URISyntaxException, UnknownHostException {
-    assertTrue(CorsUtils.isValidOrigin("http://localhost", ZeppelinConfiguration.load()));
+    ZeppelinConfiguration zConf = localConfiguration();
+    assertTrue(CorsUtils.isValidOrigin("http://localhost:8080", zConf));
+    assertFalse(CorsUtils.isValidOrigin("http://localhost:8081", zConf));
+    assertFalse(CorsUtils.isValidOrigin("https://localhost:8080", zConf));
+  }
+
+  @Test
+  void isIpv6Loopback() throws URISyntaxException, UnknownHostException {
+    assertTrue(CorsUtils.isValidOrigin("http://[::1]:8080", localConfiguration()));
   }
 
   @Test
   void isLocalMachine() throws URISyntaxException, UnknownHostException {
-    String origin = "http://" + InetAddress.getLocalHost().getHostName();
-    assertTrue(CorsUtils.isValidOrigin(origin, ZeppelinConfiguration.load()),
+    String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
+    assertTrue(CorsUtils.isValidOrigin(origin, localConfiguration()),
       "Origin " + origin + " is not allowed. Please check your hostname.");
   }
 
@@ -76,7 +84,7 @@ class CorsUtilsTest {
   @Test
   void nullOriginWithStar()
       throws URISyntaxException, UnknownHostException {
-    assertTrue(CorsUtils.isValidOrigin(null,
+    assertFalse(CorsUtils.isValidOrigin(null,
         ZeppelinConfiguration.load("zeppelin-site-star.xml")));
   }
 
@@ -92,5 +100,9 @@ class CorsUtilsTest {
       throws URISyntaxException, UnknownHostException {
     assertFalse(CorsUtils.isValidOrigin("test123",
         ZeppelinConfiguration.load("zeppelin-site.xml")));
+  }
+
+  private static ZeppelinConfiguration localConfiguration() {
+    return ZeppelinConfiguration.load("no-configured-origins.xml");
   }
 }

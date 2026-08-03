@@ -104,7 +104,7 @@ public class Note implements JsonSerializable {
    * The fair behavior can therefore create a DeadLock.
    */
   private transient final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(false);
-  private transient boolean removed = false;
+  private transient volatile boolean removed = false;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
