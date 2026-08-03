@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -202,6 +203,27 @@ class HDFSFileInterpreterTest {
       t.close();
     } finally {
       TimeZone.setDefault(original);
+    }
+  }
+
+  @Test
+  void testListDateFormatsWithRootLocale() {
+    // ZEPPELIN-6483 follow-up: the timestamp must not depend on the JVM default
+    // locale either — under th-TH the CLDR default calendar is Buddhist, which
+    // would render 2015 as 2558 without Locale.ROOT in listDate().
+    Locale original = Locale.getDefault();
+    try {
+      Locale.setDefault(Locale.forLanguageTag("th-TH"));
+      HDFSFileInterpreter t = new MockHDFSFileInterpreter(new Properties());
+      t.open();
+      InterpreterResult result = t.interpret("ls -l /", null);
+      String out = result.message().get(0).getData();
+      // modificationTime 1438548219672 == 2015-08-02 20:43 GMT
+      assertTrue(out.contains("2015-08-02 20:43GMT"),
+          "modification time should not depend on the default locale, but was:\n" + out);
+      t.close();
+    } finally {
+      Locale.setDefault(original);
     }
   }
 
