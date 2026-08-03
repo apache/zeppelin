@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -174,7 +175,9 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   private String listDate(OneFileStatus fs) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    // Locale.ROOT keeps the calendar and digits stable regardless of the JVM
+    // default locale (e.g. Buddhist calendar under th-TH).
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT);
     // Format in GMT so the value matches the "GMT" label appended in listOne(),
     // regardless of the JVM default time zone.
     sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
