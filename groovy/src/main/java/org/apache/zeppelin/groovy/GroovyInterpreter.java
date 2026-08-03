@@ -196,7 +196,6 @@ public class GroovyInterpreter extends Interpreter {
       if (object instanceof Thread) {
         try {
           Thread t = (Thread) object;
-          t.dumpStack();
           t.interrupt();
           //t.stop(); //TODO(dlukyanov): need some way to terminate maybe through GObject..
         } catch (Throwable t) {
