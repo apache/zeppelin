@@ -176,7 +176,6 @@ public class TerminalInterpreter extends KerberosInterpreter {
     jinjaParams.put("TERMINAL_SERVER_URL", terminalServerUrl);
     String terminalDashboardTemplate = jinjava.render(template, jinjaParams);
 
-    LOGGER.info(terminalDashboardTemplate);
     try {
       intpContext.out.setType(InterpreterResult.Type.ANGULAR);
       InterpreterResultMessageOutput outputUI = intpContext.out.getOutputAt(0);
