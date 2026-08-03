@@ -117,8 +117,6 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/test-classes" ]]; then
   addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-server/target/test-classes"
 fi
 
-addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-shaded/target"
-
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 

@@ -335,7 +335,6 @@
               <exclude>org.scala-lang:scala-reflect</exclude>
               <exclude>commons-lang:commons-lang</exclude>
               <exclude>org.apache.commons:commons-compress</exclude>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
             </excludes>
           </artifactSet>
 
