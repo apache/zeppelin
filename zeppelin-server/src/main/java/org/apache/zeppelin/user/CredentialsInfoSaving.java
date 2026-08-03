@@ -30,6 +30,7 @@ public class CredentialsInfoSaving implements JsonSerializable {
 
   public Map<String, UserCredentials> credentialsMap;
 
+  @Override
   public String toJson() {
     return GSON.toJson(this);
   }

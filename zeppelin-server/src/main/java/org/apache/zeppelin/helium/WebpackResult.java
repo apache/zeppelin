@@ -28,6 +28,7 @@ public class WebpackResult implements JsonSerializable {
   public final String [] errors = new String[0];
   public final String [] warnings = new String[0];
 
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }

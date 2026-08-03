@@ -96,6 +96,7 @@ public class HeliumConf implements JsonSerializable {
     bundleDisplayOrder = Collections.synchronizedList(orderedPackageList);
   }
 
+  @Override
   public String toJson() {
     return gson.toJson(this);
   }
