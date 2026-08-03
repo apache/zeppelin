@@ -77,7 +77,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
   @BeforeEach
   public void startUpManager() throws IOException {
-    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration());
   }
 
   @AfterEach

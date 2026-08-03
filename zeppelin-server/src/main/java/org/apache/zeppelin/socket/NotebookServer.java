@@ -337,7 +337,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
       ServiceContext context = ServiceContextFactory.create(identity);
       if (Message.isDisabledForRunningNotes(receivedMessage.op)) {
-        String noteId = (String) receivedMessage.get("noteId");
+        String noteId = getNoteIdForRunningNoteCheck(conn, receivedMessage);
         if (!authorizationService.isReader(noteId, context.getUserAndRoles())) {
           throw new ForbiddenException("Insufficient privileges to read note");
         }
@@ -886,22 +886,33 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void broadcastReloadedNoteList(ServiceContext context)
       throws IOException {
-    requireGlobalNotebookAdministration(context, OP.RELOAD_NOTES_FROM_REPO);
     getNotebook().reloadAllNotes(context.getAutheInfo());
     broadcastNoteListUpdate();
   }
 
-  private void requireGlobalNotebookAdministration(ServiceContext context, OP operation) {
-    if (zConf.isAnonymousAllowed()) {
-      return;
+  private String getNoteIdForRunningNoteCheck(NotebookSocket conn, Message message) {
+    String noteId;
+    switch (message.op) {
+      case MOVE_NOTE_TO_TRASH:
+      case DEL_NOTE:
+      case PARAGRAPH_CLEAR_ALL_OUTPUT:
+        noteId = message.getType("id");
+        break;
+      case RUN_ALL_PARAGRAPHS:
+        noteId = message.getType("noteId");
+        break;
+      default:
+        noteId = connectionManager.getAssociatedNoteId(conn);
+        if (noteId == null
+            && (message.op == OP.COMMIT_PARAGRAPH || message.op == OP.PATCH_PARAGRAPH)) {
+          noteId = message.getType("noteId");
+        }
+        break;
     }
-    String administratorRole = zConf.getString(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_OWNER_ROLE);
-    if (StringUtils.isBlank(administratorRole)
-        || !context.getUserAndRoles().contains(administratorRole)) {
-      throw new ForbiddenException(
-          "Administrator role is required for " + operation);
+    if (StringUtils.isBlank(noteId)) {
+      throw new IllegalArgumentException("No note specified for " + message.op);
     }
+    return noteId;
   }
 
   void permissionError(NotebookSocket conn, String op, String userName, Set<String> userAndRoles,

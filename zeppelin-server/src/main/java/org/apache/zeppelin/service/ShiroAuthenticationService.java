@@ -89,7 +89,8 @@ public class ShiroAuthenticationService implements AuthenticationService {
         Collection<Realm> realms =
             ((DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
                 .getRealms();
-        if (realms.size() > 1) {
+        // Realm-less Shiro configurations can still expose anonymous filter chains.
+        if (realms != null && realms.size() > 1) {
           boolean isIniRealmEnabled = false;
           for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {

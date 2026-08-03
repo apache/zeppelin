@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +39,6 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -47,6 +47,7 @@ import org.apache.zeppelin.service.AuthenticatedSessionService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SessionAuthenticationException;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -119,6 +120,111 @@ class NotebookServerAuthenticationTest {
 
     verify(authorizationService).isRunner("private-note", Set.of("user1"));
     verify(notebookProvider, never()).get();
+  }
+
+  @Test
+  void runningNoteCheckUsesAssociatedNoteForParagraphMessages() throws Exception {
+    AuthenticatedIdentity identity =
+        new AuthenticatedIdentity("user1", Set.of(), true, "session-id");
+    AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
+    SecurityManager securityManager = mock(SecurityManager.class);
+    when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
+    AuthorizationService authorizationService = mock(AuthorizationService.class);
+    when(authorizationService.isReader("note-id", Set.of("user1"))).thenReturn(true);
+    Notebook notebook = mock(Notebook.class);
+    when(notebook.processNote(eq("note-id"), any())).thenReturn(false);
+    ConnectionManager connectionManager = mock(ConnectionManager.class);
+    NotebookSocket socket = authenticatedSocket(identity, securityManager);
+    when(connectionManager.getAssociatedNoteId(socket)).thenReturn("note-id");
+    NotebookServer server = server(
+        sessionService, mock(NotebookService.class), authorizationService);
+    server.setConnectionManager(connectionManager);
+    server.setNotebook(() -> notebook);
+
+    server.onMessage(socket,
+        new Message(OP.RUN_PARAGRAPH)
+            .put("id", "paragraph-id")
+            .put("noteId", "untrusted-note-id")
+            .toJson());
+
+    verify(authorizationService).isReader("note-id", Set.of("user1"));
+    verify(notebook, times(2)).processNote(eq("note-id"), any());
+  }
+
+  @Test
+  void runningNoteCheckUsesMessageIdForNoteMessages() throws Exception {
+    AuthenticatedIdentity identity =
+        new AuthenticatedIdentity("user1", Set.of(), true, "session-id");
+    AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
+    SecurityManager securityManager = mock(SecurityManager.class);
+    when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
+    AuthorizationService authorizationService = mock(AuthorizationService.class);
+    when(authorizationService.isReader("note-id", Set.of("user1"))).thenReturn(true);
+    Notebook notebook = mock(Notebook.class);
+    when(notebook.processNote(eq("note-id"), any())).thenReturn(false);
+    NotebookService notebookService = mock(NotebookService.class);
+    NotebookServer server = server(sessionService, notebookService, authorizationService);
+    server.setNotebook(() -> notebook);
+
+    server.onMessage(authenticatedSocket(identity, securityManager),
+        new Message(OP.MOVE_NOTE_TO_TRASH)
+            .put("id", "note-id")
+            .put("noteId", "untrusted-note-id")
+            .toJson());
+
+    verify(authorizationService).isReader("note-id", Set.of("user1"));
+    verify(notebook).processNote(eq("note-id"), any());
+    verify(notebookService).moveNoteToTrash(eq("note-id"), any(), any());
+  }
+
+  @Test
+  void runningNoteCheckUsesNoteIdForBatchMessages() throws Exception {
+    AuthenticatedIdentity identity =
+        new AuthenticatedIdentity("user1", Set.of(), true, "session-id");
+    AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
+    SecurityManager securityManager = mock(SecurityManager.class);
+    when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
+    AuthorizationService authorizationService = mock(AuthorizationService.class);
+    when(authorizationService.isReader("note-id", Set.of("user1"))).thenReturn(true);
+    Notebook notebook = mock(Notebook.class);
+    when(notebook.processNote(eq("note-id"), any())).thenReturn(true);
+    NotebookServer server = server(
+        sessionService, mock(NotebookService.class), authorizationService);
+    server.setNotebook(() -> notebook);
+
+    server.onMessage(authenticatedSocket(identity, securityManager),
+        new Message(OP.RUN_ALL_PARAGRAPHS)
+            .put("noteId", "note-id")
+            .put("id", "untrusted-note-id")
+            .toJson());
+
+    verify(authorizationService).isReader("note-id", Set.of("user1"));
+    verify(notebook).processNote(eq("note-id"), any());
+  }
+
+  @Test
+  void runningNoteCheckFallsBackToMessageNoteIdForUnassociatedEdits() throws Exception {
+    AuthenticatedIdentity identity =
+        new AuthenticatedIdentity("user1", Set.of(), true, "session-id");
+    AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
+    SecurityManager securityManager = mock(SecurityManager.class);
+    when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
+    AuthorizationService authorizationService = mock(AuthorizationService.class);
+    when(authorizationService.isReader("note-id", Set.of("user1"))).thenReturn(true);
+    Notebook notebook = mock(Notebook.class);
+    when(notebook.processNote(eq("note-id"), any())).thenReturn(true);
+    NotebookServer server = server(
+        sessionService, mock(NotebookService.class), authorizationService);
+    server.setNotebook(() -> notebook);
+
+    server.onMessage(authenticatedSocket(identity, securityManager),
+        new Message(OP.COMMIT_PARAGRAPH)
+            .put("noteId", "note-id")
+            .put("id", "paragraph-id")
+            .toJson());
+
+    verify(authorizationService).isReader("note-id", Set.of("user1"));
+    verify(notebook).processNote(eq("note-id"), any());
   }
 
   @Test
@@ -396,45 +502,25 @@ class NotebookServerAuthenticationTest {
   }
 
   @Test
-  void repositoryReloadRequiresTheConfiguredAdministratorRole() throws Exception {
+  void repositoryReloadUsesTheAuthenticatedSessionIdentity() throws Exception {
     AuthenticatedIdentity identity =
         new AuthenticatedIdentity("user", Set.of("reader"), true, "session-id");
     SecurityManager securityManager = mock(SecurityManager.class);
     AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
     when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
-    Provider<Notebook> notebookProvider = mock(Provider.class);
-    NotebookServer server = server(sessionService, mock(NotebookService.class));
-    ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
-    when(zConf.getString(ConfVars.ZEPPELIN_OWNER_ROLE)).thenReturn("admin");
-    server.setZeppelinConfiguration(zConf);
-    server.setNotebook(notebookProvider);
-
-    server.onMessage(
-        authenticatedSocket(identity, securityManager),
-        new Message(OP.RELOAD_NOTES_FROM_REPO).toJson());
-
-    verify(notebookProvider, never()).get();
-  }
-
-  @Test
-  void repositoryReloadAllowsTheConfiguredAdministratorRole() throws Exception {
-    AuthenticatedIdentity identity =
-        new AuthenticatedIdentity("user", Set.of("admin"), true, "session-id");
-    SecurityManager securityManager = mock(SecurityManager.class);
-    AuthenticatedSessionService sessionService = mock(AuthenticatedSessionService.class);
-    when(sessionService.refresh(identity, securityManager, true)).thenReturn(identity);
     Notebook notebook = mock(Notebook.class);
     NotebookServer server = server(sessionService, mock(NotebookService.class));
-    ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
-    when(zConf.getString(ConfVars.ZEPPELIN_OWNER_ROLE)).thenReturn("admin");
-    server.setZeppelinConfiguration(zConf);
     server.setNotebook(() -> notebook);
 
     server.onMessage(
         authenticatedSocket(identity, securityManager),
         new Message(OP.RELOAD_NOTES_FROM_REPO).toJson());
 
-    verify(notebook).reloadAllNotes(any());
+    ArgumentCaptor<AuthenticationInfo> authenticationInfo =
+        ArgumentCaptor.forClass(AuthenticationInfo.class);
+    verify(notebook).reloadAllNotes(authenticationInfo.capture());
+    assertEquals("user", authenticationInfo.getValue().getUser());
+    assertEquals(Set.of("reader"), authenticationInfo.getValue().getRoles());
   }
 
   private static NotebookServer server(

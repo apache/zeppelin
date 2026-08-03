@@ -35,12 +35,26 @@ import java.time.Clock;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
+import jakarta.inject.Provider;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.junit.jupiter.api.Test;
 
 class AuthenticatedSessionServiceTest {
+
+  @Test
+  void providerIsNotResolvedUntilAnAuthenticatedSessionNeedsIt() {
+    Provider<AuthenticationService> authenticationServiceProvider = mock(Provider.class);
+    AuthenticatedSessionService service =
+        new AuthenticatedSessionService(authenticationServiceProvider);
+
+    assertSame(
+        AuthenticatedIdentity.anonymous(),
+        service.refresh(AuthenticatedIdentity.anonymous(), null, true));
+
+    verify(authenticationServiceProvider, never()).get();
+  }
 
   @Test
   void noAuthenticationAlwaysUsesAnonymousIdentity() {

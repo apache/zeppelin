@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
@@ -40,16 +41,26 @@ public class AuthenticatedSessionService {
   private static final String ROLE_SNAPSHOT_SESSION_ATTRIBUTE =
       AuthenticatedSessionService.class.getName() + ".roleSnapshot";
 
-  private final AuthenticationService authenticationService;
+  private final Provider<AuthenticationService> authenticationServiceProvider;
   private final Clock clock;
 
   @Inject
-  public AuthenticatedSessionService(AuthenticationService authenticationService) {
-    this(authenticationService, Clock.systemUTC());
+  public AuthenticatedSessionService(
+      Provider<AuthenticationService> authenticationServiceProvider) {
+    this(authenticationServiceProvider, Clock.systemUTC());
+  }
+
+  AuthenticatedSessionService(AuthenticationService authenticationService) {
+    this(() -> authenticationService, Clock.systemUTC());
   }
 
   AuthenticatedSessionService(AuthenticationService authenticationService, Clock clock) {
-    this.authenticationService = authenticationService;
+    this(() -> authenticationService, clock);
+  }
+
+  private AuthenticatedSessionService(
+      Provider<AuthenticationService> authenticationServiceProvider, Clock clock) {
+    this.authenticationServiceProvider = authenticationServiceProvider;
     this.clock = clock;
   }
 
@@ -126,7 +137,8 @@ public class AuthenticatedSessionService {
       }
 
       AuthenticatedIdentity refreshed =
-          subject.execute(authenticationService::getAuthenticatedIdentity);
+          subject.execute(
+              () -> authenticationServiceProvider.get().getAuthenticatedIdentity());
       Serializable sessionId = connectionIdentity.getSessionId().orElseThrow(
           () -> new SessionAuthenticationException("Authenticated session is unavailable"));
       if (!refreshed.isAuthenticated()
@@ -171,7 +183,8 @@ public class AuthenticatedSessionService {
     if (session == null || !subject.isAuthenticated() || !sessionId.equals(session.getId())) {
       throw new SessionAuthenticationException("Authenticated session is no longer valid");
     }
-    String principal = subject.execute(authenticationService::getPrincipal);
+    String principal =
+        subject.execute(() -> authenticationServiceProvider.get().getPrincipal());
     if (!connectionIdentity.getPrincipal().equals(principal)) {
       throw new SessionAuthenticationException("Authenticated session identity changed");
     }

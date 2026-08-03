@@ -98,6 +98,7 @@ abstract public class AbstractZeppelinIT {
     visibilityWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
         MAX_BROWSER_TIMEOUT_SEC);
+    manager.waitForWebSocketConnected();
     try {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript(
           "$('.modal-backdrop').remove(); $('#loginModal').modal('hide');");
@@ -141,6 +142,7 @@ abstract public class AbstractZeppelinIT {
     }
     manager.getWebDriver().navigate().refresh();
     visibilityWait(loggedInUserMenuLocator(), MAX_BROWSER_TIMEOUT_SEC);
+    manager.waitForWebSocketConnected();
   }
 
   // Shared locator for the logged-in navbar user menu button. Uses a class-order-agnostic

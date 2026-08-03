@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,6 +68,15 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
     when(zConf.getShiroPath()).thenReturn(StringUtils.EMPTY);
     setSubject(subject);
     shiroSecurityService = new ShiroAuthenticationService(zConf);
+  }
+
+  @Test
+  void canInitializeWithoutConfiguredRealms() {
+    ZeppelinConfiguration configuration = mock(ZeppelinConfiguration.class);
+    when(configuration.getShiroPath()).thenReturn("shiro.ini");
+    ThreadContext.bind(new DefaultSecurityManager());
+
+    assertDoesNotThrow(() -> new ShiroAuthenticationService(configuration));
   }
 
   @Test

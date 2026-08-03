@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -95,6 +97,26 @@ class SessionConfiguratorTest {
     assertSame(securityManager,
         endpointConfig.getUserProperties().get(
             SessionConfigurator.AUTHENTICATION_SECURITY_MANAGER));
+  }
+
+  @Test
+  void resolvesAuthenticationOnlyWhenTheShiroFilteredHandshakeRuns() {
+    ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
+    AuthenticationService authenticationService = mock(AuthenticationService.class);
+    ServiceLocator serviceLocator = serviceLocator(zConf, authenticationService);
+
+    SessionConfigurator configurator = new SessionConfigurator(serviceLocator);
+
+    verify(serviceLocator, never()).getService(AuthenticationService.class);
+
+    ServerEndpointConfig endpointConfig = ServerEndpointConfig.Builder
+        .create(NotebookServer.class, "/ws")
+        .build();
+    HandshakeRequest request = mock(HandshakeRequest.class);
+    when(request.getHeaders()).thenReturn(Map.of());
+    configurator.modifyHandshake(endpointConfig, request, mock(HandshakeResponse.class));
+
+    verify(serviceLocator).getService(AuthenticationService.class);
   }
 
   private static ServiceLocator serviceLocator(

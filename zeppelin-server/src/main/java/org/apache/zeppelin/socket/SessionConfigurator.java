@@ -45,12 +45,10 @@ public class SessionConfigurator extends Configurator {
 
   private final ServiceLocator serviceLocator;
   private final ZeppelinConfiguration zConf;
-  private final AuthenticationService authenticationService;
 
   public SessionConfigurator(ServiceLocator serviceLocator) {
     this.serviceLocator = serviceLocator;
     this.zConf = serviceLocator.getService(ZeppelinConfiguration.class);
-    this.authenticationService = serviceLocator.getService(AuthenticationService.class);
   }
 
   @Override
@@ -72,6 +70,8 @@ public class SessionConfigurator extends Configurator {
     holder = request.getHeaders().get(CorsUtils.HEADER_ORIGIN);
     sec.getUserProperties().put(CorsUtils.HEADER_ORIGIN,
         null != holder && !holder.isEmpty() ? holder.get(0) : null);
+    AuthenticationService authenticationService =
+        serviceLocator.getService(AuthenticationService.class);
     AuthenticatedIdentity identity = authenticationService.getAuthenticatedIdentity();
     sec.getUserProperties().put(AUTHENTICATED_IDENTITY, identity);
     sec.getUserProperties().put(
