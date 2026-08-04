@@ -440,6 +440,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       try {
         obj = Resource.serializeObject(ret);
       } catch (IOException e) {
+        LOGGER.error("invokeMethod failed", e);
         throw new InterpreterRPCException(e.toString());
       }
     }
