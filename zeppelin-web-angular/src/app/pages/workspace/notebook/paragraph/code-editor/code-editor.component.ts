@@ -66,6 +66,7 @@ export class NotebookParagraphCodeEditorComponent
   private editor?: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   private highlightDecorations: DecorationIdentifier[] = [];
+  private searchTerm = '';
   height = 18;
   interpreterName?: string;
 
@@ -217,6 +218,8 @@ export class NotebookParagraphCodeEditorComponent
     this.initEditorFocus();
     this.initCompletionService(this.editor);
     this.setEditorValue(this.editor);
+    // A term requested before Monaco finished loading was only stored, not applied yet.
+    this.highlightMatches(this.searchTerm);
     setTimeout(() => {
       this.autoAdjustEditorHeight();
     });
@@ -356,6 +359,7 @@ export class NotebookParagraphCodeEditorComponent
   }
 
   highlightMatches(term: string) {
+    this.searchTerm = term;
     if (!this.editor || !term) {
       // Remove previous highlights if term is empty
       this.highlightDecorations = this.editor?.deltaDecorations(this.highlightDecorations, []) || [];

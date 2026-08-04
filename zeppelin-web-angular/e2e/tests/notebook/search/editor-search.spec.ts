@@ -17,6 +17,7 @@ import {
   createTestNotebook,
   PAGES,
   performLoginIfRequired,
+  setParagraphText,
   skipWhenAuthenticationIsStillRequired,
   waitForNotebookLinks,
   waitForZeppelinReady
@@ -75,6 +76,22 @@ test.describe('Notebook editor search', () => {
 
     await expect(editorSearchPage.matchesCount).toContainText(/1 of 3/, { timeout: 15000 });
     await expect(editorSearchPage.matchHighlights).toHaveCount(3);
+  });
+
+  test('highlights the term carried by a deep link when the notebook opens', async ({ page }) => {
+    const { noteId, paragraphId } = await createTestNotebook(page);
+
+    await test.step('Given a paragraph containing the term three times', async () => {
+      await setParagraphText(page, noteId, paragraphId, 'alpha target beta target gamma target');
+    });
+
+    await test.step('When the notebook is opened with the term in the query string', async () => {
+      await editorSearchPage.openNotebookWithSearchTerm(noteId, 'target');
+    });
+
+    await test.step('Then every occurrence is highlighted', async () => {
+      await expect(editorSearchPage.termHighlights).toHaveCount(3);
+    });
   });
 
   test('replaces all matches in the editor search widget', async ({ page }) => {

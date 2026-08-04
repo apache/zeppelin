@@ -22,6 +22,7 @@ export class EditorSearchPage extends BasePage {
   readonly replaceInput: Locator;
   readonly matchesCount: Locator;
   readonly matchHighlights: Locator;
+  readonly termHighlights: Locator;
   readonly nextMatchButton: Locator;
   readonly previousMatchButton: Locator;
   readonly toggleReplaceButton: Locator;
@@ -42,6 +43,8 @@ export class EditorSearchPage extends BasePage {
     this.matchesCount = this.findWidget.locator('.matchesCount').first();
     // Monaco decorates every match with .findMatch and the active one with .currentFindMatch.
     this.matchHighlights = this.editor.locator('.findMatch, .currentFindMatch');
+    // The `term` query param highlights through Zeppelin's own decoration class, not Monaco's find widget.
+    this.termHighlights = this.editor.locator('.editor-search-highlight');
     this.nextMatchButton = this.findWidget.locator('.button.next, [title^="Next Match"]').first();
     this.previousMatchButton = this.findWidget.locator('.button.previous, [title^="Previous Match"]').first();
     this.toggleReplaceButton = this.findWidget.locator('.button.toggle, [title^="Toggle Replace"]').first();
@@ -50,6 +53,12 @@ export class EditorSearchPage extends BasePage {
 
   async openNotebook(noteId: string): Promise<void> {
     await this.page.goto(`/#/notebook/${noteId}`);
+    await waitForZeppelinReady(this.page);
+    await expect(this.editor).toBeVisible({ timeout: 15000 });
+  }
+
+  async openNotebookWithSearchTerm(noteId: string, term: string): Promise<void> {
+    await this.page.goto(`/#/notebook/${noteId}?term=${encodeURIComponent(term)}`);
     await waitForZeppelinReady(this.page);
     await expect(this.editor).toBeVisible({ timeout: 15000 });
   }
