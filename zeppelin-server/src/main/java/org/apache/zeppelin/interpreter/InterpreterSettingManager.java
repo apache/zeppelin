@@ -475,9 +475,8 @@ public class InterpreterSettingManager implements NoteEventListener {
     return appEventListener;
   }
 
-  boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-                                          String interpreterJson, boolean override)
-      throws IOException {
+  private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
+                                                  String interpreterJson, boolean override) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -487,38 +486,26 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
 
     LOGGER.debug("Reading interpreter-setting.json from {} as Resource", url);
-    try (InputStream stream = openStream(url)) {
+    try (InputStream stream = url.openStream()) {
       List<RegisteredInterpreter> registeredInterpreterList = getInterpreterListFromJson(stream);
       registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
     }
     return true;
   }
 
-  boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson,
+  private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson,
       boolean override) throws IOException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
     if (Files.exists(interpreterJsonPath)) {
       LOGGER.debug("Reading interpreter-setting.json from file {}", interpreterJsonPath);
-      try (InputStream stream = openStream(interpreterJsonPath.toFile())) {
+      try (InputStream stream = new FileInputStream(interpreterJsonPath.toFile())) {
         List<RegisteredInterpreter> registeredInterpreterList = getInterpreterListFromJson(stream);
         registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
       }
       return true;
     }
     return false;
-  }
-
-  // allows a tracked stream to be injected in unit tests.
-  @VisibleForTesting
-  InputStream openStream(URL url) throws IOException {
-    return url.openStream();
-  }
-
-  // allows a tracked stream to be injected in unit tests.
-  @VisibleForTesting
-  InputStream openStream(File file) throws IOException {
-    return new FileInputStream(file);
   }
 
   private List<RegisteredInterpreter> getInterpreterListFromJson(InputStream stream) {

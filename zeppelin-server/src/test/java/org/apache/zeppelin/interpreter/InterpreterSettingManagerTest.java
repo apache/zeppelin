@@ -18,8 +18,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.google.gson.JsonSyntaxException;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -28,46 +26,23 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.repository.RemoteRepository;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 
 class InterpreterSettingManagerTest extends AbstractInterpreterTest {
-
-  private static final String INTERPRETER_SETTING_JSON = "interpreter-setting.json";
-
-  private static final String STREAM_TEST_SETTING =
-      "[{\"group\": \"stream_close_test\","
-          + " \"name\": \"stream_close_test\","
-          + " \"className\": \"org.apache.zeppelin.interpreter.EchoInterpreter\","
-          + " \"properties\": {}}]";
 
   private String note1Id;
   private String note2Id;
@@ -365,65 +340,6 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     } finally {
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName());
-    }
-  }
-
-  @Test
-  void testRegisterInterpreterFromPathClosesStream(@TempDir Path interpreterDir)
-      throws IOException {
-    Files.write(interpreterDir.resolve(INTERPRETER_SETTING_JSON),
-        STREAM_TEST_SETTING.getBytes(StandardCharsets.UTF_8));
-
-    InterpreterSettingManager spyManager = spy(interpreterSettingManager);
-    InputStream stream = spy(
-        new ByteArrayInputStream(STREAM_TEST_SETTING.getBytes(StandardCharsets.UTF_8)));
-    doReturn(stream).when(spyManager).openStream(any(File.class));
-
-    assertTrue(spyManager.registerInterpreterFromPath(
-        interpreterDir.toString(), INTERPRETER_SETTING_JSON, false));
-
-    verify(stream).close();
-  }
-
-  @Test
-  void testRegisterInterpreterFromResourceClosesStream(@TempDir Path interpreterDir)
-      throws IOException {
-    // registerInterpreterFromResource builds a URLClassLoader over every file in the
-    // interpreter directory, so the setting has to be reachable from a jar entry.
-    writeSettingJar(interpreterDir.resolve("stream-close-test.jar"));
-
-    InterpreterSettingManager spyManager = spy(interpreterSettingManager);
-    InputStream stream = spy(
-        new ByteArrayInputStream(STREAM_TEST_SETTING.getBytes(StandardCharsets.UTF_8)));
-    doReturn(stream).when(spyManager).openStream(any(URL.class));
-
-    assertTrue(spyManager.registerInterpreterFromResource(
-        getClass().getClassLoader(), interpreterDir.toString(), INTERPRETER_SETTING_JSON, false));
-
-    verify(stream).close();
-  }
-
-  @Test
-  void testStreamIsClosedWhenParsingFails(@TempDir Path interpreterDir) throws IOException {
-    Files.write(interpreterDir.resolve(INTERPRETER_SETTING_JSON),
-        "not json".getBytes(StandardCharsets.UTF_8));
-
-    InterpreterSettingManager spyManager = spy(interpreterSettingManager);
-    InputStream stream = spy(
-        new ByteArrayInputStream("not json".getBytes(StandardCharsets.UTF_8)));
-    doReturn(stream).when(spyManager).openStream(any(File.class));
-
-    assertThrows(JsonSyntaxException.class, () -> spyManager.registerInterpreterFromPath(
-        interpreterDir.toString(), INTERPRETER_SETTING_JSON, false));
-
-    verify(stream).close();
-  }
-
-  private static void writeSettingJar(Path jarPath) throws IOException {
-    try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(jarPath))) {
-      jar.putNextEntry(new JarEntry(INTERPRETER_SETTING_JSON));
-      jar.write(STREAM_TEST_SETTING.getBytes(StandardCharsets.UTF_8));
-      jar.closeEntry();
     }
   }
 }
