@@ -540,6 +540,10 @@ public class Notebook {
     return noteManager.containsFolder(folderPath);
   }
 
+  public List<NoteInfo> getNoteInfoRecursively(String folderPath) throws IOException {
+    return noteManager.getNoteInfoRecursively(folderPath);
+  }
+
   public void moveNote(String noteId, String newNotePath, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Move note {} to {}", noteId, newNotePath);
     noteManager.moveNote(noteId, newNotePath, subject);
