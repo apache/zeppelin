@@ -84,8 +84,6 @@ export class NotebookParagraphComponent
   implements OnInit, OnChanges, OnDestroy, AfterViewInit, AngularKeyboardEventHandler
 {
   @HostBinding('attr.tabindex') tabindex = '-1';
-  @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
-  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent)
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
   @Input() paragraph!: ParagraphItem;
@@ -145,9 +143,11 @@ export class NotebookParagraphComponent
   @Output() readonly openSearchMenu = new EventEmitter();
 
   private destroy$ = new Subject<void>();
+  private searchTerm = '';
 
   private mode: Mode = 'command';
   waitConfirmFromEdit = false;
+  notebookParagraphCodeEditorComponent?: NotebookParagraphCodeEditorComponent;
 
   private keyBinderService: KeyBinder;
 
@@ -170,7 +170,17 @@ export class NotebookParagraphComponent
     }
   }
 
+  // The code editor sits behind an @if on `config.editorHide`, so it can mount long after the
+  // search term arrived, and it mounts as a fresh instance that knows nothing about the term.
+  // Setter injection replays the retained term the moment the editor becomes available.
+  @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
+  set codeEditorComponent(component: NotebookParagraphCodeEditorComponent | undefined) {
+    this.notebookParagraphCodeEditorComponent = component;
+    component?.highlightMatches(this.searchTerm);
+  }
+
   highlightMatches(searchText: string) {
+    this.searchTerm = searchText;
     this.notebookParagraphCodeEditorComponent?.highlightMatches(searchText);
   }
 

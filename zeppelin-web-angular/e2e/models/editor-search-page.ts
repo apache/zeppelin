@@ -23,6 +23,7 @@ export class EditorSearchPage extends BasePage {
   readonly matchesCount: Locator;
   readonly matchHighlights: Locator;
   readonly termHighlights: Locator;
+  readonly showHideCodeButton: Locator;
   readonly nextMatchButton: Locator;
   readonly previousMatchButton: Locator;
   readonly toggleReplaceButton: Locator;
@@ -45,6 +46,9 @@ export class EditorSearchPage extends BasePage {
     this.matchHighlights = this.editor.locator('.findMatch, .currentFindMatch');
     // The `term` query param highlights through Zeppelin's own decoration class, not Monaco's find widget.
     this.termHighlights = this.editor.locator('.editor-search-highlight');
+    this.showHideCodeButton = page
+      .locator('zeppelin-notebook-paragraph-control a[nzTooltipTitle="Show/hide the code"]')
+      .first();
     this.nextMatchButton = this.findWidget.locator('.button.next, [title^="Next Match"]').first();
     this.previousMatchButton = this.findWidget.locator('.button.previous, [title^="Previous Match"]').first();
     this.toggleReplaceButton = this.findWidget.locator('.button.toggle, [title^="Toggle Replace"]').first();
@@ -58,8 +62,19 @@ export class EditorSearchPage extends BasePage {
   }
 
   async openNotebookWithSearchTerm(noteId: string, term: string): Promise<void> {
+    await this.navigateToNotebookWithSearchTerm(noteId, term);
+    await expect(this.editor).toBeVisible({ timeout: 15000 });
+  }
+
+  // Separate from openNotebookWithSearchTerm: a paragraph whose editor starts hidden renders no
+  // Monaco instance, so the caller cannot wait for the editor before acting.
+  async navigateToNotebookWithSearchTerm(noteId: string, term: string): Promise<void> {
     await this.page.goto(`/#/notebook/${noteId}?term=${encodeURIComponent(term)}`);
     await waitForZeppelinReady(this.page);
+  }
+
+  async showCode(): Promise<void> {
+    await this.showHideCodeButton.click();
     await expect(this.editor).toBeVisible({ timeout: 15000 });
   }
 
