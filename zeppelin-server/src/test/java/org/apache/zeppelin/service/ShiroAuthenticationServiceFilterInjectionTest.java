@@ -54,7 +54,12 @@ class ShiroAuthenticationServiceFilterInjectionTest {
         "*",
         "admin)(cn=a*",
         ")(mail=*@corp.com",
-        "alice)(userPassword=*");
+        "alice)(userPassword=*",
+        "alice\\",
+        "alice\\2a",
+        "alice\\29\\28uid=\\2a",
+        "\\",
+        "\0");
   }
 
   @ParameterizedTest
@@ -111,6 +116,17 @@ class ShiroAuthenticationServiceFilterInjectionTest {
             "alice"));
   }
 
+  @Test
+  void backslashAndNulInSearchTextAreEscaped() {
+    assertEquals("(uid=*alice\\5c*)",
+        ShiroAuthenticationService.buildUserSearchFilter(USER_ATTRIBUTE, "alice\\"));
+    assertEquals("(uid=*alice\\00*)",
+        ShiroAuthenticationService.buildUserSearchFilter(USER_ATTRIBUTE, "alice\0"));
+    assertEquals("(&(objectclass=person)(uid=*alice\\5c\\00*))",
+        ShiroAuthenticationService.buildUserSearchFilterWithObjectClass(
+            USER_OBJECT_CLASS, USER_ATTRIBUTE, "alice\\\0"));
+  }
+
   private static void assertMetacharacterCounts(String rendered, String payload,
       int expectedOpenParens, int expectedCloseParens, int expectedAsterisks) {
     assertEquals(expectedOpenParens, count(rendered, '('),
@@ -128,6 +144,12 @@ class ShiroAuthenticationServiceFilterInjectionTest {
     }
     if (payload.indexOf('*') >= 0) {
       assertTrue(rendered.contains("\\2a"), "missing \\2a in: " + rendered);
+    }
+    if (payload.indexOf('\\') >= 0) {
+      assertTrue(rendered.contains("\\5c"), "missing \\5c in: " + rendered);
+    }
+    if (payload.indexOf('\0') >= 0) {
+      assertTrue(rendered.contains("\\00"), "missing \\00 in: " + rendered);
     }
   }
 
