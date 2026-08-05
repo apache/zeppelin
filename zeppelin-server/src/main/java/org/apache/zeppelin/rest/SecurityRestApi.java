@@ -18,6 +18,7 @@ package org.apache.zeppelin.rest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,16 +103,10 @@ public class SecurityRestApi extends AbstractRestApi {
     List<String> autoSuggestRoleList = new ArrayList<>();
     Collections.sort(usersList);
     Collections.sort(rolesList);
-    Collections.sort(
-        usersList,
-        (o1, o2) -> {
-          if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
-            return 0;
-          } else if (o1.matches(searchText + "(.*)")) {
-            return -1;
-          }
-          return 0;
-        });
+    // List the users whose name starts with the search text first, keeping the alphabetical order
+    // within each group. The search text comes from the client, so it must not be compiled as a
+    // regular expression here.
+    usersList.sort(Comparator.comparing((String user) -> !user.startsWith(searchText)));
     int maxLength = 0;
     for (String user : usersList) {
       if (StringUtils.containsIgnoreCase(user, searchText)) {
