@@ -25,4 +25,4 @@ The content does not exist yet.
 
 We're always welcoming contribution.
 
-If you're interested, please check [How to contribute (website)](./development/howtocontributewebsite.html).
+If you're interested, please check [How to contribute (website)](./development/contribution/how_to_contribute_website.html).
