@@ -27,6 +27,7 @@ export * from './note-status.service';
 export * from './note-var-share.service';
 export * from './notebook-repos.service';
 export * from './notebook.service';
+export * from './react-feature.service';
 export * from './runtime-compiler.service';
 export * from './save-as.service';
 export * from './security.service';
