@@ -29,7 +29,6 @@ import org.apache.zeppelin.test.DownloadUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -54,6 +53,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,6 +78,8 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
     zepServer.addInterpreter("sh");
     zepServer.addInterpreter("spark");
     zepServer.copyBinDir();
+    zepServer.getZeppelinConfiguration().setProperty(
+        ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
     zepServer.start();
     TestHelper.configureSparkInterpreter(zepServer, sparkHome);
   }
@@ -676,143 +678,43 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
   }
 
-  @Disabled // TODO(ZEPPELIN-5994): Fix and enable this test
   @Test
-  void testJobs() throws Exception {
-    // create a note and a paragraph
+  void testCronDisabledInAnonymousMode() throws Exception {
     String noteId = null;
     try {
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
-      noteId = notebook.createNote("note1_testJobs", anonymous);
-      // Use write lock, because name is overwritten
+      assertFalse(zConf.isAuthenticationEnabled());
+      assertFalse(zConf.isZeppelinNotebookCronEnable());
+      noteId = notebook.createNote("note1_testCronDisabledInAnonymousMode", anonymous);
       notebook.processNote(noteId,
-        note -> {
-          note.setName("note for run test");
-          Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-          paragraph.setText("%md This is test paragraph.");
-
-          Map<String, Object> config = paragraph.getConfig();
-          config.put("enabled", true);
-          paragraph.setConfig(config);
-          return null;
-        });
-
-      notebook.processNote(noteId,
-        note -> {
-          try {
-            note.runAll(AuthenticationInfo.ANONYMOUS, false, false, new HashMap<>());
-          } catch (Exception e) {
-            fail();
-          }
-          return null;
-        });
+          note -> {
+            assertNotNull(note, "can't create new note");
+            note.setName("note for anonymous cron test");
+            Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+            Map<String, Object> config = paragraph.getConfig();
+            config.put("enabled", true);
+            paragraph.setConfig(config);
+            paragraph.setText("%md This is test paragraph.");
+            notebook.saveNote(note, anonymous);
+            return null;
+          });
 
       String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
-      // right cron expression but not exist note.
-      CloseableHttpResponse postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
-      assertThat("", postCron, isNotFound());
-      postCron.close();
-
-      // right cron expression.
-      postCron = httpPost("/notebook/cron/" + noteId, jsonRequest);
-      assertThat("", postCron, isAllowed());
-      postCron.close();
-      Thread.sleep(1000);
-
-      // wrong cron expression.
-      jsonRequest = "{\"cron\":\"a * * * * ?\" }";
-      postCron = httpPost("/notebook/cron/" + noteId, jsonRequest);
-      assertThat("", postCron, isBadRequest());
-      postCron.close();
-      Thread.sleep(1000);
-
-      // remove cron job.
-      CloseableHttpResponse deleteCron = httpDelete("/notebook/cron/" + noteId);
-      assertThat("", deleteCron, isAllowed());
-      deleteCron.close();
+      try (
+          CloseableHttpResponse postCron =
+              httpPost(
+                  "/notebook/cron/" + noteId,
+                  jsonRequest)) {
+        assertThat("", postCron, isForbidden());
+      }
+      try (
+          CloseableHttpResponse deleteCron =
+              httpDelete("/notebook/cron/" + noteId)) {
+        assertThat("", deleteCron, isForbidden());
+      }
     } finally {
-      //cleanup
       if (null != noteId) {
         notebook.removeNote(noteId, anonymous);
       }
-      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
-    }
-  }
-
-  @Disabled // TODO(ZEPPELIN-5994): Fix and enable this test
-  @Test
-  void testCronDisable() throws Exception {
-    String noteId = null;
-    try {
-      // create a note and a paragraph
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
-      noteId = notebook.createNote("note1_testCronDisable", anonymous);
-      // use write lock because Name is overwritten
-      notebook.processNote(noteId,
-        note -> {
-          note.setName("note for run test");
-          Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-          paragraph.setText("%md This is test paragraph.");
-
-          Map<String, Object> config = paragraph.getConfig();
-          config.put("enabled", true);
-          paragraph.setConfig(config);
-          return null;
-        });
-
-      notebook.processNote(noteId,
-        note -> {
-          try {
-            note.runAll(AuthenticationInfo.ANONYMOUS, true, true, new HashMap<>());
-          } catch (Exception e) {
-            fail();
-          }
-          return null;
-        });
-
-
-      String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
-      // right cron expression.
-      CloseableHttpResponse postCron = httpPost("/notebook/cron/" + noteId, jsonRequest);
-      assertThat("", postCron, isForbidden());
-      postCron.close();
-
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
-      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "/System");
-
-      // use write lock, because Name is overwritten
-      notebook.processNote(noteId,
-        note -> {
-          note.setName("System/test2");
-          return null;
-        });
-      notebook.processNote(noteId,
-        note -> {
-          try {
-            note.runAll(AuthenticationInfo.ANONYMOUS, true, true, new HashMap<>());
-          } catch (Exception e) {
-            fail();
-          }
-          return null;
-        });
-      postCron = httpPost("/notebook/cron/" + noteId, jsonRequest);
-      assertThat("", postCron, isAllowed());
-      postCron.close();
-      Thread.sleep(1000);
-
-      // remove cron job.
-      CloseableHttpResponse deleteCron = httpDelete("/notebook/cron/" + noteId);
-      assertThat("", deleteCron, isAllowed());
-      deleteCron.close();
-      Thread.sleep(1000);
-
-      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());
-    } finally {
-      //cleanup
-      if (null != noteId) {
-        notebook.removeNote(noteId, anonymous);
-      }
-      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName());
     }
   }
 
