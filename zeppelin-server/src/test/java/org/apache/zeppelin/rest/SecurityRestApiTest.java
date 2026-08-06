@@ -92,6 +92,23 @@ class SecurityRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testGetUserListWithRegexMetacharacters() throws IOException {
+    // The search text is not a regular expression. Metacharacters must not break the endpoint.
+    for (String searchText : new String[] {"%2A", "%28", "%2B"}) {
+      CloseableHttpResponse get = httpGet("/security/userlist/" + searchText, "admin", "password1");
+      assertThat("Status code for search text " + searchText,
+          get.getStatusLine().getStatusCode(), CoreMatchers.equalTo(200));
+      Map<String, Object> resp = gson.fromJson(
+          EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),
+          new TypeToken<Map<String, Object>>(){}.getType());
+      List<String> userList = (List) ((Map) resp.get("body")).get("users");
+      assertThat("Search result size for search text " + searchText, userList.size(),
+          CoreMatchers.equalTo(0));
+      get.close();
+    }
+  }
+
+  @Test
   void testRolesEscaped() throws IOException {
     CloseableHttpResponse get = httpGet("/security/ticket", "admin", "password1");
     Map<String, Object> resp = gson.fromJson(EntityUtils.toString(get.getEntity(), StandardCharsets.UTF_8),

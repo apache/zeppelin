@@ -53,6 +53,7 @@ import org.apache.shiro.util.JdbcUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.LdapFilterEncoder;
 import org.apache.zeppelin.realm.LdapRealm;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.slf4j.Logger;
@@ -315,7 +316,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       String[] attrIDs = {userDnPrefix};
       constraints.setReturningAttributes(attrIDs);
       NamingEnumeration<SearchResult> result =
-          ctx.search(userDnSuffix, "(" + userDnPrefix + "=*" + searchText + "*)", constraints);
+          ctx.search(userDnSuffix, buildUserSearchFilter(userDnPrefix, searchText), constraints);
       while (result.hasMore()) {
         Attributes attrs = result.next().getAttributes();
         if (attrs.get(userDnPrefix) != null) {
@@ -328,6 +329,17 @@ public class ShiroAuthenticationService implements AuthenticationService {
     }
     LOGGER.info("UserList: {}", userList);
     return userList;
+  }
+
+  /**
+   * Builds the user search filter for {@link DefaultLdapRealm}. The attribute name and the search
+   * text are escaped per RFC 4515; the wildcards Zeppelin adds around the search text stay outside
+   * the escaped value so that substring matching keeps working.
+   */
+  static String buildUserSearchFilter(String userDnPrefix, String searchText) {
+    return String.format("(%s=*%s*)",
+        LdapFilterEncoder.escapeFilterValue(userDnPrefix),
+        LdapFilterEncoder.escapeFilterValue(searchText));
   }
 
   /** Function to extract users from Zeppelin LdapRealm. */
@@ -348,13 +360,7 @@ public class ShiroAuthenticationService implements AuthenticationService {
       NamingEnumeration<SearchResult> result =
           ctx.search(
               userSearchRealm,
-              "(&(objectclass="
-                  + userObjectClass
-                  + ")("
-                  + userAttribute
-                  + "=*"
-                  + searchText
-                  + "*))",
+              buildUserSearchFilterWithObjectClass(userObjectClass, userAttribute, searchText),
               constraints);
       while (result.hasMore()) {
         Attributes attrs = result.next().getAttributes();
@@ -375,6 +381,18 @@ public class ShiroAuthenticationService implements AuthenticationService {
       LOGGER.error("Error retrieving User list from Ldap Realm", e);
     }
     return userList;
+  }
+
+  /**
+   * Builds the user search filter for Zeppelin {@link LdapRealm}. Follows the same escaping rules
+   * as {@link #buildUserSearchFilter(String, String)}, with the user object class escaped as well.
+   */
+  static String buildUserSearchFilterWithObjectClass(String userObjectClass, String userAttribute,
+      String searchText) {
+    return String.format("(&(objectclass=%s)(%s=*%s*))",
+        LdapFilterEncoder.escapeFilterValue(userObjectClass),
+        LdapFilterEncoder.escapeFilterValue(userAttribute),
+        LdapFilterEncoder.escapeFilterValue(searchText));
   }
 
   /**
