@@ -274,17 +274,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
   }
 
   public void onMessage(NotebookSocket conn, String msg) {
+    Message receivedMessage = null;
     try {
-      Message receivedMessage = deserializeMessage(msg);
+      receivedMessage = deserializeMessage(msg);
       if (receivedMessage.op != OP.PING) {
-        LOGGER.debug("RECEIVE: " + receivedMessage.op +
-            ", RECEIVE PRINCIPAL: " + receivedMessage.principal +
-            ", RECEIVE ROLES: " + receivedMessage.roles +
-            ", RECEIVE DATA: " + receivedMessage.data);
+        LOGGER.debug("WebSocket message received: operation={}, principal={}",
+            receivedMessage.op, receivedMessage.principal);
       }
-      if (LOGGER.isTraceEnabled()) {
-        LOGGER.trace("RECEIVE MSG = " + receivedMessage);
-      }
+      LOGGER.trace("WebSocket message processing started: operation={}, principal={}",
+          receivedMessage.op, receivedMessage.principal);
 
       TicketContainer.Entry ticketEntry = TicketContainer.instance.getTicketEntry(receivedMessage.principal);
       if (ticketEntry == null || StringUtils.isEmpty(ticketEntry.getTicket())) {
@@ -485,7 +483,13 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
       }
     } catch (Exception e) {
-      LOGGER.error("Can't handle message: {}", msg, e);
+      String operation = receivedMessage == null || receivedMessage.op == null
+          ? "unknown" : receivedMessage.op.name();
+      String principal = receivedMessage == null || StringUtils.isEmpty(receivedMessage.principal)
+          ? "unknown" : receivedMessage.principal;
+      LOGGER.error("WebSocket message handling completed: operation={}, principal={}, "
+              + "success=false, errorType={}",
+          operation, principal, e.getClass().getSimpleName());
       try {
         conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info", e.getMessage())));
       } catch (IOException iox) {
