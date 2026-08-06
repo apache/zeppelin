@@ -891,6 +891,33 @@ class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testRunNoteWithoutParamsInBody() throws IOException {
+    LOGGER.info("Running testRunNoteWithoutParamsInBody");
+    String note1Id = null;
+    try {
+      note1Id = notebook.createNote("note1", anonymous);
+
+      // Running a note without form parameters is valid. Gson leaves ParametersRequest#params
+      // null both when the key is absent and when it is an explicit null, so neither body may fail.
+      for (String body : new String[] {"{}", "{\"params\":null}"}) {
+        CloseableHttpResponse post =
+                httpPost("/notebook/job/" + note1Id + "?blocking=true&isolated=true", body);
+        assertThat(post, isAllowed());
+        Map<String, Object> resp = gson.fromJson(
+                EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8),
+                new TypeToken<Map<String, Object>>() {}.getType());
+        assertEquals("OK", resp.get("status"), "Failed for request body: " + body);
+        post.close();
+      }
+    } finally {
+      // cleanup
+      if (null != note1Id) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+    }
+  }
+
+  @Test
   void testRunAllParagraph_FirstFailed() throws IOException {
     LOGGER.info("Running testRunAllParagraph_FirstFailed");
     String note1Id = null;

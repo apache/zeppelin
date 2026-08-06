@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest.message;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -29,7 +30,12 @@ public class ParametersRequest {
     this.params = params;
   }
 
+  /**
+   * Gson bypasses the constructor, so this field is null when the body carries no "params" entry.
+   *
+   * @return the parameters, or an empty map when none were supplied
+   */
   public Map<String, Object> getParams() {
-    return params;
+    return params == null ? Collections.emptyMap() : params;
   }
 }
