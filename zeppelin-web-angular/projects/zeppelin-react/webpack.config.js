@@ -65,61 +65,19 @@ module.exports = (_env, argv) => {
       ]
     },
     plugins: [
+      // No `shared` scope: the shell bundles no React and never calls container.init.
+      // This remote is the only participant, so there is nothing to dedupe against. Re-add it once a second exists.
       new ModuleFederationPlugin({
         name: 'reactApp',
         filename: 'remoteEntry.js',
         exposes: {
           './PublishedParagraph': './src/pages/PublishedParagraph',
           './ParagraphFooter': './src/components/paragraph/ParagraphFooter'
-        },
-        shared: {
-          react: {
-            singleton: true,
-            strictVersion: false,
-            requiredVersion: '18.3.1',
-            eager: true
-          },
-          'react-dom': {
-            singleton: true,
-            strictVersion: false,
-            requiredVersion: '18.3.1',
-            eager: true
-          }
         }
       }),
       new HtmlWebpackPlugin({
         template: './src/index.html'
-      }),
-      {
-        apply: compiler => {
-          compiler.hooks.afterEmit.tap('GenerateRemoteEntryJson', () => {
-            const fs = require('fs');
-            const path = require('path');
-
-            const remoteEntryJson = {
-              name: 'zeppelinReact',
-              type: 'module',
-              version: '1.0.0',
-              baseUrl: isProduction ? '/assets/react/' : 'http://localhost:3001/',
-              exposes: {
-                './PublishedParagraph': './PublishedParagraph.tsx',
-                './ParagraphFooter': './ParagraphFooter.tsx'
-              }
-            };
-
-            const outputDir = path.resolve(__dirname, 'dist');
-            const outputPath = path.resolve(outputDir, 'remoteEntry.json');
-
-            // Ensure directory exists
-            if (!fs.existsSync(outputDir)) {
-              fs.mkdirSync(outputDir, { recursive: true });
-            }
-
-            fs.writeFileSync(outputPath, JSON.stringify(remoteEntryJson, null, 2));
-            console.log('Generated remoteEntry.json for Native Federation');
-          });
-        }
-      }
+      })
     ],
     output: {
       path: path.resolve(__dirname, 'dist'),
