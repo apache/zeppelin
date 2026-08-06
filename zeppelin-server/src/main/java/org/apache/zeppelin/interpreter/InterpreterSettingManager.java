@@ -486,9 +486,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
 
     LOGGER.debug("Reading interpreter-setting.json from {} as Resource", url);
-    List<RegisteredInterpreter> registeredInterpreterList =
-        getInterpreterListFromJson(url.openStream());
-    registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
+    try (InputStream stream = url.openStream()) {
+      List<RegisteredInterpreter> registeredInterpreterList = getInterpreterListFromJson(stream);
+      registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
+    }
     return true;
   }
 
@@ -498,9 +499,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
     if (Files.exists(interpreterJsonPath)) {
       LOGGER.debug("Reading interpreter-setting.json from file {}", interpreterJsonPath);
-      List<RegisteredInterpreter> registeredInterpreterList =
-          getInterpreterListFromJson(new FileInputStream(interpreterJsonPath.toFile()));
-      registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
+      try (InputStream stream = new FileInputStream(interpreterJsonPath.toFile())) {
+        List<RegisteredInterpreter> registeredInterpreterList = getInterpreterListFromJson(stream);
+        registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
+      }
       return true;
     }
     return false;
