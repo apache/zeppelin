@@ -12,25 +12,7 @@
 
 import { Directive, ElementRef, Input, NgZone, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { ReactRemoteLoaderService } from './react-remote-loader.service';
-import {
-  AnyExposedModule,
-  ReactExposedModule,
-  ReactHostCallbacks,
-  ReactMountHandle,
-  ReactProps
-} from './react-mount-handle';
-
-const isLegacyModule = (mod: AnyExposedModule, handleOrUnmount: unknown): handleOrUnmount is () => void => {
-  void mod;
-  return typeof handleOrUnmount === 'function';
-};
-
-const wrapLegacyHandle = (unmount: () => void): ReactMountHandle => ({
-  update: () => {
-    /* legacy modules don't support updates; no-op */
-  },
-  unmount
-});
+import { ReactExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 
 @Directive({
   selector: '[zeppelin-react-mount]',
@@ -101,18 +83,13 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     this.loading = true;
     const moduleKey = this.module;
     try {
-      const mod = await this.loader.loadModule<AnyExposedModule>(moduleKey);
+      const mod = await this.loader.loadModule<ReactExposedModule>(moduleKey);
       if (this.destroyed) {
         return;
       }
       this.ngZone.runOutsideAngular(() => {
         try {
-          const returned = (mod as ReactExposedModule).mount(this.host.nativeElement, this.latestProps);
-          if (isLegacyModule(mod, returned)) {
-            this.handle = wrapLegacyHandle(returned as unknown as () => void);
-          } else {
-            this.handle = returned as ReactMountHandle;
-          }
+          this.handle = mod.mount(this.host.nativeElement, this.latestProps);
           this.mountedModule = moduleKey;
         } catch (err) {
           this.handle = null;

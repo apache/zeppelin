@@ -46,22 +46,37 @@ The published paragraph was picked as pilot because it's read-only and has almos
 ## Architecture
 
 ```
-Angular host (port 4200)          React remote (port 3001)
-┌─────────────────────────┐       ┌─────────────────────────┐
-│  paragraph.component.ts │       │  webpack.config.js      │
-│  loads remoteEntry.js ──┼──────>│  ModuleFederationPlugin  │
-│  calls mount(el, props) │       │  name: 'reactApp'       │
-└─────────────────────────┘       │  exposes:               │
-                                  │    ./PublishedParagraph  │
-                                  └─────────────────────────┘
+Angular host (port 4200)              React remote (port 3001)
+┌───────────────────────────────┐     ┌─────────────────────────┐
+│  [zeppelin-react-mount]       │     │  webpack.config.js      │
+│  ReactRemoteLoaderService ────┼────>│  ModuleFederationPlugin │
+│  loads remoteEntry.js         │     │  name: 'reactApp'       │
+│  calls mount(el, props)       │     │  exposes:               │
+└───────────────────────────────┘     │    ./PublishedParagraph │
+                                      │    ./ParagraphFooter    │
+                                      └─────────────────────────┘
 ```
 
-1. Angular loads `remoteEntry.js` from the React dev server or production assets.
+1. `ReactRemoteLoaderService` loads `remoteEntry.js` from the React dev server or production assets, once per page.
 2. The script registers `window.reactApp` as a Module Federation container.
-3. Angular calls `container.get('./PublishedParagraph')` to get the module.
-4. The module exports `mount(element, props)`, which calls `createRoot()` and renders into the DOM element.
+3. The service calls `container.get('<exposed key>')` and caches the module promise.
+4. The `[zeppelin-react-mount]` directive calls `mount(element, props)` outside the Angular zone and keeps the returned handle for later `update()` and `unmount()` calls.
+5. If the remote fails to load, the directive reports the error to the host, which renders its Angular fallback instead.
 
-Append `?react=true` to any published paragraph URL to activate React mode.
+Host components do not touch `window.reactApp` themselves; they bind props to the directive and supply an `onError` callback.
+
+## Feature flags
+
+Each React surface is behind a URL query flag, resolved by `ReactFeatureService`:
+
+| URL | Result |
+| --- | --- |
+| `?react=true` | enabled |
+| `?react` | enabled |
+| `?react=false` | disabled |
+| flag absent | disabled |
+
+Append `?react=true` to any published paragraph URL, or `?reactFooter=true` to a notebook URL, to activate React mode.
 
 ## Setup
 
@@ -146,7 +161,5 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
    `exampleFeatureProps` should be a getter on the host component (not
    an inline object literal) so identity is stable when nothing changed.
 
-The legacy `./PublishedParagraph` module returns a bare unmount fn from
-`mount`. The directive tolerates that shape, but new modules should use
-the handle contract.
+Every exposed module must return the handle contract from `mount`. The directive assigns the return value straight to its handle, so returning a bare unmount function makes the next prop change throw.
 
