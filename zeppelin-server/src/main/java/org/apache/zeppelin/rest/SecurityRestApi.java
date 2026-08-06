@@ -79,7 +79,8 @@ public class SecurityRestApi extends AbstractRestApi {
     data.put("ticket", ticketEntry.getTicket());
 
     JsonResponse<Map<String, String>> response = new JsonResponse<>(Response.Status.OK, "", data);
-    LOGGER.warn("{}", response);
+    LOGGER.info("WebSocket ticket request completed: principal={}, success=true",
+        ticketEntry.getPrincipal());
     return response.build();
   }
 
