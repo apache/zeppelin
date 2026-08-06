@@ -305,9 +305,11 @@ public class HeliumBundleFactory {
 
     // 1. setup package.json
     File existingPackageJson = new File(bundleDir, "package.json");
-    JsonReader reader = new JsonReader(new FileReader(existingPackageJson));
-    Map<String, Object> packageJson = gson.fromJson(reader,
-            new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, Object> packageJson;
+    try (JsonReader reader = new JsonReader(new FileReader(existingPackageJson))) {
+      packageJson = gson.fromJson(reader,
+              new TypeToken<Map<String, Object>>(){}.getType());
+    }
     Map<String, String> existingDeps = (Map<String, String>) packageJson.get("dependencies");
     String mainFileName = (String) packageJson.get("main");
 
