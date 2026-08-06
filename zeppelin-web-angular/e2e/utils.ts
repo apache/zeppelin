@@ -482,6 +482,36 @@ const createNotebookViaRest = async (
   return { noteId, paragraphId };
 };
 
+export const setParagraphText = async (
+  page: Page,
+  noteId: string,
+  paragraphId: string,
+  text: string
+): Promise<void> => {
+  const response = await page.request.put(`/api/notebook/${noteId}/paragraph/${paragraphId}`, {
+    data: { text },
+    failOnStatusCode: false
+  });
+  if (!response.ok()) {
+    throw new Error(`Update paragraph REST request failed: ${response.status()} ${await response.text()}`);
+  }
+};
+
+export const setParagraphEditorHidden = async (
+  page: Page,
+  noteId: string,
+  paragraphId: string,
+  editorHide: boolean
+): Promise<void> => {
+  const response = await page.request.put(`/api/notebook/${noteId}/paragraph/${paragraphId}/config`, {
+    data: { editorHide },
+    failOnStatusCode: false
+  });
+  if (!response.ok()) {
+    throw new Error(`Update paragraph config REST request failed: ${response.status()} ${await response.text()}`);
+  }
+};
+
 interface CreateTestNotebookWithNameOptions {
   folderPath?: string | null;
   namePrefix?: string;

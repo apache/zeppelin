@@ -11,6 +11,7 @@
  */
 
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -57,9 +58,10 @@ import { NotebookParagraphComponent } from './paragraph/paragraph.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class NotebookComponent extends MessageListenersManager implements OnInit, OnDestroy {
+export class NotebookComponent extends MessageListenersManager implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren(NotebookParagraphComponent) listOfNotebookParagraphComponent!: QueryList<NotebookParagraphComponent>;
   private destroy$ = new Subject<void>();
+  private searchTerm = '';
   note?: Exclude<Note['note'], undefined>;
   permissions?: Permissions;
   selectId: string | null = null;
@@ -272,7 +274,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   onParagraphSearch(term: string) {
-    this.listOfNotebookParagraphComponent?.forEach(comp => comp.highlightMatches(term || ''));
+    this.searchTerm = term || '';
+    this.highlightSearchTerm();
   }
 
   saveParagraph(id: string) {
@@ -485,6 +488,13 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       });
   }
 
+  ngAfterViewInit(): void {
+    this.highlightSearchTerm();
+    this.listOfNotebookParagraphComponent.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.highlightSearchTerm();
+    });
+  }
+
   removeParagraphFromNgZ(): void {
     if (this.note && Array.isArray(this.note.paragraphs)) {
       this.note.paragraphs.forEach(p => {
@@ -500,5 +510,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.destroy$.next();
     this.destroy$.complete();
     this.titleService.setTitle('Zeppelin');
+  }
+
+  // The term can arrive before the paragraphs exist: the query param subscription emits during
+  // ngOnInit, and the paragraphs themselves are only rendered once the note arrives over the
+  // WebSocket. Keep the term and (re)apply it whenever the paragraph views change.
+  private highlightSearchTerm(): void {
+    this.listOfNotebookParagraphComponent?.forEach(comp => comp.highlightMatches(this.searchTerm));
   }
 }
