@@ -185,6 +185,36 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>verify-interpreter-runtime-artifact</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/InterpreterRuntimeArtifactIT.java</include>
+              </includes>
+              <failIfNoTests>true</failIfNoTests>
+              <systemPropertyVariables>
+                <runtimeArtifactBuildDirectory>${project.build.directory}</runtimeArtifactBuildDirectory>
+                <runtimeArtifactFinalName>${project.build.finalName}</runtimeArtifactFinalName>
+                <runtimeArtifactVersion>${project.version}</runtimeArtifactVersion>
+                <runtimeArtifactModuleDirectory>${project.basedir}</runtimeArtifactModuleDirectory>
+                <runtimeArtifactStagingDirectory>
+                  ${project.basedir}/../interpreter
+                </runtimeArtifactStagingDirectory>
+                <runtimeArtifactHadoopScope>${hadoop.deps.scope}</runtimeArtifactHadoopScope>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!--
         Build the relocated interpreter runtime as an internal distribution artifact. The normal
         zeppelin-interpreter artifact remains unchanged and is the only artifact installed or
