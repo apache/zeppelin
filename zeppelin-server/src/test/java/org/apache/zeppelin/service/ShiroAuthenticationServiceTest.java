@@ -36,6 +36,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.TestGroupResolver;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.service.shiro.AbstractShiroTest;
 import org.h2.jdbcx.JdbcDataSource;
@@ -107,6 +108,7 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
     setupPrincipalName("test");
 
     KnoxJwtRealm realm = spy(new KnoxJwtRealm());
+    realm.setGroupResolverClass(TestGroupResolver.class.getName());
     LifecycleUtils.init(realm);
     Set<String> testRoles = new HashSet<String>();
     testRoles.add("role1");

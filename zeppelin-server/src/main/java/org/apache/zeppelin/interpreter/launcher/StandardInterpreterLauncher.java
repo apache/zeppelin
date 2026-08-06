@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.ProcessLaunchObserver;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,9 +42,25 @@ import java.util.Map;
 public class StandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardInterpreterLauncher.class);
+  private ProcessLaunchObserver processLaunchObserver = ProcessLaunchObserver.NO_OP;
 
   public StandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
+  }
+
+  public void setProcessLaunchObservers(List<ProcessLaunchObserver> observers) {
+    this.processLaunchObserver = (launchOutput, interpreterProcess) -> {
+      for (ProcessLaunchObserver observer : observers) {
+        Thread thread = Thread.currentThread();
+        ClassLoader previousClassLoader = thread.getContextClassLoader();
+        try {
+          thread.setContextClassLoader(observer.getClass().getClassLoader());
+          observer.onProcessLaunch(launchOutput, interpreterProcess);
+        } finally {
+          thread.setContextClassLoader(previousClassLoader);
+        }
+      }
+    };
   }
 
   @Override
@@ -75,7 +93,8 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
           buildEnvFromProperties(context), connectTimeout, connectionPoolSize, name,
           context.getInterpreterGroupId(), option.isUserImpersonate(),
-          runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath());
+          runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
+          processLaunchObserver);
     }
   }
 

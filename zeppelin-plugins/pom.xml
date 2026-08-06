@@ -31,11 +31,6 @@
     <packaging>pom</packaging>
     <name>Zeppelin: Plugins Parent</name>
     <description>Zeppelin Plugins Parent</description>
-    <properties>
-        <!-- no need to include hadoop jar, because it's already included in zeppelin-server -->
-        <hadoop.deps.scope>provided</hadoop.deps.scope>
-    </properties>
-
     <modules>
         <module>notebookrepo/s3</module>
         <module>notebookrepo/github</module>
@@ -49,6 +44,7 @@
         <module>launcher/docker</module>
         <module>launcher/yarn</module>
         <module>launcher/flink</module>
+        <module>security/hadoop</module>
     </modules>
 
     <dependencies>

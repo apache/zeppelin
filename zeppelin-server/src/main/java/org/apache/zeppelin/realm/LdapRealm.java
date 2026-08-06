@@ -44,9 +44,6 @@ import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.PagedResultsControl;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -184,6 +181,8 @@ public class LdapRealm extends DefaultLdapRealm {
 
   private String hadoopSecurityCredentialPath;
   private static final String KEYSTORE_PASS = "ldapRealm.systemPassword";
+  private static final String HADOOP_SECRET_RESOLVER =
+      "org.apache.zeppelin.realm.hadoop.HadoopCredentialProviderSecretResolver";
 
   private boolean authorizationEnabled;
 
@@ -228,15 +227,13 @@ public class LdapRealm extends DefaultLdapRealm {
       String keystorePass) {
     String password = "";
     try {
-      Configuration configuration = new Configuration();
-      configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          hadoopSecurityCredentialPath);
-      CredentialProvider provider = CredentialProviderFactory.getProviders(configuration).get(0);
-      CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(keystorePass);
-      if (credEntry != null) {
-        password = new String(credEntry.getCredential());
+      SecretResolver resolver =
+          SecurityProviderLoader.load(HADOOP_SECRET_RESOLVER, SecretResolver.class);
+      char[] credential = resolver.resolve(hadoopSecurityCredentialPath, keystorePass);
+      if (credential != null) {
+        password = new String(credential);
       }
-    } catch (IOException e) {
+    } catch (IOException | ReflectiveOperationException e) {
       throw new ShiroException("Error from getting credential entry from keystore", e);
     }
     if (org.apache.commons.lang3.StringUtils.isEmpty(password)) {

@@ -113,6 +113,7 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.properties = properties;
     this.envs = envs;
     this.hadoopConf = new YarnConfiguration();
+    this.hadoopConf.setClassLoader(YarnRemoteInterpreterProcess.class.getClassLoader());
     // Add core-site.xml and yarn-site.xml. This is for integration test where using MiniHadoopCluster.
     if (properties.containsKey("HADOOP_CONF_DIR") &&
             !StringUtils.isBlank(properties.getProperty("HADOOP_CONF_DIR"))) {

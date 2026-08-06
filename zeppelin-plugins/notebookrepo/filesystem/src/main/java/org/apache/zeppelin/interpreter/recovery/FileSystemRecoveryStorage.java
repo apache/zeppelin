@@ -53,7 +53,8 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
       throws IOException {
     super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
-    String recoveryDirProperty = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR);
+    String recoveryDirProperty =
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR);
     this.fs = new FileSystemStorage(zConf, recoveryDirProperty);
     LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
         " for Zeppelin Recovery.");

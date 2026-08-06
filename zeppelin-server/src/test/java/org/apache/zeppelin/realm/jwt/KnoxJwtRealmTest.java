@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -94,6 +95,13 @@ public class KnoxJwtRealmTest {
     
     // Then: should return false
     assertFalse(result, "JWT token with past expiration should be rejected");
+  }
+
+  @Test
+  void testMapGroupPrincipalsUsesConfiguredResolver() {
+    knoxJwtRealm.setGroupResolver(principal -> Set.of(principal + "-role"));
+
+    assertEquals(Set.of("alice-role"), knoxJwtRealm.mapGroupPrincipals("alice"));
   }
 
   // Note: Full token validation tests are omitted as they require complex setup

@@ -102,8 +102,16 @@ public abstract class InterpreterLauncher {
       }
     }
 
-    // launch it via sub class implementation without recovering.
-    return launchDirectly(context);
+    // Launch external plugins with their own classloader as TCCL. Libraries such as Hadoop use
+    // TCCL for configuration resources and service discovery.
+    Thread thread = Thread.currentThread();
+    ClassLoader previousClassLoader = thread.getContextClassLoader();
+    try {
+      thread.setContextClassLoader(getClass().getClassLoader());
+      return launchDirectly(context);
+    } finally {
+      thread.setContextClassLoader(previousClassLoader);
+    }
   }
 
   /**

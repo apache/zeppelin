@@ -63,7 +63,6 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
@@ -196,11 +195,10 @@ public class InterpreterSettingManager implements NoteEventListener {
     this.interpreterEventServer = new RemoteInterpreterEventServer(zConf, this);
     this.interpreterEventServer.start();
 
-    this.recoveryStorage =
-        ReflectionUtils.createClazzInstance(
-            zConf.getRecoveryStorageClass(),
-            new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-            new Object[] {zConf, this});
+    this.recoveryStorage = pluginManager.createPluginInstance(
+        zConf.getRecoveryStorageClass(),
+        new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+        new Object[] {zConf, this});
 
     LOGGER.info("Using RecoveryStorage: {}", this.recoveryStorage.getClass().getName());
 

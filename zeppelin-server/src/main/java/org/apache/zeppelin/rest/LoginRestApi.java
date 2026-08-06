@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.rest;
 
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,6 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
@@ -43,10 +41,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
-import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
-import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
-import org.apache.zeppelin.realm.kerberos.KerberosRealm;
-import org.apache.zeppelin.realm.kerberos.KerberosToken;
+import org.apache.zeppelin.realm.ExternalLoginRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -78,108 +73,57 @@ public class LoginRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getLogin(@Context HttpHeaders headers) {
     JsonResponse<Map<String, String>> response = null;
-    if (isKnoxSSOEnabled()) {
-      KnoxJwtRealm knoxJwtRealm = getJTWRealm();
-      Cookie cookie = headers.getCookies().get(knoxJwtRealm.getCookieName());
-      if (cookie != null && cookie.getValue() != null) {
-        Subject currentUser = SecurityUtils.getSubject();
-        JWTAuthenticationToken token = new JWTAuthenticationToken(null, cookie.getValue());
-        try {
-          String name = knoxJwtRealm.getName(token);
+    ExternalLoginRealm externalLoginRealm = getExternalLoginRealm();
+    if (externalLoginRealm != null) {
+      try {
+        AuthenticationToken token =
+            externalLoginRealm.getLoginAuthenticationToken(headers.getCookies());
+        if (token != null) {
+          String name = externalLoginRealm.getLoginPrincipal(token);
+          Subject currentUser = SecurityUtils.getSubject();
           if (!currentUser.isAuthenticated() || !currentUser.getPrincipal().equals(name)) {
             response = proceedToLogin(currentUser, token);
           }
-        } catch (ParseException e) {
-          LOGGER.error("ParseException in LoginRestApi: ", e);
         }
+      } catch (AuthenticationException e) {
+        LOGGER.error("Error while processing an external login token", e);
       }
-      if (response == null) {
+
+      if (response == null && externalLoginRealm.shouldRedirectOnMissingToken()) {
         Map<String, String> data = new HashMap<>();
         data.put("redirectURL",
-            constructUrl(knoxJwtRealm.getProviderUrl(), knoxJwtRealm.getRedirectParam(),
-                knoxJwtRealm.getLogin()));
+            constructUrl(externalLoginRealm.getProviderUrl(),
+                externalLoginRealm.getRedirectParam(), externalLoginRealm.getLogin()));
         response = new JsonResponse<>(Status.OK, "", data);
       }
-      return response.build();
-    }
-
-    KerberosRealm kerberosRealm = getKerberosRealm();
-    if (null != kerberosRealm) {
-      try {
-        Map<String, Cookie> cookies = headers.getCookies();
-        KerberosToken kerberosToken = KerberosRealm.getKerberosTokenFromCookies(cookies);
-        if (null != kerberosToken) {
-          Subject currentUser = SecurityUtils.getSubject();
-          String name = (String) kerberosToken.getPrincipal();
-          if (!currentUser.isAuthenticated() || !currentUser.getPrincipal().equals(name)) {
-            response = proceedToLogin(currentUser, kerberosToken);
-          }
-        }
-        if (null == response) {
-          LOGGER.warn("No Kerberos token received");
-          response = new JsonResponse<>(Status.UNAUTHORIZED, "", null);
-        }
-        return response.build();
-      } catch (AuthenticationException e){
-        LOGGER.error("Error in Login", e);
+      if (response == null) {
+        LOGGER.warn("No external authentication token received");
+        response = new JsonResponse<>(Status.UNAUTHORIZED, "", null);
       }
+      return response.build();
     }
     return new JsonResponse<>(Status.METHOD_NOT_ALLOWED).build();
   }
 
-  private KerberosRealm getKerberosRealm() {
+  private ExternalLoginRealm getExternalLoginRealm() {
+    ExternalLoginRealm selectedRealm = null;
     Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
-        String name = realm.getClass().getName();
-
-        LOGGER.debug("RealmClass.getName: {}", name);
-
-        if (name.equals("org.apache.zeppelin.realm.kerberos.KerberosRealm")) {
-          return (KerberosRealm) realm;
+        LOGGER.debug("RealmClass.getName: {}", realm.getClass().getName());
+        if (realm instanceof ExternalLoginRealm
+            && (selectedRealm == null
+                || ((ExternalLoginRealm) realm).getLoginPriority()
+                    > selectedRealm.getLoginPriority())) {
+          selectedRealm = (ExternalLoginRealm) realm;
         }
       }
     }
-    return null;
+    return selectedRealm;
   }
 
-  private KnoxJwtRealm getJTWRealm() {
-    Collection<Realm> realmsList = authenticationService.getRealmsList();
-    if (realmsList != null) {
-      for (Realm realm : realmsList) {
-        if (realm instanceof KnoxJwtRealm) {
-          return (KnoxJwtRealm) realm;
-        }
-      }
-    }
-    return null;
-  }
-
-  private boolean isKnoxSSOEnabled() {
-    Collection<Realm> realmsList = authenticationService.getRealmsList();
-    if (realmsList != null) {
-      for (Realm realm : realmsList) {
-        if (realm instanceof KnoxJwtRealm) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private boolean isKerberosRealmEnabled() {
-    Collection<Realm> realmsList = authenticationService.getRealmsList();
-    if (realmsList != null) {
-      for (Realm realm : realmsList) {
-        if (realm instanceof KerberosRealm) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private JsonResponse<Map<String, String>> proceedToLogin(Subject currentUser, AuthenticationToken token) {
+  private JsonResponse<Map<String, String>> proceedToLogin(
+      Subject currentUser, AuthenticationToken token) {
     JsonResponse<Map<String, String>> response = null;
     try {
       logoutCurrentUser();
@@ -260,18 +204,12 @@ public class LoginRestApi extends AbstractRestApi {
       status = Status.FORBIDDEN;
       data.put("clearAuthorizationHeader", "false");
     }
-    if (isKnoxSSOEnabled()) {
-      KnoxJwtRealm knoxJwtRealm = getJTWRealm();
+    ExternalLoginRealm externalLoginRealm = getExternalLoginRealm();
+    if (externalLoginRealm != null) {
       data.put("redirectURL",
-          constructUrl(knoxJwtRealm.getProviderUrl(), knoxJwtRealm.getRedirectParam(),
-              knoxJwtRealm.getLogout()));
-      data.put("isLogoutAPI", knoxJwtRealm.getLogoutAPI().toString());
-    } else if (isKerberosRealmEnabled()) {
-      KerberosRealm kerberosRealm = getKerberosRealm();
-      data.put("redirectURL",
-          constructUrl(kerberosRealm.getProviderUrl(), kerberosRealm.getRedirectParam(),
-              kerberosRealm.getLogout()));
-      data.put("isLogoutAPI", kerberosRealm.getLogoutAPI().toString());
+          constructUrl(externalLoginRealm.getProviderUrl(), externalLoginRealm.getRedirectParam(),
+              externalLoginRealm.getLogout()));
+      data.put("isLogoutAPI", externalLoginRealm.getLogoutAPI().toString());
     }
     JsonResponse<Map<String, String>> response = new JsonResponse<>(status, "", data);
     LOGGER.info(response.toString());

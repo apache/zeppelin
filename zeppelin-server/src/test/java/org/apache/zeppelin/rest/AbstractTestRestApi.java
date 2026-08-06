@@ -91,6 +91,7 @@ public abstract class AbstractTestRestApi {
           "knoxJwtRealm.redirectParam = originalUrl\n" +
           "knoxJwtRealm.cookieName = hadoop-jwt\n" +
           "knoxJwtRealm.publicKeyPath = knox-sso.pem\n" +
+          "knoxJwtRealm.groupResolverClass = org.apache.zeppelin.realm.TestGroupResolver\n" +
           "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
           "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
           "securityManager.sessionManager = $sessionManager\n" +

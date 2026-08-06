@@ -18,7 +18,13 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.Test;
 
 public class InterpreterLauncherTest {
@@ -27,5 +33,29 @@ public class InterpreterLauncherTest {
   public void testEscapeSpecialCharacters() {
     String cmd = "{}.";
     assertEquals("\\{\\}\\.", InterpreterLauncher.escapeSpecialCharacter(cmd));
+  }
+
+  @Test
+  void launchUsesPluginClassLoaderAsContextAndRestoresThePreviousOne() throws Exception {
+    InterpreterLauncher launcher = new InterpreterLauncher(ZeppelinConfiguration.load(), null) {
+      @Override
+      public InterpreterClient launchDirectly(InterpreterLaunchContext context)
+          throws IOException {
+        assertSame(getClass().getClassLoader(),
+            Thread.currentThread().getContextClassLoader());
+        return null;
+      }
+    };
+    Thread thread = Thread.currentThread();
+    ClassLoader previousClassLoader = thread.getContextClassLoader();
+    try (URLClassLoader emptyClassLoader = new URLClassLoader(new URL[0], null)) {
+      thread.setContextClassLoader(emptyClassLoader);
+
+      launcher.launch(null);
+
+      assertSame(emptyClassLoader, thread.getContextClassLoader());
+    } finally {
+      thread.setContextClassLoader(previousClassLoader);
+    }
   }
 }

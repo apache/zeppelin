@@ -34,6 +34,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.realm.ExternalLoginRealm;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
@@ -85,7 +86,7 @@ import java.util.regex.Pattern;
  * authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
  *
  */
-public class KerberosRealm extends AuthorizingRealm {
+public class KerberosRealm extends AuthorizingRealm implements ExternalLoginRealm {
   private static final Logger LOGGER = LoggerFactory.getLogger(KerberosRealm.class);
 
   // Configs to set in shiro.ini
@@ -203,6 +204,28 @@ public class KerberosRealm extends AuthorizingRealm {
     return token instanceof KerberosToken;
   }
 
+  @Override
+  public org.apache.shiro.authc.AuthenticationToken getLoginAuthenticationToken(
+      Map<String, jakarta.ws.rs.core.Cookie> cookies)
+      throws org.apache.shiro.authc.AuthenticationException {
+    return getKerberosTokenFromCookies(cookies);
+  }
+
+  @Override
+  public String getLoginPrincipal(org.apache.shiro.authc.AuthenticationToken token) {
+    return (String) token.getPrincipal();
+  }
+
+  @Override
+  public boolean shouldRedirectOnMissingToken() {
+    return false;
+  }
+
+  @Override
+  public int getLoginPriority() {
+    return 0;
+  }
+
   /**
    * Initializes the KerberosRealm by 'kinit'ing using principal and keytab.
    * <p>
@@ -276,6 +299,7 @@ public class KerberosRealm extends AuthorizingRealm {
       }
 
       Configuration hadoopConfig = new Configuration();
+      hadoopConfig.setClassLoader(KerberosRealm.class.getClassLoader());
       hadoopGroups = new Groups(hadoopConfig);
 
     } catch (Exception ex) {
@@ -982,6 +1006,11 @@ public class KerberosRealm extends AuthorizingRealm {
 
   public String getLogout() {
     return logout;
+  }
+
+  @Override
+  public String getLogin() {
+    return null;
   }
 
   public void setLogout(String logout) {
