@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpBackend, HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ConfigurationService, MessageService, TicketService } from '@zeppelin/services';
 
@@ -37,6 +37,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   errorText?: string;
   importLoading = false;
   wsMaxLimit?: number;
+  private readonly externalHttpClient: HttpClient;
 
   @MessageListener(OP.IMPORT_NOTE)
   noteImported(_: MessageReceiveDataTypeMap[OP.IMPORT_NOTE]) {
@@ -46,7 +47,7 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
   importNote() {
     this.errorText = '';
     this.importLoading = true;
-    this.httpClient.get(this.importUrl ?? '').subscribe(
+    this.externalHttpClient.get(this.importUrl ?? '').subscribe(
       data => {
         this.importLoading = false;
         this.processImportJson(data);
@@ -106,9 +107,10 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
     private configurationService: ConfigurationService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,
-    private httpClient: HttpClient
+    httpBackend: HttpBackend
   ) {
     super(messageService);
+    this.externalHttpClient = new HttpClient(httpBackend);
   }
 
   async ngOnInit() {

@@ -10,6 +10,8 @@
  * limitations under the License.
  */
 
+import { createServer } from 'node:http';
+
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../models/home-page';
 import { NoteImportModal } from '../../../models/note-import-modal';
@@ -67,6 +69,46 @@ test.describe('Note Import Modal', () => {
     await noteImportModal.setImportUrl('https://example.com/note.json');
 
     await expect(noteImportModal.importNoteButton).toBeEnabled();
+  });
+
+  test('Given URL tab is selected, When importing from wildcard CORS origin, Then response should be readable', async () => {
+    const corsServer = createServer((request, response) => {
+      response.setHeader('Access-Control-Allow-Headers', 'X-Requested-With');
+      response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      response.setHeader('Access-Control-Allow-Origin', '*');
+      response.setHeader('Connection', 'close');
+
+      if (request.method === 'OPTIONS') {
+        response.writeHead(204);
+        response.end();
+        return;
+      }
+
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ name: 'Missing paragraphs' }));
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      corsServer.once('error', reject);
+      corsServer.listen(0, '127.0.0.1', resolve);
+    });
+
+    try {
+      const address = corsServer.address();
+      if (!address || typeof address === 'string') {
+        throw new Error('Failed to bind CORS test server');
+      }
+
+      await noteImportModal.switchToUrlTab();
+      await noteImportModal.setImportUrl(`http://127.0.0.1:${address.port}/note.json`);
+      await noteImportModal.clickImportNote();
+
+      await expect(noteImportModal.errorAlert).toHaveText('Invalid JSON');
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        corsServer.close(error => (error ? reject(error) : resolve()));
+      });
+    }
   });
 
   test('Given Import Note modal is open, When entering import name, Then name should be set', async () => {
