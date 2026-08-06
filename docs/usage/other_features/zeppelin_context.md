@@ -195,7 +195,7 @@ Currently only [text](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/
 [options](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option), and 
 [checkbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox) are supported.
 
-Dynamic forms are described in detail here: [Dynamic Form](../usage/dynamic_form/intro.html).
+Dynamic forms are described in detail here: [Dynamic Form](../dynamic_form/intro.html).
 
 In sql environment, you can create dynamic form in simple template.
 
@@ -205,7 +205,7 @@ In sql environment, you can create dynamic form in simple template.
 select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
-To learn more about dynamic form, checkout [Dynamic Form](../usage/dynamic_form/intro.html).
+To learn more about dynamic form, checkout [Dynamic Form](../dynamic_form/intro.html).
 
 
 ## Usage with Embedded Commands
