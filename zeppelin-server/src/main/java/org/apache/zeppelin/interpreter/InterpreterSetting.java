@@ -44,6 +44,7 @@ import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.plugin.PluginManager;
@@ -866,10 +867,22 @@ public class InterpreterSetting {
     InterpreterClient recoveredClient = zConf.isRecoveryEnabled()
         ? recoveryStorage.getInterpreterClient(interpreterGroupId) : null;
     boolean reusableRecoveryCredential = recoveredClient != null && recoveredClient.isRunning();
-    boolean issuedCallbackToken = false;
-    if (StringUtils.isBlank(callbackToken) || !reusableRecoveryCredential) {
-      callbackToken = interpreterEventServer.issueCallbackToken(interpreterGroupId);
-      issuedCallbackToken = true;
+    boolean installedLaunchCredential = false;
+    if (!reusableRecoveryCredential) {
+      if (option.isExistingProcess()) {
+        callbackToken = System.getenv(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV);
+        if (StringUtils.isBlank(callbackToken)) {
+          throw new IOException("Externally managed interpreters require "
+              + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV
+              + " to be configured in both processes");
+        }
+        interpreterEventServer.registerCallbackToken(interpreterGroupId, callbackToken);
+      } else {
+        callbackToken = interpreterEventServer.issueCallbackToken(interpreterGroupId);
+      }
+      installedLaunchCredential = true;
+    } else if (StringUtils.isBlank(callbackToken)) {
+      throw new IOException("Recovered interpreter callback credential is unavailable");
     }
     InterpreterLaunchContext launchContext = new
         InterpreterLaunchContext(properties, option, interpreterRunner, userName,
@@ -891,7 +904,7 @@ public class InterpreterSetting {
       recoveryStorage.onInterpreterClientStart(process);
       return process;
     } catch (IOException | RuntimeException e) {
-      if (issuedCallbackToken) {
+      if (installedLaunchCredential) {
         interpreterEventServer.revokeCallbackToken(interpreterGroupId, callbackToken);
       }
       throw e;

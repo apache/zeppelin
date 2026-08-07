@@ -72,7 +72,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
           remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
                   properties);
           remoteInterpreterProcess.start(userName);
-          remoteInterpreterProcess.init(zConf, id, eventServer.getCallbackToken(id));
+          remoteInterpreterProcess.init(zConf, id);
           getInterpreterSetting().getRecoveryStorage()
                   .onInterpreterClientStart(remoteInterpreterProcess);
         } catch (IOException | RuntimeException e) {

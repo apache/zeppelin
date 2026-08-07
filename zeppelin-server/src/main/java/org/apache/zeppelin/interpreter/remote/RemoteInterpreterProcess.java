@@ -119,17 +119,23 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   }
 
   public void init(ZeppelinConfiguration zConf,
-                   String interpreterGroupId,
-                   String callbackToken) {
+                   String interpreterGroupId) {
     callRemoteFunction(client -> {
-      Map<String, String> configuration = new HashMap<>(zConf.getCompleteConfiguration());
-      configuration.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY,
-          interpreterGroupId);
-      configuration.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY,
-          callbackToken);
-      client.init(configuration);
+      client.init(createInitConfiguration(zConf, interpreterGroupId));
       return null;
     });
+  }
+
+  static Map<String, String> createInitConfiguration(ZeppelinConfiguration zConf,
+                                                      String interpreterGroupId) {
+    Map<String, String> configuration = new HashMap<>(zConf.getCompleteConfiguration());
+    // The callback credential is bootstrap material supplied by the launcher. Never copy it
+    // into the unencrypted interpreter RPC payload, including when an operator accidentally
+    // configures the reserved property in zeppelin-site.xml.
+    configuration.remove(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY);
+    configuration.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY,
+        interpreterGroupId);
+    return configuration;
   }
 
   @Override

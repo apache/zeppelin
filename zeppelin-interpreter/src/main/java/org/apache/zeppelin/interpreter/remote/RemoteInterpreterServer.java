@@ -102,6 +102,9 @@ public class RemoteInterpreterServer extends Thread
     implements RemoteInterpreterService.Iface {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterServer.class);
+  private static final String TEST_CALLBACK_CREDENTIAL =
+      "remote-interpreter-server-test-callback-credential";
+  private static final long CALLBACK_REGISTRATION_TIMEOUT_SECONDS = 30;
 
   public static final int DEFAULT_SHUTDOWN_TIMEOUT = 2000;
 
@@ -116,10 +119,10 @@ public class RemoteInterpreterServer extends Thread
 
   private String intpEventServerHost;
   private int intpEventServerPort;
-  private volatile String intpEventCallbackToken =
-      System.getenv(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV);
-  private final CountDownLatch callbackCredentialReady = new CountDownLatch(
-      StringUtils.isBlank(intpEventCallbackToken) ? 1 : 0);
+  private final String intpEventCallbackToken;
+  private final boolean callbackRegistrationRequired;
+  private final CountDownLatch callbackRegistrationReady;
+  private final CountDownLatch callbackRegistrationComplete;
   private String host;
   private int port;
   private TThreadPoolServer server;
@@ -165,7 +168,34 @@ public class RemoteInterpreterServer extends Thread
                                  String portRange,
                                  String interpreterGroupId,
                                  boolean isTest) throws Exception {
+    this(intpEventServerHost, intpEventServerPort, portRange, interpreterGroupId, isTest,
+        isTest ? TEST_CALLBACK_CREDENTIAL
+            : System.getenv(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV),
+        intpEventServerHost != null && !isTest);
+  }
+
+  RemoteInterpreterServer(String intpEventServerHost,
+                          int intpEventServerPort,
+                          String portRange,
+                          String interpreterGroupId,
+                          boolean isTest,
+                          String callbackCredential) throws Exception {
+    this(intpEventServerHost, intpEventServerPort, portRange, interpreterGroupId, isTest,
+        callbackCredential, intpEventServerHost != null && !isTest);
+  }
+
+  RemoteInterpreterServer(String intpEventServerHost,
+                          int intpEventServerPort,
+                          String portRange,
+                          String interpreterGroupId,
+                          boolean isTest,
+                          String callbackCredential,
+                          boolean callbackRegistrationRequired) throws Exception {
     super("RemoteInterpreterServer-Thread");
+    if (intpEventServerHost != null && StringUtils.isBlank(callbackCredential)) {
+      throw new IllegalArgumentException(
+          "Interpreter callback credential is required before startup");
+    }
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       this.intpEventServerPort = intpEventServerPort;
@@ -177,6 +207,13 @@ public class RemoteInterpreterServer extends Thread
     }
     this.isTest = isTest;
     this.interpreterGroupId = interpreterGroupId;
+    this.intpEventCallbackToken = callbackCredential;
+    this.callbackRegistrationRequired = callbackRegistrationRequired;
+    this.callbackRegistrationReady = new CountDownLatch(
+        interpreterGroupId != null
+            && interpreterGroupId.endsWith("-" + Constants.EXISTING_PROCESS) ? 1 : 0);
+    this.callbackRegistrationComplete = new CountDownLatch(
+        callbackRegistrationRequired ? 1 : 0);
   }
 
   @Override
@@ -190,7 +227,7 @@ public class RemoteInterpreterServer extends Thread
         .stopTimeoutUnit(TimeUnit.MILLISECONDS)
         .processor(processor));
 
-      if (null != intpEventServerHost && !isTest) {
+      if (callbackRegistrationRequired) {
         Thread registerThread = new Thread(new RegisterRunnable());
         registerThread.setName("RegisterThread");
         registerThread.start();
@@ -207,21 +244,12 @@ public class RemoteInterpreterServer extends Thread
   public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
     this.zProperties = new Properties();
     this.zProperties.putAll(properties);
+    this.zProperties.remove(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY);
     String configuredGroupId = zProperties.getProperty(
         RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY);
     if (configuredGroupId != null && !configuredGroupId.equals(interpreterGroupId)) {
       throw new InterpreterRPCException("Interpreter callback group id does not match");
     }
-    String configuredCallbackToken = zProperties.getProperty(
-        RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY);
-    if (configuredCallbackToken != null && !configuredCallbackToken.isEmpty()) {
-      if (StringUtils.isNotBlank(intpEventCallbackToken)
-          && !intpEventCallbackToken.equals(configuredCallbackToken)) {
-        throw new InterpreterRPCException("Interpreter callback credential does not match");
-      }
-      intpEventCallbackToken = configuredCallbackToken;
-    }
-
     try {
       lifecycleManager = createLifecycleManager();
       lifecycleManager.onInterpreterProcessStarted(interpreterGroupId);
@@ -229,7 +257,7 @@ public class RemoteInterpreterServer extends Thread
       throw new InterpreterRPCException("Fail to create LifecycleManager, cause: " + e.toString());
     }
 
-    if (!isTest) {
+    if (intpEventServerHost != null && (!isTest || callbackRegistrationRequired)) {
       if (StringUtils.isBlank(intpEventCallbackToken)) {
         throw new InterpreterRPCException("Interpreter callback credential is required");
       }
@@ -246,7 +274,20 @@ public class RemoteInterpreterServer extends Thread
               intpEventServerHost, intpEventServerPort, connectionPoolSize);
         }
       }
-      callbackCredentialReady.countDown();
+      // An externally managed process can start before Zeppelin has installed its pre-shared
+      // credential. init() carries only this readiness signal, never the credential itself.
+      callbackRegistrationReady.countDown();
+      try {
+        if (!callbackRegistrationComplete.await(
+            getCallbackRegistrationTimeoutSeconds(), TimeUnit.SECONDS)) {
+          throw new InterpreterRPCException(
+              "Timed out authenticating the interpreter callback registration");
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new InterpreterRPCException(
+            "Interrupted while authenticating the interpreter callback registration");
+      }
     }
   }
 
@@ -305,6 +346,10 @@ public class RemoteInterpreterServer extends Thread
     LOGGER.info("Creating interpreter lifecycle manager: {}", lifecycleManagerClass);
     return (LifecycleManager) clazz.getConstructor(Properties.class, RemoteInterpreterServer.class)
             .newInstance(zProperties, this);
+  }
+
+  long getCallbackRegistrationTimeoutSeconds() {
+    return CALLBACK_REGISTRATION_TIMEOUT_SECONDS;
   }
 
   public static void main(String[] args) throws Exception {
@@ -655,39 +700,54 @@ public class RemoteInterpreterServer extends Thread
       }
       if (!Thread.currentThread().isInterrupted()) {
         RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
-        RemoteInterpreterEventClient registrationClient = null;
         try {
-          // Externally managed interpreters do not inherit the launcher environment. In that
-          // mode the server provisions the callback credential through init() after connecting
-          // to the configured interpreter endpoint.
-          callbackCredentialReady.await();
-          // Registration has its own short-lived transport. The server can call init() as soon as
-          // processStarted() is handled, before the registration reply is written; sharing the
-          // runtime client would let init() close that in-flight transport.
-          registrationClient = new RemoteInterpreterEventClient(
-              intpEventServerHost, intpEventServerPort, 1,
-              interpreterGroupId, intpEventCallbackToken);
-          LOGGER.info("Registering interpreter process");
-          registrationClient.registerInterpreterProcess(registerInfo);
-          LOGGER.info("Registered interpreter process");
+          callbackRegistrationReady.await();
+          long registrationDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(
+              getCallbackRegistrationTimeoutSeconds());
+          while (!Thread.currentThread().isInterrupted()
+              && server != null && server.isServing()
+              && callbackRegistrationComplete.getCount() != 0
+              && System.nanoTime() < registrationDeadline) {
+            RemoteInterpreterEventClient registrationClient = null;
+            try {
+              // Registration has its own short-lived transport. The server can call init() as
+              // soon as processStarted() is handled, before the registration reply is written;
+              // sharing the runtime client would let init() close that in-flight transport.
+              registrationClient = createInterpreterEventClient(
+                  intpEventServerHost, intpEventServerPort, 1);
+              LOGGER.info("Registering interpreter process");
+              registrationClient.registerInterpreterProcess(registerInfo);
+              callbackRegistrationComplete.countDown();
+              LOGGER.info("Registered interpreter process");
+            } catch (Exception e) {
+              LOGGER.warn("Interpreter callback registration failed; retrying: {}", e.getMessage());
+              long remainingMillis = TimeUnit.NANOSECONDS.toMillis(
+                  registrationDeadline - System.nanoTime());
+              if (remainingMillis > 0) {
+                Thread.sleep(Math.min(1000, remainingMillis));
+              }
+            } finally {
+              if (registrationClient != null) {
+                registrationClient.close();
+              }
+            }
+          }
+          if (!Thread.currentThread().isInterrupted()
+              && server != null && server.isServing()
+              && callbackRegistrationComplete.getCount() != 0) {
+            LOGGER.error("Interpreter callback registration timed out; shutting down");
+            shutdown();
+          }
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
-          LOGGER.info("Interrupted while waiting for interpreter callback credentials");
+          LOGGER.info("Interrupted while waiting to register the interpreter process");
         } catch (Exception e) {
-          LOGGER.error("Error while registering interpreter: {}, cause: {}", registerInfo, e);
-          try {
-            shutdown();
-          } catch (Exception e1) {
-            LOGGER.warn("Exception occurs while shutting down", e1);
-          }
-        } finally {
-          if (registrationClient != null) {
-            registrationClient.close();
-          }
+          LOGGER.error("Failed to shut down after callback registration failure", e);
         }
       }
 
-      if (launcherEnv != null && "yarn".endsWith(launcherEnv)) {
+      if (callbackRegistrationComplete.getCount() == 0
+          && launcherEnv != null && "yarn".endsWith(launcherEnv)) {
         try {
           YarnUtils.register(host, port);
           ScheduledExecutorService yarnHeartbeat = ExecutorFactory.singleton()

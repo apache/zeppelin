@@ -23,10 +23,12 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SparkInterpreterCallbackCredentialTest {
@@ -51,5 +53,24 @@ class SparkInterpreterCallbackCredentialTest {
     assertTrue(environment.get("ZEPPELIN_SPARK_CONF").contains(
         "spark.kubernetes.driverEnv." + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV
             + "=callback-token"));
+  }
+
+  @Test
+  void rejectsClusterModeWithoutSecureCredentialPropagation() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty("SPARK_HOME", DownloadUtils.downloadSpark());
+    properties.setProperty("spark.master", "spark://standalone.example:7077");
+    properties.setProperty("spark.submit.deployMode", "cluster");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(
+        properties, new InterpreterOption(), null, "user", "group-id",
+        "setting-id", "spark", "spark", 0, "host");
+    context.setIntpEventCallbackToken("callback-token");
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(
+        ZeppelinConfiguration.load(), null);
+
+    IOException error = assertThrows(IOException.class,
+        () -> launcher.buildEnvFromProperties(context));
+
+    assertTrue(error.getMessage().contains("Spark cluster deploy mode"));
   }
 }

@@ -17,13 +17,36 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class RemoteInterpreterProcessTest {
+
+  @Test
+  void initConfigurationNeverContainsCallbackCredential() {
+    ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
+    Map<String, String> completeConfiguration = new HashMap<>();
+    completeConfiguration.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY,
+        "must-not-leak");
+    when(zConf.getCompleteConfiguration()).thenReturn(completeConfiguration);
+
+    Map<String, String> configuration =
+        RemoteInterpreterProcess.createInitConfiguration(zConf, "group");
+
+    assertEquals("group", configuration.get(
+        RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY));
+    assertFalse(configuration.containsKey(
+        RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY));
+  }
 
   @Test
   void terminationListenerRunsOnceWhenInstalledAfterTermination() {

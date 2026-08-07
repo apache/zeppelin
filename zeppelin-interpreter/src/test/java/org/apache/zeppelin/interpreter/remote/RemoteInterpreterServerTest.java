@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -76,16 +77,98 @@ class RemoteInterpreterServerTest {
   }
 
   @Test
-  void testRejectsCallbackCredentialReplacement() throws Exception {
+  void testInitDoesNotAcceptCallbackCredential() throws Exception {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId",
+        true, "launch-token");
     Map<String, String> properties = new HashMap<>();
     properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY, "groupId");
-    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "first-token");
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "untrusted-token");
     server.init(properties);
 
-    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "second-token");
+    assertFalse(server.getProperties().containsKey(
+        RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY));
+  }
+
+  @Test
+  void testExistingProcessRegistersOnlyAfterInitReadiness() throws Exception {
+    RemoteInterpreterEventClient runtimeClient = mock(RemoteInterpreterEventClient.class);
+    RemoteInterpreterEventClient registrationClient = mock(RemoteInterpreterEventClient.class);
+    AtomicInteger createdClients = new AtomicInteger();
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":",
+        "setting-existing_process", true, "callback-token", true) {
+      @Override
+      RemoteInterpreterEventClient createInterpreterEventClient(String eventServerHost,
+                                                                 int eventServerPort,
+                                                                 int connectionPoolSize) {
+        return createdClients.getAndIncrement() == 0 ? runtimeClient : registrationClient;
+      }
+    };
+    server.start();
+    long deadline = System.currentTimeMillis() + 10_000;
+    while (!server.isRunning() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(50);
+    }
+    assertTrue(server.isRunning());
+    assertEquals(0, createdClients.get());
+
+    Map<String, String> properties = new HashMap<>();
+    properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY,
+        "setting-existing_process");
+    properties.put("zeppelin.interpreter.connection.poolsize", "1");
+    server.init(properties);
+
+    assertEquals(2, createdClients.get());
+    assertSame(runtimeClient, server.intpEventClient);
+    verify(registrationClient).registerInterpreterProcess(argThat(info ->
+        info.getInterpreterGroupId().equals("setting-existing_process")));
+    stopRemoteInterpreterServer(server, 10_000);
+  }
+
+  @Test
+  void testRegistrationFailureStopsInterpreterServer() throws Exception {
+    RemoteInterpreterEventClient runtimeClient = mock(RemoteInterpreterEventClient.class);
+    RemoteInterpreterEventClient registrationClient = mock(RemoteInterpreterEventClient.class);
+    doThrow(new RuntimeException("callback registration failed"))
+        .when(registrationClient).registerInterpreterProcess(
+            org.mockito.ArgumentMatchers.any());
+    AtomicInteger createdClients = new AtomicInteger();
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":",
+        "setting-existing_process", true, "callback-token", true) {
+      @Override
+      RemoteInterpreterEventClient createInterpreterEventClient(String eventServerHost,
+                                                                 int eventServerPort,
+                                                                 int connectionPoolSize) {
+        return createdClients.getAndIncrement() == 0 ? runtimeClient : registrationClient;
+      }
+
+      @Override
+      long getCallbackRegistrationTimeoutSeconds() {
+        return 1;
+      }
+    };
+    server.start();
+    long deadline = System.currentTimeMillis() + 10_000;
+    while (!server.isRunning() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(50);
+    }
+    assertTrue(server.isRunning());
+
+    Map<String, String> properties = new HashMap<>();
+    properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY,
+        "setting-existing_process");
+    properties.put("zeppelin.interpreter.connection.poolsize", "1");
     assertThrows(InterpreterRPCException.class, () -> server.init(properties));
+
+    deadline = System.currentTimeMillis() + 10_000;
+    while (server.isRunning() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(50);
+    }
+    assertFalse(server.isRunning());
+    verify(registrationClient, atLeastOnce()).registerInterpreterProcess(
+        org.mockito.ArgumentMatchers.any());
   }
 
   @Test
@@ -95,7 +178,7 @@ class RemoteInterpreterServerTest {
     AtomicInteger createdClients = new AtomicInteger();
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId",
-        false) {
+        false, "callback-token", false) {
       @Override
       RemoteInterpreterEventClient createInterpreterEventClient(String eventServerHost,
                                                                  int eventServerPort,
@@ -105,7 +188,7 @@ class RemoteInterpreterServerTest {
     };
     Map<String, String> properties = new HashMap<>();
     properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY, "groupId");
-    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "callback-token");
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "untrusted-token");
     properties.put("zeppelin.interpreter.connection.poolsize", "1");
     server.init(properties);
     assertSame(initialClient, server.intpEventClient);
@@ -135,7 +218,7 @@ class RemoteInterpreterServerTest {
     AtomicInteger createdClients = new AtomicInteger();
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
         RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId",
-        false) {
+        false, "callback-token", false) {
       @Override
       RemoteInterpreterEventClient createInterpreterEventClient(String eventServerHost,
                                                                  int eventServerPort,
@@ -145,7 +228,7 @@ class RemoteInterpreterServerTest {
     };
     Map<String, String> properties = new HashMap<>();
     properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY, "groupId");
-    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "callback-token");
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "untrusted-token");
     properties.put("zeppelin.interpreter.connection.poolsize", "1");
     server.init(properties);
 

@@ -203,6 +203,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         sparkProperties.setProperty(
             "spark.kubernetes.driverEnv." + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV,
             context.getIntpEventCallbackToken());
+      } else {
+        throw new IOException("Authenticated interpreter callbacks do not support Spark "
+            + "cluster deploy mode for master " + getSparkMaster(context)
+            + "; use client mode, Yarn, or Kubernetes");
       }
     }
 
