@@ -19,8 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.util.OptionalInt;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
@@ -59,15 +57,19 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -584,31 +586,29 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public List<LibraryMetadata> getAllLibraryMetadatas(String interpreter) throws TException {
-    if (StringUtils.isBlank(interpreter)) {
-      LOGGER.warn("Interpreter is blank");
+    Optional<Path> interpreterLocalRepo = resolveInterpreterRepository(interpreter);
+    if (interpreterLocalRepo.isEmpty()) {
+      LOGGER.warn("Unable to resolve local repository for requested interpreter");
       return Collections.emptyList();
     }
-    File interpreterLocalRepo = new File(
-        zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO)
-            + File.separator
-            + interpreter);
-    if (!interpreterLocalRepo.exists()) {
-      LOGGER.warn("Local interpreter repository {} for interpreter {} doesn't exists", interpreterLocalRepo,
-          interpreter);
-      return Collections.emptyList();
-    }
-    if (!interpreterLocalRepo.isDirectory()) {
-      LOGGER.warn("Local interpreter repository {} is no folder", interpreterLocalRepo);
-      return Collections.emptyList();
-    }
-    Collection<File> files = FileUtils.listFiles(interpreterLocalRepo, new String[] { "jar" }, false);
-    List<LibraryMetadata> metaDatas = new ArrayList<>(files.size());
-    for (File file : files) {
-      try {
-        metaDatas.add(new LibraryMetadata(file.getName(), FileUtils.checksumCRC32(file)));
-      } catch (IOException e) {
-        LOGGER.warn(e.getMessage(), e);
+
+    List<LibraryMetadata> metaDatas = new ArrayList<>();
+    try (DirectoryStream<Path> libraries =
+             Files.newDirectoryStream(interpreterLocalRepo.get(), "*.jar")) {
+      for (Path entry : libraries) {
+        Optional<Path> library = resolveLibrary(interpreter, entry.getFileName().toString());
+        if (library.isPresent()) {
+          try {
+            metaDatas.add(new LibraryMetadata(
+                library.get().getFileName().toString(),
+                FileUtils.checksumCRC32(library.get().toFile())));
+          } catch (IOException e) {
+            LOGGER.warn("Unable to calculate interpreter library checksum", e);
+          }
+        }
       }
+    } catch (IOException e) {
+      LOGGER.warn("Unable to list libraries for requested interpreter", e);
     }
     return metaDatas;
   }
@@ -616,23 +616,100 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public ByteBuffer getLibrary(String interpreter, String libraryName) throws TException {
-    if (StringUtils.isAnyBlank(interpreter, libraryName)) {
-      LOGGER.warn("Interpreter \"{}\" or libraryName \"{}\" is blank", interpreter, libraryName);
-      return null;
-    }
-    File library = new File(zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO)
-        + File.separator + interpreter + File.separator + libraryName);
-    if (!library.exists()) {
-      LOGGER.warn("Library {} doesn't exists", library);
+    Optional<Path> library = resolveLibrary(interpreter, libraryName);
+    if (library.isEmpty()) {
+      LOGGER.warn("Unable to resolve requested interpreter library");
       return null;
     }
 
     try {
-      return ByteBuffer.wrap(FileUtils.readFileToByteArray(library));
+      return ByteBuffer.wrap(Files.readAllBytes(library.get()));
     } catch (IOException e) {
-      LOGGER.error("Unable to read library {}", library, e);
+      LOGGER.error("Unable to read requested interpreter library", e);
     }
     return null;
+  }
+
+  private Optional<Path> resolveInterpreterRepository(String interpreter) {
+    if (!isSinglePathSegment(interpreter)) {
+      return Optional.empty();
+    }
+
+    try {
+      InterpreterSetting interpreterSetting =
+          interpreterSettingManager.getInterpreterSettingByName(interpreter);
+      if (interpreterSetting == null
+          || !isSinglePathSegment(interpreterSetting.getId())) {
+        return Optional.empty();
+      }
+
+      Path repositoryRoot = Path.of(
+          zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO))
+          .toRealPath();
+      Path interpreterRepository = repositoryRoot.resolve(interpreterSetting.getId()).normalize();
+      if (!repositoryRoot.equals(interpreterRepository.getParent())
+          || Files.isSymbolicLink(interpreterRepository)
+          || !Files.isDirectory(interpreterRepository, LinkOption.NOFOLLOW_LINKS)) {
+        return Optional.empty();
+      }
+
+      Path realInterpreterRepository = interpreterRepository.toRealPath();
+      if (!repositoryRoot.equals(realInterpreterRepository.getParent())) {
+        return Optional.empty();
+      }
+      return Optional.of(realInterpreterRepository);
+    } catch (IOException | InvalidPathException e) {
+      LOGGER.debug("Unable to resolve interpreter repository", e);
+      return Optional.empty();
+    }
+  }
+
+  private Optional<Path> resolveLibrary(String interpreter, String libraryName) {
+    if (!isSinglePathSegment(libraryName) || !libraryName.endsWith(".jar")) {
+      return Optional.empty();
+    }
+
+    Optional<Path> interpreterRepository = resolveInterpreterRepository(interpreter);
+    if (interpreterRepository.isEmpty()) {
+      return Optional.empty();
+    }
+
+    try {
+      Path library = interpreterRepository.get().resolve(libraryName).normalize();
+      if (!interpreterRepository.get().equals(library.getParent())
+          || Files.isSymbolicLink(library)
+          || !Files.isRegularFile(library, LinkOption.NOFOLLOW_LINKS)) {
+        return Optional.empty();
+      }
+
+      Path realLibrary = library.toRealPath();
+      if (!realLibrary.startsWith(interpreterRepository.get())
+          || !interpreterRepository.get().equals(realLibrary.getParent())
+          || !Files.isRegularFile(realLibrary, LinkOption.NOFOLLOW_LINKS)) {
+        return Optional.empty();
+      }
+      return Optional.of(realLibrary);
+    } catch (IOException | InvalidPathException e) {
+      LOGGER.debug("Unable to resolve interpreter library", e);
+      return Optional.empty();
+    }
+  }
+
+  private boolean isSinglePathSegment(String value) {
+    if (StringUtils.isBlank(value) || value.contains("/") || value.contains("\\")) {
+      return false;
+    }
+
+    try {
+      Path path = Path.of(value);
+      return !path.isAbsolute()
+          && path.getNameCount() == 1
+          && !".".equals(value)
+          && !"..".equals(value)
+          && path.equals(path.normalize());
+    } catch (InvalidPathException e) {
+      return false;
+    }
   }
 
 }
