@@ -32,7 +32,8 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final String interpreterGroupId;
   private final boolean isRecovery;
   private final RemoteInterpreterEventServer interpreterEventServer;
-  private final String callbackToken;
+  private final RemoteInterpreterEventServer.CallbackCredentialRegistration
+      callbackCredentialRegistration;
 
   public RemoteInterpreterRunningProcess(
       String interpreterSettingName,
@@ -45,7 +46,8 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
       int port,
       boolean isRecovery,
       RemoteInterpreterEventServer interpreterEventServer,
-      String callbackToken) {
+      RemoteInterpreterEventServer.CallbackCredentialRegistration
+          callbackCredentialRegistration) {
     super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.interpreterSettingName = interpreterSettingName;
     this.interpreterGroupId = interpreterGroupId;
@@ -53,7 +55,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
     this.port = port;
     this.isRecovery = isRecovery;
     this.interpreterEventServer = interpreterEventServer;
-    this.callbackToken = callbackToken;
+    this.callbackCredentialRegistration = callbackCredentialRegistration;
   }
 
   @Override
@@ -84,8 +86,12 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   @Override
   public boolean recover() {
     boolean recovered = super.recover();
-    if (!recovered && interpreterEventServer != null && callbackToken != null) {
-      interpreterEventServer.revokeCallbackToken(interpreterGroupId, callbackToken);
+    if (recovered && interpreterEventServer != null) {
+      recovered = interpreterEventServer.isCallbackTokenActive(
+          callbackCredentialRegistration);
+    }
+    if (!recovered && interpreterEventServer != null) {
+      interpreterEventServer.revokeCallbackToken(callbackCredentialRegistration);
     }
     return recovered;
   }

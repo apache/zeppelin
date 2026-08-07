@@ -135,15 +135,19 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   @Override
   public boolean recover() {
     try {
-      remoteClient.callRemoteFunction(client -> {
-        client.reconnect(intpEventServerHost, intpEventServerPort);
-        return null;
-      });
+      reconnectToEventServer();
       return true;
     } catch (Exception e) {
       LOGGER.error("Fail to recover remote interpreter process: {}" , e.getMessage());
       return false;
     }
+  }
+
+  protected void reconnectToEventServer() {
+    remoteClient.callRemoteFunction(client -> {
+      client.reconnect(intpEventServerHost, intpEventServerPort);
+      return null;
+    });
   }
 
 

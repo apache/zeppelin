@@ -242,9 +242,8 @@ public class RemoteInterpreterServer extends Thread
         // recovered process. Replacing it here would leave existing interpreter contexts with a
         // closed client.
         if (intpEventClient == null) {
-          intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost,
-              intpEventServerPort, connectionPoolSize, interpreterGroupId,
-              intpEventCallbackToken);
+          intpEventClient = createInterpreterEventClient(
+              intpEventServerHost, intpEventServerPort, connectionPoolSize);
         }
       }
       callbackCredentialReady.countDown();
@@ -515,16 +514,17 @@ public class RemoteInterpreterServer extends Thread
     RemoteInterpreterEventClient replacement = null;
     try {
       LOGGER.info("Reconnect to this interpreter process from {}:{}", host, port);
-      this.intpEventServerHost = host;
-      this.intpEventServerPort = port;
-      replacement = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
+      replacement = createInterpreterEventClient(host, port,
           Integer.parseInt(zProperties.getProperty(
-              "zeppelin.interpreter.connection.poolsize", "100")),
-          interpreterGroupId, intpEventCallbackToken);
+              "zeppelin.interpreter.connection.poolsize", "100")));
+      replacement.registerInterpreterProcess(
+          new RegisterInfo(this.host, this.port, interpreterGroupId));
 
       RemoteInterpreterEventClient previous;
       synchronized (intpEventClientLock) {
         previous = intpEventClient;
+        this.intpEventServerHost = host;
+        this.intpEventServerPort = port;
         intpEventClient = replacement;
 
         if (interpreterGroup != null) {
@@ -555,6 +555,13 @@ public class RemoteInterpreterServer extends Thread
       }
       throw new InterpreterRPCException(e.toString());
     }
+  }
+
+  RemoteInterpreterEventClient createInterpreterEventClient(String eventServerHost,
+                                                             int eventServerPort,
+                                                             int connectionPoolSize) {
+    return new RemoteInterpreterEventClient(eventServerHost, eventServerPort,
+        connectionPoolSize, interpreterGroupId, intpEventCallbackToken);
   }
 
   @Override
