@@ -11,6 +11,7 @@
  */
 
 export * from './angular-object';
+export * from './checksum';
 export * from './interfaces/public-api';
 export * from './message';
 export * from './paragraph-state';
