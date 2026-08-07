@@ -28,7 +28,7 @@ export class AppHttpInterceptor implements HttpInterceptor {
   intercept(httpRequest: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let httpRequestUpdated = httpRequest.clone({ withCredentials: true });
     if (environment.production) {
-      httpRequestUpdated = httpRequest.clone({ setHeaders: { 'X-Requested-With': 'XMLHttpRequest' } });
+      httpRequestUpdated = httpRequestUpdated.clone({ setHeaders: { 'X-Requested-With': 'XMLHttpRequest' } });
     }
     return next.handle(httpRequestUpdated).pipe(
       map(event => {
