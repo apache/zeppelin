@@ -37,6 +37,7 @@ public class InterpreterLaunchContext {
   private String interpreterSettingName;
   private int intpEventServerPort;
   private String intpEventServerHost;
+  private String intpEventCallbackToken;
 
   public InterpreterLaunchContext(Properties properties,
                                   InterpreterOption option,
@@ -98,5 +99,13 @@ public class InterpreterLaunchContext {
 
   public String getIntpEventServerHost() {
     return intpEventServerHost;
+  }
+
+  public String getIntpEventCallbackToken() {
+    return intpEventCallbackToken;
+  }
+
+  public void setIntpEventCallbackToken(String intpEventCallbackToken) {
+    this.intpEventCallbackToken = intpEventCallbackToken;
   }
 }

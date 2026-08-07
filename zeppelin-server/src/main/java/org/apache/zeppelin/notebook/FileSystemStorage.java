@@ -223,7 +223,10 @@ public class FileSystemStorage {
       writeFile(content, file, writeTempFileFirst, null);
   }
 
-  public void writeFile(final String content, final Path file, boolean writeTempFileFirst, Set<PosixFilePermission> permissions)
+  public void writeFile(final String content,
+                        final Path file,
+                        boolean writeTempFileFirst,
+                        Set<PosixFilePermission> permissions)
       throws IOException {
     FsPermission fsPermission;
     if (permissions == null || permissions.isEmpty()) {
@@ -240,8 +243,14 @@ public class FileSystemStorage {
         InputStream in = new ByteArrayInputStream(content.getBytes(
             zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
         Path tmpFile = new Path(file.toString() + ".tmp");
-        IOUtils.copyBytes(in, fs.create(tmpFile), hadoopConf);
-        fs.setPermission(tmpFile, fsPermission);
+        IOUtils.copyBytes(in, fs.create(
+            tmpFile,
+            fsPermission,
+            true,
+            hadoopConf.getInt("io.file.buffer.size", 4096),
+            fs.getDefaultReplication(tmpFile),
+            fs.getDefaultBlockSize(tmpFile),
+            null), hadoopConf);
         fs.delete(file, true);
         fs.rename(tmpFile, file);
         return null;

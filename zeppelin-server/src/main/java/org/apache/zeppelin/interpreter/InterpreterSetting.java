@@ -38,6 +38,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
+import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -861,12 +862,40 @@ public class InterpreterSetting {
                                                                  Properties properties)
       throws IOException {
     InterpreterLauncher launcher = createLauncher(properties);
+    String callbackToken = interpreterEventServer.getCallbackToken(interpreterGroupId);
+    InterpreterClient recoveredClient = zConf.isRecoveryEnabled()
+        ? recoveryStorage.getInterpreterClient(interpreterGroupId) : null;
+    boolean reusableRecoveryCredential = recoveredClient != null && recoveredClient.isRunning();
+    boolean issuedCallbackToken = false;
+    if (StringUtils.isBlank(callbackToken) || !reusableRecoveryCredential) {
+      callbackToken = interpreterEventServer.issueCallbackToken(interpreterGroupId);
+      issuedCallbackToken = true;
+    }
     InterpreterLaunchContext launchContext = new
         InterpreterLaunchContext(properties, option, interpreterRunner, userName,
-        interpreterGroupId, id, group, name, interpreterEventServer.getPort(), interpreterEventServer.getHost());
-    RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
-    recoveryStorage.onInterpreterClientStart(process);
-    return process;
+        interpreterGroupId, id, group, name, interpreterEventServer.getPort(),
+        interpreterEventServer.getHost());
+    launchContext.setIntpEventCallbackToken(callbackToken);
+    try {
+      RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
+      String launchedCallbackToken = callbackToken;
+      process.setTerminationListener(() -> {
+        interpreterEventServer.revokeCallbackToken(
+            interpreterGroupId, launchedCallbackToken);
+        try {
+          recoveryStorage.onInterpreterClientStop(process);
+        } catch (IOException e) {
+          LOGGER.warn("Fail to remove terminated interpreter process from recovery storage", e);
+        }
+      });
+      recoveryStorage.onInterpreterClientStart(process);
+      return process;
+    } catch (IOException | RuntimeException e) {
+      if (issuedCallbackToken) {
+        interpreterEventServer.revokeCallbackToken(interpreterGroupId, callbackToken);
+      }
+      throw e;
+    }
   }
 
   List<Interpreter> getOrCreateSession(String user, String noteId) {

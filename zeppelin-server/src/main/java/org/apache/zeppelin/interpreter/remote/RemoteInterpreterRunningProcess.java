@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.RemoteInterpreterEventServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,8 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final String interpreterSettingName;
   private final String interpreterGroupId;
   private final boolean isRecovery;
+  private final RemoteInterpreterEventServer interpreterEventServer;
+  private final String callbackToken;
 
   public RemoteInterpreterRunningProcess(
       String interpreterSettingName,
@@ -40,13 +43,17 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
       int intpEventServerPort,
       String host,
       int port,
-      boolean isRecovery) {
+      boolean isRecovery,
+      RemoteInterpreterEventServer interpreterEventServer,
+      String callbackToken) {
     super(connectTimeout, connectionPoolSize, intpEventServerHost, intpEventServerPort);
     this.interpreterSettingName = interpreterSettingName;
     this.interpreterGroupId = interpreterGroupId;
     this.host = host;
     this.port = port;
     this.isRecovery = isRecovery;
+    this.interpreterEventServer = interpreterEventServer;
+    this.callbackToken = callbackToken;
   }
 
   @Override
@@ -72,6 +79,15 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   @Override
   public void start(String userName) {
     // assume process is externally managed. nothing to do
+  }
+
+  @Override
+  public boolean recover() {
+    boolean recovered = super.recover();
+    if (!recovered && interpreterEventServer != null && callbackToken != null) {
+      interpreterEventServer.revokeCallbackToken(interpreterGroupId, callbackToken);
+    }
+    return recovered;
   }
 
   @Override

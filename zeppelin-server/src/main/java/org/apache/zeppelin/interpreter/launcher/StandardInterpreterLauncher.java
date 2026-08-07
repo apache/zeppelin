@@ -25,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -65,7 +66,9 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
           context.getIntpEventServerPort(),
           option.getHost(),
           option.getPort(),
-          false);
+          false,
+          null,
+          null);
     } else {
       // create new remote process
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + File.separator
@@ -89,6 +92,10 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
       }
     }
     env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());
+    if (StringUtils.isNotBlank(context.getIntpEventCallbackToken())) {
+      env.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV,
+          context.getIntpEventCallbackToken());
+    }
     return env;
   }
 }

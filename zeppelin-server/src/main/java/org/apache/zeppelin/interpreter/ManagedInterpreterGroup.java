@@ -66,12 +66,24 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     synchronized (interpreterProcessCreationLock) {
       if (remoteInterpreterProcess == null) {
         LOGGER.info("Create InterpreterProcess for InterpreterGroup: {}", getId());
-        remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
-                properties);
-        remoteInterpreterProcess.start(userName);
-        remoteInterpreterProcess.init(zConf);
-        getInterpreterSetting().getRecoveryStorage()
-                .onInterpreterClientStart(remoteInterpreterProcess);
+        RemoteInterpreterEventServer eventServer = interpreterSetting.getInterpreterSettingManager()
+            .getInterpreterEventServer();
+        try {
+          remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+                  properties);
+          remoteInterpreterProcess.start(userName);
+          remoteInterpreterProcess.init(zConf, id, eventServer.getCallbackToken(id));
+          getInterpreterSetting().getRecoveryStorage()
+                  .onInterpreterClientStart(remoteInterpreterProcess);
+        } catch (IOException | RuntimeException e) {
+          String callbackToken = eventServer.getCallbackToken(id);
+          eventServer.revokeCallbackToken(id, callbackToken);
+          if (remoteInterpreterProcess != null) {
+            remoteInterpreterProcess.stop();
+            remoteInterpreterProcess = null;
+          }
+          throw e;
+        }
       }
       return remoteInterpreterProcess;
     }
@@ -110,7 +122,14 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       interpreterSetting.removeInterpreterGroup(id);
       if (remoteInterpreterProcess != null) {
         LOGGER.info("Kill RemoteInterpreterProcess");
-        remoteInterpreterProcess.stop();
+        RemoteInterpreterEventServer eventServer = interpreterSetting
+            .getInterpreterSettingManager().getInterpreterEventServer();
+        String callbackToken = eventServer.getCallbackToken(id);
+        try {
+          remoteInterpreterProcess.stop();
+        } finally {
+          eventServer.revokeCallbackToken(id, callbackToken);
+        }
         try {
           interpreterSetting.getRecoveryStorage().onInterpreterClientStop(remoteInterpreterProcess);
         } catch (IOException e) {

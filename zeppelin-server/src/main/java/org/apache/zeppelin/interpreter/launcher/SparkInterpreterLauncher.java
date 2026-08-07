@@ -38,6 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +193,19 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     }
 
+    if (StringUtils.isNotBlank(context.getIntpEventCallbackToken())
+        && "cluster".equals(getDeployMode(context))) {
+      if (isYarnMode(context)) {
+        sparkProperties.setProperty(
+            "spark.yarn.appMasterEnv." + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV,
+            context.getIntpEventCallbackToken());
+      } else if (getSparkMaster(context).startsWith("k8s://")) {
+        sparkProperties.setProperty(
+            "spark.kubernetes.driverEnv." + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV,
+            context.getIntpEventCallbackToken());
+      }
+    }
+
     StringJoiner sparkConfSJ = new StringJoiner("|");
     if (context.getOption().isUserImpersonate() && zConf.getZeppelinImpersonateSparkProxyUser()) {
       sparkConfSJ.add("--proxy-user");
@@ -261,7 +275,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         env.put("HADOOP_USER_NAME", userName);
       }
     }
-    LOGGER.info("buildEnvFromProperties: {}", env);
+    LOGGER.info("buildEnvFromProperties keys: {}", env.keySet());
     return env;
   }
 

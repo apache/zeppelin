@@ -88,6 +88,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -115,9 +116,14 @@ public class RemoteInterpreterServer extends Thread
 
   private String intpEventServerHost;
   private int intpEventServerPort;
+  private volatile String intpEventCallbackToken =
+      System.getenv(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV);
+  private final CountDownLatch callbackCredentialReady = new CountDownLatch(
+      StringUtils.isBlank(intpEventCallbackToken) ? 1 : 0);
   private String host;
   private int port;
   private TThreadPoolServer server;
+  private final Object intpEventClientLock = new Object();
   RemoteInterpreterEventClient intpEventClient;
   private DependencyResolver depLoader;
   private LifecycleManager lifecycleManager;
@@ -201,6 +207,20 @@ public class RemoteInterpreterServer extends Thread
   public void init(Map<String, String> properties) throws InterpreterRPCException, TException {
     this.zProperties = new Properties();
     this.zProperties.putAll(properties);
+    String configuredGroupId = zProperties.getProperty(
+        RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY);
+    if (configuredGroupId != null && !configuredGroupId.equals(interpreterGroupId)) {
+      throw new InterpreterRPCException("Interpreter callback group id does not match");
+    }
+    String configuredCallbackToken = zProperties.getProperty(
+        RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY);
+    if (configuredCallbackToken != null && !configuredCallbackToken.isEmpty()) {
+      if (StringUtils.isNotBlank(intpEventCallbackToken)
+          && !intpEventCallbackToken.equals(configuredCallbackToken)) {
+        throw new InterpreterRPCException("Interpreter callback credential does not match");
+      }
+      intpEventCallbackToken = configuredCallbackToken;
+    }
 
     try {
       lifecycleManager = createLifecycleManager();
@@ -210,12 +230,24 @@ public class RemoteInterpreterServer extends Thread
     }
 
     if (!isTest) {
+      if (StringUtils.isBlank(intpEventCallbackToken)) {
+        throw new InterpreterRPCException("Interpreter callback credential is required");
+      }
       int connectionPoolSize = Integer.parseInt(
               zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100"));
       LOGGER.info("Creating RemoteInterpreterEventClient with connection pool size: {}",
               connectionPoolSize);
-      intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
-              connectionPoolSize);
+      synchronized (intpEventClientLock) {
+        // reconnect() has already installed and propagated the runtime client when this is a
+        // recovered process. Replacing it here would leave existing interpreter contexts with a
+        // closed client.
+        if (intpEventClient == null) {
+          intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost,
+              intpEventServerPort, connectionPoolSize, interpreterGroupId,
+              intpEventCallbackToken);
+        }
+      }
+      callbackCredentialReady.countDown();
     }
   }
 
@@ -326,7 +358,6 @@ public class RemoteInterpreterServer extends Thread
         interpreterGroup.setInterpreterHookRegistry(hookRegistry);
         interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
         interpreterGroup.setResourcePool(resourcePool);
-        intpEventClient.setIntpGroupId(interpreterGroupId);
 
         String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
         if (properties.containsKey("zeppelin.interpreter.output.limit")) {
@@ -481,24 +512,47 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void reconnect(String host, int port) throws InterpreterRPCException, TException {
+    RemoteInterpreterEventClient replacement = null;
     try {
       LOGGER.info("Reconnect to this interpreter process from {}:{}", host, port);
       this.intpEventServerHost = host;
       this.intpEventServerPort = port;
-      intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
-              Integer.parseInt(zProperties.getProperty("zeppelin.interpreter.connection.poolsize", "100")));
-      intpEventClient.setIntpGroupId(interpreterGroupId);
+      replacement = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort,
+          Integer.parseInt(zProperties.getProperty(
+              "zeppelin.interpreter.connection.poolsize", "100")),
+          interpreterGroupId, intpEventCallbackToken);
 
-      this.angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
-      this.resourcePool = new DistributedResourcePool(interpreterGroup.getId(), intpEventClient);
+      RemoteInterpreterEventClient previous;
+      synchronized (intpEventClientLock) {
+        previous = intpEventClient;
+        intpEventClient = replacement;
 
-      // reset all the available InterpreterContext's components that use intpEventClient.
-      for (InterpreterContext context : InterpreterContext.getAllContexts().values()) {
-        context.setIntpEventClient(intpEventClient);
-        context.setAngularObjectRegistry(angularObjectRegistry);
-        context.setResourcePool(resourcePool);
+        if (interpreterGroup != null) {
+          this.angularObjectRegistry =
+              new AngularObjectRegistry(interpreterGroup.getId(), intpEventClient);
+          this.resourcePool =
+              new DistributedResourcePool(interpreterGroup.getId(), intpEventClient);
+          interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
+          interpreterGroup.setResourcePool(resourcePool);
+          if (depLoader != null) {
+            appLoader = new ApplicationLoader(resourcePool, depLoader);
+          }
+
+          // Reset every context in this interpreter process that retained the previous client.
+          for (InterpreterContext context : InterpreterContext.getAllContexts().values()) {
+            context.setIntpEventClient(intpEventClient);
+            context.setAngularObjectRegistry(angularObjectRegistry);
+            context.setResourcePool(resourcePool);
+          }
+        }
+      }
+      if (previous != null) {
+        previous.close();
       }
     } catch (Exception e) {
+      if (replacement != null && replacement != intpEventClient) {
+        replacement.close();
+      }
       throw new InterpreterRPCException(e.toString());
     }
   }
@@ -594,17 +648,34 @@ public class RemoteInterpreterServer extends Thread
       }
       if (!Thread.currentThread().isInterrupted()) {
         RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
+        RemoteInterpreterEventClient registrationClient = null;
         try {
-          intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort, 10);
+          // Externally managed interpreters do not inherit the launcher environment. In that
+          // mode the server provisions the callback credential through init() after connecting
+          // to the configured interpreter endpoint.
+          callbackCredentialReady.await();
+          // Registration has its own short-lived transport. The server can call init() as soon as
+          // processStarted() is handled, before the registration reply is written; sharing the
+          // runtime client would let init() close that in-flight transport.
+          registrationClient = new RemoteInterpreterEventClient(
+              intpEventServerHost, intpEventServerPort, 1,
+              interpreterGroupId, intpEventCallbackToken);
           LOGGER.info("Registering interpreter process");
-          intpEventClient.registerInterpreterProcess(registerInfo);
+          registrationClient.registerInterpreterProcess(registerInfo);
           LOGGER.info("Registered interpreter process");
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          LOGGER.info("Interrupted while waiting for interpreter callback credentials");
         } catch (Exception e) {
           LOGGER.error("Error while registering interpreter: {}, cause: {}", registerInfo, e);
           try {
             shutdown();
           } catch (Exception e1) {
             LOGGER.warn("Exception occurs while shutting down", e1);
+          }
+        } finally {
+          if (registrationClient != null) {
+            registrationClient.close();
           }
         }
       }

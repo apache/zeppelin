@@ -27,6 +27,7 @@ import java.util.Set;
 
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +56,17 @@ public class RemoteInterpreterDownloader {
       int port = Integer.parseInt(args[1]);
       String interpreter = args[2];
       String localRepoPath = args[3];
+      String interpreterGroupId = System.getenv("INTERPRETER_GROUP_ID");
+      String callbackToken = System.getenv(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV);
+      if (StringUtils.isAnyBlank(interpreterGroupId, callbackToken)) {
+        // Externally managed interpreters may be started before Zeppelin can provision their
+        // callback credential through init(). They must use a pre-populated local repository.
+        LOGGER.warn("Skip remote interpreter library synchronization because callback "
+            + "credentials are not available");
+        return;
+      }
       RemoteInterpreterEventClient intpEventClient = new RemoteInterpreterEventClient(
-          zeppelinServerHost, port, 3);
+          zeppelinServerHost, port, 3, interpreterGroupId, callbackToken);
 
       RemoteInterpreterDownloader downloader = new RemoteInterpreterDownloader(interpreter,
           intpEventClient, new File(localRepoPath));

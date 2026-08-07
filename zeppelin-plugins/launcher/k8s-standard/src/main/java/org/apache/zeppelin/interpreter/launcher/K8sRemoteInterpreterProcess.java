@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -282,7 +283,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
       NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable<HasMetadata> k8sObjects =
           client.load(IOUtils.toInputStream(template, StandardCharsets.UTF_8));
       LOGGER.info("Apply {} with {} K8s Objects", path.getAbsolutePath(), k8sObjects.get().size());
-      LOGGER.debug(template);
+      String callbackToken = getEnv().get(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV);
+      LOGGER.debug(StringUtils.isBlank(callbackToken)
+          ? template
+          : template.replace(callbackToken, "[REDACTED]"));
       if (delete) {
         k8sObjects.inNamespace(interpreterNamespace).delete();
       } else {

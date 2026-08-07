@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract class for interpreter process
@@ -43,6 +45,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   protected int intpEventServerPort;
   private PooledRemoteClient<Client> remoteClient;
   private String startTime;
+  private Runnable terminationListener = () -> { };
+  private boolean terminated;
 
   public RemoteInterpreterProcess(int connectTimeout,
                                   int connectionPoolSize,
@@ -70,6 +74,20 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
 
   public String getStartTime() {
     return startTime;
+  }
+
+  public synchronized void setTerminationListener(Runnable terminationListener) {
+    this.terminationListener = terminationListener;
+    if (terminated) {
+      terminationListener.run();
+    }
+  }
+
+  protected synchronized void notifyTermination() {
+    if (!terminated) {
+      terminated = true;
+      terminationListener.run();
+    }
   }
 
   @Override
@@ -100,9 +118,16 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
     return remoteClient.callRemoteFunction(func);
   }
 
-  public void init(ZeppelinConfiguration zConf) {
+  public void init(ZeppelinConfiguration zConf,
+                   String interpreterGroupId,
+                   String callbackToken) {
     callRemoteFunction(client -> {
-      client.init(zConf.getCompleteConfiguration());
+      Map<String, String> configuration = new HashMap<>(zConf.getCompleteConfiguration());
+      configuration.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY,
+          interpreterGroupId);
+      configuration.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY,
+          callbackToken);
+      client.init(configuration);
       return null;
     });
   }

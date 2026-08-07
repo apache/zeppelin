@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -229,6 +230,13 @@ public class FlinkInterpreterLauncher extends StandardInterpreterLauncher {
       flinkConfStringJoiner.add("-D");
       flinkConfStringJoiner.add("yarn.ship-files=" +
               yarnShipFiles.stream().collect(Collectors.joining(";")));
+    }
+
+    if (StringUtils.isNotBlank(context.getIntpEventCallbackToken())) {
+      flinkConfStringJoiner.add("-D");
+      flinkConfStringJoiner.add("containerized.master.env."
+          + RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV + "="
+          + context.getIntpEventCallbackToken());
     }
 
     // set yarn.application.name

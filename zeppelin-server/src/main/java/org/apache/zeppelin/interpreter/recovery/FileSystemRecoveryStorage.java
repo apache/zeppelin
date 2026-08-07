@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,9 +78,11 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
     InterpreterSetting interpreterSetting =
         interpreterSettingManager.getInterpreterSettingByName(interpreterSettingName);
     String recoveryData = RecoveryUtils.getRecoveryData(interpreterSetting);
-    LOGGER.debug("Updating recovery data of {}: {}", interpreterSettingName, recoveryData);
+    LOGGER.debug("Updating recovery data of {} with {} bytes",
+        interpreterSettingName, recoveryData.length());
     Path recoveryFile = new Path(recoveryDir, interpreterSettingName + ".recovery");
-    fs.writeFile(recoveryData, recoveryFile, true);
+    fs.writeFile(recoveryData, recoveryFile, true,
+        EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
   }
 
   @Override

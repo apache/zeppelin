@@ -24,9 +24,11 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,6 +141,10 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
       }
     }
     env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());
+    if (StringUtils.isNotBlank(context.getIntpEventCallbackToken())) {
+      env.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV,
+          context.getIntpEventCallbackToken());
+    }
     return env;
   }
 

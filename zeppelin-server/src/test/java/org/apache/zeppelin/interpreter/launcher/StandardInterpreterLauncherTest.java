@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +48,7 @@ class StandardInterpreterLauncherTest {
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
+    context.setIntpEventCallbackToken("callback-token");
     InterpreterClient client = launcher.launch(context);
     assertTrue(client instanceof ExecRemoteInterpreterProcess);
     ExecRemoteInterpreterProcess interpreterProcess = (ExecRemoteInterpreterProcess) client;
@@ -59,6 +61,8 @@ class StandardInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 2);
     assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
     assertTrue(interpreterProcess.getEnv().containsKey("INTERPRETER_GROUP_ID"));
+    assertEquals("callback-token",
+        interpreterProcess.getEnv().get(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV));
     assertEquals(true, interpreterProcess.isUserImpersonated());
     interpreterProcess.close();
   }

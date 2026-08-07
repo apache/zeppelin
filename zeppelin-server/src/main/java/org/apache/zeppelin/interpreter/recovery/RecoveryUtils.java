@@ -54,8 +54,15 @@ public class RecoveryUtils {
       for (ManagedInterpreterGroup interpreterGroup : interpreterSetting.getAllInterpreterGroups()) {
         RemoteInterpreterProcess interpreterProcess = interpreterGroup.getInterpreterProcess();
         if (interpreterProcess != null && interpreterProcess.isRunning()) {
+          String callbackToken = interpreterSetting.getInterpreterSettingManager()
+              .getInterpreterEventServer().getCallbackToken(interpreterGroup.getId());
+          if (StringUtils.isBlank(callbackToken)) {
+            LOGGER.warn("Skip recovery data for interpreter group {} because its callback "
+                + "credential is unavailable", interpreterGroup.getId());
+            continue;
+          }
           recoveryData.add(interpreterGroup.getId() + "\t" + interpreterProcess.getHost() + ":" +
-                  interpreterProcess.getPort());
+                  interpreterProcess.getPort() + "\t" + callbackToken);
         }
       }
     }
@@ -87,15 +94,31 @@ public class RecoveryUtils {
 
     if (!StringUtils.isBlank(recoveryData)) {
       for (String line : recoveryData.split(System.lineSeparator())) {
-        String[] tokens = line.split("\t");
+        String[] tokens = line.split("\t", -1);
+        if (tokens.length < 2) {
+          LOGGER.warn("Ignore malformed interpreter recovery record");
+          continue;
+        }
         String interpreterGroupId = tokens[0];
         String[] hostPort = tokens[1].split(":");
+
+        if (tokens.length < 3 || StringUtils.isBlank(tokens[2])) {
+          LOGGER.warn("Interpreter recovery record for {} has no callback credential; "
+              + "skipping it because it cannot be recovered securely",
+              interpreterGroupId);
+          continue;
+        }
+
+        String callbackToken = tokens[2];
+        interpreterSettingManager.getInterpreterEventServer().registerCallbackToken(
+            interpreterGroupId, callbackToken, hostPort[0], Integer.parseInt(hostPort[1]));
 
         RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
                 interpreterSettingName, interpreterGroupId, connectTimeout, connectionPoolSize,
                 interpreterSettingManager.getInterpreterEventServer().getHost(),
                 interpreterSettingManager.getInterpreterEventServer().getPort(),
-                hostPort[0], Integer.parseInt(hostPort[1]), true);
+                hostPort[0], Integer.parseInt(hostPort[1]), true,
+                interpreterSettingManager.getInterpreterEventServer(), callbackToken);
         clients.put(interpreterGroupId, client);
         LOGGER.info("Recovering Interpreter Process: " + interpreterGroupId + ", " +
                 hostPort[0] + ":" + hostPort[1]);

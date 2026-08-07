@@ -146,7 +146,7 @@ if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
         ZEPPELIN_IMPERSONATE_RUN_CMD=("ssh" "${ZEPPELIN_IMPERSONATE_USER}@localhost")
     fi
 else
-    ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
+    ZEPPELIN_IMPERSONATE_RUN_CMD=("${ZEPPELIN_IMPERSONATE_CMD[@]}")
 fi
 
 
@@ -249,6 +249,10 @@ if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
         COMMAND_STRING+="source ${ZEPPELIN_CONF_DIR}/zeppelin-env.sh; "
     fi
+
+    # Pass the callback credential over stdin so it is neither exposed in the
+    # impersonation command line nor lost when ssh/sudo changes the environment.
+    COMMAND_STRING+="IFS= read -r ZEPPELIN_INTERPRETER_EVENT_TOKEN; export ZEPPELIN_INTERPRETER_EVENT_TOKEN; "
     
     # Add interpreter command to the command string
     IFS=' ' read -r -a JAVA_INTP_OPTS_ARRAY <<< "${JAVA_INTP_OPTS}"
@@ -256,7 +260,8 @@ if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     COMMAND_STRING+="${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS_ARRAY[@]} ${ZEPPELIN_INTP_MEM_ARRAY[@]} -cp '${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}' ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}"
     
     # Set INTERPRETER_RUN_COMMAND with the impersonation command and command string
-    INTERPRETER_RUN_COMMAND=("${ZEPPELIN_IMPERSONATE_CMD[@]}" "${COMMAND_STRING}")
+    INTERPRETER_RUN_COMMAND=("${ZEPPELIN_IMPERSONATE_RUN_CMD[@]}" "${COMMAND_STRING}")
+    ZEPPELIN_INTERPRETER_EVENT_TOKEN_VIA_STDIN=true
   fi
 fi
 
@@ -280,5 +285,13 @@ fi
 # Don't remove this echo, it is for diagnose, this line of output will be redirected to java log4j output.
 # Output that starts with `[INFO]` will be redirected to log4j INFO output. Other outputs from interpreter.sh
 # will be redirected to log4j DEBUG output.
-echo "[INFO] Interpreter launch command: ${INTERPRETER_RUN_COMMAND[@]}"
-exec "${INTERPRETER_RUN_COMMAND[@]}"
+INTERPRETER_LOG_COMMAND="${INTERPRETER_RUN_COMMAND[*]}"
+if [[ -n "${ZEPPELIN_INTERPRETER_EVENT_TOKEN}" ]]; then
+  INTERPRETER_LOG_COMMAND="${INTERPRETER_LOG_COMMAND//${ZEPPELIN_INTERPRETER_EVENT_TOKEN}/[REDACTED]}"
+fi
+echo "[INFO] Interpreter launch command: ${INTERPRETER_LOG_COMMAND}"
+if [[ "${ZEPPELIN_INTERPRETER_EVENT_TOKEN_VIA_STDIN}" == "true" ]]; then
+  exec "${INTERPRETER_RUN_COMMAND[@]}" <<< "${ZEPPELIN_INTERPRETER_EVENT_TOKEN}"
+else
+  exec "${INTERPRETER_RUN_COMMAND[@]}"
+fi

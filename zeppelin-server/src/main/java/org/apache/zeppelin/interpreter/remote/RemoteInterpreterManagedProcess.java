@@ -100,6 +100,7 @@ public abstract class RemoteInterpreterManagedProcess extends RemoteInterpreterP
   // after detecting yarn app is killed/failed.
   public void processStopped(String errorMessage) {
     this.errorMessage = errorMessage;
+    notifyTermination();
   }
 
   public Map<String, String> getEnv() {

@@ -195,7 +195,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     LOGGER.info("dockerCommand = {}", dockerCommand);
 
     List<String> listEnv = getListEnvs();
-    LOGGER.info("docker listEnv = {}", listEnv);
+    LOGGER.info("docker environment variables = {}", envs.keySet());
 
     // check if the interpreter process exit script
     // if interpreter process exit, then container need exit

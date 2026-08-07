@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,12 +62,17 @@ class K8sStandardInterpreterLauncherTest {
             "name",
             0,
             "host");
+    context.setIntpEventCallbackToken("callback-token");
 
     // when
     InterpreterClient client = launcher.launch(context);
 
     // then
     assertTrue(client instanceof K8sRemoteInterpreterProcess);
+    K8sRemoteInterpreterProcess process = (K8sRemoteInterpreterProcess) client;
+    assertEquals("callback-token",
+        process.getEnv().get(RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV));
+    process.close();
   }
 
   @Test

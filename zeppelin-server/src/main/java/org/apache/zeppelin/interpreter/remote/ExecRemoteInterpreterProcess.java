@@ -247,6 +247,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       // is 0.
       if (exitValue != 0) {
         transition(State.TERMINATED);
+        ExecRemoteInterpreterProcess.this.processStopped(
+            "Interpreter process exited with status " + exitValue);
       } else {
         transition(State.COMPLETED);
       }

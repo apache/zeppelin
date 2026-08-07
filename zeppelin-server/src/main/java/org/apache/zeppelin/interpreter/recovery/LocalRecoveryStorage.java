@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,8 +92,10 @@ public class LocalRecoveryStorage extends RecoveryStorage {
     InterpreterSetting interpreterSetting =
             interpreterSettingManager.getInterpreterSettingByName(interpreterSettingName);
     String recoveryData = RecoveryUtils.getRecoveryData(interpreterSetting);
-    LOGGER.debug("Updating recovery data of {}: {}", interpreterSettingName, recoveryData);
+    LOGGER.debug("Updating recovery data of {} with {} bytes",
+        interpreterSettingName, recoveryData.length());
     File recoveryFile = new File(recoveryDir, interpreterSettingName + ".recovery");
-    org.apache.zeppelin.util.FileUtils.atomicWriteToFile(recoveryData, recoveryFile);
+    org.apache.zeppelin.util.FileUtils.atomicWriteToFile(recoveryData, recoveryFile,
+        EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
   }
 }

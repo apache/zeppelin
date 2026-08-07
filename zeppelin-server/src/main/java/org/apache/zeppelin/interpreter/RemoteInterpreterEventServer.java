@@ -19,13 +19,15 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.util.OptionalInt;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
+import org.apache.thrift.server.ServerContext;
+import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -33,6 +35,7 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
 import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
@@ -59,15 +62,26 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthorizeCallback;
+import javax.security.sasl.RealmCallback;
+import javax.security.sasl.RealmChoiceCallback;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -77,12 +91,20 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventServer.class);
   private static final Gson GSON = new Gson();
+  private static final int CALLBACK_TOKEN_BYTES = 32;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+  private static final ThreadLocal<String> AUTHENTICATED_INTERPRETER_GROUP = new ThreadLocal<>();
+  private static final ThreadLocal<CallbackCredential> AUTHENTICATED_CREDENTIAL =
+      new ThreadLocal<>();
 
   private int port;
   private String host;
   private ZeppelinConfiguration zConf;
   private TThreadPoolServer thriftServer;
   private InterpreterSettingManager interpreterSettingManager;
+  private final Map<String, CallbackCredential> callbackCredentials = new ConcurrentHashMap<>();
+  private final Map<String, CallbackCredential> callbackCredentialsByAuthenticationId =
+      new ConcurrentHashMap<>();
 
   private final ScheduledExecutorService appendService =
       Executors.newSingleThreadScheduledExecutor();
@@ -112,8 +134,17 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
           RemoteInterpreterEventService.Processor<RemoteInterpreterEventServer> processor =
               new RemoteInterpreterEventService.Processor<>(RemoteInterpreterEventServer.this);
+          TSaslServerTransport.Factory transportFactory = new TSaslServerTransport.Factory(
+              RemoteInterpreterEventClient.SASL_MECHANISM,
+              RemoteInterpreterEventClient.SASL_PROTOCOL,
+              RemoteInterpreterEventClient.SASL_SERVER_NAME,
+              RemoteInterpreterEventClient.SASL_PROPERTIES,
+              createSaslCallbackHandler());
           thriftServer = new TThreadPoolServer(
-              new TThreadPoolServer.Args(tSocket).processor(processor));
+              new TThreadPoolServer.Args(tSocket)
+                  .processor(processor)
+                  .transportFactory(transportFactory));
+          thriftServer.setServerEventHandler(new AuthenticationContextCleaner());
           thriftServer.serve();
         } catch (IOException | TTransportException e ) {
           throw new RuntimeException("Fail to create TServerSocket", e);
@@ -164,8 +195,218 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     return host;
   }
 
+  public String issueCallbackToken(String interpreterGroupId) {
+    if (StringUtils.isBlank(interpreterGroupId)) {
+      throw new IllegalArgumentException("Interpreter group id is required");
+    }
+    byte[] tokenBytes = new byte[CALLBACK_TOKEN_BYTES];
+    SECURE_RANDOM.nextBytes(tokenBytes);
+    String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+    installCallbackCredential(interpreterGroupId, token);
+    return token;
+  }
+
+  public void registerCallbackToken(String interpreterGroupId, String callbackToken) {
+    if (StringUtils.isAnyBlank(interpreterGroupId, callbackToken)) {
+      throw new IllegalArgumentException("Interpreter group id and callback token are required");
+    }
+    installCallbackCredential(interpreterGroupId, callbackToken);
+  }
+
+  public void registerCallbackToken(String interpreterGroupId,
+                                    String callbackToken,
+                                    String registeredHost,
+                                    int registeredPort) {
+    if (StringUtils.isAnyBlank(interpreterGroupId, callbackToken, registeredHost)
+        || registeredPort < 1 || registeredPort > 65535) {
+      throw new IllegalArgumentException(
+          "Interpreter group, callback token, and registered endpoint are required");
+    }
+    installCallbackCredential(
+        interpreterGroupId, callbackToken, registeredHost, registeredPort);
+  }
+
+  public String getCallbackToken(String interpreterGroupId) {
+    CallbackCredential credential = callbackCredentials.get(interpreterGroupId);
+    return credential == null ? null : credential.token;
+  }
+
+  public void revokeCallbackToken(String interpreterGroupId, String callbackToken) {
+    CallbackCredential credential = callbackCredentials.get(interpreterGroupId);
+    if (credential != null && credential.token.equals(callbackToken)) {
+      removeCallbackCredential(interpreterGroupId, credential);
+    }
+  }
+
+  private synchronized CallbackCredential installCallbackCredential(String interpreterGroupId,
+                                                                     String callbackToken) {
+    return installCallbackCredential(interpreterGroupId, callbackToken, null, -1);
+  }
+
+  private synchronized CallbackCredential installCallbackCredential(String interpreterGroupId,
+                                                                     String callbackToken,
+                                                                     String registeredHost,
+                                                                     int registeredPort) {
+    CallbackCredential replacement = new CallbackCredential(
+        interpreterGroupId, callbackToken, registeredHost, registeredPort);
+    CallbackCredential previous = callbackCredentials.put(interpreterGroupId, replacement);
+    callbackCredentialsByAuthenticationId.put(replacement.authenticationId, replacement);
+    if (previous != null) {
+      callbackCredentialsByAuthenticationId.remove(previous.authenticationId, previous);
+    }
+    return replacement;
+  }
+
+  private synchronized void removeCallbackCredential(String interpreterGroupId,
+                                                     CallbackCredential credential) {
+    if (callbackCredentials.remove(interpreterGroupId, credential)) {
+      callbackCredentialsByAuthenticationId.remove(credential.authenticationId, credential);
+    }
+  }
+
+  private CallbackHandler createSaslCallbackHandler() {
+    return callbacks -> {
+      String authenticationId = null;
+      for (Callback callback : callbacks) {
+        if (callback instanceof NameCallback) {
+          authenticationId = ((NameCallback) callback).getDefaultName();
+          break;
+        }
+      }
+
+      for (Callback callback : callbacks) {
+        if (callback instanceof NameCallback) {
+          // The DIGEST-MD5 provider supplies the requested authentication id as the default name.
+        } else if (callback instanceof PasswordCallback) {
+          CallbackCredential credential =
+              callbackCredentialsByAuthenticationId.get(authenticationId);
+          if (credential != null) {
+            ((PasswordCallback) callback).setPassword(credential.token.toCharArray());
+          }
+        } else if (callback instanceof AuthorizeCallback) {
+          AuthorizeCallback authorizeCallback = (AuthorizeCallback) callback;
+          CallbackCredential credential = callbackCredentialsByAuthenticationId.get(
+              authorizeCallback.getAuthenticationID());
+          boolean authorized = authorizeCallback.getAuthenticationID().equals(
+              authorizeCallback.getAuthorizationID())
+              && credential != null
+              && callbackCredentials.get(credential.interpreterGroupId) == credential;
+          authorizeCallback.setAuthorized(authorized);
+          if (authorized) {
+            authorizeCallback.setAuthorizedID(authorizeCallback.getAuthorizationID());
+          }
+        } else if (callback instanceof RealmCallback) {
+          RealmCallback realmCallback = (RealmCallback) callback;
+          realmCallback.setText(realmCallback.getDefaultText());
+        } else if (callback instanceof RealmChoiceCallback) {
+          ((RealmChoiceCallback) callback).setSelectedIndex(0);
+        } else {
+          throw new UnsupportedCallbackException(callback);
+        }
+      }
+    };
+  }
+
+  private void requireAuthenticatedGroup(String interpreterGroupId)
+      throws InterpreterRPCException {
+    String authenticatedGroup = AUTHENTICATED_INTERPRETER_GROUP.get();
+    if (!StringUtils.equals(authenticatedGroup, interpreterGroupId)) {
+      throw new InterpreterRPCException(
+          "Authenticated interpreter group does not match the requested interpreter group");
+    }
+  }
+
+  private final class AuthenticationContextCleaner implements TServerEventHandler {
+    @Override
+    public void preServe() {
+    }
+
+    @Override
+    public ServerContext createContext(org.apache.thrift.protocol.TProtocol input,
+                                       org.apache.thrift.protocol.TProtocol output) {
+      TTransport transport = input.getTransport();
+      if (!(transport instanceof TSaslServerTransport)
+          || ((TSaslServerTransport) transport).getSaslServer() == null
+          || !((TSaslServerTransport) transport).getSaslServer().isComplete()) {
+        throw new SecurityException(
+            "Interpreter callback connection is not authenticated");
+      }
+      String authenticationId = ((TSaslServerTransport) transport)
+          .getSaslServer().getAuthorizationID();
+      CallbackCredential credential =
+          callbackCredentialsByAuthenticationId.get(authenticationId);
+      if (credential == null
+          || callbackCredentials.get(credential.interpreterGroupId) != credential) {
+        throw new SecurityException("Interpreter callback credential is no longer valid");
+      }
+      return new AuthenticatedConnectionContext(credential.interpreterGroupId, credential);
+    }
+
+    @Override
+    public void deleteContext(ServerContext serverContext,
+                              org.apache.thrift.protocol.TProtocol input,
+                              org.apache.thrift.protocol.TProtocol output) {
+      AUTHENTICATED_INTERPRETER_GROUP.remove();
+      AUTHENTICATED_CREDENTIAL.remove();
+    }
+
+    @Override
+    public void processContext(ServerContext serverContext, TTransport input, TTransport output) {
+      if (!(serverContext instanceof AuthenticatedConnectionContext)) {
+        throw new SecurityException(
+            "Interpreter callback connection has no authentication context");
+      }
+      AuthenticatedConnectionContext context = (AuthenticatedConnectionContext) serverContext;
+      if (callbackCredentials.get(context.interpreterGroupId) != context.credential) {
+        throw new SecurityException("Interpreter callback credential is no longer valid");
+      }
+      AUTHENTICATED_INTERPRETER_GROUP.set(context.interpreterGroupId);
+      AUTHENTICATED_CREDENTIAL.set(context.credential);
+    }
+  }
+
+  private static final class CallbackCredential {
+    private final String interpreterGroupId;
+    private final String token;
+    private final String authenticationId;
+    private String registeredHost;
+    private int registeredPort = -1;
+
+    private CallbackCredential(String interpreterGroupId,
+                               String token,
+                               String registeredHost,
+                               int registeredPort) {
+      this.interpreterGroupId = interpreterGroupId;
+      this.token = token;
+      this.authenticationId = RemoteInterpreterEventClient.callbackAuthenticationId(
+          interpreterGroupId, token);
+      this.registeredHost = registeredHost;
+      this.registeredPort = registeredPort;
+    }
+  }
+
+  private static final class AuthenticatedConnectionContext implements ServerContext {
+    private final String interpreterGroupId;
+    private final CallbackCredential credential;
+
+    private AuthenticatedConnectionContext(String interpreterGroupId,
+                                           CallbackCredential credential) {
+      this.interpreterGroupId = interpreterGroupId;
+      this.credential = credential;
+    }
+  }
+
   @Override
   public void registerInterpreterProcess(RegisterInfo registerInfo) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(registerInfo.getInterpreterGroupId());
+    if (StringUtils.isBlank(registerInfo.getHost())
+        || registerInfo.getPort() < 1 || registerInfo.getPort() > 65535) {
+      throw new InterpreterRPCException("Interpreter process endpoint is invalid");
+    }
+    CallbackCredential authenticatedCredential = AUTHENTICATED_CREDENTIAL.get();
+    if (authenticatedCredential == null) {
+      throw new InterpreterRPCException("Interpreter callback credential is unavailable");
+    }
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(registerInfo.getInterpreterGroupId());
     if (interpreterGroup == null) {
@@ -180,30 +421,52 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
               "interpreterGroup: {}", registerInfo.getInterpreterGroupId());
       return;
     }
-    LOGGER.info("Register interpreter process: {}:{}, interpreterGroup: {}",
-            registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
-    interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
+    synchronized (authenticatedCredential) {
+      if (authenticatedCredential.registeredHost != null) {
+        if (authenticatedCredential.registeredPort == registerInfo.getPort()
+            && authenticatedCredential.registeredHost.equals(registerInfo.getHost())) {
+          LOGGER.debug("Interpreter process is already registered at {}:{} for group {}",
+              registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
+          return;
+        }
+        throw new InterpreterRPCException(
+            "Interpreter process endpoint is already registered for this launch credential");
+      }
+      LOGGER.info("Register interpreter process: {}:{}, interpreterGroup: {}",
+          registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
+      interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
+      authenticatedCredential.registeredHost = registerInfo.getHost();
+      authenticatedCredential.registeredPort = registerInfo.getPort();
+    }
   }
 
   @Override
   public void unRegisterInterpreterProcess(String intpGroupId) throws InterpreterRPCException, TException {
-    LOGGER.info("Unregister interpreter process: {}", intpGroupId);
-    InterpreterGroup interpreterGroup =
-            interpreterSettingManager.getInterpreterGroupById(intpGroupId);
-    if (interpreterGroup == null) {
-      LOGGER.warn("Unable to unregister interpreter process because no such interpreterGroup: {}",
-              intpGroupId);
-      return;
+    requireAuthenticatedGroup(intpGroupId);
+    CallbackCredential authenticatedCredential = AUTHENTICATED_CREDENTIAL.get();
+    try {
+      LOGGER.info("Unregister interpreter process: {}", intpGroupId);
+      InterpreterGroup interpreterGroup =
+              interpreterSettingManager.getInterpreterGroupById(intpGroupId);
+      if (interpreterGroup == null) {
+        LOGGER.warn("Unable to unregister interpreter process because no such interpreterGroup: {}",
+                intpGroupId);
+        return;
+      }
+      // Close RemoteInterpreter when RemoteInterpreterServer already timeout.
+      // Otherwise the ProgressBar will be missing when rerun after the
+      // RemoteInterpreterServer timeout
+      // and old RemoteInterpreterGroups will always alive after GC.
+      interpreterGroup.close();
+      interpreterSettingManager.removeInterpreterGroup(intpGroupId);
+    } finally {
+      removeCallbackCredential(intpGroupId, authenticatedCredential);
     }
-    // Close RemoteInterpreter when RemoteInterpreterServer already timeout.
-    // Otherwise the ProgressBar will be missing when rerun after the RemoteInterpreterServer timeout
-    // and old RemoteInterpreterGroups will always alive after GC.
-    interpreterGroup.close();
-    interpreterSettingManager.removeInterpreterGroup(intpGroupId);
   }
 
   @Override
   public void sendWebUrl(WebUrlInfo weburlInfo) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(weburlInfo.getInterpreterGroupId());
     InterpreterGroup interpreterGroup =
             interpreterSettingManager.getInterpreterGroupById(weburlInfo.getInterpreterGroupId());
     if (interpreterGroup == null) {
@@ -285,6 +548,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void addAngularObject(String intpGroupId, String json) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     LOGGER.debug("Add AngularObject, interpreterGroupId: {}, json: {}", intpGroupId, json);
     AngularObject<?> angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
@@ -314,6 +578,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void updateAngularObject(String intpGroupId, String json) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     AngularObject<?> angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
@@ -351,6 +616,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
                                   String noteId,
                                   String paragraphId,
                                   String name) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
@@ -376,6 +642,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void sendParagraphInfo(String intpGroupId, String json) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
@@ -395,6 +662,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public List<String> getAllResources(String intpGroupId) throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     ResourceSet resourceSet = getAllResourcePoolExcept(intpGroupId);
     List<String> resourceList = new LinkedList<>();
     for (Resource r : resourceSet) {
@@ -430,6 +698,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public ByteBuffer invokeMethod(String intpGroupId, String invokeMethodJson)
           throws InterpreterRPCException, TException {
+    requireAuthenticatedGroup(intpGroupId);
     InvokeResourceMethodEventMessage invokeMethodMessage =
         InvokeResourceMethodEventMessage.fromJson(invokeMethodJson);
     Object ret = invokeResourceMethod(intpGroupId, invokeMethodMessage);

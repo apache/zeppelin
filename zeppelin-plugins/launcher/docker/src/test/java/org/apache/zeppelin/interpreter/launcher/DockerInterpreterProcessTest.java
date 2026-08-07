@@ -25,6 +25,7 @@ import com.spotify.docker.client.messages.ContainerState;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Collections;
@@ -186,11 +187,14 @@ class DockerInterpreterProcessTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null,
         "user1", "intpGroupId", "groupId",
         "groupName", "name", 0, "host");
+    context.setIntpEventCallbackToken("callback-token");
     InterpreterClient client = launcher.launch(context);
 
     assertTrue(client instanceof DockerInterpreterProcess);
     DockerInterpreterProcess interpreterProcess = (DockerInterpreterProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
+    assertTrue(interpreterProcess.getListEnvs().contains(
+        RemoteInterpreterEventClient.CALLBACK_TOKEN_ENV + "=callback-token"));
 
     assertEquals("/opt/spark", interpreterProcess.containerSparkHome);
     assertTrue(interpreterProcess.uploadLocalLibToContainter);

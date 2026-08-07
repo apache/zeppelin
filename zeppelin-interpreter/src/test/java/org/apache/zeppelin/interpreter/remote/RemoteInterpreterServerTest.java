@@ -23,6 +23,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -64,6 +68,41 @@ class RemoteInterpreterServerTest {
 
     server.intpEventClient.onAppStatusUpdate("", "", "", "");
     stopRemoteInterpreterServer(server, 10 * 10000);
+  }
+
+  @Test
+  void testRejectsCallbackCredentialReplacement() throws Exception {
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+    Map<String, String> properties = new HashMap<>();
+    properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY, "groupId");
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "first-token");
+    server.init(properties);
+
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "second-token");
+    assertThrows(InterpreterRPCException.class, () -> server.init(properties));
+  }
+
+  @Test
+  void testInitKeepsReconnectedEventClient() throws Exception {
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId",
+        false);
+    Map<String, String> properties = new HashMap<>();
+    properties.put(RemoteInterpreterEventClient.INTERPRETER_GROUP_PROPERTY, "groupId");
+    properties.put(RemoteInterpreterEventClient.CALLBACK_TOKEN_PROPERTY, "callback-token");
+    properties.put("zeppelin.interpreter.connection.poolsize", "1");
+    server.init(properties);
+    RemoteInterpreterEventClient initialClient = server.intpEventClient;
+
+    server.reconnect("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces());
+    RemoteInterpreterEventClient reconnectedClient = server.intpEventClient;
+    assertNotSame(initialClient, reconnectedClient);
+
+    server.init(properties);
+    assertSame(reconnectedClient, server.intpEventClient);
+    reconnectedClient.close();
   }
 
   private void startRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
