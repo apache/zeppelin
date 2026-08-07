@@ -35,6 +35,46 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ## Migration Guide
 
+### WebSocket authentication migration
+
+This release updates Apache Shiro 1.13 to Shiro 2.2.1's Jakarta artifacts while retaining
+Zeppelin's Java 11 baseline. This is the smallest supported bridge for the unified authentication
+change. Shiro 3 requires Java 17 and should be handled as a separate runtime upgrade rather than
+bundling a JDK transition into this security change.
+
+Shiro 2.x is now end-of-life, so this bridge is transitional. Zeppelin does not include the
+`shiro-guice` module affected by CVE-2026-56091, and the shipped configuration disables the
+RememberMe feature affected by CVE-2026-56130. Operators with custom Shiro configuration should
+also keep RememberMe disabled. A Java 17 and Shiro 3 migration remains the long-term follow-up.
+
+When Shiro is enabled, notebook WebSockets now authenticate during the HTTP upgrade with the same
+Shiro session cookie as REST. Custom `shiro.ini` files should add an explicit `/ws = authc` rule
+before a broader anonymous rule. The shipped template already contains this rule.
+
+Existing `shiro.ini` files are preserved during upgrades and do not inherit new template defaults.
+Under `[main]`, also set `filterChainResolver.caseInsensitive = true`, configure the injected
+`JSESSIONID` cookie with `httpOnly = true`, `sameSite = LAX`, and `secure = true`, and set
+`securityManager.rememberMeManager = null`. Shiro emits `Secure` only for requests Jetty recognizes
+as HTTPS; TLS-terminating proxies must forward the original scheme. Zeppelin does not use
+remember-me authentication, so disabling that unused facility reduces the exposed authentication
+surface until the separate JDK 17 / Shiro 3 upgrade.
+
+Browser and Java clients must retain the REST login cookie and send it when opening `/ws`.
+WebSocket message fields such as `principal`, `roles`, and `ticket` are no longer authentication
+credentials. Proxies must continue forwarding `Cookie`, `Origin`, `Upgrade`, and `Connection`
+headers to the `/ws` endpoint.
+
+The default value of `zeppelin.server.allowed.origins` is now empty instead of `*`. An empty value
+permits only the configured local server origin, so deployments accessed through another hostname,
+port, or reverse proxy must list each trusted browser origin explicitly before upgrading.
+
+`ZeppelinClient` now owns an isolated REST session and implements `AutoCloseable`; applications
+should close each client after use. `ZSession` reuses that session cookie for `/ws`. HTTPS and WSS
+both keep the JVM's normal certificate and hostname verification, including for Knox deployments;
+configure the JVM trust store when an internal certificate authority is required.
+Process-global `Unirest.config()` and `Unirest.shutDown()` no longer configure or close these
+isolated clients; use JVM networking properties and close each `ZeppelinClient` directly.
+
 ### Upgrading from Zeppelin 0.9, 0.10 to 0.11
  - From 0.11, The type of `Pegdown` for parsing markdown was deprecated ([ZEPPELIN-5529](https://issues.apache.org/jira/browse/ZEPPELIN-2619)). It will use `Flexmark` instead.
 

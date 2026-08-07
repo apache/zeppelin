@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -61,11 +62,14 @@ public class ZeppelinWebSocketClient {
   }
 
   public void connect(String url) throws Exception {
+    connect(url, null);
+  }
+
+  public void connect(String url, String cookieHeader) throws Exception {
+    URI echoUri = new URI(url);
+    ClientUpgradeRequest request = createUpgradeRequest(echoUri, cookieHeader);
     this.wsClient = new WebSocketClient();
     wsClient.start();
-    URI echoUri = new URI(url);
-    ClientUpgradeRequest request = new ClientUpgradeRequest();
-    request.setHeader("Origin", "*");
     CompletableFuture<Session> future = wsClient.connect(this, echoUri, request);
     try {
       future.get(DEFAULT_CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -79,6 +83,37 @@ public class ZeppelinWebSocketClient {
               e.getCause());
     }
     LOGGER.info("WebSocket connect established");
+  }
+
+  ClientUpgradeRequest createUpgradeRequest(URI webSocketUri, String cookieHeader)
+      throws URISyntaxException {
+    ClientUpgradeRequest request = new ClientUpgradeRequest();
+    request.setHeader("Origin", toHttpOrigin(webSocketUri));
+    if (cookieHeader != null && !cookieHeader.trim().isEmpty()) {
+      request.setHeader("Cookie", cookieHeader);
+    }
+    return request;
+  }
+
+  private static String toHttpOrigin(URI webSocketUri) throws URISyntaxException {
+    String scheme;
+    if ("wss".equalsIgnoreCase(webSocketUri.getScheme())) {
+      scheme = "https";
+    } else if ("ws".equalsIgnoreCase(webSocketUri.getScheme())) {
+      scheme = "http";
+    } else {
+      throw new IllegalArgumentException(
+          "Unsupported WebSocket URL scheme: " + webSocketUri.getScheme());
+    }
+    if (webSocketUri.getHost() == null) {
+      throw new IllegalArgumentException("WebSocket URL must contain a host");
+    }
+    int port = webSocketUri.getPort();
+    if (("http".equals(scheme) && port == 80) || ("https".equals(scheme) && port == 443)) {
+      port = -1;
+    }
+    return new URI(scheme, null, webSocketUri.getHost(), port,
+        null, null, null).toString();
   }
 
   public void addStatementMessageHandler(String statementId,

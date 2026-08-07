@@ -53,10 +53,9 @@ public class SecurityRestApi extends AbstractRestApi {
   }
 
   /**
-   * Get ticket
-   * Returns username & ticket
-   * for anonymous access, username is always anonymous.
-   * After getting this ticket, access through websockets become safe
+   * Return legacy UI identity metadata.
+   * For anonymous access, username is always anonymous. The returned ticket is retained for
+   * response compatibility and is not a REST or WebSocket authentication credential.
    *
    * @return 200 response
    */

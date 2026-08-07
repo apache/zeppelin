@@ -28,9 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Very simple ticket container
- * No cleanup is done, since the same user accross different devices share the same ticket
- * The Map size is at most the number of different user names having access to a Zeppelin instance
+ * Legacy UI identity metadata retained for response compatibility.
+ *
+ * <p>Tickets from this container are not authentication credentials for REST or WebSocket.
+ * Both transports are authenticated by the Shiro session. No cleanup is done because the same
+ * user across different devices shares one legacy entry, so the map is bounded by user names.
  */
 
 
@@ -86,8 +88,8 @@ public class TicketContainer {
   }
 
   /**
-   * get or create ticket for Websocket authentication assigned to authenticated shiro user
-   * For unathenticated user (anonymous), always return ticket value "anonymous"
+   * Get or create legacy response metadata for an authenticated Shiro user.
+   * For an unauthenticated user (anonymous), always return ticket value "anonymous".
    * @param principal
    * @return
    */

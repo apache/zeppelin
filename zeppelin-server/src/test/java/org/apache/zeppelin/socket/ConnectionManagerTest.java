@@ -22,13 +22,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -36,12 +41,78 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import jakarta.websocket.CloseReason;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ConnectionManagerTest {
+
+  @Test
+  void collaborativeStatusUsesTheAuthorizationAwareBroadcastHandler() {
+    ZeppelinConfiguration zConf = mock(ZeppelinConfiguration.class);
+    when(zConf.isZeppelinNotebookCollaborativeModeEnable()).thenReturn(true);
+    ConnectionManager manager = new ConnectionManager(mock(AuthorizationService.class), zConf);
+    ConnectionManager.NoteBroadcastHandler handler =
+        mock(ConnectionManager.NoteBroadcastHandler.class);
+    manager.setNoteBroadcastHandler(handler);
+    NotebookSocket first = mock(NotebookSocket.class);
+    NotebookSocket second = mock(NotebookSocket.class);
+    when(first.getUser()).thenReturn("first");
+    when(second.getUser()).thenReturn("second");
+
+    manager.addNoteConnection("note-id", first);
+    manager.addNoteConnection("note-id", second);
+
+    ArgumentCaptor<Message> messages = ArgumentCaptor.forClass(Message.class);
+    verify(handler, times(2)).broadcast(eq("note-id"), messages.capture());
+    Message collaborative = messages.getAllValues().get(1);
+    assertEquals(Message.OP.COLLABORATIVE_MODE_STATUS, collaborative.op);
+    assertTrue((Boolean) collaborative.get("status"));
+    assertEquals(Set.of("first", "second"), collaborative.get("users"));
+  }
+
+  @Test
+  void closesOnlyConnectionsFromTheExactAuthenticatedSession() throws Exception {
+    ConnectionManager manager = new ConnectionManager(
+        mock(AuthorizationService.class), ZeppelinConfiguration.load());
+    NotebookSocket firstSession = mock(NotebookSocket.class);
+    NotebookSocket watcherSession = mock(NotebookSocket.class);
+    NotebookSocket secondSession = mock(NotebookSocket.class);
+    NotebookSocket otherSecurityManager = mock(NotebookSocket.class);
+    SecurityManager securityManager = mock(SecurityManager.class);
+    SecurityManager anotherSecurityManager = mock(SecurityManager.class);
+    when(firstSession.getAuthenticatedIdentity()).thenReturn(
+        new AuthenticatedIdentity("user1", java.util.Set.of(), true, "session-1"));
+    when(firstSession.getAuthenticationSecurityManager()).thenReturn(securityManager);
+    when(watcherSession.getAuthenticatedIdentity()).thenReturn(
+        new AuthenticatedIdentity("user1", java.util.Set.of(), true, "session-1"));
+    when(watcherSession.getAuthenticationSecurityManager()).thenReturn(securityManager);
+    when(secondSession.getAuthenticatedIdentity()).thenReturn(
+        new AuthenticatedIdentity("user1", java.util.Set.of(), true, "session-2"));
+    when(secondSession.getAuthenticationSecurityManager()).thenReturn(securityManager);
+    when(otherSecurityManager.getAuthenticatedIdentity()).thenReturn(
+        new AuthenticatedIdentity("user1", java.util.Set.of(), true, "session-1"));
+    when(otherSecurityManager.getAuthenticationSecurityManager()).thenReturn(anotherSecurityManager);
+    manager.addConnection(firstSession);
+    manager.watcherSockets.add(watcherSession);
+    manager.addConnection(secondSession);
+    manager.addConnection(otherSecurityManager);
+
+    assertEquals(2, manager.closeConnectionsForSession(securityManager, "session-1"));
+
+    verify(firstSession).close(org.mockito.ArgumentMatchers.argThat(
+        reason -> reason.getCloseCode() == CloseReason.CloseCodes.VIOLATED_POLICY));
+    verify(watcherSession).close(org.mockito.ArgumentMatchers.argThat(
+        reason -> reason.getCloseCode() == CloseReason.CloseCodes.VIOLATED_POLICY));
+    verify(secondSession, never()).close(org.mockito.ArgumentMatchers.any());
+    verify(otherSecurityManager, never()).close(org.mockito.ArgumentMatchers.any());
+  }
 
   @Test
   void checkMapGrow() {

@@ -17,13 +17,20 @@
 package org.apache.zeppelin.socket;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
+import org.apache.zeppelin.service.AuthenticatedSessionService;
+import org.apache.zeppelin.service.SessionAuthenticationException;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.zeppelin.utils.ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.Session;
 
 /**
@@ -32,13 +39,24 @@ import jakarta.websocket.Session;
 public class NotebookSocket {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookSocket.class);
 
-  private Session session;
-  private Map<String, Object> headers;
+  private final Session session;
+  private final Map<String, Object> headers;
+  private final AuthenticatedIdentity authenticatedIdentity;
+  private final SecurityManager authenticationSecurityManager;
+  private final AuthenticatedSessionService authenticatedSessionService;
   private String user;
 
-  public NotebookSocket(Session session, Map<String, Object> headers) {
+  public NotebookSocket(
+      Session session,
+      Map<String, Object> headers,
+      AuthenticatedIdentity authenticatedIdentity,
+      SecurityManager authenticationSecurityManager,
+      AuthenticatedSessionService authenticatedSessionService) {
     this.session = session;
-    this.headers = headers;
+    this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+    this.authenticatedIdentity = authenticatedIdentity;
+    this.authenticationSecurityManager = authenticationSecurityManager;
+    this.authenticatedSessionService = authenticatedSessionService;
     this.user = StringUtils.EMPTY;
     LOGGER.debug("NotebookSocket created for session: {}", session.getId());
   }
@@ -48,11 +66,36 @@ public class NotebookSocket {
   }
 
   public void send(String serializeMessage) throws IOException {
+    try {
+      authenticatedSessionService.validate(
+          authenticatedIdentity, authenticationSecurityManager);
+    } catch (SessionAuthenticationException e) {
+      try {
+        close(new CloseReason(
+            CloseReason.CloseCodes.VIOLATED_POLICY,
+            "Authenticated session is no longer valid"));
+      } catch (IOException closeFailure) {
+        e.addSuppressed(closeFailure);
+      }
+      throw new IOException("Authenticated session is no longer valid", e);
+    }
     session.getAsyncRemote().sendText(serializeMessage, result -> {
       if (result.getException() != null) {
         LOGGER.error("Failed to send async message for User {} in Session {}: {}", this.user, this.session.getId(), result.getException());
       }
     });
+  }
+
+  public void close(CloseReason closeReason) throws IOException {
+    session.close(closeReason);
+  }
+
+  public AuthenticatedIdentity getAuthenticatedIdentity() {
+    return authenticatedIdentity;
+  }
+
+  public SecurityManager getAuthenticationSecurityManager() {
+    return authenticationSecurityManager;
   }
 
   public String getUser() {

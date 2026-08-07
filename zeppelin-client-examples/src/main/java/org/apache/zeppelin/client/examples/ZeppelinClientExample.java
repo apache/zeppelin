@@ -30,49 +30,51 @@ public class ZeppelinClientExample {
 
   public static void main(String[] args) throws Exception {
     ClientConfig clientConfig = new ClientConfig("http://localhost:8080");
-    ZeppelinClient zClient = new ZeppelinClient(clientConfig);
+    try (ZeppelinClient zClient = new ZeppelinClient(clientConfig)) {
+      String zeppelinVersion = zClient.getVersion();
+      System.out.println("Zeppelin version: " + zeppelinVersion);
 
-    String zeppelinVersion = zClient.getVersion();
-    System.out.println("Zeppelin version: " + zeppelinVersion);
+      String notePath = "/zeppelin_client_examples/note_1";
+      String noteId = null;
+      try {
+        noteId = zClient.createNote(notePath);
+        System.out.println("Created note: " + noteId);
 
-    String notePath = "/zeppelin_client_examples/note_1";
-    String noteId = null;
-    try {
-      noteId = zClient.createNote(notePath);
-      System.out.println("Created note: " + noteId);
+        String newNotePath = notePath + "_rename";
+        zClient.renameNote(noteId, newNotePath);
 
-      String newNotePath = notePath + "_rename";
-      zClient.renameNote(noteId, newNotePath);
+        NoteResult renamedNoteResult = zClient.queryNoteResult(noteId);
+        System.out.println(
+            "Rename note: " + noteId + " name to " + renamedNoteResult.getNotePath());
 
-      NoteResult renamedNoteResult = zClient.queryNoteResult(noteId);
-      System.out.println("Rename note: " + noteId + " name to " + renamedNoteResult.getNotePath());
+        String paragraphId = zClient.addParagraph(
+            noteId, "the first paragraph", "%python print('hello world')");
+        ParagraphResult paragraphResult = zClient.executeParagraph(noteId, paragraphId);
+        System.out.println("Added new paragraph and execute it.");
+        System.out.println("Paragraph result: " + paragraphResult);
 
-      String paragraphId = zClient.addParagraph(noteId, "the first paragraph", "%python print('hello world')");
-      ParagraphResult paragraphResult = zClient.executeParagraph(noteId, paragraphId);
-      System.out.println("Added new paragraph and execute it.");
-      System.out.println("Paragraph result: " + paragraphResult);
+        String paragraphId2 = zClient.addParagraph(noteId, "the second paragraph",
+                "%python\nimport time\ntime.sleep(5)\nprint('done')");
+        zClient.submitParagraph(noteId, paragraphId2);
+        zClient.waitUtilParagraphRunning(noteId, paragraphId2);
+        // It's also ok here to call zClient.cancelNote(noteId);
+        // CancelNote() would cancel all paragraphs in the note.
+        zClient.cancelParagraph(noteId, paragraphId2);
+        paragraphResult = zClient.waitUtilParagraphFinish(noteId, paragraphId2);
+        System.out.println("Added new paragraph, submit it then cancel it");
+        System.out.println("Paragraph result: " + paragraphResult);
 
-      String paragraphId2 = zClient.addParagraph(noteId, "the second paragraph",
-              "%python\nimport time\ntime.sleep(5)\nprint('done')");
-      zClient.submitParagraph(noteId, paragraphId2);
-      zClient.waitUtilParagraphRunning(noteId, paragraphId2);
-      // It's also ok here to call zClient.cancelNote(noteId);
-      // CancelNote() would cancel all paragraphs in the note.
-      zClient.cancelParagraph(noteId, paragraphId2);
-      paragraphResult = zClient.waitUtilParagraphFinish(noteId, paragraphId2);
-      System.out.println("Added new paragraph, submit it then cancel it");
-      System.out.println("Paragraph result: " + paragraphResult);
+        NoteResult noteResult = zClient.executeNote(noteId);
+        System.out.println("Execute note and the note result: " + noteResult);
 
-      NoteResult noteResult = zClient.executeNote(noteId);
-      System.out.println("Execute note and the note result: " + noteResult);
-
-      zClient.submitNote(noteId);
-      noteResult = zClient.waitUntilNoteFinished(noteId);
-      System.out.println("Submit note and the note result: " + noteResult);
-    } finally {
-      if (noteId != null) {
-        zClient.deleteNote(noteId);
-        System.out.println("Note " + noteId + " is deleted");
+        zClient.submitNote(noteId);
+        noteResult = zClient.waitUntilNoteFinished(noteId);
+        System.out.println("Submit note and the note result: " + noteResult);
+      } finally {
+        if (noteId != null) {
+          zClient.deleteNote(noteId);
+          System.out.println("Note " + noteId + " is deleted");
+        }
       }
     }
   }

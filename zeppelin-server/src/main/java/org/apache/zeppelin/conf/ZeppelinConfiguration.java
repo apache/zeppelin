@@ -67,7 +67,8 @@ public class ZeppelinConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
-  private Boolean anonymousAllowed;
+  private volatile Boolean anonymousAllowed;
+  private volatile String shiroPath;
 
   private static final EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
   private static final SystemConfiguration sysConfig = new SystemConfiguration();
@@ -618,8 +619,30 @@ public class ZeppelinConfiguration {
   }
 
   public String getShiroPath() {
+    String initializedShiroPath = shiroPath;
+    if (initializedShiroPath != null) {
+      return initializedShiroPath;
+    }
+    return resolveShiroPath();
+  }
+
+  private String resolveShiroPath() {
     String shiroPath = getAbsoluteDir(String.format("%s/shiro.ini", getConfDir()));
     return new File(shiroPath).exists() ? shiroPath : StringUtils.EMPTY;
+  }
+
+  /**
+   * Capture the authentication mode once during server construction.
+   *
+   * <p>Jetty's Shiro filter is also configured only at startup. Keeping this decision immutable
+   * prevents a later filesystem change from making notebook authorization believe the running,
+   * Shiro-protected server has switched to anonymous mode.
+   */
+  public synchronized void initializeAuthenticationMode() {
+    if (shiroPath == null) {
+      shiroPath = resolveShiroPath();
+      anonymousAllowed = StringUtils.isBlank(shiroPath);
+    }
   }
 
   public boolean isAuthenticationEnabled() {
@@ -680,7 +703,7 @@ public class ZeppelinConfiguration {
 
   public boolean isAnonymousAllowed() {
     if (anonymousAllowed == null) {
-      anonymousAllowed = this.getShiroPath().equals(StringUtils.EMPTY);
+      initializeAuthenticationMode();
     }
     return anonymousAllowed;
   }
@@ -733,6 +756,10 @@ public class ZeppelinConfiguration {
 
   public String getWebsocketMaxTextMessageSize() {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
+  }
+
+  public long getWebsocketAuthorizationRolesRefreshIntervalMs() {
+    return getLong(ConfVars.ZEPPELIN_WEBSOCKET_AUTHORIZATION_ROLES_REFRESH_INTERVAL_MS);
   }
 
   public String getJettyName() {
@@ -1058,6 +1085,8 @@ public class ZeppelinConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "10240000"),
+    ZEPPELIN_WEBSOCKET_AUTHORIZATION_ROLES_REFRESH_INTERVAL_MS(
+        "zeppelin.websocket.authorization.roles.refresh.interval.ms", 1000L),
     ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS("zeppelin.websocket.paragraph_status_progress.enable", true),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),

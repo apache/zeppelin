@@ -21,14 +21,18 @@ package org.apache.zeppelin.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +44,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -62,10 +67,12 @@ import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -88,6 +95,7 @@ class NotebookServiceTest {
   private File confDir;
   private SearchService searchService;
   private Notebook notebook;
+  private AuthorizationService authorizationService;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -102,11 +110,12 @@ class NotebookServiceTest {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
+    confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
+    zConf.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+        confDir.getAbsolutePath());
     // enable cron for testNoteUpdate method
     if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
-      confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
-      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
-            confDir.getAbsolutePath());
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
       String shiroPath = zConf.getAbsoluteDir(String.format("%s/shiro.ini", zConf.getConfDir()));
       Files.createFile(new File(shiroPath).toPath());
@@ -136,7 +145,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
-    AuthorizationService authorizationService =
+    authorizationService =
         new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
@@ -411,6 +420,157 @@ class NotebookServiceTest {
   }
 
   @Test
+  void missingNoteReachesNotFoundInsteadOfPermissionFailure() throws IOException {
+    notebookService.removeNote("missing-note", context, callback);
+
+    ArgumentCaptor<Exception> failure = ArgumentCaptor.forClass(Exception.class);
+    verify(callback).onFailure(failure.capture(), eq(context));
+    assertTrue(failure.getValue() instanceof NoteNotFoundException);
+  }
+
+  @Test
+  void folderRemovalRequiresOwnershipOfEveryDescendantNote() throws IOException {
+    String userOneNote = notebookService.createNote(
+        "/shared-folder/user-one-note", "test", true, context, callback);
+    String userTwoNote = notebookService.createNote(
+        "/shared-folder/user-two-note", "test", true, context, callback);
+    authorizationService.setOwners(userOneNote, Set.of("user1"));
+    authorizationService.setOwners(userTwoNote, Set.of("user2"));
+    ServiceContext userOneContext = new ServiceContext(
+        new AuthenticationInfo("user1"), new HashSet<>(Set.of("user1")));
+    reset(callback);
+
+    List<NoteInfo> result = notebookService.removeFolder(
+        "/shared-folder", userOneContext, callback);
+
+    assertNull(result);
+    verify(callback).onFailure(any(Exception.class), eq(userOneContext));
+    assertTrue(notebook.containsNoteById(userOneNote));
+    assertTrue(notebook.containsNoteById(userTwoNote));
+  }
+
+  @Test
+  void folderMutationRejectsAclChangeAfterDescendantPreflight() throws IOException {
+    String noteId = notebookService.createNote(
+        "/acl-race/note", "test", true, context, callback);
+    AuthorizationService guardedAuthorization = spy(authorizationService);
+    NotebookService guardedService = new NotebookService(
+        notebook,
+        guardedAuthorization,
+        notebook.getConf(),
+        mock(SchedulerService.class));
+    doAnswer(invocation -> {
+      guardedAuthorization.setOwners(noteId, Set.of("different-owner"));
+      // Simulate the ACL changing immediately after the preflight's final comparison. The
+      // guarded mutation must compare the captured generation again under the ACL monitor.
+      return true;
+    }).when(guardedAuthorization).isAuthorizationVersionCurrent(anyLong());
+    reset(callback);
+
+    List<NoteInfo> result = guardedService.removeFolder("/acl-race", context, callback);
+
+    assertNull(result);
+    verify(callback).onFailure(any(IOException.class), eq(context));
+    assertTrue(notebook.containsNoteById(noteId));
+  }
+
+  @Test
+  void restoreFolderDoesNotOverwriteExistingDestination() throws IOException {
+    String trashedNote = notebookService.createNote(
+        "/Backup/trashed-note", "test", true, context, callback);
+    notebookService.moveFolderToTrash("/Backup", context, callback);
+    String replacementNote = notebookService.createNote(
+        "/Backup/replacement-note", "test", true, context, callback);
+    reset(callback);
+
+    notebookService.restoreFolder("/~Trash/Backup", context, callback);
+
+    verify(callback).onFailure(any(IOException.class), eq(context));
+    assertEquals(
+        "/~Trash/Backup/trashed-note",
+        notebook.getNoteManager().getNotesInfo().get(trashedNote));
+    assertEquals(
+        "/Backup/replacement-note",
+        notebook.getNoteManager().getNotesInfo().get(replacementNote));
+  }
+
+  @Test
+  void restoreAllChecksEveryDestinationBeforeMovingAnything() throws IOException {
+    String collidingTrashedNote = notebookService.createNote(
+        "/Alpha/old-note", "test", true, context, callback);
+    notebookService.moveFolderToTrash("/Alpha", context, callback);
+    String replacementNote = notebookService.createNote(
+        "/Alpha/new-note", "test", true, context, callback);
+    String otherTrashedNote = notebookService.createNote(
+        "/Beta/old-note", "test", true, context, callback);
+    notebookService.moveFolderToTrash("/Beta", context, callback);
+    reset(callback);
+
+    notebookService.restoreAll(context, callback);
+
+    verify(callback).onFailure(any(IOException.class), eq(context));
+    assertEquals(
+        "/~Trash/Alpha/old-note",
+        notebook.getNoteManager().getNotesInfo().get(collidingTrashedNote));
+    assertEquals(
+        "/Alpha/new-note",
+        notebook.getNoteManager().getNotesInfo().get(replacementNote));
+    assertEquals(
+        "/~Trash/Beta/old-note",
+        notebook.getNoteManager().getNotesInfo().get(otherTrashedNote));
+  }
+
+  @Test
+  void reservedTrashRootRequiresDedicatedOperations() throws IOException {
+    reset(callback);
+
+    notebookService.restoreFolder("/~TrashEvil/folder", context, callback);
+    verify(callback).onFailure(any(IOException.class), eq(context));
+
+    reset(callback);
+    assertNull(notebookService.removeFolder("/~Trash", context, callback));
+    verify(callback).onFailure(any(IOException.class), eq(context));
+  }
+
+  @Test
+  void unauthorizedReloadDoesNotReplaceSharedNoteCache() throws IOException {
+    String noteId = notebookService.createNote(
+        "/private-note", "test", true, context, callback);
+    authorizationService.setPermissions(
+        noteId, Set.of("owner"), Set.of("owner"), Set.of("owner"), Set.of("owner"));
+    notebook.processNote(noteId, note -> {
+      note.getInfo().put("unsaved-cache-marker", true);
+      return null;
+    });
+    ServiceContext intruderContext = new ServiceContext(
+        new AuthenticationInfo("intruder"), new HashSet<>(Set.of("intruder")));
+    reset(callback);
+
+    assertNull(notebookService.getNote(noteId, true, intruderContext, callback, null));
+
+    verify(callback).onFailure(any(Exception.class), eq(intruderContext));
+    notebook.processNote(noteId, note -> {
+      assertEquals(true, note.getInfo().get("unsaved-cache-marker"));
+      return null;
+    });
+  }
+
+  @Test
+  void revisionHistoryRequiresReadPermission() throws IOException {
+    String noteId = notebookService.createNote(
+        "/private-revisions", "test", true, context, callback);
+    authorizationService.setPermissions(
+        noteId, Set.of("owner"), Set.of("owner"), Set.of("owner"), Set.of("owner"));
+    ServiceContext intruderContext = new ServiceContext(
+        new AuthenticationInfo("intruder"), new HashSet<>(Set.of("intruder")));
+    reset(callback);
+
+    assertNull(notebookService.listRevisionHistory(noteId, intruderContext, callback));
+
+    verify(callback).onFailure(any(Exception.class), eq(intruderContext));
+  }
+
+  @Test
   void testNoteUpdate() throws IOException {
     // create note
     String note1Id = notebookService.createNote("/folder_update/note_test_update", "test", true, context, callback);
@@ -594,6 +754,20 @@ class NotebookServiceTest {
     assertEquals("/Untitled Note", notebookService.normalizeNotePath(null));
     assertEquals("/my_note", notebookService.normalizeNotePath("my_note"));
     assertEquals("/my  note", notebookService.normalizeNotePath("my\r\nnote"));
+    assertEquals(
+        "Empty path segments are not allowed",
+        assertThrows(
+            IOException.class,
+            () -> notebookService.normalizeNotePath("/victim//folder")).getMessage());
+    assertEquals(
+        "Empty path segments are not allowed",
+        assertThrows(
+            IOException.class,
+            () -> notebookService.normalizeNotePath("/victim%2F%2Ffolder")).getMessage());
+    assertTrue(assertThrows(
+        IOException.class,
+        () -> notebookService.normalizeNotePath("/victim/./folder"))
+        .getMessage().startsWith("Path traversal segments are not allowed"));
 
     try {
       String longNoteName = StringUtils.join(
@@ -613,14 +787,14 @@ class NotebookServiceTest {
       notebookService.normalizeNotePath("%2e%2e/%2e%2e/tmp/test222");
       fail("Should fail");
     } catch (IOException e) {
-      assertEquals("Note name can not contain '..'", e.getMessage());
+      assertTrue(e.getMessage().startsWith("Path traversal segments are not allowed"));
     }
     try {
       // Double URL encoding of ".."
       notebookService.normalizeNotePath("%252e%252e/%252e%252e/tmp/test333");
       fail("Should fail");
     } catch (IOException e) {
-      assertEquals("Note name can not contain '..'", e.getMessage());
+      assertTrue(e.getMessage().startsWith("Path traversal segments are not allowed"));
     }
     try {
       notebookService.normalizeNotePath("%25252525252e%25252525252e/tmp/test444");

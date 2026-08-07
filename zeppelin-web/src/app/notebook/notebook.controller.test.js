@@ -2,9 +2,12 @@ describe('Controller: NotebookCtrl', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
   let scope;
+  let controller;
+  let rootScope;
 
   let websocketMsgSrvMock = {
     getNote: function() {},
+    getNoteByRevision: function() {},
     listRevisionHistory: function() {},
     getInterpreterBindings: function() {},
     updateNote: function() {},
@@ -25,9 +28,13 @@ describe('Controller: NotebookCtrl', function() {
   };
 
   beforeEach(inject(function($controller, $rootScope) {
+    spyOn(websocketMsgSrvMock, 'listRevisionHistory');
+    controller = $controller;
+    rootScope = $rootScope;
     scope = $rootScope.$new();
     $controller('NotebookCtrl', {
       $scope: scope,
+      $routeParams: {noteId: noteMock.id},
       websocketMsgSrv: websocketMsgSrvMock,
       baseUrlSrv: baseUrlSrvMock,
     });
@@ -87,6 +94,43 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.isNoteDirty).toEqual(null);
   });
 
+  it('should request revision history only after note access succeeds', function() {
+    expect(websocketMsgSrvMock.listRevisionHistory).not.toHaveBeenCalled();
+
+    scope.$broadcast('setNoteContent', noteMock);
+    scope.$broadcast('setNoteContent', noteMock);
+
+    expect(websocketMsgSrvMock.listRevisionHistory).toHaveBeenCalledWith(noteMock.id);
+    expect(websocketMsgSrvMock.listRevisionHistory.calls.count()).toEqual(1);
+  });
+
+  it('should not request revision history without a successful note response', function() {
+    scope.$broadcast('setNoteContent', undefined);
+
+    expect(websocketMsgSrvMock.listRevisionHistory).not.toHaveBeenCalled();
+  });
+
+  it('should request revision history only after revision note access succeeds', function() {
+    let revisionScope = rootScope.$new();
+    let revisionId = 'revision-1';
+    spyOn(websocketMsgSrvMock, 'getNoteByRevision');
+    websocketMsgSrvMock.listRevisionHistory.calls.reset();
+
+    controller('NotebookCtrl', {
+      $scope: revisionScope,
+      $routeParams: {noteId: noteMock.id, revisionId: revisionId},
+      websocketMsgSrv: websocketMsgSrvMock,
+      baseUrlSrv: baseUrlSrvMock,
+    });
+
+    expect(websocketMsgSrvMock.getNoteByRevision).toHaveBeenCalledWith(noteMock.id, revisionId);
+    expect(websocketMsgSrvMock.listRevisionHistory).not.toHaveBeenCalled();
+
+    revisionScope.$broadcast('noteRevision', {note: noteMock});
+
+    expect(websocketMsgSrvMock.listRevisionHistory).toHaveBeenCalledWith(noteMock.id);
+  });
+
   it('should first call killSaveTimer() when calling startSaveTimer()', function() {
     expect(scope.saveTimer).toEqual(null);
     spyOn(scope, 'killSaveTimer');
@@ -125,7 +169,6 @@ describe('Controller: NotebookCtrl', function() {
 
   it('should reload note info once per one "setNoteMenu" event', function() {
     spyOn(websocketMsgSrvMock, 'getNote');
-    spyOn(websocketMsgSrvMock, 'listRevisionHistory');
 
     scope.$broadcast('setNoteMenu');
     expect(websocketMsgSrvMock.getNote.calls.count()).toEqual(0);

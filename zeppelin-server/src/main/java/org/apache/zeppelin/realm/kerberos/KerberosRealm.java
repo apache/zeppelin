@@ -509,7 +509,7 @@ public class KerberosRealm extends AuthorizingRealm {
                 isCookiePersistent(), isHttps);
           }
           KerberosToken kerberosToken = new KerberosToken(token.getUserName(), token.toString());
-          SecurityUtils.getSubject().login(kerberosToken);
+          loginIfNecessary(SecurityUtils.getSubject(), kerberosToken);
           doFilter(filterChain, httpRequest, httpResponse);
         }
       } else {
@@ -546,6 +546,20 @@ public class KerberosRealm extends AuthorizingRealm {
         }
       }
     }
+  }
+
+  /**
+   * Preserve the Shiro session when Hadoop's signed Kerberos token identifies the subject that
+   * is already authenticated. Shiro 2 rotates an existing session on every successful login;
+   * re-login on every REST request would therefore invalidate a WebSocket using that session.
+   */
+  void loginIfNecessary(
+      org.apache.shiro.subject.Subject shiroSubject, KerberosToken kerberosToken) {
+    if (shiroSubject.isAuthenticated()
+        && Objects.equals(shiroSubject.getPrincipal(), kerberosToken.getPrincipal())) {
+      return;
+    }
+    shiroSubject.login(kerberosToken);
   }
 
   /**

@@ -27,7 +27,7 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
-import org.apache.shiro.realm.ldap.DefaultLdapContextFactory;
+import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -105,9 +105,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   public LdapContextFactory getLdapContextFactory() {
     if (this.ldapContextFactory == null) {
       LOGGER.debug("No LdapContextFactory specified - creating a default instance.");
-      DefaultLdapContextFactory defaultFactory = new DefaultLdapContextFactory();
-      defaultFactory.setPrincipalSuffix(this.principalSuffix);
-      defaultFactory.setSearchBase(this.searchBase);
+      JndiLdapContextFactory defaultFactory = new JndiLdapContextFactory();
       defaultFactory.setUrl(this.url);
       defaultFactory.setSystemUsername(this.systemUsername);
       defaultFactory.setSystemPassword(getSystemPassword());
@@ -290,6 +288,18 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       roles.put(pair.getValue(), "*");
     }
     return roles;
+  }
+
+  /**
+   * Resolve every role for one principal with a single Active Directory query.
+   *
+   * <p>This is used when Zeppelin captures an authenticated identity for REST or WebSocket.
+   * Calling {@code Subject.hasRole} once per configured role can otherwise repeat the same LDAP
+   * lookup when Shiro authorization caching is disabled.
+   */
+  public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals)
+      throws NamingException {
+    return queryForAuthorizationInfo(principals, getLdapContextFactory());
   }
 
   private Set<String> getRoleNamesForUser(String username, LdapContext ldapContext)

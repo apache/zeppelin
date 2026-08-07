@@ -71,6 +71,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.paragraphWarningDialog = {};
 
   let connectedOnce = false;
+  let revisionHistoryRequestPending = false;
   let isRevisionPath = function(path) {
     let pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
     return pattern.test(path);
@@ -189,12 +190,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   const initNotebook = function() {
     noteVarShareService.clear();
     initializeRevisionSupported();
+    revisionHistoryRequestPending = true;
     if ($routeParams.revisionId) {
       websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
     } else {
       websocketMsgSrv.getNote($routeParams.noteId);
     }
-    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
     let currentRoute = $route.current;
     if (currentRoute) {
       setTimeout(
@@ -211,6 +212,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         1000
       );
     }
+  };
+
+  const requestRevisionHistoryAfterNoteAccess = function() {
+    if (!revisionHistoryRequestPending) {
+      return;
+    }
+    revisionHistoryRequestPending = false;
+    websocketMsgSrv.listRevisionHistory($routeParams.noteId);
   };
 
   initNotebook();
@@ -380,6 +389,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     console.log('received note revision %o', data);
     if (data.note) {
       $scope.note = data.note;
+      requestRevisionHistoryAfterNoteAccess();
       initializeLookAndFeel();
     } else {
       $location.path('/');
@@ -1536,11 +1546,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.$on('setNoteContent', function(event, note) {
-    if (note === undefined) {
+    if (!note) {
       $location.path('/');
+      return;
     }
 
     $scope.note = note;
+    requestRevisionHistoryAfterNoteAccess();
 
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;

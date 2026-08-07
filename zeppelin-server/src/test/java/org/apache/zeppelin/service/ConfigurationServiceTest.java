@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -83,5 +84,14 @@ class ConfigurationServiceTest extends AbstractTestRestApi {
       assertFalse(entry.getKey().contains("password"));
       assertTrue(entry.getKey().startsWith("zeppelin.server"));
     }
+  }
+
+  @Test
+  void websocketClientConfigurationUsesAnExplicitSafeAllowlist() {
+    Map<String, String> properties = configurationService.getClientProperties();
+
+    assertEquals(Map.of(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE.getVarName(),
+        zConf.getWebsocketMaxTextMessageSize()), properties);
   }
 }

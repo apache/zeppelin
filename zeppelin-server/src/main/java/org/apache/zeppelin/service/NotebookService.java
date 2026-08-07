@@ -82,8 +82,9 @@ import org.slf4j.LoggerFactory;
 public class NotebookService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookService.class);
+  private static final String TRASH_PATH = "/" + NoteManager.TRASH_FOLDER;
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+          DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss").withZone(ZoneId.systemDefault());
 
   private final ZeppelinConfiguration zConf;
   private final Notebook notebook;
@@ -108,6 +109,10 @@ public class NotebookService {
     if (StringUtils.isBlank(noteId)) {
       callback.onSuccess(null, context);
     } else {
+      if (!checkPermission(
+          noteId, Permission.READER, Message.OP.GET_HOME_NOTE, context, callback)) {
+        return noteId;
+      }
       notebook.processNote(noteId,
         note -> {
           if (note != null && !checkPermission(noteId, Permission.READER, Message.OP.GET_HOME_NOTE, context,
@@ -133,6 +138,11 @@ public class NotebookService {
                       ServiceContext context,
                       ServiceCallback<Note> callback,
                       NoteProcessor<T> noteProcessor) throws IOException {
+    // Authorize before processNote: a reload reads from the repository and replaces the
+    // shared cache entry, so it must never be triggered by a user who cannot read the note.
+    if (!checkPermission(noteId, Permission.READER, Message.OP.GET_NOTE, context, callback)) {
+      return null;
+    }
     return notebook.processNote(noteId, reload,
       note -> {
         if (note == null) {
@@ -239,9 +249,15 @@ public class NotebookService {
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = NotebookPathValidator.decodeRepeatedly(notePath);
+    notePath = NotebookPathValidator.decodeRepeatedly(notePath)
+        .replace("\r", " ").replace("\n", " ");
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
+    }
+
+    NotebookPathValidator.rejectTraversalSegments(notePath);
+    if (notePath.contains("//")) {
+      throw new IOException("Empty path segments are not allowed");
     }
 
     int pos = notePath.lastIndexOf("/");
@@ -687,13 +703,13 @@ public class NotebookService {
           return null;
         }
 
-        if (!note.getPath().startsWith("/" + NoteManager.TRASH_FOLDER)) {
+        if (!isTrashDescendant(note.getPath())) {
           callback.onFailure(new IOException("Can not restore this note " + note.getPath() +
               " as it is not in trash folder"), context);
           return null;
         }
         try {
-          String destNotePath = note.getPath().replace("/" + NoteManager.TRASH_FOLDER, "");
+          String destNotePath = restoreDestination(note.getPath());
           notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
           callback.onSuccess(note, context);
         } catch (IOException e) {
@@ -709,17 +725,34 @@ public class NotebookService {
                             ServiceContext context,
                             ServiceCallback<Void> callback) throws IOException {
 
-    if (!folderPath.startsWith("/" + NoteManager.TRASH_FOLDER)) {
-      callback.onFailure(new IOException("Can not restore this folder: " + folderPath +
+    String normalizedFolderPath = normalizeNotePath(folderPath);
+    if (!isTrashDescendant(normalizedFolderPath)) {
+      callback.onFailure(new IOException("Can not restore this folder: " + normalizedFolderPath +
           " as it is not in trash folder"), context);
       return;
     }
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        normalizedFolderPath, Permission.WRITER, Message.OP.RESTORE_FOLDER, context, callback);
+    if (authorization == null) {
+      return;
+    }
     try {
-      String destFolderPath = folderPath.replace("/" + NoteManager.TRASH_FOLDER, "");
-      notebook.moveFolder(folderPath, destFolderPath, context.getAutheInfo());
+      String destFolderPath = restoreDestination(normalizedFolderPath);
+      authorizationService.runWithAuthorizationVersion(
+          authorization.getAuthorizationVersion(),
+          () -> {
+            notebook.moveFolder(
+                normalizedFolderPath,
+                destFolderPath,
+                context.getAutheInfo(),
+                authorization.getMetadata().getVersion(),
+                false);
+            return null;
+          });
       callback.onSuccess(null, context);
     } catch (IOException e) {
-      callback.onFailure(new IOException("Fail to restore folder: " + folderPath, e), context);
+      callback.onFailure(
+          new IOException("Fail to restore folder: " + normalizedFolderPath, e), context);
     }
 
   }
@@ -728,8 +761,23 @@ public class NotebookService {
   public void restoreAll(ServiceContext context,
                          ServiceCallback<Void> callback) throws IOException {
 
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        "/" + NoteManager.TRASH_FOLDER,
+        Permission.WRITER,
+        Message.OP.RESTORE_ALL,
+        context,
+        callback);
+    if (authorization == null) {
+      return;
+    }
     try {
-      notebook.restoreAll(context.getAutheInfo());
+      authorizationService.runWithAuthorizationVersion(
+          authorization.getAuthorizationVersion(),
+          () -> {
+            notebook.restoreAll(
+                context.getAutheInfo(), authorization.getMetadata().getVersion());
+            return null;
+          });
       callback.onSuccess(null, context);
     } catch (IOException e) {
       callback.onFailure(new IOException("Fail to restore all", e), context);
@@ -998,6 +1046,10 @@ public class NotebookService {
                               String formName,
                               ServiceContext context,
                               ServiceCallback<Note> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.REMOVE_NOTE_FORMS, context,
+        callback)) {
+      return;
+    }
     notebook.processNote(noteId,
       note -> {
         if (note == null) {
@@ -1024,13 +1076,18 @@ public class NotebookService {
       ServiceContext context,
       ServiceCallback<NotebookRepoWithVersionControl.Revision> callback) throws IOException {
 
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.CHECKPOINT_NOTE, context,
+        callback)) {
+      return null;
+    }
+
     NotebookRepoWithVersionControl.Revision revision = notebook.processNote(noteId,
       note -> {
         if (note == null) {
           callback.onFailure(new NoteNotFoundException(noteId), context);
           return null;
         }
-        if (!checkPermission(noteId, Permission.WRITER, Message.OP.REMOVE_NOTE_FORMS, context,
+        if (!checkPermission(noteId, Permission.WRITER, Message.OP.CHECKPOINT_NOTE, context,
           callback)) {
           return null;
         }
@@ -1046,6 +1103,10 @@ public class NotebookService {
       ServiceContext context,
       ServiceCallback<List<NotebookRepoWithVersionControl.Revision>> callback) throws IOException {
 
+    if (!checkPermission(
+        noteId, Permission.READER, Message.OP.LIST_REVISION_HISTORY, context, callback)) {
+      return null;
+    }
 
     List<NotebookRepoWithVersionControl.Revision> revisions = notebook.processNote(noteId,
       note -> {
@@ -1053,16 +1114,12 @@ public class NotebookService {
           callback.onFailure(new NoteNotFoundException(noteId), context);
           return null;
         }
-        // TODO(zjffdu) Disable checking permission for now, otherwise zeppelin will send 2 AUTH_INFO
-        // message to frontend when frontend try to get note without proper privilege.
-        //    if (!checkPermission(noteId, Permission.READER, Message.OP.LIST_REVISION_HISTORY, context,
-        //        callback)) {
-        //      return null;
-        //    }
         return notebook.listRevisionHistory(noteId, note.getPath(), context.getAutheInfo());
       });
 
-    callback.onSuccess(revisions, context);
+    if (revisions != null) {
+      callback.onSuccess(revisions, context);
+    }
     return revisions;
   }
 
@@ -1071,6 +1128,11 @@ public class NotebookService {
                               String revisionId,
                               ServiceContext context,
                               ServiceCallback<Note> callback) throws IOException {
+
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.SET_NOTE_REVISION, context,
+        callback)) {
+      return;
+    }
 
     notebook.processNote(noteId,
       note -> {
@@ -1103,6 +1165,11 @@ public class NotebookService {
                                 ServiceContext context,
                                 ServiceCallback<Note> callback) throws IOException {
 
+    if (!checkPermission(noteId, Permission.READER, Message.OP.NOTE_REVISION, context,
+        callback)) {
+      return null;
+    }
+
     return notebook.processNote(noteId,
       note -> {
         if (note == null) {
@@ -1125,6 +1192,11 @@ public class NotebookService {
                                           String revisionId,
                                           ServiceContext context,
                                           ServiceCallback<Note> callback) throws IOException {
+
+    if (!checkPermission(noteId, Permission.READER, Message.OP.NOTE_REVISION_FOR_COMPARE, context,
+        callback)) {
+      return;
+    }
 
     notebook.processNote(noteId ,
       note -> {
@@ -1157,6 +1229,10 @@ public class NotebookService {
       ServiceContext context,
       ServiceCallback<List<InterpreterCompletion>> callback) throws IOException {
 
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.COMPLETION, context, callback)) {
+      return null;
+    }
+
     return notebook.processNote(noteId,
       note -> {
         if (note == null) {
@@ -1186,10 +1262,18 @@ public class NotebookService {
                                String paragraphText,
                                ServiceContext context,
                                ServiceCallback<Map<String, Object>> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.READER, Message.OP.EDITOR_SETTING, context, callback)) {
+      return;
+    }
     notebook.processNote(noteId,
       note -> {
         if (note == null) {
           callback.onFailure(new NoteNotFoundException(noteId), context);
+          return null;
+        }
+        if (!checkPermission(
+            noteId, Permission.READER, Message.OP.EDITOR_SETTING, context, callback)) {
+          return null;
         }
         try {
           Map<String, Object> settings = notebook.getInterpreterSettingManager().
@@ -1206,6 +1290,11 @@ public class NotebookService {
                                      boolean isPersonalized,
                                      ServiceContext context,
                                      ServiceCallback<Note> callback) throws IOException {
+
+    if (!checkPermission(noteId, Permission.WRITER, Message.OP.UPDATE_PERSONALIZED_MODE, context,
+        callback)) {
+      return;
+    }
 
     notebook.processNote(noteId,
       note -> {
@@ -1233,10 +1322,8 @@ public class NotebookService {
       return;
     }
 
-    String destNotePath = "/" + NoteManager.TRASH_FOLDER + notebook.getNoteManager().getNotesInfo().get(noteId);
-    if (notebook.containsNote(destNotePath)) {
-      destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
-    }
+    String destNotePath = findAvailableTrashPath(
+        TRASH_PATH + notebook.getNoteManager().getNotesInfo().get(noteId));
 
     final String finalDestNotePath = destNotePath;
 
@@ -1261,25 +1348,58 @@ public class NotebookService {
                               ServiceContext context,
                               ServiceCallback<Void> callback) throws IOException {
 
-    //TODO(zjffdu) folder permission check
-    //TODO(zjffdu) folderPath is relative path, need to fix it in frontend
-    LOGGER.info("Move folder {} to trash", folderPath);
-
-    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
-    if (notebook.containsNote(destFolderPath)) {
-      destFolderPath = destFolderPath + " " +
-          TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
+    String sourceFolderPath = normalizeNotePath(folderPath);
+    if (isTrashPath(sourceFolderPath)) {
+      callback.onFailure(
+          new IOException("Folder is already in the trash: " + sourceFolderPath), context);
+      return;
     }
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        sourceFolderPath,
+        Permission.OWNER,
+        Message.OP.MOVE_FOLDER_TO_TRASH,
+        context,
+        callback);
+    if (authorization == null) {
+      return;
+    }
+    LOGGER.info("Move folder {} to trash", sourceFolderPath);
 
-    notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
+    String destFolderPath = findAvailableTrashPath(TRASH_PATH + sourceFolderPath);
+
+    authorizationService.runWithAuthorizationVersion(
+        authorization.getAuthorizationVersion(),
+        () -> {
+          notebook.moveFolder(
+              sourceFolderPath,
+              destFolderPath,
+              context.getAutheInfo(),
+              authorization.getMetadata().getVersion());
+          return null;
+        });
     callback.onSuccess(null, context);
   }
 
   public void emptyTrash(ServiceContext context,
                          ServiceCallback<Void> callback) throws IOException {
 
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        "/" + NoteManager.TRASH_FOLDER,
+        Permission.OWNER,
+        Message.OP.EMPTY_TRASH,
+        context,
+        callback);
+    if (authorization == null) {
+      return;
+    }
     try {
-      notebook.emptyTrash(context.getAutheInfo());
+      authorizationService.runWithAuthorizationVersion(
+          authorization.getAuthorizationVersion(),
+          () -> {
+            notebook.emptyTrash(
+                context.getAutheInfo(), authorization.getMetadata().getVersion());
+            return null;
+          });
       callback.onSuccess(null, context);
     } catch (IOException e) {
       callback.onFailure(e, context);
@@ -1290,8 +1410,27 @@ public class NotebookService {
   public List<NoteInfo> removeFolder(String folderPath,
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
+    String normalizedFolderPath = normalizeNotePath(folderPath);
+    if (TRASH_PATH.equals(normalizedFolderPath)) {
+      callback.onFailure(
+          new IOException("Use emptyTrash to remove the trash root"), context);
+      return null;
+    }
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        normalizedFolderPath, Permission.OWNER, Message.OP.REMOVE_FOLDER, context, callback);
+    if (authorization == null) {
+      return null;
+    }
     try {
-      notebook.removeFolder(folderPath, context.getAutheInfo());
+      authorizationService.runWithAuthorizationVersion(
+          authorization.getAuthorizationVersion(),
+          () -> {
+            notebook.removeFolder(
+                normalizedFolderPath,
+                context.getAutheInfo(),
+                authorization.getMetadata().getVersion());
+            return null;
+          });
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
@@ -1306,11 +1445,31 @@ public class NotebookService {
                            String newFolderPath,
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
-    //TODO(zjffdu) folder permission check
+    String normalizedFolderPath = normalizeNotePath(folderPath);
+    String normalizedNewFolderPath = normalizeNotePath(newFolderPath);
+    if (isTrashPath(normalizedFolderPath) || isTrashPath(normalizedNewFolderPath)) {
+      callback.onFailure(
+          new IOException("Use the dedicated trash operations for paths under " + TRASH_PATH),
+          context);
+      return null;
+    }
+    FolderPermissionSnapshot authorization = checkFolderPermission(
+        normalizedFolderPath, Permission.OWNER, Message.OP.FOLDER_RENAME, context, callback);
+    if (authorization == null) {
+      return null;
+    }
 
     try {
-      notebook.moveFolder(normalizeNotePath(folderPath),
-              normalizeNotePath(newFolderPath), context.getAutheInfo());
+      authorizationService.runWithAuthorizationVersion(
+          authorization.getAuthorizationVersion(),
+          () -> {
+            notebook.moveFolder(
+                normalizedFolderPath,
+                normalizedNewFolderPath,
+                context.getAutheInfo(),
+                authorization.getMetadata().getVersion());
+            return null;
+          });
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
@@ -1344,8 +1503,8 @@ public class NotebookService {
       Map<String, Object> config = (Map<String, Object>) message.get("config");
       notebook.processNote(noteId,
         note -> {
-          Paragraph p = setParagraphUsingMessage(note, message, paragraphId,
-            text, title, params, config);
+          Paragraph p = setParagraphUsingMessage(note, paragraphId,
+            text, title, params, config, context);
           p.setResult((InterpreterResult) message.get("results"));
           p.setErrorMessage((String) message.get("errorMessage"));
           p.setStatusWithoutNotification(status);
@@ -1389,14 +1548,14 @@ public class NotebookService {
   }
 
 
-  private Paragraph setParagraphUsingMessage(Note note, Message fromMessage, String paragraphId,
+  private Paragraph setParagraphUsingMessage(Note note, String paragraphId,
                                              String text, String title, Map<String, Object> params,
-                                             Map<String, Object> config) {
+                                             Map<String, Object> config,
+                                             ServiceContext context) {
     Paragraph p = note.getParagraph(paragraphId);
     p.setText(text);
     p.setTitle(title);
-    AuthenticationInfo subject =
-        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
+    AuthenticationInfo subject = context.getAutheInfo();
     p.setAuthenticationInfo(subject);
     p.settings.setParams(params);
     p.setConfig(config);
@@ -1418,6 +1577,11 @@ public class NotebookService {
                                   ServiceContext context,
                                   ServiceCallback<AngularObject> callback) throws IOException {
 
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.ANGULAR_OBJECT_UPDATED, context,
+        callback)) {
+      return;
+    }
+
     String user = context.getAutheInfo().getUser();
     AngularObject ao = null;
     boolean global = false;
@@ -1430,6 +1594,10 @@ public class NotebookService {
           return note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
         }
       });
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.ANGULAR_OBJECT_UPDATED, context,
+        callback)) {
+      return;
+    }
     for (InterpreterSetting setting : settings) {
       if (setting.getInterpreterGroup(user, noteId) == null) {
         continue;
@@ -1536,6 +1704,11 @@ public class NotebookService {
                                       Message.OP op,
                                       ServiceContext context,
                                       ServiceCallback<T> callback) throws IOException {
+    // Preserve the API's not-found contract while still failing closed when a live note has
+    // missing authorization metadata. Callers will resolve the absent note and return 404.
+    if (!notebook.containsNoteById(noteId)) {
+      return true;
+    }
     boolean isAllowed = false;
     Set<String> allowed = null;
     switch (permission) {
@@ -1565,6 +1738,86 @@ public class NotebookService {
       callback.onFailure(new ForbiddenException(errorMsg), context);
       return false;
     }
+  }
+
+  private <T> FolderPermissionSnapshot checkFolderPermission(
+      String folderPath,
+      Permission permission,
+      Message.OP op,
+      ServiceContext context,
+      ServiceCallback<T> callback) throws IOException {
+    String normalizedFolderPath = normalizeNotePath(folderPath);
+    String descendantPrefix = normalizedFolderPath + "/";
+    long authorizationVersion = authorizationService.getAuthorizationVersion();
+    NoteManager.NoteMetadataSnapshot metadata =
+        notebook.getNoteManager().getNotesInfoSnapshot();
+    for (Map.Entry<String, String> note : metadata.getNotesInfo().entrySet()) {
+      String notePath = note.getValue();
+      if ((normalizedFolderPath.equals(notePath) || notePath.startsWith(descendantPrefix))
+          && !checkPermission(note.getKey(), permission, op, context, callback)) {
+        return null;
+      }
+    }
+    if (!authorizationService.isAuthorizationVersionCurrent(authorizationVersion)) {
+      callback.onFailure(
+          new IOException("Notebook authorization changed during folder authorization"), context);
+      return null;
+    }
+    return new FolderPermissionSnapshot(metadata, authorizationVersion);
+  }
+
+  private static final class FolderPermissionSnapshot {
+    private final NoteManager.NoteMetadataSnapshot metadata;
+    private final long authorizationVersion;
+
+    private FolderPermissionSnapshot(
+        NoteManager.NoteMetadataSnapshot metadata, long authorizationVersion) {
+      this.metadata = metadata;
+      this.authorizationVersion = authorizationVersion;
+    }
+
+    private NoteManager.NoteMetadataSnapshot getMetadata() {
+      return metadata;
+    }
+
+    private long getAuthorizationVersion() {
+      return authorizationVersion;
+    }
+  }
+
+  private String findAvailableTrashPath(String desiredPath) {
+    if (!pathExists(desiredPath)) {
+      return desiredPath;
+    }
+
+    String timestampedPath = desiredPath + " "
+        + TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
+    String candidate = timestampedPath;
+    int suffix = 2;
+    while (pathExists(candidate)) {
+      candidate = timestampedPath + "-" + suffix++;
+    }
+    return candidate;
+  }
+
+  private boolean pathExists(String path) {
+    return notebook.containsNote(path) || notebook.containsFolder(path);
+  }
+
+  private static boolean isTrashPath(String path) {
+    return TRASH_PATH.equalsIgnoreCase(path)
+        || path.regionMatches(true, 0, TRASH_PATH + "/", 0, TRASH_PATH.length() + 1);
+  }
+
+  private static boolean isTrashDescendant(String path) {
+    return path.regionMatches(true, 0, TRASH_PATH + "/", 0, TRASH_PATH.length() + 1);
+  }
+
+  private static String restoreDestination(String trashPath) throws IOException {
+    if (!isTrashDescendant(trashPath)) {
+      throw new IOException("Path is not in the trash: " + trashPath);
+    }
+    return trashPath.substring(TRASH_PATH.length());
   }
 
 }

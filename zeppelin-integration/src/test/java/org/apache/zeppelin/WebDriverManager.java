@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.TimeoutException;
@@ -41,7 +42,6 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +60,9 @@ import org.slf4j.LoggerFactory;
 public class WebDriverManager implements Closeable {
 
   public final static Logger LOG = LoggerFactory.getLogger(WebDriverManager.class);
+  private static final By WEBSOCKET_CONNECTED =
+      By.xpath("//i[@uib-tooltip='WebSocket Connected']");
+  private static final By LOGIN_BUTTON = By.cssSelector(".nav-login-btn");
 
   final boolean deleteTempFiles;
   final Path logDir;
@@ -75,6 +78,15 @@ public class WebDriverManager implements Closeable {
 
   public WebDriverManager(int port) throws IOException {
     this(true, port);
+  }
+
+  public WebDriverManager(boolean deleteTempFiles, ZeppelinConfiguration zConf)
+      throws IOException {
+    this(deleteTempFiles, configureBrowserOrigin(zConf));
+  }
+
+  public WebDriverManager(ZeppelinConfiguration zConf) throws IOException {
+    this(true, zConf);
   }
 
   public WebDriver getWebDriver() {
@@ -151,20 +163,17 @@ public class WebDriverManager implements Closeable {
 
     long start = System.currentTimeMillis();
     boolean loaded = false;
-    driver.manage().timeouts()
-      .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
+    // Explicit readiness polling must not inherit the normal implicit wait. Otherwise an
+    // authenticated page spends the full implicit timeout looking for the deliberately absent
+    // WebSocket indicator before it can notice that the login UI is ready.
+    driver.manage().timeouts().implicitlyWait(Duration.ZERO);
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, Duration.ofSeconds(60))).until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
-                .isDisplayed();
-          }
-        });
+        (new WebDriverWait(driver, Duration.ofSeconds(60)))
+            .until(d -> isDisplayed(d, WEBSOCKET_CONNECTED) || isDisplayed(d, LOGIN_BUTTON));
         loaded = true;
         break;
       } catch (TimeoutException e) {
@@ -174,6 +183,8 @@ public class WebDriverManager implements Closeable {
     }
 
     assertTrue(loaded);
+    driver.manage().timeouts()
+      .implicitlyWait(Duration.ofSeconds(AbstractZeppelinIT.MAX_IMPLICIT_WAIT));
 
     try {
       // Manually setting fixed window size since `maximize()` crashes for Chrome/Edge driver on linux with xvfb.
@@ -183,6 +194,23 @@ public class WebDriverManager implements Closeable {
     }
 
     return driver;
+  }
+
+  public void waitForWebSocketConnected() {
+    (new WebDriverWait(driver, Duration.ofSeconds(60)))
+        .until(d -> isDisplayed(d, WEBSOCKET_CONNECTED));
+  }
+
+  private static boolean isDisplayed(WebDriver driver, By locator) {
+    return driver.findElements(locator).stream().anyMatch(element -> element.isDisplayed());
+  }
+
+  private static int configureBrowserOrigin(ZeppelinConfiguration zConf) {
+    int port = zConf.getServerPort();
+    zConf.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(),
+        "http://localhost:" + port);
+    return port;
   }
 
   private WebDriver getFirefoxDriver() {

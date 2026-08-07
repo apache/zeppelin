@@ -36,33 +36,38 @@ The entry point of zeppelin client api is class `ZeppelinClient`. All the operat
 
 {% highlight java %}
 ClientConfig clientConfig = new ClientConfig("http://localhost:8080");
-ZeppelinClient zClient = new ZeppelinClient(clientConfig);
+try (ZeppelinClient zClient = new ZeppelinClient(clientConfig)) {
+  String zeppelinVersion = zClient.getVersion();
+  System.out.println("Zeppelin version: " + zeppelinVersion);
 
-String zeppelinVersion = zClient.getVersion();
-System.out.println("Zeppelin version: " + zeppelinVersion);
+  // execute note 2A94M5J1Z paragraph by paragraph
+  try {
+    ParagraphResult paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150210-015259_1403135953");
+    System.out.println("Execute the 1st spark tutorial paragraph, paragraph result: " + paragraphResult);
 
-// execute note 2A94M5J1Z paragraph by paragraph
-try {
-  ParagraphResult paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150210-015259_1403135953");
-  System.out.println("Execute the 1st spark tutorial paragraph, paragraph result: " + paragraphResult);
+    paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150210-015302_1492795503");
+    System.out.println("Execute the 2nd spark tutorial paragraph, paragraph result: " + paragraphResult);
 
-  paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150210-015302_1492795503");
-  System.out.println("Execute the 2nd spark tutorial paragraph, paragraph result: " + paragraphResult);
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("maxAge", "40");
+    paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150212-145404_867439529", parameters);
+    System.out.println("Execute the 3rd spark tutorial paragraph, paragraph result: " + paragraphResult);
 
-  Map<String, String> parameters = new HashMap<>();
-  parameters.put("maxAge", "40");
-  paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150212-145404_867439529", parameters);
-  System.out.println("Execute the 3rd spark tutorial paragraph, paragraph result: " + paragraphResult);
-
-  parameters = new HashMap<>();
-  parameters.put("marital", "married");
-  paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150213-230422_1600658137", parameters);
-  System.out.println("Execute the 4th spark tutorial paragraph, paragraph result: " + paragraphResult);
-} finally {
-  // you need to stop interpreter explicitly if you are running paragraph separately.
-  zClient.stopInterpreter("2A94M5J1Z", "spark");
+    parameters = new HashMap<>();
+    parameters.put("marital", "married");
+    paragraphResult = zClient.executeParagraph("2A94M5J1Z", "20150213-230422_1600658137", parameters);
+    System.out.println("Execute the 4th spark tutorial paragraph, paragraph result: " + paragraphResult);
+  } finally {
+    // you need to stop interpreter explicitly if you are running paragraph separately.
+    zClient.stopInterpreter("2A94M5J1Z", "spark");
+  }
 }
 {% endhighlight %}
+
+Each `ZeppelinClient` owns an isolated HTTP session and connection pool. Close it after use, as in
+the try-with-resources example above. Its REST session cookie is reused automatically when a
+`ZSession` opens the notebook WebSocket. HTTPS and WSS use normal JVM certificate and hostname
+verification; configure the JVM trust store for an internal certificate authority.
 
 Here we list some importance apis of ZeppelinClient, for the completed api, please refer its javadoc.
 

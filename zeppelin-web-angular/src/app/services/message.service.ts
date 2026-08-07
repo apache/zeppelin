@@ -11,8 +11,9 @@
  */
 
 import { Inject, Injectable, OnDestroy, Optional } from '@angular/core';
-import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { Observable, Subscription } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
@@ -41,13 +42,25 @@ import { TicketService } from './ticket.service';
 })
 export class MessageService extends Message implements OnDestroy {
   private readonly localAddFocusMsgIds = new Set<string>();
+  private readonly authenticatedSessionEndedSubscription: Subscription;
 
   constructor(
     private baseUrlService: BaseUrlService,
     private ticketService: TicketService,
+    private router: Router,
     @Optional() @Inject(MESSAGE_INTERCEPTOR) private messageInterceptor: MessageInterceptor
   ) {
     super();
+    this.authenticatedSessionEndedSubscription = super
+      .closed()
+      .pipe(filter(event => event.code === 1008))
+      .subscribe(() => {
+        const returnUrl = this.router.url;
+        this.ticketService.clearTicket();
+        if (!returnUrl.startsWith('/login')) {
+          this.router.navigate(['/login'], { queryParams: { returnUrl } }).then();
+        }
+      });
   }
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
@@ -59,7 +72,7 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   bootstrap(): void {
-    super.bootstrap(this.ticketService.originTicket, this.baseUrlService.getWebsocketUrl());
+    super.bootstrap(this.baseUrlService.getWebsocketUrl());
   }
 
   ping() {
@@ -115,6 +128,7 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.authenticatedSessionEndedSubscription.unsubscribe();
     super.destroy();
   }
 

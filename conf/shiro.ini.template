@@ -78,6 +78,8 @@ user3 = password4, role2
 # authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
 
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+### Match URL rules case-insensitively so case variants cannot bypass a protected chain.
+filterChainResolver.caseInsensitive = true
 
 ### If caching of user is required then uncomment below lines
 #cacheManager = org.apache.shiro.cache.MemoryConstrainedCacheManager
@@ -90,11 +92,13 @@ cookie.httpOnly = true
 ### Restrict the session cookie to same-site requests by default. Set to NONE only when
 ### Zeppelin is intentionally embedded into a different origin (and 'cookie.secure = true').
 cookie.sameSite = LAX
-### Uncomment the below line only when Zeppelin is running over HTTPS
-#cookie.secure = true
+### Shiro emits Secure only for requests that are HTTPS (including correctly forwarded HTTPS).
+cookie.secure = true
 sessionManager.sessionIdCookie = $cookie
 
 securityManager.sessionManager = $sessionManager
+### Zeppelin does not use remember-me authentication. Disable it explicitly until Shiro 3.
+securityManager.rememberMeManager = null
 # 86,400,000 milliseconds = 24 hour
 securityManager.sessionManager.globalSessionTimeout = 86400000
 shiro.loginUrl = /api/login
@@ -115,12 +119,15 @@ admin = *
 #
 # IMPORTANT: Order matters: URL path expressions are evaluated against an incoming request
 # in the order they are defined and the FIRST MATCH WINS.
+# The same Shiro filter handles REST requests and the notebook WebSocket handshake. Keep `/ws`
+# authenticated unless anonymous notebook access is intentional; use `/ws = anon` to opt out.
 #
 # To allow anonymous access to all but the stated urls,
 # uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
 #
 /api/version = anon
 /api/cluster/address = anon
+/ws = authc
 # Allow all authenticated users to restart interpreters on a notebook page.
 # Comment out the following line if you would like to authorize only admin users to restart interpreters.
 /api/interpreter/setting/restart/** = authc

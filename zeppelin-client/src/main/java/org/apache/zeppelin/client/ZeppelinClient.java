@@ -22,58 +22,131 @@ import kong.unirest.GetRequest;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import kong.unirest.UnirestInstance;
 import kong.unirest.apache.ApacheClient;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.zeppelin.common.SessionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import unirest.shaded.org.apache.http.client.CookieStore;
 import unirest.shaded.org.apache.http.client.HttpClient;
+import unirest.shaded.org.apache.http.cookie.ClientCookie;
+import unirest.shaded.org.apache.http.cookie.Cookie;
+import unirest.shaded.org.apache.http.impl.client.BasicCookieStore;
+import unirest.shaded.org.apache.http.impl.client.HttpClientBuilder;
 import unirest.shaded.org.apache.http.impl.client.HttpClients;
 
-import javax.net.ssl.SSLContext;
-import java.security.cert.X509Certificate;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Low level api for interacting with Zeppelin. Underneath, it use the zeppelin rest api.
  * You can use this class to operate Zeppelin note/paragraph,
  * e.g. get/add/delete/update/execute/cancel
  */
-public class ZeppelinClient {
+public class ZeppelinClient implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinClient.class);
 
-  private ClientConfig clientConfig;
+  private final ClientConfig clientConfig;
+  private final UnirestInstance unirest;
+  private final CookieStore cookieStore;
 
   public ZeppelinClient(ClientConfig clientConfig) throws Exception {
     this.clientConfig = clientConfig;
-    Unirest.config().defaultBaseUrl(clientConfig.getZeppelinRestUrl() + "/api");
+    this.unirest = Unirest.spawnInstance();
+    this.cookieStore = new BasicCookieStore();
+    this.unirest.config().defaultBaseUrl(clientConfig.getZeppelinRestUrl() + "/api");
 
-    if (clientConfig.isUseKnox()) {
-      try {
-        SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy() {
-          public boolean isTrusted(X509Certificate[] chain, String authType) {
-            return true;
-          }
-        }).build();
-        HttpClient customHttpClient = HttpClients.custom().setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-        Unirest.config().httpClient(ApacheClient.builder(customHttpClient));
-      } catch (Exception e) {
-        throw new Exception("Fail to setup httpclient of Unirest", e);
-      }
+    try {
+      HttpClientBuilder httpClientBuilder =
+              HttpClients.custom().useSystemProperties().setDefaultCookieStore(cookieStore);
+      HttpClient customHttpClient = httpClientBuilder.build();
+      this.unirest.config().httpClient(ApacheClient.builder(customHttpClient));
+    } catch (Exception e) {
+      throw new Exception("Fail to setup httpclient of Unirest", e);
     }
   }
 
   public ClientConfig getClientConfig() {
     return clientConfig;
+  }
+
+  @Override
+  public void close() {
+    unirest.close();
+  }
+
+  /**
+   * Build the Cookie request header for the supplied WebSocket URI from this client's REST
+   * cookie store. Cookies are scoped to the target scheme, host and path before being exposed.
+   */
+  String getSessionCookieHeader(URI requestUri) {
+    Date now = new Date();
+    String requestHost = requestUri.getHost();
+    String requestPath = requestUri.getRawPath();
+    boolean secureRequest = "wss".equalsIgnoreCase(requestUri.getScheme());
+    if (requestHost == null) {
+      return "";
+    }
+    if (requestPath == null || requestPath.isEmpty()) {
+      requestPath = "/";
+    }
+    final String normalizedRequestPath = requestPath;
+    return cookieStore.getCookies().stream()
+            .filter(cookie -> !cookie.isExpired(now))
+            .filter(cookie -> !cookie.isSecure() || secureRequest)
+            .filter(cookie -> domainMatches(cookie, requestHost))
+            .filter(cookie -> pathMatches(cookie.getPath(), normalizedRequestPath))
+            .sorted(Comparator.comparingInt(
+                    (Cookie cookie) -> normalizedCookiePath(cookie.getPath()).length()).reversed())
+            .map(cookie -> cookie.getName() + "=" + cookie.getValue())
+            .collect(Collectors.joining("; "));
+  }
+
+  private boolean domainMatches(Cookie cookie, String requestHost) {
+    String cookieDomain = cookie.getDomain();
+    if (cookieDomain == null || cookieDomain.isEmpty()) {
+      return false;
+    }
+
+    String normalizedHost = requestHost.toLowerCase(Locale.ROOT);
+    String normalizedDomain = cookieDomain.toLowerCase(Locale.ROOT);
+    if (normalizedDomain.startsWith(".")) {
+      normalizedDomain = normalizedDomain.substring(1);
+    }
+
+    boolean domainAttributePresent = cookie instanceof ClientCookie
+            && ((ClientCookie) cookie).containsAttribute(ClientCookie.DOMAIN_ATTR);
+    if (!domainAttributePresent) {
+      return normalizedHost.equals(normalizedDomain);
+    }
+    return normalizedHost.equals(normalizedDomain)
+            || normalizedHost.endsWith("." + normalizedDomain);
+  }
+
+  private boolean pathMatches(String cookiePath, String requestPath) {
+    String normalizedCookiePath = normalizedCookiePath(cookiePath);
+    if (requestPath.equals(normalizedCookiePath)) {
+      return true;
+    }
+    if (!requestPath.startsWith(normalizedCookiePath)) {
+      return false;
+    }
+    return normalizedCookiePath.endsWith("/")
+            || requestPath.charAt(normalizedCookiePath.length()) == '/';
+  }
+
+  private String normalizedCookiePath(String cookiePath) {
+    return cookiePath == null || cookiePath.isEmpty() ? "/" : cookiePath;
   }
 
   /**
@@ -119,7 +192,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public String getVersion() throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .get("/version")
             .asJson();
     checkResponse(response);
@@ -137,7 +210,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public SessionInfo newSession(String interpreter) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/session")
             .header("Content-Type", "application/json")
             .queryString("interpreter", interpreter)
@@ -155,7 +228,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public void stopSession(String sessionId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .delete("/session/{sessionId}")
             .routeParam("sessionId", sessionId)
             .asJson();
@@ -172,7 +245,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public SessionInfo getSession(String sessionId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .get("/session/{sessionId}")
             .routeParam("sessionId", sessionId)
             .asJson();
@@ -211,7 +284,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public List<SessionInfo> listSessions(String interpreter) throws Exception {
-    GetRequest getRequest = Unirest.get("/session");
+    GetRequest getRequest = unirest.get("/session");
     if (interpreter != null) {
       getRequest.queryString("interpreter", interpreter);
     }
@@ -260,7 +333,7 @@ public class ZeppelinClient {
    */
   public void login(String userName, String password) throws Exception {
     if (clientConfig.isUseKnox()) {
-      HttpResponse<String> response = Unirest.get(clientConfig.getKnoxSSOUrl() +
+      HttpResponse<String> response = unirest.get(clientConfig.getKnoxSSOUrl() +
               "?originalUrl=" + clientConfig.getZeppelinRestUrl())
               .basicAuth(userName, password)
               .asString();
@@ -269,7 +342,7 @@ public class ZeppelinClient {
                 response.getStatus(),
                 response.getStatusText()));
       }
-      response = Unirest.get("/security/ticket")
+      response = unirest.get("/security/ticket")
               .asString();
       if (response.getStatus() != 200) {
         throw new Exception(String.format("Fail to get ticket after Knox SSO, status: %s, statusText: %s",
@@ -277,7 +350,7 @@ public class ZeppelinClient {
                 response.getStatusText()));
       }
     } else {
-      HttpResponse<JsonNode> response = Unirest
+      HttpResponse<JsonNode> response = unirest
               .post("/login")
               .field("userName", userName)
               .field("password", password)
@@ -306,7 +379,7 @@ public class ZeppelinClient {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("notePath", notePath);
     bodyObject.put("defaultInterpreterGroup", defaultInterpreterGroup);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook")
             .header("Content-Type", "application/json")
             .body(bodyObject.toString())
@@ -325,7 +398,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public void deleteNote(String noteId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .delete("/notebook/{noteId}")
             .routeParam("noteId", noteId)
             .asJson();
@@ -345,7 +418,7 @@ public class ZeppelinClient {
   public String cloneNote(String noteId, String destPath) throws Exception {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("name", destPath);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/{noteId}")
             .routeParam("noteId", noteId)
             .header("Content-Type", "application/json")
@@ -362,7 +435,7 @@ public class ZeppelinClient {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("name", newNotePath);
 
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .put("/notebook/{noteId}/rename")
             .routeParam("noteId", noteId)
             .header("Content-Type", "application/json")
@@ -382,7 +455,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public NoteResult queryNoteResult(String noteId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .get("/notebook/{noteId}")
             .routeParam("noteId", noteId)
             .asJson();
@@ -399,7 +472,7 @@ public class ZeppelinClient {
   public NoteResult queryNoteResultByPath(String notePath) throws Exception {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("notePath", notePath);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/getByPath")
             .header("Content-Type", "application/json")
             .body(bodyObject)
@@ -494,7 +567,7 @@ public class ZeppelinClient {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("params", parameters);
     // run note in non-blocking and isolated way.
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/job/{noteId}")
             .routeParam("noteId", noteId)
             .queryString("blocking", "false")
@@ -515,7 +588,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public void cancelNote(String noteId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .delete("/notebook/job/{noteId}")
             .routeParam("noteId", noteId)
             .asJson();
@@ -534,7 +607,7 @@ public class ZeppelinClient {
    */
   public String importNote(String notePath, String noteContent) throws Exception {
     JSONObject bodyObject = new JSONObject(noteContent);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/import")
             .queryString("notePath", notePath)
             .header("Content-Type", "application/json")
@@ -597,7 +670,7 @@ public class ZeppelinClient {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("title", title);
     bodyObject.put("text", text);
-    HttpResponse<JsonNode> response = Unirest.post("/notebook/{noteId}/paragraph")
+    HttpResponse<JsonNode> response = unirest.post("/notebook/{noteId}/paragraph")
             .routeParam("noteId", noteId)
             .header("Content-Type", "application/json")
             .body(bodyObject.toString())
@@ -622,7 +695,7 @@ public class ZeppelinClient {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("title", title);
     bodyObject.put("text", text);
-    HttpResponse<JsonNode> response = Unirest.put("/notebook/{noteId}/paragraph/{paragraphId}")
+    HttpResponse<JsonNode> response = unirest.put("/notebook/{noteId}/paragraph/{paragraphId}")
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
             .header("Content-Type", "application/json")
@@ -712,7 +785,7 @@ public class ZeppelinClient {
                                          Map<String, String> parameters) throws Exception {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("params", parameters);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/job/{noteId}/{paragraphId}")
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
@@ -780,7 +853,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public String nextSessionParagraph(String noteId, int maxParagraph) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .post("/notebook/{noteId}/paragraph/next")
             .routeParam("noteId", noteId)
             .header("Content-Type", "application/json")
@@ -801,7 +874,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public void cancelParagraph(String noteId, String paragraphId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .delete("/notebook/job/{noteId}/{paragraphId}")
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
@@ -820,7 +893,7 @@ public class ZeppelinClient {
    * @throws Exception
    */
   public ParagraphResult queryParagraphResult(String noteId, String paragraphId) throws Exception {
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .get("/notebook/{noteId}/paragraph/{paragraphId}")
             .routeParam("noteId", noteId)
             .routeParam("paragraphId", paragraphId)
@@ -900,7 +973,7 @@ public class ZeppelinClient {
   public void stopInterpreter(String noteId, String interpreter) throws Exception {
     JSONObject bodyObject = new JSONObject();
     bodyObject.put("noteId", noteId);
-    HttpResponse<JsonNode> response = Unirest
+    HttpResponse<JsonNode> response = unirest
             .put("/interpreter/setting/restart/{interpreter}")
             .routeParam("interpreter", interpreter)
             .header("Content-Type", "application/json")

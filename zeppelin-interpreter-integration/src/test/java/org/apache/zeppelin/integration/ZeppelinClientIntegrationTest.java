@@ -75,7 +75,13 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
 
   @AfterAll
   static void destroy() throws Exception {
-    zepServer.destroy();
+    try {
+      if (zeppelinClient != null) {
+        zeppelinClient.close();
+      }
+    } finally {
+      zepServer.destroy();
+    }
   }
 
   @BeforeEach

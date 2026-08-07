@@ -17,14 +17,55 @@
 
 package org.apache.zeppelin.client.websocket;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.net.URI;
 
 class ZeppelinWebSocketClientTest {
+
+  @Test
+  void upgradeRequestIncludesRestSessionCookies() throws Exception {
+    ZeppelinWebSocketClient client = new ZeppelinWebSocketClient(msg -> { });
+
+    ClientUpgradeRequest request = client.createUpgradeRequest(
+            URI.create("wss://knox.example/gateway/default/zeppelin/ws"),
+            "JSESSIONID=session-id; hadoop-jwt=knox-token");
+
+    assertEquals("JSESSIONID=session-id; hadoop-jwt=knox-token",
+            request.getHeader("Cookie"));
+    assertEquals("https://knox.example", request.getHeader("Origin"));
+  }
+
+  @Test
+  void upgradeRequestOmitsCookieHeaderForAnonymousSession() throws Exception {
+    ZeppelinWebSocketClient client = new ZeppelinWebSocketClient(msg -> { });
+
+    ClientUpgradeRequest request = client.createUpgradeRequest(
+            URI.create("ws://localhost:8080/ws"), "  ");
+
+    assertNull(request.getHeader("Cookie"));
+    assertEquals("http://localhost:8080", request.getHeader("Origin"));
+  }
+
+  @Test
+  void upgradeRequestCanonicalizesDefaultOriginPorts() throws Exception {
+    ZeppelinWebSocketClient client = new ZeppelinWebSocketClient(msg -> { });
+
+    ClientUpgradeRequest secure = client.createUpgradeRequest(
+            URI.create("wss://zeppelin.example:443/ws"), null);
+    ClientUpgradeRequest plain = client.createUpgradeRequest(
+            URI.create("ws://zeppelin.example:80/ws"), null);
+
+    assertEquals("https://zeppelin.example", secure.getHeader("Origin"));
+    assertEquals("http://zeppelin.example", plain.getHeader("Origin"));
+  }
 
   @Test
   void connectFailsFastWhenPortClosed() {

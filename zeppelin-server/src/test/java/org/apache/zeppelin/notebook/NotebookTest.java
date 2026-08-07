@@ -1704,10 +1704,14 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   @Test
   void testRemoveFolderFiresNoteRemoveEventForEachNote() throws IOException {
     final AtomicInteger onNoteRemove = new AtomicInteger(0);
+    final AtomicInteger removedNotesSeenByListener = new AtomicInteger(0);
     notebook.addNotebookEventListener(new NoteEventListener() {
       @Override
       public void onNoteRemove(Note note, AuthenticationInfo subject) {
         onNoteRemove.incrementAndGet();
+        if (note.isRemoved()) {
+          removedNotesSeenByListener.incrementAndGet();
+        }
       }
 
       @Override
@@ -1741,6 +1745,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     notebook.removeFolder("/folder1", anonymous);
 
     assertEquals(2, onNoteRemove.get());
+    assertEquals(2, removedNotesSeenByListener.get());
   }
 
   @Test

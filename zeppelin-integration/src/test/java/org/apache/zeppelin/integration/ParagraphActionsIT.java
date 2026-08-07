@@ -62,7 +62,7 @@ class ParagraphActionsIT extends AbstractZeppelinIT {
 
   @BeforeEach
   public void startUp() throws IOException {
-    manager = new WebDriverManager(zepServer.getZeppelinConfiguration().getServerPort());
+    manager = new WebDriverManager(zepServer.getZeppelinConfiguration());
   }
 
   @AfterEach

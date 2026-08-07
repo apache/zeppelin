@@ -82,7 +82,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     "zeppelin.notebook.homescreen": "",
     "zeppelin.notebook.storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo",
     "zeppelin.interpreter.connect.timeout": "30000",
-    "zeppelin.server.allowed.origins":"*",
+    "zeppelin.server.allowed.origins":"",
     "zeppelin.encoding": "UTF-8"
   }
 }

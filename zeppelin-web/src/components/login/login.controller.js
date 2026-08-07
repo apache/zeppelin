@@ -14,7 +14,8 @@
 
 angular.module('zeppelinWebApp').controller('LoginCtrl', LoginCtrl);
 
-function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout) {
+function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, $location, $timeout,
+    websocketEvents) {
   'ngInject';
 
   $scope.SigningIn = false;
@@ -34,9 +35,14 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
     }).then(function successCallback(response) {
       $rootScope.ticket = response.data.body;
       angular.element('#loginModal').modal('toggle');
-      $rootScope.$broadcast('loginSuccess', true);
       $rootScope.userName = $scope.loginParams.userName;
       $scope.SigningIn = false;
+
+      // The authenticated identity is fixed during the WebSocket handshake. Reconnect after
+      // login so the new Shiro session cookie is authenticated before privileged messages run.
+      websocketEvents.reconnect(function() {
+        $rootScope.$broadcast('loginSuccess', true);
+      });
 
       // redirect to the page from where the user originally was
       if ($location.search() && $location.search()['ref']) {
@@ -62,7 +68,7 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
 
   // handle session logout message received from WebSocket
   $rootScope.$on('session_logout', function(event, data) {
-    if ($rootScope.userName !== '') {
+    if ($rootScope.ticket && $rootScope.ticket.principal !== 'anonymous') {
       $rootScope.userName = '';
       $rootScope.ticket = undefined;
 

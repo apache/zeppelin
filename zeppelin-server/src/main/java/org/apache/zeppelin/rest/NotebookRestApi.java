@@ -301,10 +301,7 @@ public class NotebookRestApi extends AbstractRestApi {
           }
         }
 
-        authorizationService.setReaders(noteId, readers);
-        authorizationService.setRunners(noteId, runners);
-        authorizationService.setWriters(noteId, writers);
-        authorizationService.setOwners(noteId, owners);
+        authorizationService.setPermissions(noteId, readers, runners, writers, owners);
         LOGGER.debug("After set permissions {} {} {} {}", authorizationService.getOwners(noteId),
                 authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
                 authorizationService.getWriters(noteId));

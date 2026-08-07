@@ -20,8 +20,5 @@ export interface WebSocketMessage<
 > {
   op: Op;
   data?: T[Op];
-  ticket?: string; // default 'anonymous'
-  principal?: string; // default 'anonymous'
-  roles?: string; // default '[]'
   msgId?: string;
 }
