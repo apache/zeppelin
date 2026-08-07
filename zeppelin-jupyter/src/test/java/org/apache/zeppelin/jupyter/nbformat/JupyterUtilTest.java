@@ -114,4 +114,21 @@ class JupyterUtilTest {
     assertEquals(3 , nbformat.getCells().stream().filter(c -> c instanceof MarkdownCell).count());
     assertEquals(4 , nbformat.getCells().stream().filter(c -> c instanceof CodeCell).count());
   }
+
+  @Test
+  void testGetNbformatKernelspec() {
+    InputStream resource = getClass().getResourceAsStream("/spark_example_notebook.zpln");
+    String text = new BufferedReader(
+        new InputStreamReader(resource, StandardCharsets.UTF_8))
+        .lines()
+        .collect(Collectors.joining("\n"));
+    JupyterUtil util = new JupyterUtil();
+    Nbformat nbformat = util.getNbformat(new StringReader(util.getNbformat(text)));
+
+    Kernelspec kernelspec = nbformat.getMetadata().getKernelspec();
+    assertNotNull(kernelspec);
+    assertEquals("spark2-scala", kernelspec.getName());
+    // display_name is required by the nbformat schema, see ZEPPELIN-6153
+    assertEquals(JupyterUtil.KERNEL_DISPLAY_NAME, kernelspec.getDisplayName());
+  }
 }

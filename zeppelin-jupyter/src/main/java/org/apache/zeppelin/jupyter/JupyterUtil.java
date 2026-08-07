@@ -64,6 +64,8 @@ public class JupyterUtil {
 
   private static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
+  public static final String KERNEL_DISPLAY_NAME = "Zeppelin";
+
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
   private final RuntimeTypeAdapterFactory<Output> outputTypeFactory;
 
@@ -239,6 +241,9 @@ public class JupyterUtil {
     JsonObject kernelspecJson = new JsonObject();
     kernelspecJson.addProperty("language", "scala");
     kernelspecJson.addProperty("name", "spark2-scala");
+    // display_name is required by the nbformat schema. Renderers such as GitHub
+    // fail to display the notebook when it is missing.
+    kernelspecJson.addProperty("display_name", KERNEL_DISPLAY_NAME);
 
     JsonObject languageInfoJson = new JsonObject();
     languageInfoJson.addProperty("codemirror_mode", "text/x-scala");
