@@ -77,6 +77,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -967,6 +968,81 @@ class NotebookServerTest extends AbstractTestRestApi {
         notebook.removeNote(noteId, anonymous);
       }
     }
+  }
+
+  @Test
+  void getInterpreterBindingsRequiresReaderPermission() throws IOException {
+    AuthenticationInfo owner = new AuthenticationInfo("binding-owner");
+    String noteId = notebook.createNote("private-binding-read", owner);
+    try {
+      setNotePermissions(noteId, "binding-owner", "binding-owner");
+      NotebookSocket socket = createWebSocket();
+      Message message = new Message(OP.GET_INTERPRETER_BINDINGS).put("noteId", noteId);
+
+      notebookServer.getInterpreterBindings(socket, serviceContext("binding-attacker"), message);
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+      assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
+
+      reset(socket);
+      setNotePermissions(noteId, "binding-owner", "binding-reader");
+      notebookServer.getInterpreterBindings(socket, serviceContext("binding-reader"), message);
+
+      verify(socket).send(response.capture());
+      assertEquals(OP.INTERPRETER_BINDINGS,
+          notebookServer.deserializeMessage(response.getValue()).op);
+    } finally {
+      notebook.removeNote(noteId, owner);
+    }
+  }
+
+  @Test
+  void saveInterpreterBindingsRequiresWriterPermission() throws IOException {
+    AuthenticationInfo owner = new AuthenticationInfo("binding-owner");
+    String noteId = notebook.createNote("private-binding-write", owner);
+    try {
+      setNotePermissions(noteId, "binding-owner", "binding-reader");
+      String initialGroup = notebook.processNote(noteId, Note::getDefaultInterpreterGroup);
+      String replacementGroup = initialGroup.equals("md") ? "spark" : "md";
+      Message message = new Message(OP.SAVE_INTERPRETER_BINDINGS)
+          .put("noteId", noteId)
+          .put("selectedSettingIds", Arrays.asList(replacementGroup));
+      NotebookSocket socket = createWebSocket();
+
+      notebookServer.saveInterpreterBindings(socket, serviceContext("binding-reader"), message);
+
+      assertEquals(initialGroup,
+          notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+      assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
+
+      reset(socket);
+      authorizationService.setWriters(noteId,
+          new HashSet<>(Arrays.asList("binding-owner", "binding-writer")));
+      notebookServer.saveInterpreterBindings(socket, serviceContext("binding-writer"), message);
+
+      assertEquals(replacementGroup,
+          notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
+      verify(socket).send(response.capture());
+      assertEquals(OP.INTERPRETER_BINDINGS,
+          notebookServer.deserializeMessage(response.getValue()).op);
+    } finally {
+      notebook.removeNote(noteId, owner);
+    }
+  }
+
+  private void setNotePermissions(String noteId, String owner, String reader) throws IOException {
+    authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(owner)));
+    authorizationService.setReaders(noteId, new HashSet<>(Arrays.asList(owner, reader)));
+    authorizationService.setRunners(noteId, new HashSet<>(Arrays.asList(owner)));
+    authorizationService.setWriters(noteId, new HashSet<>(Arrays.asList(owner)));
+  }
+
+  private ServiceContext serviceContext(String user) {
+    return new ServiceContext(new AuthenticationInfo(user),
+        new HashSet<>(Arrays.asList(user)));
   }
 
   @Test
