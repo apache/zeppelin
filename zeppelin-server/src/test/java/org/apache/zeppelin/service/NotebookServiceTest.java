@@ -779,4 +779,39 @@ class NotebookServiceTest {
       assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
   }
+
+  @Test
+  void testUpdateParagraphChecksIsBasedOnCurrentServerText() throws IOException {
+    String noteId = notebookService.createNote("/note_checksum", "test", true, context, callback);
+    String paragraphId = notebook.processNote(noteId, note -> {
+      Paragraph p = note.getParagraph(0);
+      p.setText("server text");
+      return p.getId();
+    });
+
+    // a commit based on the text the server holds is stored
+    notebookService.updateParagraph(noteId, paragraphId, "title", "agreed text",
+        new HashMap<>(), new HashMap<>(), "server text".hashCode(), context, callback);
+    notebook.processNote(noteId, note -> {
+      assertEquals("agreed text", note.getParagraph(paragraphId).getText());
+      return null;
+    });
+
+    // a commit based on text the server no longer holds is rejected, keeping the server copy
+    notebookService.updateParagraph(noteId, paragraphId, "stale title", "diverged text",
+        new HashMap<>(), new HashMap<>(), "text nobody has".hashCode(), context, callback);
+    notebook.processNote(noteId, note -> {
+      assertEquals("agreed text", note.getParagraph(paragraphId).getText());
+      assertEquals("title", note.getParagraph(paragraphId).getTitle());
+      return null;
+    });
+
+    // clients that send no checksum keep the previous behaviour
+    notebookService.updateParagraph(noteId, paragraphId, "no checksum", "text without checksum",
+        new HashMap<>(), new HashMap<>(), context, callback);
+    notebook.processNote(noteId, note -> {
+      assertEquals("text without checksum", note.getParagraph(paragraphId).getText());
+      return null;
+    });
+  }
 }

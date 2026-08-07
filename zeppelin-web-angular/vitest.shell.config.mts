@@ -23,6 +23,15 @@ export default defineConfig({
       legacy: true
     }
   },
+  resolve: {
+    alias: {
+      // The @zeppelin/* aliases live in tsconfig.base.json, which vite does not read, and they
+      // point at dist/ rather than the sources. Mapping the SDK to its source lets specs cover
+      // code that imports from it; other aliases are deliberately left out, since resolving them
+      // pulls in the JIT compiler and monaco.
+      '@zeppelin/sdk': new URL('./projects/zeppelin-sdk/src/public-api.ts', import.meta.url).pathname
+    }
+  },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.ts', 'projects/zeppelin-sdk/**/*.spec.ts', 'projects/zeppelin-visualization/**/*.spec.ts'],
