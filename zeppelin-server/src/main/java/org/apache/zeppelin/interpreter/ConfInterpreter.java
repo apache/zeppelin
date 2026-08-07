@@ -18,11 +18,13 @@
 package org.apache.zeppelin.interpreter;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -67,6 +69,10 @@ public class ConfInterpreter extends Interpreter {
       finalProperties.putAll(getProperties());
       Properties newProperties = new Properties();
       newProperties.load(new StringReader(st));
+      Optional<InterpreterResult> validationError = validateUpdatedProperties(newProperties);
+      if (validationError.isPresent()) {
+        return validationError.get();
+      }
       for (String key : newProperties.stringPropertyNames()) {
         finalProperties.put(key.trim(), newProperties.getProperty(key).trim());
       }
@@ -77,6 +83,21 @@ public class ConfInterpreter extends Interpreter {
       LOGGER.error("Fail to update interpreter setting", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, ExceptionUtils.getStackTrace(e));
     }
+  }
+
+  protected Optional<InterpreterResult> validateUpdatedProperties(Properties updatedProperties) {
+    if (!interpreterSetting.getOption().isUserImpersonate()) {
+      return Optional.empty();
+    }
+    return updatedProperties.stringPropertyNames().stream()
+        .map(String::trim)
+        .filter(RemoteInterpreterUtils::isEnvString)
+        .sorted()
+        .findFirst()
+        .map(environmentVariable -> new InterpreterResult(InterpreterResult.Code.ERROR,
+            "Environment variable '" + environmentVariable
+                + "' cannot be overridden with %conf when user impersonation is enabled. "
+                + "Configure it in the interpreter setting instead."));
   }
 
   @Override
