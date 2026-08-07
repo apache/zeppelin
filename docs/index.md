@@ -107,11 +107,11 @@ limitations under the License.
   * [Data Source Authorization](./setup/security/datasource_authorization.html)
   * [HTTP Security Headers](./setup/security/http_security_headers.html)
 * Notebook Storage: a guide about saving notebooks to external storage
-  * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
-  * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
-  * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
-  * [Google Cloud Storage](./setup/storage/storage.html#notebook-storage-in-gcs)
-  * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
+  * [Git Storage](./setup/storage/notebook_storage.html#Git)
+  * [S3 Storage](./setup/storage/notebook_storage.html#S3)
+  * [Azure Storage](./setup/storage/notebook_storage.html#Azure)
+  * [Google Cloud Storage](./setup/storage/notebook_storage.html#GCS)
+  * [MongoDB Storage](./setup/storage/notebook_storage.html#MongoDB)
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
   * [Monitoring](./setup/operation/monitoring.html): monitoring instructions for Apache Zeppelin
