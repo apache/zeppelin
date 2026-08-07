@@ -751,6 +751,23 @@ public class NotebookService {
                               Map<String, Object> config,
                               ServiceContext context,
                               ServiceCallback<Paragraph> callback) throws IOException {
+    updateParagraph(noteId, paragraphId, title, text, params, config, null, context, callback);
+  }
+
+  /**
+   * @param baseChecksum checksum of the text the client believed the server held, or null to skip
+   *                     the check. When it does not match, the client text is stale or diverged,
+   *                     so it is not stored and the server copy is sent back instead.
+   */
+  public void updateParagraph(String noteId,
+                              String paragraphId,
+                              String title,
+                              String text,
+                              Map<String, Object> params,
+                              Map<String, Object> config,
+                              Integer baseChecksum,
+                              ServiceContext context,
+                              ServiceCallback<Paragraph> callback) throws IOException {
     if (!checkPermission(noteId, Permission.WRITER, Message.OP.COMMIT_PARAGRAPH, context,
         callback)) {
       return;
@@ -765,6 +782,11 @@ public class NotebookService {
         Paragraph p = note.getParagraph(paragraphId);
         if (p == null) {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
+          return null;
+        }
+        if (baseChecksum != null && baseChecksum != checksum(p.getText())) {
+          LOGGER.info("Rejecting stale commit of paragraph {} in note {}", paragraphId, noteId);
+          callback.onSuccess(p, context);
           return null;
         }
         // In personalized mode only the note owner may update the master paragraph, so that
@@ -1527,6 +1549,38 @@ public class NotebookService {
     } catch (IOException e) {
       callback.onFailure(new IOException("Fail to patch", e), context);
     }
+  }
+
+  /**
+   * Resend a single paragraph to a client whose patched text diverged, so that the note as a
+   * whole does not have to be reloaded.
+   */
+  public void getParagraph(String noteId, String paragraphId, ServiceContext context,
+                           ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.READER, Message.OP.GET_PARAGRAPH, context, callback)) {
+      return;
+    }
+    notebook.processNote(noteId,
+      note -> {
+        if (note == null) {
+          callback.onFailure(new NoteNotFoundException(noteId), context);
+          return null;
+        }
+        Paragraph p = note.getParagraph(paragraphId);
+        if (p == null) {
+          callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
+          return null;
+        }
+        callback.onSuccess(p, context);
+        return null;
+      });
+  }
+
+  /**
+   * Same algorithm as {@link String#hashCode()} so that the client can compute it identically.
+   */
+  static int checksum(String text) {
+    return text == null ? "".hashCode() : text.hashCode();
   }
 
 

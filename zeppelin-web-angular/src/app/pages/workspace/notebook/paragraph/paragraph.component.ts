@@ -41,7 +41,8 @@ import {
   Note,
   ParagraphConfigResult,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  textChecksum
 } from '@zeppelin/sdk';
 import {
   HeliumService,
@@ -202,8 +203,10 @@ export class NotebookParagraphComponent
     }
     this.originalText = this.originalText ? this.originalText : '';
     const patch = this.diffMatchPatch.patch_make(this.originalText, this.dirtyText).toString();
+    const baseChecksum = textChecksum(this.originalText);
+    const afterChecksum = textChecksum(this.dirtyText);
     this.originalText = this.dirtyText;
-    this.messageService.patchParagraph(this.paragraph.id, this.note.id, patch);
+    this.messageService.patchParagraph(this.paragraph.id, this.note.id, patch, baseChecksum, afterChecksum);
   }
 
   startSaveTimer() {
@@ -521,7 +524,10 @@ export class NotebookParagraphComponent
       config,
       settings: { params }
     } = this.paragraph;
-    this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    // in collaborative mode let the server reject this commit when our text is based on a
+    // paragraph state the server no longer holds
+    const baseChecksum = this.collaborativeMode ? textChecksum(this.originalText || '') : undefined;
+    this.messageService.commitParagraph(id, title, text, config, params, this.note.id, baseChecksum);
     this.cdr.markForCheck();
   }
 

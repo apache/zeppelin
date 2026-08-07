@@ -201,6 +201,7 @@ public class Message implements JsonSerializable {
     INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
     COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
     PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
+    GET_PARAGRAPH,                // [c-s] resend a single paragraph after a failed patch
     NOTE_RUNNING_STATUS,        // [s-c] sequential run status will be change
     NOTICE                        // [s-c] Notice
   }

@@ -299,13 +299,32 @@ export class MessageService extends Message implements OnDestroy {
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
-    noteId: string
+    noteId: string,
+    baseChecksum?: number
   ): void {
-    super.commitParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId);
+    super.commitParagraph(
+      paragraphId,
+      paragraphTitle,
+      paragraphData,
+      paragraphConfig,
+      paragraphParams,
+      noteId,
+      baseChecksum
+    );
   }
 
-  patchParagraph(paragraphId: string, noteId: string, patch: string): void {
-    super.patchParagraph(paragraphId, noteId, patch);
+  patchParagraph(
+    paragraphId: string,
+    noteId: string,
+    patch: string,
+    baseChecksum?: number,
+    afterChecksum?: number
+  ): void {
+    super.patchParagraph(paragraphId, noteId, patch, baseChecksum, afterChecksum);
+  }
+
+  getParagraph(paragraphId: string, noteId: string): void {
+    super.getParagraph(paragraphId, noteId);
   }
 
   importNote(note: ImportNote['note']): void {

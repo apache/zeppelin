@@ -72,6 +72,7 @@ import {
   ParagraphRemove,
   ParagraphRemoved,
   ParagraphStatus,
+  GetParagraph,
   ParasInfo,
   PatchParagraphReceived,
   PatchParagraphSend,
@@ -108,7 +109,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.IMPORT_NOTE]: ImportNoteReceived;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsSend;
   [OP.PARAGRAPH]: UpdateParagraph;
-  [OP.PATCH_PARAGRAPH]: PatchParagraphSend;
+  [OP.PATCH_PARAGRAPH]: PatchParagraphReceived;
   [OP.PARAGRAPH_REMOVED]: ParagraphRemoved;
   [OP.EDITOR_SETTING]: EditorSettingReceived;
   [OP.PROGRESS]: Progress;
@@ -159,7 +160,8 @@ export interface MessageSendDataTypeMap {
   [OP.PARAGRAPH_CLEAR_ALL_OUTPUT]: ParagraphClearAllOutput;
   [OP.COMPLETION]: Completion;
   [OP.COMMIT_PARAGRAPH]: CommitParagraph;
-  [OP.PATCH_PARAGRAPH]: PatchParagraphReceived;
+  [OP.PATCH_PARAGRAPH]: PatchParagraphSend;
+  [OP.GET_PARAGRAPH]: GetParagraph;
   [OP.IMPORT_NOTE]: ImportNote;
   [OP.CHECKPOINT_NOTE]: CheckpointNote;
   [OP.SET_NOTE_REVISION]: SetNoteRevision;

@@ -479,6 +479,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
         case PATCH_PARAGRAPH:
           patchParagraph(conn, context, receivedMessage);
           break;
+        case GET_PARAGRAPH:
+          getParagraph(conn, context, receivedMessage);
+          break;
         default:
           break;
       }
@@ -1087,8 +1090,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
     String text = (String) fromMessage.get("paragraph");
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
+    Integer baseChecksum = fromMessage.get("baseChecksum") == null
+        ? null : ((Number) fromMessage.get("baseChecksum")).intValue();
 
-    getNotebookService().updateParagraph(noteId, paragraphId, title, text, params, config, context,
+    getNotebookService().updateParagraph(noteId, paragraphId, title, text, params, config,
+        baseChecksum, context,
         new WebSocketServiceCallback<Paragraph>(conn) {
           @Override
           public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
@@ -1126,6 +1132,10 @@ public class NotebookServer implements AngularObjectRegistryListener,
     if (patchText == null) {
       return;
     }
+    // checksums of the sender's text before and after the patch, so receivers can tell whether
+    // their own patchApply produced the same text. Absent for clients that do not send them.
+    Object baseChecksum = fromMessage.get("baseChecksum");
+    Object afterChecksum = fromMessage.get("afterChecksum");
 
     getNotebookService().patchParagraph(noteId, paragraphId, patchText, context,
         new WebSocketServiceCallback<String>(conn) {
@@ -1134,8 +1144,36 @@ public class NotebookServer implements AngularObjectRegistryListener,
             super.onSuccess(result, context);
             Message message = new Message(OP.PATCH_PARAGRAPH)
                 .put("patch", result)
-                .put("paragraphId", paragraphId);
+                .put("paragraphId", paragraphId)
+                .put("noteId", noteId2)
+                .put("baseChecksum", baseChecksum)
+                .put("afterChecksum", afterChecksum);
             connectionManager.broadcastExcept(noteId2, message, conn);
+          }
+        });
+  }
+
+  private void getParagraph(NotebookSocket conn,
+                            ServiceContext context,
+                            Message fromMessage) throws IOException {
+    String paragraphId = fromMessage.getType("id", LOGGER);
+    if (paragraphId == null) {
+      return;
+    }
+    String noteId = connectionManager.getAssociatedNoteId(conn);
+    if (noteId == null) {
+      noteId = fromMessage.getType("noteId", LOGGER);
+      if (noteId == null) {
+        return;
+      }
+    }
+
+    getNotebookService().getParagraph(noteId, paragraphId, context,
+        new WebSocketServiceCallback<Paragraph>(conn) {
+          @Override
+          public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
+            super.onSuccess(p, context);
+            conn.send(serializeMessage(new Message(OP.PARAGRAPH).put("paragraph", p)));
           }
         });
   }

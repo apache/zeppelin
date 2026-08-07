@@ -441,7 +441,8 @@ export class Message {
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
-    noteId: string
+    noteId: string,
+    baseChecksum?: number
   ): void {
     return this.send<OP.COMMIT_PARAGRAPH>(OP.COMMIT_PARAGRAPH, {
       id: paragraphId,
@@ -449,18 +450,34 @@ export class Message {
       title: paragraphTitle,
       paragraph: paragraphData,
       config: paragraphConfig,
-      params: paragraphParams
+      params: paragraphParams,
+      baseChecksum
     });
   }
 
-  patchParagraph(paragraphId: string, noteId: string, patch: string): void {
+  patchParagraph(
+    paragraphId: string,
+    noteId: string,
+    patch: string,
+    baseChecksum?: number,
+    afterChecksum?: number
+  ): void {
     // javascript add "," if change contains several patches
     // but java library requires patch list without ","
     const normalPatch = patch.replace(/,@@/g, '@@');
     return this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
       id: paragraphId,
       noteId,
-      patch: normalPatch
+      patch: normalPatch,
+      baseChecksum,
+      afterChecksum
+    });
+  }
+
+  getParagraph(paragraphId: string, noteId: string): void {
+    return this.send<OP.GET_PARAGRAPH>(OP.GET_PARAGRAPH, {
+      id: paragraphId,
+      noteId
     });
   }
 
