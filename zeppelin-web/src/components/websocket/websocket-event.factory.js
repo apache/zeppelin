@@ -45,7 +45,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
     }
 
     data.msgId = uniqueClientId + '-' + ++lastMsgIdSeqSent;
-    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
+    console.log('Send >> %o, %o', data.op, data.principal);
     return websocketCalls.ws.send(JSON.stringify(data));
   };
 
@@ -59,7 +59,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       payload = angular.fromJson(event.data);
     }
 
-    console.log('Receive << %o, %o', payload.op, payload);
+    console.log('Receive << %o', payload.op);
 
     let op = payload.op;
     let data = payload.data;
