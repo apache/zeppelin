@@ -207,7 +207,8 @@ public class Notebook {
     try {
       thread.join();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOGGER.warn("Paragraph recovery thread interrupted", e);
+      Thread.currentThread().interrupt();
     }
   }
 
