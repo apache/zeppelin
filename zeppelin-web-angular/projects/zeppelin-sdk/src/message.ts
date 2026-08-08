@@ -126,7 +126,7 @@ export class Message {
         retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
       )
       .subscribe(e => {
-        console.log('Receive:', e);
+        console.log('Receive:', e.op);
         this.received$.next(this.interceptReceived(e as WebSocketMessage<MessageReceiveDataTypeMap>));
       });
   }
@@ -166,7 +166,7 @@ export class Message {
       data,
       ...this.ticket
     };
-    console.log('Send:', message);
+    console.log('Send:', message.op, message.principal);
 
     this.ws.next(message);
     this.sent$.next(message);

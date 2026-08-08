@@ -242,7 +242,8 @@ public class LoginRestApi extends AbstractRestApi {
       response = new JsonResponse<>(Response.Status.FORBIDDEN, "", null);
     }
 
-    LOGGER.info(response.toString());
+    LOGGER.info("Login request completed: principal={}, success={}",
+        userName, response.getCode() == Response.Status.OK);
     return response.build();
   }
 
