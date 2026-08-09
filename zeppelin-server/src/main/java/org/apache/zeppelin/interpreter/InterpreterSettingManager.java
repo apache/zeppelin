@@ -611,7 +611,10 @@ public class InterpreterSettingManager implements NoteEventListener {
       try {
         return interpreterSetting.getDefaultInterpreterInfo().getEditor();
       } catch (Exception e) {
-        LOGGER.warn(e.getMessage());
+        LOGGER.warn(
+            "Failed to resolve editor setting for the default interpreter of note {}; "
+                + "using default editor",
+            noteId, e);
         return DEFAULT_EDITOR;
       }
     } else {
@@ -648,7 +651,9 @@ public class InterpreterSettingManager implements NoteEventListener {
             }
             return interpreterSetting.getDefaultInterpreterInfo().getEditor();
           } catch (Exception e) {
-            LOGGER.warn(e.getMessage());
+            LOGGER.warn(
+                "Failed to resolve editor setting for interpreter group {}; using default editor",
+                intpGroupName, e);
             return DEFAULT_EDITOR;
           }
         }
@@ -660,7 +665,10 @@ public class InterpreterSettingManager implements NoteEventListener {
           InterpreterSetting interpreterSetting = getInterpreterSettingByName(intpGroupName);
           return interpreterSetting.getInterpreterInfo(intpName).getEditor();
         } catch (Exception e) {
-          LOGGER.warn(e.getMessage());
+          LOGGER.warn(
+              "Failed to resolve editor setting for interpreter {} in group {}; "
+                  + "using default editor",
+              intpName, intpGroupName, e);
           return DEFAULT_EDITOR;
         }
       }
