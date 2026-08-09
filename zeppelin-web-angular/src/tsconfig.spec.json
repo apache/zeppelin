@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../out-tsc/spec",
+    "types": ["mathjax", "node"]
+  },
+  "include": ["**/*.spec.ts", "../test/test-setup.ts", "../vitest.shell.config.ts"],
+  "exclude": []
+}

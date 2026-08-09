@@ -158,6 +158,24 @@ module.exports = tseslint.config(
     }
   },
   {
+    // Shell unit specs live outside the Angular build tsconfig, which excludes
+    // *.spec.ts. Point type-aware linting at the spec program explicitly.
+    files: ['src/**/*.spec.ts', 'test/test-setup.ts', 'vitest.shell.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./src/tsconfig.spec.json'],
+        tsconfigRootDir: __dirname
+      }
+    }
+  },
+  {
+    // The shell test setup intentionally loads Zone.js for its side effects.
+    files: ['test/test-setup.ts'],
+    rules: {
+      'import/no-unassigned-import': 'off'
+    }
+  },
+  {
     // ZEPPELIN-6325 / ZEPPELIN-6372: keep public-api.ts barrels alphabetically
     // ordered by module specifier. Delegated to eslint-plugin-perfectionist
     // rather than owning a custom statement-reordering fixer.
