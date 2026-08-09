@@ -118,12 +118,10 @@
   "lint-staged": {
     "**/*.ts": [
       "cross-env NODE_OPTIONS='--max-old-space-size=8192' eslint --fix",
-      "./node_modules/.bin/prettier --write",
-      "git add"
+      "./node_modules/.bin/prettier --write"
     ],
     "**/*.{js,json,css,html}": [
-      "./node_modules/.bin/prettier --write",
-      "git add"
+      "./node_modules/.bin/prettier --write"
     ]
   }
 }
