@@ -28,4 +28,12 @@ public class Kernelspec {
 
   @SerializedName("display_name")
   private String displayName;
+
+  public String getName() {
+    return name;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
 }
