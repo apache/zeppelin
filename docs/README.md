@@ -71,11 +71,26 @@ If you wish to help us and contribute to Zeppelin Documentation, please look at 
     bundle exec jekyll build --safe
     ```
 
- 2. checkout ASF repo
+ 2. verify no analytics scripts in the generated output
+
+    ```
+    (
+      grep -rnE --include='*.html' \
+        "google-analytics\.com|googletagmanager\.com|analytics\.js|ga\.js|UA-[0-9]" \
+        _site/
+      case $? in
+        0) echo "FAIL: analytics found"; exit 1 ;;
+        1) ;;
+        *) echo "ERROR: scan failed"; exit 2 ;;
+      esac
+    )
+    ```
+
+ 3. checkout ASF repo
 
     ```
     svn co https://svn.apache.org/repos/asf/zeppelin asf-zeppelin
     ```
 
- 3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
- 4. `svn commit`
+ 4. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
+ 5. `svn commit`
