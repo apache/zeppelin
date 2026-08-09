@@ -620,7 +620,7 @@ The role of registered interpreters, settings and interpreters group are describ
 }            
 ```
 </td>
-    </td>        
+    </tr>        
   </table>  
   
 <br/>

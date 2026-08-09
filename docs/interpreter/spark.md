@@ -132,17 +132,17 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>`SPARK_HOME`</td>
     <td></td>
     <td>Location of spark distribution</td>
-  <tr>
+  </tr>
   <tr>
     <td>spark.master</td>
     <td>local[*]</td>
     <td>Spark master uri. <br/> e.g. spark://master_host:7077</td>
-  <tr>
+  </tr>
   <tr>
     <td>spark.submit.deployMode</td>
     <td></td>
     <td>The deploy mode of Spark driver program, either "client" or "cluster", Which means to launch driver program locally ("client") or remotely ("cluster") on one of the nodes inside the cluster.</td>
-  <tr>
+  </tr>
     <td>spark.app.name</td>
     <td>Zeppelin</td>
     <td>The name of spark application.</td>
