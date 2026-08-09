@@ -23,9 +23,11 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -125,20 +127,33 @@ public interface NotebookRepo extends Closeable {
   /**
    * Get NotebookRepo settings got the given user.
    *
+   * Implementations that don't expose any configurable setting can rely on this default,
+   * which reports that the repo has no settings.
+   *
    * @param subject
    * @return
    */
   @ZeppelinApi
-  List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject);
+  default List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+    LoggerFactory.getLogger(getClass())
+        .debug("getSettings is not implemented for {}", getClass().getSimpleName());
+    return Collections.emptyList();
+  }
 
   /**
    * update notebook repo settings.
+   *
+   * Implementations that don't expose any configurable setting can rely on this default,
+   * which ignores the update and warns about it.
    *
    * @param settings
    * @param subject
    */
   @ZeppelinApi
-  void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
+  default void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
+    LoggerFactory.getLogger(getClass())
+        .warn("updateSettings is not implemented for {}", getClass().getSimpleName());
+  }
 
   NoteParser getNoteParser();
 

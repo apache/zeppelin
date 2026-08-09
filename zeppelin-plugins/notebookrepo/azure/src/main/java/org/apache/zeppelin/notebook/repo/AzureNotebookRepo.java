@@ -28,9 +28,7 @@ import com.microsoft.azure.storage.file.ListFileItem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -173,17 +171,6 @@ public class AzureNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void close() {
-  }
-
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
   }
 
 }
