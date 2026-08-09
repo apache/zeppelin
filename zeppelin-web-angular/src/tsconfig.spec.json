@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["mathjax", "node", "vitest"]
+    "types": ["mathjax", "node"]
   },
   "include": ["app/**/*.ts", "test-setup.ts"],
   "exclude": []

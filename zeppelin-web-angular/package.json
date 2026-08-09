@@ -19,7 +19,7 @@
     "lint:react": "cd projects/zeppelin-react && npm run lint",
     "lint:fix:react": "cd projects/zeppelin-react && npm run lint:fix",
     "test:eslint-rules": "node --test eslint-rules/",
-    "test:shell": "./projects/zeppelin-react/node_modules/.bin/vitest run --config vitest.shell.config.ts",
+    "test:shell": "vitest run --config vitest.shell.config.ts",
     "e2e": "playwright test",
     "e2e:fast": "playwright test --project=chromium",
     "e2e:classic": "playwright test --config playwright.classic.config.js",
@@ -102,6 +102,7 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "https-proxy-agent": "^2.2.1",
     "husky": "9.1.7",
+    "jsdom": "29.1.1",
     "lint-staged": "^15.5.2",
     "monaco-editor-webpack-plugin": "7.0.1",
     "ng-packagr": "^21.2.3",
@@ -111,7 +112,8 @@
     "style-loader": "^4.0.0",
     "ts-node": "~7.0.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.33.1"
+    "typescript-eslint": "^8.33.1",
+    "vitest": "4.1.8"
   },
   "overrides": {
     "@babel/runtime": "^7.27.0"

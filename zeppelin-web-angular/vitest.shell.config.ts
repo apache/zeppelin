@@ -10,10 +10,12 @@
  * limitations under the License.
  */
 
-export default {
+const { defineConfig } = require('vitest/config');
+
+module.exports = defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.ts'],
     setupFiles: ['./src/test-setup.ts']
   }
-};
+});

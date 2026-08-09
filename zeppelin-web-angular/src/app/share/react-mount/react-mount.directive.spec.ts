@@ -13,7 +13,7 @@
 import { ElementRef, NgZone, SimpleChange } from '@angular/core';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AnyExposedModule, ReactMountHandle, ReactProps } from './react-mount-handle';
+import { AnyExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 import { ReactMountDirective } from './react-mount.directive';
 import { ReactRemoteLoaderService } from './react-remote-loader.service';
 
@@ -22,7 +22,9 @@ describe('ReactMountDirective', () => {
     const host = new ElementRef(document.createElement('div'));
     const ngZone = new NgZone({ enableLongStackTrace: false });
     const expectedError = new Error('remote failed');
-    let mountedProps: ReactProps | null = null;
+    const mounted = {
+      props: undefined as (ReactProps & ReactHostCallbacks) | undefined
+    };
     let callbackRanInAngularZone = false;
 
     const handle: ReactMountHandle = {
@@ -31,7 +33,7 @@ describe('ReactMountDirective', () => {
     };
     const exposedModule: AnyExposedModule = {
       mount: (_element: HTMLElement, props: ReactProps): ReactMountHandle => {
-        mountedProps = props;
+        mounted.props = props;
         return handle;
       }
     };
@@ -54,10 +56,13 @@ describe('ReactMountDirective', () => {
     });
 
     await vi.waitFor(() => {
-      expect(mountedProps).not.toBeNull();
+      expect(mounted.props).toBeDefined();
     });
 
-    const onError = mountedProps?.onError;
+    if (mounted.props === undefined) {
+      throw new Error('React remote was not mounted');
+    }
+    const onError = mounted.props.onError;
     expect(onError).toEqual(expect.any(Function));
 
     ngZone.runOutsideAngular(() => {
