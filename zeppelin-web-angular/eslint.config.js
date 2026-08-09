@@ -150,6 +150,27 @@ module.exports = tseslint.config(
     }
   },
   {
+    // Shell unit specs live outside the production app tsconfig so they need
+    // their own parser program for type-aware linting.
+    files: ['src/**/*.spec.ts', 'src/test-setup.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./src/tsconfig.spec.json'],
+        tsconfigRootDir: __dirname
+      }
+    }
+  },
+  {
+    // Root-level tool configs are lint-staged inputs, but they do not belong
+    // to an app tsconfig.
+    files: ['vitest.shell.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: false
+      }
+    }
+  },
+  {
     // Library projects publish under the `lib` selector prefix, not `zeppelin`.
     files: ['projects/zeppelin-sdk/**/*.ts', 'projects/zeppelin-visualization/**/*.ts'],
     rules: {

@@ -53,7 +53,7 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.latestProps = this.reactProps ?? {};
+    this.latestProps = this.wrapHostCallbacks(this.reactProps ?? {});
 
     if (changes.module && !changes.module.firstChange && this.mountedModule) {
       // Module swap after first mount is unsupported. Report via onError
@@ -127,21 +127,29 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     }
   }
 
+  private wrapHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
+    const { onError } = props;
+    if (typeof onError !== 'function') {
+      return props;
+    }
+    return {
+      ...props,
+      onError: (error: unknown) => {
+        this.ngZone.run(() => {
+          try {
+            onError(error);
+          } catch {
+            /* swallow callback errors; they shouldn't loop */
+          }
+        });
+      }
+    };
+  }
+
   private reportError(error: unknown): void {
     const onError = this.latestProps.onError;
     if (typeof onError === 'function') {
-      // Re-enter the Angular zone so onError handlers can safely mutate
-      // host state and trigger change detection. React lifecycle callbacks
-      // (e.g. error boundaries) run outside the zone because we mounted
-      // there; calling back into the host without ngZone.run would leave
-      // markForCheck() with nothing to flush.
-      this.ngZone.run(() => {
-        try {
-          onError(error);
-        } catch {
-          /* swallow callback errors; they shouldn't loop */
-        }
-      });
+      onError(error);
     } else {
       console.error('[ReactMountDirective]', error);
     }
