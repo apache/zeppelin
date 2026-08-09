@@ -142,7 +142,8 @@ Zeppelin service runs on local server, it auto configure itself to use `DockerIn
  - ${ZEPPELIN_HOME}/interpreter/${interpreterGroupName}
  - ${ZEPPELIN_HOME}/conf/zeppelin-site.xml
  - ${ZEPPELIN_HOME}/conf/log4j.properties
- - ${ZEPPELIN\_HOME}/conf/log4j\_yarn_cluster.properties
+ - ${ZEPPELIN_HOME}/conf/log4j2.properties
+ - ${ZEPPELIN_HOME}/conf/log4j_yarn_cluster.properties
  - HADOOP\_CONF_DIR
  - SPARK\_CONF_DIR
  - /etc/krb5.conf

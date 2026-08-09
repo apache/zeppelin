@@ -78,6 +78,11 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     chmod 775 ${ZEPPELIN_HOME} && \
     chmod -R 775 /opt/conda
 
+# These 4 files are all required by bin/common.sh, not obsolete duplicates:
+# log4j.properties / log4j_docker.properties configure reload4j, which backs the
+# server and most interpreters; log4j2.properties / log4j2_docker.properties
+# configure the real Log4j2 core that Flink bundles transitively. The "_docker"
+# variants are only picked up when the ZEPPELIN_IN_DOCKER env var is set.
 COPY log4j.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j_docker.properties ${ZEPPELIN_HOME}/conf/
 COPY log4j2.properties ${ZEPPELIN_HOME}/conf/
