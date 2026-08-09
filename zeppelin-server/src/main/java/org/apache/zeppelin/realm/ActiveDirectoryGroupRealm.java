@@ -27,7 +27,7 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
-import org.apache.shiro.realm.ldap.DefaultLdapContextFactory;
+import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -105,9 +105,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   public LdapContextFactory getLdapContextFactory() {
     if (this.ldapContextFactory == null) {
       LOGGER.debug("No LdapContextFactory specified - creating a default instance.");
-      DefaultLdapContextFactory defaultFactory = new DefaultLdapContextFactory();
-      defaultFactory.setPrincipalSuffix(this.principalSuffix);
-      defaultFactory.setSearchBase(this.searchBase);
+      JndiLdapContextFactory defaultFactory = new JndiLdapContextFactory();
       defaultFactory.setUrl(this.url);
       defaultFactory.setSystemUsername(this.systemUsername);
       defaultFactory.setSystemPassword(getSystemPassword());
