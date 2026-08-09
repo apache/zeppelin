@@ -43,7 +43,6 @@ public class InterpreterProcessStatus {
     this.settingName = setting.getName();
     this.groupId = group.getId();
     this.numSessions = group.getSessionNum();
-    // Read the handle once: another thread may close the group concurrently.
     RemoteInterpreterProcess process = group.getInterpreterProcess();
     this.started = process != null;
     if (started) {

@@ -73,10 +73,7 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   public String getStartTime() {
     return startTime;
   }
-
-  /**
-   * Epoch millis captured at construction, used to compute uptime without a remote call.
-   */
+  
   public long getStartTimeMs() {
     return startTimeMs;
   }

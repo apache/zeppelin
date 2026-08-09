@@ -702,8 +702,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   /**
-   * Snapshot the status of every running interpreter group. Uses in-memory state only (no remote
-   * probe) so a stuck interpreter cannot block this call.
+   * Snapshot the status of every running interpreter group. Uses in-memory state only
    */
   public List<InterpreterProcessStatus> getInterpreterProcessStatuses() {
     List<InterpreterProcessStatus> statuses = new ArrayList<>();
