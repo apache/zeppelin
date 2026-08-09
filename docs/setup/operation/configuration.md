@@ -236,7 +236,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</h6></td>
     <td><h6 class="properties">zeppelin.notebook.homescreen.hide</h6></td>
     <td>false</td>
-    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../usage/other_features/customizing_homepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../../usage/other_features/customizing_homepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_WAR_TEMPDIR</h6></td>
