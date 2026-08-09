@@ -547,7 +547,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     copyFiles.put(
         zeplConfPath + "/zeppelin-site.xml", containerZeplConfPath + "/zeppelin-site.xml");
     copyFiles.put(zeplConfPath + "/log4j.properties", containerZeplConfPath + "/log4j.properties");
-    copyFiles.put(zeplConfPath + "/log4j2.properties", containerZeplConfPath + "/log4j2.properties");
+    copyFiles.put(zeplConfPath + "/log4j2.properties",
+        containerZeplConfPath + "/log4j2.properties");
     copyFiles.put(zeplConfPath + "/log4j_yarn_cluster.properties",
         containerZeplConfPath + "/log4j_yarn_cluster.properties");
 
