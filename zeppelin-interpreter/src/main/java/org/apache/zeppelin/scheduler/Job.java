@@ -89,7 +89,7 @@ public abstract class Job<T> {
   private Date dateFinished;
   protected volatile Status status;
 
-  transient boolean aborted = false;
+  transient volatile boolean aborted = false;
   private volatile String errorMessage;
   private transient volatile Throwable exception;
   private transient JobListener listener;
