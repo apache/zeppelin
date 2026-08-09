@@ -18,6 +18,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -220,6 +224,31 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
+  void testGetEditorFallbackLogging() {
+    Logger logger = Logger.getLogger(InterpreterSettingManager.class);
+    TestAppender appender = new TestAppender();
+    logger.addAppender(appender);
+
+    try {
+      Map<String, Object> editor =
+          interpreterSettingManager.getEditorSetting("%test.nonexistent", note1Id);
+
+      assertEquals("text", editor.get("language"));
+      assertEquals(false, editor.get("editOnDblClick"));
+
+      LoggingEvent warning = appender.getWarnEvent();
+      assertNotNull(warning);
+      assertNotNull(warning.getRenderedMessage());
+      assertTrue(warning.getRenderedMessage().contains("test"));
+      assertTrue(warning.getRenderedMessage().contains("nonexistent"));
+      assertNotNull(warning.getThrowableInformation());
+      assertNotNull(warning.getThrowableInformation().getThrowable());
+    } finally {
+      logger.removeAppender(appender);
+    }
+  }
+
+  @Test
   void testRestartShared() throws InterpreterException {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     interpreterSetting.getOption().setPerUser("shared");
@@ -340,6 +369,31 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     } finally {
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_INCLUDES.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_EXCLUDES.getVarName());
+    }
+  }
+
+  private static class TestAppender extends AppenderSkeleton {
+    private final List<LoggingEvent> events = new ArrayList<>();
+
+    @Override
+    protected void append(LoggingEvent event) {
+      events.add(event);
+    }
+
+    LoggingEvent getWarnEvent() {
+      return events.stream()
+          .filter(event -> Level.WARN.equals(event.getLevel()))
+          .findFirst()
+          .orElse(null);
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public boolean requiresLayout() {
+      return false;
     }
   }
 }
