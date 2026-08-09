@@ -19,12 +19,15 @@
 package org.apache.zeppelin.file;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -177,5 +180,15 @@ class FileInterpreterTest {
     assertTrue(args.flags.contains('a'));
     assertTrue(args.flags.contains('h'));
     assertFalse(args.flags.contains('-'));
+  }
+
+  @Test
+  void testCompletionReturnsEmptyListInsteadOfNull() {
+    TestFileInterpreter interpreter = new TestFileInterpreter(new Properties());
+
+    List<InterpreterCompletion> completions = interpreter.completion("ls", 2, null);
+
+    assertNotNull(completions, "completion() should never return null");
+    assertTrue(completions.isEmpty(), "Default completion() should return an empty list");
   }
 }
