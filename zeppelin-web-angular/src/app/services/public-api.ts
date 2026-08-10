@@ -18,6 +18,7 @@ export * from './completion.service';
 export * from './configuration.service';
 export * from './credential.service';
 export * from './helium.service';
+export * from './inline-completion.service';
 export * from './interpreter.service';
 export * from './job-manager.service';
 export * from './message.service';
