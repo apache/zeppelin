@@ -21,7 +21,9 @@ React micro-frontend that runs alongside the Angular host via [Webpack Module Fe
 The Angular host's `src/app/share/react-mount/` exports two pieces:
 
 - `ReactRemoteLoaderService` — loads `remoteEntry.js` once per page,
-  caches per-module promises, evicts on error.
+  caches per-module promises, evicts on error. The load is bounded by
+  `environment.reactRemoteLoadTimeoutMs`, so a remote that stalls instead
+  of failing still reaches the host's `onError` and its fallback.
 - `ReactMountDirective` — owns the host element, mounts outside the
   Angular zone, forwards `[reactProps]` changes through
   `handle.update(...)`, and unmounts on destroy. Re-checks `destroyed`
