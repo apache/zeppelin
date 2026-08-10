@@ -19,6 +19,7 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +68,7 @@ import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -88,6 +91,7 @@ class NotebookServiceTest {
   private File confDir;
   private SearchService searchService;
   private Notebook notebook;
+  private AuthorizationService authorizationService;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -136,8 +140,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
-    AuthorizationService authorizationService =
-        new AuthorizationService(noteManager, zConf, storage);
+    authorizationService = new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
             zConf,
@@ -408,6 +411,115 @@ class NotebookServiceTest {
 
     notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(0, notesInfo.size());
+  }
+
+  @Test
+  void testFolderOperationsRequirePermissionOnEveryNote() throws IOException {
+    ServiceContext user1 = userContext("user1");
+    ServiceContext user2 = userContext("user2");
+
+    // note2 sits in a sub folder, so it is only reached by walking the folder recursively
+    String note1Id = notebookService.createNote("/folder_1/note1", "test", true, user1, callback);
+    String note2Id =
+        notebookService.createNote("/folder_1/nested/note2", "test", true, user1, callback);
+    // user2 owns one of the two notes
+    authorizationService.setOwners(note1Id, new HashSet<>(Arrays.asList("user1", "user2")));
+    assertTrue(authorizationService.isOwner(note1Id, user2.getUserAndRoles()));
+    assertFalse(authorizationService.isOwner(note2Id, user2.getUserAndRoles()));
+
+    reset(callback);
+    assertNull(notebookService.renameFolder("/folder_1", "/folder_2", user2, callback));
+    assertForbidden();
+
+    reset(callback);
+    notebookService.moveFolderToTrash("folder_1", user2, callback);
+    assertForbidden();
+
+    reset(callback);
+    assertNull(notebookService.removeFolder("/folder_1", user2, callback));
+    String errorMsg = assertForbidden();
+    // the message names the folder but not the note that blocked the call
+    assertTrue(errorMsg.contains("/folder_1"), errorMsg);
+    assertFalse(errorMsg.contains("note2"), errorMsg);
+
+    // nothing was applied
+    reset(callback);
+    List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, user1, callback);
+    assertEquals(new HashSet<>(Arrays.asList("/folder_1/note1", "/folder_1/nested/note2")),
+        notesInfo.stream().map(NoteInfo::getPath).collect(Collectors.toSet()));
+
+    // the owner of every note succeeds
+    reset(callback);
+    notesInfo = notebookService.renameFolder("/folder_1", "/folder_2", user1, callback);
+    verify(callback).onSuccess(notesInfo, user1);
+    assertEquals(new HashSet<>(Arrays.asList("/folder_2/note1", "/folder_2/nested/note2")),
+        notesInfo.stream().map(NoteInfo::getPath).collect(Collectors.toSet()));
+
+    reset(callback);
+    notesInfo = notebookService.removeFolder("/folder_2", user1, callback);
+    verify(callback).onSuccess(notesInfo, user1);
+    assertEquals(0, notesInfo.size());
+  }
+
+  @Test
+  void testRestoreFolderRequiresWriterPermission() throws IOException {
+    ServiceContext user1 = userContext("user1");
+    ServiceContext user2 = userContext("user2");
+    ServiceContext user3 = userContext("user3");
+
+    String noteId = notebookService.createNote("/Backup/note1", "test", true, user1, callback);
+    // user2 may write the note, user3 may only read it
+    authorizationService.setWriters(noteId, new HashSet<>(Arrays.asList("user1", "user2")));
+    authorizationService.setReaders(noteId,
+        new HashSet<>(Arrays.asList("user1", "user2", "user3")));
+    assertTrue(authorizationService.isReader(noteId, user3.getUserAndRoles()));
+    assertFalse(authorizationService.isWriter(noteId, user3.getUserAndRoles()));
+    assertTrue(authorizationService.isWriter(noteId, user2.getUserAndRoles()));
+    notebookService.moveFolderToTrash("Backup", user1, callback);
+
+    // a reader is not enough
+    reset(callback);
+    notebookService.restoreFolder("/~Trash/Backup", user3, callback);
+    assertForbidden();
+
+    // a writer is, like RESTORE_NOTE
+    reset(callback);
+    notebookService.restoreFolder("/~Trash/Backup", user2, callback);
+    verify(callback).onSuccess(null, user2);
+    notebookService.getNote(noteId, user2, callback,
+        restoredNote -> {
+          assertEquals("/Backup/note1", restoredNote.getPath());
+          return null;
+        });
+  }
+
+  @Test
+  void testRemoveFolderHoldingNoNoteIsAllowed() throws IOException {
+    ServiceContext user1 = userContext("user1");
+    ServiceContext user2 = userContext("user2");
+
+    String noteId = notebookService.createNote("/folder_1/note1", "test", true, user1, callback);
+    // removing the last note leaves the folder itself in the tree
+    notebookService.removeNote(noteId, user1, callback);
+
+    reset(callback);
+    List<NoteInfo> notesInfo = notebookService.removeFolder("/folder_1", user2, callback);
+    verify(callback).onSuccess(notesInfo, user2);
+    assertEquals(0, notesInfo.size());
+  }
+
+  private ServiceContext userContext(String user) {
+    return new ServiceContext(new AuthenticationInfo(user),
+        new HashSet<>(Arrays.asList(user)));
+  }
+
+  // returns the message the caller would receive, to check what it does not reveal
+  private String assertForbidden() throws IOException {
+    ArgumentCaptor<Exception> exception = ArgumentCaptor.forClass(Exception.class);
+    verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
+    assertTrue(exception.getValue() instanceof ForbiddenException,
+        "Expected a ForbiddenException but got: " + exception.getValue());
+    return ((ForbiddenException) exception.getValue()).getResponse().getEntity().toString();
   }
 
   @Test

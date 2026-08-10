@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -72,11 +73,13 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -921,6 +924,54 @@ class NotebookServerTest extends AbstractTestRestApi {
         notebook.removeNote(noteId, anonymous);
       }
     }
+  }
+
+  @Test
+  void testRemoveFolderRequiresOwnerOnEveryNote() throws IOException {
+    String note1Id = null;
+    String note2Id = null;
+    try {
+      note1Id = notebook.createNote("/ws_folder/note1", anonymous);
+      note2Id = notebook.createNote("/ws_folder/note2", anonymous);
+      // user1 owns only one of the two notes
+      authorizationService.setOwners(note1Id, new HashSet<>(Arrays.asList("user1")));
+      authorizationService.setOwners(note2Id, new HashSet<>(Arrays.asList("user2")));
+
+      NotebookSocket sock = createWebSocket();
+      notebookServer.onMessage(sock, removeFolderMessage("ws_folder", "user1"));
+
+      // the notes survive and the client is told why
+      assertTrue(notebook.containsNote("/ws_folder/note1"));
+      assertTrue(notebook.containsNote("/ws_folder/note2"));
+      ArgumentCaptor<String> sent = ArgumentCaptor.forClass(String.class);
+      verify(sock, atLeastOnce()).send(sent.capture());
+      assertTrue(sent.getAllValues().stream().anyMatch(m -> m.contains(OP.AUTH_INFO.name())),
+          "Expected an AUTH_INFO message, but got: " + sent.getAllValues());
+
+      // the owner of every note succeeds
+      authorizationService.setOwners(note2Id, new HashSet<>(Arrays.asList("user1")));
+      notebookServer.onMessage(createWebSocket(), removeFolderMessage("ws_folder", "user1"));
+      assertFalse(notebook.containsNote("/ws_folder/note1"));
+      assertFalse(notebook.containsNote("/ws_folder/note2"));
+      note1Id = null;
+      note2Id = null;
+    } finally {
+      if (note1Id != null) {
+        notebook.removeNote(note1Id, anonymous);
+      }
+      if (note2Id != null) {
+        notebook.removeNote(note2Id, anonymous);
+      }
+    }
+  }
+
+  private String removeFolderMessage(String folderPath, String principal) {
+    String ticket = TicketContainer.instance.getTicket(principal,
+        new HashSet<>(Arrays.asList(principal)));
+    Message message = new Message(OP.REMOVE_FOLDER).put("id", folderPath);
+    message.principal = principal;
+    message.ticket = ticket;
+    return message.toJson();
   }
 
   @Test
