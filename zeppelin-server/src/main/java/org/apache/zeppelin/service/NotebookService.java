@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -452,14 +453,19 @@ public class NotebookService {
       callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
-    p.setText(text);
-    p.setTitle(title);
-    p.setAuthenticationInfo(context.getAutheInfo());
-    if (params != null && !params.isEmpty()) {
-      p.settings.setParams(params);
-    }
-    if (config != null && !config.isEmpty()) {
-      p.mergeConfig(config);
+    // In personalized mode only the note owner may update the master paragraph, so that
+    // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+    if (!note.isPersonalizedMode()
+        || authorizationService.isOwner(note.getId(), context.getUserAndRoles())) {
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(context.getAutheInfo());
+      if (params != null && !params.isEmpty()) {
+        p.settings.setParams(params);
+      }
+      if (config != null && !config.isEmpty()) {
+        p.mergeConfig(config);
+      }
     }
 
     if (note.isPersonalizedMode()) {
@@ -761,10 +767,15 @@ public class NotebookService {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
           return null;
         }
-        p.settings.setParams(params);
-        p.mergeConfig(config);
-        p.setTitle(title);
-        p.setText(text);
+        // In personalized mode only the note owner may update the master paragraph, so that
+        // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+        if (!note.isPersonalizedMode()
+            || authorizationService.isOwner(noteId, context.getUserAndRoles())) {
+          p.settings.setParams(params);
+          p.mergeConfig(config);
+          p.setTitle(title);
+          p.setText(text);
+        }
         if (note.isPersonalizedMode()) {
           p = p.getUserParagraph(context.getAutheInfo().getUser());
           p.settings.setParams(params);
@@ -1393,16 +1404,21 @@ public class NotebookService {
                                              String text, String title, Map<String, Object> params,
                                              Map<String, Object> config) {
     Paragraph p = note.getParagraph(paragraphId);
-    p.setText(text);
-    p.setTitle(title);
     AuthenticationInfo subject =
         new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
-    p.setAuthenticationInfo(subject);
-    p.settings.setParams(params);
-    p.setConfig(config);
+    // In personalized mode only the note owner may update the master paragraph, so that
+    // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+    if (!note.isPersonalizedMode()
+        || authorizationService.isOwner(note.getId(), new HashSet<>(subject.getUsersAndRoles()))) {
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(subject);
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(subject.getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(subject);

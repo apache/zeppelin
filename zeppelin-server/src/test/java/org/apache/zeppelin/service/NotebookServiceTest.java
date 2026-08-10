@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +89,7 @@ class NotebookServiceTest {
   private File confDir;
   private SearchService searchService;
   private Notebook notebook;
+  private AuthorizationService authorizationService;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -136,8 +138,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
-    AuthorizationService authorizationService =
-        new AuthorizationService(noteManager, zConf, storage);
+    authorizationService = new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
             zConf,
@@ -586,6 +587,88 @@ class NotebookServiceTest {
     notebookService.clearParagraphOutput(note1Id, p.getId(), context, callback);
     assertNull(p.getReturn());
     verify(callback).onSuccess(p, context);
+  }
+
+  @Test
+  void testRunParagraphInPersonalizedModeDoesNotPolluteMasterParagraph() throws IOException {
+    String note1Id = notebookService.createNote("/note_personalized", "test", true, context, callback);
+    // make "admin" the note owner so that "user1" below is a non-owner
+    authorizationService.setOwners(note1Id, Collections.singleton("admin"));
+    Map<String, Object> masterParams = new HashMap<>();
+    masterParams.put("name", "master");
+    String paragraphId = notebook.processNote(note1Id,
+      note1 -> {
+        note1.setPersonalizedMode(true);
+        Paragraph p = note1.getParagraph(0);
+        p.setText("1+1");
+        p.settings.setParams(masterParams);
+        return p.getId();
+      });
+
+    ServiceContext user1Context = new ServiceContext(new AuthenticationInfo("user1"),
+        new HashSet<>(Collections.singleton("user1")));
+    Map<String, Object> user1Params = new HashMap<>();
+    user1Params.put("name", "user1");
+
+    reset(callback);
+    boolean runStatus = notebook.processNote(note1Id,
+      note1 -> {
+        return notebookService.runParagraph(note1, paragraphId, "user1_title", "1+1",
+          user1Params, new HashMap<>(), null, false, true, user1Context, callback);
+      });
+    assertTrue(runStatus);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1Params, user1Paragraph.settings.getParams());
+        assertEquals("user1_title", user1Paragraph.getTitle());
+        return null;
+      });
+
+    // updateParagraph must not pollute the master paragraph either
+    reset(callback);
+    Map<String, Object> user1UpdatedParams = new HashMap<>();
+    user1UpdatedParams.put("name", "user1_updated");
+    notebookService.updateParagraph(note1Id, paragraphId, "user1_updated_title", "1+1",
+        user1UpdatedParams, new HashMap<>(), user1Context, callback);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
+        assertEquals("user1_updated_title", user1Paragraph.getTitle());
+        return null;
+      });
+
+    // the note owner's changes must reach the master paragraph so new users inherit them
+    reset(callback);
+    ServiceContext adminContext = new ServiceContext(new AuthenticationInfo("admin"),
+        new HashSet<>(Collections.singleton("admin")));
+    Map<String, Object> adminParams = new HashMap<>();
+    adminParams.put("name", "admin");
+    notebookService.updateParagraph(note1Id, paragraphId, "admin_title", "1+1",
+        adminParams, new HashMap<>(), adminContext, callback);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(adminParams, master.settings.getParams());
+        assertEquals("admin_title", master.getTitle());
+        Paragraph adminParagraph = master.getUserParagraph("admin");
+        assertEquals(adminParams, adminParagraph.settings.getParams());
+        assertEquals("admin_title", adminParagraph.getTitle());
+        // the non-owner's personal copy must keep their own values
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
+        return null;
+      });
   }
 
   @Test
