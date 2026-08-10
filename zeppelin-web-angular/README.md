@@ -53,7 +53,7 @@ Run `npm run build` to build the project. The build artifacts will be stored in 
 
 ### Running Unit Tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `npm run test:shell` to execute the Angular shell unit tests via [Vitest](https://vitest.dev).
 
 ## Implementation Progress
 
