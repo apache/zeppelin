@@ -38,7 +38,7 @@ module.exports = tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' }
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,mts}'],
     // == legacy `plugin:@angular-eslint/recommended` (sets the TS parser and
     // the @angular-eslint plugin). The @typescript-eslint plugin is registered
     // separately below because tsRecommended does not bring it in.

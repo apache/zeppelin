@@ -119,7 +119,7 @@
     "@babel/runtime": "^7.27.0"
   },
   "lint-staged": {
-    "**/*.ts": [
+    "**/*.{ts,mts}": [
       "cross-env NODE_OPTIONS='--max-old-space-size=8192' eslint --fix",
       "./node_modules/.bin/prettier --write",
       "git add"

@@ -21,7 +21,8 @@ describe('ReactMountDirective', () => {
   it('mounts React remotes outside the Angular zone without TestBed', async () => {
     const host = new ElementRef<HTMLElement>(document.createElement('div'));
     const ngZone = new NgZone({});
-    const zoneStates: boolean[] = [];
+    const mountedOutsideZone: boolean[] = [];
+    let insideRunOutsideAngular = false;
     const unmount = vi.fn();
     const mountHandle: ReactMountHandle = {
       update: vi.fn(),
@@ -29,22 +30,33 @@ describe('ReactMountDirective', () => {
     };
     const remote: ReactExposedModule = {
       mount: (_element: HTMLElement, _props: ReactProps) => {
-        zoneStates.push(NgZone.isInAngularZone());
+        mountedOutsideZone.push(insideRunOutsideAngular);
         return mountHandle;
       }
     };
     const loadModule = vi.fn(async <T>(): Promise<T> => remote as T);
     const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
+    // zone.js cannot patch the native async/await vitest emits.
+    // isInAngularZone() is therefore always false past the await.
+    const runOutsideAngular = ngZone.runOutsideAngular.bind(ngZone);
+    vi.spyOn(ngZone, 'runOutsideAngular').mockImplementation((fn: () => unknown) => {
+      insideRunOutsideAngular = true;
+      try {
+        return runOutsideAngular(fn);
+      } finally {
+        insideRunOutsideAngular = false;
+      }
+    });
     const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
 
     directive.module = 'paragraph-footer';
     directive.ngOnChanges({
       module: new SimpleChange(undefined, directive.module, true)
     });
-    await vi.waitFor(() => expect(zoneStates).toHaveLength(1));
+    await vi.waitFor(() => expect(mountedOutsideZone).toHaveLength(1));
 
     expect(loadModule).toHaveBeenCalledWith('paragraph-footer');
-    expect(zoneStates).toEqual([false]);
+    expect(mountedOutsideZone).toEqual([true]);
 
     directive.ngOnDestroy();
 
