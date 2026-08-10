@@ -187,11 +187,9 @@ public class NoteManager {
     if (note.isRemoved()) {
       LOGGER.warn("Try to save note: {} when it is removed", note.getId());
     } else {
-      addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), false);
-      noteCache.putNote(note);
-      // Make sure to execute `notebookRepo.save()` successfully in concurrent context
-      // Otherwise, the NullPointerException will be thrown when invoking notebookRepo.get() in the following operations.
       synchronized (this) {
+        addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), false);
+        noteCache.putNote(note);
         this.notebookRepo.save(note, subject);
       }
     }
@@ -220,12 +218,14 @@ public class NoteManager {
    * @throws IOException
    */
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
-    NoteTree tree = this.noteTree;
-    String notePath = tree.notesInfo.remove(noteId);
-    Folder folder = getOrCreateFolder(tree, getFolderName(notePath));
-    folder.removeNote(getNoteName(notePath));
-    noteCache.removeNote(noteId);
-    this.notebookRepo.remove(noteId, notePath, subject);
+    synchronized (this) {
+      NoteTree tree = this.noteTree;
+      String notePath = tree.notesInfo.remove(noteId);
+      Folder folder = getOrCreateFolder(tree, getFolderName(notePath));
+      folder.removeNote(getNoteName(notePath));
+      noteCache.removeNote(noteId);
+      this.notebookRepo.remove(noteId, notePath, subject);
+    }
   }
 
   public void moveNote(String noteId,
@@ -235,33 +235,37 @@ public class NoteManager {
       throw new IOException("No metadata found for this note: " + noteId);
     }
 
-    NoteTree tree = this.noteTree;
-    if (!isNotePathAvailable(tree, newNotePath)) {
-      throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
-    }
+    String notePath;
+    synchronized (this) {
+      NoteTree tree = this.noteTree;
+      if (!isNotePathAvailable(tree, newNotePath)) {
+        throw new NotePathAlreadyExistsException("Note '" + newNotePath + "' existed");
+      }
 
-    // move the old NoteNode from notePath to newNotePath
-    String notePath = tree.notesInfo.get(noteId);
-    NoteNode noteNode = getNoteNode(tree, notePath);
-    noteNode.getParent().removeNote(getNoteName(notePath));
-    noteNode.setNotePath(newNotePath);
-    String newParent = getFolderName(newNotePath);
-    Folder newFolder = getOrCreateFolder(tree, newParent);
-    newFolder.addNoteNode(noteNode);
+      // move the old NoteNode from notePath to newNotePath
+      notePath = tree.notesInfo.get(noteId);
+      NoteNode noteNode = getNoteNode(tree, notePath);
+      noteNode.getParent().removeNote(getNoteName(notePath));
+      noteNode.setNotePath(newNotePath);
+      String newParent = getFolderName(newNotePath);
+      Folder newFolder = getOrCreateFolder(tree, newParent);
+      newFolder.addNoteNode(noteNode);
 
-    // update noteInfo mapping
-    tree.notesInfo.put(noteId, newNotePath);
+      // update noteInfo mapping
+      tree.notesInfo.put(noteId, newNotePath);
 
-    // update notebookrepo
-    this.notebookRepo.move(noteId, notePath, newNotePath, subject);
+      // update notebookrepo
+      this.notebookRepo.move(noteId, notePath, newNotePath, subject);
 
-    // Update path of the note
-    if (!StringUtils.equals(notePath, newNotePath)) {
-      processNote(noteId,
-        note -> {
-          note.setPath(newNotePath);
-          return null;
-        });
+      // Update path of the note. Access the cache directly to avoid the readLock and the
+      // disk load that processNote would add while we hold this monitor. The reverse edge
+      // via noteCache.putNote() -> LRU eviction is safe: NoteCache only ever tryLock()s.
+      if (!StringUtils.equals(notePath, newNotePath)) {
+        Note cachedNote = noteCache.getNote(noteId);
+        if (cachedNote != null) {
+          cachedNote.setPath(newNotePath);
+        }
+      }
     }
 
     // save note if note name is changed, because we need to update the note field in note json.
@@ -270,7 +274,19 @@ public class NoteManager {
     if (!StringUtils.equals(oldNoteName, newNoteName)) {
       processNote(noteId,
         note -> {
-          this.notebookRepo.save(note, subject);
+          // null when the noteId already left the mapping, e.g. a concurrent remove.
+          if (note == null) {
+            return null;
+          }
+          // newNotePath was fixed at method entry, so re-read the current path and save
+          // it under the same monitor to keep a concurrent move out of the gap.
+          synchronized (this) {
+            String currentPath = this.noteTree.notesInfo.get(noteId);
+            if (currentPath != null) {
+              note.setPath(currentPath);
+              saveNote(note, subject);
+            }
+          }
           return null;
         });
     }
@@ -279,20 +295,21 @@ public class NoteManager {
   public void moveFolder(String folderPath,
                          String newFolderPath,
                          AuthenticationInfo subject) throws IOException {
+    synchronized (this) {
+      // update notebookrepo
+      this.notebookRepo.move(folderPath, newFolderPath, subject);
 
-    // update notebookrepo
-    this.notebookRepo.move(folderPath, newFolderPath, subject);
+      // update filesystem tree
+      NoteTree tree = this.noteTree;
+      Folder folder = getFolder(tree, folderPath);
+      folder.getParent().removeFolder(folder.getName(), subject);
+      Folder newFolder = getOrCreateFolder(tree, newFolderPath);
+      newFolder.getParent().addFolder(newFolder.getName(), folder);
 
-    // update filesystem tree
-    NoteTree tree = this.noteTree;
-    Folder folder = getFolder(tree, folderPath);
-    folder.getParent().removeFolder(folder.getName(), subject);
-    Folder newFolder = getOrCreateFolder(tree, newFolderPath);
-    newFolder.getParent().addFolder(newFolder.getName(), folder);
-
-    // update notesInfo
-    for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
-      tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
+      // update notesInfo
+      for (NoteInfo noteInfo : folder.getNoteInfoRecursively()) {
+        tree.notesInfo.put(noteInfo.getId(), noteInfo.getPath());
+      }
     }
   }
 
