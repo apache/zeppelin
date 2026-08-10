@@ -160,7 +160,7 @@ module.exports = tseslint.config(
   {
     // Shell unit specs live outside the Angular build tsconfig, which excludes
     // *.spec.ts. Point type-aware linting at the spec program explicitly.
-    files: ['src/**/*.spec.ts', 'test/test-setup.ts', 'vitest.shell.config.ts'],
+    files: ['src/**/*.spec.ts', 'test/test-setup.ts', 'vitest.shell.config.mts'],
     languageOptions: {
       parserOptions: {
         project: ['./src/tsconfig.spec.json'],

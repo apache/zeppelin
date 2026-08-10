@@ -41,7 +41,7 @@ describe('ReactMountDirective', () => {
     directive.ngOnChanges({
       module: new SimpleChange(undefined, directive.module, true)
     });
-    await Promise.resolve();
+    await vi.waitFor(() => expect(zoneStates).toHaveLength(1));
 
     expect(loadModule).toHaveBeenCalledWith('paragraph-footer');
     expect(zoneStates).toEqual([false]);

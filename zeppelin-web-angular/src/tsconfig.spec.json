@@ -4,6 +4,6 @@
     "outDir": "../out-tsc/spec",
     "types": ["mathjax", "node"]
   },
-  "include": ["**/*.spec.ts", "../test/test-setup.ts", "../vitest.shell.config.ts"],
+  "include": ["**/*.spec.ts", "../test/test-setup.ts", "../vitest.shell.config.mts"],
   "exclude": []
 }
