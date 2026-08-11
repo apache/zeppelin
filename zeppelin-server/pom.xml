@@ -585,7 +585,7 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8</argLine>
+          <argLine>-Xmx3g -Xms1g -Dfile.encoding=UTF-8 ${extraJavaTestArgs}</argLine>
           <systemProperties>
             <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
           </systemProperties>
