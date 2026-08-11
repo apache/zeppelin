@@ -37,8 +37,6 @@
         <scalate.version>1.9.8</scalate.version>
 
         <!-- test library versions -->
-        <jna.version>5.12.1</jna.version>
-        <cassandra.unit.version>4.3.1.0</cassandra.unit.version>
 
         <scala.version>${scala.2.12.version}</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
@@ -137,26 +135,17 @@
         </dependency>
 
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>${jna.version}</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>cassandra</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-          <groupId>org.cassandraunit</groupId>
-          <artifactId>cassandra-unit</artifactId>
-          <version>${cassandra.unit.version}</version>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>com.datastax.oss</groupId>
-              <artifactId>java-driver-core</artifactId>
-            </exclusion>
-          </exclusions>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
 
-        
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
