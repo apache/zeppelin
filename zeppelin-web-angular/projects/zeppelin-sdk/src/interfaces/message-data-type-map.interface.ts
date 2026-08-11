@@ -169,7 +169,6 @@ export interface MessageSendDataTypeMap {
   [OP.EDITOR_SETTING]: EditorSettingSend;
   [OP.LIST_NOTE_JOBS]: undefined;
   [OP.UNSUBSCRIBE_UPDATE_NOTE_JOBS]: undefined;
-  [OP.LIST_UPDATE_NOTE_JOBS]: undefined;
   [OP.GET_INTERPRETER_BINDINGS]: GetInterpreterBindings;
   [OP.SAVE_INTERPRETER_BINDINGS]: SaveInterpreterBindings;
   [OP.GET_INTERPRETER_SETTINGS]: undefined;

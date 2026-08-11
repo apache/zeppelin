@@ -12,6 +12,9 @@
 
 /**
  * Representation of event type.
+ *
+ * Wire operations must match org.apache.zeppelin.common.Message.OP. Add SDK-local events only here
+ * and mark them with @frontendOnly.
  */
 export enum OP {
   /**
@@ -54,6 +57,7 @@ export enum OP {
    * paragraph status update
    *  @param id paragraph id
    *  @param progress percentage progress
+   * @frontendOnly Emitted locally by the SDK without using the websocket.
    */
   PARAGRAPH_STATUS = 'PARAGRAPH_STATUS',
 
@@ -91,6 +95,19 @@ export enum OP {
    * @param object notebook
    */
   IMPORT_NOTE = 'IMPORT_NOTE',
+
+  /**
+   * [c-s]
+   * convert a note to nbformat
+   */
+  CONVERT_NOTE_NBFORMAT = 'CONVERT_NOTE_NBFORMAT',
+
+  /**
+   * [s-c]
+   * converted nbformat note
+   */
+  CONVERTED_NOTE_NBFORMAT = 'CONVERTED_NOTE_NBFORMAT',
+
   NOTE_UPDATE = 'NOTE_UPDATE',
   NOTE_RENAME = 'NOTE_RENAME',
 
@@ -347,8 +364,8 @@ export enum OP {
   LIST_NOTE_JOBS = 'LIST_NOTE_JOBS',
 
   /**
-   * [c-s]
-   * get job management information for until unixtime
+   * [s-c]
+   * update job management information
    */
   LIST_UPDATE_NOTE_JOBS = 'LIST_UPDATE_NOTE_JOBS',
 
