@@ -27,7 +27,7 @@ Apache Zeppelin can be configured to include HTTP Headers which aids in preventi
 
 ## Setting up HTTP Strict Transport Security (HSTS) Response Header
 
-Enabling HSTS Response Header prevents Man-in-the-middle attacks by automatically redirecting HTTP requests to HTTPS when Zeppelin Server is running on SSL. Read on how to configure SSL for Zeppelin [here] (../operation/configuration.html). Even if web page contains any resource which gets served over HTTP or any HTTP links, it will automatically be redirected to HTTPS for the target domain. 
+Enabling HSTS Response Header prevents Man-in-the-middle attacks by automatically redirecting HTTP requests to HTTPS when Zeppelin Server is running on SSL. Read on how to configure SSL for Zeppelin [here](../operation/configuration.html). Even if web page contains any resource which gets served over HTTP or any HTTP links, it will automatically be redirected to HTTPS for the target domain.
 It also prevents MITM attack by not allowing User to override the invalid certificate message, when Attacker presents invalid SSL certificate to the User.  
 
 The following property needs to be updated in the zeppelin-site.xml in order to enable HSTS. You can choose appropriate value for "max-age".

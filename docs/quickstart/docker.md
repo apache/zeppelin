@@ -165,8 +165,8 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 1. Configuring in the zeppelin-env.sh
 
   Because there are only spark binary files in the interpreter image, no spark conf files are included.
-  The configuration file in the `spark-<version>/conf/` local to the zeppelin service needs to be uploaded to the `/spark/conf/` directory in the spark interpreter container.
-  So you need to setting `export SPARK_CONF_DIR=/spark-<version>-path/conf/` in the `zeppelin-env.sh` file.
+  The configuration file in the `spark-&lt;version&gt;/conf/` local to the zeppelin service needs to be uploaded to the `/spark/conf/` directory in the spark interpreter container.
+  So you need to setting `export SPARK_CONF_DIR=/spark-&lt;version&gt;-path/conf/` in the `zeppelin-env.sh` file.
 
 2. Configuring in the spark Properties
 
@@ -174,7 +174,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | SPARK\_CONF_DIR | /spark-<version>-path.../conf/ | Spark-<version>-path/conf/ path local on the zeppelin service |
+  | SPARK\_CONF_DIR | /spark-&lt;version&gt;-path.../conf/ | Spark-&lt;version&gt;-path/conf/ path local on the zeppelin service |
 
 
 #### HADOOP\_CONF_DIR
@@ -182,8 +182,8 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 1. Configuring in the zeppelin-env.sh
 
   Because there are only spark binary files in the interpreter image, no configuration files are included.
-  The configuration file in the `hadoop-<version>/etc/hadoop` local to the zeppelin service needs to be uploaded to the spark interpreter container.
-  So you need to setting `export HADOOP_CONF_DIR=hadoop-<version>-path/etc/hadoop` in the `zeppelin-env.sh` file.
+  The configuration file in the `hadoop-&lt;version&gt;/etc/hadoop` local to the zeppelin service needs to be uploaded to the spark interpreter container.
+  So you need to setting `export HADOOP_CONF_DIR=hadoop-&lt;version&gt;-path/etc/hadoop` in the `zeppelin-env.sh` file.
 
 2. Configuring in the spark Properties
 
@@ -191,7 +191,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | HADOOP\_CONF_DIR | hadoop-<version>-path/etc/hadoop | hadoop-<version>-path/etc/hadoop path local on the zeppelin service |
+  | HADOOP\_CONF_DIR | hadoop-&lt;version&gt;-path/etc/hadoop | hadoop-&lt;version&gt;-path/etc/hadoop path local on the zeppelin service |
 
 
 #### Accessing Spark UI (or Service running in interpreter container)
@@ -215,4 +215,4 @@ Zeppelin can run locally (such as inside your IDE in debug mode) and able to run
 | Configuration variable | Value | Description |
 | ----- | ----- | ----- |
 | `ZEPPELIN_RUN_MODE` | `docker` | Make Zeppelin run interpreter on Docker |
-| `ZEPPELIN_DOCKER_CONTAINER_IMAGE` | `<image>:<version>` | Zeppelin interpreter docker image to use |
+| `ZEPPELIN_DOCKER_CONTAINER_IMAGE` | `&lt;image&gt;:&lt;version&gt;` | Zeppelin interpreter docker image to use |

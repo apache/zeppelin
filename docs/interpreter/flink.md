@@ -98,11 +98,12 @@ Apache Flink is supported in Zeppelin with the Flink interpreter group which con
 * Support multiple insert statements 
   </td>
   </tr>
+  <tr>
     <td>Multi-tenancy</td>
     <td>Multiple user can work in one Zeppelin instance without affecting each other.</td>
   </tr>
 
-  </tr>
+  <tr>
     <td>Rest API Support</td>
     <td>You can not only submit Flink job via Zeppelin notebook UI, but also can do that via its rest api (You can use Zeppelin as Flink job server).</td>
   </tr>
@@ -176,17 +177,17 @@ You can also add and set other Flink properties which are not listed in the tabl
     <th>Description</th>
   </tr>
   <tr>
-    <td>`FLINK_HOME`</td>
+    <td markdown="span">`FLINK_HOME`</td>
     <td></td>
     <td>Location of Flink installation. It is must be specified, otherwise you can not use Flink in Zeppelin</td>
   </tr>
   <tr>
-    <td>`HADOOP_CONF_DIR`</td>
+    <td markdown="span">`HADOOP_CONF_DIR`</td>
     <td></td>
     <td>Location of hadoop conf, this is must be set if running in yarn mode</td>
   </tr>
   <tr>
-    <td>`HIVE_CONF_DIR`</td>
+    <td markdown="span">`HIVE_CONF_DIR`</td>
     <td></td>
     <td>Location of hive conf, this is must be set if you want to connect to hive metastore</td>
   </tr>
@@ -208,12 +209,12 @@ You can also add and set other Flink properties which are not listed in the tabl
   <tr>
     <td>jobmanager.memory.process.size</td>
     <td>1024m</td>
-    <td>Total memory size of JobManager, e.g. 1024m. It is official [Flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
+    <td markdown="span">Total memory size of JobManager, e.g. 1024m. It is official [Flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
   </tr>
   <tr>
     <td>taskmanager.memory.process.size</td>
     <td>1024m</td>
-    <td>Total memory size of TaskManager, e.g. 1024m. It is official [Flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
+    <td markdown="span">Total memory size of TaskManager, e.g. 1024m. It is official [Flink property](https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/deployment/config/)</td>
   </tr>
   <tr>
     <td>taskmanager.numberOfTaskSlots</td>
@@ -253,27 +254,27 @@ You can also add and set other Flink properties which are not listed in the tabl
   <tr>
     <td>flink.udf.jars.packages</td>
     <td></td>
-    <td>Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars`. Specifying this can reduce the number of classes to scan, otherwise all the classes in udf jar will be scanned.</td>
+    <td markdown="span">Packages (comma separated) that would be searched for the udf defined in `flink.udf.jars`. Specifying this can reduce the number of classes to scan, otherwise all the classes in udf jar will be scanned.</td>
   </tr>
   <tr>
     <td>flink.execution.jars</td>
     <td></td>
-    <td>Additional user jars (comma separated), these jars could be either local files or hdfs files if you have hadoop installed. It can be used to specify Flink connector jars or udf jars (no udf class auto-registration like `flink.udf.jars`)</td>
+    <td markdown="span">Additional user jars (comma separated), these jars could be either local files or hdfs files if you have hadoop installed. It can be used to specify Flink connector jars or udf jars (no udf class auto-registration like `flink.udf.jars`)</td>
   </tr>
   <tr>
     <td>flink.execution.packages</td>
     <td></td>
-    <td>Additional user packages (comma separated), e.g. `org.apache.flink:flink-json:1.10.0`</td>
+    <td markdown="span">Additional user packages (comma separated), e.g. `org.apache.flink:flink-json:1.10.0`</td>
   </tr>
   <tr>
     <td>zeppelin.flink.concurrentBatchSql.max</td>
     <td>10</td>
-    <td>Max concurrent sql of Batch Sql (`%flink.bsql`)</td>
+    <td markdown="span">Max concurrent sql of Batch Sql (`%flink.bsql`)</td>
   </tr>
   <tr>
     <td>zeppelin.flink.concurrentStreamSql.max</td>
     <td>10</td>
-    <td>Max concurrent sql of Stream Sql (`%flink.ssql`)</td>
+    <td markdown="span">Max concurrent sql of Stream Sql (`%flink.ssql`)</td>
   </tr>
   <tr>
     <td>zeppelin.pyflink.python</td>
@@ -316,17 +317,17 @@ You can also add and set other Flink properties which are not listed in the tabl
     <td>max number of row returned by sql interpreter</td>
   </tr>
   <tr>
-    <td>`zeppelin.flink.job.check_interval`</td>
+    <td markdown="span">`zeppelin.flink.job.check_interval`</td>
     <td>1000</td>
     <td>Check interval (in milliseconds) to check Flink job progress</td>
   </tr>
   <tr>
-    <td>`flink.interpreter.close.shutdown_cluster`</td>
+    <td markdown="span">`flink.interpreter.close.shutdown_cluster`</td>
     <td>true</td>
     <td>Whether shutdown Flink cluster when closing interpreter</td>
   </tr>
   <tr>
-    <td>`zeppelin.interpreter.close.cancel_job`</td>
+    <td markdown="span">`zeppelin.interpreter.close.cancel_job`</td>
     <td>true</td>
     <td>Whether cancel Flink job when closing interpreter</td>
   </tr>
@@ -745,12 +746,12 @@ In this section, we will list and explain all the supported local properties in 
   <tr>
     <td>refreshInterval</td>
     <td>3000</td>
-    <td>Used in `%flink.ssql` to specify frontend refresh interval for streaming data visualization.</td>
+    <td markdown="span">Used in `%flink.ssql` to specify frontend refresh interval for streaming data visualization.</td>
   </tr>
   <tr>
     <td>template</td>
     <td>{0}</td>
-    <td>Used in `%flink.ssql` to specify html template for `single` type of streaming data visualization, And you can use `{i}` as placeholder for the {i}th column of the result.</td>
+    <td markdown="span">Used in `%flink.ssql` to specify html template for `single` type of streaming data visualization, And you can use `{i}` as placeholder for the {i}th column of the result.</td>
   </tr>
   <tr>
     <td>parallelism</td>
@@ -760,7 +761,7 @@ In this section, we will list and explain all the supported local properties in 
   <tr>
     <td>maxParallelism</td>
     <td></td>
-    <td>Used in %flink.ssql & %flink.bsql to specify the flink sql job max parallelism in case you want to change parallelism later. For more details, refer this [link](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/parallel.html#setting-the-maximum-parallelism) </td>
+    <td markdown="span">Used in %flink.ssql & %flink.bsql to specify the flink sql job max parallelism in case you want to change parallelism later. For more details, refer this [link](https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/parallel.html#setting-the-maximum-parallelism) </td>
   </tr>
   <tr>
     <td>savepointDir</td>
@@ -796,5 +797,4 @@ Zeppelin is shipped with several Flink tutorial notes which may be helpful for y
 ## Community
 
 [Join our community](http://zeppelin.apache.org/community.html) to discuss with others.
-
 

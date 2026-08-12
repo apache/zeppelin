@@ -40,11 +40,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the registered interpreters available on the server.</td>
+      <td markdown="span">This ```GET``` method returns all the registered interpreters available on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -56,7 +56,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -117,11 +117,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the interpreters settings registered on the server.</td>
+      <td markdown="span">This ```GET``` method returns all the interpreters settings registered on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -133,7 +133,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -201,11 +201,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns a registered interpreter setting on the server.</td>
+      <td markdown="span">This ```GET``` method returns a registered interpreter setting on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[setting ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[setting ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -220,7 +220,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -265,11 +265,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds a new interpreter setting using a registered interpreter to the server.</td>
+      <td markdown="span">This ```POST``` method adds a new interpreter setting using a registered interpreter to the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -284,7 +284,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -316,7 +316,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -359,11 +359,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method updates an interpreter setting with new properties.</td>
+      <td markdown="span">This ```PUT``` method updates an interpreter setting with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -375,7 +375,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -407,7 +407,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -451,11 +451,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes an given interpreter setting.</td>
+      <td markdown="span">This ```DELETE``` method deletes an given interpreter setting.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -467,7 +467,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -484,11 +484,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method restarts the given interpreter id.</td>
+      <td markdown="span">This ```PUT``` method restarts the given interpreter id.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart/[interpreter ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart/[interpreter ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -500,7 +500,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON input (Optional)</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -511,7 +511,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -527,11 +527,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds new repository.</td>
+      <td markdown="span">This ```POST``` method adds new repository.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -543,7 +543,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -556,7 +556,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -572,11 +572,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method delete repository with given id.</td>
+      <td markdown="span">This ```DELETE``` method delete repository with given id.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository/[repository ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository/[repository ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -594,11 +594,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns available types for interpreter property.</td>
+      <td markdown="span">This ```GET``` method returns available types for interpreter property.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/property/types```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/property/types```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -610,7 +610,7 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
     <tr>
       <td>Sample JSON response</td>
-        <td>
+        <td markdown="block">
 
 ```json
 {
@@ -620,7 +620,7 @@ The role of registered interpreters, settings and interpreters group are describ
 }            
 ```
 </td>
-    </tr>        
+    </tr>
   </table>  
   
 <br/>
@@ -630,11 +630,11 @@ The role of registered interpreters, settings and interpreters group are describ
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns interpreter settings metadata info. </td>
+      <td markdown="span">This ```GET``` method returns interpreter settings metadata info. </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/metadata/[setting ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/metadata/[setting ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>

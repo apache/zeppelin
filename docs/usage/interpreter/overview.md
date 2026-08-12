@@ -51,7 +51,7 @@ The interpreter settings are the configuration of a given interpreter on the Zep
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
-Properties are exported as environment variables on the system if the property name consists of upper-case characters, numbers or underscores ([A-Z_0-9]). Otherwise, the property is set as a common interpreter property. 
+Properties are exported as environment variables on the system if the property name consists of upper-case characters, numbers or underscores (`[A-Z_0-9]`). Otherwise, the property is set as a common interpreter property.
 e.g. You can define `SPARK_HOME` and `HADOOP_CONF_DIR` in spark's interpreter setting, they are be passed to Spark interpreter process as environment variable which is used by Spark. 
 
 You may use parameters from the context of the interpreter by adding #{contextParameterName} in the interpreter property value. The parameter can be of the following types: string, number, boolean.

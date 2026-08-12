@@ -109,7 +109,7 @@ hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 cd /home/zeppelin/zeppelin
 bin/zeppelin-daemon.sh start
 ```
-After successful start, visit http://[zeppelin-server-host-name]:8080 with your web browser.
+After successful start, visit `http://[zeppelin-server-host-name]:8080` with your web browser.
 
 ### Stop Zeppelin
 
@@ -123,7 +123,7 @@ Zeppelin provides various distributed processing frameworks to process data that
 ### Hive
 Zeppelin supports Hive through JDBC interpreter. You might need the information to use Hive and can find in your hive-site.xml
 
-Once Zeppelin server has started successfully, visit http://[zeppelin-server-host-name]:8080 with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. Set them as per Hive installation on YARN cluster.
+Once Zeppelin server has started successfully, visit `http://[zeppelin-server-host-name]:8080` with your web browser. Click on Interpreter tab next to Notebook dropdown. Look for Hive configurations and set them appropriately. Set them as per Hive installation on YARN cluster.
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
 
 ### Spark

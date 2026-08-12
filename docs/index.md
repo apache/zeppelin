@@ -21,10 +21,10 @@ limitations under the License.
 <div class="row" style="margin-top: 0px;">
   <div class="col-sm-6 col-md-6" style="padding-right:0;">
     <h1 style="color:#4c555a; margin-top: 0px;">What is Apache Zeppelin?</h1>
-    <p style="margin-bottom: 0px; margin-top: 20px; font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
+    <p style="margin-bottom: 0px; margin-top: 20px; font-size: 18px; font-family: Roboto, sans-serif;">
       Multi-purpose notebook which supports
     </p>
-    <p style="font-size: 18px; font-style="font-family: "Roboto", sans-serif;">
+    <p style="font-size: 18px; font-family: Roboto, sans-serif;">
       20+ language backends
     </p>
     <ul style="list-style-type: none; padding-left:10px; margin-top: 30px;" >
@@ -161,4 +161,3 @@ limitations under the License.
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
   * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
-

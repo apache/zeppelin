@@ -102,7 +102,7 @@ Some language backends can programmatically create forms. For example [ZeppelinC
 Here are some examples:
 
 ### Text input form
-<div class="codetabs">
+<div class="codetabs" markdown="block">
     <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -125,7 +125,7 @@ print("Hello "+z.textbox("name"))
 Use `z.input()` instead in version 0.7.3 or prior. `z.input()` is deprecated in 0.8.0.
 
 ### Text input form with default value
-<div class="codetabs">
+<div class="codetabs" markdown="block">
     <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -148,7 +148,7 @@ print("Hello "+z.textbox("name", "sun"))
 Use `z.input()` instead in version 0.7.3 or prior. `z.input()` is deprecated in 0.8.0.
 
 ### Password form
-<div class="codetabs">
+<div class="codetabs" markdown="block">
     <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -169,7 +169,7 @@ print("Password is "+ z.password("my_password"))
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_password_prog.png" />
 
 ### Select form
-<div class="codetabs">
+<div class="codetabs" markdown="block">
     <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -202,7 +202,7 @@ print("Hello "+z.select("day", [("1","mon"),
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
 
 #### Checkbox form
-<div class="codetabs">
+<div class="codetabs" markdown="block">
     <div data-lang="scala" markdown="1">
 
 {% highlight scala %}

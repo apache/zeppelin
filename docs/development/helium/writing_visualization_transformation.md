@@ -201,7 +201,7 @@ Here is an example.
 |`widget` | `checkbox` |  Use [checkbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox) widget. |
 |`widget` | `textarea` |  Use [textarea](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea) widget. |
 |`widget` | `option` |  Use [select + option](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select) widget. This parameter should have `optionValues` field as well. |
-|`optionValues` | (Array<string>) |  Available option values used with the `option` widget |
+|`optionValues` | (Array&lt;string&gt;) |  Available option values used with the `option` widget |
 
 <br/>
 
@@ -278,4 +278,3 @@ class AwesomeVisualization extends Visualization {
   ...
 }
 ```
-

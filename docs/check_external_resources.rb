@@ -43,7 +43,18 @@ end
 
 violations = []
 
-Dir.glob(File.join(SITE_DIR, "**", "*.html")).sort.each do |file|
+unless Dir.exist?(SITE_DIR)
+  warn "Site directory not found: #{SITE_DIR}"
+  exit 1
+end
+
+html_files = Dir.glob(File.join(SITE_DIR, "**", "*.html")).sort
+if html_files.empty?
+  warn "No HTML files found in #{SITE_DIR}"
+  exit 1
+end
+
+html_files.each do |file|
   File.read(file).scan(RESOURCE_PATTERN) do |tag, value|
     host = remote_host(value)
     next if host.nil? || asf_host?(host)
