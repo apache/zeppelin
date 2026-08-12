@@ -16,7 +16,10 @@
 
 export const environment = {
   production: false,
-  reactRemoteEntryUrl: 'http://localhost:3001/remoteEntry.js'
+  reactRemoteEntryUrl: 'http://localhost:3001/remoteEntry.js',
+  // Budget for fetching remoteEntry.js, after which the host falls back.
+  // Set to 0 to disable the timer.
+  reactRemoteLoadTimeoutMs: 10000
 };
 
 /*

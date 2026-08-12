@@ -45,14 +45,20 @@ export class ReactRemoteLoaderService {
       script.src = environment.reactRemoteEntryUrl;
       script.async = true;
 
-      // Remove the tag on *any* failure (network error or loaded-but-unregistered):
-      // containerPromise resets on rejection, so each retry would otherwise leak a tag.
+      const timeoutMs = environment.reactRemoteLoadTimeoutMs;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+
+      // Remove the tag on *any* failure (network error, timeout, or
+      // loaded-but-unregistered): containerPromise resets on rejection, so each
+      // retry would otherwise leak a tag.
       const fail = (message: string) => {
+        clearTimeout(timer);
         script.remove();
         reject(new Error(message));
       };
 
       script.onload = () => {
+        clearTimeout(timer);
         if (!window.reactApp) {
           fail('window.reactApp not registered after script load');
           return;
@@ -60,6 +66,16 @@ export class ReactRemoteLoaderService {
         resolve(window.reactApp);
       };
       script.onerror = () => fail(`Failed to load React remote at ${script.src}`);
+
+      // A request the server accepts but never answers fires neither onload nor
+      // onerror, so without this the promise stays pending for minutes.
+      if (timeoutMs > 0) {
+        timer = setTimeout(
+          () => fail(`Timed out after ${timeoutMs} ms loading the React remote at ${script.src}`),
+          timeoutMs
+        );
+      }
+
       document.head.appendChild(script);
     });
 
