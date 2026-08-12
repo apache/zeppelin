@@ -38,7 +38,7 @@ module.exports = tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' }
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,mts}'],
     // == legacy `plugin:@angular-eslint/recommended` (sets the TS parser and
     // the @angular-eslint plugin). The @typescript-eslint plugin is registered
     // separately below because tsRecommended does not bring it in.
@@ -155,6 +155,24 @@ module.exports = tseslint.config(
     rules: {
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'lib', style: 'kebab-case' }],
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'lib', style: 'camelCase' }]
+    }
+  },
+  {
+    // Shell unit specs live outside the Angular build tsconfig, which excludes
+    // *.spec.ts. Point type-aware linting at the spec program explicitly.
+    files: ['src/**/*.spec.ts', 'test/test-setup.ts', 'vitest.shell.config.mts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./src/tsconfig.spec.json'],
+        tsconfigRootDir: __dirname
+      }
+    }
+  },
+  {
+    // The shell test setup intentionally loads Zone.js for its side effects.
+    files: ['test/test-setup.ts'],
+    rules: {
+      'import/no-unassigned-import': 'off'
     }
   },
   {
