@@ -19,8 +19,7 @@ From `$ZEPPELIN_HOME/docs`, run:
 ```bash
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e BUNDLE_PATH=/tmp/bundle \
+  -e HOME=/usr/local/bundle \
   -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
@@ -48,8 +47,7 @@ From `$ZEPPELIN_HOME/docs`, run:
 ```bash
 docker run --rm \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e BUNDLE_PATH=/tmp/bundle \
+  -e HOME=/usr/local/bundle \
   -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \

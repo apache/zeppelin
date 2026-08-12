@@ -61,8 +61,7 @@ Preview with Docker:
 cd docs
 docker run --rm -it \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e BUNDLE_PATH=/tmp/bundle \
+  -e HOME=/usr/local/bundle \
   -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
@@ -74,8 +73,8 @@ docker run --rm -it \
 Open `http://localhost:4000`. The preview intentionally runs without
 `--safe`, so links are rooted at `/` instead of the production version path.
 The container uses the current user's UID and GID so generated files remain
-owned by that user on the host. Bundler writes its disposable files under
-`/tmp` inside the container.
+owned by that user on the host. The Ruby image's writable gem directory is
+also used as the container home for that user.
 
 Build the publication artifact with Docker:
 
@@ -83,8 +82,7 @@ Build the publication artifact with Docker:
 cd docs
 docker run --rm \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e BUNDLE_PATH=/tmp/bundle \
+  -e HOME=/usr/local/bundle \
   -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
@@ -101,8 +99,7 @@ When `Gemfile` changes, update `Gemfile.lock` inside Docker:
 cd docs
 docker run --rm \
   --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e BUNDLE_PATH=/tmp/bundle \
+  -e HOME=/usr/local/bundle \
   -v "$PWD:/docs" \
   -w /docs \
   ruby:4.0.6 \
