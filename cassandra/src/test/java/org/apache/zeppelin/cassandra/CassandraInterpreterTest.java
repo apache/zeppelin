@@ -27,13 +27,13 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.cassandraunit.CQLDataLoader;
-import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.CassandraContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -65,28 +65,40 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CassandraInterpreterTest { // extends AbstractCassandraUnit4CQLTestCase {
+@Testcontainers
+public class CassandraInterpreterTest {
   private static final String ARTISTS_TABLE = "zeppelin.artists";
 
   private static volatile CassandraInterpreter interpreter;
+
+  private static CqlSession session;
 
   private final InterpreterContext intrContext = InterpreterContext.builder()
       .setParagraphTitle("Paragraph1")
       .build();
 
+  @Container
+  public static CassandraContainer<?> cassandra =
+      new CassandraContainer<>("cassandra:4.1.3");
+
   @BeforeAll
-  public static synchronized void setUp() throws IOException, InterruptedException {
-    System.setProperty("cassandra.skip_wait_for_gossip_to_settle", "0");
-    System.setProperty("cassandra.load_ring_state", "false");
-    System.setProperty("cassandra.initial_token", "0");
-    System.setProperty("cassandra.num_tokens", "nil");
-    System.setProperty("cassandra.allocate_tokens_for_local_replication_factor", "nil");
-    EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-    CqlSession session = EmbeddedCassandraServerHelper.getSession();
-    new CQLDataLoader(session).load(new ClassPathCQLDataSet("prepare_all.cql", "zeppelin"));
+  public static synchronized void setUp() throws IOException {
+    session = CqlSession.builder()
+        .addContactPoint(java.net.InetSocketAddress.createUnresolved(
+            cassandra.getHost(), cassandra.getMappedPort(9042)))
+        .withLocalDatacenter("datacenter1")
+        .build();
+
+    String cql = IOUtils.resourceToString("/prepare_all.cql", StandardCharsets.UTF_8);
+    for (String stmt : cql.split(";")) {
+      String trimmed = stmt.trim();
+      if (!trimmed.isEmpty()) {
+        session.execute(trimmed);
+      }
+    }
 
     Properties properties = new Properties();
-    properties.setProperty(CASSANDRA_CLUSTER_NAME, EmbeddedCassandraServerHelper.getClusterName());
+    properties.setProperty(CASSANDRA_CLUSTER_NAME, "Test Cluster");
     properties.setProperty(CASSANDRA_COMPRESSION_PROTOCOL, "NONE");
     properties.setProperty(CASSANDRA_CREDENTIALS_USERNAME, "none");
     properties.setProperty(CASSANDRA_CREDENTIALS_PASSWORD, "none");
@@ -111,9 +123,9 @@ public class CassandraInterpreterTest { // extends AbstractCassandraUnit4CQLTest
     properties.setProperty(CASSANDRA_SOCKET_READ_TIMEOUT_MILLIS, "12000");
     properties.setProperty(CASSANDRA_SOCKET_TCP_NO_DELAY, "true");
 
-    properties.setProperty(CASSANDRA_HOSTS, EmbeddedCassandraServerHelper.getHost());
+    properties.setProperty(CASSANDRA_HOSTS, cassandra.getHost());
     properties.setProperty(CASSANDRA_PORT,
-        Integer.toString(EmbeddedCassandraServerHelper.getNativeTransportPort()));
+        Integer.toString(cassandra.getMappedPort(9042)));
     properties.setProperty("datastax-java-driver.advanced.connection.pool.local.size", "1");
     interpreter = new CassandraInterpreter(properties);
     interpreter.open();
@@ -122,6 +134,9 @@ public class CassandraInterpreterTest { // extends AbstractCassandraUnit4CQLTest
   @AfterAll
   public static void tearDown() {
     interpreter.close();
+    if (session != null) {
+      session.close();
+    }
   }
 
   @Test
@@ -333,7 +348,7 @@ public class CassandraInterpreterTest { // extends AbstractCassandraUnit4CQLTest
     String statement2 = "@timestamp=15\n" +
         "INSERT INTO zeppelin.ts(key,val) VALUES('k','v2');";
 
-    CqlSession session = EmbeddedCassandraServerHelper.getSession();
+    CqlSession session = CassandraInterpreterTest.session;
     // Insert v1 with current timestamp
     interpreter.interpret(statement1, intrContext);
     System.out.println("going to read data from zeppelin.ts;");
@@ -562,14 +577,17 @@ public class CassandraInterpreterTest { // extends AbstractCassandraUnit4CQLTest
 
     // When
     final InterpreterResult actual = interpreter.interpret(query, intrContext);
-    final int port = EmbeddedCassandraServerHelper.getNativeTransportPort();
-    final String address = EmbeddedCassandraServerHelper.getHost();
+    final int port = cassandra.getMappedPort(9042);
+    final String address = cassandra.getHost();
     // Then
     final String expected = rawResult.replaceAll("TRIED_HOSTS", address + ":" + port)
         .replaceAll("QUERIED_HOSTS", address + ":" + port);
 
     assertEquals(Code.SUCCESS, actual.code());
-    assertEquals(expected, reformatHtml(actual.message().get(0).getData()));
+    // JDK 17+ renders unresolved InetSocketAddress as "host/<unresolved>:port"
+    String actualHtml = reformatHtml(actual.message().get(0).getData())
+        .replaceAll(address + "/&lt;unresolved&gt;:", address + ":");
+    assertEquals(expected, actualHtml);
   }
 
   @Test
