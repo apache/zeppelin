@@ -60,6 +60,10 @@ Preview with Docker:
 ```bash
 cd docs
 docker run --rm -it \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -e BUNDLE_PATH=/tmp/bundle \
+  -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
   -p '4000:4000' \
@@ -69,12 +73,19 @@ docker run --rm -it \
 
 Open `http://localhost:4000`. The preview intentionally runs without
 `--safe`, so links are rooted at `/` instead of the production version path.
+The container uses the current user's UID and GID so generated files remain
+owned by that user on the host. Bundler writes its disposable files under
+`/tmp` inside the container.
 
 Build the publication artifact with Docker:
 
 ```bash
 cd docs
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -e BUNDLE_PATH=/tmp/bundle \
+  -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
   ruby:4.0.6 \
@@ -89,6 +100,9 @@ When `Gemfile` changes, update `Gemfile.lock` inside Docker:
 ```bash
 cd docs
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -e BUNDLE_PATH=/tmp/bundle \
   -v "$PWD:/docs" \
   -w /docs \
   ruby:4.0.6 \

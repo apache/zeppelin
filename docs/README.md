@@ -18,6 +18,10 @@ From `$ZEPPELIN_HOME/docs`, run:
 
 ```bash
 docker run --rm -it \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -e BUNDLE_PATH=/tmp/bundle \
+  -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
   -p '4000:4000' \
@@ -26,7 +30,8 @@ docker run --rm -it \
 ```
 
 Jekyll starts at `http://localhost:4000` and watches the `docs/` sources for
-updates.
+updates. The container runs with the current user's UID and GID so generated
+files are not owned by `root` on the host.
 
 ## Contribute to Zeppelin documentation
 If you wish to help us and contribute to Zeppelin Documentation, please look at [Zeppelin Documentation's contribution guideline](https://zeppelin.apache.org/contribution/contributions.html).
@@ -42,6 +47,10 @@ From `$ZEPPELIN_HOME/docs`, run:
 
 ```bash
 docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -e BUNDLE_PATH=/tmp/bundle \
+  -e BUNDLE_FROZEN=true \
   -v "$PWD:/docs" \
   -w /docs \
   ruby:4.0.6 \
