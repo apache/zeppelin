@@ -53,6 +53,7 @@ describe('Controller: Interpreter', function() {
       $controller('InterpreterCtrl', {
         $scope: $rootScope.$new(),
         baseUrlSrv: baseUrlSrvMock,
+        $route: {current: {$$route: {originalPath: '/interpreter'}}},
       });
       $httpBackend.flush();
 
