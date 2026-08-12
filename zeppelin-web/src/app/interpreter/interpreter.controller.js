@@ -114,7 +114,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         $scope.interpreterSettings = res.data.body;
         checkDownloadingDependencies();
       }).catch(function(res) {
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           ngToast.danger({
             content: 'You don\'t have permission on this page',
             verticalPosition: 'bottom',
