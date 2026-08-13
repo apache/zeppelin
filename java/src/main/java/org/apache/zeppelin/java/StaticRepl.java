@@ -51,7 +51,10 @@ public class StaticRepl {
     return execute(generatedClassName, code, ToolProvider.getSystemJavaCompiler());
   }
 
-  public static String execute(String generatedClassName, String code, JavaCompiler compiler) throws Exception {
+  public static String execute(
+      String generatedClassName,
+      String code,
+      JavaCompiler compiler) throws Exception {
 
     if (compiler == null) {
       throw new Exception(
@@ -112,7 +115,12 @@ public class StaticRepl {
       System.setErr(newErr);
 
       DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-      CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
+      CompilationTask task = compiler.getTask(null,
+          null,
+          diagnostics,
+          null,
+          null,
+          compilationUnits);
 
       // executing the compilation process
       boolean success = task.call();

@@ -32,35 +32,35 @@ import java.io.PrintStream;
 
 public class StaticReplTest {
 
-    @Test
-    void shouldRestoreSystemStreamsWhenCompilationThrows(){
-      PrintStream originalOut = System.out;
-      PrintStream originalErr = System.err;
+  @Test
+  void shouldRestoreSystemStreamsWhenCompilationThrows(){
+    PrintStream originalOut = System.out;
+    PrintStream originalErr = System.err;
 
-      JavaCompiler compiler = mock(JavaCompiler.class);
-      CompilationTask task = mock(CompilationTask.class);
+    JavaCompiler compiler = mock(JavaCompiler.class);
+    CompilationTask task = mock(CompilationTask.class);
 
-      when(compiler.getTask(any(), any(), any(), any(), any(), any()))
+    when(compiler.getTask(any(), any(), any(), any(), any(), any()))
         .thenReturn(task);
-        
-      when(task.call())
+      
+    when(task.call())
         .thenThrow(new RuntimeException("Compilation failed unexpectedly"));
-        
-      String code = "public class TestClass {"
+      
+    String code = "public class TestClass {"
         + " public static void main(String[] args) {}"
         + "}";
+    
+    try {
+      assertThrows(RuntimeException.class, () -> StaticRepl.execute("TestClass", code, compiler));
       
-      try {
-        assertThrows(RuntimeException.class, () -> StaticRepl.execute("TestClass", code, compiler));
-        
-        assertSame(originalOut, System.out);
-        assertSame(originalErr, System.err);
+      assertSame(originalOut, System.out);
+      assertSame(originalErr, System.err);
 
-      } finally {
-        System.setOut(originalOut);
-        System.setErr(originalErr);
-      }
-        
+    } finally {
+      System.setOut(originalOut);
+      System.setErr(originalErr);
     }
+      
+  }
     
 }
