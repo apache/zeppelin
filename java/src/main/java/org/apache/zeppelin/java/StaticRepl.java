@@ -48,8 +48,11 @@ public class StaticRepl {
   private static final Logger LOGGER = LoggerFactory.getLogger(StaticRepl.class);
 
   public static String execute(String generatedClassName, String code) throws Exception {
+    return execute(generatedClassName, code, ToolProvider.getSystemJavaCompiler());
+  }
 
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+  public static String execute(String generatedClassName, String code, JavaCompiler compiler) throws Exception {
+
     if (compiler == null) {
       throw new Exception(
           "Java compiler not available. Make sure Zeppelin is running on JDK (not JRE).");
