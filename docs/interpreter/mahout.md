@@ -47,28 +47,28 @@ The `add_mahout.py` script contains several command line arguments for advanced 
     <th>Example</th>
   </tr>
   <tr>
-    <td>`--zeppelin_home`</td>
-    <td>This is the path to the Zeppelin installation.  This flag is not needed if the script is run from the top-level installation directory or from the `zeppelin/scripts/mahout` directory.</td>
-    <td>`/path/to/zeppelin`</td>
+    <td markdown="span">`--zeppelin_home`</td>
+    <td markdown="span">This is the path to the Zeppelin installation.  This flag is not needed if the script is run from the top-level installation directory or from the `zeppelin/scripts/mahout` directory.</td>
+    <td markdown="span">`/path/to/zeppelin`</td>
   </tr>
   <tr>
-    <td>`--mahout_home`</td>
-    <td>If the user has already installed Mahout, this flag can set the path to `MAHOUT_HOME`.  If this is set, downloading Mahout will be skipped.</td>
-    <td>`/path/to/mahout_home`</td>
+    <td markdown="span">`--mahout_home`</td>
+    <td markdown="span">If the user has already installed Mahout, this flag can set the path to `MAHOUT_HOME`.  If this is set, downloading Mahout will be skipped.</td>
+    <td markdown="span">`/path/to/mahout_home`</td>
   </tr>
   <tr>
-    <td>`--restart_later`</td>
+    <td markdown="span">`--restart_later`</td>
     <td>Restarting is necessary for updates to take effect. By default the script will restart Zeppelin for you. Restart will be skipped if this flag is set.</td>
     <td>NA</td>
   </tr>
   <tr>
-    <td>`--force_download`</td>
+    <td markdown="span">`--force_download`</td>
     <td>This flag will force the script to re-download the binary even if it already exists.  This is useful for previously failed downloads.</td>
     <td>NA</td>
   </tr>
   <tr>
-      <td>`--overwrite_existing`</td>
-      <td>This flag will force the script to overwrite existing `%sparkMahout` and `%flinkMahout` interpreters. Useful when you want to just start over.</td>
+      <td markdown="span">`--overwrite_existing`</td>
+      <td markdown="span">This flag will force the script to overwrite existing `%sparkMahout` and `%flinkMahout` interpreters. Useful when you want to just start over.</td>
       <td>NA</td>
     </tr>
 </table>

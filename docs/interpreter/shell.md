@@ -28,7 +28,7 @@ Zeppelin Shell has two interpreters the default is the %sh interpreter.
 
 ### Shell interpreter
 Shell interpreter uses [Apache Commons Exec](https://commons.apache.org/proper/commons-exec) to execute external processes. 
-In Zeppelin notebook, you can use ` %sh ` in the beginning of a paragraph to invoke system shell and run commands.
+In Zeppelin notebook, you can use `%sh` in the beginning of a paragraph to invoke system shell and run commands.
 
 ### Terminal interpreter
 Terminal interpreter uses [hterm](https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm), [Pty4J](https://github.com/JetBrains/pty4j) analog terminal operation.
@@ -110,7 +110,7 @@ export KINIT_FAIL_THRESHOLD=10
 The shell interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
 The following example shows one use of this facility:
 
-####In Scala cell:
+#### In Scala cell:
 
 ```scala
 z.put("dataFileName", "members-list-003.parquet")
@@ -119,7 +119,7 @@ val members = spark.read.parquet(z.get("dataFileName"))
     // ...
 ```
 
-####In later Shell cell:
+#### In later Shell cell:
 
 ```bash
 %sh

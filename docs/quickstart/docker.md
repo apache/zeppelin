@@ -174,7 +174,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | SPARK\_CONF_DIR | /spark-<version>-path.../conf/ | Spark-<version>-path/conf/ path local on the zeppelin service |
+  | SPARK\_CONF_DIR | `/spark-<version>-path.../conf/` | `Spark-<version>-path/conf/` path local on the zeppelin service |
 
 
 #### HADOOP\_CONF_DIR
@@ -191,7 +191,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | HADOOP\_CONF_DIR | hadoop-<version>-path/etc/hadoop | hadoop-<version>-path/etc/hadoop path local on the zeppelin service |
+  | HADOOP\_CONF_DIR | `hadoop-<version>-path/etc/hadoop` | `hadoop-<version>-path/etc/hadoop` path local on the zeppelin service |
 
 
 #### Accessing Spark UI (or Service running in interpreter container)

@@ -159,6 +159,6 @@ You can find issues for <a href="https://issues.apache.org/jira/browse/ZEPPELIN-
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
+* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
 
 If you have any issues, create a ticket in [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN).

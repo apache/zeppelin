@@ -40,7 +40,7 @@ You can **load** interpreters located in Maven repository using REST API, like t
 ```
 http://[zeppelin-server]:[zeppelin-port]/api/interpreter/load/[interpreter_group_name]/[interpreter_name]
 ```
-The Restful method will be <code>**POST**</code>. And the parameters you need are:
+The Restful method will be **`POST`**. And the parameters you need are:
 
   1.  **Artifact:** Maven artifact ( groupId:artifactId:version ) 
 
@@ -89,7 +89,7 @@ If you want to **unload** the interpreters using REST API,
 ```
 http://[zeppelin-server]:[zeppelin-port]/api/interpreter/unload/[interpreter_group_name]/[interpreter_name]
 ```
-In this case, the Restful method will be <code>**DELETE**</code>.
+In this case, the Restful method will be **`DELETE`**.
 
 <br/>
 ## What is the next step after Loading ?

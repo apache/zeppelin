@@ -86,11 +86,11 @@ A [Property Graph](https://github.com/tinkerpop/gremlin/wiki/Defining-a-Property
     * each edge has a label that denotes the type of relationship between its two vertices.
     * each edge has a collection of properties defined by a map from key to value.
 
-<img src="https://github.com/tinkerpop/gremlin/raw/master/doc/images/graph-example-1.jpg" />
+![Property graph example]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/property-graph-example.svg)
 
 A [Labelled Property Graph](https://neo4j.com/developer/graph-database/#property-graph) is a Property Graph where the nodes can be tagged with **labels** representing their different roles in the graph model
 
-<img src="http://s3.amazonaws.com/dev.assets.neo4j.com/wp-content/uploads/property_graph_model.png" />
+![Labeled property graph data model]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/labeled-property-graph-model.svg)
 
 ### What are the APIs?
 
