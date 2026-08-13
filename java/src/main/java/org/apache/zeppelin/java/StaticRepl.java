@@ -102,68 +102,65 @@ public class StaticRepl {
     // Save the old System.out!
     PrintStream oldOut = System.out;
     PrintStream oldErr = System.err;
-    // Tell Java to use your special stream
-    System.setOut(newOut);
-    System.setErr(newErr);
 
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-    CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
+    try {
+      // Tell Java to use your special stream
+      System.setOut(newOut);
+      System.setErr(newErr);
 
-    // executing the compilation process
-    boolean success = task.call();
+      DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+      CompilationTask task = compiler.getTask(null, null, diagnostics, null, null, compilationUnits);
 
-    // if success is false will get error
-    if (!success) {
-      for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-        if (diagnostic.getLineNumber() == -1) {
-          continue;
+      // executing the compilation process
+      boolean success = task.call();
+
+      // if success is false will get error
+      if (!success) {
+        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+          if (diagnostic.getLineNumber() == -1) {
+            continue;
+          }
+          System.err.println("line " + diagnostic.getLineNumber() + " : "
+              + diagnostic.getMessage(null));
         }
-        System.err.println("line " + diagnostic.getLineNumber() + " : "
-            + diagnostic.getMessage(null));
+        System.out.flush();
+        System.err.flush();
+
+        LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
+        throw new Exception(baosErr.toString());
+      } else {
+        try {
+
+          // creating new class loader
+          URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
+              .toURL()});
+          // execute the Main method
+          Class.forName(generatedClassName, true, classLoader)
+              .getDeclaredMethod("main", new Class[]{String[].class})
+              .invoke(null, new Object[]{null});
+
+          System.out.flush();
+          System.err.flush();
+
+          return baosOut.toString();
+
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+          LOGGER.error("Exception in Interpreter while execution", e);
+          System.err.println(e);
+          e.printStackTrace(newErr);
+          throw new Exception(baosErr.toString(), e);
+
+        }
       }
+      
+    } finally {
       System.out.flush();
       System.err.flush();
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
-      throw new Exception(baosErr.toString());
-    } else {
-      try {
-
-        // creating new class loader
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
-            .toURL()});
-        // execute the Main method
-        Class.forName(generatedClassName, true, classLoader)
-            .getDeclaredMethod("main", new Class[]{String[].class})
-            .invoke(null, new Object[]{null});
-
-        System.out.flush();
-        System.err.flush();
-
-        // set the stream to old stream
-        System.setOut(oldOut);
-        System.setErr(oldErr);
-
-        return baosOut.toString();
-
-      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-               | InvocationTargetException e) {
-        LOGGER.error("Exception in Interpreter while execution", e);
-        System.err.println(e);
-        e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString(), e);
-
-      } finally {
-
-        System.out.flush();
-        System.err.flush();
-
-        System.setOut(oldOut);
-        System.setErr(oldErr);
-      }
-    }
+    } 
 
   }
 
