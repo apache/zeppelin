@@ -40,6 +40,7 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   @Input('zeppelin-react-mount') module!: string;
   @Input() reactProps: ReactProps & ReactHostCallbacks = {};
 
+  private latestRawProps: ReactProps & ReactHostCallbacks = {};
   private latestProps: ReactProps & ReactHostCallbacks = {};
   private destroyed = false;
   private loading = false;
@@ -53,7 +54,8 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.latestProps = this.reactProps ?? {};
+    this.latestRawProps = this.reactProps ?? {};
+    this.latestProps = this.withHostCallbacks(this.latestRawProps);
 
     if (changes.module && !changes.module.firstChange && this.mountedModule) {
       // Module swap after first mount is unsupported. Report via onError
@@ -128,7 +130,7 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   }
 
   private reportError(error: unknown): void {
-    const onError = this.latestProps.onError;
+    const onError = this.latestRawProps.onError;
     if (typeof onError === 'function') {
       // Re-enter the Angular zone so onError handlers can safely mutate
       // host state and trigger change detection. React lifecycle callbacks
@@ -145,5 +147,24 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     } else {
       console.error('[ReactMountDirective]', error);
     }
+  }
+
+  private withHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
+    const onError = props.onError;
+    if (typeof onError !== 'function') {
+      return props;
+    }
+    return {
+      ...props,
+      onError: (error: unknown): void => {
+        this.ngZone.run(() => {
+          try {
+            onError(error);
+          } catch {
+            /* swallow callback errors; they shouldn't loop */
+          }
+        });
+      }
+    };
   }
 }
