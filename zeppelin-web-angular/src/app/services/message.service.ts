@@ -277,6 +277,10 @@ export class MessageService extends Message implements OnDestroy {
     super.runAllParagraphs(noteId, paragraphs);
   }
 
+  cancelAllParagraphs(noteId: string): void {
+    super.cancelAllParagraphs(noteId);
+  }
+
   paragraphRemove(paragraphId: string): void {
     super.paragraphRemove(paragraphId);
   }

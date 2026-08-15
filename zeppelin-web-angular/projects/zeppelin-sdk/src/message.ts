@@ -415,6 +415,10 @@ export class Message {
     });
   }
 
+  cancelAllParagraphs(noteId: string): void {
+    this.send<OP.CANCEL_ALL_PARAGRAPHS>(OP.CANCEL_ALL_PARAGRAPHS, { noteId });
+  }
+
   paragraphRemove(paragraphId: string): void {
     this.send<OP.PARAGRAPH_REMOVE>(OP.PARAGRAPH_REMOVE, { id: paragraphId });
   }
