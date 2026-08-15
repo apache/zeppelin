@@ -617,6 +617,36 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   }
 
   @Test
+  void testAbortAll() throws IOException {
+    String noteId = notebook.createNote("note1", anonymous);
+    notebook.processNote(noteId,
+      note -> {
+        Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p1.setText("p1");
+        p1.setStatus(Status.RUNNING);
+
+        Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p2.setText("p2");
+        p2.setStatus(Status.PENDING);
+
+        Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p3.setText("p3");
+        p3.setStatus(Status.FINISHED);
+
+        // when
+        note.abortAll();
+
+        // then
+        assertTrue(p1.isAborted());
+        assertTrue(p2.isAborted());
+        assertFalse(p3.isAborted());
+        assertEquals(Status.FINISHED, p3.getStatus());
+        return null;
+      });
+    notebook.removeNote(noteId, anonymous);
+  }
+
+  @Test
   void testSchedule() throws InterruptedException, IOException {
     // create a note and a paragraph
     String noteId = notebook.createNote("note1", anonymous);
