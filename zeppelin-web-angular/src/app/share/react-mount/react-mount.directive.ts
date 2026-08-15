@@ -132,11 +132,10 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   private reportError(error: unknown): void {
     const onError = this.latestRawProps.onError;
     if (typeof onError === 'function') {
-      // Re-enter the Angular zone so onError handlers can safely mutate
-      // host state and trigger change detection. React lifecycle callbacks
-      // (e.g. error boundaries) run outside the zone because we mounted
-      // there; calling back into the host without ngZone.run would leave
-      // markForCheck() with nothing to flush.
+      // Re-enter the Angular zone before calling back into the host. We mount
+      // the remote outside the zone, so React lifecycle callbacks (e.g. error
+      // boundaries) run outside it as well, and any async work the handler
+      // starts from there (timers, HTTP) would stay untracked by NgZone.
       this.ngZone.run(() => {
         try {
           onError(error);
