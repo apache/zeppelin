@@ -19,8 +19,10 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,6 +69,9 @@ import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.rest.exception.NoteNotFoundException;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -669,6 +674,62 @@ class NotebookServiceTest {
         assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
         return null;
       });
+  }
+
+  @Test
+  void testCancelAllParagraphs() throws IOException {
+    String note1Id = notebookService.createNote("note_cancel_all", "python", false, context, callback);
+    Paragraph p1 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p1");
+        p.setStatus(Status.RUNNING);
+        return p;
+      });
+    Paragraph p2 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p2");
+        p.setStatus(Status.FINISHED);
+        return p;
+      });
+
+    reset(callback);
+    notebookService.cancelAllParagraphs(note1Id, context, callback);
+
+    assertTrue(p1.isAborted());
+    assertFalse(p2.isAborted());
+    verify(callback).onSuccess(any(), eq(context));
+  }
+
+  @Test
+  void testCancelAllParagraphsForbidden() throws IOException {
+    String note1Id = notebookService.createNote("note_cancel_all_forbidden", "python", false, context, callback);
+    Paragraph p1 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p1");
+        p.setStatus(Status.RUNNING);
+        return p;
+      });
+
+    HashSet<String> otherUser = new HashSet<>();
+    otherUser.add("other_user");
+    authorizationService.setOwners(note1Id, otherUser);
+    authorizationService.setWriters(note1Id, otherUser);
+    authorizationService.setRunners(note1Id, otherUser);
+
+    reset(callback);
+    notebookService.cancelAllParagraphs(note1Id, context, callback);
+
+    assertFalse(p1.isAborted());
+    verify(callback).onFailure(any(ForbiddenException.class), eq(context));
+  }
+
+  @Test
+  void testCancelAllParagraphsNoteNotFound() {
+    assertThrows(NoteNotFoundException.class,
+        () -> notebookService.cancelAllParagraphs("non_existing_note_id", context, callback));
   }
 
   @Test
