@@ -20,7 +20,6 @@ package org.apache.zeppelin.interpreter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -592,19 +591,23 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       return Collections.emptyList();
     }
 
+    Path repository = interpreterLocalRepo.get();
     List<LibraryMetadata> metaDatas = new ArrayList<>();
     try (DirectoryStream<Path> libraries =
-             Files.newDirectoryStream(interpreterLocalRepo.get(), "*.jar")) {
+             Files.newDirectoryStream(repository, "*.jar")) {
       for (Path entry : libraries) {
-        Optional<Path> library = resolveLibrary(interpreter, entry.getFileName().toString());
-        if (library.isPresent()) {
-          try {
-            metaDatas.add(new LibraryMetadata(
-                library.get().getFileName().toString(),
-                FileUtils.checksumCRC32(library.get().toFile())));
-          } catch (IOException e) {
-            LOGGER.warn("Unable to calculate interpreter library checksum", e);
-          }
+        Optional<Path> library = resolveLibrary(repository, entry.getFileName().toString());
+        if (library.isEmpty()) {
+          continue;
+        }
+
+        Path libraryPath = library.get();
+        try {
+          metaDatas.add(new LibraryMetadata(
+              libraryPath.getFileName().toString(),
+              FileUtils.checksumCRC32(libraryPath.toFile())));
+        } catch (IOException e) {
+          LOGGER.warn("Unable to calculate interpreter library checksum", e);
         }
       }
     } catch (IOException e) {
@@ -616,7 +619,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public ByteBuffer getLibrary(String interpreter, String libraryName) throws TException {
-    Optional<Path> library = resolveLibrary(interpreter, libraryName);
+    Optional<Path> library = resolveInterpreterRepository(interpreter)
+        .flatMap(repository -> resolveLibrary(repository, libraryName));
     if (library.isEmpty()) {
       LOGGER.warn("Unable to resolve requested interpreter library");
       return null;
@@ -631,24 +635,27 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   private Optional<Path> resolveInterpreterRepository(String interpreter) {
-    if (!isSinglePathSegment(interpreter)) {
+    if (interpreter == null || interpreter.isBlank()) {
       return Optional.empty();
     }
 
     try {
       InterpreterSetting interpreterSetting =
           interpreterSettingManager.getInterpreterSettingByName(interpreter);
-      if (interpreterSetting == null
-          || !isSinglePathSegment(interpreterSetting.getId())) {
+      if (interpreterSetting == null || interpreterSetting.getId() == null) {
+        return Optional.empty();
+      }
+
+      Path repositoryName = Path.of(interpreterSetting.getId());
+      if (repositoryName.isAbsolute() || repositoryName.getNameCount() != 1) {
         return Optional.empty();
       }
 
       Path repositoryRoot = Path.of(
           zConf.getAbsoluteDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO))
           .toRealPath();
-      Path interpreterRepository = repositoryRoot.resolve(interpreterSetting.getId()).normalize();
+      Path interpreterRepository = repositoryRoot.resolve(repositoryName).normalize();
       if (!repositoryRoot.equals(interpreterRepository.getParent())
-          || Files.isSymbolicLink(interpreterRepository)
           || !Files.isDirectory(interpreterRepository, LinkOption.NOFOLLOW_LINKS)) {
         return Optional.empty();
       }
@@ -664,51 +671,31 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     }
   }
 
-  private Optional<Path> resolveLibrary(String interpreter, String libraryName) {
-    if (!isSinglePathSegment(libraryName) || !libraryName.endsWith(".jar")) {
-      return Optional.empty();
-    }
-
-    Optional<Path> interpreterRepository = resolveInterpreterRepository(interpreter);
-    if (interpreterRepository.isEmpty()) {
+  private Optional<Path> resolveLibrary(Path interpreterRepository, String libraryName) {
+    if (libraryName == null || !libraryName.endsWith(".jar")) {
       return Optional.empty();
     }
 
     try {
-      Path library = interpreterRepository.get().resolve(libraryName).normalize();
-      if (!interpreterRepository.get().equals(library.getParent())
-          || Files.isSymbolicLink(library)
+      Path libraryPath = Path.of(libraryName);
+      if (libraryPath.isAbsolute() || libraryPath.getNameCount() != 1) {
+        return Optional.empty();
+      }
+
+      Path library = interpreterRepository.resolve(libraryPath).normalize();
+      if (!interpreterRepository.equals(library.getParent())
           || !Files.isRegularFile(library, LinkOption.NOFOLLOW_LINKS)) {
         return Optional.empty();
       }
 
       Path realLibrary = library.toRealPath();
-      if (!realLibrary.startsWith(interpreterRepository.get())
-          || !interpreterRepository.get().equals(realLibrary.getParent())
-          || !Files.isRegularFile(realLibrary, LinkOption.NOFOLLOW_LINKS)) {
+      if (!interpreterRepository.equals(realLibrary.getParent())) {
         return Optional.empty();
       }
       return Optional.of(realLibrary);
     } catch (IOException | InvalidPathException e) {
       LOGGER.debug("Unable to resolve interpreter library", e);
       return Optional.empty();
-    }
-  }
-
-  private boolean isSinglePathSegment(String value) {
-    if (StringUtils.isBlank(value) || value.contains("/") || value.contains("\\")) {
-      return false;
-    }
-
-    try {
-      Path path = Path.of(value);
-      return !path.isAbsolute()
-          && path.getNameCount() == 1
-          && !".".equals(value)
-          && !"..".equals(value)
-          && path.equals(path.normalize());
-    } catch (InvalidPathException e) {
-      return false;
     }
   }
 
