@@ -21,10 +21,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.PreDestroy;
 import jakarta.inject.Inject;
 
@@ -76,6 +79,12 @@ public class LuceneSearch extends SearchService {
   private static final String SEARCH_FIELD_TITLE = "header";
   private static final String PARAGRAPH = "paragraph";
   private static final String ID_FIELD = "id";
+  /** Number of results a query returns at most. */
+  private static final int MAX_RESULTS = 20;
+  /** Number of hits pulled from the index per round while looking for readable ones. */
+  private static final int HIT_BATCH_SIZE = 20;
+  /** Only the id is needed to tell whether the caller may read a hit. */
+  private static final Set<String> ID_FIELD_ONLY = Collections.singleton(ID_FIELD);
 
   private final Directory indexDirectory;
   private final IndexWriter indexWriter;
@@ -113,7 +122,7 @@ public class LuceneSearch extends SearchService {
    * @see org.apache.zeppelin.search.Search#query(java.lang.String)
    */
   @Override
-  public List<Map<String, String>> query(String queryStr) {
+  public List<Map<String, String>> query(String queryStr, Predicate<String> readable) {
     if (null == indexDirectory) {
       throw new IllegalStateException(
           "Something went wrong on instance creation time, index dir is null");
@@ -134,7 +143,7 @@ public class LuceneSearch extends SearchService {
       SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
 
-      result = doSearch(indexSearcher, query, analyzer, highlighter);
+      result = doSearch(indexSearcher, query, analyzer, highlighter, readable);
     } catch (IOException e) {
       LOGGER.error("Failed to open index dir {}, make sure indexing finished OK", indexDirectory, e);
     } catch (ParseException e) {
@@ -144,70 +153,95 @@ public class LuceneSearch extends SearchService {
   }
 
   private List<Map<String, String>> doSearch(
-      IndexSearcher searcher, Query query, Analyzer analyzer, Highlighter highlighter) {
+      IndexSearcher searcher, Query query, Analyzer analyzer, Highlighter highlighter,
+      Predicate<String> readable) {
     List<Map<String, String>> matchingParagraphs = new ArrayList<>();
-    ScoreDoc[] hits;
+    Map<String, Boolean> readableNotes = new HashMap<>();
     try {
-      hits = searcher.search(query, 20).scoreDocs;
-      for (int i = 0; i < hits.length; i++) {
-        LOGGER.debug("doc={} score={}", hits[i].doc, hits[i].score);
-
-        int id = hits[i].doc;
-        Document doc = searcher.doc(id);
-        String path = doc.get(ID_FIELD);
-        if (path != null) {
-          LOGGER.debug( "{}. {}", (i + 1), path);
-          String title = doc.get("title");
-          if (title != null) {
-            LOGGER.debug("   Title: {}", doc.get("title"));
+      // Walk the hits in score order and keep the ones the caller may read until the result
+      // set is full or the hits run out. Reading is checked here and not on the result set,
+      // because a cut that runs first would hide results the caller is allowed to see.
+      ScoreDoc lastHit = null;
+      while (matchingParagraphs.size() < MAX_RESULTS) {
+        ScoreDoc[] hits = (lastHit == null
+            ? searcher.search(query, HIT_BATCH_SIZE)
+            : searcher.searchAfter(lastHit, query, HIT_BATCH_SIZE)).scoreDocs;
+        if (hits.length == 0) {
+          break;
+        }
+        lastHit = hits[hits.length - 1];
+        for (ScoreDoc hit : hits) {
+          if (matchingParagraphs.size() >= MAX_RESULTS) {
+            break;
           }
-
-          String text = doc.get(SEARCH_FIELD_TEXT);
-          String header = doc.get(SEARCH_FIELD_TITLE);
-          String fragment = "";
-
-          if (text != null) {
-            TokenStream tokenStream =
-                TokenSources.getTokenStream(
-                    searcher.getIndexReader(), id, SEARCH_FIELD_TEXT, analyzer);
-            TextFragment[] frags = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-            LOGGER.debug("    {} fragments found for query '{}'", frags.length, query);
-            for (TextFragment frag : frags) {
-              if ((frag != null) && (frag.getScore() > 0)) {
-                LOGGER.debug("    Fragment: {}", frag);
-              }
-            }
-            fragment = (frags != null && frags.length > 0) ? frags[0].toString() : "";
+          LOGGER.debug("doc={} score={}", hit.doc, hit.score);
+          // Read the id alone to decide on a hit. The rest of the document is only worth
+          // loading for the hits that end up in the result set.
+          String path = searcher.doc(hit.doc, ID_FIELD_ONLY).get(ID_FIELD);
+          if (path == null) {
+            LOGGER.info("No {} for this document", ID_FIELD);
+            continue;
           }
-
-          if (header != null) {
-            TokenStream tokenTitle =
-                TokenSources.getTokenStream(
-                    searcher.getIndexReader(), id, SEARCH_FIELD_TITLE, analyzer);
-            TextFragment[] frgTitle = highlighter.getBestTextFragments(tokenTitle, header, true, 3);
-            header = (frgTitle != null && frgTitle.length > 0) ? frgTitle[0].toString() : "";
-          } else {
-            header = "";
+          if (!readableNotes.computeIfAbsent(noteIdOf(path), readable::test)) {
+            continue;
           }
           matchingParagraphs.add(
-              ImmutableMap.<String, String>builder()
-                  .put("id", path)
-                  .put("name", title)
-                  .put("snippet", fragment)
-                  .put("text", text)
-                  .put("header", header)
-                  .put("title", header)
-                  .put("tables", "")
-                  .put("output", "")
-                  .build());
-        } else {
-          LOGGER.info("{}. No {} for this document", i + 1, ID_FIELD);
+              toMatch(searcher, query, analyzer, highlighter, hit.doc, searcher.doc(hit.doc)));
         }
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
       LOGGER.error("Exception on searching for {}", query, e);
     }
     return matchingParagraphs;
+  }
+
+  private Map<String, String> toMatch(IndexSearcher searcher, Query query, Analyzer analyzer,
+      Highlighter highlighter, int docId, Document doc)
+      throws IOException, InvalidTokenOffsetsException {
+    String path = doc.get(ID_FIELD);
+    String title = doc.get("title");
+    String text = doc.get(SEARCH_FIELD_TEXT);
+    String header = doc.get(SEARCH_FIELD_TITLE);
+    String fragment = "";
+
+    if (text != null) {
+      TokenStream tokenStream =
+          TokenSources.getTokenStream(
+              searcher.getIndexReader(), docId, SEARCH_FIELD_TEXT, analyzer);
+      TextFragment[] frags = highlighter.getBestTextFragments(tokenStream, text, true, 3);
+      LOGGER.debug("    {} fragments found for query '{}'", frags.length, query);
+      fragment = (frags != null && frags.length > 0) ? frags[0].toString() : "";
+    }
+
+    if (header != null) {
+      TokenStream tokenTitle =
+          TokenSources.getTokenStream(
+              searcher.getIndexReader(), docId, SEARCH_FIELD_TITLE, analyzer);
+      TextFragment[] frgTitle = highlighter.getBestTextFragments(tokenTitle, header, true, 3);
+      header = (frgTitle != null && frgTitle.length > 0) ? frgTitle[0].toString() : "";
+    } else {
+      header = "";
+    }
+    return ImmutableMap.<String, String>builder()
+        .put("id", path)
+        .put("name", title)
+        .put("snippet", fragment)
+        .put("text", text)
+        .put("header", header)
+        .put("title", header)
+        .put("tables", "")
+        .put("output", "")
+        .build();
+  }
+
+  /**
+   * The id of an indexed document is either a noteId or a noteId followed by the paragraph.
+   *
+   * @see #formatId(String, Paragraph)
+   */
+  private static String noteIdOf(String documentId) {
+    int separator = documentId.indexOf('/');
+    return separator < 0 ? documentId : documentId.substring(0, separator);
   }
 
   /* (non-Javadoc)
