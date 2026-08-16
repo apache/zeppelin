@@ -89,6 +89,7 @@ src/
 │   └── PublishedParagraph.tsx   # entry component + mount()
 ├── templates/
 │   └── SingleResultRenderer.tsx # routes result types to renderers
+├── theme/               # host theme detection, antd + chart.js theming
 ├── utils/               # tableUtils, textUtils, exportFile
 └── main.ts              # re-exports for Module Federation
 ```
@@ -109,12 +110,18 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
 
 1. Create a component (e.g. `src/components/<area>/ExampleFeature.tsx`).
 2. Wrap its render tree in `<ReactErrorBoundary onError={props.onError}>`.
-3. Export a `mount(element, props)` function that:
+3. Wrap it in `<ZeppelinThemeProvider>` as well (see `src/theme/`), otherwise
+   antd builds its styles from the default light algorithm and the module only
+   looks right in dark mode while the shell's global `.ant-*` rules happen to
+   cover the components in use. Pass surface specific tokens through its
+   `token` prop, and read `useHostThemeMode()` when you draw outside antd, as
+   a canvas chart does.
+4. Export a `mount(element, props)` function that:
    - Creates a single `Root` via `createRoot(element)`.
    - Calls `root.render(<Wrapped {...props}/>)` on initial mount AND on
      every `update(newProps)` call. React's reconciler preserves state.
    - Returns `{ update, unmount }`. `unmount` calls `root.unmount()`.
-4. Register in `webpack.config.js` under `exposes`:
+5. Register in `webpack.config.js` under `exposes`:
    ```js
    exposes: {
      './PublishedParagraph': './src/pages/PublishedParagraph',
@@ -122,14 +129,14 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
      './ExampleFeature': './src/components/<area>/ExampleFeature'
    }
    ```
-5. Re-export from `main.ts`:
+6. Re-export from `main.ts`:
    ```ts
    export {
      ExampleFeature,
      mount as mountExampleFeature
    } from './components/<area>/ExampleFeature';
    ```
-6. Use from Angular by adding the directive to your template:
+7. Use from Angular by adding the directive to your template:
    ```html
    <div
      zeppelin-react-mount="./ExampleFeature"
