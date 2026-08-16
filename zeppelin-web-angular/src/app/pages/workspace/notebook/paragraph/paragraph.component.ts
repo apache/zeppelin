@@ -197,7 +197,7 @@ export class NotebookParagraphComponent
   }
 
   sendPatch() {
-    if (!this.dirtyText) {
+    if (this.dirtyText === undefined) {
       throw new Error('dirtyText is required');
     }
     this.originalText = this.originalText ? this.originalText : '';
