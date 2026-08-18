@@ -602,6 +602,26 @@ public class NotebookService {
 
   }
 
+  public void cancelAllParagraphs(String noteId,
+                                  ServiceContext context,
+                                  ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.CANCEL_ALL_PARAGRAPHS, context,
+        callback)) {
+      return;
+    }
+
+    notebook.processNote(noteId,
+      note -> {
+        if (note == null) {
+          throw new NoteNotFoundException(noteId);
+        }
+        note.abortAll();
+        callback.onSuccess(null, context);
+        return null;
+      });
+
+  }
+
   public void moveParagraph(String noteId,
                             String paragraphId,
                             int newIndex,

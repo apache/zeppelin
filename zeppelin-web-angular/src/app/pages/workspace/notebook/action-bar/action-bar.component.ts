@@ -154,6 +154,10 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     );
   }
 
+  cancelAllParagraphs() {
+    this.messageService.cancelAllParagraphs(this.note.id);
+  }
+
   clearAllParagraphOutput() {
     this.messageService.paragraphClearAllOutput(this.note.id);
   }

@@ -178,6 +178,10 @@ export interface RunAllParagraphs {
   paragraphs: string;
 }
 
+export interface CancelAllParagraphs {
+  noteId: string;
+}
+
 export interface InsertParagraph {
   index: number;
 }

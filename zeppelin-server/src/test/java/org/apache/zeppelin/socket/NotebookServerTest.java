@@ -238,6 +238,52 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testCancelAllParagraphsNotDisabledForRunningNotes() {
+    assertFalse(Message.isDisabledForRunningNotes(OP.CANCEL_ALL_PARAGRAPHS));
+  }
+
+  @Test
+  void testCancelAllParagraphsWebSocket() throws IOException {
+    NotebookSocket sock1 = createWebSocket();
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    notebookServer.onMessage(sock1, new Message(OP.NEW_NOTE).put("name", noteName).toJson());
+    NoteInfo createdNoteInfo = null;
+    for (NoteInfo noteInfo : notebook.getNotesInfo()) {
+      if (notebook.processNote(noteInfo.getId(), Note::getName).equals(noteName)) {
+        createdNoteInfo = noteInfo;
+        break;
+      }
+    }
+    String noteId = createdNoteInfo.getId();
+
+    notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", noteId).toJson());
+
+    Paragraph paragraph = notebook.processNote(noteId,
+      note -> {
+        Paragraph p = note.getParagraphs().get(0);
+        p.setStatus(Status.RUNNING);
+        // simulate a sequential run in progress
+        note.setRunning(true);
+        return p;
+      });
+
+    try {
+      notebookServer.onMessage(sock1,
+          new Message(OP.CANCEL_ALL_PARAGRAPHS).put("noteId", noteId).toJson());
+
+      assertTrue(paragraph.isAborted());
+    } finally {
+      notebook.processNote(noteId,
+        note -> {
+          note.setRunning(false);
+          return null;
+        });
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
   void testCollaborativeEditing() throws IOException {
     if (!zepServer.getZeppelinConfiguration().isZeppelinNotebookCollaborativeModeEnable()) {
       return;

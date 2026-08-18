@@ -445,6 +445,12 @@ export enum OP {
 
   /**
    * [c-s]
+   * cancel all paragraphs
+   */
+  CANCEL_ALL_PARAGRAPHS = 'CANCEL_ALL_PARAGRAPHS',
+
+  /**
+   * [c-s]
    * paragraph was executed by spell
    */
   PARAGRAPH_EXECUTED_BY_SPELL = 'PARAGRAPH_EXECUTED_BY_SPELL',

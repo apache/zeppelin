@@ -887,11 +887,7 @@ public class NotebookRestApi extends AbstractRestApi {
       note -> {
         checkIfNoteIsNotNull(note, noteId);
         checkIfUserCanRun(noteId, "Insufficient privileges you cannot stop this job for this note");
-        for (Paragraph p : note.getParagraphs()) {
-          if (!p.isTerminated()) {
-            p.abort();
-          }
-        }
+        note.abortAll();
         return new JsonResponse<>(Status.OK).build();
       });
   }

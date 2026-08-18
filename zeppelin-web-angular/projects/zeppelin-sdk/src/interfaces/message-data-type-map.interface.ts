@@ -59,6 +59,7 @@ import {
   AngularObjectRemove,
   AngularObjectUpdate,
   AngularObjectUpdated,
+  CancelAllParagraphs,
   CancelParagraph,
   CommitParagraph,
   Completion,
@@ -154,6 +155,7 @@ export interface MessageSendDataTypeMap {
   [OP.PARAGRAPH_EXECUTED_BY_SPELL]: ParagraphExecutedBySpell;
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
+  [OP.CANCEL_ALL_PARAGRAPHS]: CancelAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;
   [OP.PARAGRAPH_CLEAR_OUTPUT]: ParagraphClearOutput;
   [OP.PARAGRAPH_CLEAR_ALL_OUTPUT]: ParagraphClearAllOutput;

@@ -387,6 +387,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
         case CANCEL_PARAGRAPH:
           cancelParagraph(conn, context, receivedMessage);
           break;
+        case CANCEL_ALL_PARAGRAPHS:
+          cancelAllParagraphs(conn, context, receivedMessage);
+          break;
         case MOVE_PARAGRAPH:
           moveParagraph(conn, context, receivedMessage);
           break;
@@ -1480,6 +1483,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
     final String paragraphId = (String) fromMessage.get("id");
     String noteId = connectionManager.getAssociatedNoteId(conn);
     getNotebookService().cancelParagraph(noteId, paragraphId, context, new WebSocketServiceCallback<>(conn));
+  }
+
+  private void cancelAllParagraphs(NotebookSocket conn, ServiceContext context, Message fromMessage) throws IOException {
+    final String noteId = (String) fromMessage.get("noteId");
+    getNotebookService().cancelAllParagraphs(noteId, context, new WebSocketServiceCallback<>(conn));
   }
 
   private void runAllParagraphs(NotebookSocket conn,

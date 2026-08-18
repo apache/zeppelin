@@ -192,6 +192,7 @@ public class Message implements JsonSerializable {
     PARAGRAPH_MOVED,              // [s-c] paragraph moved
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
+    CANCEL_ALL_PARAGRAPHS,        // [c-s] cancel(abort) all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
