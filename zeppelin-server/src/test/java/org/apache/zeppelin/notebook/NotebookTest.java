@@ -31,7 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
@@ -61,7 +60,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -191,16 +189,6 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-
-    }
-
-    @Override
     public NoteParser getNoteParser() {
       return null;
     }
@@ -273,16 +261,6 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
     @Override
     public void close() {
-
-    }
-
-    @Override
-    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
     }
 
