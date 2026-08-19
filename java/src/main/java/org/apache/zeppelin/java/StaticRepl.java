@@ -137,30 +137,28 @@ public class StaticRepl {
 
         LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
         throw new Exception(baosErr.toString());
-      } else {
-        try {
+      }
 
-          // creating new class loader
-          URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
-              .toURL()});
-          // execute the Main method
-          Class.forName(generatedClassName, true, classLoader)
-              .getDeclaredMethod("main", new Class[]{String[].class})
-              .invoke(null, new Object[]{null});
+      try {
+        // creating new class loader
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
+            .toURL()});
+        // execute the Main method
+        Class.forName(generatedClassName, true, classLoader)
+            .getDeclaredMethod("main", new Class[]{String[].class})
+            .invoke(null, new Object[]{null});
 
-          System.out.flush();
-          System.err.flush();
+        System.out.flush();
+        System.err.flush();
 
-          return baosOut.toString();
+        return baosOut.toString();
 
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-                | InvocationTargetException e) {
-          LOGGER.error("Exception in Interpreter while execution", e);
-          System.err.println(e);
-          e.printStackTrace(newErr);
-          throw new Exception(baosErr.toString(), e);
-
-        }
+      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+              | InvocationTargetException e) {
+        LOGGER.error("Exception in Interpreter while execution", e);
+        System.err.println(e);
+        e.printStackTrace(newErr);
+        throw new Exception(baosErr.toString(), e);
       }
 
     } finally {
