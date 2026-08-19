@@ -94,9 +94,6 @@ public class StaticRepl {
     // replace name of class containing Main method with generated name
     code = code.replace(mainClassName, generatedClassName);
 
-    JavaFileObject file = new JavaSourceFromString(generatedClassName, code);
-    Iterable<? extends JavaFileObject> compilationUnits = List.of(file);
-
     ByteArrayOutputStream baosOut = new ByteArrayOutputStream();
     ByteArrayOutputStream baosErr = new ByteArrayOutputStream();
 
@@ -112,55 +109,7 @@ public class StaticRepl {
       System.setOut(newOut);
       System.setErr(newErr);
 
-      DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-      CompilationTask task = compiler.getTask(null,
-          null,
-          diagnostics,
-          null,
-          null,
-          compilationUnits);
-
-      // executing the compilation process
-      boolean success = task.call();
-
-      // if success is false will get error
-      if (!success) {
-        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-          if (diagnostic.getLineNumber() == -1) {
-            continue;
-          }
-          System.err.println("line " + diagnostic.getLineNumber() + " : "
-              + diagnostic.getMessage(null));
-        }
-        System.out.flush();
-        System.err.flush();
-
-        LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
-        throw new Exception(baosErr.toString());
-      }
-
-      try {
-        // creating new class loader
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
-            .toURL()});
-        // execute the Main method
-        Class.forName(generatedClassName, true, classLoader)
-            .getDeclaredMethod("main", new Class[]{String[].class})
-            .invoke(null, new Object[]{null});
-
-        System.out.flush();
-        System.err.flush();
-
-        return baosOut.toString();
-
-      } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
-              | InvocationTargetException e) {
-        LOGGER.error("Exception in Interpreter while execution", e);
-        System.err.println(e);
-        e.printStackTrace(newErr);
-        throw new Exception(baosErr.toString(), e);
-      }
-
+      return compileAndRun(generatedClassName, code, compiler, baosOut, baosErr, newErr);
     } finally {
       System.out.flush();
       System.err.flush();
@@ -169,6 +118,67 @@ public class StaticRepl {
       System.setErr(oldErr);
     }
 
+  }
+
+  private static String compileAndRun(
+      String generatedClassName,
+      String code,
+      JavaCompiler compiler,
+      ByteArrayOutputStream baosOut,
+      ByteArrayOutputStream baosErr,
+      PrintStream newErr) throws Exception {
+
+    JavaFileObject file = new JavaSourceFromString(generatedClassName, code);
+    Iterable<? extends JavaFileObject> compilationUnits = List.of(file);
+
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+    CompilationTask task = compiler.getTask(null,
+        null,
+        diagnostics,
+        null,
+        null,
+        compilationUnits);
+
+    // executing the compilation process
+    boolean success = task.call();
+
+    // if success is false will get error
+    if (!success) {
+      for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+        if (diagnostic.getLineNumber() == -1) {
+          continue;
+        }
+        System.err.println("line " + diagnostic.getLineNumber() + " : "
+            + diagnostic.getMessage(null));
+      }
+      System.out.flush();
+      System.err.flush();
+
+      LOGGER.error("Exception in Interpreter while compilation", baosErr.toString());
+      throw new Exception(baosErr.toString());
+    }
+
+    try {
+      // creating new class loader
+      URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
+          .toURL()});
+      // execute the Main method
+      Class.forName(generatedClassName, true, classLoader)
+          .getDeclaredMethod("main", new Class[]{String[].class})
+          .invoke(null, new Object[]{null});
+
+      System.out.flush();
+      System.err.flush();
+
+      return baosOut.toString();
+
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+            | InvocationTargetException e) {
+      LOGGER.error("Exception in Interpreter while execution", e);
+      System.err.println(e);
+      e.printStackTrace(newErr);
+      throw new Exception(baosErr.toString(), e);
+    }
   }
 
 }
