@@ -509,7 +509,7 @@ public class KerberosRealm extends AuthorizingRealm {
                 isCookiePersistent(), isHttps);
           }
           KerberosToken kerberosToken = new KerberosToken(token.getUserName(), token.toString());
-          SecurityUtils.getSubject().login(kerberosToken);
+          loginIfNecessary(SecurityUtils.getSubject(), kerberosToken);
           doFilter(filterChain, httpRequest, httpResponse);
         }
       } else {
@@ -546,6 +546,15 @@ public class KerberosRealm extends AuthorizingRealm {
         }
       }
     }
+  }
+
+  void loginIfNecessary(
+      org.apache.shiro.subject.Subject subject, KerberosToken kerberosToken) {
+    if (subject.isAuthenticated()
+        && Objects.equals(subject.getPrincipal(), kerberosToken.getPrincipal())) {
+      return;
+    }
+    subject.login(kerberosToken);
   }
 
   /**

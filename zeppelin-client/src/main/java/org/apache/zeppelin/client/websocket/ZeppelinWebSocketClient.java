@@ -61,13 +61,16 @@ public class ZeppelinWebSocketClient {
   }
 
   public void connect(String url) throws Exception {
+    connect(url, "");
+  }
+
+  public void connect(String url, String cookieHeader) throws Exception {
+    URI webSocketUri = new URI(url);
+    ClientUpgradeRequest request = createUpgradeRequest(webSocketUri, cookieHeader);
     this.wsClient = new WebSocketClient();
-    wsClient.start();
-    URI echoUri = new URI(url);
-    ClientUpgradeRequest request = new ClientUpgradeRequest();
-    request.setHeader("Origin", "*");
-    CompletableFuture<Session> future = wsClient.connect(this, echoUri, request);
     try {
+      wsClient.start();
+      CompletableFuture<Session> future = wsClient.connect(this, webSocketUri, request);
       future.get(DEFAULT_CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     } catch (TimeoutException e) {
       stopQuietly();
@@ -77,8 +80,38 @@ public class ZeppelinWebSocketClient {
       stopQuietly();
       throw new IOException("Failed to establish websocket connection to " + url,
               e.getCause());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      stopQuietly();
+      throw e;
+    } catch (Exception e) {
+      stopQuietly();
+      throw e;
     }
     LOGGER.info("WebSocket connect established");
+  }
+
+  static ClientUpgradeRequest createUpgradeRequest(
+      URI webSocketUri, String cookieHeader) throws Exception {
+    String scheme = webSocketUri.getScheme();
+    if (!("ws".equalsIgnoreCase(scheme) || "wss".equalsIgnoreCase(scheme))
+        || webSocketUri.getHost() == null
+        || webSocketUri.getUserInfo() != null) {
+      throw new IllegalArgumentException("Expected an absolute ws or wss URI without credentials");
+    }
+
+    ClientUpgradeRequest request = new ClientUpgradeRequest();
+    if (cookieHeader != null && !cookieHeader.trim().isEmpty()) {
+      request.setHeader("Cookie", cookieHeader);
+    }
+    String httpScheme = "wss".equalsIgnoreCase(scheme) ? "https" : "http";
+    int port = webSocketUri.getPort();
+    int originPort = ("http".equals(httpScheme) && port == 80)
+        || ("https".equals(httpScheme) && port == 443) ? -1 : port;
+    URI origin = new URI(
+        httpScheme, null, webSocketUri.getHost(), originPort, null, null, null);
+    request.setHeader("Origin", origin.toASCIIString());
+    return request;
   }
 
   public void addStatementMessageHandler(String statementId,

@@ -161,8 +161,12 @@ public class WebDriverManager implements Closeable {
         (new WebDriverWait(driver, Duration.ofSeconds(60))).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
-            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
-                .isDisplayed();
+            boolean websocketConnected =
+                d.findElements(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
+                    .stream().anyMatch(element -> element.isDisplayed());
+            boolean authenticationRequired = d.findElements(By.id("loginModal"))
+                .stream().anyMatch(element -> element.isDisplayed());
+            return websocketConnected || authenticationRequired;
           }
         });
         loaded = true;

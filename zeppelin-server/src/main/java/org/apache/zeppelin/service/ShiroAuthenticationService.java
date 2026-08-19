@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.service;
 
+import java.io.Serializable;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,6 +48,7 @@ import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.JdbcUtils;
@@ -85,10 +87,15 @@ public class ShiroAuthenticationService implements AuthenticationService {
     this.zConf = zConf;
     if (zConf.getShiroPath().length() > 0) {
       try {
+        DefaultSecurityManager securityManager =
+            (DefaultSecurityManager) ThreadContext.getSecurityManager();
+        if (securityManager == null) {
+          throw new UnavailableSecurityManagerException(
+              "No Shiro SecurityManager is bound to the current request");
+        }
         Collection<Realm> realms =
-            ((DefaultSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-                .getRealms();
-        if (realms.size() > 1) {
+            securityManager.getRealms();
+        if (realms != null && realms.size() > 1) {
           boolean isIniRealmEnabled = false;
           for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
@@ -108,6 +115,21 @@ public class ShiroAuthenticationService implements AuthenticationService {
     }
   }
 
+  /** Capture the current Shiro subject as one immutable identity snapshot. */
+  @Override
+  public AuthenticatedIdentity getAuthenticatedIdentity() {
+    Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+    if (!subject.isAuthenticated()) {
+      return AuthenticatedIdentity.anonymous();
+    }
+
+    String principal = getAuthenticatedPrincipal(subject);
+    Set<String> roles = getAssociatedRoles(subject, principal);
+    Session session = subject.getSession(false);
+    Serializable sessionId = session == null ? null : session.getId();
+    return new AuthenticatedIdentity(principal, roles, true, sessionId);
+  }
+
   /**
    * Return the authenticated user if any otherwise returns "anonymous".
    *
@@ -116,19 +138,23 @@ public class ShiroAuthenticationService implements AuthenticationService {
   @Override
   public String getPrincipal() {
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
-
-    String principal;
-    if (subject.isAuthenticated()) {
-      principal = extractPrincipal(subject);
-      if (zConf.isUsernameForceLowerCase()) {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Converting principal name {} to lower case: {}", principal, principal.toLowerCase());
-        }
-        principal = principal.toLowerCase();
-      }
-    } else {
+    if (!subject.isAuthenticated()) {
       // TODO(jl): Could be better to occur error?
-      principal = "anonymous";
+      return AuthenticatedIdentity.ANONYMOUS_PRINCIPAL;
+    }
+    return getAuthenticatedPrincipal(subject);
+  }
+
+  private String getAuthenticatedPrincipal(Subject subject) {
+    String principal = extractPrincipal(subject);
+    if (zConf.isUsernameForceLowerCase()) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            "Converting principal name {} to lower case: {}",
+            principal,
+            principal.toLowerCase());
+      }
+      principal = principal.toLowerCase();
     }
     return principal;
   }
@@ -228,43 +254,48 @@ public class ShiroAuthenticationService implements AuthenticationService {
   @Override
   public Set<String> getAssociatedRoles() {
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+    if (!subject.isAuthenticated()) {
+      return new HashSet<>();
+    }
+    return getAssociatedRoles(subject, getAuthenticatedPrincipal(subject));
+  }
+
+  private Set<String> getAssociatedRoles(Subject subject, String principal) {
     Set<String> roles = new HashSet<>();
     Map<String, String> allRoles = null;
 
-    if (subject.isAuthenticated()) {
-      Collection<Realm> realmsList = getRealmsList();
-      for (Realm realm : realmsList) {
-        String name = realm.getClass().getName();
-        if (INI_REALM.equals(name)) {
-          allRoles = ((IniRealm) realm).getIni().get("roles");
-          break;
-        } else if (LDAP_REALM.equals(name)) {
-          try {
-            AuthorizationInfo auth =
-                ((LdapRealm) realm)
-                    .queryForAuthorizationInfo(
-                        new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
-                        ((LdapRealm) realm).getContextFactory());
-            if (auth != null) {
-              roles = new HashSet<>(auth.getRoles());
-            }
-          } catch (NamingException e) {
-            LOGGER.error("Can't fetch roles", e);
+    Collection<Realm> realmsList = getRealmsList();
+    for (Realm realm : realmsList) {
+      String name = realm.getClass().getName();
+      if (INI_REALM.equals(name)) {
+        allRoles = ((IniRealm) realm).getIni().get("roles");
+        break;
+      } else if (LDAP_REALM.equals(name)) {
+        try {
+          AuthorizationInfo auth =
+              ((LdapRealm) realm)
+                  .queryForAuthorizationInfo(
+                      new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
+                      ((LdapRealm) realm).getContextFactory());
+          if (auth != null) {
+            roles = new HashSet<>(auth.getRoles());
           }
-          break;
-        } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(name)) {
-          allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
-          break;
-        } else if (realm instanceof KnoxJwtRealm) {
-          roles = ((KnoxJwtRealm) realm).mapGroupPrincipals(getPrincipal());
-          break;
+        } catch (NamingException e) {
+          LOGGER.error("Can't fetch roles", e);
         }
+        break;
+      } else if (ACTIVE_DIRECTORY_GROUP_REALM.equals(name)) {
+        allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
+        break;
+      } else if (realm instanceof KnoxJwtRealm) {
+        roles = ((KnoxJwtRealm) realm).mapGroupPrincipals(principal);
+        break;
       }
-      if (allRoles != null) {
-        for (Map.Entry<String, String> pair : allRoles.entrySet()) {
-          if (subject.hasRole(pair.getKey())) {
-            roles.add(pair.getKey());
-          }
+    }
+    if (allRoles != null) {
+      for (Map.Entry<String, String> pair : allRoles.entrySet()) {
+        if (subject.hasRole(pair.getKey())) {
+          roles.add(pair.getKey());
         }
       }
     }

@@ -26,8 +26,6 @@ import io.micrometer.core.instrument.Tags;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.SocketTimeoutException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -53,6 +51,7 @@ import jakarta.websocket.server.ServerEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
@@ -86,17 +85,18 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
+import org.apache.zeppelin.service.AuthenticatedSessionService;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.AuthenticatedSessionService.SessionAuthenticationException;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
-import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.IdHashes;
-import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.ServerUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
@@ -106,7 +106,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.zeppelin.common.Message.MSG_ID_NOT_DEFINED;
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS;
 
 /**
  * Zeppelin websocket service. This class used setter injection because all servlet should have
@@ -149,6 +148,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
   private ConnectionManager connectionManager;
+  private AuthenticatedSessionService authenticatedSessionService;
   private ZeppelinConfiguration zConf;
   private Provider<Notebook> notebookProvider;
   private Provider<NoteParser> noteParser;
@@ -207,6 +207,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
     return this.connectionManager;
   }
 
+  @Inject
+  public void setAuthenticatedSessionService(
+      AuthenticatedSessionService authenticatedSessionService) {
+    this.authenticatedSessionService = authenticatedSessionService;
+  }
+
 
   @Inject
   public void setConfigurationService(
@@ -236,40 +242,62 @@ public class NotebookServer implements AngularObjectRegistryListener,
     return jobManagerServiceProvider.get();
   }
 
-  public boolean checkOrigin(String origin) {
-    try {
-      return CorsUtils.isValidOrigin(origin, zConf);
-    } catch (UnknownHostException | URISyntaxException e) {
-      LOGGER.error(e.toString(), e);
-    }
-    return false;
-  }
-
   @OnOpen
   public void onOpen(Session session, EndpointConfig endpointConfig) throws IOException {
 
     LOGGER.info("Open connection to {} with Session: {}, config: {}", ServerUtils.getRemoteAddress(session), session, endpointConfig.getUserProperties().keySet());
 
     Map<String, Object> headers = endpointConfig.getUserProperties();
-    String origin = String.valueOf(headers.get(CorsUtils.HEADER_ORIGIN));
-    if (checkOrigin(origin)) {
-      NotebookSocket notebookSocket = sessionIdNotebookSocketMap
-          .computeIfAbsent(session.getId(), unused -> new NotebookSocket(session, headers));
+    Object capturedIdentity = headers.get(SessionConfigurator.AUTHENTICATED_IDENTITY);
+    if (!(capturedIdentity instanceof AuthenticatedIdentity)) {
+      session.close(new CloseReason(
+          CloseReason.CloseCodes.VIOLATED_POLICY,
+          "Authentication state was not established"));
+      return;
+    }
+
+    SecurityManager securityManager = (SecurityManager) headers.get(
+        SessionConfigurator.AUTHENTICATION_SECURITY_MANAGER);
+    NotebookSocket notebookSocket = null;
+    try {
+      AuthenticatedIdentity identity = authenticatedSessionService.refresh(
+          (AuthenticatedIdentity) capturedIdentity, securityManager, false);
+      notebookSocket = new NotebookSocket(
+          session, headers, identity, securityManager, authenticatedSessionService);
+      sessionIdNotebookSocketMap.put(session.getId(), notebookSocket);
       onOpen(notebookSocket);
-    } else {
-      LOGGER.error("Websocket request is not allowed by {} settings. Origin: {}", ZEPPELIN_ALLOWED_ORIGINS,
-          origin);
-      session.close();
+      // Close the race between initial validation and connection registration.
+      authenticatedSessionService.validate(identity, securityManager);
+    } catch (SessionAuthenticationException e) {
+      if (notebookSocket != null) {
+        sessionIdNotebookSocketMap.remove(session.getId(), notebookSocket);
+        removeConnection(notebookSocket);
+      }
+      session.close(new CloseReason(
+          CloseReason.CloseCodes.VIOLATED_POLICY,
+          "Authentication session is no longer valid"));
     }
   }
 
   public void onOpen(NotebookSocket conn) {
     connectionManager.addConnection(conn);
+    connectionManager.addUserConnection(
+        conn.getAuthenticatedIdentity().getPrincipal(), conn);
   }
 
   @OnMessage
   public void onMessage(Session session, String msg) {
     NotebookSocket conn = sessionIdNotebookSocketMap.get(session.getId());
+    if (conn == null) {
+      try {
+        session.close(new CloseReason(
+            CloseReason.CloseCodes.VIOLATED_POLICY,
+            "Authentication state was not established"));
+      } catch (IOException e) {
+        LOGGER.debug("Failed to close unregistered WebSocket session", e);
+      }
+      return;
+    }
     onMessage(conn, msg);
   }
 
@@ -277,34 +305,23 @@ public class NotebookServer implements AngularObjectRegistryListener,
     Message receivedMessage = null;
     try {
       receivedMessage = deserializeMessage(msg);
+      String authenticatedPrincipal = conn.getAuthenticatedIdentity() == null
+          ? "unknown" : conn.getAuthenticatedIdentity().getPrincipal();
       if (receivedMessage.op != OP.PING) {
         LOGGER.debug("WebSocket message received: operation={}, principal={}",
-            receivedMessage.op, receivedMessage.principal);
+            receivedMessage.op, authenticatedPrincipal);
       }
       LOGGER.trace("WebSocket message processing started: operation={}, principal={}",
-          receivedMessage.op, receivedMessage.principal);
+          receivedMessage.op, authenticatedPrincipal);
 
-      TicketContainer.Entry ticketEntry = TicketContainer.instance.getTicketEntry(receivedMessage.principal);
-      if (ticketEntry == null || StringUtils.isEmpty(ticketEntry.getTicket())) {
-        LOGGER.debug("{} message: no ticket on file for principal {}",
-            receivedMessage.op, receivedMessage.principal);
-        return;
-      } else if (!ticketEntry.getTicket().equals(receivedMessage.ticket)) {
-        /* not to pollute logs, log instead of exception */
-        LOGGER.debug("{} message: ticket mismatch for principal {}",
-            receivedMessage.op, receivedMessage.principal);
-        if (!receivedMessage.op.equals(OP.PING)) {
-          conn.send(serializeMessage(new Message(OP.SESSION_LOGOUT).put("info",
-              "Your ticket is invalid possibly due to server restart. Please login again.")));
-        }
-
-        return;
-      }
-
-      boolean allowAnonymous = zConf.isAnonymousAllowed();
-      if (!allowAnonymous && receivedMessage.principal.equals("anonymous")) {
-        LOGGER.warn("Anonymous access not allowed.");
-        return;
+      AuthenticatedIdentity identity;
+      if (receivedMessage.op == OP.PING) {
+        authenticatedSessionService.validate(
+            conn.getAuthenticatedIdentity(), conn.getAuthenticationSecurityManager());
+        identity = conn.getAuthenticatedIdentity();
+      } else {
+        identity = authenticatedSessionService.refresh(
+            conn.getAuthenticatedIdentity(), conn.getAuthenticationSecurityManager(), true);
       }
 
       if (Message.isDisabledForRunningNotes(receivedMessage.op)) {
@@ -315,10 +332,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         }
       }
 
-      if (StringUtils.isEmpty(conn.getUser())) {
-        connectionManager.addUserConnection(receivedMessage.principal, conn);
-      }
-      ServiceContext context = getServiceContext(ticketEntry);
+      ServiceContext context = identity.toServiceContext();
       // Lets be elegant here
       switch (receivedMessage.op) {
         case LIST_NOTES:
@@ -485,11 +499,22 @@ public class NotebookServer implements AngularObjectRegistryListener,
         default:
           break;
       }
+    } catch (SessionAuthenticationException e) {
+      LOGGER.debug("Closing WebSocket with invalid authentication session: errorType={}",
+          e.getClass().getSimpleName());
+      try {
+        conn.close(new CloseReason(
+            CloseReason.CloseCodes.VIOLATED_POLICY,
+            "Authentication session is no longer valid"));
+      } catch (IOException closeException) {
+        LOGGER.debug("Failed to close WebSocket with invalid authentication session: errorType={}",
+            closeException.getClass().getSimpleName());
+      }
     } catch (Exception e) {
       String operation = receivedMessage == null || receivedMessage.op == null
           ? "unknown" : receivedMessage.op.name();
-      String principal = receivedMessage == null || StringUtils.isEmpty(receivedMessage.principal)
-          ? "unknown" : receivedMessage.principal;
+      String principal = conn.getAuthenticatedIdentity() == null
+          ? "unknown" : conn.getAuthenticatedIdentity().getPrincipal();
       LOGGER.error("WebSocket message handling completed: operation={}, principal={}, "
               + "success=false, errorType={}",
           operation, principal, e.getClass().getSimpleName());
@@ -1308,8 +1333,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
-    String user = fromMessage.principal;
-
     getNotebookService().updateAngularObject(noteId, paragraphId, interpreterGroupId,
         varName, varValue, context,
         new WebSocketServiceCallback<AngularObject>(conn) {
@@ -2319,15 +2342,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     Message m = new Message(OP.NOTICE);
     m.data.put("notice", message);
     connectionManager.broadcast(m);
-  }
-
-  private ServiceContext getServiceContext(TicketContainer.Entry ticketEntry) {
-    AuthenticationInfo authInfo =
-        new AuthenticationInfo(ticketEntry.getPrincipal(), ticketEntry.getRoles(), ticketEntry.getTicket());
-    Set<String> userAndRoles = new HashSet<>();
-    userAndRoles.add(authInfo.getUser());
-    userAndRoles.addAll(authInfo.getRoles());
-    return new ServiceContext(authInfo, userAndRoles);
   }
 
   public class WebSocketServiceCallback<T> extends SimpleServiceCallback<T> {

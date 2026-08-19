@@ -18,20 +18,26 @@ package org.apache.zeppelin.service;
 
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.lang.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
@@ -100,6 +106,45 @@ class ShiroAuthenticationServiceTest extends AbstractShiroTest {
     when(zConf.isUsernameForceLowerCase()).thenReturn(true);
     setupPrincipalName(expectedName);
     assertEquals(expectedName.toLowerCase(), shiroSecurityService.getPrincipal());
+  }
+
+  @Test
+  void capturesPrincipalRolesAndSessionFromOneSubject() {
+    setupPrincipalName("TestUser");
+    when(zConf.isUsernameForceLowerCase()).thenReturn(true);
+    Session session = mock(Session.class);
+    when(session.getId()).thenReturn("session-id");
+    when(subject.getSession(false)).thenReturn(session);
+
+    KnoxJwtRealm realm = spy(new KnoxJwtRealm());
+    LifecycleUtils.init(realm);
+    when(realm.mapGroupPrincipals("testuser")).thenReturn(Set.of("reader"));
+    ThreadContext.bind(new DefaultSecurityManager(realm));
+
+    AuthenticatedIdentity identity = shiroSecurityService.getAuthenticatedIdentity();
+
+    assertEquals("testuser", identity.getPrincipal());
+    assertEquals(Set.of("reader"), identity.getRoles());
+    assertEquals("session-id", identity.getSessionId().orElseThrow());
+    assertTrue(identity.isAuthenticated());
+    verify(subject, times(1)).isAuthenticated();
+    verify(subject, times(1)).getPrincipal();
+    verify(subject, times(1)).getSession(false);
+  }
+
+  @Test
+  void capturesAnonymousIdentityWithoutLookingUpSession() {
+    when(subject.isAuthenticated()).thenReturn(false);
+
+    AuthenticatedIdentity identity = shiroSecurityService.getAuthenticatedIdentity();
+
+    assertEquals(AuthenticatedIdentity.ANONYMOUS_PRINCIPAL, identity.getPrincipal());
+    assertEquals(Collections.emptySet(), identity.getRoles());
+    assertFalse(identity.isAuthenticated());
+    assertTrue(identity.getSessionId().isEmpty());
+    verify(subject, times(1)).isAuthenticated();
+    verify(subject, times(0)).getPrincipal();
+    verify(subject, times(0)).getSession(false);
   }
 
   @Test

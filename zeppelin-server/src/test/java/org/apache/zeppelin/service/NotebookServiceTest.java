@@ -43,11 +43,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
@@ -175,6 +177,40 @@ class NotebookServiceTest {
       confDir.delete();
     }
     searchService.close();
+  }
+
+  @Test
+  void spellUsesTheAuthenticatedServiceContextInsteadOfMessageIdentity() throws IOException {
+    AuthenticationInfo authenticated =
+        new AuthenticationInfo("session-user", Set.of("role1"), null);
+    ServiceContext authenticatedContext = new ServiceContext(
+        authenticated, new HashSet<>(Set.of("session-user", "role1")));
+    String noteId = notebookService.createNote(
+        "/spell-auth", "test", true, authenticatedContext, callback);
+    String paragraphId = notebook.processNote(
+        noteId, note -> note.getParagraph(0).getId());
+    Message forged = new Message(Message.OP.PARAGRAPH_EXECUTED_BY_SPELL)
+        .put("id", paragraphId)
+        .put("paragraph", "%md result")
+        .put("title", "")
+        .put("status", "FINISHED")
+        .put("params", Map.of())
+        .put("config", Map.of())
+        .put("results", new InterpreterResult(Code.SUCCESS, "ok"))
+        .put("errorMessage", null)
+        .put("dateStarted", "2026-08-07T00:00:00.000Z")
+        .put("dateFinished", "2026-08-07T00:00:01.000Z");
+    forged.principal = "forged-admin";
+    forged.roles = "[\"admin\"]";
+    forged.ticket = "forged-ticket";
+
+    notebookService.spell(noteId, forged, authenticatedContext, callback);
+
+    AuthenticationInfo stored = notebook.processNote(
+        noteId, note -> note.getParagraph(paragraphId).getAuthenticationInfo());
+    assertEquals("session-user", stored.getUser());
+    assertEquals(Set.of("role1"), stored.getRoles());
+    assertNull(stored.getTicket());
   }
 
   @Test

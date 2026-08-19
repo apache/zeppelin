@@ -26,6 +26,8 @@ import org.apache.zeppelin.client.websocket.ZeppelinWebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
  * There's no Zeppelin concept(like note/paragraph) in ZSession.
  *
  */
-public class ZSession {
+public class ZSession implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZSession.class);
 
   private ZeppelinClient zeppelinClient;
@@ -120,14 +122,7 @@ public class ZSession {
     this.sessionInfo = zeppelinClient.getSession(getSessionId());
 
     if (messageHandler != null) {
-      this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
-      this.webSocketClient.connect(zeppelinClient.getClientConfig().getZeppelinRestUrl()
-              .replace("https", "ws").replace("http", "ws") + "/ws");
-
-      // call GET_NOTE to establish websocket connection between this session and zeppelin-server
-      Message msg = new Message(Message.OP.GET_NOTE);
-      msg.put("id", getNoteId());
-      this.webSocketClient.send(msg);
+      connectWebSocket(messageHandler);
     }
   }
 
@@ -137,11 +132,52 @@ public class ZSession {
    * @throws Exception
    */
   public void stop() throws Exception {
-    if (getSessionId() != null) {
-      zeppelinClient.stopSession(getSessionId());
+    Exception failure = null;
+    try {
+      if (getSessionId() != null) {
+        zeppelinClient.stopSession(getSessionId());
+      }
+    } catch (Exception e) {
+      failure = e;
     }
-    if (webSocketClient != null) {
-      webSocketClient.stop();
+    try {
+      if (webSocketClient != null) {
+        webSocketClient.stop();
+      }
+    } catch (Exception e) {
+      if (failure == null) {
+        failure = e;
+      } else if (failure != e) {
+        failure.addSuppressed(e);
+      }
+    } finally {
+      webSocketClient = null;
+    }
+    if (failure != null) {
+      throw failure;
+    }
+  }
+
+  /** Stop the remote session and release all client transports. */
+  @Override
+  public void close() throws Exception {
+    Exception failure = null;
+    try {
+      stop();
+    } catch (Exception e) {
+      failure = e;
+    }
+    try {
+      zeppelinClient.close();
+    } catch (RuntimeException e) {
+      if (failure == null) {
+        failure = e;
+      } else if (failure != e) {
+        failure.addSuppressed(e);
+      }
+    }
+    if (failure != null) {
+      throw failure;
     }
   }
 
@@ -168,8 +204,21 @@ public class ZSession {
                                                    String sessionId,
                                                    MessageHandler messageHandler) throws Exception {
     ZSession session = new ZSession(clientConfig, interpreter, sessionId);
-    session.reconnect(messageHandler);
+    session.reconnectOrClose(messageHandler);
     return session;
+  }
+
+  private void reconnectOrClose(MessageHandler messageHandler) throws Exception {
+    try {
+      reconnect(messageHandler);
+    } catch (Exception failure) {
+      try {
+        zeppelinClient.close();
+      } catch (RuntimeException cleanupFailure) {
+        failure.addSuppressed(cleanupFailure);
+      }
+      throw failure;
+    }
   }
 
   private void reconnect(MessageHandler messageHandler) throws Exception {
@@ -179,15 +228,52 @@ public class ZSession {
     }
 
     if (messageHandler != null) {
-      this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
-      this.webSocketClient.connect(zeppelinClient.getClientConfig().getZeppelinRestUrl()
-              .replace("https", "ws").replace("http", "ws") + "/ws");
+      connectWebSocket(messageHandler);
+    }
+  }
 
-      // call GET_NOTE to establish websocket connection between this session and zeppelin-server
+  private void connectWebSocket(MessageHandler messageHandler) throws Exception {
+    URI webSocketUri = toWebSocketUri(
+        zeppelinClient.getClientConfig().getZeppelinRestUrl());
+    this.webSocketClient = new ZeppelinWebSocketClient(messageHandler);
+    try {
+      this.webSocketClient.connect(
+          webSocketUri.toString(), zeppelinClient.getWebSocketCookieHeader(webSocketUri));
       Message msg = new Message(Message.OP.GET_NOTE);
       msg.put("id", getNoteId());
       this.webSocketClient.send(msg);
+    } catch (Exception failure) {
+      try {
+        this.webSocketClient.stop();
+      } catch (Exception cleanupFailure) {
+        if (failure != cleanupFailure) {
+          failure.addSuppressed(cleanupFailure);
+        }
+      }
+      this.webSocketClient = null;
+      throw failure;
     }
+  }
+
+  static URI toWebSocketUri(String restUrl) throws URISyntaxException {
+    URI restUri = new URI(restUrl);
+    String scheme = restUri.getScheme();
+    if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+        || restUri.getHost() == null
+        || restUri.getUserInfo() != null
+        || restUri.getRawQuery() != null
+        || restUri.getRawFragment() != null) {
+      throw new IllegalArgumentException(
+          "Expected an absolute http or https Zeppelin REST URL");
+    }
+
+    String path = restUri.getRawPath();
+    path = path == null ? "" : path;
+    while (path.endsWith("/") && !path.isEmpty()) {
+      path = path.substring(0, path.length() - 1);
+    }
+    String webSocketScheme = "https".equalsIgnoreCase(scheme) ? "wss" : "ws";
+    return new URI(webSocketScheme + "://" + restUri.getRawAuthority() + path + "/ws");
   }
 
   /**

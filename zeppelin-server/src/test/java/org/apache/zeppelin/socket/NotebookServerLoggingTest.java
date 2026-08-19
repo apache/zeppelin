@@ -32,6 +32,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +52,8 @@ class NotebookServerLoggingTest {
     notebookServer.setZeppelinConfiguration(zConf);
     NotebookSocket conn = mock(NotebookSocket.class);
     when(conn.getUser()).thenReturn(principal);
+    when(conn.getAuthenticatedIdentity()).thenReturn(
+        new AuthenticatedIdentity(principal, Collections.emptySet(), false, null));
 
     Message message = new Message(OP.CONVERT_NOTE_NBFORMAT)
         .put("ticketCopy", ticket)

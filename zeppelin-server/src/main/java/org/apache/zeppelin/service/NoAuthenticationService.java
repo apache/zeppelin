@@ -39,6 +39,11 @@ public class NoAuthenticationService implements AuthenticationService {
   }
 
   @Override
+  public AuthenticatedIdentity getAuthenticatedIdentity() {
+    return AuthenticatedIdentity.anonymous();
+  }
+
+  @Override
   public String getPrincipal() {
     return ANONYMOUS;
   }

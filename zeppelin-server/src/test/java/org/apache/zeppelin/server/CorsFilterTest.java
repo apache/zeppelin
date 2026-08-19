@@ -50,7 +50,7 @@ class CorsFilterTest {
 
   @Test
   void validCorsFilterTest() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
@@ -65,7 +65,7 @@ class CorsFilterTest {
 
   @Test
   void invalidCorsFilterTest() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
@@ -81,7 +81,7 @@ class CorsFilterTest {
   @ParameterizedTest
   @ValueSource(strings = {"POST", "PUT", "DELETE", "PATCH"})
   void crossOriginStateChangingBlocked(String method) throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
@@ -96,7 +96,7 @@ class CorsFilterTest {
 
   @Test
   void crossOriginPreflightBlocked() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
@@ -112,11 +112,11 @@ class CorsFilterTest {
 
   @Test
   void allowedOriginPostPasses() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
-    when(mockRequest.getHeader("Origin")).thenReturn("http://localhost");
+    when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
     when(mockRequest.getMethod()).thenReturn("POST");
     Map<String, String> setHeaders = recordSetHeaders(mockResponse);
 
@@ -124,13 +124,13 @@ class CorsFilterTest {
 
     verify(mockResponse, never()).sendError(anyInt(), anyString());
     verify(mockedFilterChain, times(1)).doFilter(mockRequest, mockResponse);
-    assertEquals("http://localhost", setHeaders.get("Access-Control-Allow-Origin"));
+    assertEquals("http://localhost:8080", setHeaders.get("Access-Control-Allow-Origin"));
     assertEquals("true", setHeaders.get("Access-Control-Allow-Credentials"));
   }
 
   @Test
   void disallowedOriginGetPasses() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
@@ -148,7 +148,7 @@ class CorsFilterTest {
 
   @Test
   void noOriginPostPasses() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
@@ -163,7 +163,7 @@ class CorsFilterTest {
 
   @Test
   void simpleOptionsWithoutPreflightHeaderPasses() throws IOException, ServletException {
-    CorsFilter filter = new CorsFilter(ZeppelinConfiguration.load());
+    CorsFilter filter = new CorsFilter(defaultConfiguration());
     HttpServletRequest mockRequest = mock(HttpServletRequest.class);
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
@@ -184,5 +184,9 @@ class CorsFilterTest {
       return null;
     }).when(response).setHeader(anyString(), anyString());
     return recorded;
+  }
+
+  private static ZeppelinConfiguration defaultConfiguration() {
+    return ZeppelinConfiguration.load("zeppelin-site.xml");
   }
 }

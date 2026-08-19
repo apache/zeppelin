@@ -179,12 +179,14 @@ public class LoginRestApi extends AbstractRestApi {
     return false;
   }
 
-  private JsonResponse<Map<String, String>> proceedToLogin(Subject currentUser, AuthenticationToken token) {
+  JsonResponse<Map<String, String>> proceedToLogin(
+      Subject currentUser, AuthenticationToken token) {
     JsonResponse<Map<String, String>> response = null;
     try {
-      logoutCurrentUser();
-      currentUser.getSession(true);
+      logoutCurrentUser(currentUser);
       currentUser.login(token);
+      // Shiro rotates the session during login; only retain the final authenticated session.
+      currentUser.getSession(true);
 
       Set<String> roles = authenticationService.getAssociatedRoles();
       String principal = authenticationService.getPrincipal();
@@ -215,7 +217,8 @@ public class LoginRestApi extends AbstractRestApi {
    * Post Login
    * Returns userName & password
    * for anonymous access, username is always anonymous.
-   * After getting this ticket, access through websockets become safe
+   * The ticket remains in the response for legacy client compatibility. WebSocket authentication
+   * uses the Shiro session cookie established by this request.
    *
    * @return 200 response
    */
@@ -224,19 +227,10 @@ public class LoginRestApi extends AbstractRestApi {
   public Response postLogin(@FormParam("userName") String userName,
       @FormParam("password") String password) {
     LOGGER.debug("userName: {}", userName);
-    // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = SecurityUtils.getSubject();
-    if (currentUser.isAuthenticated()) {
-      currentUser.logout();
-    }
     LOGGER.debug("currentUser: {}", currentUser);
-    JsonResponse<Map<String, String>> response = null;
-    if (!currentUser.isAuthenticated()) {
-
-      UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
-
-      response = proceedToLogin(currentUser, token);
-    }
+    UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
+    JsonResponse<Map<String, String>> response = proceedToLogin(currentUser, token);
 
     if (response == null) {
       response = new JsonResponse<>(Response.Status.FORBIDDEN, "", null);
@@ -290,9 +284,11 @@ public class LoginRestApi extends AbstractRestApi {
   }
 
   private void logoutCurrentUser() {
-    Subject currentUser = SecurityUtils.getSubject();
+    logoutCurrentUser(SecurityUtils.getSubject());
+  }
+
+  private void logoutCurrentUser(Subject currentUser) {
     TicketContainer.instance.removeTicket(authenticationService.getPrincipal());
-    currentUser.getSession().stop();
     currentUser.logout();
   }
 }

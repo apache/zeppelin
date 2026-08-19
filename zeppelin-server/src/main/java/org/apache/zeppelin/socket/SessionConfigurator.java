@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.socket;
 
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import jakarta.websocket.HandshakeResponse;
@@ -23,19 +25,44 @@ import jakarta.websocket.server.HandshakeRequest;
 import jakarta.websocket.server.ServerEndpointConfig;
 import jakarta.websocket.server.ServerEndpointConfig.Configurator;
 
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class set headers to websocket sessions and inject hk2 when initiating instances by ServerEndpoint annotation.
  */
 public class SessionConfigurator extends Configurator {
 
-  private final ServiceLocator serviceLocator;
+  static final String AUTHENTICATED_IDENTITY = AuthenticatedIdentity.class.getName();
+  static final String AUTHENTICATION_SECURITY_MANAGER = SecurityManager.class.getName();
 
-  public SessionConfigurator(ServiceLocator serviceLocator) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SessionConfigurator.class);
+
+  private final ServiceLocator serviceLocator;
+  private final ZeppelinConfiguration zConf;
+
+  public SessionConfigurator(
+      ServiceLocator serviceLocator, ZeppelinConfiguration zConf) {
     this.serviceLocator = serviceLocator;
+    this.zConf = zConf;
+  }
+
+  @Override
+  public boolean checkOrigin(String originHeaderValue) {
+    try {
+      return CorsUtils.isValidOrigin(originHeaderValue, zConf);
+    } catch (UnknownHostException | URISyntaxException e) {
+      LOGGER.warn("Rejecting WebSocket handshake with invalid Origin: {}", originHeaderValue);
+      return false;
+    }
   }
 
   @Override
@@ -45,9 +72,14 @@ public class SessionConfigurator extends Configurator {
     holder = request.getHeaders().get(WatcherSecurityKey.HTTP_HEADER);
     sec.getUserProperties().put(WatcherSecurityKey.HTTP_HEADER,
         null != holder && !holder.isEmpty() ? holder.get(0) : null);
-    holder = request.getHeaders().get(CorsUtils.HEADER_ORIGIN);
-    sec.getUserProperties().put(CorsUtils.HEADER_ORIGIN,
-        null != holder && !holder.isEmpty() ? holder.get(0) : null);
+    AuthenticationService authenticationService =
+        serviceLocator.getService(AuthenticationService.class);
+    sec.getUserProperties().put(
+        AUTHENTICATED_IDENTITY, authenticationService.getAuthenticatedIdentity());
+    SecurityManager securityManager = ThreadContext.getSecurityManager();
+    if (securityManager != null) {
+      sec.getUserProperties().put(AUTHENTICATION_SECURITY_MANAGER, securityManager);
+    }
   }
 
   @Override

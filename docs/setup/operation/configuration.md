@@ -121,8 +121,8 @@ Sources descending by priority:
   <tr>
     <td><h6 class="properties">ZEPPELIN_ALLOWED_ORIGINS</h6></td>
     <td><h6 class="properties">zeppelin.server.allowed.origins</h6></td>
-    <td>*</td>
-    <td>Enables a way to specify a ',' separated list of allowed origins for REST and websockets. <br /> e.g. http://localhost:8080</td>
+    <td>(empty)</td>
+    <td>Comma-separated exact origins allowed for REST and WebSockets. Empty allows only a local origin using the configured server scheme and port. Use <code>*</code> only to explicitly allow every valid origin.<br />e.g. https://zeppelin.example.com</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_CREDENTIALS_PERSIST</h6></td>

@@ -34,7 +34,8 @@ It is pretty to create a ZSession and its api is very straightforward, we can se
 It is very easy to create a ZSession, you need to provide ClientConfig, interpreter and also you can customize your ZSession by specificy its interpreter properties.
 
 After you can create ZSession, you need to start it before running any code. 
-ZSession's lifecycle  is under your control, you need to call stop method expclitly, otherwise the interpreter processs will keep running.
+ZSession's lifecycle is under your control; call `close()` explicitly, otherwise the
+interpreter process and client transports will keep running.
 
 {% highlight java %}
 ZSession session = null;
@@ -102,7 +103,7 @@ try {
 } finally {
   if (session != null) {
     try {
-      session.stop();
+      session.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -118,6 +119,8 @@ public void start() throws Exception
 public void start(MessageHandler messageHandler) throws Exception
 
 public void stop() throws Exception
+
+public void close() throws Exception
 
 public ExecuteResult execute(String code) throws Exception
 

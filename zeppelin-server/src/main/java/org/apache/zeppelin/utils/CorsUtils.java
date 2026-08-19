@@ -20,7 +20,9 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Locale;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 public class CorsUtils {
@@ -30,26 +32,84 @@ public class CorsUtils {
   }
 
   public static final String HEADER_ORIGIN = "Origin";
-  public static boolean isValidOrigin(String sourceHost, ZeppelinConfiguration zConf)
+  public static boolean isValidOrigin(String sourceOrigin, ZeppelinConfiguration zConf)
       throws UnknownHostException, URISyntaxException {
-
-    String sourceUriHost = "";
-
-    if (sourceHost != null && !sourceHost.isEmpty()) {
-      sourceUriHost = new URI(sourceHost).getHost();
-      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase(Locale.ROOT);
+    if (sourceOrigin == null || sourceOrigin.isEmpty()) {
+      return false;
     }
 
-    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
-    // getAllowedOrigins() returns lowercased entries; normalize sourceHost the same way
-    // before the membership check so case differences in the Origin header do not produce
-    // false rejections of explicitly configured origins.
-    String normalizedOrigin =
-        sourceHost == null ? "" : sourceHost.toLowerCase(Locale.ROOT);
+    URI origin = parseOrigin(sourceOrigin);
+    String canonicalOrigin = canonicalOrigin(origin);
+    List<String> allowedOrigins = zConf.getAllowedOrigins();
+    for (String allowedOrigin : allowedOrigins) {
+      if ("*".equals(allowedOrigin.trim())) {
+        return true;
+      }
+      try {
+        if (canonicalOrigin.equals(canonicalOrigin(parseOrigin(allowedOrigin.trim())))) {
+          return true;
+        }
+      } catch (URISyntaxException ignored) {
+        // Ignore malformed configured entries instead of broadening the allowed set.
+      }
+    }
 
-    return zConf.getAllowedOrigins().contains("*")
-        || currentHost.equals(sourceUriHost)
+    // A configured allowlist is authoritative. Localhost is the secure convenience default only
+    // when no origins were configured.
+    if (!allowedOrigins.isEmpty()) {
+      return false;
+    }
+
+    String expectedScheme = zConf.useSsl() ? "https" : "http";
+    int expectedPort = zConf.useSsl() ? zConf.getServerSslPort() : zConf.getServerPort();
+    if (!expectedScheme.equals(origin.getScheme().toLowerCase(Locale.ROOT))
+        || effectivePort(origin) != expectedPort) {
+      return false;
+    }
+
+    String sourceUriHost = origin.getHost().toLowerCase(Locale.ROOT);
+    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
+    return currentHost.equals(sourceUriHost)
         || "localhost".equals(sourceUriHost)
-        || zConf.getAllowedOrigins().contains(normalizedOrigin);
+        || "127.0.0.1".equals(sourceUriHost)
+        || "[::1]".equals(sourceUriHost)
+        || "::1".equals(sourceUriHost);
+  }
+
+  private static URI parseOrigin(String value) throws URISyntaxException {
+    URI origin = new URI(value);
+    String scheme = origin.getScheme();
+    if (scheme == null
+        || (!("http".equalsIgnoreCase(scheme)) && !("https".equalsIgnoreCase(scheme)))
+        || origin.getHost() == null
+        || origin.getUserInfo() != null
+        || (origin.getRawPath() != null && !origin.getRawPath().isEmpty())
+        || origin.getRawQuery() != null
+        || origin.getRawFragment() != null) {
+      throw new URISyntaxException(value, "Expected an HTTP Origin without path or credentials");
+    }
+    return origin;
+  }
+
+  private static String canonicalOrigin(URI origin) throws URISyntaxException {
+    String scheme = origin.getScheme().toLowerCase(Locale.ROOT);
+    int port = effectivePort(origin);
+    int canonicalPort = ("http".equals(scheme) && port == 80)
+        || ("https".equals(scheme) && port == 443) ? -1 : port;
+    return new URI(
+        scheme,
+        null,
+        origin.getHost().toLowerCase(Locale.ROOT),
+        canonicalPort,
+        null,
+        null,
+        null).toASCIIString();
+  }
+
+  private static int effectivePort(URI origin) {
+    if (origin.getPort() >= 0) {
+      return origin.getPort();
+    }
+    return "https".equalsIgnoreCase(origin.getScheme()) ? 443 : 80;
   }
 }

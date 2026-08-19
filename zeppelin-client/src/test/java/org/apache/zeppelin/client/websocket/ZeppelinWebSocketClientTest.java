@@ -17,14 +17,36 @@
 
 package org.apache.zeppelin.client.websocket;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import java.net.URI;
 import org.junit.jupiter.api.Test;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 
 import java.time.Duration;
 
 class ZeppelinWebSocketClientTest {
+
+  @Test
+  void upgradeRequestUsesCookieAndTheCorrespondingHttpOrigin() throws Exception {
+    ClientUpgradeRequest request = ZeppelinWebSocketClient.createUpgradeRequest(
+        new URI("wss://zeppelin.example:8443/context/ws"), "JSESSIONID=session-1");
+
+    assertEquals("JSESSIONID=session-1", request.getHeader("Cookie"));
+    assertEquals("https://zeppelin.example:8443", request.getHeader("Origin"));
+  }
+
+  @Test
+  void upgradeRequestOmitsEmptyCookieAndCanonicalizesDefaultPort() throws Exception {
+    ClientUpgradeRequest request = ZeppelinWebSocketClient.createUpgradeRequest(
+        new URI("ws://zeppelin.example:80/ws"), "");
+
+    assertNull(request.getHeader("Cookie"));
+    assertEquals("http://zeppelin.example", request.getHeader("Origin"));
+  }
 
   @Test
   void connectFailsFastWhenPortClosed() {

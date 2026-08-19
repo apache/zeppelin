@@ -59,7 +59,6 @@ import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
-import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.DEFAULT_UI;
@@ -118,6 +117,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer;
+import org.eclipse.jetty.websocket.servlet.WebSocketUpgradeFilter;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -189,6 +189,7 @@ public class ZeppelinServer implements AutoCloseable {
             bindAsContract(AdminService.class).in(Singleton.class);
             bindAsContract(AuthorizationService.class).in(Singleton.class);
             bindAsContract(ConnectionManager.class).in(Singleton.class);
+            bindAsContract(AuthenticatedSessionService.class).in(Singleton.class);
             bindAsContract(NoteManager.class).in(Singleton.class);
             bind(AuthenticationServiceFactory.getAuthServiceClass(zConf))
                     .to(AuthenticationService.class)
@@ -476,7 +477,7 @@ public class ZeppelinServer implements AutoCloseable {
             .configure(webapp, (servletContext, wsContainer) -> {
               wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
               wsContainer.addEndpoint(ServerEndpointConfig.Builder.create(NotebookServer.class, "/ws")
-              .configurator(new SessionConfigurator(sharedServiceLocator)).build());
+              .configurator(new SessionConfigurator(sharedServiceLocator, zConf)).build());
             });
   }
 
@@ -563,9 +564,21 @@ public class ZeppelinServer implements AutoCloseable {
     String shiroIniPath = zConf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
       webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
-      webapp
-          .addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
-          .setInitParameter("staticSecurityManagerEnabled", "true");
+      FilterHolder shiroFilter =
+          webapp.addFilter(
+              FailClosedShiroFilter.class,
+              "/api/*",
+              EnumSet.allOf(DispatcherType.class));
+      shiroFilter.setInitParameter("staticSecurityManagerEnabled", "true");
+
+      // Jetty's WebSocket initializer otherwise prepends its upgrade filter. Register the
+      // authentication and upgrade filters explicitly so REST and WebSocket handshakes use the
+      // same Shiro URL policy before an upgrade can occur.
+      webapp.addFilter(shiroFilter, "/ws", EnumSet.allOf(DispatcherType.class));
+      FilterHolder upgradeFilter = new FilterHolder(WebSocketUpgradeFilter.class);
+      upgradeFilter.setName(WebSocketUpgradeFilter.class.getName());
+      upgradeFilter.setAsyncSupported(true);
+      webapp.addFilter(upgradeFilter, "/*", EnumSet.of(DispatcherType.REQUEST));
       webapp.addEventListener(new EnvironmentLoaderListener());
     }
   }
