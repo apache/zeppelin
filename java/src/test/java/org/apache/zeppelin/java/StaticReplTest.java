@@ -33,7 +33,7 @@ import java.io.PrintStream;
 public class StaticReplTest {
 
   @Test
-  void shouldRestoreSystemStreamsWhenCompilationThrows(){
+  void shouldRestoreSystemStreamsWhenCompilationThrows() {
     PrintStream originalOut = System.out;
     PrintStream originalErr = System.err;
 
@@ -42,17 +42,17 @@ public class StaticReplTest {
 
     when(compiler.getTask(any(), any(), any(), any(), any(), any()))
         .thenReturn(task);
-      
+
     when(task.call())
         .thenThrow(new RuntimeException("Compilation failed unexpectedly"));
-      
+
     String code = "public class TestClass {"
         + " public static void main(String[] args) {}"
         + "}";
-    
+
     try {
       assertThrows(RuntimeException.class, () -> StaticRepl.execute("TestClass", code, compiler));
-      
+
       assertSame(originalOut, System.out);
       assertSame(originalErr, System.err);
 
@@ -60,7 +60,7 @@ public class StaticReplTest {
       System.setOut(originalOut);
       System.setErr(originalErr);
     }
-      
+
   }
-    
+
 }

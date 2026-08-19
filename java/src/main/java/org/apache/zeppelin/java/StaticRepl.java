@@ -162,14 +162,14 @@ public class StaticRepl {
 
         }
       }
-      
+
     } finally {
       System.out.flush();
       System.err.flush();
 
       System.setOut(oldOut);
       System.setErr(oldErr);
-    } 
+    }
 
   }
 
