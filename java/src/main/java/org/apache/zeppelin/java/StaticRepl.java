@@ -51,10 +51,8 @@ public class StaticRepl {
     return execute(generatedClassName, code, ToolProvider.getSystemJavaCompiler());
   }
 
-  public static String execute(
-      String generatedClassName,
-      String code,
-      JavaCompiler compiler) throws Exception {
+  static String execute(String generatedClassName, String code, JavaCompiler compiler)
+      throws Exception {
 
     if (compiler == null) {
       throw new Exception(
