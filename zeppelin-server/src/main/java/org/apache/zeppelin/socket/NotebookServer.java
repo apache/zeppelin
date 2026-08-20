@@ -621,6 +621,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
     getNotebook().processNote(noteId,
       note -> {
         if (note != null) {
+          if (!authorizationService.isReader(noteId, context.getUserAndRoles())) {
+            permissionError(conn, "get interpreter bindings from",
+                context.getAutheInfo().getUser(), context.getUserAndRoles(),
+                authorizationService.getReaders(noteId));
+            return null;
+          }
           List<InterpreterSetting> bindedSettings =
               note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
           for (InterpreterSetting setting : bindedSettings) {
@@ -638,9 +644,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
     List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
     // use write lock, because defaultInterpreterGroup is overwritten
-    getNotebook().processNote(noteId,
+    boolean permitted = getNotebook().processNote(noteId,
       note -> {
         if (note != null) {
+          if (!authorizationService.isWriter(noteId, context.getUserAndRoles())) {
+            permissionError(conn, "save interpreter bindings for",
+                context.getAutheInfo().getUser(), context.getUserAndRoles(),
+                authorizationService.getWriters(noteId));
+            return false;
+          }
           List<String> settingIdList =
               gson.fromJson(String.valueOf(fromMessage.data.get("selectedSettingIds")),
                   new TypeToken<ArrayList<String>>() {
@@ -656,10 +668,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
               setting.getInterpreterInfos(), true));
           }
         }
-        return null;
+        return true;
       });
-    conn.send(serializeMessage(
-        new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
+    if (permitted) {
+      conn.send(serializeMessage(
+          new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
+    }
   }
 
   public void broadcastNote(Note note) {
