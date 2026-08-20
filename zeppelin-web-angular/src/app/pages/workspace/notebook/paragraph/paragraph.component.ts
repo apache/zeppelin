@@ -63,6 +63,7 @@ import {
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
+import { makeParagraphPatch } from './paragraph-patch';
 
 type Mode = 'edit' | 'command';
 
@@ -197,12 +198,8 @@ export class NotebookParagraphComponent
   }
 
   sendPatch() {
-    if (!this.dirtyText) {
-      throw new Error('dirtyText is required');
-    }
-    this.originalText = this.originalText ? this.originalText : '';
-    const patch = this.diffMatchPatch.patch_make(this.originalText, this.dirtyText).toString();
-    this.originalText = this.dirtyText;
+    const { patch, originalText } = makeParagraphPatch(this.diffMatchPatch, this.originalText, this.dirtyText);
+    this.originalText = originalText;
     this.messageService.patchParagraph(this.paragraph.id, this.note.id, patch);
   }
 
