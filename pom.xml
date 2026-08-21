@@ -55,7 +55,6 @@
     <module>build-tools</module>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
-    <module>zeppelin-interpreter-shaded</module>
     <module>zeppelin-jupyter-interpreter</module>
     <module>zeppelin-jupyter-interpreter-shaded</module>
     <module>groovy</module>
@@ -137,6 +136,7 @@
     <dropwizard.version>4.2.29</dropwizard.version>
     <micrometer.version>1.14.2</micrometer.version>
     <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
+    <jsr250.api.version>1.0</jsr250.api.version>
 
     <hadoop.version>3.3.6</hadoop.version>
     <hadoop.deps.scope>provided</hadoop.deps.scope>
@@ -360,6 +360,12 @@
         <groupId>com.google.code.findbugs</groupId>
         <artifactId>jsr305</artifactId>
         <version>${findbugs.jsr305.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>jsr250-api</artifactId>
+        <version>${jsr250.api.version}</version>
       </dependency>
 
       <!-- Apache Shiro -->

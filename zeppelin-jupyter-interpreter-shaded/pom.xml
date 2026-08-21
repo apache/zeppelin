@@ -104,7 +104,6 @@
           </transformers>
           <artifactSet>
             <excludes>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
               <exclude>log4j:log4j</exclude>
             </excludes>
           </artifactSet>
