@@ -407,6 +407,18 @@ Sources descending by priority:
     <td>Size(in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.idle.timeout</h6></td>
+    <td>300000</td>
+    <td>Time(in milliseconds) before an idle websocket session is closed.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.heartbeat.interval</h6></td>
+    <td>60000</td>
+    <td>Interval(in milliseconds) at which the server sends a websocket ping frame to each session to keep it alive. Set to 0 or a negative value to disable server-initiated heartbeats.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</h6></td>
     <td><h6 class="properties">zeppelin.server.default.dir.allowed</h6></td>
     <td>false</td>

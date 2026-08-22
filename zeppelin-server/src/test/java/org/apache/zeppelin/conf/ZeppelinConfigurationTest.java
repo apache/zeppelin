@@ -152,4 +152,37 @@ class ZeppelinConfigurationTest {
     // then
     assertEquals(12345, zConf.getServerPort());
   }
+
+  @Test
+  void getWebsocketIdleTimeoutDefaultTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    assertEquals(300000L, zConf.getWebsocketIdleTimeout());
+  }
+
+  @Test
+  void getWebsocketIdleTimeoutOverrideTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    zConf.setProperty(ConfVars.ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT.getVarName(), "600000");
+    assertEquals(600000L, zConf.getWebsocketIdleTimeout());
+  }
+
+  @Test
+  void getWebsocketHeartbeatIntervalDefaultTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    assertEquals(60000L, zConf.getWebsocketHeartbeatInterval());
+  }
+
+  @Test
+  void getWebsocketHeartbeatIntervalOverrideTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    zConf.setProperty(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL.getVarName(), "30000");
+    assertEquals(30000L, zConf.getWebsocketHeartbeatInterval());
+  }
+
+  @Test
+  void getWebsocketHeartbeatIntervalDisabledTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    zConf.setProperty(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL.getVarName(), "0");
+    assertEquals(0L, zConf.getWebsocketHeartbeatInterval());
+  }
 }
