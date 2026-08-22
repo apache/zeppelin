@@ -19,8 +19,8 @@ package org.apache.zeppelin.sparql;
 
 import org.apache.http.HttpStatus;
 
+import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
@@ -57,10 +57,10 @@ public class JenaInterpreter implements SparqlEngine {
 
   @Override
   public InterpreterResult query(String query) {
-    LOGGER.info("SPARQL: Run Query '" + query + "' against " + serviceEndpoint);
+    LOGGER.info("SPARQL: Run Query '{}' against {}", query, serviceEndpoint);
 
     try {
-      queryExecution = QueryExecutionFactory.sparqlService(serviceEndpoint, query);
+      queryExecution = QueryExecution.service(serviceEndpoint).query(query).build();
       PrefixMapping prefixMapping = queryExecution.getQuery().getPrefixMapping();
 
       // execute query and get Results
@@ -85,14 +85,14 @@ public class JenaInterpreter implements SparqlEngine {
               InterpreterResult.Code.SUCCESS,
               InterpreterResult.Type.TABLE,
               tsv);
-    } catch (QueryParseException e) {
+    } catch (QueryParseException | HttpException e) {
       LOGGER.error(e.toString());
       return new InterpreterResult(
         InterpreterResult.Code.ERROR,
         "Error: " + e.getMessage());
     } catch (QueryExceptionHTTP e) {
       LOGGER.error(e.toString());
-      int responseCode = e.getResponseCode();
+      int responseCode = e.getStatusCode();
 
       if (responseCode == HttpStatus.SC_UNAUTHORIZED) {
         return new InterpreterResult(

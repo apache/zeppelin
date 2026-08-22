@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.sparql;
 
-import org.apache.jena.fuseki.Fuseki;
+import org.apache.jena.atlas.web.WebLib;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.fuseki.server.DataAccessPointRegistry;
 import org.apache.jena.query.Dataset;
@@ -52,7 +52,7 @@ class SparqlJenaEngineTest {
 
   @BeforeAll
   public static void setUp() {
-    port = Fuseki.choosePort();
+    port = WebLib.choosePort();
 
     Model model = ModelFactory.createDefaultModel();
     model.read(DATA_FILE);
@@ -108,6 +108,11 @@ class SparqlJenaEngineTest {
     assertEquals(Code.SUCCESS, result.code());
 
     final String expected = "?subject\t?predicate\t?object\n" +
+        "<http://example.org/#green-goblin>\t<http://xmlns.com/foaf/0.1/name>\t\"Green Goblin\"\n" +
+        "<http://example.org/#green-goblin>\t<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" +
+        "\t<http://xmlns.com/foaf/0.1/Person>\n<http://example.org/#green-goblin>\t" +
+        "<http://www.perceive.net/schemas/relationship/enemyOf>\t" +
+        "<http://example.org/#spiderman>\n" +
         "<http://example.org/#spiderman>\t<http://xmlns.com/foaf/0.1/name>" +
         "\t\"Человек-паук\"@ru\n<http://example.org/#spiderman>\t" +
         "<http://xmlns.com/foaf/0.1/name>\t\"Spiderman\"\n" +
@@ -116,12 +121,7 @@ class SparqlJenaEngineTest {
         "<http://www.perceive.net/schemas/relationship/enemyOf>\t" +
         "<http://example.org/#green-goblin>\n<http://example.org/#spiderman>\t" +
         "<http://example.org/stats#born>\t\"1962-10-15T14:00.00\"^^" +
-        "<http://www.w3.org/2001/XMLSchema#dateTime>\n<http://example.org/#green-goblin>\t" +
-        "<http://xmlns.com/foaf/0.1/name>\t\"Green Goblin\"\n" +
-        "<http://example.org/#green-goblin>\t" +
-        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" +
-        "\t<http://xmlns.com/foaf/0.1/Person>\n<http://example.org/#green-goblin>\t" +
-        "<http://www.perceive.net/schemas/relationship/enemyOf>\t<http://example.org/#spiderman>\n";
+        "<http://www.w3.org/2001/XMLSchema#dateTime>\n";
     assertEquals(expected, result.message().get(0).getData());
   }
 
@@ -141,6 +141,11 @@ class SparqlJenaEngineTest {
     assertEquals(Code.SUCCESS, result.code());
 
     final String expected = "?subject\t?predicate\t?object\n" +
+        "<http://example.org/#green-goblin>\t<foaf:name>\t\"Green Goblin\"\n" +
+        "<http://example.org/#green-goblin>\t" +
+        "<rdf:type>" +
+        "\t<foaf:Person>\n<http://example.org/#green-goblin>\t" +
+        "<rel:enemyOf>\t<http://example.org/#spiderman>\n" +
         "<http://example.org/#spiderman>\t<foaf:name>" +
         "\t\"Человек-паук\"@ru\n<http://example.org/#spiderman>\t" +
         "<foaf:name>\t\"Spiderman\"\n" +
@@ -148,12 +153,7 @@ class SparqlJenaEngineTest {
         "\t<foaf:Person>\n<http://example.org/#spiderman>\t" +
         "<rel:enemyOf>\t" +
         "<http://example.org/#green-goblin>\n<http://example.org/#spiderman>\t" +
-        "<http://example.org/stats#born>\t1962-10-15T14:00.00\n" +
-        "<http://example.org/#green-goblin>\t<foaf:name>\t\"Green Goblin\"\n" +
-        "<http://example.org/#green-goblin>\t" +
-        "<rdf:type>" +
-        "\t<foaf:Person>\n<http://example.org/#green-goblin>\t" +
-        "<rel:enemyOf>\t<http://example.org/#spiderman>\n";
+        "<http://example.org/stats#born>\t1962-10-15T14:00.00\n";
 
     assertEquals(expected, result.message().get(0).getData());
   }
