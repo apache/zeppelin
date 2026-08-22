@@ -11,8 +11,6 @@
  */
 
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const webpack = require('@angular-devkit/build-angular/node_modules/webpack');
-const ModuleFederationPlugin = webpack.container.ModuleFederationPlugin;
 
 const MONACO_DIR = /monaco-editor[\\/]/;
 
@@ -72,14 +70,6 @@ module.exports = (config, options, targetOptions) => {
   });
 
   config.plugins = config.plugins || [];
-  config.plugins.push(
-    new ModuleFederationPlugin({
-      name: 'shell',
-      remotes: {
-        reactApp: 'reactApp@http://localhost:3001/remoteEntry.js'
-      }
-    })
-  );
   config.plugins.push(
     new MonacoWebpackPlugin({
       languages: [

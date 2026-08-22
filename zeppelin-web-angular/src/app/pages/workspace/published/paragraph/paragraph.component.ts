@@ -13,8 +13,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
-  OnDestroy,
   QueryList,
   TemplateRef,
   ViewChild,
@@ -29,13 +27,12 @@ import {
   ParagraphItem,
   ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
-import { HeliumService, MessageService, NgZService, NoteStatusService } from '@zeppelin/services';
-import { RemoteContainer } from '@zeppelin/share';
+import { HeliumService, MessageService, NgZService, NoteStatusService, ReactFeatureService } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
 import { isNil } from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
-import { environment } from '../../../../../environments/environment';
+import { ReactHostCallbacks, ReactProps } from '../../../../share/react-mount';
 
 @Component({
   selector: 'zeppelin-publish-paragraph',
@@ -44,20 +41,20 @@ import { environment } from '../../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PublishedParagraphComponent extends ParagraphBase implements Published, OnDestroy {
+export class PublishedParagraphComponent extends ParagraphBase implements Published {
   readonly [publishedSymbol] = true;
 
   noteId: string | null = null;
   paragraphId: string | null = null;
   previewCode: string = '';
   useReact = false;
+  // Separate from useReact (which is re-derived from the URL) so a failed remote stays degraded.
+  reactFailed = false;
   isLoading = true;
   error: string | null = null;
-  private unmountReact: (() => void) | null = null;
-  private reactScriptLoaded = false;
+  reactProps: ReactProps & ReactHostCallbacks = {};
 
   @ViewChild('codePreviewModal', { static: true }) codePreviewModal!: TemplateRef<void>;
-  @ViewChild('reactContainer', { static: false }) reactContainer!: ElementRef<HTMLDivElement>;
   @ViewChildren(NotebookParagraphResultComponent)
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
@@ -67,13 +64,14 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     private heliumService: HeliumService,
     private router: Router,
     private nzModalService: NzModalService,
+    private reactFeature: ReactFeatureService,
     noteStatusService: NoteStatusService,
     ngZService: NgZService,
     cdr: ChangeDetectorRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
-    this.activatedRoute.queryParams.subscribe(queryParams => {
-      this.useReact = queryParams.react === 'true' || queryParams.react === '';
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      this.useReact = this.reactFeature.isEnabled('publishedParagraph', params);
     });
 
     this.activatedRoute.params.subscribe(params => {
@@ -86,12 +84,6 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     });
   }
 
-  ngOnDestroy() {
-    if (this.useReact) {
-      this.cleanupReactWidget();
-    }
-  }
-
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
     const note = data.note;
@@ -101,11 +93,11 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
         if (!this.paragraph.results) {
           this.showRunConfirmationModal();
         }
-        if (this.useReact) {
+        if (this.useReact && !this.reactFailed) {
           this.setResults(this.paragraph);
+          this.reactProps = this.buildReactProps(this.paragraph);
           this.isLoading = false;
           this.cdr.markForCheck();
-          this.loadReactWidget();
           return;
         }
 
@@ -161,9 +153,21 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   }
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
+    // In React mode the Angular result components never render, so this query is empty.
+    // The remote is refreshed from updateParagraphObjectWhenUpdated instead.
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
     if (resultComponent) {
       resultComponent.updateResult(config, result);
+    }
+  }
+
+  updateParagraphObjectWhenUpdated(newPara: ParagraphItem): void {
+    super.updateParagraphObjectWhenUpdated(newPara);
+    // A run pushes OP.PARAGRAPH, not OP.NOTE, so getNote does not rebuild the props.
+    // Do it here, once the base class has merged the new results into this.paragraph.
+    if (this.useReact && !this.reactFailed && this.paragraph) {
+      this.reactProps = this.buildReactProps(this.paragraph);
+      this.cdr.markForCheck();
     }
   }
 
@@ -204,75 +208,25 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     });
   }
 
-  /**
-   * Loads the React micro-frontend via Webpack Module Federation.
-   *
-   * Flow:
-   * 1. Loads remoteEntry.js once (skips on subsequent calls via `reactScriptLoaded` flag).
-   * 2. remoteEntry.js registers `window.reactApp` as a federation container.
-   * 3. `container.get('./PublishedParagraph')` returns a module with a `mount(el, props)` function.
-   * 4. `mount()` calls `createRoot()` and renders into the given element.
-   * 5. `mount()` returns an `unmount` function, stored for cleanup in `ngOnDestroy`.
-   *
-   * See `projects/zeppelin-react/README.md` for the full guide.
-   * Append `?react=true` to a published paragraph URL to activate.
-   */
-  private loadReactWidget() {
-    if (!this.reactContainer || !this.paragraph) {
-      return;
-    }
-
-    const loadModule = async () => {
-      const container: RemoteContainer | undefined = window.reactApp;
-      if (!container) {
-        throw new Error('window.reactApp not available');
+  private buildReactProps(paragraph: ParagraphItem): ReactProps & ReactHostCallbacks {
+    return {
+      paragraphId: this.paragraphId,
+      noteId: this.noteId,
+      results: paragraph.results?.msg,
+      config: paragraph.config?.results,
+      onError: (err: unknown) => {
+        console.error('[PublishedParagraph] React mount failed', err);
+        this.degradeToAngular(paragraph);
       }
-
-      const factory = await container.get<{ mount: (el: HTMLElement, props: unknown) => () => void }>(
-        './PublishedParagraph'
-      );
-      const { mount } = factory();
-
-      if (!mount || typeof mount !== 'function') {
-        throw new Error('mount function not found');
-      }
-
-      const mountPoint = this.reactContainer.nativeElement;
-      const props = {
-        paragraphId: this.paragraphId,
-        noteId: this.noteId,
-        results: this.paragraph?.results?.msg,
-        config: this.paragraph?.config?.results
-      };
-
-      this.unmountReact = mount(mountPoint, props);
     };
-
-    if (this.reactScriptLoaded) {
-      loadModule();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = environment.reactRemoteEntryUrl;
-
-    script.onload = () => {
-      this.reactScriptLoaded = true;
-      loadModule();
-    };
-
-    script.onerror = () => {
-      this.error = 'Failed to load React widget';
-      this.cdr.markForCheck();
-    };
-
-    document.head.appendChild(script);
   }
 
-  private cleanupReactWidget() {
-    if (this.unmountReact) {
-      this.unmountReact();
-      this.unmountReact = null;
-    }
+  private degradeToAngular(paragraph: ParagraphItem): void {
+    this.reactFailed = true;
+    this.error = 'Failed to load React widget';
+    // The React branch skipped the Angular init path (getNote), so run it before showing the fallback.
+    this.originalText = paragraph.text;
+    this.initializeDefault(paragraph.config, paragraph.settings);
+    this.cdr.markForCheck();
   }
 }
