@@ -496,6 +496,38 @@ class InterpreterRestApiTest extends AbstractTestRestApi {
     delete.close();
   }
 
+  /**
+   * A setting that has never been used has no interpreter process, which is also its state right
+   * after a restart, so the health check reports that instead of starting one.
+   */
+  @Test
+  void testHealthCheckOfAnInterpreterThatIsNotRunning() throws IOException {
+    InterpreterSetting mdIntpSetting = notebook.getInterpreterSettingManager()
+            .getInterpreterSettingByName("md");
+
+    CloseableHttpResponse post =
+            httpPost("/interpreter/setting/" + mdIntpSetting.getId() + "/healthcheck", "");
+    JsonObject body = getBodyFieldFromResponse(
+            EntityUtils.toString(post.getEntity(), StandardCharsets.UTF_8));
+
+    assertThat("health check of an unused interpreter:", post, isAllowed());
+    assertEquals(mdIntpSetting.getId(), body.get("settingId").getAsString());
+    assertEquals("NOT_RUNNING", body.get("reason").getAsString());
+    assertEquals(0, body.getAsJsonArray("groups").size());
+    assertEquals(0, mdIntpSetting.getAllInterpreterGroups().size(),
+            "the health check must not have started an interpreter");
+    post.close();
+  }
+
+  @Test
+  void testHealthCheckOfNonExistInterpreterSetting() throws IOException {
+    CloseableHttpResponse post =
+            httpPost("/interpreter/setting/no_such_setting/healthcheck", "");
+
+    assertThat("health check of an unknown setting:", post, isNotFound());
+    post.close();
+  }
+
   private JsonObject getBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonObject("body");

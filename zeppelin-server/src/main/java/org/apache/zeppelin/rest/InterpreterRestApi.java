@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.common.Message.OP;
+import org.apache.zeppelin.rest.message.HealthCheckInterpreterRequest;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
@@ -206,12 +207,7 @@ public class InterpreterRestApi extends AbstractRestApi {
       if (null == noteId) {
         interpreterSettingManager.close(settingId);
       } else {
-        Set<String> entities = new HashSet<>();
-        entities.add(authenticationService.getPrincipal());
-        entities.addAll(authenticationService.getAssociatedRoles());
-        if (authorizationService.hasRunPermission(entities, noteId) ||
-                authorizationService.hasWritePermission(entities, noteId) ||
-                authorizationService.isOwner(entities, noteId)) {
+        if (hasPermissionOnNote(noteId)) {
           interpreterSettingManager.restart(settingId, authenticationService.getPrincipal(), noteId);
         } else {
           return new JsonResponse<>(Status.FORBIDDEN, "No privilege to restart interpreter")
@@ -227,6 +223,53 @@ public class InterpreterRestApi extends AbstractRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
     }
     return new JsonResponse<>(Status.OK, "", setting).build();
+  }
+
+  /**
+   * Health check of an interpreter setting: probes its interpreter processes and reports whether
+   * they answer.
+   *
+   * <p>This is the one interpreter read path that does contact the interpreter, which is acceptable
+   * because a user asks for it explicitly, it names a single setting, and the server bounds the
+   * wait. It never starts an interpreter: a setting with nothing running is reported as such,
+   * since that is the normal state right after a restart.
+   *
+   * @param message HealthCheckInterpreterRequest, optional
+   */
+  @POST
+  @Path("setting/{settingId}/healthcheck")
+  @ZeppelinApi
+  public Response healthCheckSetting(String message, @PathParam("settingId") String settingId) {
+    InterpreterSetting setting = interpreterSettingManager.get(settingId);
+    if (setting == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "", settingId).build();
+    }
+
+    HealthCheckInterpreterRequest request =
+        GSON.fromJson(message, HealthCheckInterpreterRequest.class);
+    String noteId = request == null ? null : request.getNoteId();
+    if (null != noteId && !hasPermissionOnNote(noteId)) {
+      return new JsonResponse<>(Status.FORBIDDEN, "No privilege to health check interpreter")
+              .build();
+    }
+
+    LOGGER.info("Health check interpreterSetting {}, user={}", settingId,
+        authenticationService.getPrincipal());
+    return new JsonResponse<>(Status.OK, "", interpreterSettingManager.healthCheck(setting))
+            .build();
+  }
+
+  /**
+   * @return whether the current user may act on the interpreters of the given note, which running a
+   *         paragraph of it already implies
+   */
+  private boolean hasPermissionOnNote(String noteId) {
+    Set<String> entities = new HashSet<>();
+    entities.add(authenticationService.getPrincipal());
+    entities.addAll(authenticationService.getAssociatedRoles());
+    return authorizationService.hasRunPermission(entities, noteId)
+            || authorizationService.hasWritePermission(entities, noteId)
+            || authorizationService.isOwner(entities, noteId);
   }
 
   /**
