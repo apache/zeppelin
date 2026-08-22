@@ -26,6 +26,9 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.List;
 import java.util.Map;
 
@@ -127,7 +130,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // when — semantic search for a meaningful phrase
-    List<Map<String, String>> results = searchService.query("testing something");
+    List<Map<String, String>> results = searchService.query("testing something", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -144,7 +147,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = searchService.query("Notebook1");
+    List<Map<String, String>> results = searchService.query("Notebook1", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -159,7 +162,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = searchService.query("testingTitleSearch");
+    List<Map<String, String>> results = searchService.query("testingTitleSearch", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -178,7 +181,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // when — natural language query, no exact keyword match
-    List<Map<String, String>> results = searchService.query("yesterday's spending");
+    List<Map<String, String>> results = searchService.query("yesterday's spending", id -> true);
 
     // then — should rank the spend query higher than the user count query
     assertFalse(results.isEmpty());
@@ -193,7 +196,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = searchService.query("test");
+    List<Map<String, String>> results = searchService.query("test", id -> true);
     assertFalse(results.isEmpty());
 
     // then — find the paragraph result (not the note-name result)
@@ -214,7 +217,7 @@ class EmbeddingSearchTest {
   void canNotSearchBeforeIndexing() {
     // given NO indexing was done
     // when
-    List<Map<String, String>> result = searchService.query("anything");
+    List<Map<String, String>> result = searchService.query("anything", id -> true);
     // then
     assertTrue(result.isEmpty());
   }
@@ -235,7 +238,8 @@ class EmbeddingSearchTest {
     });
 
     // then — updated content should now be findable
-    List<Map<String, String>> results = searchService.query("reindexing updated content");
+    List<Map<String, String>> results =
+        searchService.query("reindexing updated content", id -> true);
     assertFalse(results.isEmpty());
   }
 
@@ -252,16 +256,16 @@ class EmbeddingSearchTest {
     String note2Id = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
     drainSearchEvents();
 
-    assertFalse(searchService.query("Notebook2").isEmpty());
+    assertFalse(searchService.query("Notebook2", id -> true).isEmpty());
 
     // when
     searchService.deleteNoteIndex(note2Id);
 
     // then — no results should reference the deleted note's ID
-    boolean foundNote2After = searchService.query("not test at all").stream()
+    boolean foundNote2After = searchService.query("not test at all", id -> true).stream()
         .anyMatch(r -> r.get("id").startsWith(note2Id));
     assertFalse(foundNote2After, "Note2 should be removed from index after deletion");
-    assertFalse(searchService.query("Notebook1").isEmpty());
+    assertFalse(searchService.query("Notebook1", id -> true).isEmpty());
   }
 
   @Test
@@ -282,7 +286,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // then — "Notebook1" note name should still be findable
-    assertFalse(searchService.query("Notebook1").isEmpty());
+    assertFalse(searchService.query("Notebook1", id -> true).isEmpty());
   }
 
   @Test
@@ -302,7 +306,7 @@ class EmbeddingSearchTest {
     drainSearchEvents();
 
     // then — the new paragraph should be findable by semantic query
-    List<Map<String, String>> results = searchService.query("lifetime value");
+    List<Map<String, String>> results = searchService.query("lifetime value", id -> true);
     assertFalse(results.isEmpty(), "Newly added paragraph should be searchable");
     boolean found = results.stream()
         .anyMatch(r -> r.get("text").contains("lifetime_value"));
@@ -310,6 +314,49 @@ class EmbeddingSearchTest {
   }
 
   // ---- Helper methods (same as LuceneSearchTest) ----
+
+  @Test
+  void keepsReadableResultsThatTheCutWouldHide() throws IOException, InterruptedException {
+    // given: more notes than one result set holds. The notes the caller may not read match
+    // the query exactly, the ones it may read carry the same words but say more, so they
+    // score lower and fall outside the cut.
+    String queryStr = "quarterly revenue report";
+    Set<String> readableNoteIds = new HashSet<>();
+    for (int i = 0; i < 25; i++) {
+      newNoteWithParagraph("Hidden" + i, queryStr);
+    }
+    for (int i = 0; i < 3; i++) {
+      readableNoteIds.add(newNoteWithParagraph("Mine" + i, queryStr
+          + " which also walks through unrelated kitchen recipes, holiday photographs and"
+          + " a long list of gardening tips that have nothing to do with the numbers"));
+    }
+    drainSearchEvents();
+    Predicate<String> readable = readableNoteIds::contains;
+
+    // the fixture has to be one where cutting first actually loses results, otherwise this
+    // test would pass on any implementation
+    List<Map<String, String>> unfiltered = searchService.query(queryStr, id -> true);
+    long readableWithinCut = unfiltered.stream()
+        .filter(result -> readable.test(noteIdOf(result.get("id"))))
+        .count();
+    assertTrue(readableWithinCut < readableNoteIds.size(),
+        "the readable notes have to fall outside the cut for this test to mean anything");
+
+    // when
+    List<Map<String, String>> results = searchService.query(queryStr, readable);
+
+    // then: every readable note comes back, and nothing else does
+    assertEquals(readableNoteIds.size(), results.size());
+    for (Map<String, String> result : results) {
+      assertTrue(readable.test(noteIdOf(result.get("id"))),
+          "a result the caller may not read: " + result.get("id"));
+    }
+  }
+
+  private static String noteIdOf(String documentId) {
+    int separator = documentId.indexOf('/');
+    return separator < 0 ? documentId : documentId.substring(0, separator);
+  }
 
   private String newNoteWithParagraph(String noteName, String parText) throws IOException {
     String noteId = newNote(noteName);

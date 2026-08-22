@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +101,7 @@ class LuceneSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = noteSearchService.query("all");
+    List<Map<String, String>> results = noteSearchService.query("all", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -118,7 +121,7 @@ class LuceneSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = noteSearchService.query("Notebook1");
+    List<Map<String, String>> results = noteSearchService.query("Notebook1", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -134,7 +137,7 @@ class LuceneSearchTest {
     drainSearchEvents();
 
     // when
-    List<Map<String, String>> results = noteSearchService.query("testingTitleSearch");
+    List<Map<String, String>> results = noteSearchService.query("testingTitleSearch", id -> true);
 
     // then
     assertFalse(results.isEmpty());
@@ -168,7 +171,7 @@ class LuceneSearchTest {
   void canNotSearchBeforeIndexing() {
     // given NO noteSearchService.index() was called
     // when
-    List<Map<String, String>> result = noteSearchService.query("anything");
+    List<Map<String, String>> result = noteSearchService.query("anything", id -> true);
     // then
     assertTrue(result.isEmpty());
     // assert logs were printed
@@ -193,10 +196,10 @@ class LuceneSearchTest {
       });
 
     // then
-    List<Map<String, String>> results = noteSearchService.query("all");
+    List<Map<String, String>> results = noteSearchService.query("all", id -> true);
     assertTrue(results.isEmpty());
 
-    results = noteSearchService.query("indeed");
+    results = noteSearchService.query("indeed", id -> true);
     assertFalse(results.isEmpty());
   }
 
@@ -221,7 +224,7 @@ class LuceneSearchTest {
     noteSearchService.deleteNoteIndex(note2Id);
 
     // then
-    assertTrue(noteSearchService.query("all").isEmpty());
+    assertTrue(noteSearchService.query("all", id -> true).isEmpty());
     assertTrue(resultForQuery("Notebook2").isEmpty());
 
     List<Map<String, String>> results = resultForQuery("test");
@@ -287,7 +290,7 @@ class LuceneSearchTest {
   }
 
   private List<Map<String, String>> resultForQuery(String q) {
-    return noteSearchService.query(q);
+    return noteSearchService.query(q, id -> true);
   }
 
   /**
@@ -297,6 +300,61 @@ class LuceneSearchTest {
    * @param parText text of the paragraph
    * @return Note
    */
+  @Test
+  void keepsReadableResultsThatTheCutWouldHide() throws IOException, InterruptedException {
+    // given: more notes than one result set holds, and only a few of them readable
+    Set<String> readableNoteIds = new HashSet<>();
+    for (int i = 0; i < 25; i++) {
+      newNoteWithParagraph("Hidden" + i, "shared search term");
+    }
+    for (int i = 0; i < 3; i++) {
+      readableNoteIds.add(newNoteWithParagraph("Mine" + i, "shared search term"));
+    }
+    drainSearchEvents();
+    Predicate<String> readable = readableNoteIds::contains;
+
+    // the fixture has to be one where cutting first actually loses results, otherwise this
+    // test would pass on any implementation
+    List<Map<String, String>> unfiltered = noteSearchService.query("shared search term",
+        id -> true);
+    long readableWithinCut = unfiltered.stream()
+        .filter(result -> readable.test(noteIdOf(result.get("id"))))
+        .count();
+    assertTrue(readableWithinCut < readableNoteIds.size(),
+        "the readable notes have to fall outside the cut for this test to mean anything");
+
+    // when
+    List<Map<String, String>> results = noteSearchService.query("shared search term", readable);
+
+    // then: every readable note comes back, and nothing else does
+    assertEquals(readableNoteIds.size(), results.size());
+    for (Map<String, String> result : results) {
+      assertTrue(readable.test(noteIdOf(result.get("id"))),
+          "a result the caller may not read: " + result.get("id"));
+    }
+  }
+
+  @Test
+  void returnsNothingWhenTheCallerMayReadNothing() throws IOException, InterruptedException {
+    // given
+    for (int i = 0; i < 25; i++) {
+      newNoteWithParagraph("Hidden" + i, "shared search term");
+    }
+    drainSearchEvents();
+
+    // when: the walk has to end on its own once the hits run out
+    List<Map<String, String>> results = noteSearchService.query("shared search term",
+        id -> false);
+
+    // then
+    assertTrue(results.isEmpty(), () -> "unreadable results were returned: " + results);
+  }
+
+  private static String noteIdOf(String documentId) {
+    int separator = documentId.indexOf('/');
+    return separator < 0 ? documentId : documentId.substring(0, separator);
+  }
+
   private String newNoteWithParagraph(String noteName, String parText) throws IOException {
     String note1Id = newNote(noteName);
     notebook.processNote(note1Id,
