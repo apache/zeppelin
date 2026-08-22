@@ -32,7 +32,9 @@
     }
 
     .inner {
+      display: flex;
       width: 800px;
+      max-width: calc(100% - 32px);
       height: 300px;
       position: absolute;
       z-index: 1;
@@ -42,25 +44,35 @@
       box-shadow: @box-shadow-base;
 
       .form {
-        width: 500px;
-        position: absolute;
-        left: 0;
-        height: 100%;
+        flex: 1 1 auto;
+        min-width: 0;
         background: @component-background;
         padding: 36px;
       }
 
       .sidebar {
-        width: 300px;
-        position: absolute;
-        right: 0;
-        height: 100%;
+        flex: 0 0 300px;
         background: @primary-color;
         padding: 24px 36px;
         color: @text-color-dark;
 
         h1 {
           color: @heading-color-dark;
+        }
+      }
+
+      @media (max-width: @screen-sm-max) {
+        flex-direction: column;
+        height: auto;
+        max-height: calc(100% - 32px);
+        overflow-y: auto;
+
+        .form {
+          flex: none;
+        }
+
+        .sidebar {
+          flex: none;
         }
       }
     }

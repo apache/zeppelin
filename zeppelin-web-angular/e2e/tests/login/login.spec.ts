@@ -11,6 +11,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { DarkModePage } from '../../models/dark-mode-page';
 import { LoginPage } from '../../models/login-page';
 import { LoginTestUtil, TestCredentials } from '../../models/login-page.util';
 import { addPageAnnotationBeforeEach, PAGES } from '../../utils';
@@ -127,4 +128,32 @@ test.describe('Login Page', () => {
 
     await loginPage.waitForErrorMessage();
   });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`should fit a narrow viewport without horizontal overflow in ${theme} theme`, async ({ page }) => {
+      await test.step(`Given the ${theme} theme is active on a 375x812 viewport`, async () => {
+        const darkModePage = new DarkModePage(page);
+        await darkModePage.setThemeInLocalStorage(theme);
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.reload();
+        await expect(loginPage.formContainer).toBeVisible();
+      });
+
+      await test.step('Then the document should not overflow horizontally', async () => {
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+        );
+        expect(overflow).toBe(0);
+      });
+
+      await test.step('Then the login controls should be fully visible and usable', async () => {
+        await expect(loginPage.userNameInput).toBeInViewport({ ratio: 1 });
+        await expect(loginPage.passwordInput).toBeInViewport({ ratio: 1 });
+        await expect(loginPage.loginButton).toBeInViewport({ ratio: 1 });
+
+        await loginPage.userNameInput.fill('narrow-viewport-user');
+        await expect(loginPage.userNameInput).toHaveValue('narrow-viewport-user');
+      });
+    });
+  }
 });
