@@ -147,7 +147,6 @@ limitations under the License.
   * [JDBC](./interpreter/jdbc.html)
   * [Jupyter](./interpreter/jupyter.html)
   * [Livy](./interpreter/livy.html)
-  * [Mahout](./interpreter/mahout.html)
   * [Markdown](./interpreter/markdown.html)
   * [MongoDB](./interpreter/mongodb.html)
   * [Neo4j](./interpreter/neo4j.html)
