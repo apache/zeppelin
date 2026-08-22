@@ -11,6 +11,7 @@ target/*
 tslint-rules/**/*.js
 
 coverage/*
+projects/*/coverage/*
 playwright-report/*
 playwright-coverage/*
 test-results/*
