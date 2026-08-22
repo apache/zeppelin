@@ -35,6 +35,8 @@
     "@types/react-dom": "18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
+    "@vitest/coverage-v8": "4.1.8",
+    "@vitest/eslint-plugin": "^1.6.27",
     "css-loader": "6.8.0",
     "eslint": "^9.28.0",
     "eslint-plugin-react": "^7.37.5",

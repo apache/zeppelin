@@ -17,7 +17,7 @@ limitations under the License.
 
 # AGENTS.md
 
-> E2E (Playwright) conventions for `zeppelin-web-angular/e2e/`. A scoped companion to the repository-root AGENTS.md, loaded only when working under `e2e/`. See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
+> E2E (Playwright) conventions for `zeppelin-web-angular/e2e/`. Loaded only when working under `e2e/`; the package baseline is `zeppelin-web-angular/AGENTS.md`, which covers unit tests. See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
 
 Config: `zeppelin-web-angular/playwright.config.js` (Angular UI) and `playwright.classic.config.js` (legacy classic UI), sharing `playwright.shared.js`. This document is the source of truth for E2E conventions, for contributors and for coding agents alike.
 

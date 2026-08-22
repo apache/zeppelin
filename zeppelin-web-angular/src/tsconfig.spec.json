@@ -4,6 +4,12 @@
     "outDir": "../out-tsc/spec",
     "types": ["mathjax", "node"]
   },
-  "include": ["**/*.spec.ts", "../test/test-setup.ts", "../vitest.shell.config.mts"],
+  "include": [
+    "**/*.spec.ts",
+    "../projects/zeppelin-sdk/**/*.spec.ts",
+    "../projects/zeppelin-visualization/**/*.spec.ts",
+    "../test/test-setup.ts",
+    "../vitest.shell.config.mts"
+  ],
   "exclude": []
 }

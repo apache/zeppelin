@@ -16,6 +16,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.{ts,tsx}'],
-    setupFiles: ['./src/test-setup.ts']
+    setupFiles: ['./src/test-setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      // No `include`: v4 reports only the files the specs load.
+      exclude: ['**/*.spec.{ts,tsx}', '**/index.ts', 'src/test-setup.ts', 'src/main.ts']
+      // No thresholds on purpose: see zeppelin-web-angular/AGENTS.md.
+    }
   }
 });
