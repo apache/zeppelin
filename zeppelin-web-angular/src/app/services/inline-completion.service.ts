@@ -12,6 +12,7 @@
 
 import { Injectable } from '@angular/core';
 import { editor, IDisposable, IRange, languages, Position } from 'monaco-editor';
+import { parseBooleanFlag } from './query-flag.util';
 
 const MIN_PREFIX_LENGTH = 3;
 const LOCAL_WINDOW_LINES = 400;
@@ -65,12 +66,10 @@ export class InlineCompletionService {
       const searchParams = new URLSearchParams(window.location.search);
       const hashQuery = window.location.hash.split('?')[1] ?? '';
       const hashParams = new URLSearchParams(hashQuery);
-      const isEnabled = (params: URLSearchParams) => {
-        const value = params.get('aiInlineComplete');
-        return value === 'true' || value === '';
-      };
-
-      return isEnabled(searchParams) || isEnabled(hashParams);
+      return (
+        parseBooleanFlag(searchParams.get('aiInlineComplete')) === true ||
+        parseBooleanFlag(hashParams.get('aiInlineComplete')) === true
+      );
     } catch {
       return false;
     }

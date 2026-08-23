@@ -11,6 +11,7 @@
  */
 
 import { Injectable } from '@angular/core';
+import { parseBooleanFlag } from './query-flag.util';
 
 export type ReactSurface = 'publishedParagraph' | 'paragraphFooter';
 
@@ -44,27 +45,11 @@ export class ReactFeatureService {
   isEnabled(surface: ReactSurface, source?: FlagSource | null): boolean {
     const config = SURFACES[surface];
 
-    const fromQuery = this.parseFlag(source?.get(config.queryParam));
+    const fromQuery = parseBooleanFlag(source?.get(config.queryParam));
     if (fromQuery !== null) {
       return fromQuery;
     }
 
     return config.defaultEnabled;
-  }
-
-  /**
-   * A bare flag (`?react`) or `=true` enables, `=false` disables. Anything else, including an absent flag, is unset.
-   */
-  private parseFlag(value: string | null | undefined): boolean | null {
-    if (value === undefined || value === null) {
-      return null;
-    }
-    if (value === 'true' || value === '') {
-      return true;
-    }
-    if (value === 'false') {
-      return false;
-    }
-    return null;
   }
 }
