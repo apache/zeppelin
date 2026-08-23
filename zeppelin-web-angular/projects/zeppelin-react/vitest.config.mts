@@ -10,20 +10,29 @@
  * limitations under the License.
  */
 
-import path from 'path';
+// vite is pinned in package.json: the React remote keeps its own lockfile and drifted to a different minor.
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // Kept in sync with the `resolve.alias` block in webpack.config.js.
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@zeppelin/sdk': path.resolve(__dirname, '../zeppelin-sdk/src')
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@zeppelin/sdk': fileURLToPath(new URL('../zeppelin-sdk/src', import.meta.url))
     }
   },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.{ts,tsx}'],
-    setupFiles: ['./src/test-setup.ts']
+    setupFiles: ['./src/test-setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      // No `include`: v4 reports only the files the specs load.
+      exclude: ['**/*.spec.{ts,tsx}', '**/index.ts', 'src/test-setup.ts', 'src/main.ts']
+      // No thresholds on purpose: see zeppelin-web-angular/AGENTS.md.
+    }
   }
 });
