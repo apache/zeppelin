@@ -156,15 +156,33 @@ test.describe('Published Paragraph', () => {
         await waitForZeppelinReady(page);
       });
 
-      await test.step('Then Angular result component should not be rendered', async () => {
-        await expect(page.locator('zeppelin-notebook-paragraph-result')).toHaveCount(0, { timeout: 10000 });
+      await test.step('Then the Angular renderer should not be used', async () => {
+        await expect(publishedParagraphPage.angularRenderer).toHaveCount(0, { timeout: 10000 });
       });
 
       await test.step('And React widget should be mounted in the container', async () => {
-        // React mount() renders <div data-testid="react-published-paragraph"> or <Empty> (Alert)
-        const reactContent = page.locator('[data-testid="react-published-paragraph"], .ant-alert');
-        // JUSTIFIED: compound selector covers React success + error fallback (.ant-alert); either may render
-        await expect(reactContent).toBeAttached({ timeout: 15000 });
+        await expect(publishedParagraphPage.reactWidgetOrEmptyState).toBeAttached({ timeout: 15000 });
+      });
+    });
+
+    test('when the remote fails to load, the published paragraph falls back to Angular', async ({ page }) => {
+      const { noteId, paragraphId } = testNotebook;
+
+      // Dead remote: every remoteEntry.js request fails, so the mount directive's onError fires.
+      await page.route('**/remoteEntry.js', route => route.abort());
+
+      await test.step('When the remote entry is requested and fails', async () => {
+        // Angular is the default renderer, so the assertions below pass even if React was never enabled.
+        // Awaiting the request is what proves this is a real fallback.
+        const remoteRequested = page.waitForRequest('**/remoteEntry.js');
+        await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}?react=true`);
+        await remoteRequested;
+        await waitForZeppelinReady(page);
+      });
+
+      await test.step('Then the Angular renderer takes over and React never mounts', async () => {
+        await expect(publishedParagraphPage.angularRenderer).toHaveCount(1, { timeout: 15000 });
+        await expect(publishedParagraphPage.reactWidget).toHaveCount(0);
       });
     });
   });

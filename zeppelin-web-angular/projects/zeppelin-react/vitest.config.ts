@@ -10,9 +10,17 @@
  * limitations under the License.
  */
 
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Kept in sync with the `resolve.alias` block in webpack.config.js.
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@zeppelin/sdk': path.resolve(__dirname, '../zeppelin-sdk/src')
+    }
+  },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.{ts,tsx}'],

@@ -12,9 +12,9 @@
 
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { AnyExposedModule } from './react-mount-handle';
+import { ReactExposedModule } from './react-mount-handle';
 
-export interface RemoteContainer {
+interface RemoteContainer {
   get<T>(key: string): Promise<() => T>;
   init?: (shareScope: unknown) => Promise<void>;
 }
@@ -28,7 +28,7 @@ declare global {
 @Injectable({ providedIn: 'root' })
 export class ReactRemoteLoaderService {
   private containerPromise: Promise<RemoteContainer> | null = null;
-  private readonly modulePromises = new Map<string, Promise<AnyExposedModule>>();
+  private readonly modulePromises = new Map<string, Promise<ReactExposedModule>>();
 
   loadContainer(): Promise<RemoteContainer> {
     if (this.containerPromise) {
@@ -90,7 +90,7 @@ export class ReactRemoteLoaderService {
     return this.containerPromise;
   }
 
-  loadModule<T extends AnyExposedModule>(exposedKey: string): Promise<T> {
+  loadModule<T extends ReactExposedModule>(exposedKey: string): Promise<T> {
     const cached = this.modulePromises.get(exposedKey);
     if (cached) {
       return cached as Promise<T>;
