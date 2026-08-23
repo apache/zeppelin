@@ -62,7 +62,15 @@ export class InlineCompletionService {
 
   private isEnabled(): boolean {
     try {
-      return new URLSearchParams(window.location.search).get('aiInlineComplete') === 'true';
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashQuery = window.location.hash.split('?')[1] ?? '';
+      const hashParams = new URLSearchParams(hashQuery);
+      const isEnabled = (params: URLSearchParams) => {
+        const value = params.get('aiInlineComplete');
+        return value === 'true' || value === '';
+      };
+
+      return isEnabled(searchParams) || isEnabled(hashParams);
     } catch {
       return false;
     }
