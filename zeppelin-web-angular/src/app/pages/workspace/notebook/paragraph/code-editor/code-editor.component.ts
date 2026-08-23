@@ -209,7 +209,7 @@ export class NotebookParagraphCodeEditorComponent
           document.activeElement.blur();
         }
       },
-      '!suggestWidgetVisible'
+      '!suggestWidgetVisible && !inlineSuggestionVisible'
     );
 
     this.updateEditorOptions(this.editor);
