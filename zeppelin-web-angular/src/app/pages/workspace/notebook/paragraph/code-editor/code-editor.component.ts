@@ -26,7 +26,7 @@ import {
 import { editor as MonacoEditor, IDisposable, IPosition, KeyCode } from 'monaco-editor';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
-import { CompletionService, MessageService } from '@zeppelin/services';
+import { CompletionService, InlineCompletionService, MessageService } from '@zeppelin/services';
 
 import { MonacoKeyboardEventHandler, ParagraphActions, ParagraphActionToHandlerName } from '@zeppelin/key-binding';
 import { pt2px } from '@zeppelin/utility';
@@ -161,7 +161,7 @@ export class NotebookParagraphCodeEditorComponent
 
   handleShowFind() {
     if (this.editor) {
-      this.editor.getAction('actions.find').run();
+      this.editor.getAction('actions.find')?.run();
 
       // Focus on the find widget input field
       const findInput = document.querySelector('.find-widget .input') as HTMLInputElement;
@@ -209,7 +209,7 @@ export class NotebookParagraphCodeEditorComponent
           document.activeElement.blur();
         }
       },
-      '!suggestWidgetVisible'
+      '!suggestWidgetVisible && !inlineSuggestionVisible'
     );
 
     this.updateEditorOptions(this.editor);
@@ -217,6 +217,7 @@ export class NotebookParagraphCodeEditorComponent
     this.initEditorListener(this.editor);
     this.initEditorFocus();
     this.initCompletionService(this.editor);
+    this.initInlineCompletionService(this.editor);
     this.setEditorValue(this.editor);
     // A term requested before Monaco finished loading was only stored, not applied yet.
     this.highlightMatches(this.searchTerm);
@@ -283,6 +284,14 @@ export class NotebookParagraphCodeEditorComponent
     this.completionService.registerAsCompletionReceiver(model, this.paragraphControl.pid);
   }
 
+  initInlineCompletionService(editor: IStandaloneCodeEditor): void {
+    const model = editor.getModel();
+    if (!model) {
+      return;
+    }
+    this.inlineCompletionService.register(model, this.paragraphControl.pid);
+  }
+
   initEditorFocus() {
     if (this.focus && this.editor) {
       this.editor.focus();
@@ -302,6 +311,7 @@ export class NotebookParagraphCodeEditorComponent
       contextmenu: false,
       matchBrackets: 'always',
       wordWrap: 'on',
+      inlineSuggest: { enabled: true },
       scrollbar: {
         handleMouseWheel: false,
         alwaysConsumeMouseWheel: false
@@ -394,7 +404,8 @@ export class NotebookParagraphCodeEditorComponent
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private messageService: MessageService,
-    private completionService: CompletionService
+    private completionService: CompletionService,
+    private inlineCompletionService: InlineCompletionService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -425,6 +436,7 @@ export class NotebookParagraphCodeEditorComponent
     const model = this.editor?.getModel();
     if (model) {
       this.completionService.unregister(model);
+      this.inlineCompletionService.unregister(model);
     }
     this.monacoDisposables.forEach(d => d.dispose());
   }
