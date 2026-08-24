@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,11 @@ public class TerminalInterpreter extends KerberosInterpreter {
 
   private int terminalPort = 0;
   private String terminalHostIp;
+
+  // Per-terminal-server secret every websocket client must present; it reaches
+  // legitimate clients only through the paragraph result, i.e. through
+  // Zeppelin's own note ACLs.
+  private String terminalToken;
 
   // Internal and external IP mapping of zeppelin server
   private HashMap<String, String> mapIpMapping = new HashMap<>();
@@ -114,7 +120,8 @@ public class TerminalInterpreter extends KerberosInterpreter {
         LOGGER.info("Terminal host IP: " + terminalHostIp);
         LOGGER.info("Terminal port: " + terminalPort);
         String allowedOrigin = generateOrigin(terminalHostIp, terminalPort);
-        terminalThread = new TerminalThread(terminalPort, allowedOrigin);
+        terminalToken = generateAuthToken();
+        terminalThread = new TerminalThread(terminalPort, allowedOrigin, terminalToken);
         terminalThread.start();
       } catch (IOException e) {
         LOGGER.error(e.getMessage(), e);
@@ -170,7 +177,8 @@ public class TerminalInterpreter extends KerberosInterpreter {
     HashMap<String, Object> jinjaParams = new HashMap();
     Date now = new Date();
     String terminalServerUrl = generateOrigin(hostIp, port) +
-        "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
+        "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime() +
+        "&token=" + terminalToken;
     jinjaParams.put("HOST_NAME", hostName);
     jinjaParams.put("HOST_IP", hostIp);
     jinjaParams.put("TERMINAL_SERVER_URL", terminalServerUrl);
@@ -189,6 +197,19 @@ public class TerminalInterpreter extends KerberosInterpreter {
 
   private String generateOrigin(String hostIp, int port) {
     return "http://" + hostIp + ":" + port;
+  }
+
+  // The terminal websocket exposes an OS shell, so it must be gated by a
+  // secret nobody can guess: 256 bits from a CSPRNG, hex encoded.
+  private static String generateAuthToken() {
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[32];
+    random.nextBytes(bytes);
+    StringBuilder sb = new StringBuilder(bytes.length * 2);
+    for (byte b : bytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
   }
 
   @Override
@@ -249,6 +270,11 @@ public class TerminalInterpreter extends KerberosInterpreter {
   @VisibleForTesting
   public String getTerminalHostIp() {
     return terminalHostIp;
+  }
+
+  @VisibleForTesting
+  public String getTerminalToken() {
+    return terminalToken;
   }
 
   @VisibleForTesting

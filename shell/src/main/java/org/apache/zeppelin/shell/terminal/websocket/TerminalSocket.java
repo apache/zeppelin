@@ -26,36 +26,65 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.CloseReason;
+import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 
 @ClientEndpoint
 @ServerEndpoint(value = "/")
 public class TerminalSocket {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalSocket.class);
+
+  // Key under which TerminalThread publishes the per-server auth token
+  public static final String AUTH_TOKEN_PROPERTY = "zeppelin.terminal.auth.token";
+
   private TerminalService terminalService;
   private TerminalManager terminalManager = TerminalManager.getInstance();
 
   private String noteId;
   private String paragraphId;
+  private boolean authorized = false;
 
   public TerminalSocket() {
     terminalService = terminalManager.addTerminalService(this);
   }
 
   @OnOpen
-  public void onWebSocketConnect(Session sess) {
+  public void onWebSocketConnect(Session sess, EndpointConfig config) {
+    // This endpoint hands out an OS shell: require the per-server secret that
+    // only reaches clients through the paragraph result (note ACLs). The
+    // Origin check is not authentication - any non-browser client forges it.
+    String expectedToken = (String) config.getUserProperties().get(AUTH_TOKEN_PROPERTY);
+    if (!isTokenValid(expectedToken, sess.getRequestParameterMap().get("token"))) {
+      LOGGER.warn("Rejecting terminal websocket connection without a valid auth token: {}", sess);
+      try {
+        sess.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,
+            "Missing or invalid terminal auth token"));
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+      return;
+    }
+    authorized = true;
     LOGGER.info("Socket Connected: {}", sess);
     terminalService.onWebSocketConnect(sess);
   }
 
   @OnMessage
   public void onWebSocketText(String message) {
+    if (!authorized) {
+      LOGGER.warn("Ignoring message from unauthorized terminal websocket connection");
+      return;
+    }
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Received TEXT message: {}", message);
     }
@@ -95,6 +124,16 @@ public class TerminalSocket {
     LOGGER.warn(cause.getMessage(), cause);
 
     terminalManager.onWebSocketError(this, noteId, paragraphId);
+  }
+
+  private static boolean isTokenValid(String expectedToken, List<String> suppliedTokens) {
+    if (expectedToken == null || expectedToken.isEmpty()
+        || suppliedTokens == null || suppliedTokens.isEmpty()) {
+      return false;
+    }
+    return MessageDigest.isEqual(
+        expectedToken.getBytes(StandardCharsets.UTF_8),
+        suppliedTokens.get(0).getBytes(StandardCharsets.UTF_8));
   }
 
   private Map<String, String> getMessageMap(String message) {

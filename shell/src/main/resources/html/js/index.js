@@ -12,8 +12,9 @@
 
 var noteId = getParams("noteId");
 var paragraphId = getParams("paragraphId");
+var token = getParams("token");
 
-var ws = new WebSocket("ws://" + location.host + "/terminal/");
+var ws = new WebSocket("ws://" + location.host + "/terminal/?token=" + encodeURIComponent(token));
 
 ws.onopen = () => {
     // alert("ws.onopen");
