@@ -52,7 +52,7 @@ public class TerminalSocket {
 
   private String noteId;
   private String paragraphId;
-  private boolean authorized = false;
+  private volatile boolean authorized = false;
 
   public TerminalSocket() {
     terminalService = terminalManager.addTerminalService(this);
@@ -65,7 +65,7 @@ public class TerminalSocket {
     // Origin check is not authentication - any non-browser client forges it.
     String expectedToken = (String) config.getUserProperties().get(AUTH_TOKEN_PROPERTY);
     if (!isTokenValid(expectedToken, sess.getRequestParameterMap().get("token"))) {
-      LOGGER.warn("Rejecting terminal websocket connection without a valid auth token: {}", sess);
+      LOGGER.warn("Rejecting terminal websocket connection without a valid auth token: {}", sess.getId());
       try {
         sess.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,
             "Missing or invalid terminal auth token"));
@@ -75,7 +75,7 @@ public class TerminalSocket {
       return;
     }
     authorized = true;
-    LOGGER.info("Socket Connected: {}", sess);
+    LOGGER.info("Socket Connected: {}", sess.getId());
     terminalService.onWebSocketConnect(sess);
   }
 

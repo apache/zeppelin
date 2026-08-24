@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -373,12 +374,22 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       // Attempt Connect
       session = webSocketContainer.connectToServer(
           TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
-      Thread.sleep(3000);
       // the server must close the connection instead of exposing the shell
-      assertFalse(session.isOpen());
-    } catch (InterruptedException | DeploymentException | IOException e) {
+      boolean closed = false;
+      for (int i = 0; i < 30; i++) {
+        if (!session.isOpen()) {
+          closed = true;
+          break;
+        }
+        Thread.sleep(100);
+      }
+      assertTrue(closed, "WebSocket connection without auth token should be closed by the server");
+    } catch (DeploymentException | IOException e) {
       // a handshake rejected by the server is an acceptable outcome as well
-      LOGGER.info("Terminal connection without token rejected: " + e.getMessage());
+      LOGGER.info("Terminal connection without token rejected during handshake: " + e.getMessage());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      fail("Test interrupted while waiting for session closure: " + e.getMessage());
     } finally {
       if (session != null) {
         try {
