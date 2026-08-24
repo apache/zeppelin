@@ -13,6 +13,15 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // oxc does not apply the decorator options from tsconfig.base.json to specs,
+  // which src/tsconfig.json excludes. Undeclared, a decorated spec fails to
+  // parse with "Invalid or unexpected token".
+  oxc: {
+    decorator: {
+      emitDecoratorMetadata: true,
+      legacy: true
+    }
+  },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.spec.ts'],

@@ -11,3 +11,16 @@
  */
 
 import 'zone.js';
+// The pair src/polyfills.ts loads for the application. Without Reflect.metadata
+// the emitted `__metadata` helper is a silent no-op and injection fails NG0202.
+import 'core-js/es7/reflect';
+
+import { getTestBed } from '@angular/core/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { afterEach } from 'vitest';
+
+getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+
+// Vitest globals are disabled, so Angular cannot install its own reset hook and
+// the test module stays locked after the first spec instantiates it.
+afterEach(() => getTestBed().resetTestingModule());
