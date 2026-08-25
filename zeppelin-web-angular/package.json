@@ -89,6 +89,8 @@
     "@types/node": "22.12.0",
     "@types/parse5": "^5.0.2",
     "@types/webpack-env": "^1.18.8",
+    "@vitest/coverage-v8": "4.1.8",
+    "@vitest/eslint-plugin": "^1.6.27",
     "angular-eslint": "21.4.0",
     "concurrently": "9.2.1",
     "cross-env": "^10.1.0",
@@ -112,6 +114,7 @@
     "ts-node": "~7.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.33.1",
+    "vite": "8.2.1",
     "vitest": "4.1.8"
   },
   "overrides": {
