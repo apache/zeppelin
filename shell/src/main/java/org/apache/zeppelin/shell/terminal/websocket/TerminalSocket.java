@@ -116,15 +116,19 @@ public class TerminalSocket {
   @OnClose
   public void onWebSocketClose(CloseReason reason) {
     LOGGER.info("Socket Closed: {}", reason);
-
-    terminalManager.onWebSocketClose(this, noteId, paragraphId);
+    if (authorized && noteId != null && paragraphId != null) {
+      terminalManager.onWebSocketClose(this, noteId, paragraphId);
+    } else {
+      terminalManager.removeTerminalService(this);
+    }
   }
 
   @OnError
   public void onWebSocketError(Throwable cause) {
     LOGGER.warn(cause.getMessage(), cause);
-
-    terminalManager.onWebSocketError(this, noteId, paragraphId);
+    if (authorized && noteId != null && paragraphId != null) {
+      terminalManager.onWebSocketError(this, noteId, paragraphId);
+    }
   }
 
   private static boolean isTokenValid(String expectedToken, List<String> suppliedTokens) {
