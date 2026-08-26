@@ -17,7 +17,13 @@
   Note: For security reasons, some key/value pairs including passwords would not be shown.
 </ng-template>
 <div class="content">
-  <nz-table nzSize="small" [nzData]="configEntries" [nzFrontPagination]="false" [nzShowPagination]="false">
+  <nz-table
+    data-testid="configuration-table"
+    nzSize="small"
+    [nzData]="configEntries"
+    [nzFrontPagination]="false"
+    [nzShowPagination]="false"
+  >
     <thead>
       <tr>
         <th>Name</th>
