@@ -54,6 +54,7 @@ Angular host (port 4200)              React remote (port 3001)
 │  calls mount(el, props)       │     │  exposes:               │
 └───────────────────────────────┘     │    ./PublishedParagraph │
                                       │    ./ParagraphFooter    │
+                                      │    ./ConfigurationTable │
                                       └─────────────────────────┘
 ```
 
@@ -76,7 +77,7 @@ Each React surface is behind a URL query flag, resolved by `ReactFeatureService`
 | `?react=false` | disabled |
 | flag absent | disabled |
 
-Append `?react=true` to any published paragraph URL, or `?reactFooter=true` to a notebook URL, to activate React mode.
+Append `?react=true` to any published paragraph URL, `?reactFooter=true` to a notebook URL, or `?reactConfiguration=true` to the configuration URL to activate React mode.
 
 ## Setup
 
@@ -98,10 +99,12 @@ From `projects/zeppelin-react/`, run `npm run lint` to check, `npm run lint:fix`
 src/
 ├── components/
 │   ├── common/          # Empty, Loading
+│   ├── paragraph/       # ParagraphFooter
 │   ├── renderers/       # HTMLRenderer, ImageRenderer, TextRenderer
 │   └── visualizations/  # TableVisualization, VisualizationControls
 ├── pages/
-│   └── PublishedParagraph.tsx   # entry component + mount()
+│   ├── PublishedParagraph.tsx   # entry component + mount()
+│   └── ConfigurationTable.tsx   # /configuration table + mount()
 ├── templates/
 │   └── SingleResultRenderer.tsx # routes result types to renderers
 ├── theme/               # host theme detection, antd + chart.js theming
@@ -141,6 +144,7 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
    exposes: {
      './PublishedParagraph': './src/pages/PublishedParagraph',
      './ParagraphFooter': './src/components/paragraph/ParagraphFooter',
+     './ConfigurationTable': './src/pages/ConfigurationTable',
      './ExampleFeature': './src/components/<area>/ExampleFeature'
    }
    ```
