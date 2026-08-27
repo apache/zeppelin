@@ -81,4 +81,25 @@ test.describe('Configuration Page - React table behind a flag', () => {
 
     await expect(page.locator(`${MOUNTED_TABLE} thead th`)).toHaveText(['Name', 'Value']);
   });
+
+  test('when the remote fails to load, the Angular table renders', async ({ page }) => {
+    await test.step('Given a dead remote whose entry never loads', async () => {
+      await page.route('**/remoteEntry.js', route => route.abort());
+    });
+
+    await test.step('When the page opens with the React table enabled', async () => {
+      // Angular is the default branch, so the assertions below pass even if the flag
+      // never took. Awaiting the request is what proves this is a real fallback.
+      const remoteRequested = page.waitForRequest('**/remoteEntry.js');
+      await openConfiguration(page, '?reactConfiguration=true');
+      await remoteRequested;
+    });
+
+    await test.step('Then the Angular table takes over, showing the host-fetched entries', async () => {
+      await expect(page.locator(TABLE)).toBeVisible({ timeout: 15000 });
+      await expect(page.locator(MOUNT)).toHaveCount(0);
+      // JUSTIFIED: this spec uses raw selectors throughout so it can scope to the mount host; it builds no POM.
+      await expect(page.locator(`${TABLE} tbody tr:not(.ant-table-placeholder)`)).not.toHaveCount(0);
+    });
+  });
 });
