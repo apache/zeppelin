@@ -72,7 +72,8 @@ module.exports = (_env, argv) => {
         filename: 'remoteEntry.js',
         exposes: {
           './PublishedParagraph': './src/pages/PublishedParagraph',
-          './ParagraphFooter': './src/components/paragraph/ParagraphFooter'
+          './ParagraphFooter': './src/components/paragraph/ParagraphFooter',
+          './ConfigurationTable': './src/pages/ConfigurationTable'
         }
       }),
       new HtmlWebpackPlugin({

@@ -12,7 +12,7 @@
 
 import { Injectable } from '@angular/core';
 
-export type ReactSurface = 'publishedParagraph' | 'paragraphFooter';
+export type ReactSurface = 'publishedParagraph' | 'paragraphFooter' | 'configurationTable';
 
 interface ReactSurfaceConfig {
   queryParam: string;
@@ -26,6 +26,10 @@ const SURFACES: Record<ReactSurface, ReactSurfaceConfig> = {
   },
   paragraphFooter: {
     queryParam: 'reactFooter',
+    defaultEnabled: false
+  },
+  configurationTable: {
+    queryParam: 'reactConfiguration',
     defaultEnabled: false
   }
 };
