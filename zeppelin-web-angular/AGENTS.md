@@ -84,6 +84,10 @@ A spec with no assertion, or one whose assertion sits inside an `if`, passes by 
 
 The e2e suite gets the same protection from `eslint-plugin-playwright`.
 
+## monaco-editor and path aliases in specs
+
+`vitest.shell.config.mts` mirrors the `paths` block in `tsconfig.base.json`, which Vite does not read; add an alias there when you add a path. Eleven files under `src/` import `monaco-editor`, two behind the `@zeppelin/services` barrel, so a spec that reaches the editor or notebook area loads it: a few seconds on first import and a `marked.umd.js.map` sourcemap warning, both monaco's, not ours. Mock it with `vi.mock('monaco-editor', ...)` when the spec only needs to assert the editor was called. The runner resolves monaco to `editor.api`, which skips the language registrations `editor.main` performs, so do not assert that a built-in language is registered.
+
 ## Determinism
 
 No clock, no randomness, no network. A spec that reads `Date.now()` or fetches will eventually fail for reasons unrelated to the code under test.

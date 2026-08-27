@@ -11,9 +11,42 @@
  */
 
 // vite is pinned in package.json: the React remote keeps its own lockfile and drifted to a different minor.
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Mirrors the `paths` block in tsconfig.base.json, which Vite does not read.
+  // The two library aliases resolve to source, not `dist/`, so a unit run does not wait on a build.
+  resolve: {
+    alias: [
+      // monaco-editor ships no `main` and no `exports` (microsoft/monaco-editor#4848).
+      // `module` names editor.main, which boots the full editor and dies in jsdom.
+      // 0.55 restores resolution but still points there, so revisit rather than drop.
+      {
+        find: /^monaco-editor$/,
+        replacement: fileURLToPath(new URL('./node_modules/monaco-editor/esm/vs/editor/editor.api.js', import.meta.url))
+      },
+      { find: /^@zeppelin\/sdk$/, replacement: fileURLToPath(new URL('./projects/zeppelin-sdk/src', import.meta.url)) },
+      {
+        find: /^@zeppelin\/sdk\/(.*)$/,
+        replacement: `${fileURLToPath(new URL('./projects/zeppelin-sdk/src', import.meta.url))}/$1`
+      },
+      {
+        find: /^@zeppelin\/visualization$/,
+        replacement: fileURLToPath(new URL('./projects/zeppelin-visualization/src', import.meta.url))
+      },
+      {
+        find: /^@zeppelin\/visualization\/(.*)$/,
+        replacement: `${fileURLToPath(new URL('./projects/zeppelin-visualization/src', import.meta.url))}/$1`
+      },
+      // `@zeppelin/*` falls back to src/environments in tsconfig; Vite aliases do not.
+      {
+        find: /^@zeppelin\/environment$/,
+        replacement: fileURLToPath(new URL('./src/environments/environment.ts', import.meta.url))
+      },
+      { find: /^@zeppelin\/(.*)$/, replacement: `${fileURLToPath(new URL('./src/app', import.meta.url))}/$1` }
+    ]
+  },
   // oxc does not apply the decorator options from tsconfig.base.json to specs,
   // which src/tsconfig.json excludes. Undeclared, a decorated spec fails to
   // parse with "Invalid or unexpected token".
