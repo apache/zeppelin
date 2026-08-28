@@ -146,6 +146,7 @@ describe('Controller: ParagraphCtrl', function() {
     describe('candidates built from an interpreter answer', function() {
       let editorElement;
       let editor;
+      let remoteCompleter;
 
       beforeEach(function() {
         websocketMsgSrvMock.getEditorSetting = function() {};
@@ -156,24 +157,35 @@ describe('Controller: ParagraphCtrl', function() {
         document.body.appendChild(editorElement);
 
         editor = ace.edit(editorElement);
+
         scope.aceLoaded(editor);
-        editor.focus();
+
+        // getCompletions returns without registering its listener unless the editor is focused,
+        // and a headless run does not reliably grant it.
+        editor.isFocused = function() {
+          return true;
+        };
+
+        // Captured now, not at call time: setCompleters writes a module-global list.
+        remoteCompleter = editor.completers[0];
       });
 
       afterEach(function() {
         document.body.removeChild(editorElement);
       });
 
-      // aceLoaded installs remoteCompleter as the first of ace's completers.
       let collectCandidates = function(completions) {
-        let remoteCompleter = editor.completers[0];
         let received = null;
+        let called = false;
 
         remoteCompleter.getCompletions(editor, editor.getSession(), {row: 0, column: 0}, '', function(err, items) {
+          called = true;
           received = items;
         });
         rootScope.$broadcast('completionList', {completions: completions});
 
+        // Otherwise a missing answer surfaces as a null-shape error somewhere else.
+        expect(called).toBe(true);
         return received;
       };
 
