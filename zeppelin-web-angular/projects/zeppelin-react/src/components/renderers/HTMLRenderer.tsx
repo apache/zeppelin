@@ -31,9 +31,12 @@ export const HTMLRenderer = ({ html }: HTMLRendererProps) => {
       // Highlight code blocks (matches Angular: result.component.ts renderHTML)
       const codeEle = container.querySelector('pre code');
       if (codeEle) {
-        import('highlight.js').then(({ default: hljs }) => {
-          hljs.highlightBlock(codeEle as HTMLElement);
-        });
+        import('highlight.js')
+          .then(({ default: hljs }) => {
+            hljs.highlightBlock(codeEle as HTMLElement);
+          })
+          // Without this a failed chunk is an unhandled rejection; the cost is an unhighlighted block.
+          .catch(() => undefined);
       }
 
       const scripts = Array.from(container.querySelectorAll('script'));
