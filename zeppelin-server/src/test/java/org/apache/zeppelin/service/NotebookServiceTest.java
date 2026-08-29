@@ -69,6 +69,7 @@ import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -95,6 +96,7 @@ class NotebookServiceTest {
   private SearchService searchService;
   private Notebook notebook;
   private AuthorizationService authorizationService;
+  private ZeppelinConfiguration zConf;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -106,11 +108,12 @@ class NotebookServiceTest {
   @BeforeEach
   void setUp(TestInfo testInfo) throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
-    // enable cron for testNoteUpdate method
-    if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
+    // enable cron for the tests that update a note's cron settings
+    if ("testNoteUpdate()".equals(testInfo.getDisplayName())
+        || "testCronRefreshedOnlyWhenTheExpressionChanges()".equals(testInfo.getDisplayName())) {
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
             confDir.getAbsolutePath());
@@ -472,6 +475,48 @@ class NotebookServiceTest {
               verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
               return null;
             });
+  }
+
+  @Test
+  void testCronRefreshedOnlyWhenTheExpressionChanges() throws IOException {
+    SchedulerService schedulerService = mock(SchedulerService.class);
+    NotebookService service =
+        new NotebookService(notebook, authorizationService, zConf, schedulerService);
+    String noteId = service.createNote("/folder_cron/note_test_cron", "test", true, context,
+        callback);
+
+    Map<String, Object> config = new HashMap<>();
+    config.put("isZeppelinNotebookCronEnable", true);
+    config.put("looknfeel", "looknfeel");
+    config.put("cron", "0 0/5 * * * ?");
+    config.put("cronExecutingRoles", "[\"test\"]");
+    config.put("cronExecutingUser", "test");
+
+    // adding a cron expression schedules the note
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
+
+    // an unrelated change that keeps the same expression leaves the scheduler alone.
+    // onSuccess proves the update ran to the end, since updateNote has earlier exits that
+    // would satisfy never() without ever reaching the cron decision
+    reset(schedulerService);
+    reset(callback);
+    config.put("looknfeel", "simple");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+    verify(schedulerService, never()).refreshCron(noteId);
+
+    // changing the expression schedules it again
+    reset(schedulerService);
+    config.put("cron", "0 0 0/1 * * ?");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
+
+    // removing the expression unschedules it
+    reset(schedulerService);
+    config.remove("cron");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
   }
 
   @Test
