@@ -203,10 +203,6 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   async exportNote() {
-    if (!this.ticketService.configuration) {
-      throw new Error('Configuration is not loaded');
-    }
-
     const sizeLimit = await this.configurationService.fetchWsMaxMessageSize();
     const jsonContent = JSON.stringify(this.note);
     if (jsonContent.length > sizeLimit) {
@@ -355,9 +351,6 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   ) {
     super(messageService);
     this.updateIsNoteParagraphRunning();
-    if (!this.ticketService.configuration) {
-      throw new Error('Configuration is not loaded');
-    }
   }
 
   ngOnInit(): void {

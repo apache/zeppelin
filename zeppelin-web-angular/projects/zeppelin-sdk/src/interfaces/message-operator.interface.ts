@@ -282,14 +282,13 @@ export enum OP {
 
   /**
    * [c-s]
-   * ask all key/value pairs of configurations
+   * @deprecated Retained for backend wire contract compatibility. Use ConfigurationService REST APIs instead.
    */
   LIST_CONFIGURATIONS = 'LIST_CONFIGURATIONS',
 
   /**
    * [s-c]
-   * all key/value pairs of configurations
-   * @param settings serialized Map<String = 'String', String> object
+   * @deprecated Retained for backend wire contract compatibility. Use ConfigurationService REST APIs instead.
    */
   CONFIGURATIONS_INFO = 'CONFIGURATIONS_INFO',
 
