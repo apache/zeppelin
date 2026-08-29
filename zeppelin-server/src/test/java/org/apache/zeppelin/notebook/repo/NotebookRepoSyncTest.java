@@ -39,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -76,6 +78,7 @@ class NotebookRepoSyncTest {
   private InterpreterFactory factory;
   private InterpreterSettingManager interpreterSettingManager;
   private Credentials credentials;
+  private EventBus eventBus;
   private AuthenticationInfo anonymous;
   private NoteManager noteManager;
   private AuthorizationService authorizationService;
@@ -96,6 +99,7 @@ class NotebookRepoSyncTest {
     zConf = ZeppelinConfiguration.load();
     noteParser = new GsonNoteParser(zConf);
     storage = ConfigStorage.createConfigStorage(zConf);
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_EVENTBUS_ENABLED.getVarName(), "true");
     zConf.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
@@ -116,7 +120,8 @@ class NotebookRepoSyncTest {
     noteManager = new NoteManager(notebookRepoSync, zConf);
     authorizationService = new AuthorizationService(noteManager, zConf, storage);
     credentials = new Credentials(zConf, storage);
-    notebook = new Notebook(zConf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, credentials, null);
+    eventBus = new ZeppelinEventBus();
+    notebook = new Notebook(zConf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, credentials, eventBus);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
