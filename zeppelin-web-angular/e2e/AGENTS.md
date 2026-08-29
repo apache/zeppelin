@@ -121,7 +121,7 @@ Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one the
 
 ## Migration (Angular to React Microfrontend)
 
-Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), and the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input). Both are query params inside the hash. There is no app-wide "flip this route to React" flag, and no cross-framework parity project in this config. Write specs so they survive a route being reimplemented, but do not build parity infrastructure ahead of need.
+Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input), and the configuration table swaps via a `?reactConfiguration=true` flag (`configuration/configuration.component`). All three are query params inside the hash. There is no app-wide "flip this route to React" flag, and no cross-framework parity project in this config. Write specs so they survive a route being reimplemented, but do not build parity infrastructure ahead of need.
 
 ### Write Framework-Neutral Specs
 
