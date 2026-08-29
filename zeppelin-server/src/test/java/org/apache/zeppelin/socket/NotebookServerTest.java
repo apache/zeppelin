@@ -41,11 +41,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
@@ -904,6 +906,88 @@ class NotebookServerTest extends AbstractTestRestApi {
         assertEquals(map.get("jobLabel"), "jobLabel_value");
         return null;
       });
+  }
+
+  @Test
+  void testCloneNoteClonesTheRequestedSourceNote() throws IOException {
+    String sourceNoteId = null;
+    String associatedNoteId = null;
+    String clonedNoteId = null;
+
+    try {
+      sourceNoteId = notebook.createNote("/clone_source", anonymous);
+      notebook.processNote(sourceNoteId,
+        note -> {
+          Paragraph paragraph = note.addNewParagraph(anonymous);
+          paragraph.setText("%md source note");
+          paragraph.setAuthenticationInfo(anonymous);
+          notebook.saveNote(note, anonymous);
+          return null;
+        });
+      associatedNoteId = notebook.createNote("/clone_associated", anonymous);
+
+      NotebookSocket sock = createWebSocket();
+      // the socket is looking at another note, which used to decide what CLONE_NOTE copied
+      notebookServer.onMessage(sock, new Message(OP.GET_NOTE).put("id", associatedNoteId).toJson());
+
+      String clonedNotePath = "/clone_target_" + System.currentTimeMillis();
+      notebookServer.onMessage(sock, new Message(OP.CLONE_NOTE)
+          .put("id", sourceNoteId)
+          .put("name", clonedNotePath)
+          .toJson());
+
+      clonedNoteId = notebook.getNoteIdByPath(clonedNotePath);
+      assertNotNull(clonedNoteId, "the requested source note should have been cloned");
+      List<String> clonedTexts = notebook.processNote(clonedNoteId,
+        note -> note.getParagraphs().stream().map(Paragraph::getText).collect(Collectors.toList()));
+      assertEquals(Collections.singletonList("%md source note"), clonedTexts,
+          "CLONE_NOTE should copy the note in the request, not the one the socket is looking at");
+    } finally {
+      for (String noteId : new String[] {clonedNoteId, associatedNoteId, sourceNoteId}) {
+        if (noteId != null) {
+          notebook.removeNote(noteId, anonymous);
+        }
+      }
+    }
+  }
+
+  @Test
+  void testCloneNoteAppliesTheWriteRuleOfTheRestEndpoint() throws IOException {
+    String sourceNoteId = null;
+    String associatedNoteId = null;
+    String clonedNoteId = null;
+
+    try {
+      sourceNoteId = notebook.createNote("/clone_protected_source", anonymous);
+      authorizationService.setOwners(sourceNoteId, new HashSet<>(Arrays.asList("someone_else")));
+      authorizationService.setWriters(sourceNoteId, new HashSet<>(Arrays.asList("someone_else")));
+      associatedNoteId = notebook.createNote("/clone_protected_associated", anonymous);
+
+      NotebookSocket sock = createWebSocket();
+      notebookServer.onMessage(sock, new Message(OP.GET_NOTE).put("id", associatedNoteId).toJson());
+
+      String clonedNotePath = "/clone_protected_target_" + System.currentTimeMillis();
+      notebookServer.onMessage(sock, new Message(OP.CLONE_NOTE)
+          .put("id", sourceNoteId)
+          .put("name", clonedNotePath)
+          .toJson());
+
+      // this server has no conf/shiro.ini, so hasWritePermission grants write access to everybody
+      // and the REST clone endpoint accepts this note. The WebSocket path has to accept it too
+      clonedNoteId = notebook.getNoteIdByPath(clonedNotePath);
+      assertNotNull(clonedNoteId,
+          "an explicit ACL must not block the clone while Zeppelin runs in anonymous mode");
+    } finally {
+      if (sourceNoteId != null) {
+        authorizationService.setOwners(sourceNoteId, new HashSet<>());
+        authorizationService.setWriters(sourceNoteId, new HashSet<>());
+      }
+      for (String noteId : new String[] {clonedNoteId, associatedNoteId, sourceNoteId}) {
+        if (noteId != null) {
+          notebook.removeNote(noteId, anonymous);
+        }
+      }
+    }
   }
 
   @Test

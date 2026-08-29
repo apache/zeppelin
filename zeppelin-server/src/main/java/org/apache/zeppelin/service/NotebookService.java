@@ -339,6 +339,16 @@ public class NotebookService {
                           String newNotePath,
                           ServiceContext context,
                           ServiceCallback<Note> callback) throws IOException {
+    // NotebookRestApi used to check write access here with hasWritePermission, which also grants
+    // access when Zeppelin runs without conf/shiro.ini. checkPermission does not, so it would
+    // reject a WebSocket clone that the REST endpoint still allows on an anonymous deployment.
+    if (!authorizationService.hasWritePermission(context.getUserAndRoles(), noteId)) {
+      callback.onFailure(new ForbiddenException("Insufficient privileges to clone note " + noteId
+          + ".\nAllowed users or roles: " + authorizationService.getWriters(noteId)
+          + "\nBut the user " + context.getAutheInfo().getUser() + " belongs to: "
+          + context.getUserAndRoles()), context);
+      return null;
+    }
     //TODO(zjffdu) move these to Notebook
     if (StringUtils.isBlank(newNotePath)) {
       newNotePath = "/Cloned Note_" + noteId;
