@@ -164,6 +164,7 @@ module.exports = tseslint.config(
     files: [
       'src/**/*.spec.ts',
       'projects/zeppelin-{sdk,visualization}/**/*.spec.ts',
+      'test/**/*.spec.ts',
       'test/test-setup.ts',
       'vitest.shell.config.mts'
     ],
@@ -176,7 +177,7 @@ module.exports = tseslint.config(
   },
   {
     // Catch specs that cannot fail, as eslint-plugin-playwright does for e2e.
-    files: ['src/**/*.spec.ts', 'projects/zeppelin-{sdk,visualization}/**/*.spec.ts'],
+    files: ['src/**/*.spec.ts', 'projects/zeppelin-{sdk,visualization}/**/*.spec.ts', 'test/**/*.spec.ts'],
     plugins: { vitest },
     rules: {
       'vitest/expect-expect': 'error',

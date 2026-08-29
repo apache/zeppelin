@@ -15,7 +15,6 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { flatMap, sortBy } from 'lodash';
-import { scanDirectory, Results } from 'scandirectory';
 import cfg from './reporter.coverage.config';
 
 const TEST_STATUS = {
@@ -47,15 +46,9 @@ class CoverageReporter implements Reporter {
   testedIds = new Map<string, TestStatusType>();
   targetPaths: string[] = [];
 
-  async onBegin() {
+  onBegin() {
     console.log('Coverage reporter starting...');
-    console.log('Root path:', cfg.rootPath);
-
-    const results = await scanDirectory({
-      directory: cfg.rootPath
-    });
-
-    this.targetPaths = this.processScannedFiles(results);
+    this.targetPaths = [...cfg.transform];
     console.log('Target paths:', this.targetPaths.length);
   }
 
@@ -83,39 +76,6 @@ class CoverageReporter implements Reporter {
     console.log(`Finished the run: ${result.status}`);
 
     await this.saveResultsToFile(results, result.status);
-  }
-
-  processScannedFiles(results: Results): string[] {
-    return Object.keys(results)
-      .filter(key => !results[key].directory)
-      .map(key => this.normalizeFilePath(key, results))
-      .filter(key => key !== '.')
-      .filter(key => this.shouldIncludeFile(key));
-  }
-
-  normalizeFilePath(key: string, results: Results): string {
-    if (/index\.tsx?$/.test(key)) {
-      return results[key].parent?.relativePath || '.';
-    }
-    return key.replace(/\.tsx?$/, '');
-  }
-
-  shouldIncludeFile(key: string): boolean {
-    if (cfg.testMatch?.length) {
-      const matchesTest = cfg.testMatch.some(rule => (rule instanceof RegExp ? rule.test(key) : rule === key));
-      if (!matchesTest) {
-        return false;
-      }
-    }
-
-    if (cfg.excludes?.length) {
-      const isExcluded = cfg.excludes.some(rule => (rule instanceof RegExp ? rule.test(key) : rule === key));
-      if (isExcluded) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   extractPageAnnotations(test: TestCase): string[] {

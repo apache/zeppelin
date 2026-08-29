@@ -17,7 +17,7 @@ limitations under the License.
 
 # AGENTS.md
 
-Unit test conventions for this package. They apply to the Angular shell in `src/` and to the libraries under `projects/` that have no file of their own: `zeppelin-sdk`, which is framework-neutral, and `zeppelin-visualization`, which is mostly so apart from one `@Component` base class.
+Unit test conventions for this package. They apply to the Angular shell in `src/`, package-level infrastructure specs under `test/`, and the libraries under `projects/` that have no file of their own: `zeppelin-sdk`, which is framework-neutral, and `zeppelin-visualization`, which is mostly so apart from one `@Component` base class.
 
 Two subtrees override this file: [`e2e/AGENTS.md`](e2e/AGENTS.md) for the Playwright suite, and [`projects/zeppelin-react/AGENTS.md`](projects/zeppelin-react/AGENTS.md) for the React remote, which has a different CI status and one exception of its own.
 
@@ -25,15 +25,15 @@ The repository root `AGENTS.md` asks every change to include unit tests. This fi
 
 ## Layout
 
-- A spec lives next to its source: `foo.ts` / `foo.spec.ts`.
-- The runner is Vitest on jsdom. There is no Karma and no `TestBed` bootstrap in the setup file; `test/test-setup.ts` loads `zone.js` and nothing else.
-- `npm run test:shell` covers `src/`, `projects/zeppelin-sdk` and `projects/zeppelin-visualization`. The two libraries have no runner of their own; they ride on the shell config because their code needs nothing extra. `projects/zeppelin-react` is separate. It has its own Vitest config and its own file here.
+- A product-code spec lives next to its source: `foo.ts` / `foo.spec.ts`. Specs for package-level test and reporting infrastructure live under `test/`.
+- The runner is Vitest on jsdom. There is no Karma. `test/test-setup.ts` loads `zone.js` and reflection metadata, initializes Angular `TestBed`, and resets the test environment after each spec.
+- `npm run test:shell` covers `src/`, package-level specs under `test/`, `projects/zeppelin-sdk` and `projects/zeppelin-visualization`. The two libraries have no runner of their own; they ride on the shell config because their code needs nothing extra. `projects/zeppelin-react` is separate. It has its own Vitest config and its own file here.
 
 ## Running
 
 | Command | Purpose |
 | --- | --- |
-| `npm run test:shell` | Run the unit tests for `src/` and the two libraries |
+| `npm run test:shell` | Run the unit tests for `src/`, `test/` and the two libraries |
 | `npm run test:shell -- --coverage` | Same, with a coverage report |
 | `npm run test:shell -- foo.spec.ts` | Run one file |
 
@@ -97,9 +97,9 @@ it('renders a dash for null and undefined', ...)     // good
 it('handles input', ...)                             // not a test name
 ```
 
-## Angular classes without TestBed
+## Angular classes with and without TestBed
 
-Directives, pipes and services are plain classes. Construct them directly and pass mocks to the constructor. `TestBed` is not needed and is slower.
+Construct directly testable directives, pipes and services as plain classes when Angular framework wiring is not the subject of the spec. Pass mocks to the constructor instead of starting `TestBed` unnecessarily.
 
 ```ts
 const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
@@ -108,7 +108,7 @@ const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoa
 
 See `src/app/share/react-mount/react-mount.directive.spec.ts` for a worked example, and `src/app/share/pipes/humanize-bytes.pipe.spec.ts` for a pipe.
 
-**A spec cannot declare a decorator of its own.** Importing a decorated class from source works (the pipe and directive specs here do exactly that), but writing `@Injectable()` inside a spec file fails with `SyntaxError: Invalid or unexpected token`. Spec files are excluded from the nearest `tsconfig.json` (`src/tsconfig.json` for the shell, each library's own under `projects/`), so the transform never picks up the decorator settings; that is [ZEPPELIN-6637](https://issues.apache.org/jira/browse/ZEPPELIN-6637). Until it lands, test a class by constructing it rather than by declaring a stand-in. Conventions for TestBed-based component specs are added here once it does.
+Use `TestBed` when the behavior depends on template bindings, dependency injection, change detection, or Angular lifecycle wiring. `src/app/share/react-mount/react-mount.directive.testbed.spec.ts` shows that path with a decorated host component. Keep the direct-construction spec beside it for behavior that does not need Angular wiring.
 
 ## Migration (Angular to React)
 
@@ -122,9 +122,9 @@ A spec written after a surface moves to React pins the new implementation's beha
 
 `--coverage` produces a v8 report under `coverage/`. It is measured, not gated. There are no thresholds.
 
-**Read the percentage carefully: it is not whole-tree coverage.** The denominator is only the files the specs actually load, because `include` is left unset while ZEPPELIN-6637 is open (see `vitest.shell.config.mts`). Most of the tree is absent from the report rather than counted as zero, so the figure reads far better than the real state, and it can *fall* as specs are added, since each new spec pulls more files into the denominator. Expect a large drop when `include` is eventually turned on.
+**Read the percentage carefully: it is not whole-tree coverage.** The denominator is only the files the specs actually load, because `include` is left unset (see `vitest.shell.config.mts`). Coverage parsing is separate from the test transform, so the whole tree must be deliberately remeasured before that setting is widened. Most of the tree is absent from the report rather than counted as zero, so the figure reads far better than the real state, and it can *fall* as specs are added, since each new spec pulls more files into the denominator. Expect a large drop when `include` is eventually turned on.
 
-That is deliberate. `src/` currently holds a few specs against 222 source files, so any threshold set today is either meaningless or permanently red. The intended progression is: measure only, then ratchet so the number cannot fall, then require coverage on changed files. A whole-tree percentage is the wrong target during a migration, because much of the tree is going to be rewritten anyway.
+That is deliberate. `src/` currently holds a few specs against more than 200 source files, so any threshold set today is either meaningless or permanently red. The intended progression is: measure only, then ratchet so the number cannot fall, then require coverage on changed files. A whole-tree percentage is the wrong target during a migration, because much of the tree is going to be rewritten anyway.
 
 This is a different measurement from `e2e/reporter.coverage.ts`, which counts annotated component pages rather than lines. The two numbers are not comparable and are not merged.
 
@@ -134,5 +134,5 @@ This is a different measurement from `e2e/reporter.coverage.ts`, which counts an
 2. Create `foo.spec.ts` next to `foo.ts`.
 3. Import from `vitest` (`describe`, `expect`, `it`), not from Jasmine or Jest.
    Check the target has callers before you invest in it. `get-keyword-positions.spec.ts` is a worked example of a function that turned out to have none.
-4. Construct the class directly; do not reach for `TestBed`.
+4. Construct the class directly unless the behavior depends on Angular wiring; use `TestBed` when it does.
 5. Run `npm run test:shell` and confirm it passes before opening a PR.
