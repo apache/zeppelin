@@ -14,9 +14,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { HTMLRenderer } from './HTMLRenderer';
 
-// jsdom never runs scripts, so the execution this component exists for is out
-// of reach here and belongs in e2e. These specs pin the swap that makes it
-// possible: a script parsed out of innerHTML is inert, so it is rebuilt.
+// jsdom never runs scripts, so the execution this component exists for is out of reach here and belongs in e2e.
+// What these specs pin is the fidelity of the swap:
+// attributes, body and position survive it. They do not prove the swap happened,
+// because a script parsed out of innerHTML already carries all three.
+// Only the async assertion below distinguishes a rebuilt script from an inert one.
 describe('HTMLRenderer', () => {
   it('renders the markup it is given', () => {
     render(<HTMLRenderer html="<p>rendered output</p>" />);

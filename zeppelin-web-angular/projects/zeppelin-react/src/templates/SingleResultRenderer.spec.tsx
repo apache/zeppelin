@@ -26,10 +26,12 @@ const configs = {
 } as unknown as ParagraphConfigResults;
 
 describe('SingleResultRenderer', () => {
-  it('renders TEXT as preformatted output', () => {
-    render(<SingleResultRenderer index={0} result={result(DatasetType.TEXT, 'line one\nline two')} />);
+  it('renders TEXT as text, leaving markup in it literal', () => {
+    // Markup in the payload is what separates this arm from HTML: routing TEXT to
+    // HTMLRenderer would parse the tag away instead of showing it.
+    render(<SingleResultRenderer index={0} result={result(DatasetType.TEXT, 'line one <b>not bold</b>')} />);
 
-    expect(screen.getByText(/line one/)).toBeTruthy();
+    expect(screen.getByText(/line one <b>not bold<\/b>/)).toBeTruthy();
   });
 
   it('renders TABLE through the visualization', () => {
@@ -42,8 +44,16 @@ describe('SingleResultRenderer', () => {
   });
 
   it('hands the visualization the display config for its own result index', () => {
-    render(<SingleResultRenderer index={1} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} />);
+    // Both indices are rendered: index 1 alone would pass against a hard-coded [1],
+    // and the positive assertion keeps an absent chart from reading as success.
+    const table = render(
+      <SingleResultRenderer index={0} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} />
+    );
+    expect(screen.getByText('alice')).toBeTruthy();
+    table.unmount();
 
+    render(<SingleResultRenderer index={1} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} />);
+    expect(screen.getByRole('button', { name: /Table/ })).toBeTruthy();
     expect(screen.queryByText('alice')).toBeNull();
   });
 
