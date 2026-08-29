@@ -965,6 +965,8 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_METRIC_ENABLE_PROMETHEUS);
   }
 
+  public boolean isEventBusEnabled() { return getBoolean(ConfVars.ZEPPELIN_EVENTBUS_ENABLED); }
+
   public DEFAULT_UI getDefaultUi() {
     return DEFAULT_UI.valueOf(getString(ConfVars.ZEPPELIN_DEFAULT_UI).toUpperCase());
   }
@@ -1222,7 +1224,8 @@ public class ZeppelinConfiguration {
     ),
     ZEPPELIN_ASSISTANT_OPENAI_MODEL(
         "zeppelin.assistant.openai.model", "gpt-6-luna"
-    );
+    ),
+    ZEPPELIN_EVENTBUS_ENABLED("zeppelin.eventbus.enabled", false);
 
     private String varName;
     private Class<?> varClass;
