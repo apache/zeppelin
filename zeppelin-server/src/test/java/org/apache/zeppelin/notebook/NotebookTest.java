@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -107,7 +108,8 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     authorizationService = new AuthorizationService(noteManager, zConf, storage);
 
     credentials = new Credentials(zConf, storage);
-    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, null);
+    ZeppelinEventBus eventBus = new ZeppelinEventBus();
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, eventBus);
     notebook.setParagraphJobListener(this);
     schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
@@ -1710,7 +1712,7 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
   }
 
   @Test
-  void testRemoveFolderFiresNoteRemoveEventForEachNote() throws IOException {
+  void testRemoveFolderFiresNoteRemovedEventForEachNote() throws IOException {
     final AtomicInteger onNoteRemove = new AtomicInteger(0);
     notebook.addNotebookEventListener(new NoteEventListener() {
       @Override

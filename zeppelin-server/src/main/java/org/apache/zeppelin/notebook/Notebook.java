@@ -44,6 +44,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.NoteRemovedEvent;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -86,11 +88,13 @@ public class Notebook {
   private Credentials credentials;
   private final List<Consumer<String>> initConsumers;
   private ExecutorService initExecutor;
+  private EventBus eventBus;
 
   /**
    * Main constructor \w manual Dependency Injection
    *
    * @throws IOException
+   *
    * @throws SchedulerException
    */
   public Notebook(
@@ -100,8 +104,8 @@ public class Notebook {
       NoteManager noteManager,
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
-      Credentials credentials)
-      {
+      Credentials credentials,
+      EventBus eventBus) {
     this.zConf = zConf;
     this.authorizationService = authorizationService;
     this.noteManager = noteManager;
@@ -111,6 +115,7 @@ public class Notebook {
     // TODO(zjffdu) cycle refer, not a good solution
     this.interpreterSettingManager.setNotebook(this);
     this.credentials = credentials;
+    this.eventBus = eventBus;
     addNotebookEventListener(this.interpreterSettingManager);
     initConsumers = new LinkedList<>();
   }
@@ -221,7 +226,8 @@ public class Notebook {
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       Credentials credentials,
-      NoteEventListener noteEventListener)
+      NoteEventListener noteEventListener,
+      EventBus eventBus)
       throws IOException {
     this(
         zConf,
@@ -230,7 +236,8 @@ public class Notebook {
         noteManager,
         replFactory,
         interpreterSettingManager,
-        credentials);
+        credentials,
+        eventBus);
     if (null != noteEventListener) {
       addNotebookEventListener(noteEventListener);
     }
@@ -432,7 +439,11 @@ public class Notebook {
     note.setRemoved(true);
     noteManager.removeNote(note.getId(), subject);
     authorizationService.removeNoteAuth(note.getId());
+
     fireNoteRemoveEvent(note, subject);
+    if (zConf.isEventBusEnabled()) {
+      eventBus.post(new NoteRemovedEvent(note, subject));
+    }
   }
 
   public void removeCorruptedNote(String noteId, AuthenticationInfo subject) throws IOException {
@@ -564,6 +575,9 @@ public class Notebook {
             note.setRemoved(true);
             authorizationService.removeNoteAuth(note.getId());
             fireNoteRemoveEvent(note, subject);
+            if (zConf.isEventBusEnabled()) {
+              eventBus.post(new NoteRemovedEvent(note, subject));
+            }
           }
           return null;
         });
@@ -842,6 +856,7 @@ public class Notebook {
       listener.onNoteUpdate(note, subject);
     }
   }
+
 
   private void fireNoteRemoveEvent(Note note, AuthenticationInfo subject) {
     for (NoteEventListener listener : noteEventListeners) {

@@ -52,6 +52,9 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.NoteRemovedEvent;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
@@ -70,6 +73,7 @@ import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -191,6 +195,32 @@ class NotebookServerTest extends AbstractTestRestApi {
     } finally {
       restoreJobManagerFlag(originalFlag);
     }
+  }
+
+  @Test
+  void testEventBusHandlesNoteRemovedEvent() throws IOException {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.load();
+    conf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_EVENTBUS_ENABLED.getVarName(), "true");
+
+    EventBus eventBus = new ZeppelinEventBus();
+    NotebookServer server = new NotebookServer();
+    AuthorizationService mockAuthorizationService = mock(AuthorizationService.class);
+    JobManagerService mockJobManagerService = mock(JobManagerService.class);
+    Note note = new Note();
+
+    when(mockAuthorizationService.getOwners(note.getId())).thenReturn(new HashSet<>());
+
+    server.setZeppelinConfiguration(conf);
+    server.setAuthorizationService(mockAuthorizationService);
+    server.setJobManagerService(() -> mockJobManagerService);
+    server.registerEventBus(eventBus, conf);
+
+    eventBus.post(new NoteRemovedEvent(note, AuthenticationInfo.ANONYMOUS));
+
+    verify(mockJobManagerService).getNoteJobInfoByUnixTime(Mockito.anyLong(), Mockito.any(), Mockito.any());
+    verify(mockJobManagerService).removeNoteJobInfo(eq(note.getId()), Mockito.isNull(), Mockito.any());
+
+    server.close();
   }
 
   @Test
