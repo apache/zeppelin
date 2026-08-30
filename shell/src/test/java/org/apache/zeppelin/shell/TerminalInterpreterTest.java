@@ -42,6 +42,7 @@ import jakarta.websocket.WebSocketContainer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -89,7 +90,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       assertTrue(running);
 
       URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
-          ":" + terminal.getTerminalPort() + "/terminal/");
+          ":" + terminal.getTerminalPort() + "/terminal/?token=" + terminal.getTerminalToken());
       LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
       String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
       LOGGER.info("origin: " + origin);
@@ -175,7 +176,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       assertTrue(running);
 
       URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
-          ":" + terminal.getTerminalPort() + "/terminal/");
+          ":" + terminal.getTerminalPort() + "/terminal/?token=" + terminal.getTerminalToken());
       LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
       String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
       LOGGER.info("origin: " + origin);
@@ -258,7 +259,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
     assertTrue(running);
 
     URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
-        ":" + terminal.getTerminalPort() + "/terminal/");
+        ":" + terminal.getTerminalPort() + "/terminal/?token=" + terminal.getTerminalToken());
     LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
     String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
     LOGGER.info("origin: " + origin);
@@ -308,7 +309,7 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
     assertTrue(running);
 
     URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
-        ":" + terminal.getTerminalPort() + "/terminal/");
+        ":" + terminal.getTerminalPort() + "/terminal/?token=" + terminal.getTerminalToken());
     LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
     String origin = "http://invalid-origin";
     LOGGER.info("origin: " + origin);
@@ -348,6 +349,64 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
 
     assertTrue(exception instanceof IOException);
     assertTrue(exception.getMessage().contains("403 Forbidden"));
+  }
+
+  @Test
+  void testMissingTokenRejected() {
+    Session session = null;
+    WebSocketContainer webSocketContainer = null;
+
+    // mock connect terminal
+    boolean running = terminal.terminalThreadIsRunning();
+    assertTrue(running);
+
+    // valid Origin, but no per-server auth token in the query string
+    URI webSocketConnectionUri = URI.create("ws://" + terminal.getTerminalHostIp() +
+        ":" + terminal.getTerminalPort() + "/terminal/");
+    LOGGER.info("webSocketConnectionUri: " + webSocketConnectionUri);
+    String origin = "http://" + terminal.getTerminalHostIp() + ":" + terminal.getTerminalPort();
+    LOGGER.info("origin: " + origin);
+    ClientEndpointConfig clientEndpointConfig = getOriginRequestHeaderConfig(origin);
+    webSocketContainer = ContainerProvider.getWebSocketContainer();
+
+    try {
+      // Attempt Connect
+      session = webSocketContainer.connectToServer(
+          TerminalSocketTest.class, clientEndpointConfig, webSocketConnectionUri);
+      // the server must close the connection instead of exposing the shell
+      boolean closed = false;
+      for (int i = 0; i < 30; i++) {
+        if (!session.isOpen()) {
+          closed = true;
+          break;
+        }
+        Thread.sleep(100);
+      }
+      assertTrue(closed, "WebSocket connection without auth token should be closed by the server");
+    } catch (DeploymentException | IOException e) {
+      // a handshake rejected by the server is an acceptable outcome as well
+      LOGGER.info("Terminal connection without token rejected during handshake: " + e.getMessage());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      fail("Test interrupted while waiting for session closure: " + e.getMessage());
+    } finally {
+      if (session != null) {
+        try {
+          session.close();
+        } catch (IOException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+
+      // Force lifecycle stop when done with container.
+      if (webSocketContainer instanceof LifeCycle) {
+        try {
+          ((LifeCycle) webSocketContainer).stop();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
   }
 
   private static ClientEndpointConfig getOriginRequestHeaderConfig(String origin) {
