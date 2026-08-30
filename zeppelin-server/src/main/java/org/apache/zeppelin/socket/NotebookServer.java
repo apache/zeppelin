@@ -152,6 +152,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   // lifecycle without exposing it as part of the public API.
   ScheduledExecutorService heartbeatScheduler;
   private Thread heartbeatShutdownHook;
+  private boolean heartbeatInitialized;
 
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
@@ -282,9 +283,10 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * (rather than from the injected setters, whose call order is not guaranteed) is safe.
    */
   synchronized void startHeartbeatScheduler() {
-    if (heartbeatScheduler != null) {
+    if (heartbeatInitialized) {
       return;
     }
+    heartbeatInitialized = true;
     long intervalMs = zConf.getWebsocketHeartbeatInterval();
     if (intervalMs <= 0) {
       LOGGER.info("Websocket heartbeat is disabled (zeppelin.websocket.heartbeat.interval={})", intervalMs);
@@ -320,6 +322,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
       }
       heartbeatShutdownHook = null;
     }
+    heartbeatInitialized = false;
   }
 
   /**
@@ -328,15 +331,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * point of this heartbeat: it keeps connections alive even when the client-side application
    * keep-alive timer is throttled or stopped (e.g. a backgrounded browser tab). A single
    * session failing to receive a ping must not stop the remaining sessions from being pinged.
+   * Pong responses are not tracked; once the heartbeat is enabled, Jetty's idle timeout no
+   * longer determines connection liveness (see ZEPPELIN-6694).
    */
   void sendHeartbeat() {
-    synchronized (connectionManager.connectedSockets) {
-      for (NotebookSocket conn : connectionManager.connectedSockets) {
-        try {
-          conn.sendPing();
-        } catch (RuntimeException e) {
-          LOGGER.warn("Failed to send heartbeat ping to {}", conn, e);
-        }
+    for (NotebookSocket conn : connectionManager.connectedSockets) {
+      try {
+        conn.sendPing();
+      } catch (RuntimeException e) {
+        LOGGER.warn("Failed to send heartbeat ping to {}", conn, e);
       }
     }
   }
