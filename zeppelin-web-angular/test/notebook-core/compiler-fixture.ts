@@ -10,7 +10,12 @@
  * limitations under the License.
  */
 
-export { ConfigurationTable, mount as mountConfigurationTable } from './pages/ConfigurationTable';
-export { PublishedParagraph, mount } from './pages/PublishedParagraph';
-export { ParagraphFooter, mount as mountParagraphFooter } from './components/paragraph/ParagraphFooter';
-export type { NotebookCoreRemoteProps } from './notebookCoreContract';
+import ts from 'typescript';
+
+export const createFixtureHost = (options: ts.CompilerOptions, files: ReadonlyMap<string, string>): ts.CompilerHost => {
+  const host = ts.createCompilerHost(options);
+  const { readFile, fileExists } = host;
+  host.readFile = file => files.get(file) ?? readFile(file);
+  host.fileExists = file => files.has(file) || fileExists(file);
+  return host;
+};

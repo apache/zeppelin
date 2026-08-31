@@ -10,7 +10,20 @@
  * limitations under the License.
  */
 
-export { ConfigurationTable, mount as mountConfigurationTable } from './pages/ConfigurationTable';
-export { PublishedParagraph, mount } from './pages/PublishedParagraph';
-export { ParagraphFooter, mount as mountParagraphFooter } from './components/paragraph/ParagraphFooter';
-export type { NotebookCoreRemoteProps } from './notebookCoreContract';
+export type NotebookCoreSnapshot = Readonly<{
+  noteId: string;
+  revisionId: string | null;
+}>;
+
+export type NotebookCoreUnsubscribe = () => void;
+
+export type NotebookCoreSnapshotListener = () => void;
+
+export type NotebookCorePort = Readonly<{
+  getSnapshot: () => NotebookCoreSnapshot;
+  subscribe: (listener: NotebookCoreSnapshotListener) => NotebookCoreUnsubscribe;
+}>;
+
+export type NotebookCoreRemoteProps = Readonly<{
+  core: NotebookCorePort;
+}>;

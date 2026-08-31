@@ -19,6 +19,7 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["./*"],
+      "@zeppelin/notebook-core": ["../../zeppelin-notebook-core/src/public-api.ts"],
       "@zeppelin/sdk": ["../../zeppelin-sdk/src"],
       "@zeppelin/sdk/*": ["../../zeppelin-sdk/src/*"]
     }

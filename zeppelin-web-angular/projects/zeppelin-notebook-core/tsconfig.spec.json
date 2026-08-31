@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/spec/notebook-core",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.spec.ts", "../../test/notebook-core/**/*.ts"],
+  "exclude": []
+}

@@ -10,7 +10,11 @@
  * limitations under the License.
  */
 
-export { ConfigurationTable, mount as mountConfigurationTable } from './pages/ConfigurationTable';
-export { PublishedParagraph, mount } from './pages/PublishedParagraph';
-export { ParagraphFooter, mount as mountParagraphFooter } from './components/paragraph/ParagraphFooter';
-export type { NotebookCoreRemoteProps } from './notebookCoreContract';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'node',
+    include: ['projects/zeppelin-notebook-core/**/*.spec.ts', 'test/notebook-core/**/*.spec.ts']
+  }
+});
