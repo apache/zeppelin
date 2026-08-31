@@ -18,6 +18,10 @@ import ts from 'typescript';
 
 export const zeppelinWebAngularRoot = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 export const sourceRoot = fileURLToPath(new URL('../../projects/zeppelin-notebook-core/src/', import.meta.url));
+export const reactNotebookCoreProofConsumer = resolve(
+  zeppelinWebAngularRoot,
+  'e2e/core-contract/react-remote/NotebookCorePortProbe.tsx'
+);
 export const reactNotebookCoreBoundaryFiles = [
   resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src/main.ts'),
   resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src/notebookCoreContract.ts')
@@ -70,25 +74,33 @@ const isCheckedSourceFile = (path: string): boolean => {
 };
 
 export const findReactNotebookConsumerViolations = (
-  roots: string[] = sourceFiles(
-    resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src'),
-    path => /\.[cm]?[jt]sx?$/.test(path) && !isSpecSourceFile(path)
-  ),
+  roots: string[] = [
+    ...sourceFiles(
+      resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src'),
+      path => /\.[cm]?[jt]sx?$/.test(path) && !isSpecSourceFile(path)
+    ),
+    reactNotebookCoreProofConsumer
+  ],
   options = readCompilerOptions(resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/tsconfig.json')),
   host: ts.CompilerHost = ts.createCompilerHost(options)
 ): string[] => {
   const program = ts.createProgram(roots, options, host);
   const modules = new Map<string, { source: string; dependencies: Set<string> }>();
-  const pending = [...program.getSourceFiles()];
-  for (const file of pending) {
-    if (modules.has(file.fileName) || file.fileName.includes('/node_modules/')) {
-      continue;
+  const loadModule = (path: string, source?: string): { source: string; dependencies: Set<string> } | undefined => {
+    const existing = modules.get(path);
+    if (existing) {
+      return existing;
     }
+    const text = source ?? host.readFile(path);
+    if (text === undefined) {
+      return undefined;
+    }
+    const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, getScriptKind(path));
     const dependencies = new Set<string>();
     const visit = (node: ts.Node): void => {
       const specifier = getModuleSpecifier(node);
-      if (specifier) {
-        const target = ts.resolveModuleName(specifier, file.fileName, options, host).resolvedModule?.resolvedFileName;
+      if (specifier && specifier !== '<computed module dependency>') {
+        const target = ts.resolveModuleName(specifier, path, options, host).resolvedModule?.resolvedFileName;
         if (target) {
           dependencies.add(target);
         }
@@ -97,16 +109,26 @@ export const findReactNotebookConsumerViolations = (
     };
     visit(file);
     for (const reference of file.referencedFiles) {
-      dependencies.add(resolve(dirname(file.fileName), reference.fileName));
+      dependencies.add(resolve(dirname(path), reference.fileName));
     }
     for (const reference of file.typeReferenceDirectives) {
-      const target = ts.resolveTypeReferenceDirective(reference.fileName, file.fileName, options, host)
+      const target = ts.resolveTypeReferenceDirective(reference.fileName, path, options, host)
         .resolvedTypeReferenceDirective?.resolvedFileName;
       if (target) {
         dependencies.add(target);
       }
     }
-    modules.set(file.fileName, { source: file.text, dependencies });
+    const loaded = { source: text, dependencies };
+    modules.set(path, loaded);
+    return loaded;
+  };
+  const pending = [...program.getSourceFiles()];
+  for (const file of pending) {
+    if (modules.has(file.fileName) || file.fileName.includes('/node_modules/')) {
+      continue;
+    }
+    const module = loadModule(file.fileName, file.text);
+    const dependencies = module?.dependencies ?? new Set<string>();
     // TypeScript can resolve require() without adding its target to the program.
     // Inspect those local sources too, including helpers outside the root list.
     for (const target of dependencies) {
@@ -122,7 +144,7 @@ export const findReactNotebookConsumerViolations = (
   // Discover adapters, re-export barrels and routes from their dependency on the
   // shared contract. A new consumer must not require editing a scanner file list.
   const consumers = new Set([
-    ...reactNotebookCoreBoundaryFiles,
+    ...[...reactNotebookCoreBoundaryFiles, reactNotebookCoreProofConsumer].filter(path => modules.has(path)),
     ...[...modules.keys()].filter(path => path.startsWith(sourceRoot))
   ]);
   let changed = true;
@@ -139,20 +161,32 @@ export const findReactNotebookConsumerViolations = (
   const violations: string[] = [];
   const checked = new Set<string>();
   const main = reactNotebookCoreBoundaryFiles[0];
+  const remoteModules = new Set<string>();
+  const collectRemoteModules = (path: string): void => {
+    if (remoteModules.has(path) || path.startsWith(sourceRoot)) {
+      return;
+    }
+    remoteModules.add(path);
+    loadModule(path)?.dependencies.forEach(collectRemoteModules);
+  };
+  collectRemoteModules(reactNotebookCoreProofConsumer);
   const check = (path: string): void => {
     if (checked.has(path) || path.startsWith(sourceRoot)) {
       return;
     }
     checked.add(path);
-    const module = modules.get(path);
+    const module = loadModule(path);
     if (!module) {
-      if (!path.includes('/node_modules/')) {
-        violations.push(`${path}: cannot inspect local notebook dependency`);
-      }
+      violations.push(`${path}: cannot inspect notebook dependency`);
       return;
     }
     violations.push(
-      ...findViolations(path, module.source, forbiddenReactNotebookCoreConsumerModulePrefixes, options, host)
+      ...(remoteModules.has(path)
+        ? findNotebookRemoteConsumerViolations(path, module.source, options, host)
+        : [
+            ...findViolations(path, module.source, forbiddenReactNotebookCoreConsumerModulePrefixes, options, host),
+            ...findNotebookCoreValueImportViolations(path, module.source, options, host)
+          ])
     );
     // The public aggregator also exports existing SDK-backed pages. Check its
     // own imports, but do not include those unrelated pages in the core boundary.
@@ -168,6 +202,123 @@ export const findReactNotebookConsumerViolations = (
     }
   };
   consumers.forEach(check);
+  return violations;
+};
+
+const notebookRemoteContractTypes = new Set(['NotebookCorePort', 'NotebookCoreRemoteProps', 'NotebookCoreSnapshot']);
+
+export const findNotebookCoreValueImportViolations = (
+  path: string,
+  source: string,
+  compilerOptions = readCompilerOptions(resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/tsconfig.json')),
+  resolutionHost: ts.ModuleResolutionHost = ts.sys
+): string[] => {
+  const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, getScriptKind(path));
+  const violations: string[] = [];
+  const visit = (node: ts.Node): void => {
+    const specifier = getModuleSpecifier(node);
+    if (specifier && resolvesToNotebookCore(specifier, path, compilerOptions, resolutionHost)) {
+      const typeOnlyImport =
+        ts.isImportTypeNode(node) ||
+        (ts.isImportDeclaration(node) &&
+          (node.importClause?.isTypeOnly === true ||
+            (node.importClause?.name === undefined &&
+              node.importClause?.namedBindings !== undefined &&
+              ts.isNamedImports(node.importClause.namedBindings) &&
+              node.importClause.namedBindings.elements.every(binding => binding.isTypeOnly)))) ||
+        (ts.isExportDeclaration(node) &&
+          (node.isTypeOnly ||
+            (node.exportClause !== undefined &&
+              ts.isNamedExports(node.exportClause) &&
+              node.exportClause.elements.every(binding => binding.isTypeOnly))));
+      if (!typeOnlyImport) {
+        violations.push(`${path}: runtime notebook core import`);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  return violations;
+};
+
+export const findNotebookRemoteConsumerViolations = (
+  path: string,
+  source: string,
+  compilerOptions = readCompilerOptions(resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/tsconfig.json')),
+  resolutionHost: ts.ModuleResolutionHost = ts.sys
+): string[] => {
+  const violations = findViolations(
+    path,
+    source,
+    forbiddenReactNotebookCoreConsumerModulePrefixes,
+    compilerOptions,
+    resolutionHost
+  );
+  violations.push(...findNotebookCoreValueImportViolations(path, source, compilerOptions, resolutionHost));
+  const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, getScriptKind(path));
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) {
+      continue;
+    }
+    const specifier = getModuleSpecifier(statement);
+    if (!specifier || !resolvesToNotebookCore(specifier, path, compilerOptions, resolutionHost)) {
+      continue;
+    }
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    const namedImports = bindings && ts.isNamedImports(bindings) ? bindings.elements : [];
+    const isTypeOnly =
+      clause?.isTypeOnly === true ||
+      (clause?.name === undefined && namedImports.length > 0 && namedImports.every(binding => binding.isTypeOnly));
+
+    if (!isTypeOnly || clause?.name || !bindings || !ts.isNamedImports(bindings)) {
+      violations.push(`${path}: remote must import only NotebookCorePort contract types`);
+      continue;
+    }
+    for (const binding of namedImports) {
+      const importedName = binding.propertyName?.text ?? binding.name.text;
+      if (!notebookRemoteContractTypes.has(importedName)) {
+        violations.push(`${path}: remote notebook core import ${importedName}`);
+      }
+    }
+  }
+
+  const visit = (node: ts.Node): void => {
+    const specifier = getModuleSpecifier(node);
+    if (
+      specifier &&
+      !ts.isImportDeclaration(node) &&
+      resolvesToNotebookCore(specifier, path, compilerOptions, resolutionHost)
+    ) {
+      if (ts.isImportTypeNode(node) && node.qualifier && ts.isIdentifier(node.qualifier)) {
+        if (!notebookRemoteContractTypes.has(node.qualifier.text)) {
+          violations.push(`${path}: remote notebook core import ${node.qualifier.text}`);
+        }
+      } else if (
+        ts.isExportDeclaration(node) &&
+        (node.isTypeOnly ||
+          (node.exportClause &&
+            ts.isNamedExports(node.exportClause) &&
+            node.exportClause.elements.every(binding => binding.isTypeOnly))) &&
+        node.exportClause &&
+        ts.isNamedExports(node.exportClause)
+      ) {
+        for (const binding of node.exportClause.elements) {
+          const importedName = binding.propertyName?.text ?? binding.name.text;
+          if (!notebookRemoteContractTypes.has(importedName)) {
+            violations.push(`${path}: remote notebook core import ${importedName}`);
+          }
+        }
+      } else {
+        violations.push(`${path}: remote must import only NotebookCorePort contract types`);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+
   return violations;
 };
 
@@ -337,7 +488,11 @@ const getModuleSpecifier = (node: ts.Node): string | null => {
     ts.isCallExpression(node) &&
     node.arguments.length >= 1 &&
     (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-      (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
+      (ts.isIdentifier(node.expression) && node.expression.text === 'require') ||
+      (ts.isPropertyAccessExpression(node.expression) &&
+        ts.isIdentifier(node.expression.expression) &&
+        node.expression.expression.text === 'require' &&
+        node.expression.name.text === 'resolve'))
   ) {
     let argument = node.arguments[0];
     while (ts.isParenthesizedExpression(argument)) {
@@ -401,6 +556,17 @@ const moduleIdentities = (
     identities.push(`@zeppelin/${localPath}`);
   }
   return identities;
+};
+
+const resolvesToNotebookCore = (
+  specifier: string,
+  path: string,
+  compilerOptions: ts.CompilerOptions,
+  resolutionHost: ts.ModuleResolutionHost
+): boolean => {
+  return moduleIdentities(specifier, path, compilerOptions, resolutionHost).some(identity =>
+    matchesModulePrefix(identity, '@zeppelin/notebook-core')
+  );
 };
 
 const matchesModulePrefix = (moduleSpecifier: string, prefix: string): boolean => {
