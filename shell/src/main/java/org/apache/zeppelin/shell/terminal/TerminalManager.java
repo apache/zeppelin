@@ -69,7 +69,7 @@ public class TerminalManager {
   public void removeTerminalService(TerminalSocket terminalSocket) {
     Integer terminalSocketHashcode = terminalSocket.hashCode();
     if (terminalSocket2Service.containsKey(terminalSocketHashcode)) {
-      terminalSocket2Service.remove(terminalSocketHashcode);
+      terminalSocket2Service.remove(terminalSocketHashcode).close();
     } else {
       LOGGER.error("Can't find TerminalSocket: " + terminalSocketHashcode);
       LOGGER.error(terminalSocket2Service.toString());
