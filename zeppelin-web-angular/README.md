@@ -55,6 +55,10 @@ Run `npm run build` to build the project. The build artifacts will be stored in 
 
 Run `npm run test:shell` to execute the Angular shell unit tests via [Vitest](https://vitest.dev).
 
+Run `npm run test:notebook-core` for the dedicated Node-based Vitest suite. Contract specs live in `projects/zeppelin-notebook-core`; dependency-boundary checks live in `test/notebook-core`. Run `npm run typecheck:notebook-core` to check the core and its test infrastructure, rebuild the core package, and check the React contract against both built declarations and the same core source. The React contract is a type-only scaffold; it does not mount a notebook or implement a runtime.
+
+The React remote has a separate jsdom suite: run `npm test --prefix projects/zeppelin-react`. The shell and React suites do not include the notebook-core suite.
+
 ## Implementation Progress
 
 ### Pages

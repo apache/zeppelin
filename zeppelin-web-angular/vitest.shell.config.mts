@@ -12,11 +12,11 @@
 
 // vite is pinned in package.json: the React remote keeps its own lockfile and drifted to a different minor.
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // Mirrors the `paths` block in tsconfig.base.json, which Vite does not read.
-  // The two library aliases resolve to source, not `dist/`, so a unit run does not wait on a build.
+  // The library aliases resolve to source, not `dist/`, so a unit run does not wait on a build.
   resolve: {
     alias: [
       // monaco-editor ships no `main` and no `exports` (microsoft/monaco-editor#4848).
@@ -38,6 +38,10 @@ export default defineConfig({
       {
         find: /^@zeppelin\/visualization\/(.*)$/,
         replacement: `${fileURLToPath(new URL('./projects/zeppelin-visualization/src', import.meta.url))}/$1`
+      },
+      {
+        find: /^@zeppelin\/notebook-core$/,
+        replacement: fileURLToPath(new URL('./projects/zeppelin-notebook-core/src/public-api.ts', import.meta.url))
       },
       // `@zeppelin/*` falls back to src/environments in tsconfig; Vite aliases do not.
       {
@@ -64,6 +68,7 @@ export default defineConfig({
       'projects/zeppelin-visualization/**/*.spec.ts',
       'test/**/*.spec.ts'
     ],
+    exclude: [...configDefaults.exclude, 'test/notebook-core/**'],
     setupFiles: ['./test/test-setup.ts'],
     coverage: {
       provider: 'v8',
