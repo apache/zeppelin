@@ -269,7 +269,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.exportNote = function() {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/client').then(function(response) {
-      const limit = response.data.body.wsMessageMaxSize;
+      const limit = response.data.body.wsMaxMessageSize;
 
       let jsonContent = JSON.stringify($scope.note, null, 2);
 
