@@ -118,4 +118,73 @@ describe('ReactMountDirective', () => {
     expect(update).toHaveBeenCalledOnce();
     expect(zoneStates).toEqual([true, true]);
   });
+
+  it('re-enters the zone for host callbacks other than onError', async () => {
+    const host = new ElementRef<HTMLElement>(document.createElement('div'));
+    const ngZone = new NgZone({});
+    let mountedProps: (ReactProps & ReactHostCallbacks) | undefined;
+    const remote: ReactExposedModule = {
+      mount: (_element: HTMLElement, props: ReactProps & ReactHostCallbacks) => {
+        mountedProps = props;
+        return { update: vi.fn(), unmount: vi.fn() };
+      }
+    };
+    const loadModule = vi.fn(async <T>(): Promise<T> => remote as T);
+    const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
+    const zoneStates: boolean[] = [];
+    const received: unknown[] = [];
+    // A surface that hands the remote a real callback, the way the notebook
+    // repository list does with its save. Left unwrapped, the host's refetch
+    // and any HTTP it starts would run outside NgZone.
+    const onRepoChange = vi.fn((repo: unknown) => {
+      zoneStates.push(NgZone.isInAngularZone());
+      received.push(repo);
+    });
+    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+
+    directive.module = 'notebook-repos';
+    directive.reactProps = { onRepoChange };
+    directive.ngOnChanges({
+      module: new SimpleChange(undefined, directive.module, true),
+      reactProps: new SimpleChange(undefined, directive.reactProps, true)
+    });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+
+    ngZone.runOutsideAngular(() => {
+      (mountedProps!.onRepoChange as (repo: unknown) => void)({ name: 'GitNotebookRepo' });
+    });
+
+    expect(zoneStates).toEqual([true]);
+    expect(received).toEqual([{ name: 'GitNotebookRepo' }]);
+  });
+
+  it('keeps non-function props as they are', async () => {
+    const host = new ElementRef<HTMLElement>(document.createElement('div'));
+    const ngZone = new NgZone({});
+    let mountedProps: (ReactProps & ReactHostCallbacks) | undefined;
+    const remote: ReactExposedModule = {
+      mount: (_element: HTMLElement, props: ReactProps & ReactHostCallbacks) => {
+        mountedProps = props;
+        return { update: vi.fn(), unmount: vi.fn() };
+      }
+    };
+    const loader = { loadModule: vi.fn(async <T>(): Promise<T> => remote as T) } as Pick<
+      ReactRemoteLoaderService,
+      'loadModule'
+    >;
+    const repositories = [{ name: 'GitNotebookRepo' }];
+    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+
+    directive.module = 'notebook-repos';
+    directive.reactProps = { repositories, readOnly: false };
+    directive.ngOnChanges({
+      module: new SimpleChange(undefined, directive.module, true),
+      reactProps: new SimpleChange(undefined, directive.reactProps, true)
+    });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+
+    // Same references, so the remote can still memoize on them.
+    expect(mountedProps!.repositories).toBe(repositories);
+    expect(mountedProps!.readOnly).toBe(false);
+  });
 });

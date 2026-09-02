@@ -125,22 +125,33 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     }
   }
 
+  /**
+   * Every function the host passes down, not only `onError`. The remote runs
+   * outside the Angular zone, so a callback it invokes would otherwise leave
+   * the host's state change and any async work it starts untracked by NgZone.
+   * ZEPPELIN-6565 covered `onError`; a surface that hands the remote a real
+   * callback needs the same for all of them.
+   */
   private withHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
-    const onError = props.onError;
-    if (typeof onError !== 'function') {
+    const entries = Object.entries(props).filter(([, value]) => typeof value === 'function');
+    if (entries.length === 0) {
       return props;
     }
-    return {
-      ...props,
-      onError: (error: unknown): void => {
+
+    const wrapped: ReactProps = { ...props };
+    for (const [name, callback] of entries) {
+      wrapped[name] = (...args: unknown[]): void => {
         this.ngZone.run(() => {
           try {
-            onError(error);
-          } catch {
-            /* swallow callback errors; they shouldn't loop */
+            (callback as (...callbackArgs: unknown[]) => void)(...args);
+          } catch (error) {
+            // Swallowed rather than rethrown: the caller is React, which would
+            // turn it into a render error in a tree the host does not own.
+            console.error(`[ReactMountDirective] host callback "${name}" threw`, error);
           }
         });
-      }
-    };
+      };
+    }
+    return wrapped;
   }
 }
