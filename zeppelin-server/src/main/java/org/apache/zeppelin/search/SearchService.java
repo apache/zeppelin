@@ -48,6 +48,17 @@ public abstract class SearchService extends NoteEventAsyncListener {
   public abstract List<Map<String, String>> query(String queryStr, Predicate<String> readable);
 
   /**
+   * The id of an indexed document is either a noteId or a noteId followed by the paragraph.
+   *
+   * @see LuceneSearch#formatId(String, org.apache.zeppelin.notebook.Paragraph)
+   * @see EmbeddingSearch#formatId(String, org.apache.zeppelin.notebook.Paragraph)
+   */
+  static String noteIdOf(String documentId) {
+    int separator = documentId.indexOf('/');
+    return separator < 0 ? documentId : documentId.substring(0, separator);
+  }
+
+  /**
    * Updates note index for the given note, only update index of note meta info,
    * such as id,name. Paragraph index will be done in method updateParagraphIndex.
    *

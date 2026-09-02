@@ -615,16 +615,6 @@ public class EmbeddingSearch extends SearchService {
     return results;
   }
 
-  /**
-   * The key of an indexed entry is either a noteId or a noteId followed by the paragraph.
-   *
-   * @see #formatId(String, Paragraph)
-   */
-  private static String noteIdOf(String docId) {
-    int separator = docId.indexOf('/');
-    return separator < 0 ? docId : docId.substring(0, separator);
-  }
-
   @Override
   public void addNoteIndex(String noteId) {
     try {

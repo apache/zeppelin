@@ -1215,9 +1215,6 @@ public class NotebookRestApi extends AbstractRestApi {
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
-    // isReader() already covers owners, writers and runners. Handing the check to the
-    // search service keeps it in front of the cutoff, so a caller with access to few notes
-    // is still served a full result set of the notes it may read.
     List<Map<String, String>> notesFound = noteSearchService.query(queryTerm,
         noteId -> authorizationService.isReader(noteId, userAndRoles));
     LOGGER.info("{} notes found", notesFound.size());

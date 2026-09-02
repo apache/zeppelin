@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.search;
 import static org.apache.zeppelin.search.LuceneSearch.formatId;
+import static org.apache.zeppelin.search.SearchService.noteIdOf;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -348,11 +349,6 @@ class LuceneSearchTest {
 
     // then
     assertTrue(results.isEmpty(), () -> "unreadable results were returned: " + results);
-  }
-
-  private static String noteIdOf(String documentId) {
-    int separator = documentId.indexOf('/');
-    return separator < 0 ? documentId : documentId.substring(0, separator);
   }
 
   private String newNoteWithParagraph(String noteName, String parText) throws IOException {

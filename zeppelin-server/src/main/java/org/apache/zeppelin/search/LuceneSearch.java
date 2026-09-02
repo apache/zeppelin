@@ -81,8 +81,14 @@ public class LuceneSearch extends SearchService {
   private static final String ID_FIELD = "id";
   /** Number of results a query returns at most. */
   private static final int MAX_RESULTS = 20;
-  /** Number of hits pulled from the index per round while looking for readable ones. */
+  /** Number of hits pulled from the index on the first round while looking for readable ones. */
   private static final int HIT_BATCH_SIZE = 20;
+  /**
+   * Upper bound for the growing batch. Each searchAfter round re-executes the query, so the
+   * batch doubles per round to keep the round count logarithmic in the number of hits walked;
+   * the cap bounds the per-round allocation.
+   */
+  private static final int MAX_HIT_BATCH_SIZE = 1024;
   /** Only the id is needed to tell whether the caller may read a hit. */
   private static final Set<String> ID_FIELD_ONLY = Collections.singleton(ID_FIELD);
 
@@ -162,14 +168,11 @@ public class LuceneSearch extends SearchService {
       // set is full or the hits run out. Reading is checked here and not on the result set,
       // because a cut that runs first would hide results the caller is allowed to see.
       ScoreDoc lastHit = null;
+      int batchSize = HIT_BATCH_SIZE;
       while (matchingParagraphs.size() < MAX_RESULTS) {
         ScoreDoc[] hits = (lastHit == null
-            ? searcher.search(query, HIT_BATCH_SIZE)
-            : searcher.searchAfter(lastHit, query, HIT_BATCH_SIZE)).scoreDocs;
-        if (hits.length == 0) {
-          break;
-        }
-        lastHit = hits[hits.length - 1];
+            ? searcher.search(query, batchSize)
+            : searcher.searchAfter(lastHit, query, batchSize)).scoreDocs;
         for (ScoreDoc hit : hits) {
           if (matchingParagraphs.size() >= MAX_RESULTS) {
             break;
@@ -188,6 +191,13 @@ public class LuceneSearch extends SearchService {
           matchingParagraphs.add(
               toMatch(searcher, query, analyzer, highlighter, hit.doc, searcher.doc(hit.doc)));
         }
+        // Fewer hits than asked for means the index has no more; asking again would only
+        // return an empty batch.
+        if (hits.length < batchSize) {
+          break;
+        }
+        lastHit = hits[hits.length - 1];
+        batchSize = Math.min(batchSize * 2, MAX_HIT_BATCH_SIZE);
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
       LOGGER.error("Exception on searching for {}", query, e);
@@ -232,16 +242,6 @@ public class LuceneSearch extends SearchService {
         .put("tables", "")
         .put("output", "")
         .build();
-  }
-
-  /**
-   * The id of an indexed document is either a noteId or a noteId followed by the paragraph.
-   *
-   * @see #formatId(String, Paragraph)
-   */
-  private static String noteIdOf(String documentId) {
-    int separator = documentId.indexOf('/');
-    return separator < 0 ? documentId : documentId.substring(0, separator);
   }
 
   /* (non-Javadoc)
