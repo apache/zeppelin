@@ -39,7 +39,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
-  test('should display and allow title editing with tooltip', async ({ page }) => {
+  test('[NB-PARITY-002] should display and allow title editing with tooltip', async ({ page }) => {
     const notebookName = `TestNotebook_${Date.now()}`;
 
     await expect(actionBarPage.titleEditor).toBeVisible();

@@ -51,7 +51,7 @@ const openInlineCompletionEditor = async (page: Page) => {
 test.describe('Inline completion', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR);
 
-  test('shows history completion and preserves focus when dismissed', async ({ page }) => {
+  test('[NB-PARITY-010] shows history completion and preserves focus when dismissed', async ({ page }) => {
     const { noteId, inputArea } = await openInlineCompletionEditor(page);
 
     try {
@@ -63,7 +63,10 @@ test.describe('Inline completion', () => {
     }
   });
 
-  test('blurs the editor on the second Escape after dismissing completion', async ({ page, browserName }) => {
+  test('[NB-PARITY-011] blurs the editor on the second Escape after dismissing completion', async ({
+    page,
+    browserName
+  }) => {
     test.skip(browserName !== 'chromium', 'Monaco handles the second Escape differently in Firefox and WebKit');
     const { noteId, inputArea } = await openInlineCompletionEditor(page);
 
