@@ -142,6 +142,7 @@ Pages are moving from Angular to React fragments incrementally. Today this is na
 ### Suite Shape
 
 - Keep the composed suite focused on real cross-seam user flows. Behavior that lives entirely inside one fragment belongs in that fragment's own tests; do not grow the composed suite into a per-fragment unit suite.
+- The capture suite in `tests/notebook/core-contract/` tags its live-capture test `@live`, because it needs an isolated Zeppelin server. `playwright.config.js` excludes `@live`; `e2e:core-contract:live` selects it through `playwright.core-contract.config.js` and requires an explicit server URL. The live test deletes its own note in `finally`. The dedicated non-live runner has no auth setup, global hooks or backend cleanup. Tag live tests rather than excluding a whole file and hiding its synthetic tests.
 
 ## Classic UI Tests (`e2e/tests/classic/`)
 

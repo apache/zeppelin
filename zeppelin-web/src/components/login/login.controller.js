@@ -66,10 +66,14 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
       $rootScope.userName = '';
       $rootScope.ticket = undefined;
 
-      setTimeout(function() {
+      $timeout(function() {
         $scope.loginParams = {};
         $scope.loginParams.errorText = data.info;
-        angular.element('.nav-login-btn').click();
+        // A user may have opened the dialog while this logout callback was pending.
+        angular.element('#loginModal').modal('show');
+        $timeout(function() {
+          angular.element('#userName').focus();
+        }, 500);
       }, 1000);
       let locationPath = $location.path();
       $location.path('/').search('ref', locationPath);
