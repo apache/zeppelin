@@ -39,7 +39,7 @@ test.describe('Notebook Container Component', () => {
     await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
-  test('should display notebook container with proper structure', async () => {
+  test('[NB-PARITY-001] should display notebook container with proper structure', async () => {
     await expect(notebookPage.notebookContainer).toBeVisible();
     expect(await notebookPage.getNotebookContainerClass()).toContain('notebook-container');
   });

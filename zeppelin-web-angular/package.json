@@ -14,6 +14,8 @@
     "build:projects": "npm run build-project:sdk && npm run build-project:vis",
     "build-project:sdk": "ng build --project zeppelin-sdk",
     "check:websocket-contract": "node --test scripts/check-websocket-contract.test.js && node scripts/check-websocket-contract.js",
+    "generate:notebook-parity-scenarios": "node scripts/generate-notebook-parity-scenarios.mjs",
+    "check:notebook-parity-scenarios": "node --test scripts/check-notebook-parity-scenarios.test.mjs && node scripts/check-notebook-parity-scenarios.mjs",
     "build-project:vis": "ng build --project zeppelin-visualization",
     "lint": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint && npm run lint:react && prettier --check \"**/*.{ts,tsx,mts,js,json,css,html}\"",
     "lint:fix": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint --fix && npm run lint:fix:react && prettier --write \"**/*.{ts,tsx,mts,js,json,css,html}\"",
