@@ -201,24 +201,21 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('ParagraphActions.MoveCursorDown: Control+N', () => {
     test('should move cursor down with Control+N', async () => {
-      // Given: A paragraph with multiple lines
-      await keyboardPage.tryFocusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
+      await test.step('Given the cursor is at the beginning of line1', async () => {
+        await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
+        await keyboardPage.pressSelectAll();
+        await keyboardPage.pressKey('ArrowLeft');
+        await keyboardPage.pressKey('ArrowDown');
+      });
 
-      // Position cursor at beginning of first content line (after %python) using more reliable method
-      await keyboardPage.pressSelectAll(); // Select all content
-      await keyboardPage.pressKey('ArrowLeft'); // Move to beginning
-      await keyboardPage.pressKey('ArrowDown'); // Move to line1
+      await test.step('When the user presses Control+N', async () => {
+        await keyboardPage.pressMoveCursorDown();
+      });
 
-      // When: User presses Control+N (should move cursor down one line)
-      await keyboardPage.pressMoveCursorDown();
-
-      // Then: Verify cursor movement by checking if we can type at the current position
-      // Type a marker and check where it appears in the content
-      await keyboardPage.page.keyboard.type('MARKER');
-
-      await expect.poll(() => keyboardPage.getCodeEditorContent()).toContain('MARKERline2');
-      expect(await keyboardPage.getCodeEditorContent()).not.toContain('MARKERline1');
+      await test.step('Then typing inserts at the beginning of line2', async () => {
+        await keyboardPage.page.keyboard.type('MARKER');
+        await expect.poll(() => keyboardPage.getCodeEditorContent()).toBe('%python\nline1\nMARKERline2\nline3');
+      });
     });
   });
 
