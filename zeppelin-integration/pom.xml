@@ -198,8 +198,9 @@
                   </excludes>
                   <searchTransitive>true</searchTransitive>
                   <message>
-                    zeppelin-interpreter-shaded must NOT appear on the zeppelin-integration test classpath.
-                    MiniZeppelinServer instantiates ZeppelinServer in-process; mixing shaded and unshaded
+                    The legacy zeppelin-interpreter-shaded Maven artifact must NOT appear on the
+                    zeppelin-integration test classpath. MiniZeppelinServer instantiates ZeppelinServer
+                    in-process; mixing shaded and unshaded
                     org.eclipse.aether.* in the same JVM causes ClassCastException in
                     InterpreterSettingManager. See ZEPPELIN-6416.
                   </message>
