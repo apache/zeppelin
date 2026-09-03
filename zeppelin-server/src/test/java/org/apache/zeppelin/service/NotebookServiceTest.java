@@ -49,6 +49,8 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -83,9 +85,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.TestInfo;
 
-
-import com.google.gson.Gson;
-
 class NotebookServiceTest {
 
   private static NotebookService notebookService;
@@ -109,6 +108,7 @@ class NotebookServiceTest {
     ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
+    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_EVENTBUS_ENABLED.getVarName(), "true");
     // enable cron for testNoteUpdate method
     if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
@@ -144,6 +144,7 @@ class NotebookServiceTest {
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
     authorizationService = new AuthorizationService(noteManager, zConf, storage);
+    EventBus eventBus = new ZeppelinEventBus();
     notebook =
         new Notebook(
             zConf,
@@ -153,7 +154,7 @@ class NotebookServiceTest {
             mockInterpreterFactory,
             mockInterpreterSettingManager,
             credentials,
-            null);
+            eventBus);
     searchService = new LuceneSearch(zConf, notebook);
     QuartzSchedulerService schedulerService = new QuartzSchedulerService(zConf, notebook);
     notebook.initNotebook();
