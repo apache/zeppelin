@@ -30,6 +30,8 @@ import {
 } from './interfaces/message-paragraph.interface';
 import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
+import { getMessagePayloadGuard } from './message-payload-guards';
+
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
 export type SendArgumentsType<K extends keyof MessageSendDataTypeMap> = MessageSendDataTypeMap[K] extends undefined
@@ -175,6 +177,15 @@ export class Message {
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
     return this.received$.pipe(
       filter(message => message.op === op),
+      filter(message => {
+        const guard = getMessagePayloadGuard(op);
+
+        if (!guard) {
+          return true;
+        }
+
+        return guard(message.data);
+      }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
