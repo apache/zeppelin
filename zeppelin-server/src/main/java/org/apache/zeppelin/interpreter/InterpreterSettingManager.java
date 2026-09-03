@@ -148,6 +148,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   private List<String> includesInterpreters;
   private List<String> excludesInterpreters;
   private final IdleInterpreterReclaimer idleInterpreterReclaimer;
+  private final InterpreterHealthChecker interpreterHealthChecker = new InterpreterHealthChecker();
 
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zConf,
@@ -216,6 +217,15 @@ public class InterpreterSettingManager implements NoteEventListener {
   @VisibleForTesting
   public IdleInterpreterReclaimer getIdleInterpreterReclaimer() {
     return idleInterpreterReclaimer;
+  }
+
+  /**
+   * Probes the interpreter processes of the given setting and reports whether they answer.
+   *
+   * @see InterpreterHealthChecker
+   */
+  public InterpreterHealthCheck healthCheck(InterpreterSetting interpreterSetting) {
+    return interpreterHealthChecker.check(interpreterSetting);
   }
 
   public RemoteInterpreterEventServer getInterpreterEventServer() {
@@ -1132,6 +1142,7 @@ public class InterpreterSettingManager implements NoteEventListener {
 
   public void close() {
     idleInterpreterReclaimer.stop();
+    interpreterHealthChecker.stop();
     List<Thread> closeThreads = interpreterSettings.values().stream()
             .map(intpSetting-> new Thread(intpSetting::close, intpSetting.getId() + "-close"))
             .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
