@@ -19,6 +19,11 @@ export type MessagePayloadGuard = (value: unknown) => boolean;
 
 type ReceiveOP = keyof MessageReceiveDataTypeMap;
 
+/**
+ * Runtime payload guards are registered only for OPs with a demonstrated
+ * payload-shape failure. Add new guards when a concrete runtime failure
+ * shows that validation is needed.
+ */
 const MESSAGE_PAYLOAD_GUARDS: Partial<Record<ReceiveOP, MessagePayloadGuard>> = {
   [OP.LIST_UPDATE_NOTE_JOBS]: isListUpdateNoteJobsPayload
 };
