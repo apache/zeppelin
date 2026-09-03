@@ -23,7 +23,8 @@ import {
   ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  textChecksum
 } from '@zeppelin/sdk';
 
 import * as DiffMatchPatch from 'diff-match-patch';
@@ -159,8 +160,16 @@ export abstract class ParagraphBase extends MessageListenersManager {
       if (!this.paragraph.text) {
         this.paragraph.text = '';
       }
+      // patch_apply never throws: it drops a hunk it cannot place, and fuzzy matching can apply
+      // one at the wrong offset while still reporting success. Comparing against the sender's
+      // checksums is the only way to tell both apart.
+      const startedFromSameText = data.baseChecksum === textChecksum(this.paragraph.text);
       this.paragraph.text = this.diffMatchPatch.patch_apply(patch, this.paragraph.text)[0];
       this.originalText = this.paragraph.text;
+      if (startedFromSameText && data.afterChecksum !== textChecksum(this.paragraph.text)) {
+        // we no longer hold the text the sender produced, so ask for this paragraph again
+        this.messageService.getParagraph(this.paragraph.id, data.noteId);
+      }
       this.cdr.markForCheck();
     }
   }

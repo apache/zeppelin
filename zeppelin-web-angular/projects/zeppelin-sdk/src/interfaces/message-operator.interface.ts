@@ -516,6 +516,7 @@ export enum OP {
    * patch editor text
    */
   PATCH_PARAGRAPH = 'PATCH_PARAGRAPH',
+  GET_PARAGRAPH = 'GET_PARAGRAPH',
 
   /**
    * [s-c]
