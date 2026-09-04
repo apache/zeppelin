@@ -1,0 +1,516 @@
+{
+  "schemaVersion": 1,
+  "reviewedCommit": "d5b57b12fd0c5e1d885767aabe06b242debf8300",
+  "scenarios": [
+    {
+      "id": "NB-PARITY-001",
+      "name": "Notebook container structure is visible",
+      "area": "navigation",
+      "preconditions": ["A disposable notebook route is open."],
+      "action": "Render the notebook route.",
+      "observableOutcomes": ["The notebook container is visible with the expected container class."],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "allow",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/main/notebook-container.spec.ts",
+          "symbol": "Notebook Container Component"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-page.ts",
+          "symbol": "NotebookPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/main/notebook-container.spec.ts",
+            "title": "[NB-PARITY-001] should display notebook container with proper structure",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-002",
+      "name": "Notebook title can be displayed and edited",
+      "area": "navigation",
+      "preconditions": ["A disposable notebook route is open."],
+      "action": "Open the title editor and rename the notebook.",
+      "observableOutcomes": ["The title editor is visible and the changed title is reflected in the notebook header."],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/action-bar/action-bar-functionality.spec.ts",
+          "symbol": "Notebook Action Bar Functionality"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-action-bar-page.ts",
+          "symbol": "NotebookActionBarPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/action-bar/action-bar-functionality.spec.ts",
+            "title": "[NB-PARITY-002] should display and allow title editing with tooltip",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-003",
+      "name": "Paragraph enters editing mode on double click",
+      "area": "editor",
+      "preconditions": ["A disposable notebook with at least one paragraph is open."],
+      "action": "Double-click the paragraph.",
+      "observableOutcomes": ["The code editor becomes visible for the paragraph."],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+          "symbol": "Notebook Paragraph Functionality"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-paragraph-page.ts",
+          "symbol": "NotebookParagraphPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+            "title": "[NB-PARITY-003] should support double-click editing functionality",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-004",
+      "name": "Paragraph add buttons are visible",
+      "area": "editor",
+      "preconditions": ["A disposable notebook with a paragraph is open."],
+      "action": "Inspect the paragraph controls.",
+      "observableOutcomes": ["Add-paragraph controls are visible where a user can add another paragraph."],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+          "symbol": "Notebook Paragraph Functionality"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-paragraph-page.ts",
+          "symbol": "NotebookParagraphPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+            "title": "[NB-PARITY-004] should display add paragraph buttons",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-005",
+      "name": "Shift+Enter executes a markdown paragraph",
+      "area": "shortcut",
+      "preconditions": ["A disposable notebook paragraph is focused in the code editor."],
+      "action": "Type Markdown content and press Shift+Enter.",
+      "observableOutcomes": ["The paragraph executes and renders the Markdown heading result."],
+      "interpreter": "md",
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "allow"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "unverified"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/keyboard/notebook-keyboard-shortcuts.spec.ts",
+          "symbol": "ParagraphActions.Run"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts",
+          "symbol": "NotebookKeyboardPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/keyboard/notebook-keyboard-shortcuts.spec.ts",
+            "title": "[NB-PARITY-005] should execute markdown paragraph with Shift+Enter",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-010",
+      "name": "History inline completion can be dismissed without losing editor focus",
+      "area": "editor",
+      "preconditions": [
+        "A notebook contains a Python paragraph with prior text that can seed inline completion.",
+        "The notebook route is opened with aiInlineComplete enabled."
+      ],
+      "action": "Type a completion prefix in Monaco and press Escape while the completion is visible.",
+      "observableOutcomes": [
+        "The inline completion suggestion is shown from notebook history.",
+        "The Monaco input remains focused after the first Escape dismisses the suggestion."
+      ],
+      "interpreter": "python",
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "not-applicable",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "not-applicable",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts",
+          "symbol": "Inline completion"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts",
+          "symbol": "NotebookKeyboardPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts",
+            "title": "[NB-PARITY-010] shows history completion and preserves focus when dismissed",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-011",
+      "name": "The second Escape after inline completion dismissal blurs the editor",
+      "area": "editor",
+      "preconditions": [
+        "A notebook contains a Python paragraph with prior text that can seed inline completion.",
+        "The notebook route is opened with aiInlineComplete enabled.",
+        "The browser is Chromium."
+      ],
+      "action": "Press Escape once to dismiss the completion and press Escape again.",
+      "observableOutcomes": [
+        "The first Escape keeps Monaco focused.",
+        "The second Escape blurs the Monaco input in Chromium."
+      ],
+      "interpreter": "python",
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "not-applicable",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "not-applicable",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts",
+          "symbol": "Inline completion"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts",
+          "symbol": "NotebookKeyboardPage"
+        }
+      ],
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts",
+            "title": "[NB-PARITY-011] blurs the editor on the second Escape after dismissing completion",
+            "projects": ["chromium"]
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-021",
+      "name": "Text and table result displays preserve output semantics after paragraph execution",
+      "area": "result",
+      "preconditions": [
+        "A notebook has a Python paragraph that prints text.",
+        "A notebook has a paragraph that returns tabular output."
+      ],
+      "action": "Run the paragraph from the paragraph control and inspect the rendered result panel.",
+      "observableOutcomes": [
+        "The result display becomes visible and is not empty.",
+        "The UI offers every display mode that the Angular notebook exposes for the returned result type.",
+        "Visualization control changes preserve the field mapping from result columns to configured dimensions or measures.",
+        "The paragraph's persisted config reflects the resulting configuration object after a visualization option changes.",
+        "Text and table results expose accessible table output row by row so migrated React rendering can be compared without relying on screenshots alone."
+      ],
+      "interpreter": "python",
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "allow"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "unverified"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/paragraph.component.html",
+          "symbol": "paragraph result display"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/progress/progress.component.ts",
+          "symbol": "ProgressComponent"
+        },
+        {
+          "path": "zeppelin-web-angular/projects/zeppelin-visualization/src/table-transformation.ts",
+          "symbol": "TableTransformation"
+        },
+        {
+          "path": "zeppelin-web-angular/projects/zeppelin-visualization/src/pivot-transformation.ts",
+          "symbol": "PivotTransformation"
+        },
+        {
+          "path": "zeppelin-web-angular/projects/zeppelin-visualization/src/visualization.ts",
+          "symbol": "Visualization"
+        }
+      ],
+      "coverage": {
+        "status": "partial",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+            "title": "[NB-PARITY-021] should display result system properly",
+            "projects": ["chromium", "firefox", "webkit"]
+          }
+        ],
+        "issues": ["ZEPPELIN-6514", "ZEPPELIN-6516"],
+        "uncoveredOutcomes": [
+          "The UI offers every display mode that the Angular notebook exposes for the returned result type.",
+          "Visualization control changes preserve the field mapping from result columns to configured dimensions or measures.",
+          "The paragraph's persisted config reflects the resulting configuration object after a visualization option changes.",
+          "Text and table results expose accessible table output row by row so migrated React rendering can be compared without relying on screenshots alone."
+        ]
+      }
+    },
+    {
+      "id": "NB-PARITY-050",
+      "name": "Notebook editor persists the latest text after typing stops",
+      "area": "persistence",
+      "preconditions": [
+        "A disposable notebook with one editable paragraph is open.",
+        "The user can edit the paragraph."
+      ],
+      "action": "Replace the paragraph text and stop typing long enough for the notebook save path to acknowledge the edit.",
+      "observableOutcomes": [
+        "The persisted paragraph text equals the latest typed text.",
+        "The save assertion is based on observable persistence or wire evidence, not an internal timer."
+      ],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts",
+          "symbol": "CodeEditorComponent"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts",
+          "symbol": "NotebookKeyboardPage"
+        }
+      ],
+      "coverage": {
+        "status": "gap",
+        "tests": [],
+        "issues": ["ZEPPELIN-6661"],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-051",
+      "name": "Notebook editor does not lose an edit made while a prior save is in flight",
+      "area": "persistence",
+      "preconditions": [
+        "A disposable notebook with one editable paragraph is open.",
+        "The first paragraph save request can be observed before it completes."
+      ],
+      "action": "Edit the paragraph, keep the first save in flight, then make a second edit.",
+      "observableOutcomes": [
+        "The first in-flight save does not overwrite or drop the second edit.",
+        "A later observable save or reconciliation persists the second edit."
+      ],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts",
+          "symbol": "CodeEditorComponent"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts",
+          "symbol": "NotebookComponent"
+        }
+      ],
+      "coverage": {
+        "status": "gap",
+        "tests": [],
+        "issues": ["ZEPPELIN-6661"],
+        "uncoveredOutcomes": []
+      }
+    },
+    {
+      "id": "NB-PARITY-060",
+      "name": "Notebook honors host theme selection",
+      "area": "theme",
+      "preconditions": ["The user can choose light, dark, or system theme from the host shell."],
+      "action": "Change the host theme while a notebook surface is mounted.",
+      "observableOutcomes": [
+        "Notebook text remains readable.",
+        "Result and chart output inherit the host theme tokens.",
+        "The selected theme persists after reload."
+      ],
+      "interpreter": null,
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "allow",
+        "runner": "not-applicable"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "not-applicable"
+      },
+      "evidence": [
+        {
+          "path": "zeppelin-web-angular/projects/zeppelin-react/src/theme/ZeppelinThemeProvider.tsx",
+          "symbol": "ZeppelinThemeProvider"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/tests/theme/dark-mode.spec.ts",
+          "symbol": "Dark Mode"
+        }
+      ],
+      "coverage": {
+        "status": "gap",
+        "tests": [],
+        "issues": ["ZEPPELIN-6640"],
+        "uncoveredOutcomes": []
+      }
+    }
+  ]
+}

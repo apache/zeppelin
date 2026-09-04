@@ -67,7 +67,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CORE EXECUTION SHORTCUTS =====
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
-    test('should execute markdown paragraph with Shift+Enter', async () => {
+    test('[NB-PARITY-005] should execute markdown paragraph with Shift+Enter', async () => {
       // Given: A paragraph with markdown content
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
@@ -80,6 +80,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // waitForParagraphExecution gates on the status text, so it is the assertion and throws if the run never settles.
       await keyboardPage.waitForParagraphExecution(0);
+      await expect(keyboardPage.paragraphResult.getByRole('heading', { name: 'Test Heading' })).toBeVisible();
     });
   });
 

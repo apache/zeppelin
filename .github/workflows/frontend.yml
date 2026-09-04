@@ -56,6 +56,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 11
@@ -96,6 +98,10 @@ jobs:
         if: matrix.mode == 'anonymous'
         working-directory: zeppelin-web-angular
         run: ./node/npm run check:websocket-contract
+      - name: Check notebook parity scenarios
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run check:notebook-parity-scenarios
       # Keeps the Karma coverage previously run by the removed zeppelin-web e2e job
       - name: Run zeppelin-web unit tests
         if: matrix.mode == 'anonymous'

@@ -47,13 +47,13 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(paragraphPage.controlPanel).toBeVisible();
   });
 
-  test('should support double-click editing functionality', async () => {
+  test('[NB-PARITY-003] should support double-click editing functionality', async () => {
     await expect(paragraphPage.paragraphContainer).toBeVisible();
     await paragraphPage.doubleClickToEdit();
     await expect(paragraphPage.codeEditor).toBeVisible();
   });
 
-  test('should display add paragraph buttons', async () => {
+  test('[NB-PARITY-004] should display add paragraph buttons', async () => {
     await expect(paragraphPage.addParagraphAbove).toBeVisible();
     await expect(paragraphPage.addParagraphAbove).toHaveCount(1);
     await expect(paragraphPage.addParagraphBelow).toBeVisible();
@@ -66,7 +66,7 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(paragraphPage.runButton).toBeEnabled();
   });
 
-  test('should display result system properly', async ({ page }) => {
+  test('[NB-PARITY-021] should display result system properly', async ({ page }) => {
     await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
     await page.waitForLoadState('domcontentloaded');
     await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
