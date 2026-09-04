@@ -560,6 +560,18 @@
 </property>
 
 <property>
+  <name>zeppelin.websocket.idle.timeout</name>
+  <value>300000</value>
+  <description>Time in milliseconds before an idle websocket session is closed. Defaults to 300000 (5 minutes)</description>
+</property>
+
+<property>
+  <name>zeppelin.websocket.heartbeat.interval</name>
+  <value>60000</value>
+  <description>Interval in milliseconds at which the server sends a websocket ping frame to each session to keep it alive. Defaults to 60000 (1 minute). Set to 0 or a negative value to disable server-initiated heartbeats.</description>
+</property>
+
+<property>
   <name>zeppelin.server.default.dir.allowed</name>
   <value>false</value>
   <description>Enable directory listings on server.</description>

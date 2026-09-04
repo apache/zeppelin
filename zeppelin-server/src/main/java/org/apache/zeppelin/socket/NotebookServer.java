@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
@@ -145,6 +147,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private static final AtomicReference<NotebookServer> self = new AtomicReference<>();
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+  // Package-private (not private) so NotebookServerHeartbeatTest can observe scheduler
+  // lifecycle without exposing it as part of the public API.
+  ScheduledExecutorService heartbeatScheduler;
+  private Thread heartbeatShutdownHook;
+  private boolean heartbeatInitialized;
 
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
@@ -265,6 +273,75 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void onOpen(NotebookSocket conn) {
     connectionManager.addConnection(conn);
+    startHeartbeatScheduler();
+  }
+
+  /**
+   * Starts the websocket heartbeat scheduler on first use. Idempotent: a second call while the
+   * scheduler is already running is a no-op. zConf and connectionManager are both required and
+   * are set via setter injection before any real connection can open, so starting lazily here
+   * (rather than from the injected setters, whose call order is not guaranteed) is safe.
+   */
+  synchronized void startHeartbeatScheduler() {
+    if (heartbeatInitialized) {
+      return;
+    }
+    heartbeatInitialized = true;
+    long intervalMs = zConf.getWebsocketHeartbeatInterval();
+    if (intervalMs <= 0) {
+      LOGGER.info("Websocket heartbeat is disabled (zeppelin.websocket.heartbeat.interval={})", intervalMs);
+      return;
+    }
+    heartbeatScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread thread = new Thread(r, "NotebookServer-Heartbeat");
+      thread.setDaemon(true);
+      return thread;
+    });
+    heartbeatScheduler.scheduleAtFixedRate(
+        this::sendHeartbeat, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
+    heartbeatShutdownHook = new Thread(this::stopHeartbeatScheduler);
+    Runtime.getRuntime().addShutdownHook(heartbeatShutdownHook);
+    LOGGER.info("Started websocket heartbeat scheduler with interval {} ms", intervalMs);
+  }
+
+  /**
+   * Stops the websocket heartbeat scheduler, if running, and deregisters its shutdown hook so
+   * repeated start/stop cycles do not accumulate hooks. Safe to call multiple times and safe
+   * to call when the scheduler was never started.
+   */
+  synchronized void stopHeartbeatScheduler() {
+    if (heartbeatScheduler != null) {
+      heartbeatScheduler.shutdownNow();
+      heartbeatScheduler = null;
+    }
+    if (heartbeatShutdownHook != null && Thread.currentThread() != heartbeatShutdownHook) {
+      try {
+        Runtime.getRuntime().removeShutdownHook(heartbeatShutdownHook);
+      } catch (IllegalStateException e) {
+        // JVM is already shutting down; the hook will simply run (as a harmless no-op).
+      }
+      heartbeatShutdownHook = null;
+    }
+    heartbeatInitialized = false;
+  }
+
+  /**
+   * Sends a WebSocket protocol ping frame to every connected session. Writing to a session
+   * resets Jetty's idle timeout (and any intermediate proxy's idle timer), which is the whole
+   * point of this heartbeat: it keeps connections alive even when the client-side application
+   * keep-alive timer is throttled or stopped (e.g. a backgrounded browser tab). A single
+   * session failing to receive a ping must not stop the remaining sessions from being pinged.
+   * Pong responses are not tracked; once the heartbeat is enabled, Jetty's idle timeout no
+   * longer determines connection liveness (see ZEPPELIN-6694).
+   */
+  void sendHeartbeat() {
+    for (NotebookSocket conn : connectionManager.connectedSockets) {
+      try {
+        conn.sendPing();
+      } catch (RuntimeException e) {
+        LOGGER.warn("Failed to send heartbeat ping to {}", conn, e);
+      }
+    }
   }
 
   @OnMessage
