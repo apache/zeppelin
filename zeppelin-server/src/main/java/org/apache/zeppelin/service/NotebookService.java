@@ -991,15 +991,13 @@ public class NotebookService {
 
 
   private boolean isCronUpdated(Map<String, Object> configA, Map<String, Object> configB) {
-    boolean cronUpdated = false;
-    if (configA.get("cron") != null && configB.get("cron") != null && configA.get("cron")
-        .equals(configB.get("cron"))) {
-      cronUpdated = true;
-    } else if (configA.get("cron") != null || configB.get("cron") != null) {
-      cronUpdated = true;
+    Object cronA = configA.get("cron");
+    Object cronB = configB.get("cron");
+    if (cronA == null) {
+      return cronB != null;
     }
 
-    return cronUpdated;
+    return !cronA.equals(cronB);
   }
 
   public void saveNoteForms(String noteId,
