@@ -109,7 +109,6 @@
     "monaco-editor-webpack-plugin": "7.1.1",
     "ng-packagr": "^21.2.3",
     "prettier": "^3.6.2",
-    "scandirectory": "8.1.1",
     "style-loader": "^4.0.0",
     "ts-node": "~7.0.0",
     "typescript": "~5.9.3",
