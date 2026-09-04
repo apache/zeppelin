@@ -165,7 +165,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration combine.children="append">
-          <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+          <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8 ${extraJavaTestArgs}</argLine>
           <excludes>
             <exclude>${tests.to.exclude}</exclude>
           </excludes>
