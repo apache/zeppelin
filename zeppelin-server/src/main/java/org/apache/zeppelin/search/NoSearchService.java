@@ -21,6 +21,7 @@ import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class NoSearchService extends SearchService {
 
@@ -30,7 +31,7 @@ public class NoSearchService extends SearchService {
   }
 
   @Override
-  public List<Map<String, String>> query(String queryStr) {
+  public List<Map<String, String>> query(String queryStr, Predicate<String> readable) {
     return Collections.emptyList();
   }
 
