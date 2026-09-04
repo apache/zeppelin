@@ -17,7 +17,7 @@
     "@ant-design/icons": "5.4.0",
     "@zeppelin/sdk": "file:../zeppelin-sdk",
     "ansi-to-react": "6.2.6",
-    "highlight.js": "^9.15.8",
+    "highlight.js": "^10.4.1",
     "antd": "5.21.0",
     "chart.js": "^4.5.1",
     "date-fns": "^3.6.0",
