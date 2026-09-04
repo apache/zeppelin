@@ -24,7 +24,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.client.ClientConfig;
+import org.apache.zeppelin.client.ZSession;
 import org.apache.zeppelin.client.ZeppelinClient;
+import org.apache.zeppelin.client.websocket.SimpleMessageHandler;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.junit.jupiter.api.AfterAll;
@@ -50,14 +52,19 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
     zepServer.copyBinDir();
     zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
     zepServer.start();
+    zepServer.getZeppelinConfiguration().setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(),
+        "http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
     zeppelinClient = new ZeppelinClient(clientConfig);
   }
 
   @AfterAll
   static void destroy() throws Exception {
+    if (zeppelinClient != null) {
+      zeppelinClient.close();
+    }
     zepServer.destroy();
   }
 
@@ -88,6 +95,19 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
     zeppelinClient.login("admin", "password1");
     String response = zeppelinClient.createNote("/note_2");
     assertNotNull(response);
+  }
+
+  @Test
+  void testAuthenticatedZSessionWebSocket() throws Exception {
+    try (ZSession session = ZSession.builder()
+        .setClientConfig(clientConfig)
+        .setInterpreter("md")
+        .build()) {
+      session.login("admin", "password1");
+      session.start(new SimpleMessageHandler());
+
+      assertNotNull(session.getNoteId());
+    }
   }
 
   @Test

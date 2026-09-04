@@ -29,7 +29,7 @@ limitations under the License.
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
 ## Important Note
-By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Secure the Websocket channel), or only deploy and use Zeppelin in a secured and trusted environment.
+By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Apply one URL policy to REST and WebSocket), or only deploy and use Zeppelin in a secured and trusted environment.
 
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
@@ -44,7 +44,33 @@ cp conf/shiro.ini.template conf/shiro.ini
 
 For the further information about  `shiro.ini` file format, please refer to [Shiro Configuration](http://shiro.apache.org/configuration.html#Configuration-INISections).
 
-### 2. Start Zeppelin
+### 2. Apply one URL policy to REST and WebSocket
+
+When `shiro.ini` is enabled, Zeppelin routes both REST requests under `/api/*` and the
+WebSocket handshake at `/ws` through the same Shiro filter. Rules in `[urls]` are evaluated
+in order, and the first match wins. For example:
+
+```
+[urls]
+/api/version = anon
+/api/admin/** = authc, roles[admin]
+/ws = authc
+/** = authc
+```
+
+Use `anon` for an explicit exclusion from authentication. For example, `/ws = anon` before
+the catch-all rule intentionally enables anonymous WebSocket connections. Requests under
+`/api/*` or `/ws` that do not match any rule are rejected instead of bypassing authentication.
+
+This URL-policy guarantee applies to Zeppelin's standard INI web environment configured by
+`shiro.ini`. A custom Shiro `WebEnvironment` or filter-chain resolver must preserve the same
+first-match behavior and reject unmatched `/api/*` and `/ws` requests. Authenticated WebSocket
+connections also require a Shiro session-backed subject so Zeppelin can revalidate the exact
+session for the lifetime of the connection; stateless subject configurations are not supported
+for authenticated WebSockets. Zeppelin revalidates that session before processing inbound
+messages and before delivering outbound messages.
+
+### 3. Start Zeppelin
 
 ```bash
 bin/zeppelin-daemon.sh start #(or restart)
@@ -52,7 +78,7 @@ bin/zeppelin-daemon.sh start #(or restart)
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 
-### 3. Login
+### 4. Login
 Finally, you can login using one of the below **username/password** combinations.
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>

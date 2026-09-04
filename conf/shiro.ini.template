@@ -115,12 +115,16 @@ admin = *
 #
 # IMPORTANT: Order matters: URL path expressions are evaluated against an incoming request
 # in the order they are defined and the FIRST MATCH WINS.
+# The same Shiro filter handles REST requests and the notebook WebSocket handshake. Keep /ws
+# authenticated unless anonymous notebook access is intentional; replace /ws = authc below with
+# /ws = anon to opt out.
 #
 # To allow anonymous access to all but the stated urls,
 # uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
 #
 /api/version = anon
 /api/cluster/address = anon
+/ws = authc
 # Allow all authenticated users to restart interpreters on a notebook page.
 # Comment out the following line if you would like to authorize only admin users to restart interpreters.
 /api/interpreter/setting/restart/** = authc

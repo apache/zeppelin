@@ -96,7 +96,7 @@ class SecurityRestApiTest extends AbstractTestRestApi {
 
     try {
       HttpPost login = new HttpPost(getUrlToTest(zConf) + "/login");
-      login.addHeader("Origin", getUrlToTest(zConf));
+      login.addHeader("Origin", getOriginToTest(zConf));
       List<NameValuePair> parameters = new ArrayList<>();
       parameters.add(new BasicNameValuePair("password", "password2"));
       parameters.add(new BasicNameValuePair("userName", principal));

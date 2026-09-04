@@ -134,6 +134,15 @@ public abstract class AbstractTestRestApi {
     return "http://localhost:" + zConf.getServerPort() + REST_API_URL;
   }
 
+  protected static String getOriginToTest(ZeppelinConfiguration zConf) {
+    for (String allowedOrigin : zConf.getAllowedOrigins()) {
+      if (!"*".equals(allowedOrigin)) {
+        return allowedOrigin;
+      }
+    }
+    return "http://localhost:" + zConf.getServerPort();
+  }
+
   public CloseableHttpResponse httpGet(String path)
       throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
@@ -148,7 +157,7 @@ public abstract class AbstractTestRestApi {
     throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpGet httpGet = new HttpGet(getUrlToTest(zConf) + path);
-    httpGet.addHeader("Origin", getUrlToTest(zConf));
+    httpGet.addHeader("Origin", getOriginToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpGet.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -169,7 +178,7 @@ public abstract class AbstractTestRestApi {
       throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpDelete httpDelete = new HttpDelete(getUrlToTest(zConf) + path);
-    httpDelete.addHeader("Origin", getUrlToTest(zConf));
+    httpDelete.addHeader("Origin", getOriginToTest(zConf));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpDelete.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
@@ -210,7 +219,7 @@ public abstract class AbstractTestRestApi {
       throws IOException {
     LOGGER.info("Connecting to {}", getUrlToTest(zConf) + path);
     HttpPut httpPut = new HttpPut(getUrlToTest(zConf) + path);
-    httpPut.addHeader("Origin", getUrlToTest(zConf));
+    httpPut.addHeader("Origin", getOriginToTest(zConf));
     httpPut.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
     if (userAndPasswordAreNotBlank(user, pwd)) {
       httpPut.setHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
@@ -223,7 +232,7 @@ public abstract class AbstractTestRestApi {
   private String getCookie(String user, String password)
       throws IOException {
     HttpPost httpPost = new HttpPost(getUrlToTest(zConf) + "/login");
-    httpPost.addHeader("Origin", getUrlToTest(zConf));
+    httpPost.addHeader("Origin", getOriginToTest(zConf));
     ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
     postParameters.add(new BasicNameValuePair("password", password));
     postParameters.add(new BasicNameValuePair("userName", user));

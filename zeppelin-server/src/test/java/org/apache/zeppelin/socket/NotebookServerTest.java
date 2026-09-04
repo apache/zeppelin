@@ -26,17 +26,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -70,6 +68,7 @@ import org.apache.zeppelin.common.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.service.AuthenticatedIdentity;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -117,18 +116,6 @@ class NotebookServerTest extends AbstractTestRestApi {
   void setUp() {
     zConf = zepServer.getZeppelinConfiguration();
     anonymous = AuthenticationInfo.ANONYMOUS;
-  }
-
-  @Test
-  void checkOrigin() throws UnknownHostException {
-    String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
-    assertTrue(notebookServer.checkOrigin(origin),
-      "Origin " + origin + " is not allowed. Please check your hostname.");
-  }
-
-  @Test
-  void checkInvalidOrigin() {
-    assertFalse(notebookServer.checkOrigin("http://evillocalhost:8080"));
   }
 
   @Test
@@ -321,8 +308,8 @@ class NotebookServerTest extends AbstractTestRestApi {
 
     int sock1SendCount = 0;
     int sock2SendCount = 0;
-    reset(sock1);
-    reset(sock2);
+    clearInvocations(sock1);
+    clearInvocations(sock2);
     patchParagraph(sock1, paragraphId, patches[0]);
     assertEquals("ABC", paragraph.getText());
     verify(sock1, times(sock1SendCount)).send(anyString());
@@ -410,8 +397,8 @@ class NotebookServerTest extends AbstractTestRestApi {
       notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
       notebookServer.onMessage(sock2, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
-      reset(sock1);
-      reset(sock2);
+      clearInvocations(sock1);
+      clearInvocations(sock2);
 
       // update object from sock1
       notebookServer.onMessage(sock1,
@@ -480,7 +467,7 @@ class NotebookServerTest extends AbstractTestRestApi {
       // open the same notebook from sockets
       notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1Id).toJson());
 
-      reset(sock1);
+      clearInvocations(sock1);
 
       // bind object from sock1
       notebookServer.onMessage(sock1,
@@ -985,7 +972,7 @@ class NotebookServerTest extends AbstractTestRestApi {
       verify(socket).send(response.capture());
       assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
 
-      reset(socket);
+      clearInvocations(socket);
       setNotePermissions(noteId, "binding-owner", "binding-reader");
       notebookServer.getInterpreterBindings(socket, serviceContext("binding-reader"), message);
 
@@ -1018,7 +1005,7 @@ class NotebookServerTest extends AbstractTestRestApi {
       verify(socket).send(response.capture());
       assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
 
-      reset(socket);
+      clearInvocations(socket);
       authorizationService.setWriters(noteId,
           new HashSet<>(Arrays.asList("binding-owner", "binding-writer")));
       notebookServer.saveInterpreterBindings(socket, serviceContext("binding-writer"), message);
@@ -1088,6 +1075,7 @@ class NotebookServerTest extends AbstractTestRestApi {
 
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
+    when(sock.getAuthenticatedIdentity()).thenReturn(AuthenticatedIdentity.anonymous());
     return sock;
   }
 

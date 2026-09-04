@@ -1376,7 +1376,7 @@ public class NotebookService {
       notebook.processNote(noteId,
         note -> {
           Paragraph p = setParagraphUsingMessage(note, message, paragraphId,
-            text, title, params, config);
+            text, title, params, config, context.getAutheInfo());
           p.setResult((InterpreterResult) message.get("results"));
           p.setErrorMessage((String) message.get("errorMessage"));
           p.setStatusWithoutNotification(status);
@@ -1422,10 +1422,9 @@ public class NotebookService {
 
   private Paragraph setParagraphUsingMessage(Note note, Message fromMessage, String paragraphId,
                                              String text, String title, Map<String, Object> params,
-                                             Map<String, Object> config) {
+                                             Map<String, Object> config,
+                                             AuthenticationInfo subject) {
     Paragraph p = note.getParagraph(paragraphId);
-    AuthenticationInfo subject =
-        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
     // In personalized mode only the note owner may update the master paragraph, so that
     // new users inherit the owner's changes while a non-owner's changes stay in their copy.
     if (!note.isPersonalizedMode()

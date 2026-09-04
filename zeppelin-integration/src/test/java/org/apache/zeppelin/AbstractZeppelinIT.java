@@ -105,6 +105,7 @@ abstract public class AbstractZeppelinIT {
       // ignore if jQuery/Bootstrap not ready
     }
     ZeppelinITUtils.sleep(500, false);
+    waitForWebSocketConnection();
   }
 
   private WebElement angularModelWait(By locator) {
@@ -141,6 +142,12 @@ abstract public class AbstractZeppelinIT {
     }
     manager.getWebDriver().navigate().refresh();
     visibilityWait(loggedInUserMenuLocator(), MAX_BROWSER_TIMEOUT_SEC);
+    waitForWebSocketConnection();
+  }
+
+  private void waitForWebSocketConnection() {
+    visibilityWait(By.xpath("//i[@uib-tooltip='WebSocket Connected']"),
+        MAX_BROWSER_TIMEOUT_SEC);
   }
 
   // Shared locator for the logged-in navbar user menu button. Uses a class-order-agnostic
