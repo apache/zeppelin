@@ -29,11 +29,11 @@ export const HTMLRenderer = ({ html }: HTMLRendererProps) => {
       container.innerHTML = html;
 
       // Highlight code blocks (matches Angular: result.component.ts renderHTML)
-      const codeEle = container.querySelector('pre code');
+      const codeEle = container.querySelector<HTMLElement>('pre code');
       if (codeEle) {
         import('highlight.js')
           .then(({ default: hljs }) => {
-            hljs.highlightBlock(codeEle as HTMLElement);
+            hljs.highlightElement(codeEle);
           })
           // Without this a failed chunk is an unhandled rejection; the cost is an unhighlighted block.
           .catch(() => undefined);
