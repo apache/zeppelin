@@ -19,10 +19,14 @@ import { MessageListener, MessageListenersManager } from './message-listener';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('MessageListener', () => {
-  it('logs handler errors with the OP and keeps the subscription active', () => {
+  it('logs handler errors with the OP, rethrows them, and keeps the subscription active', () => {
+    // RxJS rethrows an error thrown inside `next` from a timer, so the subscription itself survives.
+    vi.useFakeTimers();
+
     const received$ = new Subject<MessageReceiveDataTypeMap[OP.NOTE]>();
     const messageService = {
       receive: vi.fn(() => received$.asObservable())
@@ -55,6 +59,7 @@ describe('MessageListener', () => {
 
     expect(component.calls).toBe(2);
     expect(consoleError).toHaveBeenCalledWith(`Failed to handle WebSocket OP ${String(OP.NOTE)}`, error);
+    expect(() => vi.runAllTimers()).toThrow(error);
   });
 
   it('passes received data to the handler', () => {

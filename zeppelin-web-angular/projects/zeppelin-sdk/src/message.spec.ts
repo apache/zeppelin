@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { MessageReceiveDataTypeMap } from './interfaces/message-data-type-map.interface';
 import { OP } from './interfaces/message-operator.interface';
@@ -19,6 +19,10 @@ import { Message } from './message';
 
 const asReceivedMessage = (message: unknown): WebSocketMessage<MessageReceiveDataTypeMap> =>
   message as WebSocketMessage<MessageReceiveDataTypeMap>;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('Message.receive', () => {
   it('passes a non-removal job update with noteName', () => {
@@ -74,9 +78,10 @@ describe('Message.receive', () => {
     expect(listener).toHaveBeenCalledWith(data);
   });
 
-  it('filters a non-removal job update without noteName', () => {
+  it('filters a non-removal job update without noteName and warns with the OP only', () => {
     const message = new Message();
     const listener = vi.fn();
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     message.receive(OP.LIST_UPDATE_NOTE_JOBS).subscribe(listener);
 
@@ -97,11 +102,16 @@ describe('Message.receive', () => {
     );
 
     expect(listener).not.toHaveBeenCalled();
+    expect(consoleWarn).toHaveBeenCalledTimes(1);
+    expect(consoleWarn).toHaveBeenCalledWith(
+      `Dropped WebSocket OP ${String(OP.LIST_UPDATE_NOTE_JOBS)}: payload failed validation`
+    );
   });
 
   it('filters a payload without a jobs array', () => {
     const message = new Message();
     const listener = vi.fn();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     message.receive(OP.LIST_UPDATE_NOTE_JOBS).subscribe(listener);
 

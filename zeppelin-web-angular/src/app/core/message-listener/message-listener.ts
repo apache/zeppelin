@@ -54,6 +54,7 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
             oldValue.apply(this, [data]);
           } catch (error) {
             console.error(`Failed to handle WebSocket OP ${String(op)}`, error);
+            throw error;
           }
         })
       );

@@ -175,16 +175,18 @@ export class Message {
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
+    const guard = getMessagePayloadGuard(op);
+
     return this.received$.pipe(
       filter(message => message.op === op),
       filter(message => {
-        const guard = getMessagePayloadGuard(op);
-
-        if (!guard) {
+        if (!guard || guard(message.data)) {
           return true;
         }
 
-        return guard(message.data);
+        // The payload can be large and carries note names, so log the OP alone.
+        console.warn(`Dropped WebSocket OP ${String(op)}: payload failed validation`);
+        return false;
       }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
