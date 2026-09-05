@@ -32,6 +32,7 @@ import { isEmpty, isEqual } from 'lodash';
 import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
 import { AngularContextManager } from './angular-context-manager';
 import { NoteStatus } from './note-status';
+import { ParagraphOutputState } from './paragraph-output-state';
 
 export const ParagraphStatus = {
   READY: 'READY',
@@ -41,6 +42,9 @@ export const ParagraphStatus = {
   ABORT: 'ABORT',
   ERROR: 'ERROR'
 };
+
+const isTerminalParagraphStatus = (status?: string): boolean =>
+  status === ParagraphStatus.FINISHED || status === ParagraphStatus.ABORT || status === ParagraphStatus.ERROR;
 
 export abstract class ParagraphBase extends MessageListenersManager {
   paragraph?: ParagraphItem;
@@ -58,6 +62,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     params: {},
     forms: {}
   };
+  private readonly outputState = new ParagraphOutputState();
 
   constructor(
     public messageService: Message,
@@ -114,6 +119,30 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
+  @MessageListener(OP.PARAGRAPH_APPEND_OUTPUT)
+  onParagraphAppendOutput(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]) {
+    if (data.paragraphId !== this.paragraph?.id) {
+      return;
+    }
+    this.initializeOutputState();
+    const result = this.outputState.append(data.index, data.data);
+    if (result) {
+      this.applyStreamingResult(data.index, result);
+    }
+  }
+
+  @MessageListener(OP.PARAGRAPH_UPDATE_OUTPUT)
+  onParagraphUpdateOutput(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT]) {
+    if (data.paragraphId !== this.paragraph?.id) {
+      return;
+    }
+    this.initializeOutputState();
+    const result = this.outputState.update(data.index, data.type, data.data);
+    if (result) {
+      this.applyStreamingResult(data.index, result);
+    }
+  }
+
   @MessageListener(OP.PARAGRAPH)
   paragraphData(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
     const oldPara = this.paragraph;
@@ -123,6 +152,11 @@ export abstract class ParagraphBase extends MessageListenersManager {
     const newPara = data.paragraph;
     if (!newPara.results) {
       newPara.results = {};
+    }
+    const oldRunActive = oldPara.status === ParagraphStatus.PENDING || oldPara.status === ParagraphStatus.RUNNING;
+    const newRunActive = newPara.status === ParagraphStatus.PENDING || newPara.status === ParagraphStatus.RUNNING;
+    if (newRunActive && (!oldRunActive || newPara.dateStarted !== oldPara.dateStarted)) {
+      this.outputState.reset();
     }
     if (this.isUpdateRequired(oldPara, newPara)) {
       this.updateParagraph(oldPara, newPara, () => {
@@ -140,6 +174,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
         this.cdr.markForCheck();
       });
       this.cdr.markForCheck();
+    }
+    if (isTerminalParagraphStatus(newPara.status)) {
+      this.outputState.finish(newPara.results?.msg);
     }
   }
 
@@ -184,6 +221,27 @@ export abstract class ParagraphBase extends MessageListenersManager {
     if (data.paragraphId === this.paragraph.id) {
       this.angularContextManager.unsetContextValue(data.name, data.paragraphId, false);
     }
+  }
+
+  private initializeOutputState(): void {
+    if (!this.outputState.isInitialized) {
+      this.outputState.reset(this.results, isTerminalParagraphStatus(this.paragraph?.status));
+    }
+  }
+
+  private applyStreamingResult(index: number, result: ParagraphIResultsMsgItem): void {
+    if (!this.paragraph) {
+      return;
+    }
+    const results = this.outputState.snapshot();
+    if (!this.paragraph.results) {
+      this.paragraph.results = {};
+    }
+    this.paragraph.results.msg = results;
+    this.results = results;
+    const config = this.paragraph.config.results?.[index] ?? { graph: new GraphConfig() };
+    this.updateParagraphResult(index, config, result);
+    this.cdr.markForCheck();
   }
 
   updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void) {
