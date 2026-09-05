@@ -824,4 +824,14 @@ class NotebookServiceTest {
       assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
   }
+
+  @Test
+  void testNormalizeFolderPath() throws IOException {
+    assertEquals("/folder", notebookService.normalizeFolderPath("folder"));
+    assertEquals("/folder", notebookService.normalizeFolderPath("/folder"));
+    assertEquals("/folder/subfolder", notebookService.normalizeFolderPath("folder/subfolder"));
+    assertEquals("/folder/subfolder", notebookService.normalizeFolderPath("/folder/subfolder"));
+
+    assertThrows(IOException.class, () -> notebookService.normalizeFolderPath(null));
+  }
 }
