@@ -4,7 +4,6 @@
   "capture": {
     "issue": "ZEPPELIN-6659",
     "zeppelinVersion": "0.13.0-SNAPSHOT",
-    "gitCommitId": "c1213a85e5bef9382db4efd38fe4d56d09964c77",
     "capturedAt": "2026-09-05T07:15:34Z",
     "browser": "Chromium",
     "interpreter": "sh",
