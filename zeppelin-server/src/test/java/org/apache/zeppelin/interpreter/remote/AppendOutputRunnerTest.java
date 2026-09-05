@@ -17,12 +17,14 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -39,6 +41,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -86,6 +89,24 @@ class AppendOutputRunnerTest {
     loopForCompletingEvents(listener, 1, buffer);
     verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\ndata2\ndata3\n");
+  }
+
+  @Test
+  void testUpdateDoesNotOvertakeQueuedAppend() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    runner.appendBuffer("note", "para", 0, "before-1\n");
+    runner.appendBuffer("note", "para", 0, "before-2\n");
+    runner.updateBuffer("note", "para", 0, InterpreterResult.Type.TEXT, "replacement\n");
+    runner.appendBuffer("note", "para", 0, "after\n");
+
+    runner.run();
+
+    InOrder order = inOrder(listener);
+    order.verify(listener).onOutputAppend("note", "para", 0, "before-1\nbefore-2\n");
+    order.verify(listener).onOutputUpdated(
+        "note", "para", 0, InterpreterResult.Type.TEXT, "replacement\n");
+    order.verify(listener).onOutputAppend("note", "para", 0, "after\n");
   }
 
   @Test

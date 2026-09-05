@@ -229,7 +229,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void updateOutput(OutputUpdateEvent event) throws InterpreterRPCException, TException {
     if (event.getAppId() == null) {
-      listener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
+      runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           InterpreterResult.Type.valueOf(event.getType()), event.getData());
     } else {
       appListener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
