@@ -103,6 +103,17 @@ public class InterpreterRestApi extends AbstractRestApi {
   }
 
   /**
+   * List the runtime status of all running interpreter processes.
+   */
+  @GET
+  @Path("status")
+  @ZeppelinApi
+  public Response getInterpreterProcessStatus() {
+    return new JsonResponse<>(Status.OK, "",
+        interpreterSettingManager.getInterpreterProcessStatuses()).build();
+  }
+
+  /**
    * Get a setting.
    */
   @GET
