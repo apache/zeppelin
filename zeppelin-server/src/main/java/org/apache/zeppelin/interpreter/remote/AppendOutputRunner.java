@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +30,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * This thread sends paragraph's append-data
- * periodically, rather than continously, with
- * a period of BUFFER_TIME_MS. It handles append-data
- * for all paragraphs across all notebooks.
+ * Sends paragraph output periodically. Adjacent append events are batched, while update events
+ * share the same queue so that they cannot overtake earlier appends.
  */
 public class AppendOutputRunner implements Runnable {
 
@@ -70,7 +69,16 @@ public class AppendOutputRunner implements Runnable {
     Long processingStartTime = System.currentTimeMillis();
     queue.drainTo(list);
 
-    for (AppendOutputBuffer buffer: list) {
+    Long sizeProcessed = Long.valueOf(0);
+    for (AppendOutputBuffer buffer : list) {
+      if (buffer instanceof UpdateOutputBuffer) {
+        sizeProcessed += flushAppendBuffers(stringBufferMap);
+        UpdateOutputBuffer update = (UpdateOutputBuffer) buffer;
+        listener.onOutputUpdated(update.getNoteId(), update.getParagraphId(), update.getIndex(),
+            update.getType(), update.getData());
+        continue;
+      }
+
       String noteId = buffer.getNoteId();
       String paragraphId = buffer.getParagraphId();
       int index = buffer.getIndex();
@@ -82,21 +90,13 @@ public class AppendOutputRunner implements Runnable {
       builder.append(buffer.getData());
       stringBufferMap.put(stringBufferKey, builder);
     }
+    sizeProcessed += flushAppendBuffers(stringBufferMap);
     Long processingTime = System.currentTimeMillis() - processingStartTime;
 
     if (processingTime > SAFE_PROCESSING_TIME) {
       LOGGER.warn("Processing time for buffered append-output is high: {} milliseconds.", processingTime);
     } else {
       LOGGER.debug("Processing time for append-output took {} milliseconds", processingTime);
-    }
-
-    Long sizeProcessed = Long.valueOf(0);
-    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
-      String stringBufferKey = stringBufferMapEntry.getKey();
-      StringBuilder buffer = stringBufferMapEntry.getValue();
-      sizeProcessed += buffer.length();
-      String[] keys = stringBufferKey.split(":");
-      listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
     }
 
     if (sizeProcessed > SAFE_PROCESSING_STRING_SIZE) {
@@ -106,8 +106,25 @@ public class AppendOutputRunner implements Runnable {
     }
   }
 
+  private long flushAppendBuffers(Map<String, StringBuilder> stringBufferMap) {
+    long sizeProcessed = 0;
+    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
+      String stringBufferKey = stringBufferMapEntry.getKey();
+      StringBuilder buffer = stringBufferMapEntry.getValue();
+      sizeProcessed += buffer.length();
+      String[] keys = stringBufferKey.split(":");
+      listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
+    }
+    stringBufferMap.clear();
+    return sizeProcessed;
+  }
+
   public void appendBuffer(String noteId, String paragraphId, int index, String outputToAppend) {
     queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
   }
 
+  public void updateBuffer(String noteId, String paragraphId, int index,
+                           InterpreterResult.Type type, String output) {
+    queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, type, output));
+  }
 }
