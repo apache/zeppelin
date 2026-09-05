@@ -30,7 +30,12 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,9 +53,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * would kill the test runner itself if called in-process.
  */
 class NotebookRunnerIntegrationTest {
-
-  private static final String REMOTE_INTERPRETER_SERVER_CLASS =
-      "org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer";
 
   private CliTestFixtures.TestDirs dirs;
 
@@ -126,8 +128,11 @@ class NotebookRunnerIntegrationTest {
     }
 
     // Confirm at the OS level (not just in-JVM bookkeeping) that no interpreter subprocess
-    // survived the parent CLI process exiting.
-    assertEquals(0, countRunningRemoteInterpreterServerProcesses());
+    // survived the parent CLI process exiting. orphanPids is every descendant pid observed
+    // under the run-note.sh process (which includes the interpreter subprocess it spawns)
+    // that is still alive now that the parent has exited.
+    assertTrue(result.orphanPids.isEmpty(),
+        "Orphan descendant process(es) survived parent exit: " + result.orphanPids);
   }
 
   @Test
@@ -145,11 +150,18 @@ class NotebookRunnerIntegrationTest {
     final boolean exited;
     final int exitCode;
     final String output;
+    /**
+     * Descendant pids of the run-note.sh process (collected while it was still alive, since
+     * {@link Process#descendants()} stops reporting anything useful once the parent has
+     * terminated) that are still alive now that the parent has exited.
+     */
+    final List<Long> orphanPids;
 
-    SubprocessResult(boolean exited, int exitCode, String output) {
+    SubprocessResult(boolean exited, int exitCode, String output, List<Long> orphanPids) {
       this.exited = exited;
       this.exitCode = exitCode;
       this.output = output;
+      this.orphanPids = orphanPids;
     }
   }
 
@@ -198,28 +210,40 @@ class NotebookRunnerIntegrationTest {
     drain.setDaemon(true);
     drain.start();
 
+    // run-note.sh forks its own java child (NotebookRunner), which in turn forks the
+    // interpreter subprocess (RemoteInterpreterServer) -- both are descendants of `process`.
+    // Process#descendants() only reliably walks that tree while the parent is still alive, so
+    // we have to poll and union pids while run-note.sh is running rather than snapshot once
+    // after it exits.
+    Set<Long> descendantPids = ConcurrentHashMap.newKeySet();
+    AtomicBoolean stopPolling = new AtomicBoolean(false);
+    Thread descendantPoller = new Thread(() -> {
+      while (!stopPolling.get()) {
+        process.descendants().map(ProcessHandle::pid).forEach(descendantPids::add);
+        try {
+          Thread.sleep(50);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+      }
+    });
+    descendantPoller.setDaemon(true);
+    descendantPoller.start();
+
     boolean exited = process.waitFor(60, TimeUnit.SECONDS);
     if (!exited) {
       process.destroyForcibly();
     }
+    stopPolling.set(true);
+    descendantPoller.join(TimeUnit.SECONDS.toMillis(5));
     drain.join(TimeUnit.SECONDS.toMillis(5));
 
-    return new SubprocessResult(exited, exited ? process.exitValue() : -1, output.toString());
-  }
+    List<Long> orphanPids = descendantPids.stream()
+        .filter(pid -> ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false))
+        .collect(Collectors.toList());
 
-  private static int countRunningRemoteInterpreterServerProcesses() throws Exception {
-    Process jps = new ProcessBuilder("jps", "-l").start();
-    int count = 0;
-    try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(jps.getInputStream(), StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        if (line.contains(REMOTE_INTERPRETER_SERVER_CLASS)) {
-          count++;
-        }
-      }
-    }
-    jps.waitFor();
-    return count;
+    return new SubprocessResult(
+        exited, exited ? process.exitValue() : -1, output.toString(), orphanPids);
   }
 }
