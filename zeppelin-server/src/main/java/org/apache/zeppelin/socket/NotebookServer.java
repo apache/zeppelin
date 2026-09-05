@@ -1237,7 +1237,10 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void cloneNote(NotebookSocket conn,
                          ServiceContext context,
                          Message fromMessage) throws IOException {
-    String noteId = connectionManager.getAssociatedNoteId(conn);
+    String noteId = (String) fromMessage.get("id");
+    if (noteId == null) {
+      return;
+    }
     String name = (String) fromMessage.get("name");
     getNotebookService().cloneNote(noteId, name, context,
         new WebSocketServiceCallback<Note>(conn) {

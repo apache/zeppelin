@@ -111,9 +111,11 @@ class NotebookServiceTest {
     zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
-    // enable cron for the tests that update a note's cron settings
+    // The cron tests need cron enabled, and the protected clone test needs conf/shiro.ini so that
+    // Zeppelin does not treat the caller as an anonymous deployment.
     if ("testNoteUpdate()".equals(testInfo.getDisplayName())
-        || "testCronRefreshedOnlyWhenTheExpressionChanges()".equals(testInfo.getDisplayName())) {
+        || "testCronRefreshedOnlyWhenTheExpressionChanges()".equals(testInfo.getDisplayName())
+        || "testCloneNoteForbiddenWhenShiroIsConfigured()".equals(testInfo.getDisplayName())) {
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
             confDir.getAbsolutePath());
@@ -517,6 +519,36 @@ class NotebookServiceTest {
     config.remove("cron");
     service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
     verify(schedulerService).refreshCron(noteId);
+  }
+
+  @Test
+  void testCloneNoteForbiddenWhenShiroIsConfigured() throws IOException {
+    String noteId = notebookService.createNote("/clone_protected", "test", true, context, callback);
+    HashSet<String> otherUser = new HashSet<>();
+    otherUser.add("other_user");
+    authorizationService.setOwners(noteId, otherUser);
+    authorizationService.setWriters(noteId, otherUser);
+
+    reset(callback);
+    assertNull(notebookService.cloneNote(noteId, "/clone_protected_target", context, callback));
+    verify(callback).onFailure(any(ForbiddenException.class), eq(context));
+  }
+
+  @Test
+  void testCloneNoteAllowedForEverybodyWithoutShiro() throws IOException {
+    String noteId = notebookService.createNote("/clone_anonymous", "test", true, context, callback);
+    HashSet<String> otherUser = new HashSet<>();
+    otherUser.add("other_user");
+    authorizationService.setOwners(noteId, otherUser);
+    authorizationService.setWriters(noteId, otherUser);
+
+    // this setup has no conf/shiro.ini, so hasWritePermission grants write access to everybody.
+    // NotebookRestApi applied that same predicate before delegating here
+    reset(callback);
+    String clonedNoteId =
+        notebookService.cloneNote(noteId, "/clone_anonymous_target", context, callback);
+    assertNotNull(clonedNoteId);
+    verify(callback).onSuccess(any(Note.class), eq(context));
   }
 
   @Test
