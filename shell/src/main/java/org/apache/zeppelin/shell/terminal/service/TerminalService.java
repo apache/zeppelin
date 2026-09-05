@@ -35,8 +35,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-public class TerminalService {
+public class TerminalService implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalService.class);
 
   private String[] termCommand;
@@ -145,6 +146,39 @@ public class TerminalService {
       if (Objects.nonNull(process)) {
         process.setWinSize(new WinSize(this.columns, this.rows));
       }
+    }
+  }
+
+  @Override
+  public void close() {
+    try {
+      if (outputWriter != null) {
+        outputWriter.close();
+      }
+      if (inputReader != null) {
+        inputReader.close();
+      }
+      if (errorReader != null) {
+        errorReader.close();
+      }
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    if (process != null) {
+      destroyProcess(process);
+    }
+  }
+
+  private void destroyProcess(PtyProcess process) {
+    process.destroy();
+    try {
+      if (!process.waitFor(5L, TimeUnit.SECONDS)) {
+        process.destroyForcibly();
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      process.destroyForcibly();
     }
   }
 
