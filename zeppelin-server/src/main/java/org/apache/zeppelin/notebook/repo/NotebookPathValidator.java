@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
- * Note-path validation helpers shared by {@link NotebookRepo} implementations
+ * Notebook path validation helpers shared by {@link NotebookRepo} implementations
  * and the service layer. A {@code final} class with {@code static} methods
  * (rather than {@link NotebookRepo} default methods) prevents an
  * implementation from accidentally — or intentionally — overriding the
@@ -83,5 +83,20 @@ public final class NotebookPathValidator {
       previous = decoded;
     }
     throw new IOException("Exceeded maximum decode attempts. Possible malicious input.");
+  }
+
+  /**
+   * Requires {@code folderPath} to use the canonical absolute folder-path form.
+   *
+   * @throws IOException if the path is null or does not start with {@code /}
+   */
+  public static void requireAbsoluteFolderPath(String folderPath) throws IOException {
+    if (folderPath == null) {
+      throw new IOException("Folder path must not be null");
+    }
+
+    if (!folderPath.startsWith("/")) {
+      throw new IOException("Folder path must start with '/'");
+    }
   }
 }

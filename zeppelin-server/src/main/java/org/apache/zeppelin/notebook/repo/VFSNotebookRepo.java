@@ -197,6 +197,9 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException{
+    NotebookPathValidator.requireAbsoluteFolderPath(folderPath);
+    NotebookPathValidator.requireAbsoluteFolderPath(newFolderPath);
+
     LOGGER.info("Move folder from {} to {}", folderPath, newFolderPath);
     FileObject fileObject = rootNotebookFileObject.resolveFile(
         folderPath.substring(1), NameScope.DESCENDENT);
@@ -218,6 +221,8 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    NotebookPathValidator.requireAbsoluteFolderPath(folderPath);
+
     LOGGER.info("Remove folder: {}", folderPath);
     FileObject folderObject = rootNotebookFileObject.resolveFile(
         folderPath.substring(1), NameScope.DESCENDENT);
