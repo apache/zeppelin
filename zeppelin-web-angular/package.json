@@ -93,7 +93,7 @@
     "@types/webpack-env": "^1.18.8",
     "@vitest/coverage-v8": "4.1.8",
     "@vitest/eslint-plugin": "^1.6.27",
-    "ajv": "^8.18.0",
+    "ajv": "^8.20.0",
     "angular-eslint": "21.4.0",
     "concurrently": "9.2.1",
     "cross-env": "^10.1.0",

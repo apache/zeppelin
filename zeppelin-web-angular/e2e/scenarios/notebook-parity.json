@@ -380,11 +380,11 @@
       "implementationEvidence": [
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/paragraph.component.html",
-          "symbol": "paragraph result display"
+          "symbol": "zeppelin-notebook-paragraph-result"
         },
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/progress/progress.component.ts",
-          "symbol": "ProgressComponent"
+          "symbol": "NotebookParagraphProgressComponent"
         },
         {
           "path": "zeppelin-web-angular/projects/zeppelin-visualization/src/table-transformation.ts",
@@ -442,7 +442,7 @@
       "implementationEvidence": [
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts",
-          "symbol": "CodeEditorComponent"
+          "symbol": "NotebookParagraphCodeEditorComponent"
         }
       ],
       "verificationEvidence": [
@@ -493,7 +493,7 @@
       "implementationEvidence": [
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts",
-          "symbol": "CodeEditorComponent"
+          "symbol": "NotebookParagraphCodeEditorComponent"
         },
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts",
@@ -538,7 +538,7 @@
       "verificationEvidence": [
         {
           "path": "zeppelin-web-angular/e2e/tests/theme/dark-mode.spec.ts",
-          "symbol": "Dark Mode"
+          "symbol": "Dark Mode Theme Switching"
         }
       ]
     }

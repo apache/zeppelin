@@ -117,7 +117,7 @@ Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one the
 1. Pick/confirm the target route and the `PAGES` key.
 2. Copy the shape of an existing spec in the same `<area>`; reuse or extend the matching POM (`models/<name>.ts` + `.util.ts`). Do not inline selectors the POM already owns.
 3. Annotate the page (`addPageAnnotationBeforeEach`), navigate, then `waitForZeppelinReady`.
-4. If the test covers a scenario in `e2e/scenarios/notebook-parity.json`, add its stable ID as a Playwright tag such as `{ tag: '@NB-PARITY-001' }`. Keep the title human-readable; the registry links coverage by tag and path. Browser-specific restrictions stay in the spec rather than being copied into the registry.
+4. If the test covers a scenario in `e2e/scenarios/notebook-parity.json`, add its stable ID as a Playwright tag such as `{ tag: '@NB-PARITY-001' }`. Keep the title human-readable; the registry links coverage by tag and path. Browser execution controls such as project lists and skip conditions stay in the spec rather than being copied into the registry. Keep browser assumptions in the registry only when they define the scenario's behavior or expected outcome.
 5. Run `npm run e2e:fast` and iterate until green.
 
 ## Migration (Angular to React Microfrontend)

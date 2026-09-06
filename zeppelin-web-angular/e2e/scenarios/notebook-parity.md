@@ -131,7 +131,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 - Preconditions: A notebook has a Python paragraph that prints text. A notebook has a paragraph that returns tabular output.
 - Action: Run the paragraph from the paragraph control and inspect the rendered result panel.
 - Observable outcomes: NB-PARITY-021-OUTCOME-001: The result display becomes visible and is not empty. NB-PARITY-021-OUTCOME-002: The UI offers every display mode that the Angular notebook exposes for the returned result type. NB-PARITY-021-OUTCOME-003: Visualization control changes preserve the field mapping from result columns to configured dimensions or measures. NB-PARITY-021-OUTCOME-004: The paragraph's persisted config reflects the resulting configuration object after a visualization option changes. NB-PARITY-021-OUTCOME-005: Text and table results expose accessible table output row by row so migrated React rendering can be compared without relying on screenshots alone.
-- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/paragraph.component.html (paragraph result display); zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/progress/progress.component.ts (ProgressComponent); zeppelin-web-angular/projects/zeppelin-visualization/src/table-transformation.ts (TableTransformation); zeppelin-web-angular/projects/zeppelin-visualization/src/pivot-transformation.ts (PivotTransformation); zeppelin-web-angular/projects/zeppelin-visualization/src/visualization.ts (Visualization)
+- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/paragraph.component.html (zeppelin-notebook-paragraph-result); zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/progress/progress.component.ts (NotebookParagraphProgressComponent); zeppelin-web-angular/projects/zeppelin-visualization/src/table-transformation.ts (TableTransformation); zeppelin-web-angular/projects/zeppelin-visualization/src/pivot-transformation.ts (PivotTransformation); zeppelin-web-angular/projects/zeppelin-visualization/src/visualization.ts (Visualization)
 - Verification evidence: not-applicable
 - Uncovered outcomes: NB-PARITY-021-OUTCOME-002: The UI offers every display mode that the Angular notebook exposes for the returned result type. NB-PARITY-021-OUTCOME-003: Visualization control changes preserve the field mapping from result columns to configured dimensions or measures. NB-PARITY-021-OUTCOME-004: The paragraph's persisted config reflects the resulting configuration object after a visualization option changes. NB-PARITY-021-OUTCOME-005: Text and table results expose accessible table output row by row so migrated React rendering can be compared without relying on screenshots alone.
 
@@ -144,7 +144,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 - Preconditions: A disposable notebook with one editable paragraph is open. The user can edit the paragraph.
 - Action: Replace the paragraph text and stop typing long enough for the notebook save path to acknowledge the edit.
 - Observable outcomes: NB-PARITY-050-OUTCOME-001: The persisted paragraph text equals the latest typed text. NB-PARITY-050-OUTCOME-002: The save assertion is based on observable persistence or wire evidence, not an internal timer.
-- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (CodeEditorComponent)
+- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent)
 - Verification evidence: zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts (NotebookKeyboardPage)
 
 ### NB-PARITY-051 Notebook editor does not lose an edit made while a prior save is in flight
@@ -156,7 +156,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 - Preconditions: A disposable notebook with one editable paragraph is open. The first paragraph save request can be observed before it completes.
 - Action: Edit the paragraph, keep the first save in flight, then make a second edit.
 - Observable outcomes: NB-PARITY-051-OUTCOME-001: The first in-flight save does not overwrite or drop the second edit. NB-PARITY-051-OUTCOME-002: A later observable save or reconciliation persists the second edit.
-- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (CodeEditorComponent); zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts (NotebookComponent)
+- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent); zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts (NotebookComponent)
 - Verification evidence: not-applicable
 
 ### NB-PARITY-060 Notebook honors host theme selection
@@ -169,4 +169,4 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 - Action: Change the host theme while a notebook surface is mounted.
 - Observable outcomes: NB-PARITY-060-OUTCOME-001: Notebook text remains readable. NB-PARITY-060-OUTCOME-002: Result and chart output inherit the host theme tokens. NB-PARITY-060-OUTCOME-003: The selected theme persists after reload.
 - Implementation evidence: zeppelin-web-angular/projects/zeppelin-react/src/theme/ZeppelinThemeProvider.tsx (ZeppelinThemeProvider)
-- Verification evidence: zeppelin-web-angular/e2e/tests/theme/dark-mode.spec.ts (Dark Mode)
+- Verification evidence: zeppelin-web-angular/e2e/tests/theme/dark-mode.spec.ts (Dark Mode Theme Switching)

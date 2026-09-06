@@ -120,14 +120,33 @@ test('accepts multiline executable Playwright test declarations', () => {
   assert.deepEqual(validateRegistry(registry, webRoot), []);
 });
 
-test('rejects duplicate ids and stale markdown', () => {
-  const { commit, root, webRoot } = createFixture();
+test('accepts an aliased Playwright test import', () => {
+  const { commit, webRoot } = createFixture();
+  const registry = baseRegistry(commit);
+  writeFixtureSpec(
+    webRoot,
+    "import { test as pwTest } from '@playwright/test';\npwTest('should render', { tag: '@NB-PARITY-001' }, async () => {});"
+  );
+
+  assert.deepEqual(validateRegistry(registry, webRoot, { checkMarkdown: false }), []);
+});
+
+test('rejects duplicate ids', () => {
+  const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
   registry.scenarios.push(structuredClone(registry.scenarios[0]));
+
+  const errors = validateRegistry(registry, webRoot, { checkMarkdown: false }).join('\n');
+  assert.match(errors, /is duplicated/);
+});
+
+test('rejects stale generated markdown', () => {
+  const { commit, webRoot } = createFixture();
+  const registry = baseRegistry(commit);
   fs.writeFileSync(path.join(webRoot, 'e2e/scenarios/notebook-parity.md'), 'stale\n');
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /is duplicated/);
+  assert.match(errors, /notebook-parity\.md is stale/);
 });
 
 test('rejects false covered claims without matching Playwright tag', () => {
@@ -185,7 +204,7 @@ test('requires Jira issues for gaps', () => {
   fs.writeFileSync(path.join(webRoot, 'e2e/scenarios/notebook-parity.md'), renderMarkdown(registry));
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /coverage\.issues must NOT have fewer than 1 items/);
+  assert.match(errors, /coverage\.issues must contain at least 1 item/);
 });
 
 test('requires executable coverage, a Jira issue, and named uncovered outcomes for partial scenarios', () => {
@@ -195,13 +214,13 @@ test('requires executable coverage, a Jira issue, and named uncovered outcomes f
   registry.scenarios[0].coverage.issues = [];
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /coverage\.issues must NOT have fewer than 1 items/);
+  assert.match(errors, /coverage\.issues must contain at least 1 item/);
 
   registry.scenarios[0].coverage.issues = ['ZEPPELIN-1234'];
   registry.scenarios[0].coverage.tests = [];
   const missingTestErrors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(missingTestErrors, /coverage\.tests must NOT have fewer than 1 items/);
-  assert.match(missingTestErrors, /coverage\.uncoveredOutcomes must NOT have fewer than 1 items/);
+  assert.match(missingTestErrors, /coverage\.tests must contain at least 1 item/);
+  assert.match(missingTestErrors, /coverage\.uncoveredOutcomes must contain at least 1 item/);
 });
 
 test('rejects invalid Jira issue keys and extra role expectation fields', () => {
@@ -211,8 +230,8 @@ test('rejects invalid Jira issue keys and extra role expectation fields', () => 
   registry.scenarios[0].roleExpectations.admin = 'allow';
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /must match pattern "\^ZEPPELIN-\[0-9\]\+\$"/);
-  assert.match(errors, /roleExpectations must NOT have additional properties/);
+  assert.match(errors, /must match \^ZEPPELIN-\[0-9\]\+\$/);
+  assert.match(errors, /roleExpectations\.admin is not allowed/);
 });
 
 test('rejects malformed coverage arrays without applying unsafe coverage rules', () => {
@@ -246,7 +265,7 @@ test('rejects malformed test entries without throwing', () => {
     }
   ];
   const metadataErrors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(metadataErrors, /must NOT have additional properties/);
+  assert.match(metadataErrors, /coverage\.tests\.0\.unexpected is not allowed/);
 });
 
 test('allows verified role evidence and optional role metadata', () => {
@@ -260,10 +279,34 @@ test('allows verified role evidence and optional role metadata', () => {
   assert.deepEqual(validateRegistry(registry, webRoot, { checkMarkdown: false }), []);
 });
 
+test('rejects not-applicable verification for an applicable role expectation', () => {
+  const { commit, webRoot } = createFixture();
+  const registry = baseRegistry(commit);
+  registry.scenarios[0].roleVerification.reader = 'not-applicable';
+
+  const errors = validateRegistry(registry, webRoot, { checkMarkdown: false }).join('\n');
+  assert.match(errors, /roleVerification\.reader must not be not-applicable/);
+});
+
+test('rejects applicable verification for a not-applicable role expectation', () => {
+  const { commit, webRoot } = createFixture();
+  const registry = baseRegistry(commit);
+  registry.scenarios[0].roleExpectations.reader = 'not-applicable';
+  registry.scenarios[0].roleVerification.reader = 'verified';
+
+  const errors = validateRegistry(registry, webRoot, { checkMarkdown: false }).join('\n');
+  assert.match(errors, /roleVerification\.reader must be not-applicable/);
+});
+
+test('rejects a null registry without throwing', () => {
+  assert.doesNotThrow(() => validateRegistry(null, undefined, { checkMarkdown: false }));
+  assert.match(validateRegistry(null, undefined, { checkMarkdown: false }).join('\n'), /registry must be object/);
+});
+
 test('rejects implementation evidence paths outside the repository', () => {
   const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
-  registry.scenarios[0].implementationEvidence[0].path = '../outside-repository.ts';
+  registry.scenarios[0].implementationEvidence[0].path = '../../outside-repository.ts';
 
   const errors = validateRegistry(registry, webRoot).join('\n');
   assert.match(errors, /implementationEvidence\[0\].path does not exist/);

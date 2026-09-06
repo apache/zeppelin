@@ -46,26 +46,38 @@ const resolveRepositoryPath = (root, relativePath) => {
   );
 };
 
-const isPlaywrightTestImport = node =>
-  ts.isImportDeclaration(node) &&
-  ts.isStringLiteral(node.moduleSpecifier) &&
-  node.moduleSpecifier.text === '@playwright/test' &&
-  node.importClause?.namedBindings &&
-  ts.isNamedImports(node.importClause.namedBindings) &&
-  node.importClause.namedBindings.elements.some(element => element.name.text === 'test');
+const getPlaywrightTestBindings = sourceFile => {
+  const bindings = new Set();
+  for (const node of sourceFile.statements) {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === '@playwright/test' &&
+      node.importClause?.namedBindings &&
+      ts.isNamedImports(node.importClause.namedBindings)
+    ) {
+      for (const element of node.importClause.namedBindings.elements) {
+        if ((element.propertyName ?? element.name).text === 'test') {
+          bindings.add(element.name.text);
+        }
+      }
+    }
+  }
+  return bindings;
+};
 
-const isSkippedDescribeCall = node =>
+const isSkippedDescribeCall = (node, testBindings) =>
   ts.isCallExpression(node) &&
   ts.isPropertyAccessExpression(node.expression) &&
   node.expression.name.text === 'skip' &&
   ts.isPropertyAccessExpression(node.expression.expression) &&
   node.expression.expression.name.text === 'describe' &&
   ts.isIdentifier(node.expression.expression.expression) &&
-  node.expression.expression.expression.text === 'test';
+  testBindings.has(node.expression.expression.expression.text);
 
-const isInsideSkippedDescribe = node => {
+const isInsideSkippedDescribe = (node, testBindings) => {
   for (let current = node.parent; current; current = current.parent) {
-    if (isSkippedDescribeCall(current)) {
+    if (isSkippedDescribeCall(current, testBindings)) {
       return true;
     }
   }
@@ -96,7 +108,8 @@ const readStaticTags = options => {
 
 const getExecutablePlaywrightTestTags = source => {
   const sourceFile = ts.createSourceFile('spec.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  if (!sourceFile.statements.some(isPlaywrightTestImport)) {
+  const testBindings = getPlaywrightTestBindings(sourceFile);
+  if (testBindings.size === 0) {
     return new Set();
   }
 
@@ -105,8 +118,8 @@ const getExecutablePlaywrightTestTags = source => {
     if (
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
-      node.expression.text === 'test' &&
-      !isInsideSkippedDescribe(node)
+      testBindings.has(node.expression.text) &&
+      !isInsideSkippedDescribe(node, testBindings)
     ) {
       for (const tag of readStaticTags(node.arguments[1])) {
         tags.add(tag);
@@ -116,6 +129,26 @@ const getExecutablePlaywrightTestTags = source => {
   };
   visit(sourceFile);
   return tags;
+};
+
+const formatSchemaError = error => {
+  const location = error.instancePath ? error.instancePath.slice(1).replaceAll('/', '.') : 'registry';
+  switch (error.keyword) {
+    case 'additionalProperties':
+      return `${location}.${error.params.additionalProperty} is not allowed`;
+    case 'minItems':
+      return `${location} must contain at least ${error.params.limit} item(s)`;
+    case 'maxItems':
+      return `${location} must contain at most ${error.params.limit} item(s)`;
+    case 'pattern':
+      return `${location} must match ${error.params.pattern}`;
+    case 'required':
+      return `${location}.${error.params.missingProperty} is required`;
+    case 'type':
+      return `${location} must be ${error.params.type}`;
+    default:
+      return `${location} ${error.message}`;
+  }
 };
 
 const testDeclaresExecutableTag = (root, test) => {
@@ -208,12 +241,11 @@ export const validateRegistry = (registry, root = webRoot, { checkMarkdown = tru
   const errors = [];
 
   if (!validateSchema(registry)) {
-    errors.push(
-      ...validateSchema.errors.map(error => {
-        const location = error.instancePath ? error.instancePath.slice(1).replaceAll('/', '.') : 'registry';
-        return `${location} ${error.message}`;
-      })
-    );
+    errors.push(...validateSchema.errors.map(formatSchemaError));
+  }
+
+  if (!registry || typeof registry !== 'object' || Array.isArray(registry)) {
+    return errors;
   }
 
   if (typeof registry.reviewedCommit === 'string' && /^[0-9a-f]{40}$/.test(registry.reviewedCommit)) {
@@ -251,6 +283,13 @@ export const validateRegistry = (registry, root = webRoot, { checkMarkdown = tru
           scenario.roleVerification[role] !== 'not-applicable'
         ) {
           errors.push(`${prefix}.roleVerification.${role} must be not-applicable`);
+        } else if (
+          scenario.roleExpectations[role] !== 'not-applicable' &&
+          scenario.roleVerification[role] === 'not-applicable'
+        ) {
+          errors.push(
+            `${prefix}.roleVerification.${role} must not be not-applicable when roleExpectations.${role} is ${scenario.roleExpectations[role]}`
+          );
         }
       }
     }
