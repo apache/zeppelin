@@ -22,9 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -34,12 +38,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.zeppelin.common.Message;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ConnectionManagerTest {
 
@@ -309,5 +316,96 @@ class ConnectionManagerTest {
 
     assertDoesNotThrow(() -> manager.removeUserConnection("", socket));
     assertTrue(manager.userSocketMap.isEmpty());
+  }
+
+  @Test
+  void broadcastToNoteSerializesMessageOnce() throws IOException {
+    CountingConnectionManager manager = newCountingManager();
+    NotebookSocket first = mock(NotebookSocket.class);
+    NotebookSocket second = mock(NotebookSocket.class);
+    NotebookSocket third = mock(NotebookSocket.class);
+    manager.addNoteConnection("note1", first);
+    manager.addNoteConnection("note1", second);
+    manager.addNoteConnection("note1", third);
+    // adding a connection broadcasts the collaborative mode status, which is not under test
+    manager.serializeCount.set(0);
+    clearInvocations(first, second, third);
+
+    manager.broadcast("note1", new Message(Message.OP.NOTE).put("note", "payload"));
+
+    assertEquals(1, manager.serializeCount.get());
+    assertEquals(payloadSentTo(first), payloadSentTo(second));
+    assertEquals(payloadSentTo(first), payloadSentTo(third));
+  }
+
+  @Test
+  void broadcastExceptSerializesMessageOnce() throws IOException {
+    CountingConnectionManager manager = newCountingManager();
+    NotebookSocket sender = mock(NotebookSocket.class);
+    NotebookSocket first = mock(NotebookSocket.class);
+    NotebookSocket second = mock(NotebookSocket.class);
+    manager.addNoteConnection("note1", sender);
+    manager.addNoteConnection("note1", first);
+    manager.addNoteConnection("note1", second);
+    manager.serializeCount.set(0);
+    clearInvocations(sender, first, second);
+
+    manager.broadcastExcept("note1",
+        new Message(Message.OP.PATCH_PARAGRAPH).put("patch", "payload"), sender);
+
+    assertEquals(1, manager.serializeCount.get());
+    assertEquals(payloadSentTo(first), payloadSentTo(second));
+    verify(sender, times(0)).send(anyString());
+  }
+
+  @Test
+  void multicastToUserSerializesMessageOnceAndKeepsWatcherBroadcasts() throws IOException {
+    CountingConnectionManager manager = newCountingManager();
+    NotebookSocket first = mock(NotebookSocket.class);
+    NotebookSocket second = mock(NotebookSocket.class);
+    manager.addUserConnection("testUser", first);
+    manager.addUserConnection("testUser", second);
+    NotebookSocket watcher = mock(NotebookSocket.class);
+    when(watcher.getHeader(WatcherSecurityKey.HTTP_HEADER)).thenReturn(WatcherSecurityKey.getKey());
+    manager.switchConnectionToWatcher(watcher);
+    manager.serializeCount.set(0);
+    clearInvocations(first, second, watcher);
+
+    manager.multicastToUser("testUser", new Message(Message.OP.NOTES_INFO).put("notes", "payload"));
+
+    assertEquals(payloadSentTo(first), payloadSentTo(second));
+    // one conversion for the two connections, plus one per watcher broadcast as before
+    assertEquals(3, manager.serializeCount.get());
+    verify(watcher, times(2)).send(anyString());
+  }
+
+  private static CountingConnectionManager newCountingManager() {
+    return new CountingConnectionManager(mock(AuthorizationService.class),
+        ZeppelinConfiguration.load());
+  }
+
+  private static String payloadSentTo(NotebookSocket socket) throws IOException {
+    ArgumentCaptor<String> payload = ArgumentCaptor.forClass(String.class);
+    verify(socket).send(payload.capture());
+    return payload.getValue();
+  }
+
+  /**
+   * Counts how often a broadcast converts its message, which is what distinguishes a single
+   * conversion reused across connections from one conversion per connection.
+   */
+  private static class CountingConnectionManager extends ConnectionManager {
+    private final AtomicInteger serializeCount = new AtomicInteger();
+
+    CountingConnectionManager(AuthorizationService authorizationService,
+                              ZeppelinConfiguration zConf) {
+      super(authorizationService, zConf);
+    }
+
+    @Override
+    protected String serializeMessage(Message m) {
+      serializeCount.incrementAndGet();
+      return super.serializeMessage(m);
+    }
   }
 }
