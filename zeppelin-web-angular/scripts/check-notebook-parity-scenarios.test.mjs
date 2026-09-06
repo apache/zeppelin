@@ -32,7 +32,7 @@ function createFixture() {
   );
   fs.writeFileSync(
     path.join(root, 'zeppelin-web-angular/e2e/tests/notebook/main/notebook-container.spec.ts'),
-    "import { test } from '@playwright/test';\ntest('[NB-PARITY-001] should render', async () => {});"
+    "import { test } from '@playwright/test';\ntest('should render', { tag: '@NB-PARITY-001' }, async () => {});"
   );
   spawnSync('git', ['init'], { cwd: root, stdio: 'ignore' });
   spawnSync('git', ['config', 'user.email', 'test@example.invalid'], { cwd: root, stdio: 'ignore' });
@@ -49,7 +49,7 @@ function writeFixtureSpec(webRoot, source) {
 
 function baseRegistry(commit) {
   return {
-    schemaVersion: 1,
+    $schema: './notebook-parity.schema.json',
     reviewedCommit: commit,
     scenarios: [
       {
@@ -58,7 +58,7 @@ function baseRegistry(commit) {
         area: 'navigation',
         preconditions: ['note exists'],
         action: 'open the route',
-        observableOutcomes: ['container is visible'],
+        observableOutcomes: [{ id: 'NB-PARITY-001-OUTCOME-001', description: 'container is visible' }],
         interpreter: null,
         roleExpectations: {
           owner: 'allow',
@@ -72,19 +72,19 @@ function baseRegistry(commit) {
           reader: 'unverified',
           runner: 'unverified'
         },
-        evidence: [
+        implementationEvidence: [
           {
             path: 'zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts',
             symbol: 'NotebookComponent'
           }
         ],
+        verificationEvidence: [],
         coverage: {
           status: 'covered',
           tests: [
             {
               path: 'zeppelin-web-angular/e2e/tests/notebook/main/notebook-container.spec.ts',
-              title: '[NB-PARITY-001] should render',
-              projects: ['chromium']
+              tag: '@NB-PARITY-001'
             }
           ],
           issues: [],
@@ -110,7 +110,8 @@ test('accepts multiline executable Playwright test declarations', () => {
     webRoot,
     `import { test } from '@playwright/test';
     test(
-      '[NB-PARITY-001] should render',
+      'should render',
+      { tag: '@NB-PARITY-001' },
       async () => {}
     );`
   );
@@ -129,38 +130,39 @@ test('rejects duplicate ids and stale markdown', () => {
   assert.match(errors, /is duplicated/);
 });
 
-test('rejects false covered claims without matching Playwright id', () => {
+test('rejects false covered claims without matching Playwright tag', () => {
   const { commit, root, webRoot } = createFixture();
   const registry = baseRegistry(commit);
-  registry.scenarios[0].coverage.tests[0].title = 'should render';
+  registry.scenarios[0].coverage.tests[0].tag = '@NB-PARITY-999';
   fs.writeFileSync(path.join(webRoot, 'e2e/scenarios/notebook-parity.md'), renderMarkdown(registry));
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /title must contain/);
+  assert.match(errors, /tag must be @NB-PARITY-001/);
 });
 
 test('rejects commented-only, helper-string, and skipped Playwright coverage claims', () => {
   const cases = [
     {
       name: 'commented-only',
-      source: "// test('[NB-PARITY-001] should render', async () => {});"
+      source: "// test('should render', { tag: '@NB-PARITY-001' }, async () => {});"
     },
     {
       name: 'helper-string',
-      source: "const title = '[NB-PARITY-001] should render';\ntest(title, async () => {});"
+      source: "const parityTag = '@NB-PARITY-001';\ntest('should render', { tag: parityTag }, async () => {});"
     },
     {
       name: 'test.skip',
-      source: "import { test } from '@playwright/test';\ntest.skip('[NB-PARITY-001] should render', async () => {});"
+      source:
+        "import { test } from '@playwright/test';\ntest.skip('should render', { tag: '@NB-PARITY-001' }, async () => {});"
     },
     {
       name: 'skipped describe',
       source:
-        "import { test } from '@playwright/test';\ntest.describe.skip('disabled', () => { test('[NB-PARITY-001] should render', async () => {}); });"
+        "import { test } from '@playwright/test';\ntest.describe.skip('disabled', () => { test('should render', { tag: '@NB-PARITY-001' }, async () => {}); });"
     },
     {
       name: 'non-Playwright test helper',
-      source: "const test = () => undefined;\ntest('[NB-PARITY-001] should render', async () => {});"
+      source: "const test = () => undefined;\ntest('should render', { tag: '@NB-PARITY-001' }, async () => {});"
     }
   ];
 
@@ -171,7 +173,7 @@ test('rejects commented-only, helper-string, and skipped Playwright coverage cla
     fs.writeFileSync(path.join(webRoot, 'e2e/scenarios/notebook-parity.md'), renderMarkdown(registry));
 
     const errors = validateRegistry(registry, webRoot).join('\n');
-    assert.match(errors, /title is not declared by an executable test\(\)/, name);
+    assert.match(errors, /tag is not declared by an executable test\(\)/, name);
   }
 });
 
@@ -183,7 +185,7 @@ test('requires Jira issues for gaps', () => {
   fs.writeFileSync(path.join(webRoot, 'e2e/scenarios/notebook-parity.md'), renderMarkdown(registry));
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /issues is required for gap scenarios/);
+  assert.match(errors, /coverage\.issues must NOT have fewer than 1 items/);
 });
 
 test('requires executable coverage, a Jira issue, and named uncovered outcomes for partial scenarios', () => {
@@ -193,13 +195,13 @@ test('requires executable coverage, a Jira issue, and named uncovered outcomes f
   registry.scenarios[0].coverage.issues = [];
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /issues is required for partial scenarios/);
+  assert.match(errors, /coverage\.issues must NOT have fewer than 1 items/);
 
   registry.scenarios[0].coverage.issues = ['ZEPPELIN-1234'];
   registry.scenarios[0].coverage.tests = [];
   const missingTestErrors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(missingTestErrors, /tests is required for partial scenarios/);
-  assert.match(missingTestErrors, /uncoveredOutcomes is required for partial scenarios/);
+  assert.match(missingTestErrors, /coverage\.tests must NOT have fewer than 1 items/);
+  assert.match(missingTestErrors, /coverage\.uncoveredOutcomes must NOT have fewer than 1 items/);
 });
 
 test('rejects invalid Jira issue keys and extra role expectation fields', () => {
@@ -209,11 +211,11 @@ test('rejects invalid Jira issue keys and extra role expectation fields', () => 
   registry.scenarios[0].roleExpectations.admin = 'allow';
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /must match ZEPPELIN-####/);
-  assert.match(errors, /roleExpectations must contain exactly/);
+  assert.match(errors, /must match pattern "\^ZEPPELIN-\[0-9\]\+\$"/);
+  assert.match(errors, /roleExpectations must NOT have additional properties/);
 });
 
-test('normalizes malformed coverage arrays before applying coverage rules', () => {
+test('rejects malformed coverage arrays without applying unsafe coverage rules', () => {
   const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
   registry.scenarios[0].coverage.tests = null;
@@ -222,48 +224,60 @@ test('normalizes malformed coverage arrays before applying coverage rules', () =
 
   assert.doesNotThrow(() => validateRegistry(registry, webRoot));
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /coverage.tests must be an array/);
-  assert.match(errors, /coverage.issues must be an array/);
-  assert.match(errors, /coverage.uncoveredOutcomes must be an array/);
-  assert.match(errors, /coverage.tests is required for covered scenarios/);
+  assert.match(errors, /coverage\.tests must be array/);
+  assert.match(errors, /coverage\.issues must be array/);
+  assert.match(errors, /coverage\.uncoveredOutcomes must be array/);
 });
 
-test('rejects malformed test entries and invalid execution metadata without throwing', () => {
+test('rejects malformed test entries without throwing', () => {
   const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
   registry.scenarios[0].coverage.tests = [null];
 
   assert.doesNotThrow(() => validateRegistry(registry, webRoot));
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /coverage.tests\[0\] must be an object/);
+  assert.match(errors, /coverage\.tests\.0 must be object/);
 
   registry.scenarios[0].coverage.tests = [
     {
       path: 'zeppelin-web-angular/e2e/tests/notebook/main/notebook-container.spec.ts',
-      title: '[NB-PARITY-001] should render',
-      projects: ['unknown-browser']
+      tag: '@NB-PARITY-001',
+      unexpected: true
     }
   ];
-  const projectErrors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(projectErrors, /projects contains an invalid project/);
+  const metadataErrors = validateRegistry(registry, webRoot).join('\n');
+  assert.match(metadataErrors, /must NOT have additional properties/);
 });
 
-test('requires role verification to distinguish expected permissions from tested permissions', () => {
+test('allows verified role evidence and optional role metadata', () => {
   const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
-  registry.scenarios[0].roleVerification.reader = 'covered';
+  registry.scenarios[0].roleVerification.reader = 'verified';
+  assert.deepEqual(validateRegistry(registry, webRoot, { checkMarkdown: false }), []);
 
-  const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /roleVerification.reader is invalid/);
+  delete registry.scenarios[0].roleExpectations;
+  delete registry.scenarios[0].roleVerification;
+  assert.deepEqual(validateRegistry(registry, webRoot, { checkMarkdown: false }), []);
 });
 
-test('rejects evidence paths outside the repository', () => {
+test('rejects implementation evidence paths outside the repository', () => {
   const { commit, webRoot } = createFixture();
   const registry = baseRegistry(commit);
-  registry.scenarios[0].evidence[0].path = '../outside-repository.ts';
+  registry.scenarios[0].implementationEvidence[0].path = '../outside-repository.ts';
 
   const errors = validateRegistry(registry, webRoot).join('\n');
-  assert.match(errors, /evidence\[0\].path does not exist/);
+  assert.match(errors, /implementationEvidence\[0\].path does not exist/);
+});
+
+test('references uncovered outcomes by stable id', () => {
+  const { commit, webRoot } = createFixture();
+  const registry = baseRegistry(commit);
+  registry.scenarios[0].coverage.status = 'partial';
+  registry.scenarios[0].coverage.issues = ['ZEPPELIN-1234'];
+  registry.scenarios[0].coverage.uncoveredOutcomes = ['NB-PARITY-001-OUTCOME-999'];
+
+  const errors = validateRegistry(registry, webRoot, { checkMarkdown: false }).join('\n');
+  assert.match(errors, /must reference an observable outcome id/);
 });
 
 test('renders generated Markdown with exactly one trailing newline', () => {
@@ -288,7 +302,7 @@ test('renders baseline commit and coverage evidence caveats', () => {
   assert.match(markdown, new RegExp(`Scenario/Angular baseline commit: \`${commit}\``));
   assert.match(
     markdown,
-    /`covered` mechanically means this registry points to a matching executable Playwright test declaration/
+    /`covered` mechanically means this registry points to a matching executable Playwright test tag/
   );
   assert.match(markdown, /Semantic adequacy and runtime pass\/fail remain review and CI evidence/);
 });

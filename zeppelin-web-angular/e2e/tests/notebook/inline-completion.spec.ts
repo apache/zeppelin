@@ -51,7 +51,7 @@ const openInlineCompletionEditor = async (page: Page) => {
 test.describe('Inline completion', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR);
 
-  test('[NB-PARITY-010] shows history completion and preserves focus when dismissed', async ({ page }) => {
+  test('shows history completion and preserves focus when dismissed', { tag: '@NB-PARITY-010' }, async ({ page }) => {
     const { noteId, inputArea } = await openInlineCompletionEditor(page);
 
     try {
@@ -63,21 +63,22 @@ test.describe('Inline completion', () => {
     }
   });
 
-  test('[NB-PARITY-011] blurs the editor on the second Escape after dismissing completion', async ({
-    page,
-    browserName
-  }) => {
-    test.skip(browserName !== 'chromium', 'Monaco handles the second Escape differently in Firefox and WebKit');
-    const { noteId, inputArea } = await openInlineCompletionEditor(page);
+  test(
+    'blurs the editor on the second Escape after dismissing completion',
+    { tag: '@NB-PARITY-011' },
+    async ({ page, browserName }) => {
+      test.skip(browserName !== 'chromium', 'Monaco handles the second Escape differently in Firefox and WebKit');
+      const { noteId, inputArea } = await openInlineCompletionEditor(page);
 
-    try {
-      await expect(inputArea).toBeFocused();
-      await page.keyboard.press('Escape');
-      await expect(inputArea).toBeFocused();
-      await page.keyboard.press('Escape');
-      await expect(inputArea).not.toBeFocused();
-    } finally {
-      await page.request.delete(`/api/notebook/${noteId}`);
+      try {
+        await expect(inputArea).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(inputArea).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(inputArea).not.toBeFocused();
+      } finally {
+        await page.request.delete(`/api/notebook/${noteId}`);
+      }
     }
-  });
+  );
 });

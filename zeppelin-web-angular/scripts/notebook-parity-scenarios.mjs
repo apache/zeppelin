@@ -16,33 +16,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import Ajv from 'ajv';
+import ts from 'typescript';
+
 export const registryPath = 'e2e/scenarios/notebook-parity.json';
+export const schemaPath = 'e2e/scenarios/notebook-parity.schema.json';
 export const markdownPath = 'e2e/scenarios/notebook-parity.md';
 export const webRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const allowedAreas = new Set([
-  'editor',
-  'execution',
-  'result',
-  'visualization',
-  'shortcut',
-  'permission',
-  'collaboration',
-  'navigation',
-  'persistence',
-  'lifecycle',
-  'theme',
-  'accessibility'
-]);
-const allowedCoverageStatuses = new Set(['covered', 'partial', 'gap', 'blocked']);
-const allowedRoleExpectations = new Set(['allow', 'deny', 'not-applicable']);
-const allowedRoleVerificationStatuses = new Set(['unverified', 'not-applicable']);
-const allowedProjects = new Set(['chromium', 'firefox', 'webkit']);
-const jiraIssuePattern = /^ZEPPELIN-\d+$/;
 const roles = ['owner', 'writer', 'reader', 'runner'];
 
 const escapeTableCell = value => String(value).replace(/\|/g, '\\|').replace(/\n/g, '<br>');
 const readJson = file => JSON.parse(readFileSync(file, 'utf8'));
+const registrySchema = readJson(path.join(webRoot, schemaPath));
+const validateSchema = new Ajv({ allErrors: true, allowUnionTypes: true }).compile(registrySchema);
 
 const resolveRepositoryPath = (root, relativePath) => {
   if (typeof relativePath !== 'string' || relativePath.length === 0 || path.isAbsolute(relativePath)) {
@@ -59,171 +46,84 @@ const resolveRepositoryPath = (root, relativePath) => {
   );
 };
 
-const assertArrayOfStrings = (errors, value, field) => {
-  if (
-    !Array.isArray(value) ||
-    value.length === 0 ||
-    value.some(item => typeof item !== 'string' || item.length === 0)
-  ) {
-    errors.push(`${field} must be a non-empty string array`);
-  }
-};
+const isPlaywrightTestImport = node =>
+  ts.isImportDeclaration(node) &&
+  ts.isStringLiteral(node.moduleSpecifier) &&
+  node.moduleSpecifier.text === '@playwright/test' &&
+  node.importClause?.namedBindings &&
+  ts.isNamedImports(node.importClause.namedBindings) &&
+  node.importClause.namedBindings.elements.some(element => element.name.text === 'test');
 
-const skipWhitespaceAndComments = (source, start) => {
-  let index = start;
-  while (index < source.length) {
-    if (/\s/.test(source[index])) {
-      index += 1;
-    } else if (source[index] === '/' && source[index + 1] === '/') {
-      index = source.indexOf('\n', index + 2);
-      if (index === -1) {
-        return source.length;
-      }
-    } else if (source[index] === '/' && source[index + 1] === '*') {
-      index = source.indexOf('*/', index + 2);
-      if (index === -1) {
-        return source.length;
-      }
-      index += 2;
-    } else {
-      return index;
+const isSkippedDescribeCall = node =>
+  ts.isCallExpression(node) &&
+  ts.isPropertyAccessExpression(node.expression) &&
+  node.expression.name.text === 'skip' &&
+  ts.isPropertyAccessExpression(node.expression.expression) &&
+  node.expression.expression.name.text === 'describe' &&
+  ts.isIdentifier(node.expression.expression.expression) &&
+  node.expression.expression.expression.text === 'test';
+
+const isInsideSkippedDescribe = node => {
+  for (let current = node.parent; current; current = current.parent) {
+    if (isSkippedDescribeCall(current)) {
+      return true;
     }
   }
-  return index;
+  return false;
 };
 
-const readStringLiteral = (source, start) => {
-  const quote = source[start];
-  if (quote !== "'" && quote !== '"' && quote !== '`') {
-    return null;
+const readStaticTags = options => {
+  if (!options || !ts.isObjectLiteralExpression(options)) {
+    return [];
   }
-
-  let value = '';
-  for (let index = start + 1; index < source.length; index += 1) {
-    const character = source[index];
-    if (character === '\\') {
-      value += source[index + 1] ?? '';
-      index += 1;
-    } else if (quote === '`' && character === '$' && source[index + 1] === '{') {
-      return null;
-    } else if (character === quote) {
-      return value;
-    } else {
-      value += character;
-    }
+  const tagProperty = options.properties.find(
+    property =>
+      ts.isPropertyAssignment(property) &&
+      ((ts.isIdentifier(property.name) && property.name.text === 'tag') ||
+        (ts.isStringLiteral(property.name) && property.name.text === 'tag'))
+  );
+  if (!tagProperty || !ts.isPropertyAssignment(tagProperty)) {
+    return [];
   }
-  return null;
+  if (ts.isStringLiteralLike(tagProperty.initializer)) {
+    return [tagProperty.initializer.text];
+  }
+  if (ts.isArrayLiteralExpression(tagProperty.initializer)) {
+    return tagProperty.initializer.elements.filter(ts.isStringLiteralLike).map(element => element.text);
+  }
+  return [];
 };
 
-const skipStringLiteral = (source, start) => {
-  const quote = source[start];
-  for (let index = start + 1; index < source.length; index += 1) {
-    const character = source[index];
-    if (character === '\\') {
-      index += 1;
-    } else if (character === quote) {
-      return index + 1;
-    }
-  }
-  return source.length;
-};
-
-const isIdentifierCharacter = character => /[A-Za-z0-9_$]/.test(character ?? '');
-
-const previousNonWhitespaceCharacter = (source, start) => {
-  for (let index = start - 1; index >= 0; index -= 1) {
-    if (!/\s/.test(source[index])) {
-      return source[index];
-    }
-  }
-  return '';
-};
-
-const importsPlaywrightTest = source =>
-  /import\s+(?:[\s\S]*?\btest\b[\s\S]*?)\s+from\s+['"]@playwright\/test['"]/.test(source);
-
-const findSkippedDescribeBlocks = source => {
-  const blocks = [];
-  const marker = 'test.describe.skip';
-  for (let start = source.indexOf(marker); start !== -1; start = source.indexOf(marker, start + marker.length)) {
-    const bodyStart = source.indexOf('{', start + marker.length);
-    if (bodyStart === -1) {
-      continue;
-    }
-    let depth = 0;
-    for (let index = bodyStart; index < source.length; index += 1) {
-      if (source[index] === "'" || source[index] === '"' || source[index] === '`') {
-        index = skipStringLiteral(source, index) - 1;
-      } else if (source[index] === '/' && source[index + 1] === '/') {
-        index = source.indexOf('\n', index + 2);
-        if (index === -1) {
-          break;
-        }
-      } else if (source[index] === '/' && source[index + 1] === '*') {
-        index = source.indexOf('*/', index + 2);
-        if (index === -1) {
-          break;
-        }
-        index += 1;
-      } else if (source[index] === '{') {
-        depth += 1;
-      } else if (source[index] === '}' && --depth === 0) {
-        blocks.push([start, index]);
-        break;
-      }
-    }
-  }
-  return blocks;
-};
-
-const getExecutablePlaywrightTestTitles = source => {
-  if (!importsPlaywrightTest(source)) {
+const getExecutablePlaywrightTestTags = source => {
+  const sourceFile = ts.createSourceFile('spec.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  if (!sourceFile.statements.some(isPlaywrightTestImport)) {
     return new Set();
   }
 
-  const titles = new Set();
-  const skippedDescribeBlocks = findSkippedDescribeBlocks(source);
-  for (let index = 0; index < source.length; index += 1) {
-    if (source[index] === '/' && source[index + 1] === '/') {
-      index = source.indexOf('\n', index + 2);
-      if (index === -1) {
-        break;
-      }
-    } else if (source[index] === '/' && source[index + 1] === '*') {
-      index = source.indexOf('*/', index + 2);
-      if (index === -1) {
-        break;
-      }
-      index += 1;
-    } else if (source[index] === "'" || source[index] === '"' || source[index] === '`') {
-      index = skipStringLiteral(source, index) - 1;
-    } else if (
-      source.startsWith('test', index) &&
-      !isIdentifierCharacter(source[index - 1]) &&
-      !isIdentifierCharacter(source[index + 4]) &&
-      previousNonWhitespaceCharacter(source, index) !== '.'
+  const tags = new Set();
+  const visit = node => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'test' &&
+      !isInsideSkippedDescribe(node)
     ) {
-      const openParen = skipWhitespaceAndComments(source, index + 4);
-      if (source[openParen] !== '(') {
-        continue;
-      }
-      const titleStart = skipWhitespaceAndComments(source, openParen + 1);
-      const title = readStringLiteral(source, titleStart);
-      if (title !== null && !skippedDescribeBlocks.some(([start, end]) => index >= start && index <= end)) {
-        titles.add(title);
+      for (const tag of readStaticTags(node.arguments[1])) {
+        tags.add(tag);
       }
     }
-  }
-
-  return titles;
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return tags;
 };
 
-const testDeclaresExecutableTitle = (root, test) => {
+const testDeclaresExecutableTag = (root, test) => {
   const absolutePath = resolveRepositoryPath(root, test.path);
   if (!absolutePath || !existsSync(absolutePath)) {
     return false;
   }
-  return getExecutablePlaywrightTestTitles(readFileSync(absolutePath, 'utf8')).has(test.title);
+  return getExecutablePlaywrightTestTags(readFileSync(absolutePath, 'utf8')).has(test.tag);
 };
 
 export const renderMarkdown = registry => {
@@ -244,24 +144,26 @@ export const renderMarkdown = registry => {
     '',
     '<!-- Generated by scripts/generate-notebook-parity-scenarios.mjs. Do not edit directly. -->',
     '',
-    `Schema version: ${registry.schemaVersion}`,
+    'Schema: [notebook-parity.schema.json](./notebook-parity.schema.json)',
     '',
     `Scenario/Angular baseline commit: \`${registry.reviewedCommit}\``,
     '',
     'Scope note: This is a prioritized baseline, not a complete Notebook inventory. Before a React vertical slice is declared ready, add every affected behavior to this registry and classify its evidence.',
     '',
-    'Coverage note: `covered` mechanically means this registry points to a matching executable Playwright test declaration. Semantic adequacy and runtime pass/fail remain review and CI evidence. Role expectations and role verification are deliberately separate.',
+    'Coverage note: `covered` mechanically means this registry points to a matching executable Playwright test tag. Semantic adequacy and runtime pass/fail remain review and CI evidence. Role expectations are recorded only when the outcome varies by role, and role verification records whether that expectation has been tested.',
     '',
     '| ID | Area | Scenario | Coverage | Roles | Tests | Issues |',
     '| --- | --- | --- | --- | --- | --- | --- |'
   ];
 
   for (const scenario of registry.scenarios) {
-    const rolesText = roles.map(role => `${role}: ${scenario.roleExpectations[role]}`).join('<br>');
+    const rolesText = scenario.roleExpectations
+      ? roles.map(role => `${role}: ${scenario.roleExpectations[role]}`).join('<br>')
+      : 'not-applicable';
     const testsText =
       scenario.coverage.tests.length === 0
         ? ''
-        : scenario.coverage.tests.map(test => `${test.path}<br>${test.title}`).join('<br><br>');
+        : scenario.coverage.tests.map(test => `${test.path}<br>${test.tag}`).join('<br><br>');
     const issuesText = scenario.coverage.issues.join(', ');
     lines.push(
       `| ${scenario.id} | ${scenario.area} | ${escapeTableCell(scenario.name)} | ${scenario.coverage.status} | ${escapeTableCell(rolesText)} | ${escapeTableCell(testsText)} | ${issuesText} |`
@@ -276,20 +178,25 @@ export const renderMarkdown = registry => {
     lines.push(`- Area: ${scenario.area}`);
     lines.push(`- Coverage: ${scenario.coverage.status}`);
     lines.push(`- Interpreter: ${scenario.interpreter ?? 'not-applicable'}`);
-    lines.push(`- Role verification: ${roles.map(role => `${role}: ${scenario.roleVerification[role]}`).join('; ')}`);
+    lines.push(
+      `- Role verification: ${scenario.roleVerification ? roles.map(role => `${role}: ${scenario.roleVerification[role]}`).join('; ') : 'not-applicable'}`
+    );
     lines.push(`- Preconditions: ${scenario.preconditions.join(' ')}`);
     lines.push(`- Action: ${scenario.action}`);
-    lines.push(`- Observable outcomes: ${scenario.observableOutcomes.join(' ')}`);
-    lines.push(`- Evidence: ${scenario.evidence.map(item => `${item.path} (${item.symbol})`).join('; ')}`);
-    if (scenario.coverage.tests.length > 0) {
-      lines.push(
-        `- Browser projects: ${scenario.coverage.tests
-          .map(test => `${test.title}: ${test.projects.join(', ')}`)
-          .join('; ')}`
-      );
-    }
+    lines.push(
+      `- Observable outcomes: ${scenario.observableOutcomes.map(outcome => `${outcome.id}: ${outcome.description}`).join(' ')}`
+    );
+    lines.push(
+      `- Implementation evidence: ${scenario.implementationEvidence.map(item => `${item.path} (${item.symbol})`).join('; ') || 'not-applicable'}`
+    );
+    lines.push(
+      `- Verification evidence: ${scenario.verificationEvidence.map(item => `${item.path} (${item.symbol})`).join('; ') || 'not-applicable'}`
+    );
     if (scenario.coverage.uncoveredOutcomes.length > 0) {
-      lines.push(`- Uncovered outcomes: ${scenario.coverage.uncoveredOutcomes.join(' ')}`);
+      const outcomesById = new Map(scenario.observableOutcomes.map(outcome => [outcome.id, outcome.description]));
+      lines.push(
+        `- Uncovered outcomes: ${scenario.coverage.uncoveredOutcomes.map(id => `${id}: ${outcomesById.get(id)}`).join(' ')}`
+      );
     }
     lines.push('');
   }
@@ -300,12 +207,16 @@ export const renderMarkdown = registry => {
 export const validateRegistry = (registry, root = webRoot, { checkMarkdown = true } = {}) => {
   const errors = [];
 
-  if (registry.schemaVersion !== 1) {
-    errors.push('schemaVersion must be 1');
+  if (!validateSchema(registry)) {
+    errors.push(
+      ...validateSchema.errors.map(error => {
+        const location = error.instancePath ? error.instancePath.slice(1).replaceAll('/', '.') : 'registry';
+        return `${location} ${error.message}`;
+      })
+    );
   }
-  if (typeof registry.reviewedCommit !== 'string' || !/^[0-9a-f]{40}$/.test(registry.reviewedCommit)) {
-    errors.push('reviewedCommit must be a full 40-character commit hash');
-  } else {
+
+  if (typeof registry.reviewedCommit === 'string' && /^[0-9a-f]{40}$/.test(registry.reviewedCommit)) {
     try {
       execFileSync('git', ['cat-file', '-e', `${registry.reviewedCommit}^{commit}`], { cwd: root, stdio: 'ignore' });
     } catch {
@@ -313,7 +224,6 @@ export const validateRegistry = (registry, root = webRoot, { checkMarkdown = tru
     }
   }
   if (!Array.isArray(registry.scenarios) || registry.scenarios.length === 0) {
-    errors.push('scenarios must be a non-empty array');
     return errors;
   }
 
@@ -321,11 +231,12 @@ export const validateRegistry = (registry, root = webRoot, { checkMarkdown = tru
   let previousId = '';
   for (const [index, scenario] of registry.scenarios.entries()) {
     const prefix = `scenarios[${index}]`;
-    if (typeof scenario.id !== 'string' || !/^NB-PARITY-\d{3}$/.test(scenario.id)) {
-      errors.push(`${prefix}.id must match NB-PARITY-###`);
-    } else if (ids.has(scenario.id)) {
+    if (!scenario || typeof scenario !== 'object') {
+      continue;
+    }
+    if (typeof scenario.id === 'string' && ids.has(scenario.id)) {
       errors.push(`${prefix}.id is duplicated: ${scenario.id}`);
-    } else {
+    } else if (typeof scenario.id === 'string') {
       if (previousId && scenario.id <= previousId) {
         errors.push(`${prefix}.id must sort after ${previousId}`);
       }
@@ -333,131 +244,76 @@ export const validateRegistry = (registry, root = webRoot, { checkMarkdown = tru
       ids.add(scenario.id);
     }
 
-    if (typeof scenario.name !== 'string' || scenario.name.length === 0) {
-      errors.push(`${prefix}.name is required`);
-    }
-    if (!allowedAreas.has(scenario.area)) {
-      errors.push(`${prefix}.area is invalid: ${scenario.area}`);
-    }
-    assertArrayOfStrings(errors, scenario.preconditions, `${prefix}.preconditions`);
-    if (typeof scenario.action !== 'string' || scenario.action.length === 0) {
-      errors.push(`${prefix}.action is required`);
-    }
-    assertArrayOfStrings(errors, scenario.observableOutcomes, `${prefix}.observableOutcomes`);
-    if (!(typeof scenario.interpreter === 'string' || scenario.interpreter === null)) {
-      errors.push(`${prefix}.interpreter must be a string or null`);
-    }
-    for (const role of roles) {
-      if (!allowedRoleExpectations.has(scenario.roleExpectations?.[role])) {
-        errors.push(`${prefix}.roleExpectations.${role} is invalid`);
+    if (scenario.roleExpectations && scenario.roleVerification) {
+      for (const role of roles) {
+        if (
+          scenario.roleExpectations[role] === 'not-applicable' &&
+          scenario.roleVerification[role] !== 'not-applicable'
+        ) {
+          errors.push(`${prefix}.roleVerification.${role} must be not-applicable`);
+        }
       }
-    }
-    const roleKeys = Object.keys(scenario.roleExpectations ?? {}).sort();
-    if (roleKeys.join(',') !== [...roles].sort().join(',')) {
-      errors.push(`${prefix}.roleExpectations must contain exactly ${roles.join(', ')}`);
-    }
-    for (const role of roles) {
-      if (!allowedRoleVerificationStatuses.has(scenario.roleVerification?.[role])) {
-        errors.push(`${prefix}.roleVerification.${role} is invalid`);
-      }
-      if (
-        scenario.roleExpectations?.[role] === 'not-applicable' &&
-        scenario.roleVerification?.[role] !== 'not-applicable'
-      ) {
-        errors.push(`${prefix}.roleVerification.${role} must be not-applicable`);
-      }
-    }
-    const roleVerificationKeys = Object.keys(scenario.roleVerification ?? {}).sort();
-    if (roleVerificationKeys.join(',') !== [...roles].sort().join(',')) {
-      errors.push(`${prefix}.roleVerification must contain exactly ${roles.join(', ')}`);
     }
 
-    if (!Array.isArray(scenario.evidence) || scenario.evidence.length === 0) {
-      errors.push(`${prefix}.evidence must be a non-empty array`);
-    } else {
-      for (const [evidenceIndex, evidence] of scenario.evidence.entries()) {
-        const evidencePath = resolveRepositoryPath(root, evidence.path);
-        if (!evidencePath || !existsSync(evidencePath)) {
-          errors.push(`${prefix}.evidence[${evidenceIndex}].path does not exist: ${evidence.path}`);
+    for (const evidenceField of ['implementationEvidence', 'verificationEvidence']) {
+      if (Array.isArray(scenario[evidenceField])) {
+        for (const [evidenceIndex, evidence] of scenario[evidenceField].entries()) {
+          if (!evidence || typeof evidence.path !== 'string') {
+            continue;
+          }
+          const evidencePath = resolveRepositoryPath(root, evidence.path);
+          if (!evidencePath || !existsSync(evidencePath)) {
+            errors.push(`${prefix}.${evidenceField}[${evidenceIndex}].path does not exist: ${evidence.path}`);
+          }
         }
-        if (typeof evidence.symbol !== 'string' || evidence.symbol.length === 0) {
-          errors.push(`${prefix}.evidence[${evidenceIndex}].symbol is required`);
+      }
+    }
+
+    const outcomeIds = new Set();
+    if (Array.isArray(scenario.observableOutcomes)) {
+      for (const [outcomeIndex, outcome] of scenario.observableOutcomes.entries()) {
+        if (!outcome || typeof outcome.id !== 'string') {
+          continue;
         }
+        if (!outcome.id.startsWith(`${scenario.id}-OUTCOME-`)) {
+          errors.push(`${prefix}.observableOutcomes[${outcomeIndex}].id must start with ${scenario.id}-OUTCOME-`);
+        } else if (outcomeIds.has(outcome.id)) {
+          errors.push(`${prefix}.observableOutcomes[${outcomeIndex}].id is duplicated: ${outcome.id}`);
+        }
+        outcomeIds.add(outcome.id);
       }
     }
 
     const coverage = scenario.coverage;
-    if (!allowedCoverageStatuses.has(coverage?.status)) {
-      errors.push(`${prefix}.coverage.status is invalid`);
+    if (!coverage || typeof coverage !== 'object') {
       continue;
     }
-    if (!Array.isArray(coverage.tests)) {
-      errors.push(`${prefix}.coverage.tests must be an array`);
-    }
-    if (!Array.isArray(coverage.issues)) {
-      errors.push(`${prefix}.coverage.issues must be an array`);
-    }
-    if (!Array.isArray(coverage.uncoveredOutcomes)) {
-      errors.push(`${prefix}.coverage.uncoveredOutcomes must be an array`);
+    const uncoveredOutcomes = Array.isArray(coverage.uncoveredOutcomes) ? coverage.uncoveredOutcomes : [];
+    for (const [outcomeIndex, outcomeId] of uncoveredOutcomes.entries()) {
+      if (!outcomeIds.has(outcomeId)) {
+        errors.push(`${prefix}.coverage.uncoveredOutcomes[${outcomeIndex}] must reference an observable outcome id`);
+      }
     }
     const coverageTests = Array.isArray(coverage.tests) ? coverage.tests : [];
-    const coverageIssues = Array.isArray(coverage.issues) ? coverage.issues : [];
-    const uncoveredOutcomes = Array.isArray(coverage.uncoveredOutcomes) ? coverage.uncoveredOutcomes : [];
-    if (coverage.status === 'covered' && coverageTests.length === 0) {
-      errors.push(`${prefix}.coverage.tests is required for covered scenarios`);
-    }
-    if (coverage.status === 'partial' && coverageTests.length === 0) {
-      errors.push(`${prefix}.coverage.tests is required for partial scenarios`);
-    }
-    if (coverage.status === 'partial' && coverageIssues.length === 0) {
-      errors.push(`${prefix}.coverage.issues is required for partial scenarios`);
-    }
-    if (coverage.status === 'partial' && uncoveredOutcomes.length === 0) {
-      errors.push(`${prefix}.coverage.uncoveredOutcomes is required for partial scenarios`);
-    }
-    if (coverage.status !== 'partial' && uncoveredOutcomes.length > 0) {
-      errors.push(`${prefix}.coverage.uncoveredOutcomes is only valid for partial scenarios`);
-    }
-    for (const [outcomeIndex, outcome] of uncoveredOutcomes.entries()) {
-      if (typeof outcome !== 'string' || !scenario.observableOutcomes.includes(outcome)) {
-        errors.push(`${prefix}.coverage.uncoveredOutcomes[${outcomeIndex}] must reference an observable outcome`);
-      }
-    }
-    if ((coverage.status === 'gap' || coverage.status === 'blocked') && coverageIssues.length === 0) {
-      errors.push(`${prefix}.coverage.issues is required for ${coverage.status} scenarios`);
-    }
-    for (const [issueIndex, issue] of coverageIssues.entries()) {
-      if (typeof issue !== 'string' || !jiraIssuePattern.test(issue)) {
-        errors.push(`${prefix}.coverage.issues[${issueIndex}] must match ZEPPELIN-####`);
-      }
-    }
     for (const [testIndex, test] of coverageTests.entries()) {
       if (!test || typeof test !== 'object') {
-        errors.push(`${prefix}.coverage.tests[${testIndex}] must be an object`);
         continue;
       }
-      const testPath = resolveRepositoryPath(root, test.path);
-      if (!testPath || !existsSync(testPath)) {
-        errors.push(`${prefix}.coverage.tests[${testIndex}].path does not exist: ${test.path}`);
-      }
-      if (coverage.status === 'covered' && !test.path.startsWith('zeppelin-web-angular/e2e/tests/notebook/')) {
-        errors.push(`${prefix}.coverage.tests[${testIndex}].path must be in the notebook E2E suite`);
-      }
-      if (typeof test.title !== 'string' || !test.title.includes(scenario.id)) {
-        errors.push(`${prefix}.coverage.tests[${testIndex}].title must contain ${scenario.id}`);
-      } else if (!testDeclaresExecutableTitle(root, test)) {
-        errors.push(
-          `${prefix}.coverage.tests[${testIndex}].title is not declared by an executable test() in ${test.path}`
-        );
-      }
-      if (!Array.isArray(test.projects) || test.projects.length === 0) {
-        errors.push(`${prefix}.coverage.tests[${testIndex}].projects must be a non-empty array`);
-      } else {
-        for (const project of test.projects) {
-          if (!allowedProjects.has(project)) {
-            errors.push(`${prefix}.coverage.tests[${testIndex}].projects contains an invalid project: ${project}`);
-          }
+      if (typeof test.path === 'string') {
+        const testPath = resolveRepositoryPath(root, test.path);
+        if (!testPath || !existsSync(testPath)) {
+          errors.push(`${prefix}.coverage.tests[${testIndex}].path does not exist: ${test.path}`);
         }
+        if (coverage.status === 'covered' && !test.path.startsWith('zeppelin-web-angular/e2e/tests/notebook/')) {
+          errors.push(`${prefix}.coverage.tests[${testIndex}].path must be in the notebook E2E suite`);
+        }
+      }
+      if (test.tag !== `@${scenario.id}`) {
+        errors.push(`${prefix}.coverage.tests[${testIndex}].tag must be @${scenario.id}`);
+      } else if (typeof test.path === 'string' && !testDeclaresExecutableTag(root, test)) {
+        errors.push(
+          `${prefix}.coverage.tests[${testIndex}].tag is not declared by an executable test() in ${test.path}`
+        );
       }
     }
   }

@@ -67,7 +67,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CORE EXECUTION SHORTCUTS =====
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
-    test('[NB-PARITY-005] should execute markdown paragraph with Shift+Enter', async () => {
+    test('should execute markdown paragraph with Shift+Enter', { tag: '@NB-PARITY-005' }, async () => {
       // Given: A paragraph with markdown content
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');

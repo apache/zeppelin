@@ -117,11 +117,12 @@ Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one the
 1. Pick/confirm the target route and the `PAGES` key.
 2. Copy the shape of an existing spec in the same `<area>`; reuse or extend the matching POM (`models/<name>.ts` + `.util.ts`). Do not inline selectors the POM already owns.
 3. Annotate the page (`addPageAnnotationBeforeEach`), navigate, then `waitForZeppelinReady`.
-4. Run `npm run e2e:fast` and iterate until green.
+4. If the test covers a scenario in `e2e/scenarios/notebook-parity.json`, add its stable ID as a Playwright tag such as `{ tag: '@NB-PARITY-001' }`. Keep the title human-readable; the registry links coverage by tag and path. Browser-specific restrictions stay in the spec rather than being copied into the registry.
+5. Run `npm run e2e:fast` and iterate until green.
 
 ## Migration (Angular to React Microfrontend)
 
-Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input), and the configuration table swaps via a `?reactConfiguration=true` flag (`configuration/configuration.component`). All three are query params inside the hash. There is no app-wide "flip this route to React" flag, and no cross-framework parity project in this config. Write specs so they survive a route being reimplemented, but do not build parity infrastructure ahead of need.
+Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input), and the configuration table swaps via a `?reactConfiguration=true` flag (`configuration/configuration.component`). All three are query params inside the hash. There is no app-wide "flip this route to React" flag and no separate cross-framework Playwright project in this config. The notebook parity registry records the Angular behavior baseline and links it to existing framework-neutral tests; add scenarios as migration work reaches them rather than duplicating the suite for both frameworks.
 
 ### Write Framework-Neutral Specs
 
