@@ -282,18 +282,6 @@ export enum OP {
 
   /**
    * [c-s]
-   * @deprecated Retained for backend wire contract compatibility. Use ConfigurationService REST APIs instead.
-   */
-  LIST_CONFIGURATIONS = 'LIST_CONFIGURATIONS',
-
-  /**
-   * [s-c]
-   * @deprecated Retained for backend wire contract compatibility. Use ConfigurationService REST APIs instead.
-   */
-  CONFIGURATIONS_INFO = 'CONFIGURATIONS_INFO',
-
-  /**
-   * [c-s]
    * checkpoint note to storage repository
    * @param noteId
    * @param checkpointName

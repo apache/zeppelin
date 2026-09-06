@@ -88,7 +88,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
@@ -162,7 +161,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private Provider<NoteParser> noteParser;
   private Provider<NotebookService> notebookServiceProvider;
   private AuthorizationService authorizationService;
-  private Provider<ConfigurationService> configurationServiceProvider;
   private Provider<JobManagerService> jobManagerServiceProvider;
 
   public NotebookServer() {
@@ -217,12 +215,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
 
   @Inject
-  public void setConfigurationService(
-      Provider<ConfigurationService> configurationServiceProvider) {
-    this.configurationServiceProvider = configurationServiceProvider;
-  }
-
-  @Inject
   public void setJobManagerService(
       Provider<JobManagerService> jobManagerServiceProvider) {
     this.jobManagerServiceProvider = jobManagerServiceProvider;
@@ -234,10 +226,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public NotebookService getNotebookService() {
     return notebookServiceProvider.get();
-  }
-
-  public ConfigurationService getConfigurationService() {
-    return configurationServiceProvider.get();
   }
 
   public synchronized JobManagerService getJobManagerService() {
@@ -510,9 +498,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
         case ANGULAR_OBJECT_CLIENT_UNBIND:
           angularObjectClientUnbind(conn, receivedMessage);
-          break;
-        case LIST_CONFIGURATIONS:
-          sendAllConfigurations(conn, context, receivedMessage);
           break;
         case CHECKPOINT_NOTE:
           checkpointNote(conn, context, receivedMessage);
@@ -1666,20 +1651,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
         return null;
       });
 
-  }
-
-  private void sendAllConfigurations(NotebookSocket conn,
-                                     ServiceContext context,
-                                     Message message) throws IOException {
-
-    getConfigurationService().getAllProperties(context,
-        new WebSocketServiceCallback<Map<String, String>>(conn) {
-          @Override
-          public void onSuccess(Map<String, String> properties, ServiceContext context) throws IOException {
-            super.onSuccess(properties, context);
-            conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO).put("configurations", properties)));
-          }
-        });
   }
 
   private void checkpointNote(NotebookSocket conn,

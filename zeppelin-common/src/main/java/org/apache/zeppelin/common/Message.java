@@ -152,10 +152,6 @@ public class Message implements JsonSerializable {
 
     ANGULAR_OBJECT_CLIENT_UNBIND, // [c-s] angular object unbind from AngularJS z object
 
-    LIST_CONFIGURATIONS,          // [c-s] ask all key/value pairs of configurations
-    CONFIGURATIONS_INFO,          // [s-c] all key/value pairs of configurations
-                                  // @param settings serialized Map<String, String> object
-
     CHECKPOINT_NOTE,              // [c-s] checkpoint note to storage repository
                                   // @param noteId
                                   // @param checkpointName
