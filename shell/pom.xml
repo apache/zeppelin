@@ -35,19 +35,10 @@
     <interpreter.name>sh</interpreter.name>
 
     <!--library versions -->
-    <pty4j.version>0.12.10-jdk8</pty4j.version>
+    <pty4j.version>0.13.12</pty4j.version>
     <jinjava.version>2.4.0</jinjava.version>
     <guava.version>32.0.0-jre</guava.version>
   </properties>
-
-  <!-- pty4j library not in maven central repository (http://repo.maven.apache.org/maven2) -->
-  <repositories>
-    <repository>
-      <id>jetbrains-intellij-dependencies</id>
-      <name>JetBrains Pty4j Repository</name>
-      <url>https://packages.jetbrains.team/maven/p/ij/intellij-dependencies</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>
