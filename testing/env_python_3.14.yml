@@ -1,0 +1,29 @@
+name: python_3
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas>=2.2,<3.0
+  - numpy>=1.21
+  - pyarrow>=18
+  - pycodestyle
+  - scipy
+  - grpcio>=1.76,<2
+  - protobuf
+  - pandasql
+  - sqlalchemy
+  - ipython
+  - ipykernel
+  - jupyter_client
+  - hvplot
+  - holoviews
+  - plotnine
+  - seaborn
+  - intake
+  - intake-parquet
+  - intake-xarray
+  - altair
+  - vega_datasets
+  - plotly
+  - jinja2
+  - pip
