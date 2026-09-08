@@ -77,7 +77,7 @@ Each React surface is behind a URL query flag, resolved by `ReactFeatureService`
 | `?react=false` | disabled |
 | flag absent | disabled |
 
-Append `?react=true` to any published paragraph URL, `?reactFooter=true` to a notebook URL, or `?reactConfiguration=true` to the configuration URL to activate React mode.
+Append `?react=true` to any published paragraph URL, `?reactFooter=true` to a notebook URL, `?reactConfiguration=true` to the configuration URL, or `?reactNotebookRepos=true` to the notebook repository URL to activate React mode.
 
 ## Setup
 
