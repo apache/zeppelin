@@ -27,49 +27,58 @@ const createNoteAtRoot = async (page: Page, name: string): Promise<string> => {
 test.describe('Notebook Repository - save reloads the note tree', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS);
 
-  test('a repository save reloads notebooks and refreshes the shell note tree', async ({ context }) => {
-    // Two clients on purpose. The header's note tree is destroyed when the
-    // dropdown closes and calls listNodes() again on every open, so it cannot
-    // tell a broadcast from its own refetch. The home route keeps a tree
-    // mounted, which leaves the broadcast as the only thing that can change it.
-    const watcher = await context.newPage();
-    const actor = await context.newPage();
-    const noteName = `NotebookRepoReload_${Date.now()}`;
-    let noteId = '';
+  // Run on both branches of the ZEPPELIN-6631 flag. The reload is the host's
+  // job either way, so a React list that swallows the save would show up here.
+  for (const { label, query } of [
+    { label: 'Angular list', query: '' },
+    { label: 'React list', query: '?reactNotebookRepos=true' }
+  ]) {
+    test(`a repository save reloads notebooks and refreshes the shell note tree (${label})`, async ({ context }) => {
+      // Two clients on purpose. The header's note tree is destroyed when the
+      // dropdown closes and calls listNodes() again on every open, so it cannot
+      // tell a broadcast from its own refetch. The home route keeps a tree
+      // mounted, which leaves the broadcast as the only thing that can change it.
+      const watcher = await context.newPage();
+      const actor = await context.newPage();
+      const noteName = `NotebookRepoReload_${Date.now()}`;
+      let noteId = '';
 
-    try {
-      await watcher.goto('/#/');
-      await waitForZeppelinReady(watcher);
-      const noteTree = new NodeListPage(watcher);
-      await expect(noteTree.nodeListContainer).toBeVisible();
+      try {
+        await watcher.goto('/#/');
+        await waitForZeppelinReady(watcher);
+        const noteTree = new NodeListPage(watcher);
+        await expect(noteTree.nodeListContainer).toBeVisible();
 
-      const reposPage = new NotebookReposPage(actor);
-      await reposPage.navigate();
-      // JUSTIFIED: .first() picks the first configured repo; the page requires at least one.
-      const repoName = (await reposPage.repositoryItems.first().locator('.ant-card-head-title').textContent()) || '';
-      const repoItem = new NotebookRepoItemPage(actor, repoName);
+        await actor.goto(`/#/notebook-repos${query}`);
+        await waitForZeppelinReady(actor);
+        const reposPage = new NotebookReposPage(actor);
+        await expect(reposPage.repositoryItems.first()).toBeVisible({ timeout: 20000 });
+        // JUSTIFIED: .first() picks the first configured repo; the page requires at least one.
+        const repoName = (await reposPage.repositoryItems.first().getAttribute('data-repo-name')) || '';
+        const repoItem = new NotebookRepoItemPage(actor, repoName);
 
-      await test.step('Given a note created out of band, which no broadcast has announced', async () => {
-        await expect(noteTree.noteLinkByName(noteName)).toHaveCount(0);
-        noteId = await createNoteAtRoot(actor, noteName);
-        // Creating a note over REST does not broadcast the list, so a tree that
-        // picked this up on its own would make the assertion after the save
-        // meaningless.
-        await expect(noteTree.noteLinkByName(noteName)).toHaveCount(0);
-      });
+        await test.step('Given a note created out of band, which no broadcast has announced', async () => {
+          await expect(noteTree.noteLinkByName(noteName)).toHaveCount(0);
+          noteId = await createNoteAtRoot(actor, noteName);
+          // Creating a note over REST does not broadcast the list, so a tree
+          // that picked this up on its own would make the assertion after the
+          // save meaningless.
+          await expect(noteTree.noteLinkByName(noteName)).toHaveCount(0);
+        });
 
-      await test.step('When the repository settings are saved unchanged', async () => {
-        await repoItem.clickEdit();
-        await repoItem.clickSave();
-      });
+        await test.step('When the repository settings are saved unchanged', async () => {
+          await repoItem.clickEdit();
+          await repoItem.clickSave();
+        });
 
-      await test.step('Then the note tree of the other client picks the note up', async () => {
-        await expect(noteTree.noteLinkByName(noteName)).toHaveCount(1, { timeout: 20000 });
-      });
-    } finally {
-      if (noteId) {
-        await actor.request.delete(`/api/notebook/${noteId}`, { failOnStatusCode: false });
+        await test.step('Then the note tree of the other client picks the note up', async () => {
+          await expect(noteTree.noteLinkByName(noteName)).toHaveCount(1, { timeout: 20000 });
+        });
+      } finally {
+        if (noteId) {
+          await actor.request.delete(`/api/notebook/${noteId}`, { failOnStatusCode: false });
+        }
       }
-    }
-  });
+    });
+  }
 });
