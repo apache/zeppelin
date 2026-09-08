@@ -282,6 +282,7 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, status.getNumSessions());
     // process starts lazily on first interpret, so it is not started at this point
     assertFalse(status.isStarted());
+    assertFalse(status.isLaunching());
     assertNull(status.getHost());
     assertEquals(-1, status.getPort());
   }

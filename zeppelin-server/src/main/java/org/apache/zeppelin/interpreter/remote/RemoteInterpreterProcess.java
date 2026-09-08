@@ -45,8 +45,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   protected String intpEventServerHost;
   protected int intpEventServerPort;
   private PooledRemoteClient<Client> remoteClient;
-  private String startTime;
   private final long startTimeMs;
+  private final String startTime;
 
   public RemoteInterpreterProcess(int connectTimeout,
                                   int connectionPoolSize,
@@ -55,8 +55,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
     this.connectTimeout = connectTimeout;
     this.intpEventServerHost = intpEventServerHost;
     this.intpEventServerPort = intpEventServerPort;
-    this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     this.startTimeMs = System.currentTimeMillis();
+    this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(startTimeMs));
     this.remoteClient = new PooledRemoteClient<>(() -> {
       TSocket transport = new TSocket(getHost(), getPort());
       try {
@@ -73,6 +73,14 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
     return connectTimeout;
   }
 
+  /**
+   * When the server created this object, formatted for display. This is not necessarily when the
+   * interpreter itself started: {@link RemoteInterpreterRunningProcess} is constructed fresh when
+   * the server recovers a process that outlived it, and when it attaches to an interpreter that
+   * was already running, so on those paths the stamp is the moment of attachment.
+   *
+   * @return the creation instant of this object as {@code yyyy-MM-dd HH:mm:ss}
+   */
   public String getStartTime() {
     return startTime;
   }
