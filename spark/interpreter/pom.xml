@@ -456,7 +456,7 @@
     <profile>
       <id>spark-scala-2.13</id>
       <properties>
-        <spark.scala.version>2.13.16</spark.scala.version>
+        <spark.scala.version>2.13.18</spark.scala.version>
         <spark.scala.binary.version>2.13</spark.scala.binary.version>
       </properties>
     </profile>
