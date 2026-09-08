@@ -27,7 +27,7 @@ it('declares the asymmetric paragraph output payloads sent by the server', () =>
     ...append,
     type: DatasetType.TEXT
   };
-  +expect(append).not.toHaveProperty('type');
+  expect(append).not.toHaveProperty('type');
   expect(update.type).toBe(DatasetType.TEXT);
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]>().toEqualTypeOf<ParagraphAppendOutput>();
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]>().not.toHaveProperty('type');

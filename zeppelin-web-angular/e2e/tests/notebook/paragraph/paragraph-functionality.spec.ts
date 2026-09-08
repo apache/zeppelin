@@ -118,6 +118,7 @@ test.describe('Notebook Paragraph Functionality', () => {
       await expect(paragraphPage.status).toHaveText('RUNNING');
       await expect(paragraphPage.resultDisplay).toContainText(/first\s+second\s+third/, { timeout: 10000 });
       await expect(paragraphPage.status).toHaveText('FINISHED');
+      await expect(paragraphPage.resultDisplay).toHaveText('first\nsecond\nthird\n');
     });
   });
 

@@ -76,8 +76,8 @@ describe('ParagraphOutputState', () => {
     const appends = capture.enabled.events.filter(event => event.op === 'PARAGRAPH_APPEND_OUTPUT');
     state.reset([{ type: DatasetType.TEXT, data: '' }]);
 
-    state.append(0, appends[0].data.data + appends[1].data.data);
-    const result = state.append(0, appends[2].data.data);
+    state.append(0, appends[0].data.data! + appends[1].data.data!);
+    const result = state.append(0, appends[2].data.data!);
 
     expect(result).toEqual({ type: DatasetType.TEXT, data: 'first\nsecond\nthird\n' });
     expect(state.snapshot()).toEqual([result]);
@@ -89,10 +89,10 @@ describe('ParagraphOutputState', () => {
     const appends = capture.enabled.events.filter(event => event.op === 'PARAGRAPH_APPEND_OUTPUT');
     state.reset();
 
-    expect(state.append(0, appends[0].data.data)).toBeUndefined();
-    expect(state.append(0, appends[1].data.data)).toBeUndefined();
+    expect(state.append(0, appends[0].data.data!)).toBeUndefined();
+    expect(state.append(0, appends[1].data.data!)).toBeUndefined();
 
-    expect(state.update(0, capturedType(update.data.type), update.data.data)).toEqual({
+    expect(state.update(0, capturedType(update.data.type!), update.data.data!)).toEqual({
       type: DatasetType.TEXT,
       data: 'first\nsecond\n'
     });
@@ -113,7 +113,7 @@ describe('ParagraphOutputState', () => {
     const state = new ParagraphOutputState();
     const events = capture.enabled.events as CapturedEvent[];
     const terminal = events.find(event => event.op === 'PARAGRAPH')!;
-    const finalAppend = events.findLast(event => event.op === 'PARAGRAPH_APPEND_OUTPUT')!;
+    const finalAppend = [...events].reverse().find(event => event.op === 'PARAGRAPH_APPEND_OUTPUT')!;
     state.reset([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
 
     replay(state, [terminal, finalAppend]);
