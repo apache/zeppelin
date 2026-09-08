@@ -73,7 +73,8 @@ module.exports = (_env, argv) => {
         exposes: {
           './PublishedParagraph': './src/pages/PublishedParagraph',
           './ParagraphFooter': './src/components/paragraph/ParagraphFooter',
-          './ConfigurationTable': './src/pages/ConfigurationTable'
+          './ConfigurationTable': './src/pages/ConfigurationTable',
+          './NotebookRepoList': './src/pages/NotebookRepoList'
         }
       }),
       new HtmlWebpackPlugin({
