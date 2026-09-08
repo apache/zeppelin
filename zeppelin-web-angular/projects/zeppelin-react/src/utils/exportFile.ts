@@ -42,7 +42,10 @@ export const exportFile = async (tableData: TableData, type: 'csv' | 'xlsx') => 
     const rows = tableData.rows.map(row => row.join(separator));
     const content = [header, ...rows].join('\n');
 
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    // Excel reads a CSV without a BOM in the system code page, garbling non-ASCII data. The
+    // Angular and classic exports write one for the same reason (ZEPPELIN-672).
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM, content], { type: 'text/plain;charset=utf-8' });
     saveAs(blob, `export.${type}`);
   }
 };
