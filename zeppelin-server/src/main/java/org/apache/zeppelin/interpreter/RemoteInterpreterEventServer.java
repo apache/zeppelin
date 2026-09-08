@@ -231,6 +231,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (event.getAppId() == null) {
       runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           InterpreterResult.Type.valueOf(event.getType()), event.getData());
+      // Complete replacements before the interpreter can publish its terminal result.
+      runner.run();
     } else {
       appListener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           event.getAppId(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
@@ -239,11 +241,15 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void updateAllOutput(OutputUpdateAllEvent event) throws InterpreterRPCException, TException {
-    listener.onOutputClear(event.getNoteId(), event.getParagraphId());
-    for (int i = 0; i < event.getMsg().size(); i++) {
-      RemoteInterpreterResultMessage msg = event.getMsg().get(i);
-      listener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), i,
-          InterpreterResult.Type.valueOf(msg.getType()), msg.getData());
+    synchronized (runner) {
+      // Finish earlier output before the clear; keep replacements ahead of the next drain.
+      runner.run();
+      listener.onOutputClear(event.getNoteId(), event.getParagraphId());
+      for (int i = 0; i < event.getMsg().size(); i++) {
+        RemoteInterpreterResultMessage msg = event.getMsg().get(i);
+        listener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), i,
+            InterpreterResult.Type.valueOf(msg.getType()), msg.getData());
+      }
     }
   }
 
@@ -266,6 +272,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void checkpointOutput(String noteId, String paragraphId) throws InterpreterRPCException, TException {
+    // Drain replacements before checkpointing.
+    // Keep storage callbacks outside the runner lock to avoid blocking output delivery.
+    runner.run();
     listener.checkpointOutput(noteId, paragraphId);
   }
 

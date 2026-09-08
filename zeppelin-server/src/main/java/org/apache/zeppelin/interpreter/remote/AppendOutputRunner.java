@@ -47,35 +47,33 @@ public class AppendOutputRunner implements Runnable {
     this.listener = listener;
   }
 
+  // Serialize scheduled and RPC drains to preserve callback order.
+  // Empty drains must return immediately to RPC callers.
   @Override
-  public void run() {
+  public synchronized void run() {
 
     Map<String, StringBuilder> stringBufferMap = new HashMap<>();
     List<AppendOutputBuffer> list = new LinkedList<>();
 
-    /* "drainTo" method does not wait for any element
-     * to be present in the queue, and thus this loop would
-     * continuosly run (with period of BUFFER_TIME_MS). "take()" method
-     * waits for the queue to become non-empty and then removes
-     * one element from it. Rest elements from queue (if present) are
-     * removed using "drainTo" method. Thus we save on some un-necessary
-     * cpu-cycles.
-     */
-    try {
-      list.add(queue.take());
-    } catch (InterruptedException e) {
-      LOGGER.error("Wait for OutputBuffer queue interrupted: {}", e.getMessage());
+    queue.drainTo(list);
+    if (list.isEmpty()) {
+      return;
     }
     Long processingStartTime = System.currentTimeMillis();
-    queue.drainTo(list);
 
     Long sizeProcessed = Long.valueOf(0);
     for (AppendOutputBuffer buffer : list) {
       if (buffer instanceof UpdateOutputBuffer) {
         sizeProcessed += flushAppendBuffers(stringBufferMap);
         UpdateOutputBuffer update = (UpdateOutputBuffer) buffer;
-        listener.onOutputUpdated(update.getNoteId(), update.getParagraphId(), update.getIndex(),
-            update.getType(), update.getData());
+        try {
+          listener.onOutputUpdated(update.getNoteId(), update.getParagraphId(), update.getIndex(),
+              update.getType(), update.getData());
+        } catch (RuntimeException e) {
+          // A stale callback must not abort another paragraph's synchronous drain.
+          LOGGER.warn("Failed to update output for note {} paragraph {}",
+              update.getNoteId(), update.getParagraphId(), e);
+        }
         continue;
       }
 
@@ -112,8 +110,13 @@ public class AppendOutputRunner implements Runnable {
       String stringBufferKey = stringBufferMapEntry.getKey();
       StringBuilder buffer = stringBufferMapEntry.getValue();
       sizeProcessed += buffer.length();
-      String[] keys = stringBufferKey.split(":");
-      listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
+      try {
+        String[] keys = stringBufferKey.split(":");
+        listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
+      } catch (RuntimeException e) {
+        // One stale append must not abort another paragraph's synchronous drain.
+        LOGGER.warn("Failed to append output for {}", stringBufferKey, e);
+      }
     }
     stringBufferMap.clear();
     return sizeProcessed;
@@ -123,6 +126,7 @@ public class AppendOutputRunner implements Runnable {
     queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
   }
 
+  /** Enqueues a replacement; callers needing completion must also invoke run(). */
   public void updateBuffer(String noteId, String paragraphId, int index,
                            InterpreterResult.Type type, String output) {
     queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, type, output));
