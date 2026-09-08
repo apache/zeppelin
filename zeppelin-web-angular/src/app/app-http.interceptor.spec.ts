@@ -10,12 +10,15 @@
  * limitations under the License.
  */
 
-import { HttpErrorResponse, HttpHandler, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { defer, firstValueFrom, of, Subject, throwError } from 'rxjs';
+
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { TicketService } from '@zeppelin/services';
+import { BaseUrlService, TicketService } from '@zeppelin/services';
 
 import { AppHttpInterceptor } from './app-http.interceptor';
 
@@ -88,6 +91,43 @@ describe('AppHttpInterceptor', () => {
 
     expect(logout).toHaveBeenCalledTimes(1);
     expect(logoutSubscribed).toHaveBeenCalledTimes(1);
+  });
+
+  it('finishes ticket cleanup without another request when logout redirects to a login 405', async () => {
+    const requests: Array<{ url: string; response: Subject<HttpEvent<unknown>> }> = [];
+    const backend: HttpHandler = {
+      handle: request => {
+        const response = new Subject<HttpEvent<unknown>>();
+        requests.push({ url: request.url, response });
+        return response;
+      }
+    };
+    const client = new HttpClient({ handle: request => interceptor.intercept(request, backend) });
+    const navigate = vi.fn(() => Promise.resolve(true));
+    const service = new TicketService(
+      client,
+      { getRestApiBase: () => REST_BASE } as BaseUrlService,
+      { navigate } as unknown as Router,
+      { success: vi.fn() } as unknown as NzMessageService
+    );
+    service.ticket.init = true;
+    service.ticket.principal = 'user1';
+    interceptor = new AppHttpInterceptor(service);
+    const failure = sessionExpired(`${REST_BASE}/login`);
+    const result = firstValueFrom(client.get(`${REST_BASE}/notebook`));
+
+    requests[0].response.error(failure);
+    await expect(result).rejects.toBe(failure);
+    expect(service.logout$.value).toBe(true);
+    expect(requests.map(request => request.url)).toEqual([`${REST_BASE}/notebook`, `${REST_BASE}/login/logout`]);
+
+    requests[1].response.error(sessionExpired(`${REST_BASE}/login`));
+
+    expect(requests.map(request => request.url)).toEqual([`${REST_BASE}/notebook`, `${REST_BASE}/login/logout`]);
+    expect(service.ticket.init).toBe(false);
+    expect(service.ticket.principal).toBe('');
+    expect(service.logout$.value).toBe(false);
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/login']);
   });
 
   it.each(['complete', 'error'])('deduplicates pending logout and allows another after %s', async outcome => {
