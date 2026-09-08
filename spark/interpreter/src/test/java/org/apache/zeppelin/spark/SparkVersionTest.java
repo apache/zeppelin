@@ -35,6 +35,9 @@ class SparkVersionTest {
     assertTrue(SparkVersion.fromVersionString("2.3.0").isUnsupportedVersion());
     assertTrue(SparkVersion.fromVersionString("0.9.0").isUnsupportedVersion());
     assertTrue(SparkVersion.UNSUPPORTED_FUTURE_VERSION.isUnsupportedVersion());
+    assertTrue(SparkVersion.fromVersionString("4.3.0").isUnsupportedVersion());
+    assertFalse(SparkVersion.fromVersionString("4.1.0").isUnsupportedVersion());
+    assertFalse(SparkVersion.fromVersionString("4.2.0").isUnsupportedVersion());
     // should not support spark2 version of HDP 2.5
     assertTrue(SparkVersion.fromVersionString("2.0.0.2.5.0.0-1245").isUnsupportedVersion());
   }
