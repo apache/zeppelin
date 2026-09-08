@@ -38,11 +38,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns Zeppelin version</td>
+      <td markdown="span">This ```GET``` method returns Zeppelin version</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/version```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/version```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -54,7 +54,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -78,11 +78,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method is used to update the root logger's log level of the server.</td>
+      <td markdown="span">This ```PUT``` method is used to update the root logger's log level of the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/log/level/<LOG_LEVEL>```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/log/level/<LOG_LEVEL>```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -94,7 +94,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -105,7 +105,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>sample error JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {

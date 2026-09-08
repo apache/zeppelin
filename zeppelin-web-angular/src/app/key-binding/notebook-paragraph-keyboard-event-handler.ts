@@ -71,9 +71,7 @@ export const ParagraphActionToHandlerName = {
   [ParagraphActions.FindInCode]: 'handleFindInCode'
 } as const satisfies Record<ParagraphActions, keyof NotebookParagraphKeyboardEventHandler>;
 
-// Referenced only via `typeof` below to derive a type; the runtime binding is intentionally unused.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const MonacoHandledParagraphActions = [
+export const MonacoHandledParagraphActions = [
   ParagraphActions.MoveCursorUp,
   ParagraphActions.MoveCursorDown,
   ParagraphActions.SwitchEditor,

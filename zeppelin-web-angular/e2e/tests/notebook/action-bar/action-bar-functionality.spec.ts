@@ -68,6 +68,14 @@ test.describe('Notebook Action Bar Functionality', () => {
     await expect(confirmButton).not.toBeVisible();
   });
 
+  test('should display cancel all button as disabled when note is idle', async () => {
+    await expect(actionBarPage.cancelAllButton).toBeVisible();
+
+    // Given: an idle note (no paragraph running), Cancel all is disabled and Run all is enabled — the two buttons are mutually exclusive
+    await expect(actionBarPage.cancelAllButton).toBeDisabled();
+    await expect(actionBarPage.runAllButton).toBeEnabled();
+  });
+
   test('should toggle code visibility', async () => {
     await expect(actionBarPage.showHideCodeButton).toBeVisible();
     await expect(actionBarPage.showHideCodeButton).toBeEnabled();

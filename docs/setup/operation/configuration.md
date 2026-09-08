@@ -51,7 +51,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_PORT</h6></td>
     <td><h6 class="properties">zeppelin.server.port</h6></td>
     <td>8080</td>
-    <td>Zeppelin server port </br>
+    <td>Zeppelin server port <br/>
       <span style="font-style:italic; color: gray"> Note: Please make sure you're not using the same port with
       <a href="https://zeppelin.apache.org/contribution/webapplication.html#dev-mode" target="_blank" rel="noopener noreferrer">Zeppelin web application development port</a> (default: 9000).</span></td>
   </tr>
@@ -236,7 +236,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</h6></td>
     <td><h6 class="properties">zeppelin.notebook.homescreen.hide</h6></td>
     <td>false</td>
-    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../usage/other_features/customizing_homepage.html">Customize your Zeppelin homepage</a>.</td>
+    <td>Hide the note ID set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Apache Zeppelin homescreen. <br />For the further information, please read <a href="../../usage/other_features/customizing_homepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_WAR_TEMPDIR</h6></td>
@@ -302,7 +302,7 @@ Sources descending by priority:
       <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_CANNED_ACL</h6></td>
       <td><h6 class="properties">zeppelin.notebook.s3.cannedAcl</h6></td>
       <td></td>
-      <td>Save notebooks to S3 with the given [Canned ACL](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/CannedAccessControlList.html) which determines the S3 permissions.</td>
+      <td markdown="span">Save notebooks to S3 with the given [Canned ACL](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/CannedAccessControlList.html) which determines the S3 permissions.</td>
   </tr>
   <tr>
       <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_PATH_STYLE_ACCESS</h6></td>
@@ -407,6 +407,18 @@ Sources descending by priority:
     <td>Size(in characters) of the maximum text message that can be received by websocket.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.idle.timeout</h6></td>
+    <td>300000</td>
+    <td>Time(in milliseconds) before an idle websocket session is closed.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.heartbeat.interval</h6></td>
+    <td>60000</td>
+    <td>Interval(in milliseconds) at which the server sends a websocket ping frame to each session to keep it alive. Set to 0 or a negative value to disable server-initiated heartbeats.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</h6></td>
     <td><h6 class="properties">zeppelin.server.default.dir.allowed</h6></td>
     <td>false</td>
@@ -422,7 +434,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME</h6></td>
     <td><h6 class="properties">zeppelin.notebook.git.remote.username</h6></td>
     <td>token</td>
-    <td>GitHub username. By default it is `token` to use GitHub's API</td>
+    <td markdown="span">GitHub username. By default it is `token` to use GitHub's API</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN</h6></td>
@@ -434,7 +446,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN</h6></td>
     <td><h6 class="properties">zeppelin.notebook.git.remote.origin</h6></td>
     <td>token</td>
-    <td>GitHub remote name. Default is `origin`</td>
+    <td markdown="span">GitHub remote name. Default is `origin`</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_RUN_MODE</h6></td>

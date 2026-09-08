@@ -735,6 +735,14 @@ public class ZeppelinConfiguration {
     return getString(ConfVars.ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE);
   }
 
+  public long getWebsocketIdleTimeout() {
+    return getLong(ConfVars.ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT);
+  }
+
+  public long getWebsocketHeartbeatInterval() {
+    return getLong(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL);
+  }
+
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
@@ -778,6 +786,38 @@ public class ZeppelinConfiguration {
 
   public String getLifecycleManagerClass() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
+  }
+
+  /**
+   * Shared with {@code TimeoutLifecycleManager} so that both ways of reclaiming an idle
+   * interpreter check at the same cadence.
+   *
+   * @return interval in milliseconds between two idle checks
+   */
+  public long getInterpreterIdleCheckInterval() {
+    return getTimeMillis(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
+  }
+
+  /**
+   * Global idle threshold, which an interpreter setting can override with its own
+   * {@code zeppelin.interpreter.lifecyclemanager.timeout.threshold} property.
+   *
+   * @return threshold in milliseconds
+   */
+  public long getInterpreterIdleTimeoutThreshold() {
+    return getTimeMillis(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
+  }
+
+  /**
+   * Reads a time valued property. {@link #getString(ConfVars)} returns null for a ConfVars
+   * declared with a numeric default, so the declared default is used when nothing is configured.
+   */
+  private long getTimeMillis(ConfVars c) {
+    String value = getString(c);
+    if (StringUtils.isBlank(value)) {
+      return c.getLongValue();
+    }
+    return parseTimeMillis(value);
   }
 
   public boolean getZeppelinImpersonateSparkProxyUser() {
@@ -1058,6 +1098,13 @@ public class ZeppelinConfiguration {
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "10240000"),
+    ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT("zeppelin.websocket.idle.timeout", 300000L),
+    // Server-initiated websocket protocol ping interval, in milliseconds. Writing a ping frame
+    // resets the Jetty idle timer (see ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT above) and any intermediate
+    // proxy's idle timer, so the default must stay well below that timeout while still keeping
+    // per-connection traffic low. 60s gives 5 pings within the 300s default idle window.
+    // <= 0 disables server-initiated heartbeats.
+    ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL("zeppelin.websocket.heartbeat.interval", 60000L),
     ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS("zeppelin.websocket.paragraph_status_progress.enable", true),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
@@ -1237,6 +1284,22 @@ public class ZeppelinConfiguration {
       return Long.parseLong(timeStrWithUnit.substring(0, timeStrWithUnit.length() - 2));
     }
     return Duration.parse("PT" + timeStrWithUnit).toMillis();
+  }
+
+  /**
+   * Parses a time value that is either a plain millisecond number or carries a unit suffix,
+   * e.g. {@code 600000}, {@code 10m} or {@code 500ms}.
+   *
+   * @throws NumberFormatException if the value carries no unit and is not a number
+   * @throws java.time.format.DateTimeParseException if the unit suffix is not understood
+   */
+  public static long parseTimeMillis(String timeStr) {
+    String trimmed = timeStr.trim();
+    try {
+      return Long.parseLong(trimmed);
+    } catch (NumberFormatException e) {
+      return timeUnitToMill(trimmed);
+    }
   }
 
 }

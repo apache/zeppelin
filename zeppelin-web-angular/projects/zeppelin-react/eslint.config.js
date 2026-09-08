@@ -25,6 +25,7 @@ const globals = require('globals');
 const tseslint = require('typescript-eslint');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
+const vitest = require('@vitest/eslint-plugin');
 
 module.exports = tseslint.config(
   {
@@ -88,6 +89,21 @@ module.exports = tseslint.config(
       'prefer-template': 'error',
       yoda: 'error',
       'react-hooks/exhaustive-deps': 'error'
+    }
+  },
+  {
+    // Catch specs that cannot fail, as eslint-plugin-playwright does for e2e.
+    files: ['src/**/*.spec.{ts,tsx}'],
+    plugins: { vitest },
+    rules: {
+      'vitest/expect-expect': 'error',
+      'vitest/no-conditional-expect': 'error',
+      'vitest/no-identical-title': 'error',
+      'vitest/no-standalone-expect': 'error',
+      'vitest/valid-expect': 'error',
+      'vitest/valid-describe-callback': 'error',
+      'vitest/no-disabled-tests': 'warn',
+      'vitest/no-focused-tests': 'error'
     }
   }
 );

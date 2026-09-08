@@ -16,6 +16,7 @@ import { BasePage } from './base-page';
 export class NotebookActionBarPage extends BasePage {
   readonly titleEditor: Locator;
   readonly runAllButton: Locator;
+  readonly cancelAllButton: Locator;
   readonly showHideCodeButton: Locator;
   readonly showHideOutputButton: Locator;
   readonly clearOutputButton: Locator;
@@ -40,6 +41,7 @@ export class NotebookActionBarPage extends BasePage {
     super(page);
     this.titleEditor = page.locator('zeppelin-elastic-input');
     this.runAllButton = page.locator('button[nzTooltipTitle="Run all paragraphs"]');
+    this.cancelAllButton = page.locator('button[nzTooltipTitle="Cancel all paragraphs"]');
     this.showHideCodeButton = page.locator('button[nzTooltipTitle="Show/hide the code"]');
     this.showHideOutputButton = page.locator('button[nzTooltipTitle="Show/hide the output"]');
     this.clearOutputButton = page.locator('button[nzTooltipTitle="Clear all output"]');

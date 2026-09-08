@@ -17,12 +17,19 @@ angular.module('zeppelinWebApp').service('saveAsService', SaveAsService);
 function SaveAsService(browserDetectService) {
   'ngInject';
 
-  this.saveAs = function(content, filename, extension) {
+  /**
+   * @param {boolean} [bom] prepends a UTF-8 BOM so Excel reads a CSV/TSV export as UTF-8
+   *   (ZEPPELIN-672). JSON formats must leave it off: the JSON spec disallows a BOM and strict
+   *   parsers such as Python's json or nbformat refuse the file.
+   */
+  this.saveAs = function(content, filename, extension, bom) {
     let BOM = '\uFEFF';
     if (browserDetectService.detectIE()) {
       angular.element('body').append('<iframe id="SaveAsId" style="display: none"></iframe>');
       let frameSaveAs = angular.element('body > iframe#SaveAsId')[0].contentWindow;
-      content = BOM + content;
+      if (bom) {
+        content = BOM + content;
+      }
       frameSaveAs.document.open('text/json', 'replace');
       frameSaveAs.document.write(content);
       frameSaveAs.document.close();
@@ -40,7 +47,9 @@ function SaveAsService(browserDetectService) {
     } else {
       const fileName = filename + '.' + extension;
       let binaryData = [];
-      binaryData.push(BOM);
+      if (bom) {
+        binaryData.push(BOM);
+      }
       binaryData.push(content);
       let blob = new Blob(binaryData, {type: 'octet/stream'});
       const url = window.URL.createObjectURL(blob);

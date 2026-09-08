@@ -17,8 +17,6 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
-import { MessageListener, MessageListenersManager } from '@zeppelin/core';
-import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
 import { MessageService, NotebookService, TicketService } from '@zeppelin/services';
 import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.component';
 
@@ -29,7 +27,7 @@ import { AboutZeppelinComponent } from '../about-zeppelin/about-zeppelin.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class HeaderComponent extends MessageListenersManager implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   connectStatus = 'error';
   noteListVisible = false;
@@ -72,11 +70,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     localStorage.setItem(HeaderComponent.HISTORY_KEY, JSON.stringify(this.searchHistory));
   }
 
-  @MessageListener(OP.CONFIGURATIONS_INFO)
-  getConfiguration(data: MessageReceiveDataTypeMap[OP.CONFIGURATIONS_INFO]) {
-    this.ticketService.setConfiguration(data);
-  }
-
   constructor(
     public ticketService: TicketService,
     public messageService: MessageService,
@@ -85,7 +78,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     private notebookService: NotebookService,
     private cdr: ChangeDetectorRef
   ) {
-    super(messageService);
     this.classicUiHref = this.resolveClassicUiHref();
   }
 
@@ -95,7 +87,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     } catch {
       this.searchHistory = [];
     }
-    this.messageService.listConfigurations();
     this.messageService.connectedStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
       this.connectStatus = status ? 'success' : 'error';
       this.cdr.markForCheck();
@@ -119,7 +110,6 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-    super.ngOnDestroy();
   }
 
   private resolveClassicUiHref() {

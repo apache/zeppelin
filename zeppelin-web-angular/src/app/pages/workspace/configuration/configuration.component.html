@@ -17,20 +17,34 @@
   Note: For security reasons, some key/value pairs including passwords would not be shown.
 </ng-template>
 <div class="content">
-  <nz-table nzSize="small" [nzData]="configEntries" [nzFrontPagination]="false" [nzShowPagination]="false">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Value</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (data of configEntries; track data) {
+  @if (shouldUseReactTable) {
+    <div
+      data-testid="react-configuration-table"
+      zeppelin-react-mount="./ConfigurationTable"
+      [reactProps]="reactTableProps"
+    ></div>
+  } @else {
+    <nz-table
+      data-testid="configuration-table"
+      nzSize="small"
+      [nzData]="configEntries"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+    >
+      <thead>
         <tr>
-          <td>{{ data[0] }}</td>
-          <td>{{ data[1] }}</td>
+          <th>Name</th>
+          <th>Value</th>
         </tr>
-      }
-    </tbody>
-  </nz-table>
+      </thead>
+      <tbody>
+        @for (data of configEntries; track data) {
+          <tr>
+            <td>{{ data[0] }}</td>
+            <td>{{ data[1] }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
 </div>

@@ -9,10 +9,12 @@
 ~ See the License for the specific language governing permissions and
 ~ limitations under the License.
 -->
-@if (useReact) {
-  <div #reactContainer></div>
+@if (useReact && !reactFailed) {
+  @if (paragraph) {
+    <div [zeppelin-react-mount]="'./PublishedParagraph'" [reactProps]="reactProps"></div>
+  }
 }
-@if (!useReact) {
+@if (!useReact || reactFailed) {
   <div>
     @if (paragraph) {
       <zeppelin-notebook-paragraph-dynamic-forms

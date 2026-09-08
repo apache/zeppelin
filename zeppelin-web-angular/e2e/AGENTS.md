@@ -17,7 +17,7 @@ limitations under the License.
 
 # AGENTS.md
 
-> E2E (Playwright) conventions for `zeppelin-web-angular/e2e/`. A scoped companion to the repository-root AGENTS.md, loaded only when working under `e2e/`. See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
+> E2E (Playwright) conventions for `zeppelin-web-angular/e2e/`. Loaded only when working under `e2e/`; the package baseline is `zeppelin-web-angular/AGENTS.md`, which covers unit tests. See [AGENTS.md specification](https://github.com/agentsmd/agents.md).
 
 Config: `zeppelin-web-angular/playwright.config.js` (Angular UI) and `playwright.classic.config.js` (legacy classic UI), sharing `playwright.shared.js`. This document is the source of truth for E2E conventions, for contributors and for coding agents alike.
 
@@ -88,7 +88,7 @@ test.describe('Home Page - Core Elements', () => {
 });
 ```
 
-Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one there if the page is missing. `PAGES` is also the coverage-instrumentation set (`getCoverageTransformPaths`), so it defines the coverage denominator. Purely structural / non-page components (lifecycle hooks, shared UI primitives like the spinner or resize handle) are intentionally omitted from `PAGES`. They are exercised transitively and are not counted.
+Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one there if the page is missing. The reporter discovers `src/app/**/*.component.ts` automatically and removes only the entries in `COVERAGE_EXCLUDED_COMPONENTS`, so component additions, deletions and moves update the denominator automatically. `PAGES` separately supplies the annotation names and must match those discovered targets. `test/reporter.coverage.spec.ts` enforces that match, rejects duplicate entries and verifies that every explicit exclusion still exists. Purely structural / non-page components (lifecycle hooks, shared UI primitives like the spinner or resize handle) are exercised transitively and are not counted.
 
 ## Running
 
@@ -121,7 +121,7 @@ Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one the
 
 ## Migration (Angular to React Microfrontend)
 
-Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), and the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input). Both are query params inside the hash. There is no app-wide "flip this route to React" flag, and no cross-framework parity project in this config. Write specs so they survive a route being reimplemented, but do not build parity infrastructure ahead of need.
+Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input), and the configuration table swaps via a `?reactConfiguration=true` flag (`configuration/configuration.component`). All three are query params inside the hash. There is no app-wide "flip this route to React" flag, and no cross-framework parity project in this config. Write specs so they survive a route being reimplemented, but do not build parity infrastructure ahead of need.
 
 ### Write Framework-Neutral Specs
 
@@ -136,7 +136,7 @@ Pages are moving from Angular to React fragments incrementally. Today this is na
 
 ### Coverage
 
-- Coverage is tracked by `PAGES` key, not source file. The key is the stable identity; the path behind it is an implementation detail. When a page moves to React, update its path in `PAGES` rather than deleting the key (deleting drops it from the coverage denominator). Specs keep the same `addPageAnnotationBeforeEach(PAGES.KEY)` call across the migration.
+- Coverage attribution is tracked by `PAGES` key while the denominator is discovered from the Angular component tree. The key is the stable identity; the path behind it is an implementation detail. While Angular still hosts the route, keep the key mapped to that host component and cover fragment-only behavior in the React package tests. When the Angular host component is removed, revise the composed E2E target policy in the same change instead of silently deleting the key. Specs keep the same `addPageAnnotationBeforeEach(PAGES.KEY)` call across the migration.
 
 ### Suite Shape
 
@@ -148,7 +148,7 @@ Pages are moving from Angular to React fragments incrementally. Today this is na
 
 - **Locators (classic exception):** the classic templates predate roles and `data-testid`, so the role/label/text-first rule cannot apply. Sanctioned here: element ids (`#findInput`), `ng-click="..."` / `ng-controller="..."` attribute selectors, class selectors the legacy templates already expose (`.username`, `.interpreterHead`), and Ace/Select2 internals. Do not add `data-testid` to the frozen `zeppelin-web` sources.
 - **Readiness:** `waitForZeppelinReady` is Angular-specific (`[ng-version]`) and does not resolve on `/classic`; gate on a classic-visible signal instead (e.g. the first `ParagraphCtrl` paragraph, or `.ace_text-input` attached).
-- **Coverage:** `PAGES` is the Angular coverage denominator; classic pages are intentionally outside it, so `addPageAnnotationBeforeEach` is not used here.
+- **Coverage:** classic pages are outside the discovered Angular component target set, so `addPageAnnotationBeforeEach` is not used here.
 - **Running:** the classic suite has its own config, `playwright.classic.config.js` (Desktop Chrome only, targets `http://localhost:8080`), and needs a Zeppelin server built with `-Pweb-classic`. The `:4200` dev server does not serve `/classic`, so a plain `npm run e2e` never includes it. Run it with `npm run e2e:classic` (single spec: `npm run e2e:classic -- tests/classic/<spec>`). In CI the workflow enables it on the anonymous matrix leg only (`-Dweb.e2e.classic.disabled=false`), matching the anonymous-only legacy Protractor suite.
 - **POM:** inlining locators/helpers is acceptable while the suite is this small; if it grows, move them behind `models/classic-*.ts` / `*.util.ts`.
 - The React-migration / framework-neutral-spec guidance does not apply to `tests/classic/`.

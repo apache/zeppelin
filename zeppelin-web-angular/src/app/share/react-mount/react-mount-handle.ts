@@ -30,15 +30,3 @@ export type ReactMountFn = (element: HTMLElement, props: ReactProps & ReactHostC
 export interface ReactExposedModule {
   mount: ReactMountFn;
 }
-
-/**
- * Legacy shape (used by ./PublishedParagraph until its follow-up
- * refactor): mount returns a bare unmount function.
- */
-export type LegacyMountFn = (element: HTMLElement, props: ReactProps) => () => void;
-
-export interface LegacyExposedModule {
-  mount: LegacyMountFn;
-}
-
-export type AnyExposedModule = ReactExposedModule | LegacyExposedModule;

@@ -38,11 +38,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the available helium packages in configured registries.</td>
+      <td markdown="span">This ```GET``` method returns all the available helium packages in configured registries.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/package```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/package```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -54,7 +54,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -95,11 +95,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all enabled helium packages in configured registries.</td>
+      <td markdown="span">This ```GET``` method returns all enabled helium packages in configured registries.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/enabledPackage```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/enabledPackage```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -111,7 +111,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -152,11 +152,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns specified helium package information</td>
+      <td markdown="span">This ```GET``` method returns specified helium package information</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/package/[Package Name]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/package/[Package Name]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -168,7 +168,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -209,11 +209,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns suggested helium package for the paragraph.</td>
+      <td markdown="span">This ```GET``` method returns suggested helium package for the paragraph.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/suggest/[Note ID]/[Paragraph ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/suggest/[Note ID]/[Paragraph ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -228,7 +228,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -269,11 +269,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method loads helium package to target paragraph.</td>
+      <td markdown="span">This ```POST``` method loads helium package to target paragraph.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/load/[Note ID]/[Paragraph ID]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/load/[Note ID]/[Paragraph ID]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -288,7 +288,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -308,11 +308,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns bundled helium visualization javascript. When refresh=true (optional) is provided, Zeppelin rebuilds bundle. Otherwise, it's provided from cache</td>
+      <td markdown="span">This ```GET``` method returns bundled helium visualization javascript. When refresh=true (optional) is provided, Zeppelin rebuilds bundle. Otherwise, it's provided from cache</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/bundle/load/[Package Name][?refresh=true]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/bundle/load/[Package Name][?refresh=true]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -332,11 +332,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method enables a helium package. Needs artifact name in input payload</td>
+      <td markdown="span">This ```POST``` method enables a helium package. Needs artifact name in input payload</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/enable/[Package Name]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/enable/[Package Name]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -356,7 +356,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -372,11 +372,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method disables a helium package.</td>
+      <td markdown="span">This ```POST``` method disables a helium package.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/disable/[Package Name]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/disable/[Package Name]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -388,7 +388,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
         
 ```json
 {"status":"OK"}
@@ -404,11 +404,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns display order of enabled visualization packages.</td>
+      <td markdown="span">This ```GET``` method returns display order of enabled visualization packages.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -420,7 +420,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
         
 ```json
 {"status":"OK","body":["zeppelin_horizontalbar","zeppelin-bubblechart"]}
@@ -436,11 +436,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method sets visualization packages display order.</td>
+      <td markdown="span">This ```POST``` method sets visualization packages display order.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/order/visualization```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -452,7 +452,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
         
 ```json
 ["zeppelin-bubblechart", "zeppelin_horizontalbar"]
@@ -461,7 +461,7 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
         
 ```json
 {"status":"OK"}
@@ -477,11 +477,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns configuration for all Helium packages</td>
+      <td markdown="span">This ```GET``` method returns configuration for all Helium packages</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/config```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -494,17 +494,17 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
   </table>
  <br/>
  
- ### Get configuration for specific package
+### Get configuration for specific package
  
    <table class="table-configuration">
      <col width="200">
      <tr>
        <td>Description</td>
-       <td>This ```GET``` method returns configuration for the specified package name and artifact</td>
+       <td markdown="span">This ```GET``` method returns configuration for the specified package name and artifact</td>
      </tr>
      <tr>
        <td>URL</td>
-       <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
+       <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
      </tr>
      <tr>
        <td>Success code</td>
@@ -523,11 +523,11 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method updates configuration for specified package name and artifact</td>
+      <td markdown="span">This ```POST``` method updates configuration for specified package name and artifact</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/config/[Package Name]/[Artifact]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -540,17 +540,17 @@ zeppelin-examples/zeppelin-example-clock/target/zeppelin-example-clock-0.7.0-SNA
   </table>   
  <br/>
  
- ### Get Spell configuration for single package
+### Get Spell configuration for single package
  
    <table class="table-configuration">
      <col width="200">
      <tr>
        <td>Description</td>
-       <td>This ```GET``` method returns specified package Spell configuration</td>
+       <td markdown="span">This ```GET``` method returns specified package Spell configuration</td>
      </tr>
      <tr>
        <td>URL</td>
-       <td>```http://[zeppelin-server]:[zeppelin-port]/api/helium/spell/config/[Package Name]```</td>
+       <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/helium/spell/config/[Package Name]```</td>
      </tr>
      <tr>
        <td>Success code</td>

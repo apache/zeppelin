@@ -560,6 +560,18 @@
 </property>
 
 <property>
+  <name>zeppelin.websocket.idle.timeout</name>
+  <value>300000</value>
+  <description>Time in milliseconds before an idle websocket session is closed. Defaults to 300000 (5 minutes)</description>
+</property>
+
+<property>
+  <name>zeppelin.websocket.heartbeat.interval</name>
+  <value>60000</value>
+  <description>Interval in milliseconds at which the server sends a websocket ping frame to each session to keep it alive. Defaults to 60000 (1 minute). Set to 0 or a negative value to disable server-initiated heartbeats.</description>
+</property>
+
+<property>
   <name>zeppelin.server.default.dir.allowed</name>
   <value>false</value>
   <description>Enable directory listings on server.</description>
@@ -576,7 +588,9 @@
   <name>zeppelin.interpreter.lifecyclemanager.class</name>
   <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
   <description>LifecycleManager class for managing the lifecycle of interpreters, by default interpreter will
-  be closed after timeout</description>
+  be closed after timeout. With TimeoutLifecycleManager, Zeppelin server tracks the last use of each
+  interpreter group and closes the idle ones itself, so the threshold below can be overridden per
+  interpreter setting</description>
 </property>
 
 <property>
@@ -588,7 +602,9 @@
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
   <value>1h</value>
-  <description>Interpreter timeout threshold, by default it is 1 hour</description>
+  <description>Interpreter timeout threshold, by default it is 1 hour. Set the same property on an
+  individual interpreter setting to override it for that interpreter only, or set it to 0 there to
+  keep that interpreter from ever being reclaimed</description>
 </property>
 -->
 

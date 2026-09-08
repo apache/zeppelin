@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 public class SessionConfInterpreter extends ConfInterpreter {
@@ -46,6 +47,11 @@ public class SessionConfInterpreter extends ConfInterpreter {
       finalProperties.putAll(this.properties);
       Properties updatedProperties = new Properties();
       updatedProperties.load(new StringReader(st));
+      Optional<InterpreterResult> validationError =
+          validateUpdatedProperties(updatedProperties);
+      if (validationError.isPresent()) {
+        return validationError.get();
+      }
       finalProperties.putAll(updatedProperties);
       LOGGER.debug("Properties for Session: {}:{}", sessionId, finalProperties);
 

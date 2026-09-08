@@ -54,7 +54,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
  * <p>These tests require the ONNX model to be downloaded, so they are gated behind
  * the {@code ZEPPELIN_EMBEDDING_TEST} environment variable. To run:
  * <pre>
- *   ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-zengine \
+ *   ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-server \
  *     -Dtest=EmbeddingSearchTest
  * </pre>
  *

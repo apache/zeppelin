@@ -12,25 +12,7 @@
 
 import { Directive, ElementRef, Input, NgZone, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { ReactRemoteLoaderService } from './react-remote-loader.service';
-import {
-  AnyExposedModule,
-  ReactExposedModule,
-  ReactHostCallbacks,
-  ReactMountHandle,
-  ReactProps
-} from './react-mount-handle';
-
-const isLegacyModule = (mod: AnyExposedModule, handleOrUnmount: unknown): handleOrUnmount is () => void => {
-  void mod;
-  return typeof handleOrUnmount === 'function';
-};
-
-const wrapLegacyHandle = (unmount: () => void): ReactMountHandle => ({
-  update: () => {
-    /* legacy modules don't support updates; no-op */
-  },
-  unmount
-});
+import { ReactExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 
 @Directive({
   selector: '[zeppelin-react-mount]',
@@ -40,6 +22,7 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   @Input('zeppelin-react-mount') module!: string;
   @Input() reactProps: ReactProps & ReactHostCallbacks = {};
 
+  private latestRawProps: ReactProps & ReactHostCallbacks = {};
   private latestProps: ReactProps & ReactHostCallbacks = {};
   private destroyed = false;
   private loading = false;
@@ -53,7 +36,8 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.latestProps = this.reactProps ?? {};
+    this.latestRawProps = this.reactProps ?? {};
+    this.latestProps = this.withHostCallbacks(this.latestRawProps);
 
     if (changes.module && !changes.module.firstChange && this.mountedModule) {
       // Module swap after first mount is unsupported. Report via onError
@@ -99,18 +83,13 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     this.loading = true;
     const moduleKey = this.module;
     try {
-      const mod = await this.loader.loadModule<AnyExposedModule>(moduleKey);
+      const mod = await this.loader.loadModule<ReactExposedModule>(moduleKey);
       if (this.destroyed) {
         return;
       }
       this.ngZone.runOutsideAngular(() => {
         try {
-          const returned = (mod as ReactExposedModule).mount(this.host.nativeElement, this.latestProps);
-          if (isLegacyModule(mod, returned)) {
-            this.handle = wrapLegacyHandle(returned as unknown as () => void);
-          } else {
-            this.handle = returned as ReactMountHandle;
-          }
+          this.handle = mod.mount(this.host.nativeElement, this.latestProps);
           this.mountedModule = moduleKey;
         } catch (err) {
           this.handle = null;
@@ -128,13 +107,12 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   }
 
   private reportError(error: unknown): void {
-    const onError = this.latestProps.onError;
+    const onError = this.latestRawProps.onError;
     if (typeof onError === 'function') {
-      // Re-enter the Angular zone so onError handlers can safely mutate
-      // host state and trigger change detection. React lifecycle callbacks
-      // (e.g. error boundaries) run outside the zone because we mounted
-      // there; calling back into the host without ngZone.run would leave
-      // markForCheck() with nothing to flush.
+      // Re-enter the Angular zone before calling back into the host. We mount
+      // the remote outside the zone, so React lifecycle callbacks (e.g. error
+      // boundaries) run outside it as well, and any async work the handler
+      // starts from there (timers, HTTP) would stay untracked by NgZone.
       this.ngZone.run(() => {
         try {
           onError(error);
@@ -145,5 +123,24 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     } else {
       console.error('[ReactMountDirective]', error);
     }
+  }
+
+  private withHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
+    const onError = props.onError;
+    if (typeof onError !== 'function') {
+      return props;
+    }
+    return {
+      ...props,
+      onError: (error: unknown): void => {
+        this.ngZone.run(() => {
+          try {
+            onError(error);
+          } catch {
+            /* swallow callback errors; they shouldn't loop */
+          }
+        });
+      }
+    };
   }
 }

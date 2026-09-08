@@ -911,7 +911,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     } else if (delimiter === ',') {
       extension = 'csv';
     }
-    saveAsService.saveAs(dsv, exportedFileName, extension);
+    // CSV and TSV keep the BOM so Excel reads them as UTF-8 (ZEPPELIN-672)
+    saveAsService.saveAs(dsv, exportedFileName, extension, true);
   };
 
   $scope.copyToClipboard = function(delimiter) {

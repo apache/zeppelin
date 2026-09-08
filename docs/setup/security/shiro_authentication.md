@@ -322,7 +322,7 @@ Since Shiro provides **url-based security**, you can hide the information by com
 ```
 
 In this case, only who have `admin` role can see **Interpreter Setting**, **Credential** and **Configuration** information.
-If you want to grant this permission to other users, you can change **roles[ ]** as you defined at `[users]` section.
+If you want to grant this permission to other users, you can change **`roles[ ]`** as you defined at `[users]` section.
 
 ### Apply multiple roles in Shiro configuration
 By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import jakarta.websocket.Session;
@@ -31,6 +32,11 @@ import jakarta.websocket.Session;
  */
 public class NotebookSocket {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookSocket.class);
+
+  // WebSocket protocol ping frames (RFC 6455 5.5.2) carry no meaningful payload here, so a
+  // single empty, effectively immutable (zero remaining bytes) buffer can be reused for every
+  // send instead of allocating one per heartbeat tick.
+  private static final ByteBuffer PING_PAYLOAD = ByteBuffer.allocate(0);
 
   private Session session;
   private Map<String, Object> headers;
@@ -53,6 +59,21 @@ public class NotebookSocket {
         LOGGER.error("Failed to send async message for User {} in Session {}: {}", this.user, this.session.getId(), result.getException());
       }
     });
+  }
+
+  /**
+   * Sends a WebSocket protocol ping frame to keep this connection alive. The peer's WebSocket
+   * implementation answers automatically with a pong (RFC 6455 5.5.2), and writing to the
+   * session resets Jetty's idle timeout as well as any intermediate proxy's idle timer, so no
+   * application-level handling is required on the client. Exceptions are swallowed and logged
+   * so a single dead session cannot break the caller's heartbeat loop over all sessions.
+   */
+  public void sendPing() {
+    try {
+      session.getBasicRemote().sendPing(PING_PAYLOAD);
+    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+      LOGGER.warn("Failed to send heartbeat ping to session {}: {}", session.getId(), e.toString());
+    }
   }
 
   public String getUser() {

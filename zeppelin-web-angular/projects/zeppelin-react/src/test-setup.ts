@@ -20,3 +20,19 @@ import { afterEach } from 'vitest';
 // Vitest globals are disabled, so Testing Library cannot self-register its
 // auto-cleanup hook; without this, rendered DOM leaks between tests.
 afterEach(cleanup);
+
+// jsdom implements no matchMedia, and antd's responsive observer calls it while
+// rendering. Without this, components such as Table throw and render nothing.
+if (typeof window.matchMedia !== 'function') {
+  window.matchMedia = (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => false
+    }) as unknown as MediaQueryList;
+}

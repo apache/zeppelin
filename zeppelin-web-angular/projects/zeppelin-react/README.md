@@ -21,7 +21,9 @@ React micro-frontend that runs alongside the Angular host via [Webpack Module Fe
 The Angular host's `src/app/share/react-mount/` exports two pieces:
 
 - `ReactRemoteLoaderService` — loads `remoteEntry.js` once per page,
-  caches per-module promises, evicts on error.
+  caches per-module promises, evicts on error. The load is bounded by
+  `environment.reactRemoteLoadTimeoutMs`, so a remote that stalls instead
+  of failing still reaches the host's `onError` and its fallback.
 - `ReactMountDirective` — owns the host element, mounts outside the
   Angular zone, forwards `[reactProps]` changes through
   `handle.update(...)`, and unmounts on destroy. Re-checks `destroyed`
@@ -44,22 +46,38 @@ The published paragraph was picked as pilot because it's read-only and has almos
 ## Architecture
 
 ```
-Angular host (port 4200)          React remote (port 3001)
-┌─────────────────────────┐       ┌─────────────────────────┐
-│  paragraph.component.ts │       │  webpack.config.js      │
-│  loads remoteEntry.js ──┼──────>│  ModuleFederationPlugin  │
-│  calls mount(el, props) │       │  name: 'reactApp'       │
-└─────────────────────────┘       │  exposes:               │
-                                  │    ./PublishedParagraph  │
-                                  └─────────────────────────┘
+Angular host (port 4200)              React remote (port 3001)
+┌───────────────────────────────┐     ┌─────────────────────────┐
+│  [zeppelin-react-mount]       │     │  webpack.config.js      │
+│  ReactRemoteLoaderService ────┼────>│  ModuleFederationPlugin │
+│  loads remoteEntry.js         │     │  name: 'reactApp'       │
+│  calls mount(el, props)       │     │  exposes:               │
+└───────────────────────────────┘     │    ./PublishedParagraph │
+                                      │    ./ParagraphFooter    │
+                                      │    ./ConfigurationTable │
+                                      └─────────────────────────┘
 ```
 
-1. Angular loads `remoteEntry.js` from the React dev server or production assets.
+1. `ReactRemoteLoaderService` loads `remoteEntry.js` from the React dev server or production assets, once per page.
 2. The script registers `window.reactApp` as a Module Federation container.
-3. Angular calls `container.get('./PublishedParagraph')` to get the module.
-4. The module exports `mount(element, props)`, which calls `createRoot()` and renders into the DOM element.
+3. The service calls `container.get('<exposed key>')` and caches the module promise.
+4. The `[zeppelin-react-mount]` directive calls `mount(element, props)` outside the Angular zone and keeps the returned handle for later `update()` and `unmount()` calls.
+5. If the remote fails to load, the directive reports the error to the host, which renders its Angular fallback instead.
 
-Append `?react=true` to any published paragraph URL to activate React mode.
+Host components do not touch `window.reactApp` themselves; they bind props to the directive and supply an `onError` callback.
+
+## Feature flags
+
+Each React surface is behind a URL query flag, resolved by `ReactFeatureService`:
+
+| URL | Result |
+| --- | --- |
+| `?react=true` | enabled |
+| `?react` | enabled |
+| `?react=false` | disabled |
+| flag absent | disabled |
+
+Append `?react=true` to any published paragraph URL, `?reactFooter=true` to a notebook URL, or `?reactConfiguration=true` to the configuration URL to activate React mode.
 
 ## Setup
 
@@ -81,12 +99,15 @@ From `projects/zeppelin-react/`, run `npm run lint` to check, `npm run lint:fix`
 src/
 ├── components/
 │   ├── common/          # Empty, Loading
+│   ├── paragraph/       # ParagraphFooter
 │   ├── renderers/       # HTMLRenderer, ImageRenderer, TextRenderer
 │   └── visualizations/  # TableVisualization, VisualizationControls
 ├── pages/
-│   └── PublishedParagraph.tsx   # entry component + mount()
+│   ├── PublishedParagraph.tsx   # entry component + mount()
+│   └── ConfigurationTable.tsx   # /configuration table + mount()
 ├── templates/
 │   └── SingleResultRenderer.tsx # routes result types to renderers
+├── theme/               # host theme detection, antd + chart.js theming
 ├── utils/               # tableUtils, textUtils, exportFile
 └── main.ts              # re-exports for Module Federation
 ```
@@ -107,27 +128,34 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
 
 1. Create a component (e.g. `src/components/<area>/ExampleFeature.tsx`).
 2. Wrap its render tree in `<ReactErrorBoundary onError={props.onError}>`.
-3. Export a `mount(element, props)` function that:
+3. Wrap it in `<ZeppelinThemeProvider>` as well (see `src/theme/`), otherwise
+   antd builds its styles from the default light algorithm and the module only
+   looks right in dark mode while the shell's global `.ant-*` rules happen to
+   cover the components in use. Pass surface specific tokens through its
+   `token` prop, and read `useHostThemeMode()` when you draw outside antd, as
+   a canvas chart does.
+4. Export a `mount(element, props)` function that:
    - Creates a single `Root` via `createRoot(element)`.
    - Calls `root.render(<Wrapped {...props}/>)` on initial mount AND on
      every `update(newProps)` call. React's reconciler preserves state.
    - Returns `{ update, unmount }`. `unmount` calls `root.unmount()`.
-4. Register in `webpack.config.js` under `exposes`:
+5. Register in `webpack.config.js` under `exposes`:
    ```js
    exposes: {
      './PublishedParagraph': './src/pages/PublishedParagraph',
      './ParagraphFooter': './src/components/paragraph/ParagraphFooter',
+     './ConfigurationTable': './src/pages/ConfigurationTable',
      './ExampleFeature': './src/components/<area>/ExampleFeature'
    }
    ```
-5. Re-export from `main.ts`:
+6. Re-export from `main.ts`:
    ```ts
    export {
      ExampleFeature,
      mount as mountExampleFeature
    } from './components/<area>/ExampleFeature';
    ```
-6. Use from Angular by adding the directive to your template:
+7. Use from Angular by adding the directive to your template:
    ```html
    <div
      zeppelin-react-mount="./ExampleFeature"
@@ -137,7 +165,5 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
    `exampleFeatureProps` should be a getter on the host component (not
    an inline object literal) so identity is stable when nothing changed.
 
-The legacy `./PublishedParagraph` module returns a bare unmount fn from
-`mount`. The directive tolerates that shape, but new modules should use
-the handle contract.
+Every exposed module must return the handle contract from `mount`. The directive assigns the return value straight to its handle, so returning a bare unmount function makes the next prop change throw.
 

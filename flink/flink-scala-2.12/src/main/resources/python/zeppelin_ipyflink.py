@@ -54,19 +54,4 @@ if not intp.isAfterFlink114():
 else:
     st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())
 
-class IPyFlinkZeppelinContext(PyZeppelinContext):
-
-    def __init__(self, z, gateway):
-        super(IPyFlinkZeppelinContext, self).__init__(z, gateway)
-
-    def show(self, obj, **kwargs):
-        from pyflink.table import Table
-        if isinstance(obj, Table):
-            if 'stream_type' in kwargs:
-                self.z.show(obj._j_table, kwargs['stream_type'], kwargs)
-            else:
-                print(self.z.showData(obj._j_table))
-        else:
-            super(IPyFlinkZeppelinContext, self).show(obj, **kwargs)
-
-z = __zeppelin__ = IPyFlinkZeppelinContext(intp.getZeppelinContext(), gateway)
+z = __zeppelin__ = PyFlinkZeppelinContext(intp.getZeppelinContext(), gateway)

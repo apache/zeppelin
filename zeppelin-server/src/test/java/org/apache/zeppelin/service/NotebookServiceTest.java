@@ -19,8 +19,10 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +38,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +69,10 @@ import org.apache.zeppelin.notebook.exception.NotePathAlreadyExistsException;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
+import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.rest.exception.NoteNotFoundException;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -88,6 +95,8 @@ class NotebookServiceTest {
   private File confDir;
   private SearchService searchService;
   private Notebook notebook;
+  private AuthorizationService authorizationService;
+  private ZeppelinConfiguration zConf;
   private ServiceContext context =
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
@@ -99,11 +108,12 @@ class NotebookServiceTest {
   @BeforeEach
   void setUp(TestInfo testInfo) throws Exception {
     notebookDir = Files.createTempDirectory("notebookDir").toAbsolutePath().toFile();
-    ZeppelinConfiguration zConf = ZeppelinConfiguration.load();
+    zConf = ZeppelinConfiguration.load();
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
         notebookDir.getAbsolutePath());
-    // enable cron for testNoteUpdate method
-    if ("testNoteUpdate()".equals(testInfo.getDisplayName())){
+    // enable cron for the tests that update a note's cron settings
+    if ("testNoteUpdate()".equals(testInfo.getDisplayName())
+        || "testCronRefreshedOnlyWhenTheExpressionChanges()".equals(testInfo.getDisplayName())) {
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
             confDir.getAbsolutePath());
@@ -136,8 +146,7 @@ class NotebookServiceTest {
     when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     Credentials credentials = new Credentials();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
-    AuthorizationService authorizationService =
-        new AuthorizationService(noteManager, zConf, storage);
+    authorizationService = new AuthorizationService(noteManager, zConf, storage);
     notebook =
         new Notebook(
             zConf,
@@ -469,6 +478,48 @@ class NotebookServiceTest {
   }
 
   @Test
+  void testCronRefreshedOnlyWhenTheExpressionChanges() throws IOException {
+    SchedulerService schedulerService = mock(SchedulerService.class);
+    NotebookService service =
+        new NotebookService(notebook, authorizationService, zConf, schedulerService);
+    String noteId = service.createNote("/folder_cron/note_test_cron", "test", true, context,
+        callback);
+
+    Map<String, Object> config = new HashMap<>();
+    config.put("isZeppelinNotebookCronEnable", true);
+    config.put("looknfeel", "looknfeel");
+    config.put("cron", "0 0/5 * * * ?");
+    config.put("cronExecutingRoles", "[\"test\"]");
+    config.put("cronExecutingUser", "test");
+
+    // adding a cron expression schedules the note
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
+
+    // an unrelated change that keeps the same expression leaves the scheduler alone.
+    // onSuccess proves the update ran to the end, since updateNote has earlier exits that
+    // would satisfy never() without ever reaching the cron decision
+    reset(schedulerService);
+    reset(callback);
+    config.put("looknfeel", "simple");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(callback).onSuccess(any(Note.class), any(ServiceContext.class));
+    verify(schedulerService, never()).refreshCron(noteId);
+
+    // changing the expression schedules it again
+    reset(schedulerService);
+    config.put("cron", "0 0 0/1 * * ?");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
+
+    // removing the expression unschedules it
+    reset(schedulerService);
+    config.remove("cron");
+    service.updateNote(noteId, "note_test_cron", new HashMap<>(config), context, callback);
+    verify(schedulerService).refreshCron(noteId);
+  }
+
+  @Test
   void testRenameNoteRejectsDuplicate() throws IOException {
     String note1Id = notebookService.createNote("/folder/note1", "test", true, context, callback);
     notebook.processNote(note1Id,
@@ -586,6 +637,144 @@ class NotebookServiceTest {
     notebookService.clearParagraphOutput(note1Id, p.getId(), context, callback);
     assertNull(p.getReturn());
     verify(callback).onSuccess(p, context);
+  }
+
+  @Test
+  void testRunParagraphInPersonalizedModeDoesNotPolluteMasterParagraph() throws IOException {
+    String note1Id = notebookService.createNote("/note_personalized", "test", true, context, callback);
+    // make "admin" the note owner so that "user1" below is a non-owner
+    authorizationService.setOwners(note1Id, Collections.singleton("admin"));
+    Map<String, Object> masterParams = new HashMap<>();
+    masterParams.put("name", "master");
+    String paragraphId = notebook.processNote(note1Id,
+      note1 -> {
+        note1.setPersonalizedMode(true);
+        Paragraph p = note1.getParagraph(0);
+        p.setText("1+1");
+        p.settings.setParams(masterParams);
+        return p.getId();
+      });
+
+    ServiceContext user1Context = new ServiceContext(new AuthenticationInfo("user1"),
+        new HashSet<>(Collections.singleton("user1")));
+    Map<String, Object> user1Params = new HashMap<>();
+    user1Params.put("name", "user1");
+
+    reset(callback);
+    boolean runStatus = notebook.processNote(note1Id,
+      note1 -> {
+        return notebookService.runParagraph(note1, paragraphId, "user1_title", "1+1",
+          user1Params, new HashMap<>(), null, false, true, user1Context, callback);
+      });
+    assertTrue(runStatus);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1Params, user1Paragraph.settings.getParams());
+        assertEquals("user1_title", user1Paragraph.getTitle());
+        return null;
+      });
+
+    // updateParagraph must not pollute the master paragraph either
+    reset(callback);
+    Map<String, Object> user1UpdatedParams = new HashMap<>();
+    user1UpdatedParams.put("name", "user1_updated");
+    notebookService.updateParagraph(note1Id, paragraphId, "user1_updated_title", "1+1",
+        user1UpdatedParams, new HashMap<>(), user1Context, callback);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(masterParams, master.settings.getParams());
+        assertNull(master.getTitle());
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
+        assertEquals("user1_updated_title", user1Paragraph.getTitle());
+        return null;
+      });
+
+    // the note owner's changes must reach the master paragraph so new users inherit them
+    reset(callback);
+    ServiceContext adminContext = new ServiceContext(new AuthenticationInfo("admin"),
+        new HashSet<>(Collections.singleton("admin")));
+    Map<String, Object> adminParams = new HashMap<>();
+    adminParams.put("name", "admin");
+    notebookService.updateParagraph(note1Id, paragraphId, "admin_title", "1+1",
+        adminParams, new HashMap<>(), adminContext, callback);
+
+    notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph master = note1.getParagraph(paragraphId);
+        assertEquals(adminParams, master.settings.getParams());
+        assertEquals("admin_title", master.getTitle());
+        Paragraph adminParagraph = master.getUserParagraph("admin");
+        assertEquals(adminParams, adminParagraph.settings.getParams());
+        assertEquals("admin_title", adminParagraph.getTitle());
+        // the non-owner's personal copy must keep their own values
+        Paragraph user1Paragraph = master.getUserParagraph("user1");
+        assertEquals(user1UpdatedParams, user1Paragraph.settings.getParams());
+        return null;
+      });
+  }
+
+  @Test
+  void testCancelAllParagraphs() throws IOException {
+    String note1Id = notebookService.createNote("note_cancel_all", "python", false, context, callback);
+    Paragraph p1 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p1");
+        p.setStatus(Status.RUNNING);
+        return p;
+      });
+    Paragraph p2 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p2");
+        p.setStatus(Status.FINISHED);
+        return p;
+      });
+
+    reset(callback);
+    notebookService.cancelAllParagraphs(note1Id, context, callback);
+
+    assertTrue(p1.isAborted());
+    assertFalse(p2.isAborted());
+    verify(callback).onSuccess(any(), eq(context));
+  }
+
+  @Test
+  void testCancelAllParagraphsForbidden() throws IOException {
+    String note1Id = notebookService.createNote("note_cancel_all_forbidden", "python", false, context, callback);
+    Paragraph p1 = notebook.processNote(note1Id,
+      note1 -> {
+        Paragraph p = note1.addNewParagraph(context.getAutheInfo());
+        p.setText("p1");
+        p.setStatus(Status.RUNNING);
+        return p;
+      });
+
+    HashSet<String> otherUser = new HashSet<>();
+    otherUser.add("other_user");
+    authorizationService.setOwners(note1Id, otherUser);
+    authorizationService.setWriters(note1Id, otherUser);
+    authorizationService.setRunners(note1Id, otherUser);
+
+    reset(callback);
+    notebookService.cancelAllParagraphs(note1Id, context, callback);
+
+    assertFalse(p1.isAborted());
+    verify(callback).onFailure(any(ForbiddenException.class), eq(context));
+  }
+
+  @Test
+  void testCancelAllParagraphsNoteNotFound() {
+    assertThrows(NoteNotFoundException.class,
+        () -> notebookService.cancelAllParagraphs("non_existing_note_id", context, callback));
   }
 
   @Test

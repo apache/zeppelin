@@ -44,23 +44,7 @@ else:
   st_env = StreamTableEnvironment(intp.getJavaStreamTableEnvironment())
 
 
-from zeppelin_context import PyZeppelinContext
-
-#TODO(zjffdu) merge it with IPyFlinkZeppelinContext
-class PyFlinkZeppelinContext(PyZeppelinContext):
-
-  def __init__(self, z, gateway):
-    super(PyFlinkZeppelinContext, self).__init__(z, gateway)
-
-  def show(self, obj, **kwargs):
-    from pyflink.table import Table
-    if isinstance(obj, Table):
-      if 'stream_type' in kwargs:
-        self.z.show(obj._j_table, kwargs['stream_type'], kwargs)
-      else:
-        print(self.z.showData(obj._j_table))
-    else:
-      super(PyFlinkZeppelinContext, self).show(obj, **kwargs)
+from zeppelin_context import PyFlinkZeppelinContext
 
 z = __zeppelin__ = PyFlinkZeppelinContext(intp.getZeppelinContext(), gateway)
 __zeppelin__._setup_matplotlib()

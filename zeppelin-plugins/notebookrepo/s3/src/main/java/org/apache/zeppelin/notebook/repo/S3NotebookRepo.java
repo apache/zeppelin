@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -323,16 +321,5 @@ public class S3NotebookRepo extends AbstractNotebookRepo {
     if (s3client != null) {
       s3client.shutdown();
     }
-  }
-
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
   }
 }

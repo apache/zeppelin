@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
@@ -86,7 +88,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
@@ -146,6 +147,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+  // Package-private (not private) so NotebookServerHeartbeatTest can observe scheduler
+  // lifecycle without exposing it as part of the public API.
+  ScheduledExecutorService heartbeatScheduler;
+  private Thread heartbeatShutdownHook;
+  private boolean heartbeatInitialized;
+
   // TODO(jl): This will be removed by handling session directly
   private final Map<String, NotebookSocket> sessionIdNotebookSocketMap = Metrics.gaugeMapSize("zeppelin_session_id_notebook_sockets", Tags.empty(), new ConcurrentHashMap<>());
   private ConnectionManager connectionManager;
@@ -154,7 +161,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private Provider<NoteParser> noteParser;
   private Provider<NotebookService> notebookServiceProvider;
   private AuthorizationService authorizationService;
-  private Provider<ConfigurationService> configurationServiceProvider;
   private Provider<JobManagerService> jobManagerServiceProvider;
 
   public NotebookServer() {
@@ -209,12 +215,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
 
   @Inject
-  public void setConfigurationService(
-      Provider<ConfigurationService> configurationServiceProvider) {
-    this.configurationServiceProvider = configurationServiceProvider;
-  }
-
-  @Inject
   public void setJobManagerService(
       Provider<JobManagerService> jobManagerServiceProvider) {
     this.jobManagerServiceProvider = jobManagerServiceProvider;
@@ -226,10 +226,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public NotebookService getNotebookService() {
     return notebookServiceProvider.get();
-  }
-
-  public ConfigurationService getConfigurationService() {
-    return configurationServiceProvider.get();
   }
 
   public synchronized JobManagerService getJobManagerService() {
@@ -265,6 +261,75 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   public void onOpen(NotebookSocket conn) {
     connectionManager.addConnection(conn);
+    startHeartbeatScheduler();
+  }
+
+  /**
+   * Starts the websocket heartbeat scheduler on first use. Idempotent: a second call while the
+   * scheduler is already running is a no-op. zConf and connectionManager are both required and
+   * are set via setter injection before any real connection can open, so starting lazily here
+   * (rather than from the injected setters, whose call order is not guaranteed) is safe.
+   */
+  synchronized void startHeartbeatScheduler() {
+    if (heartbeatInitialized) {
+      return;
+    }
+    heartbeatInitialized = true;
+    long intervalMs = zConf.getWebsocketHeartbeatInterval();
+    if (intervalMs <= 0) {
+      LOGGER.info("Websocket heartbeat is disabled (zeppelin.websocket.heartbeat.interval={})", intervalMs);
+      return;
+    }
+    heartbeatScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread thread = new Thread(r, "NotebookServer-Heartbeat");
+      thread.setDaemon(true);
+      return thread;
+    });
+    heartbeatScheduler.scheduleAtFixedRate(
+        this::sendHeartbeat, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
+    heartbeatShutdownHook = new Thread(this::stopHeartbeatScheduler);
+    Runtime.getRuntime().addShutdownHook(heartbeatShutdownHook);
+    LOGGER.info("Started websocket heartbeat scheduler with interval {} ms", intervalMs);
+  }
+
+  /**
+   * Stops the websocket heartbeat scheduler, if running, and deregisters its shutdown hook so
+   * repeated start/stop cycles do not accumulate hooks. Safe to call multiple times and safe
+   * to call when the scheduler was never started.
+   */
+  synchronized void stopHeartbeatScheduler() {
+    if (heartbeatScheduler != null) {
+      heartbeatScheduler.shutdownNow();
+      heartbeatScheduler = null;
+    }
+    if (heartbeatShutdownHook != null && Thread.currentThread() != heartbeatShutdownHook) {
+      try {
+        Runtime.getRuntime().removeShutdownHook(heartbeatShutdownHook);
+      } catch (IllegalStateException e) {
+        // JVM is already shutting down; the hook will simply run (as a harmless no-op).
+      }
+      heartbeatShutdownHook = null;
+    }
+    heartbeatInitialized = false;
+  }
+
+  /**
+   * Sends a WebSocket protocol ping frame to every connected session. Writing to a session
+   * resets Jetty's idle timeout (and any intermediate proxy's idle timer), which is the whole
+   * point of this heartbeat: it keeps connections alive even when the client-side application
+   * keep-alive timer is throttled or stopped (e.g. a backgrounded browser tab). A single
+   * session failing to receive a ping must not stop the remaining sessions from being pinged.
+   * Pong responses are not tracked; once the heartbeat is enabled, Jetty's idle timeout no
+   * longer determines connection liveness (see ZEPPELIN-6694).
+   */
+  void sendHeartbeat() {
+    for (NotebookSocket conn : connectionManager.connectedSockets) {
+      try {
+        conn.sendPing();
+      } catch (RuntimeException e) {
+        LOGGER.warn("Failed to send heartbeat ping to {}", conn, e);
+      }
+    }
   }
 
   @OnMessage
@@ -387,6 +452,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
         case CANCEL_PARAGRAPH:
           cancelParagraph(conn, context, receivedMessage);
           break;
+        case CANCEL_ALL_PARAGRAPHS:
+          cancelAllParagraphs(conn, context, receivedMessage);
+          break;
         case MOVE_PARAGRAPH:
           moveParagraph(conn, context, receivedMessage);
           break;
@@ -430,9 +498,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
         case ANGULAR_OBJECT_CLIENT_UNBIND:
           angularObjectClientUnbind(conn, receivedMessage);
-          break;
-        case LIST_CONFIGURATIONS:
-          sendAllConfigurations(conn, context, receivedMessage);
           break;
         case CHECKPOINT_NOTE:
           checkpointNote(conn, context, receivedMessage);
@@ -618,6 +683,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
     getNotebook().processNote(noteId,
       note -> {
         if (note != null) {
+          if (!authorizationService.isReader(noteId, context.getUserAndRoles())) {
+            permissionError(conn, "get interpreter bindings from",
+                context.getAutheInfo().getUser(), context.getUserAndRoles(),
+                authorizationService.getReaders(noteId));
+            return null;
+          }
           List<InterpreterSetting> bindedSettings =
               note.getBindedInterpreterSettings(new ArrayList<>(context.getUserAndRoles()));
           for (InterpreterSetting setting : bindedSettings) {
@@ -635,9 +706,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
     List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
     // use write lock, because defaultInterpreterGroup is overwritten
-    getNotebook().processNote(noteId,
+    boolean permitted = getNotebook().processNote(noteId,
       note -> {
         if (note != null) {
+          if (!authorizationService.isWriter(noteId, context.getUserAndRoles())) {
+            permissionError(conn, "save interpreter bindings for",
+                context.getAutheInfo().getUser(), context.getUserAndRoles(),
+                authorizationService.getWriters(noteId));
+            return false;
+          }
           List<String> settingIdList =
               gson.fromJson(String.valueOf(fromMessage.data.get("selectedSettingIds")),
                   new TypeToken<ArrayList<String>>() {
@@ -653,10 +730,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
               setting.getInterpreterInfos(), true));
           }
         }
-        return null;
+        return true;
       });
-    conn.send(serializeMessage(
-        new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
+    if (permitted) {
+      conn.send(serializeMessage(
+          new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
+    }
   }
 
   public void broadcastNote(Note note) {
@@ -1482,6 +1561,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
     getNotebookService().cancelParagraph(noteId, paragraphId, context, new WebSocketServiceCallback<>(conn));
   }
 
+  private void cancelAllParagraphs(NotebookSocket conn, ServiceContext context, Message fromMessage) throws IOException {
+    final String noteId = (String) fromMessage.get("noteId");
+    getNotebookService().cancelAllParagraphs(noteId, context, new WebSocketServiceCallback<>(conn));
+  }
+
   private void runAllParagraphs(NotebookSocket conn,
                                 ServiceContext context,
                                 Message fromMessage) throws IOException {
@@ -1567,20 +1651,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
         return null;
       });
 
-  }
-
-  private void sendAllConfigurations(NotebookSocket conn,
-                                     ServiceContext context,
-                                     Message message) throws IOException {
-
-    getConfigurationService().getAllProperties(context,
-        new WebSocketServiceCallback<Map<String, String>>(conn) {
-          @Override
-          public void onSuccess(Map<String, String> properties, ServiceContext context) throws IOException {
-            super.onSuccess(properties, context);
-            conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO).put("configurations", properties)));
-          }
-        });
   }
 
   private void checkpointNote(NotebookSocket conn,

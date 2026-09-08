@@ -24,8 +24,8 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Basic Usage
-In addition to the [backend Angular API](./angular_backend.html) to handle Angular objects binding, Apache Zeppelin also exposes a simple AngularJS <code>**z**</code> object on the front-end side to expose the same capabilities.
-This <code>**z**</code> object is accessible in the Angular isolated scope for each paragraph.
+In addition to the [backend Angular API](./angular_backend.html) to handle Angular objects binding, Apache Zeppelin also exposes a simple AngularJS **`z`** object on the front-end side to expose the same capabilities.
+This **`z`** object is accessible in the Angular isolated scope for each paragraph.
 
 
 ### Bind / Unbind Variables
@@ -126,6 +126,7 @@ How does the front-end AngularJS API compares to the [backend Angular API](./ang
             <th>Back-end API</th>
         </tr>
     </thead>
+    <tbody>
         <tr>
             <td>Initiate binding</td>
             <td>z.angularbind(var, initialValue, paragraphId)</td>
@@ -161,8 +162,7 @@ How does the front-end AngularJS API compares to the [backend Angular API](./ang
             <td></td>
             <td>z.runNote(noteId)</td>
         </tr> 
-    <tbody>
-    <tbody>    
+    </tbody>
 </table>
 
 Both APIs are pretty similar, except for value watching where it is done naturally by AngularJS internals on the front-end and by user custom watcher functions in the back-end.

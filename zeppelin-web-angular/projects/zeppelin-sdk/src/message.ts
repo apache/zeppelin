@@ -30,6 +30,8 @@ import {
 } from './interfaces/message-paragraph.interface';
 import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
+import { getMessagePayloadGuard } from './message-payload-guards';
+
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
 export type SendArgumentsType<K extends keyof MessageSendDataTypeMap> = MessageSendDataTypeMap[K] extends undefined
@@ -173,8 +175,19 @@ export class Message {
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
+    const guard = getMessagePayloadGuard(op);
+
     return this.received$.pipe(
       filter(message => message.op === op),
+      filter(message => {
+        if (!guard || guard(message.data)) {
+          return true;
+        }
+
+        // The payload can be large and carries note names, so log the OP alone.
+        console.warn(`Dropped WebSocket OP ${String(op)}: payload failed validation`);
+        return false;
+      }),
       map(message => message.data)
     ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
   }
@@ -415,6 +428,10 @@ export class Message {
     });
   }
 
+  cancelAllParagraphs(noteId: string): void {
+    this.send<OP.CANCEL_ALL_PARAGRAPHS>(OP.CANCEL_ALL_PARAGRAPHS, { noteId });
+  }
+
   paragraphRemove(paragraphId: string): void {
     this.send<OP.PARAGRAPH_REMOVE>(OP.PARAGRAPH_REMOVE, { id: paragraphId });
   }
@@ -529,10 +546,6 @@ export class Message {
       noteId,
       selectedSettingIds
     });
-  }
-
-  listConfigurations(): void {
-    this.send<OP.LIST_CONFIGURATIONS>(OP.LIST_CONFIGURATIONS);
   }
 
   getInterpreterSettings(): void {

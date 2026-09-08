@@ -126,13 +126,13 @@ Requires `zeppelin.search.enable = true` (already the default).
 ## Changes
 
 ### New files
-- `zeppelin-zengine/.../search/EmbeddingSearch.java` — Core implementation (~700 lines)
-- `zeppelin-zengine/.../search/EmbeddingSearchTest.java` — 11 tests including semantic validation
+- `zeppelin-server/.../search/EmbeddingSearch.java` — Core implementation (~700 lines)
+- `zeppelin-server/.../search/EmbeddingSearchTest.java` — 11 tests including semantic validation
 - `docs/embedding-search.md` — This document
 
 ### Modified files — Backend
-- `zeppelin-zengine/pom.xml` — Add `onnxruntime` and `djl-tokenizers` dependencies
-- `zeppelin-zengine/.../conf/ZeppelinConfiguration.java` — Add `ZEPPELIN_SEARCH_SEMANTIC_ENABLE`
+- `zeppelin-server/pom.xml` — Add `onnxruntime` and `djl-tokenizers` dependencies
+- `zeppelin-server/.../conf/ZeppelinConfiguration.java` — Add `ZEPPELIN_SEARCH_SEMANTIC_ENABLE`
 - `zeppelin-server/.../server/ZeppelinServer.java` — Wire `EmbeddingSearch` based on config
 - `NOTICE` — Attribution for ONNX Runtime and DJL
 
@@ -201,11 +201,11 @@ Zeppelin uses Lucene 8.7.0. Upgrading to 9.x is a separate, larger effort.
 
 ```bash
 # Run embedding search tests (requires model download, ~86MB first time)
-ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-zengine \
+ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-server \
   -Dtest=EmbeddingSearchTest
 
 # Run existing Lucene tests (should still pass, no changes)
-mvn test -pl zeppelin-zengine -Dtest=LuceneSearchTest
+mvn test -pl zeppelin-server -Dtest=LuceneSearchTest
 ```
 
 ### Key tests

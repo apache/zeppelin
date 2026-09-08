@@ -142,7 +142,8 @@ Zeppelin service runs on local server, it auto configure itself to use `DockerIn
  - ${ZEPPELIN_HOME}/interpreter/${interpreterGroupName}
  - ${ZEPPELIN_HOME}/conf/zeppelin-site.xml
  - ${ZEPPELIN_HOME}/conf/log4j.properties
- - ${ZEPPELIN\_HOME}/conf/log4j\_yarn_cluster.properties
+ - ${ZEPPELIN_HOME}/conf/log4j2.properties
+ - ${ZEPPELIN_HOME}/conf/log4j_yarn_cluster.properties
  - HADOOP\_CONF_DIR
  - SPARK\_CONF_DIR
  - /etc/krb5.conf
@@ -173,7 +174,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | SPARK\_CONF_DIR | /spark-<version>-path.../conf/ | Spark-<version>-path/conf/ path local on the zeppelin service |
+  | SPARK\_CONF_DIR | `/spark-<version>-path.../conf/` | `Spark-<version>-path/conf/` path local on the zeppelin service |
 
 
 #### HADOOP\_CONF_DIR
@@ -190,7 +191,7 @@ Supports all running modes of `local[*]`, `yarn-client`, and `yarn-cluster` of z
 
   | properties name | Value | Description |
   | ----- | ----- | ----- |
-  | HADOOP\_CONF_DIR | hadoop-<version>-path/etc/hadoop | hadoop-<version>-path/etc/hadoop path local on the zeppelin service |
+  | HADOOP\_CONF_DIR | `hadoop-<version>-path/etc/hadoop` | `hadoop-<version>-path/etc/hadoop` path local on the zeppelin service |
 
 
 #### Accessing Spark UI (or Service running in interpreter container)

@@ -815,6 +815,17 @@ public class Note implements JsonSerializable {
     return this.paragraphs;
   }
 
+  /**
+   * Abort all the paragraphs which are not terminated yet.
+   */
+  public void abortAll() {
+    for (Paragraph p : getParagraphs()) {
+      if (!p.isTerminated()) {
+        p.abort();
+      }
+    }
+  }
+
   // TODO(zjffdu) how does this used ?
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();

@@ -82,6 +82,21 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
     intpGroup.close();
   }
 
+  @Test
+  void testBackendZeppelinContextsAvailable() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(
+            "from zeppelin_context import PySparkZeppelinContext, PyFlinkZeppelinContext, " +
+            "IPySparkZeppelinContext, IPyFlinkZeppelinContext\n" +
+            "print('%s %s' % (IPySparkZeppelinContext is PySparkZeppelinContext, " +
+            "IPyFlinkZeppelinContext is PyFlinkZeppelinContext))",
+        context);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("True True",
+        context.out.toInterpreterResultMessage().get(0).getData().trim());
+  }
+
   @Override
   public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
     super.testCodeCompletion();

@@ -16,11 +16,7 @@ import { getCoverageTransformPaths } from './utils';
 const outputPath = join(__dirname, '..', 'playwright-coverage');
 
 export default {
-  rootPath: join(__dirname, '..'),
   outputPath,
-  testMatch: [/\.component$/],
-  excludes: [/\.spec\.ts$/, /\.module\.ts$/, /\.guard\.ts$/, /\.routing\.ts$/, /\.html$/, /\.less$/, /\.css$/],
-  // Transform configuration for coverage instrumentation
-  // Specifies which component files to instrument for coverage tracking
+  // Automatically discovered component targets are the reporter denominator.
   transform: getCoverageTransformPaths()
 };

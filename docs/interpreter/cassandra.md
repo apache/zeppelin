@@ -40,7 +40,7 @@ limitations under the License.
 
 In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
 
- <center>
+ <center markdown="block">
  ![Interpreter Binding]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
 
  ![Interpreter Selection]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
@@ -52,7 +52,7 @@ In a paragraph, use **_%cassandra_** to select the **Cassandra** interpreter and
 
 To access the interactive help, type **HELP;**
 
- <center>
+ <center markdown="block">
    ![Interactive Help]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
  </center>
 
@@ -69,27 +69,27 @@ The **Cassandra** interpreter accepts the following commands
     </tr>
     <tr>
       <td nowrap>Help command</td>
-      <td>`HELP`</td>
+      <td markdown="span">`HELP`</td>
       <td>Display the interactive help menu</td>
     </tr>
     <tr>
       <td nowrap>Schema commands</td>
-      <td>`DESCRIBE KEYSPACE`, `DESCRIBE CLUSTER`, `DESCRIBE TABLES` ...</td>
+      <td markdown="span">`DESCRIBE KEYSPACE`, `DESCRIBE CLUSTER`, `DESCRIBE TABLES` ...</td>
       <td>Custom commands to describe the Cassandra schema</td>
     </tr>
     <tr>
       <td nowrap>Option commands</td>
-      <td>`@consistency`, `@fetchSize` ...</td>
+      <td markdown="span">`@consistency`, `@fetchSize` ...</td>
       <td>Inject runtime options to all statements in the paragraph</td>
     </tr>
     <tr>
       <td nowrap>Prepared statement commands</td>
-      <td>`@prepare`, `@bind`, `@remove_prepared`</td>
+      <td markdown="span">`@prepare`, `@bind`, `@remove_prepared`</td>
       <td>Let you register a prepared command and re-use it later by injecting bound values</td>
     </tr>
     <tr>
       <td nowrap>Native CQL statements</td>
-      <td>All CQL-compatible statements (`SELECT`, `INSERT`, `CREATE`, ...)</td>
+      <td markdown="span">All CQL-compatible statements (`SELECT`, `INSERT`, `CREATE`, ...)</td>
       <td>All CQL statements are executed directly against the Cassandra server</td>
     </tr>
   </table>
@@ -242,7 +242,7 @@ To make schema discovery easier and more interactive, the following commands are
    </tr>
    <tr>
      <td><strong>DESCRIBE TYPES;</strong></td>
-     <td>List all existing keyspaces in the cluster and for each, all the user-defined types name</strong></td>
+     <td>List all existing keyspaces in the cluster and for each, all the user-defined types name</td>
    </tr>
    <tr>
      <td nowrap><strong>DESCRIBE FUNCTIONS;</strong></td>
@@ -303,7 +303,7 @@ To make schema discovery easier and more interactive, the following commands are
 The schema objects (cluster, keyspace, table, type, function and aggregate) are displayed in a tabular format.
 There is a drop-down menu on the top left corner to expand objects details. On the top right menu is shown the Icon legend.
 
-<center>
+<center markdown="block">
   ![Describe Schema]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 </center>
 
@@ -444,17 +444,17 @@ Sometimes you want to be able to format output of your statement. Cassandra inte
    <tr>
      <td nowrap>Float precision</td>
      <td><strong>floatPrecision=<em>value</em></strong></td>
-     <td>Precision when formatting <tt>float</tt> values. Any positive integer value, or `-1` to show everything</td>
+     <td markdown="span">Precision when formatting <tt>float</tt> values. Any positive integer value, or `-1` to show everything</td>
    </tr>
    <tr>
      <td nowrap>Double precision</td>
      <td><strong>doublePrecision=<em>value</em></strong></td>
-     <td>Precision when formatting <tt>double</tt> values. Any positive integer value, or `-1` to show everything</td>
+     <td markdown="span">Precision when formatting <tt>double</tt> values. Any positive integer value, or `-1` to show everything</td>
    </tr>
    <tr>
      <td nowrap>Decimal precision</td>
      <td><strong>decimalPrecision=<em>value</em></strong></td>
-     <td>Precision when formatting <tt>decimal</tt> values. Any positive integer value, or `-1` to show everything</td>
+     <td markdown="span">Precision when formatting <tt>decimal</tt> values. Any positive integer value, or `-1` to show everything</td>
    </tr>
    <tr>
      <td nowrap>Timestamp Format</td>
@@ -537,7 +537,7 @@ Example:
 
 #### @prepare
 
-You can use the syntax _"@prepare[statement-name]=SELECT..."_ to create a prepared statement.
+You can use the syntax `@prepare[statement-name]=SELECT...` to create a prepared statement.
 The _statement-name_ is **mandatory** because the interpreter prepares the given statement with the Java driver and
 saves the generated prepared statement in an **internal hash map**, using the provided _statement-name_ as search key.
 
@@ -577,9 +577,9 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 * **null** is parsed as-is
 * **boolean** (`true`|`false`) are parsed as-is
 * collection values must follow the **[standard CQL syntax]**:
-  * list: ['list_item1', 'list_item2', ...]
-  * set: {'set_item1', 'set_item2', …}
-  * map: {'key1': 'val1', 'key2': 'val2', …}
+  * list: `['list_item1', 'list_item2', ...]`
+  * set: `{'set_item1', 'set_item2', …}`
+  * map: `{'key1': 'val1', 'key2': 'val2', …}`
 * **tuple** values should be enclosed between parenthesis (see **[Tuple CQL syntax]**): ('text', 123, true)
 * **udt** values should be enclosed between brackets (see **[UDT CQL syntax]**): {stree_name: 'Beverly Hills', number: 104, zip_code: 90020, state: 'California', …}
 
@@ -595,7 +595,7 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 #### @remove_prepare
 
 To avoid for a prepared statement to stay forever in the prepared statement map, you can use the
-**@remove_prepare[statement-name]** syntax to remove it.
+`@remove_prepare[statement-name]` syntax to remove it.
 Removing a non-existing prepared statement yields no error.
 
 ## Using Dynamic Forms
@@ -675,41 +675,41 @@ Below are the configuration parameters supported by interpreter and their defaul
      <th>Default Value</th>
    </tr>
    <tr>
-     <td>`cassandra.cluster`</td>
+     <td markdown="span">`cassandra.cluster`</td>
      <td>Name of the Cassandra cluster to connect to</td>
      <td>Test Cluster</td>
    </tr>
    <tr>
-     <td>`cassandra.compression.protocol`</td>
-     <td>On wire compression. Possible values are: `NONE`, `SNAPPY`, `LZ4`</td>
-     <td>`NONE`</td>
+     <td markdown="span">`cassandra.compression.protocol`</td>
+     <td markdown="span">On wire compression. Possible values are: `NONE`, `SNAPPY`, `LZ4`</td>
+     <td markdown="span">`NONE`</td>
    </tr>
    <tr>
-     <td>`cassandra.credentials.username`</td>
+     <td markdown="span">`cassandra.credentials.username`</td>
      <td>If security is enable, provide the login</td>
      <td>none</td>
    </tr>
    <tr>
-     <td>`cassandra.credentials.password`</td>
+     <td markdown="span">`cassandra.credentials.password`</td>
      <td>If security is enable, provide the password</td>
      <td>none</td>
    </tr>
    <tr>
-     <td>`cassandra.hosts`</td>
-     <td>
+     <td markdown="span">`cassandra.hosts`</td>
+     <td markdown="span">
         Comma separated Cassandra hosts (DNS name or IP address).
         <br/>
         Ex: `192.168.0.12,node2,node3`
       </td>
-     <td>`localhost`</td>
+     <td markdown="span">`localhost`</td>
    </tr>
    <tr>
-     <td>`cassandra.interpreter.parallelism`</td>
+     <td markdown="span">`cassandra.interpreter.parallelism`</td>
      <td>Number of concurrent paragraphs(queries block) that can be executed</td>
      <td>10</td>
    </tr>
    <tr>
-     <td>`cassandra.keyspace`</td>
+     <td markdown="span">`cassandra.keyspace`</td>
      <td>
         Default keyspace to connect to.
         <strong>
@@ -718,11 +718,11 @@ Below are the configuration parameters supported by interpreter and their defaul
           in all of your queries
         </strong>
      </td>
-     <td>`system`</td>
+     <td markdown="span">`system`</td>
    </tr>
    <tr>
-     <td>`cassandra.load.balancing.policy`</td>
-     <td>
+     <td markdown="span">`cassandra.load.balancing.policy`</td>
+     <td markdown="span">
         Load balancing policy. Default = `DefaultLoadBalancingPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
         At runtime the driver will instantiate the policy using class name.
@@ -730,66 +730,66 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>`cassandra.max.schema.agreement.wait.second`</td>
+     <td markdown="span">`cassandra.max.schema.agreement.wait.second`</td>
      <td>Cassandra max schema agreement wait in second</td>
      <td>10</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.connection.per.host.local`</td>
+     <td markdown="span">`cassandra.pooling.connection.per.host.local`</td>
      <td>Protocol V3 and above default = 1</td>
      <td>1</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.connection.per.host.remote`</td>
+     <td markdown="span">`cassandra.pooling.connection.per.host.remote`</td>
      <td>Protocol V3 and above default = 1</td>
      <td>1</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.heartbeat.interval.seconds`</td>
+     <td markdown="span">`cassandra.pooling.heartbeat.interval.seconds`</td>
      <td>Cassandra pool heartbeat interval in secs</td>
      <td>30</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.max.request.per.connection`</td>
+     <td markdown="span">`cassandra.pooling.max.request.per.connection`</td>
      <td>Protocol V3 and above default = 1024</td>
      <td>1024</td>
    </tr>
    <tr>
-     <td>`cassandra.pooling.pool.timeout.millisecs`</td>
+     <td markdown="span">`cassandra.pooling.pool.timeout.millisecs`</td>
      <td>Cassandra pool time out in millisecs</td>
      <td>5000</td>
    </tr>
    <tr>
-     <td>`cassandra.protocol.version`</td>
-     <td>Cassandra binary protocol version (`V3`, `V4`, ...)</td>
-     <td>`DEFAULT` (detected automatically)</td>
+     <td markdown="span">`cassandra.protocol.version`</td>
+     <td markdown="span">Cassandra binary protocol version (`V3`, `V4`, ...)</td>
+     <td markdown="span">`DEFAULT` (detected automatically)</td>
    </tr>
    <tr>
      <td>cassandra.query.default.consistency</td>
-     <td>
+     <td markdown="span">
       Cassandra query default consistency level
       <br/>
       Available values: `ONE`, `TWO`, `THREE`, `QUORUM`, `LOCAL_ONE`, `LOCAL_QUORUM`, `EACH_QUORUM`, `ALL`
      </td>
-     <td>`ONE`</td>
+     <td markdown="span">`ONE`</td>
    </tr>
    <tr>
-     <td>`cassandra.query.default.fetchSize`</td>
+     <td markdown="span">`cassandra.query.default.fetchSize`</td>
      <td>Cassandra query default fetch size</td>
      <td>5000</td>
    </tr>
    <tr>
-     <td>`cassandra.query.default.serial.consistency`</td>
-     <td>
+     <td markdown="span">`cassandra.query.default.serial.consistency`</td>
+     <td markdown="span">
       Cassandra query default serial consistency level
       <br/>
       Available values: `SERIAL`, `LOCAL_SERIAL`
      </td>
-     <td>`SERIAL`</td>
+     <td markdown="span">`SERIAL`</td>
    </tr>
    <tr>
-     <td>`cassandra.reconnection.policy`</td>
-     <td>
+     <td markdown="span">`cassandra.reconnection.policy`</td>
+     <td markdown="span">
         Cassandra Reconnection Policy.
         Default = `ExponentialReconnectionPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
@@ -798,8 +798,8 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>`cassandra.retry.policy`</td>
-     <td>
+     <td markdown="span">`cassandra.retry.policy`</td>
+     <td markdown="span">
         Cassandra Retry Policy.
         Default = `DefaultRetryPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
@@ -808,23 +808,23 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>`cassandra.socket.connection.timeout.millisecs`</td>
+     <td markdown="span">`cassandra.socket.connection.timeout.millisecs`</td>
      <td>Cassandra socket default connection timeout in millisecs</td>
      <td>500</td>
    </tr>
    <tr>
-     <td>`cassandra.socket.read.timeout.millisecs`</td>
+     <td markdown="span">`cassandra.socket.read.timeout.millisecs`</td>
      <td>Cassandra socket read timeout in millisecs</td>
      <td>12000</td>
    </tr>
    <tr>
-     <td>`cassandra.socket.tcp.no_delay`</td>
+     <td markdown="span">`cassandra.socket.tcp.no_delay`</td>
      <td>Cassandra socket TCP no delay</td>
      <td>true</td>
    </tr>
    <tr>
-     <td>`cassandra.speculative.execution.policy`</td>
-     <td>
+     <td markdown="span">`cassandra.speculative.execution.policy`</td>
+     <td markdown="span">
         Cassandra Speculative Execution Policy.
         Default = `NoSpeculativeExecutionPolicy`
         To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
@@ -833,7 +833,7 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>`cassandra.ssl.enabled`</td>
+     <td markdown="span">`cassandra.ssl.enabled`</td>
      <td>
         Enable support for connecting to the Cassandra configured with SSL.
         To connect to Cassandra configured with SSL use <strong>true</strong>
@@ -842,63 +842,63 @@ Below are the configuration parameters supported by interpreter and their defaul
      <td>false</td>
    </tr>
    <tr>
-     <td>`cassandra.ssl.truststore.path`</td>
+     <td markdown="span">`cassandra.ssl.truststore.path`</td>
      <td>
         Filepath for the truststore file to use for connection to Cassandra with SSL.
      </td>
      <td></td>
    </tr>
    <tr>
-     <td>`cassandra.ssl.truststore.password`</td>
+     <td markdown="span">`cassandra.ssl.truststore.password`</td>
      <td>
         Password for the truststore file to use for connection to Cassandra with SSL.
      </td>
      <td></td>
    </tr>
    <tr>
-     <td>`cassandra.format.output`</td>
-     <td>Output format for data - strict CQL (`cql`), or human-readable (`human`)</td>
-     <td>`human`</td>
+     <td markdown="span">`cassandra.format.output`</td>
+     <td markdown="span">Output format for data - strict CQL (`cql`), or human-readable (`human`)</td>
+     <td markdown="span">`human`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.locale`</td>
+     <td markdown="span">`cassandra.format.locale`</td>
      <td>Which locale to use for output (any locale supported by JVM could be specified)</td>
-     <td>`en_US`</td>
+     <td markdown="span">`en_US`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.timezone`</td>
+     <td markdown="span">`cassandra.format.timezone`</td>
      <td>For which timezone format time/date-related types (any timezone supported by JVM could be specified)</td>
-     <td>`UTC`</td>
+     <td markdown="span">`UTC`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.timestamp`</td>
-     <td>Format string for `timestamp` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
-     <td>`yyyy-MM-dd'T'HH:mm:ss.SSSXXX`</td>
+     <td markdown="span">`cassandra.format.timestamp`</td>
+     <td markdown="span">Format string for `timestamp` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td markdown="span">`yyyy-MM-dd'T'HH:mm:ss.SSSXXX`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.time`</td>
-     <td>Format string for `time` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
-     <td>`HH:mm:ss.SSS`</td>
+     <td markdown="span">`cassandra.format.time`</td>
+     <td markdown="span">Format string for `time` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td markdown="span">`HH:mm:ss.SSS`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.date`</td>
-     <td>Format string for `date` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
-     <td>`yyyy-MM-dd`</td>
+     <td markdown="span">`cassandra.format.date`</td>
+     <td markdown="span">Format string for `date` columns (any valid <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> pattern could be used)</td>
+     <td markdown="span">`yyyy-MM-dd`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.float_precision`</td>
-     <td>Precision when formatting values of `float` type</td>
-     <td>`5`</td>
+     <td markdown="span">`cassandra.format.float_precision`</td>
+     <td markdown="span">Precision when formatting values of `float` type</td>
+     <td markdown="span">`5`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.double_precision`</td>
-     <td>Precision when formatting values of `double` type</td>
-     <td>`12`</td>
+     <td markdown="span">`cassandra.format.double_precision`</td>
+     <td markdown="span">Precision when formatting values of `double` type</td>
+     <td markdown="span">`12`</td>
    </tr>
    <tr>
-     <td>`cassandra.format.decimal_precision`</td>
-     <td>Precision when formatting values of `decimal` type</td>
-     <td>`-1` (show everything)</td>
+     <td markdown="span">`cassandra.format.decimal_precision`</td>
+     <td markdown="span">Precision when formatting values of `decimal` type</td>
+     <td markdown="span">`-1` (show everything)</td>
    </tr>
  </table>
 
@@ -908,7 +908,7 @@ Besides these parameters, it's also possible to set other driver parameters by a
 
 **4.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
-* Refactor to use unified Java driver 4.7 ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378):
+* Refactor to use unified Java driver 4.7 ([ZEPPELIN-4378](https://issues.apache.org/jira/browse/ZEPPELIN-4378)):
   * changes in configuration were necessary, as new driver has different architecture, and configuration options
   * interpreter got support for DSE-specific data types, and other extensions
   * support for `@retryPolicy` is removed, as only single retry policy is shipped with driver
@@ -918,7 +918,7 @@ Besides these parameters, it's also possible to set other driver parameters by a
 
 **3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
-* Upgrade Java driver to 3.7.2 ([ZEPPELIN-4331](https://issues.apache.org/jira/browse/ZEPPELIN-4331);
+* Upgrade Java driver to 3.7.2 ([ZEPPELIN-4331](https://issues.apache.org/jira/browse/ZEPPELIN-4331));
 
 **3.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
@@ -952,6 +952,6 @@ Besides these parameters, it's also possible to set other driver parameters by a
 [standard CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html
 [Tuple CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_reference/tupleType.html
 [UDT CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/cqlUseUDT.html
-[Zeppelin Dynamic Form](../usage/dynamic_form/intro.html)
-[Interpreter Binding Mode](../usage/interpreter/interpreter_binding_mode.html)
+[Zeppelin Dynamic Form]: ../usage/dynamic_form/intro.html
+[Interpreter Binding Mode]: ../usage/interpreter/interpreter_binding_mode.html
 [JIRA]: https://issues.apache.org/jira/browse/ZEPPELIN

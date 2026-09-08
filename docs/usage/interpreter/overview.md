@@ -51,7 +51,7 @@ The interpreter settings are the configuration of a given interpreter on the Zep
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
-Properties are exported as environment variables on the system if the property name consists of upper-case characters, numbers or underscores ([A-Z_0-9]). Otherwise, the property is set as a common interpreter property. 
+Properties are exported as environment variables on the system if the property name consists of upper-case characters, numbers or underscores (`[A-Z_0-9]`). Otherwise, the property is set as a common interpreter property.
 e.g. You can define `SPARK_HOME` and `HADOOP_CONF_DIR` in spark's interpreter setting, they are be passed to Spark interpreter process as environment variable which is used by Spark. 
 
 You may use parameters from the context of the interpreter by adding #{contextParameterName} in the interpreter property value. The parameter can be of the following types: string, number, boolean.
@@ -114,6 +114,29 @@ Before 0.8.0, Zeppelin doesn't have lifecycle management for interpreters. Users
 
 `NullLifecycleManager` will do nothing, i.e., the user needs to control the lifecycle of interpreter by themselves as before. `TimeoutLifecycleManager` will shut down interpreters after an interpreter remains idle for a while. By default, the idle threshold is 1 hour.
 Users can change this threshold via the `zeppelin.interpreter.lifecyclemanager.timeout.threshold` setting. `NullLifecycleManager` is the default lifecycle manager, and users can change it via `zeppelin.interpreter.lifecyclemanager.class`.
+
+### Per interpreter idle threshold
+
+One global threshold is not always enough: a Spark interpreter holding tens of gigabytes of cluster
+memory is worth reclaiming quickly, while a JDBC interpreter that only keeps a few connections open
+is usually worth keeping. With `TimeoutLifecycleManager` configured, Zeppelin server keeps track of
+when each interpreter group was last used and closes the idle ones itself, which lets an individual
+interpreter setting override the global value.
+
+To do so, add `zeppelin.interpreter.lifecyclemanager.timeout.threshold` as a property of that
+interpreter on the interpreter setting page, or in `interpreter.json`. The value accepts the same
+formats as the global one, i.e. a plain number of milliseconds or a unit suffix such as `10m`:
+
+| Value on an interpreter setting | Effect on that interpreter |
+|---|---|
+| not set | the global `zeppelin.interpreter.lifecyclemanager.timeout.threshold` applies |
+| `10m` | it is shut down after 10 minutes of idle time, whatever the global value is |
+| `0` | it is never shut down for being idle |
+
+A paragraph that is still running keeps its interpreter alive regardless of the threshold. The check
+runs every `zeppelin.interpreter.lifecyclemanager.timeout.checkinterval`, which is shared with the
+global behaviour, so an interpreter can be shut down up to one interval after its threshold has
+passed.
 
 
 ## Inline Generic Configuration

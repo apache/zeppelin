@@ -148,4 +148,43 @@ class ConfInterpreterTest extends AbstractInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, result.code);
   }
 
+  @Test
+  void testRejectEnvironmentVariableOverrideWithImpersonation() throws InterpreterException {
+    InterpreterSetting interpreterSetting =
+        interpreterSettingManager.getInterpreterSettingByName("test");
+    interpreterSetting.getOption().setUserImpersonate(true);
+    ConfInterpreter confInterpreter =
+        (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
+    RemoteInterpreter remoteInterpreter =
+        (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
+
+    InterpreterResult result = confInterpreter.interpret(
+        "property_1\tnew_value\n BASH_ENV \t/tmp/user-controlled.sh",
+        createDummyInterpreterContext());
+
+    assertEquals(InterpreterResult.Code.ERROR, result.code);
+    assertTrue(result.toString().contains("BASH_ENV"), result.toString());
+    assertEquals("value_1", remoteInterpreter.getProperty("property_1"));
+    assertNull(remoteInterpreter.getProperty("BASH_ENV"));
+
+    result = confInterpreter.interpret(
+        "property_1\tnew_value", createDummyInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code);
+    assertEquals("new_value", remoteInterpreter.getProperty("property_1"));
+  }
+
+  @Test
+  void testAllowEnvironmentVariableOverrideWithoutImpersonation() throws InterpreterException {
+    ConfInterpreter confInterpreter =
+        (ConfInterpreter) interpreterFactory.getInterpreter("test.conf", executionContext);
+    RemoteInterpreter remoteInterpreter =
+        (RemoteInterpreter) interpreterFactory.getInterpreter("test", executionContext);
+
+    InterpreterResult result = confInterpreter.interpret(
+        "BASH_ENV\t/tmp/user-controlled.sh", createDummyInterpreterContext());
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code);
+    assertEquals("/tmp/user-controlled.sh", remoteInterpreter.getProperty("BASH_ENV"));
+  }
+
 }

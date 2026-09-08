@@ -13,6 +13,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Table } from 'antd';
 import { VisualizationControls } from './VisualizationControls';
+import { applyChartTheme, useHostThemeMode } from '@/theme';
 import { parseTableData, exportFile } from '@/utils';
 import type { ParagraphConfigResult, ParagraphIResultsMsgItem, VisualizationMode } from '@zeppelin/sdk';
 import type { Chart, ChartConfiguration } from 'chart.js';
@@ -25,6 +26,7 @@ interface TableVisualizationProps {
 export const TableVisualization = ({ result, config }: TableVisualizationProps) => {
   const [currentMode, setCurrentMode] = useState<VisualizationMode>(config?.graph.mode || 'table');
   const chartRef = useRef<HTMLDivElement>(null);
+  const themeMode = useHostThemeMode();
 
   const tableData = useMemo(() => parseTableData(result.data), [result.data]);
 
@@ -85,6 +87,10 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
       if (cancelled || !container) return;
 
       const ChartConstructor = module.Chart || module.default;
+
+      // Ticks, legend labels and grid lines all resolve from these two
+      // globals, and a canvas is out of reach of the shell's stylesheets.
+      applyChartTheme(ChartConstructor, themeMode);
 
       const canvas = document.createElement('canvas');
       canvas.style.width = '100%';
@@ -222,7 +228,7 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
         container.innerHTML = '';
       }
     };
-  }, [currentMode, tableData]);
+  }, [currentMode, tableData, themeMode]);
 
   return (
     <div>

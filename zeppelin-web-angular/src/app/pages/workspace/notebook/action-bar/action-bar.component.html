@@ -33,6 +33,17 @@
       >
         <i nz-icon nzType="play-circle" nzTheme="outline"></i>
       </button>
+      <button
+        nz-button
+        nz-popconfirm
+        nzPopconfirmTitle="Cancel all paragraphs?"
+        nz-tooltip
+        nzTooltipTitle="Cancel all paragraphs"
+        (nzOnConfirm)="cancelAllParagraphs()"
+        [disabled]="revisionView || !isNoteParagraphRunning"
+      >
+        <i nz-icon nzType="pause-circle" nzTheme="outline"></i>
+      </button>
       @if (!viewOnly) {
         <button
           nz-button

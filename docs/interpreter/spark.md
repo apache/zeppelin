@@ -89,12 +89,12 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>You can visualize Spark Dataset/DataFrame vis Python's plotting libraries.</td>
   </tr>
 
-  </tr>
+  <tr>
     <td>Multi-tenancy</td>
     <td>Multiple user can work in one Zeppelin instance without affecting each other.</td>
   </tr>
 
-  </tr>
+  <tr>
     <td>Rest API Support</td>
     <td>You can not only submit Spark job via Zeppelin notebook UI, but also can do that via its rest api (You can use Zeppelin as Spark job server).</td>
   </tr>
@@ -129,19 +129,20 @@ You can also set other Spark properties which are not listed in the table. For a
     <th>Description</th>
   </tr>
   <tr>
-    <td>`SPARK_HOME`</td>
+    <td markdown="span">`SPARK_HOME`</td>
     <td></td>
     <td>Location of spark distribution</td>
-  <tr>
+  </tr>
   <tr>
     <td>spark.master</td>
     <td>local[*]</td>
     <td>Spark master uri. <br/> e.g. spark://master_host:7077</td>
-  <tr>
+  </tr>
   <tr>
     <td>spark.submit.deployMode</td>
     <td></td>
     <td>The deploy mode of Spark driver program, either "client" or "cluster", Which means to launch driver program locally ("client") or remotely ("cluster") on one of the nodes inside the cluster.</td>
+  </tr>
   <tr>
     <td>spark.app.name</td>
     <td>Zeppelin</td>
@@ -188,21 +189,21 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Comma-separated list of Maven coordinates of jars to include on the driver and executor classpaths. The coordinates should be groupId:artifactId:version. If spark.jars.ivySettings is given artifacts will be resolved according to the configuration in the file, otherwise artifacts will be searched for in the local maven repo, then maven central and finally any additional remote repositories given by the command-line option --repositories.</td>
   </tr>
   <tr>
-    <td>`PYSPARK_PYTHON`</td>
+    <td markdown="span">`PYSPARK_PYTHON`</td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in both driver and executors (default is <code>python</code>).
             Property <code>spark.pyspark.python</code> take precedence if it is set</td>
   </tr>
   <tr>
-    <td>`PYSPARK_DRIVER_PYTHON`</td>
+    <td markdown="span">`PYSPARK_DRIVER_PYTHON`</td>
     <td>python</td>
-    <td>Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`).
+    <td markdown="span">Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`).
             Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
   </tr>
   <tr>
     <td>zeppelin.pyspark.useIPython</td>
     <td>false</td>
-    <td>Whether use IPython when the ipython prerequisites are met in `%spark.pyspark`</td>
+    <td markdown="span">Whether use IPython when the ipython prerequisites are met in `%spark.pyspark`</td>
   </tr>
   <tr>
     <td>zeppelin.spark.concurrentSQL</td>

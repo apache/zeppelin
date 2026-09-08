@@ -12,7 +12,7 @@
 
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ConfigurationService, MessageService, TicketService } from '@zeppelin/services';
+import { ConfigurationService, MessageService } from '@zeppelin/services';
 
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { NzUploadFile } from 'ng-zorro-antd/upload';
@@ -103,7 +103,6 @@ export class NoteImportComponent extends MessageListenersManager implements OnIn
 
   constructor(
     public messageService: MessageService,
-    private ticketService: TicketService,
     private configurationService: ConfigurationService,
     private cdr: ChangeDetectorRef,
     private nzModalRef: NzModalRef,

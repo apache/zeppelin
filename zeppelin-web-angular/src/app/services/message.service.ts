@@ -277,6 +277,10 @@ export class MessageService extends Message implements OnDestroy {
     super.runAllParagraphs(noteId, paragraphs);
   }
 
+  cancelAllParagraphs(noteId: string): void {
+    super.cancelAllParagraphs(noteId);
+  }
+
   paragraphRemove(paragraphId: string): void {
     super.paragraphRemove(paragraphId);
   }
@@ -350,10 +354,6 @@ export class MessageService extends Message implements OnDestroy {
 
   saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
     super.saveInterpreterBindings(noteId, selectedSettingIds);
-  }
-
-  listConfigurations(): void {
-    super.listConfigurations();
   }
 
   getInterpreterSettings(): void {

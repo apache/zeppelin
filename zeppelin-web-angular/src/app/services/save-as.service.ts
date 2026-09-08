@@ -16,11 +16,18 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class SaveAsService {
-  saveAs(content: string, filename: string, extension: string) {
+  /**
+   * @param bom prepends a UTF-8 BOM so Excel reads a CSV/TSV export as UTF-8 (ZEPPELIN-672).
+   *            JSON formats must leave it off: the JSON spec disallows a BOM and strict parsers
+   *            such as Python's json or nbformat refuse the file.
+   */
+  saveAs(content: string, filename: string, extension: string, bom = false) {
     const BOM = '\uFEFF';
     const fileName = `${filename}.${extension}`;
     const binaryData = [];
-    binaryData.push(BOM);
+    if (bom) {
+      binaryData.push(BOM);
+    }
     binaryData.push(content);
     const blob = new Blob(binaryData, { type: 'octet/stream' });
     const url = window.URL.createObjectURL(blob);

@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -304,14 +303,4 @@ public class GCSNotebookRepo extends AbstractNotebookRepo {
     //no-op
   }
 
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("getSettings is not implemented for GCSNotebookRepo");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("updateSettings is not implemented for GCSNotebookRepo");
-  }
 }

@@ -76,7 +76,7 @@ The Neo4j Interpreter supports all Neo4j versions since v3 via the official [Neo
   </tr>
 </table>
 
-<center>
+<center markdown="block">
   ![Interpreter configuration]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/neo4j-config.png)
 </center>
 

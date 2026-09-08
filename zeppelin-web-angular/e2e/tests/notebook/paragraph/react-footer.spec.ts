@@ -55,6 +55,36 @@ test.describe('React Paragraph Footer', () => {
     await expect(page.locator('[data-testid="angular-paragraph-footer"]')).toHaveCount(0);
   });
 
+  test('with a bare reactFooter flag (no value), React footer renders', async ({ page }) => {
+    const { noteId } = testNotebook;
+
+    await test.step('When I open the notebook with a valueless reactFooter flag', async () => {
+      await page.goto(`/#/notebook/${noteId}?reactFooter`);
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the React footer renders and the Angular one does not', async () => {
+      await expect(page.locator('[data-testid="react-paragraph-footer-content"]').first()).toBeAttached({
+        timeout: 15000
+      });
+      await expect(page.locator('[data-testid="angular-paragraph-footer"]')).toHaveCount(0);
+    });
+  });
+
+  test('with an explicit reactFooter=false, Angular footer renders', async ({ page }) => {
+    const { noteId } = testNotebook;
+
+    await test.step('When I navigate with an explicit reactFooter=false', async () => {
+      await page.goto(`/#/notebook/${noteId}?reactFooter=false`);
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the flag disables React and Angular renders', async () => {
+      await expect(page.locator('[data-testid="angular-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
+      await expect(page.locator('[data-testid="react-paragraph-footer"]')).toHaveCount(0);
+    });
+  });
+
   test('reactFooter=true preserves the paragraph query param', async ({ page }) => {
     const { noteId, paragraphId } = testNotebook;
 
@@ -81,6 +111,48 @@ test.describe('React Paragraph Footer', () => {
     // reactFooterFailed and re-renders the Angular footer
     await expect(page.locator('[data-testid="angular-paragraph-footer"]').first()).toBeAttached({ timeout: 15000 });
     await expect(page.locator('[data-testid="react-paragraph-footer"]')).toHaveCount(0);
+  });
+
+  test('when the remote never answers, paragraphs fall back to the Angular footer', async ({ page }) => {
+    const { noteId } = testNotebook;
+
+    await test.step('Given a remote that accepts the request and never answers', async () => {
+      // The handler settles nothing on purpose: the request is left open.
+      await page.route('**/remoteEntry.js', () => {});
+    });
+
+    await test.step('When the notebook opens with the React footer enabled', async () => {
+      await page.goto(`/#/notebook/${noteId}?reactFooter=true`);
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the Angular footer takes over once the load budget expires', async () => {
+      await expect(page.locator('[data-testid="angular-paragraph-footer"]').first()).toBeAttached({ timeout: 30000 });
+      await expect(page.locator('[data-testid="react-paragraph-footer"]')).toHaveCount(0);
+    });
+  });
+
+  test('a remote that answers within the budget still renders the React footer', async ({ page }) => {
+    const { noteId } = testNotebook;
+
+    await test.step('Given a remote that answers slowly but well inside the budget', async () => {
+      await page.route('**/remoteEntry.js', async route => {
+        await new Promise(r => setTimeout(r, 2000));
+        await route.continue();
+      });
+    });
+
+    await test.step('When the notebook opens with the React footer enabled', async () => {
+      await page.goto(`/#/notebook/${noteId}?reactFooter=true`);
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the React footer renders and no fallback happens', async () => {
+      await expect(page.locator('[data-testid="react-paragraph-footer-content"]').first()).toBeAttached({
+        timeout: 20000
+      });
+      await expect(page.locator('[data-testid="angular-paragraph-footer"]')).toHaveCount(0);
+    });
   });
 
   test('navigating away during remoteEntry load does not throw', async ({ page }) => {

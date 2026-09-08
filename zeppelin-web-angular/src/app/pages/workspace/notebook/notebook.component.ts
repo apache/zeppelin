@@ -43,6 +43,7 @@ import {
   NgZService,
   NoteStatusService,
   NoteVarShareService,
+  ReactFeatureService,
   SecurityService,
   ThemeService,
   TicketService
@@ -431,7 +432,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     private securityService: SecurityService,
     private router: Router,
     private titleService: Title,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private reactFeature: ReactFeatureService
   ) {
     super(messageService);
   }
@@ -448,7 +450,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.activatedRoute.queryParamMap
       .pipe(startWith(this.activatedRoute.snapshot.queryParamMap), takeUntil(this.destroy$))
       .subscribe(data => {
-        this.useReactFooter = data.get('reactFooter') === 'true';
+        this.useReactFooter = this.reactFeature.isEnabled('paragraphFooter', data);
         this.cdr.markForCheck();
       });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(() => {

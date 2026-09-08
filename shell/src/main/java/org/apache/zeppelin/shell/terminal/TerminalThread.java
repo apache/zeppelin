@@ -41,10 +41,12 @@ public class TerminalThread extends Thread {
 
   private int port = 0;
   private String allowedOrigin;
+  private String authToken;
 
-  public TerminalThread(int port, String allowedOrigin) {
+  public TerminalThread(int port, String allowedOrigin, String authToken) {
     this.port = port;
     this.allowedOrigin = allowedOrigin;
+    this.authToken = authToken;
   }
 
   @Override
@@ -77,11 +79,17 @@ public class TerminalThread extends Thread {
 
     try {
       JakartaWebSocketServletContainerInitializer.configure(context,
-          (servletContext, container) ->
-            container.addEndpoint(
+          (servletContext, container) -> {
+            ServerEndpointConfig endpointConfig =
                 ServerEndpointConfig.Builder.create(TerminalSocket.class, "/")
-                  .configurator(new TerminalSessionConfigurator(allowedOrigin))
-                  .build()));
+                    .configurator(new TerminalSessionConfigurator(allowedOrigin))
+                    .build();
+            // TerminalSocket verifies this secret on every connection before
+            // exposing the shell; the Origin check alone is forgeable.
+            endpointConfig.getUserProperties()
+                .put(TerminalSocket.AUTH_TOKEN_PROPERTY, authToken);
+            container.addEndpoint(endpointConfig);
+          });
       jettyServer.start();
       jettyServer.join();
     } catch (Exception e) {

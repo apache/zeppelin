@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" role="img" aria-labelledby="title description">
+  <title id="title">Property graph example</title>
+  <desc id="description">Four nodes connected by labeled, directed edges, with properties attached to both nodes and edges.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/>
+    </marker>
+    <style>
+      .edge { fill: none; stroke: #263238; stroke-width: 2.5; marker-end: url(#arrow); }
+      .edge-label { fill: #263238; font: 700 14px Arial, sans-serif; text-anchor: middle; }
+      .property-box { fill: #ffffff; stroke: #90a4ae; stroke-width: 1.5; }
+      .property-text { fill: #37474f; font: 13px Arial, sans-serif; }
+      .node-id { fill: #263238; font: 700 18px Arial, sans-serif; text-anchor: middle; }
+      .node-type { fill: #263238; font: 14px Arial, sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="800" height="460" fill="#ffffff"/>
+
+  <path class="edge" d="M 130 166 L 130 304"/>
+  <rect x="42" y="203" width="76" height="25" rx="5" fill="#ffffff"/>
+  <text class="edge-label" x="80" y="222">KNOWS</text>
+  <rect class="property-box" x="20" y="235" width="104" height="25" rx="5"/>
+  <text class="property-text" x="30" y="252">since: 2022</text>
+
+  <path class="edge" d="M 176 124 L 372 154"/>
+  <rect x="235" y="77" width="80" height="25" rx="5" fill="#ffffff"/>
+  <text class="edge-label" x="275" y="96">CREATED</text>
+  <rect class="property-box" x="244" y="105" width="92" height="25" rx="5"/>
+  <text class="property-text" x="254" y="122">role: owner</text>
+
+  <path class="edge" d="M 169 322 L 383 191"/>
+  <rect x="219" y="244" width="114" height="25" rx="5" fill="#ffffff"/>
+  <text class="edge-label" x="276" y="263">CONTRIBUTED</text>
+  <rect class="property-box" x="236" y="273" width="96" height="25" rx="5"/>
+  <text class="property-text" x="246" y="290">commits: 18</text>
+
+  <path class="edge" d="M 458 186 L 643 293"/>
+  <rect x="519" y="203" width="62" height="25" rx="5" fill="#ffffff"/>
+  <text class="edge-label" x="550" y="222">READS</text>
+  <rect class="property-box" x="520" y="232" width="104" height="25" rx="5"/>
+  <text class="property-text" x="530" y="249">format: parquet</text>
+
+  <rect class="property-box" x="28" y="17" width="180" height="58" rx="6"/>
+  <text class="property-text" x="42" y="40">name: Mina</text>
+  <text class="property-text" x="42" y="61">age: 34</text>
+  <circle cx="130" cy="120" r="46" fill="#80cbc4" stroke="#00695c" stroke-width="2.5"/>
+  <text class="node-id" x="130" y="116">1</text>
+  <text class="node-type" x="130" y="138">person</text>
+
+  <circle cx="130" cy="350" r="46" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2.5"/>
+  <text class="node-id" x="130" y="346">2</text>
+  <text class="node-type" x="130" y="368">person</text>
+  <rect class="property-box" x="28" y="402" width="180" height="42" rx="6"/>
+  <text class="property-text" x="42" y="428">name: Yun</text>
+
+  <rect class="property-box" x="350" y="25" width="184" height="58" rx="6"/>
+  <text class="property-text" x="364" y="48">title: Flight Analysis</text>
+  <text class="property-text" x="364" y="69">language: Python</text>
+  <circle cx="420" cy="160" r="46" fill="#ffcc80" stroke="#ef6c00" stroke-width="2.5"/>
+  <text class="node-id" x="420" y="156">3</text>
+  <text class="node-type" x="420" y="178">notebook</text>
+
+  <circle cx="680" cy="320" r="46" fill="#90caf9" stroke="#1565c0" stroke-width="2.5"/>
+  <text class="node-id" x="680" y="316">4</text>
+  <text class="node-type" x="680" y="338">dataset</text>
+  <rect class="property-box" x="588" y="376" width="184" height="68" rx="6"/>
+  <text class="property-text" x="602" y="401">name: Flight Records</text>
+  <text class="property-text" x="602" y="422">rows: 2.1M</text>
+</svg>

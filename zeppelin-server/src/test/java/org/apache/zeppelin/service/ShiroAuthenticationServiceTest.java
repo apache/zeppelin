@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.LifecycleUtils;
+import org.apache.shiro.lang.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;

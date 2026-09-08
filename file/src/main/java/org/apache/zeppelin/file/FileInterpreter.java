@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -167,6 +168,6 @@ public abstract class FileInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) {
-    return null;
+    return Collections.emptyList();
   }
 }

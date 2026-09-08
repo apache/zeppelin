@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 source 'https://rubygems.org'
-gem 'github-pages'
-gem 'redcarpet'
-gem 'jekyll-twitter-plugin'
+gem 'jekyll', '4.4.1'
 gem 'nokogiri', '1.19.3'
 gem 'mini_portile2', '2.8.4'
 

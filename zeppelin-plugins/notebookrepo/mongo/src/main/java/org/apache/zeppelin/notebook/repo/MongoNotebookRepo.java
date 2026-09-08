@@ -332,17 +332,6 @@ public class MongoNotebookRepo extends AbstractNotebookRepo {
     client.close();
   }
 
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-  }
-
   /**
    * create until parent folder if not exists.
    *
