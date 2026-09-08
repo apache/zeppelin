@@ -11,7 +11,7 @@
  */
 
 import { HttpErrorResponse, HttpHandler, HttpRequest } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { defer, firstValueFrom, of, Subject, throwError } from 'rxjs';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -32,49 +32,89 @@ function sessionExpired(url: string | undefined): HttpErrorResponse {
 
 describe('AppHttpInterceptor', () => {
   let logout: ReturnType<typeof vi.fn>;
+  let logoutSubscribed: ReturnType<typeof vi.fn<() => void>>;
   let interceptor: AppHttpInterceptor;
 
   /** Drives one request through the interceptor and returns whatever the caller would observe. */
-  function intercept(failure: HttpErrorResponse, url = REST_BASE): Promise<unknown> {
+  function intercept(failure: HttpErrorResponse, url = REST_BASE, method = 'GET'): Promise<unknown> {
     const next: HttpHandler = { handle: () => throwError(() => failure) };
-    return new Promise(resolve => {
-      interceptor.intercept(new HttpRequest('GET', url), next).subscribe({
-        next: resolve,
-        error: resolve
-      });
-    });
+    return firstValueFrom(interceptor.intercept(new HttpRequest(method, url, null), next));
   }
 
   beforeEach(() => {
-    logout = vi.fn(() => of({}));
+    logoutSubscribed = vi.fn<() => void>();
+    logout = vi.fn(() =>
+      defer(() => {
+        logoutSubscribed();
+        return of({});
+      })
+    );
     interceptor = new AppHttpInterceptor({ logout } as unknown as TicketService);
   });
 
   it('logs out once when a non-logout request is answered with 405', async () => {
-    await intercept(sessionExpired(`${REST_BASE}/notebook`), `${REST_BASE}/notebook`);
+    const failure = sessionExpired(`${REST_BASE}/notebook`);
+
+    await expect(intercept(failure, `${REST_BASE}/notebook`)).rejects.toBe(failure);
 
     // `String.prototype.contains` does not exist, so this branch used to throw before reaching logout
     expect(logout).toHaveBeenCalledTimes(1);
+    expect(logoutSubscribed).toHaveBeenCalledTimes(1);
   });
 
   it('rethrows the 405 it logged out on instead of a TypeError', async () => {
     const failure = sessionExpired(`${REST_BASE}/notebook`);
 
-    const observed = await intercept(failure, `${REST_BASE}/notebook`);
-
-    expect(observed).toBe(failure);
+    await expect(intercept(failure, `${REST_BASE}/notebook`)).rejects.toBe(failure);
   });
 
-  it('does not log out again when the logout request itself is answered with 405', async () => {
-    await intercept(sessionExpired(`${REST_BASE}/login/logout`), `${REST_BASE}/login/logout`);
+  it.each([
+    ['the logout URL', `${REST_BASE}/login/logout`],
+    ['the redirected login URL', `${REST_BASE}/login`],
+    ['no URL', undefined]
+  ])('does not retry logout when its 405 response reports %s', async (_description, responseUrl) => {
+    const failure = sessionExpired(responseUrl);
+
+    await expect(intercept(failure, `${REST_BASE}/login/logout`, 'POST')).rejects.toBe(failure);
 
     expect(logout).not.toHaveBeenCalled();
+    expect(logoutSubscribed).not.toHaveBeenCalled();
   });
 
-  it('logs out on a 405 that reports no url', async () => {
-    // an XHR that never resolved a url cannot be identified as the logout call, so the session is gone
-    await intercept(sessionExpired(undefined));
+  it('logs out on a non-logout request whose 405 reports no url', async () => {
+    const failure = sessionExpired(undefined);
+
+    await expect(intercept(failure, `${REST_BASE}/notebook`)).rejects.toBe(failure);
 
     expect(logout).toHaveBeenCalledTimes(1);
+    expect(logoutSubscribed).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['complete', 'error'])('deduplicates pending logout and allows another after %s', async outcome => {
+    const pendingLogout = new Subject<object>();
+    logout.mockImplementationOnce(() =>
+      defer(() => {
+        logoutSubscribed();
+        return pendingLogout;
+      })
+    );
+    const firstFailure = sessionExpired(`${REST_BASE}/notebook`);
+    const secondFailure = sessionExpired(`${REST_BASE}/interpreter`);
+
+    await expect(intercept(firstFailure, `${REST_BASE}/notebook`)).rejects.toBe(firstFailure);
+    await expect(intercept(secondFailure, `${REST_BASE}/interpreter`)).rejects.toBe(secondFailure);
+
+    expect(logout).toHaveBeenCalledTimes(1);
+    expect(logoutSubscribed).toHaveBeenCalledTimes(1);
+
+    if (outcome === 'error') {
+      pendingLogout.error(sessionExpired(`${REST_BASE}/login`));
+    } else {
+      pendingLogout.complete();
+    }
+
+    await expect(intercept(firstFailure, `${REST_BASE}/notebook`)).rejects.toBe(firstFailure);
+    expect(logout).toHaveBeenCalledTimes(2);
+    expect(logoutSubscribed).toHaveBeenCalledTimes(2);
   });
 });
