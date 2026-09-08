@@ -63,11 +63,9 @@ test.describe('Notebook Repository - React list behind a flag', () => {
     const reactNames = await page
       .locator(`${MOUNT} ${REPO_ITEM}`)
       .evaluateAll(cards => cards.map(card => card.getAttribute('data-repo-name')));
-    // JUSTIFIED: prefer-web-first-assertions. Both sides have to be read the
-    // same way to be comparable, and the expected side was captured from a page
-    // load that is gone by now. toHaveText() reads textContent, which drops the
-    // cell separator innerText inserts, so mixing the two would compare
-    // "Notebook Path\t/opt/zeppelin" against "Notebook Path/opt/zeppelin".
+    // JUSTIFIED: prefer-web-first-assertions. Both sides must be read the same
+    // way to compare, and toHaveText() reads textContent, which loses the cell
+    // separator innerText adds.
     const reactRows = await settingRows(page, `${MOUNT} ${REPO_ITEM}`).allInnerTexts();
 
     // The host still owns the fetch and the sort, so the remote must not

@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import { createRoot, Root } from 'react-dom/client';
+import { CloseOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Select, Space, Table } from 'antd';
 import { ReactErrorBoundary } from '@/components';
 import { ZeppelinThemeProvider } from '@/theme';
@@ -39,6 +40,9 @@ export interface NotebookRepoListProps {
 
 // ng-zorro draws card titles and table headers at 500 where antd uses 600.
 const REPO_TOKENS = { fontWeightStrong: 500 };
+
+// The Angular card spaces itself with @card-padding-base from the default theme.
+const CARD_GAP = 24;
 
 const isBlank = (value: string): boolean => value.trim().length === 0;
 
@@ -103,17 +107,18 @@ const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
     }
   ];
 
+  // Icons mirror the Angular card's nz-icon edit/save/close.
   const extra = editing ? (
     <Space size={8}>
-      <Button type="primary" size="small" disabled={invalid} onClick={save}>
+      <Button type="primary" size="small" icon={<SaveOutlined />} disabled={invalid} onClick={save}>
         Save
       </Button>
-      <Button size="small" onClick={cancel}>
+      <Button size="small" icon={<CloseOutlined />} onClick={cancel}>
         Cancel
       </Button>
     </Space>
   ) : (
-    <Button size="small" onClick={() => setEditing(true)}>
+    <Button size="small" icon={<EditOutlined />} onClick={() => setEditing(true)}>
       Edit
     </Button>
   );
@@ -123,7 +128,7 @@ const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
       title={repo.name}
       extra={extra}
       size="small"
-      style={{ marginBottom: 16 }}
+      style={{ marginBottom: CARD_GAP }}
       data-testid="notebook-repo-item"
       data-repo-name={repo.name}
     >
