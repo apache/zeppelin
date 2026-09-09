@@ -99,6 +99,25 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testThatOtherUserCannotCloneNoteIfPermissionSet() throws IOException {
+    String noteId = createNoteForUser("test_5", "admin", "password1");
+    try {
+      //set permission
+      String payload = "{ \"owners\": [\"admin\"], \"readers\": [\"user2\"], " +
+              "\"runners\": [\"user2\"], \"writers\": [\"user2\"] }";
+      CloseableHttpResponse put = httpPut("/notebook/" + noteId + "/permissions", payload , "admin", "password1");
+      assertThat("test set note permission method:", put, isAllowed());
+      put.close();
+
+      userTryCloneNote(noteId, "clone_of_test_5", "user1", "password2", isForbidden());
+    } finally {
+      // the notes of this class all land on the same default path, so a leftover note would
+      // make the next test fail on a name conflict instead of on its own assertion
+      deleteNoteForUser(noteId, "admin", "password1");
+    }
+  }
+
+  @Test
   void testThatWriterCannotRemoveNote() throws IOException {
     String noteId = createNoteForUser("test_4", "admin", "password1");
 
@@ -124,6 +143,14 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     CloseableHttpResponse delete = httpDelete(("/notebook/" + noteId), user, pwd);
     assertThat(delete, m);
     delete.close();
+  }
+
+  private void userTryCloneNote(String noteId, String newNoteName, String user, String pwd,
+          Matcher<? super CloseableHttpResponse> m) throws IOException {
+    String jsonRequest = "{\"notePath\":\"" + newNoteName + "\"}";
+    CloseableHttpResponse post = httpPost("/notebook/" + noteId, jsonRequest, user, pwd);
+    assertThat(post, m);
+    post.close();
   }
 
   private void userTryGetNote(String noteId, String user, String pwd,

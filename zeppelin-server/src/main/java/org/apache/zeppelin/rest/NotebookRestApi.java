@@ -566,7 +566,6 @@ public class NotebookRestApi extends AbstractRestApi {
       throws IOException, IllegalArgumentException {
 
     LOGGER.info("Clone note by JSON {}", message);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = GSON.fromJson(message, NewNoteRequest.class);
     String newNoteName = null;
     String revisionId = null;
