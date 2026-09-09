@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "notebook-parity.schema.json",
+  "title": "Notebook parity registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "reviewedCommit", "scenarios"],
+  "properties": {
+    "$schema": {
+      "const": "./notebook-parity.schema.json"
+    },
+    "reviewedCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/scenario"
+      }
+    }
+  },
+  "definitions": {
+    "stringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "roleExpectations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "writer", "reader", "runner"],
+      "properties": {
+        "owner": { "$ref": "#/definitions/roleExpectation" },
+        "writer": { "$ref": "#/definitions/roleExpectation" },
+        "reader": { "$ref": "#/definitions/roleExpectation" },
+        "runner": { "$ref": "#/definitions/roleExpectation" }
+      }
+    },
+    "roleExpectation": {
+      "enum": ["allow", "deny", "not-applicable"]
+    },
+    "roleVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "writer", "reader", "runner"],
+      "properties": {
+        "owner": { "$ref": "#/definitions/roleVerificationStatus" },
+        "writer": { "$ref": "#/definitions/roleVerificationStatus" },
+        "reader": { "$ref": "#/definitions/roleVerificationStatus" },
+        "runner": { "$ref": "#/definitions/roleVerificationStatus" }
+      }
+    },
+    "roleVerificationStatus": {
+      "enum": ["verified", "unverified", "not-applicable"]
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^NB-PARITY-[0-9]{3}-OUTCOME-[0-9]{3}$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "coverageTest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "tag"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string",
+          "pattern": "^@NB-PARITY-[0-9]{3}$"
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "tests", "issues", "uncoveredOutcomes"],
+      "properties": {
+        "status": {
+          "enum": ["covered", "partial", "gap", "blocked"]
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/coverageTest"
+          }
+        },
+        "issues": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^ZEPPELIN-[0-9]+$"
+          }
+        },
+        "uncoveredOutcomes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^NB-PARITY-[0-9]{3}-OUTCOME-[0-9]{3}$"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "status": { "const": "covered" } }
+          },
+          "then": {
+            "properties": {
+              "tests": { "type": "array", "minItems": 1 },
+              "uncoveredOutcomes": { "type": "array", "maxItems": 0 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "partial" } }
+          },
+          "then": {
+            "properties": {
+              "tests": { "type": "array", "minItems": 1 },
+              "issues": { "type": "array", "minItems": 1 },
+              "uncoveredOutcomes": { "type": "array", "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "status": { "enum": ["gap", "blocked"] } }
+          },
+          "then": {
+            "properties": {
+              "tests": { "type": "array", "maxItems": 0 },
+              "issues": { "type": "array", "minItems": 1 },
+              "uncoveredOutcomes": { "type": "array", "maxItems": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "area",
+        "preconditions",
+        "action",
+        "observableOutcomes",
+        "interpreter",
+        "implementationEvidence",
+        "verificationEvidence",
+        "coverage"
+      ],
+      "dependencies": {
+        "roleExpectations": ["roleVerification"],
+        "roleVerification": ["roleExpectations"]
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "implementationEvidence": { "type": "array", "minItems": 1 }
+          }
+        },
+        {
+          "properties": {
+            "verificationEvidence": { "type": "array", "minItems": 1 }
+          }
+        }
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^NB-PARITY-[0-9]{3}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area": {
+          "enum": [
+            "editor",
+            "execution",
+            "result",
+            "visualization",
+            "shortcut",
+            "permission",
+            "collaboration",
+            "navigation",
+            "persistence",
+            "lifecycle",
+            "theme",
+            "accessibility"
+          ]
+        },
+        "preconditions": { "$ref": "#/definitions/stringArray" },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observableOutcomes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/outcome" }
+        },
+        "interpreter": {
+          "type": ["string", "null"]
+        },
+        "roleExpectations": { "$ref": "#/definitions/roleExpectations" },
+        "roleVerification": { "$ref": "#/definitions/roleVerification" },
+        "implementationEvidence": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/evidence" }
+        },
+        "verificationEvidence": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/evidence" }
+        },
+        "coverage": { "$ref": "#/definitions/coverage" }
+      }
+    }
+  }
+}
