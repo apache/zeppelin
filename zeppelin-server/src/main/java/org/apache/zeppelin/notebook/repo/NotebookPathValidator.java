@@ -86,6 +86,31 @@ public final class NotebookPathValidator {
   }
 
   /**
+   * Normalizes a path using the rules shared by note and folder paths.
+   *
+   * @param path the path to normalize
+   * @return the normalized path
+   * @throws IOException if the path cannot be normalized
+   */
+  public static String normalizePath(String path) throws IOException {
+    if (path == null) {
+      throw new IOException("Path must not be null");
+    }
+
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+
+    path = decodeRepeatedly(path);
+
+    if (path.contains("..")) {
+      throw new IOException("Path can not contain '..'");
+    }
+
+    return path;
+  }
+
+  /**
    * Requires {@code folderPath} to use the canonical absolute folder-path form.
    *
    * @throws IOException if the path is null or does not start with {@code /}

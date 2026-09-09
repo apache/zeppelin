@@ -234,13 +234,11 @@ public class NotebookService {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
     }
-    if (!notePath.startsWith("/")) {
-      notePath = "/" + notePath;
-    }
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = NotebookPathValidator.decodeRepeatedly(notePath);
+    notePath = NotebookPathValidator.normalizePath(notePath);
+
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
@@ -250,9 +248,6 @@ public class NotebookService {
       throw new IOException("Note name must be less than 255");
     }
 
-    if (notePath.contains("..")) {
-      throw new IOException("Note name can not contain '..'");
-    }
     return notePath;
   }
 
@@ -265,15 +260,7 @@ public class NotebookService {
    * @throws IOException
    */
   String normalizeFolderPath(String folderPath) throws IOException {
-    if (folderPath == null) {
-      throw new IOException("Folder path must not be null");
-    }
-
-    if (!folderPath.startsWith("/")) {
-      folderPath = "/" + folderPath;
-    }
-
-    return folderPath;
+    return NotebookPathValidator.normalizePath(folderPath);
   }
 
   public void removeNote(String noteId,
