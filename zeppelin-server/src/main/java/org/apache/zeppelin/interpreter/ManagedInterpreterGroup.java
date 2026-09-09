@@ -41,7 +41,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private static final Logger LOGGER = LoggerFactory.getLogger(ManagedInterpreterGroup.class);
 
   private InterpreterSetting interpreterSetting;
-  private RemoteInterpreterProcess remoteInterpreterProcess; // attached remote interpreter process
+  private volatile RemoteInterpreterProcess remoteInterpreterProcess;
   private Object interpreterProcessCreationLock = new Object();
   private final ZeppelinConfiguration zConf;
   private volatile long lastUsedTimeInMillis = System.currentTimeMillis();
