@@ -241,7 +241,9 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.NOTE_UPDATED)
   noteUpdated(data: MessageReceiveDataTypeMap[OP.NOTE_UPDATED]) {
-    if (!this.note) {
+    // NOTE_UPDATED carries the live note, so applying it while a revision is open would
+    // overwrite the historical snapshot with current values.
+    if (!this.note || this.revisionView) {
       return;
     }
     if (data.name !== this.note.name) {
