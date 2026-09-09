@@ -19,8 +19,8 @@ process.env.PLAYWRIGHT_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || defaultBase
 // https://playwright.dev/docs/test-configuration
 module.exports = defineConfig({
   ...baseConfig,
-  // Classic specs have their own config; Node fixture tests must stay outside Playwright.
-  testIgnore: [/tests\/classic\/.*\.spec\.ts/, /core-contract\/.*\.test\.mjs/],
+  // Classic, core-contract, and performance specs have their own runners.
+  testIgnore: [/tests\/classic\/.*\.spec\.ts/, /core-contract\/.*\.test\.mjs/, /performance\/.*\.spec\.ts/],
   // Live captures run only through playwright.core-contract.config.js.
   grepInvert: /@live/,
   reporter: [
