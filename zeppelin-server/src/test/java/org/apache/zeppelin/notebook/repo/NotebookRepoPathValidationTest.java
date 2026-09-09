@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -146,5 +147,29 @@ class NotebookRepoPathValidationTest {
   @Test
   void normalizePath_rejects_null() {
     assertThrows(IOException.class, () -> NotebookPathValidator.normalizePath(null));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_accepts_absolute_path() {
+    assertDoesNotThrow(
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("/folder/subfolder"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_accepts_root_path() {
+    assertDoesNotThrow(
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("/"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_rejects_relative_path() {
+    assertThrows(IOException.class,
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("folder/subfolder"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_rejects_null() {
+    assertThrows(IOException.class,
+        () -> NotebookPathValidator.requireAbsoluteFolderPath(null));
   }
 }
