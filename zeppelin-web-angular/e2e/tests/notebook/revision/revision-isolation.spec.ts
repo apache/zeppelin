@@ -17,7 +17,6 @@ import {
   createTestNotebookWithName,
   PAGES,
   performLoginIfRequired,
-  skipWhenAuthenticationIsStillRequired,
   waitForNotebookLinks,
   waitForZeppelinReady
 } from '../../../utils';
@@ -26,7 +25,6 @@ const prepareWorkspace = async (page: Page): Promise<void> => {
   await page.goto('/#/');
   await waitForZeppelinReady(page);
   await performLoginIfRequired(page);
-  await skipWhenAuthenticationIsStillRequired(page);
   await waitForNotebookLinks(page);
 };
 
@@ -56,11 +54,21 @@ const setLookAndFeel = async (page: Page, value: string): Promise<void> => {
 test.describe('Revision isolation', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK);
 
-  // Both viewers share one principal (same storageState), matching the collaborative-mode spec.
+  // All viewers share one principal (same storageState), matching the collaborative-mode spec.
   // Look and feel is what drives NOTE_UPDATE, and so the NOTE_UPDATED broadcast this covers;
   // renaming goes through a different op that resends the whole note.
   test('keeps a live NOTE_UPDATED from mutating an open revision snapshot', async ({ page, browser }) => {
     await prepareWorkspace(page);
+
+    const capabilities = await page.request.get('/api/notebook/capabilities');
+    expect(capabilities.ok()).toBe(true);
+    const { body } = await capabilities.json();
+    expect(typeof body.isRevisionSupported).toBe('boolean');
+    expect(
+      body.isRevisionSupported || process.env.ZEPPELIN_E2E_REQUIRE_REVISION !== 'true',
+      'The revision CI run requires versioned notebook storage'
+    ).toBe(true);
+    test.skip(!body.isRevisionSupported, 'The configured notebook storage does not support revisions');
 
     const { noteId } = await createTestNotebookWithName(page, { namePrefix: 'RevisionIsolation' });
     await openNotebook(page, noteId);
@@ -89,26 +97,34 @@ test.describe('Revision isolation', () => {
     });
 
     const liveContext = await browser.newContext({ storageState: await page.context().storageState() });
-    const livePage = await liveContext.newPage();
-
     try {
-      await livePage.goto('/#/');
-      await waitForZeppelinReady(livePage);
-      await performLoginIfRequired(livePage);
-      await skipWhenAuthenticationIsStillRequired(livePage);
+      const livePage = await liveContext.newPage();
+      const followerPage = await liveContext.newPage();
+      let followerMessagesReceived = 0;
+      followerPage.on('console', message => {
+        if (message.text().includes('Receive: NOTE_UPDATED')) {
+          followerMessagesReceived++;
+        }
+      });
+
+      await prepareWorkspace(livePage);
       await openNotebook(livePage, noteId);
       await expect(lookAndFeelButton(livePage)).toContainText('default', { timeout: 15000 });
+
+      await openNotebook(followerPage, noteId);
+      await expect(lookAndFeelButton(followerPage)).toContainText('default', { timeout: 15000 });
 
       // Change the live note from an independent browser context; this broadcasts NOTE_UPDATED.
       await setLookAndFeel(livePage, 'simple');
 
-      // The live follower applies it, which is how we know the broadcast actually went out and
-      // that the revision view has had the same chance to receive it.
-      await expect(lookAndFeelButton(livePage)).toContainText('simple', { timeout: 15000 });
+      // This viewer performs no local edit, so its change must come from the broadcast.
+      await expect(lookAndFeelButton(followerPage)).toContainText('simple', { timeout: 15000 });
       await expect.poll(() => sawNoteUpdated, { timeout: 15000 }).toBe(true);
 
       // The revision view got the event and must still show the snapshot as it was saved.
       await expect(lookAndFeelButton(page)).toContainText('default');
+      // Count received broadcasts; the UI assertion above verifies their visible effect.
+      expect(followerMessagesReceived).toBe(1);
     } finally {
       await liveContext.close();
     }

@@ -115,6 +115,26 @@ jobs:
       - name: Run headless E2E test with Maven
         # Classic UI e2e runs only on the anonymous leg, like the legacy Protractor suite
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
+      - name: Run revision isolation E2E test with Git storage
+        env:
+          CI: 'true'
+          ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.GitNotebookRepo
+          ZEPPELIN_E2E_REQUIRE_REVISION: 'true'
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-revision
+        run: |
+          revision_notebook_dir="$(mktemp -d "${RUNNER_TEMP}/zeppelin-revision-notebooks.XXXXXX")"
+          zeppelin_daemon="${GITHUB_WORKSPACE}/bin/zeppelin-daemon.sh"
+          cleanup() {
+            "$zeppelin_daemon" stop || true
+            rm -rf -- "$revision_notebook_dir"
+          }
+          trap cleanup EXIT
+          export ZEPPELIN_NOTEBOOK_DIR="$revision_notebook_dir"
+          # This step owns notebook cleanup instead of Playwright's global directory reset.
+          unset ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+          "$zeppelin_daemon" start
+          cd zeppelin-web-angular
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- tests/notebook/revision/revision-isolation.spec.ts --output=test-results-revision --reporter=github,html
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v6
         if: always()
@@ -123,6 +143,7 @@ jobs:
           path: |
             zeppelin-web-angular/playwright-report/
             zeppelin-web-angular/playwright-report-classic/
+            zeppelin-web-angular/playwright-report-revision/
           retention-days: 3
       - name: Print Zeppelin logs
         if: always()
