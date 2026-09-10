@@ -11,7 +11,7 @@
  */
 
 import { expect, test, Page } from '@playwright/test';
-import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
+import { NOTEBOOK_REPOS_BRANCHES, NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
 import { NodeListPage } from '../../../models/node-list-page';
 import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
@@ -29,10 +29,7 @@ test.describe('Notebook Repository - save reloads the note tree', () => {
 
   // Run on both branches of the ZEPPELIN-6631 flag. The reload is the host's
   // job either way, so a React list that swallows the save would show up here.
-  for (const { label, query } of [
-    { label: 'Angular list', query: '' },
-    { label: 'React list', query: '?reactNotebookRepos=true' }
-  ]) {
+  for (const { label, query, mount } of NOTEBOOK_REPOS_BRANCHES) {
     test(`a repository save reloads notebooks and refreshes the shell note tree (${label})`, async ({ context }) => {
       // Two clients on purpose. The header's note tree is destroyed when the
       // dropdown closes and calls listNodes() again on every open, so it cannot
@@ -53,6 +50,9 @@ test.describe('Notebook Repository - save reloads the note tree', () => {
         await waitForZeppelinReady(actor);
         const reposPage = new NotebookReposPage(actor);
         await expect(reposPage.repositoryItems.first()).toBeVisible({ timeout: 20000 });
+        // Otherwise a remote that failed to load and fell back to Angular would still pass the "React list" run,
+        // against Angular markup.
+        await expect(reposPage.reactMountedList).toHaveCount(mount ? 1 : 0);
         // JUSTIFIED: .first() picks the first configured repo; the page requires at least one.
         const repoName = (await reposPage.repositoryItems.first().getAttribute('data-repo-name')) || '';
         const repoItem = new NotebookRepoItemPage(actor, repoName);

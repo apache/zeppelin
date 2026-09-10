@@ -133,7 +133,10 @@ Pages are moving from Angular to React fragments incrementally. Today this is na
 ### When a Route Gains a React Flag
 
 - The flag is a route query param read via `ActivatedRoute.queryParams`, so with the hash router it goes INSIDE the hash: `/#/notebook/<id>/paragraph/<id>?react=true`, not before the `#`. Popups opened by app code (`window.open`) will not carry a flag added only to `page.goto`.
-- To exercise both frameworks, follow the existing precedent and toggle the flag in-spec: navigate the same spec with and without the flag across tests, as `published-paragraph.spec.ts` does. A separate flag-appending Playwright project is an alternative, but scope it (its own `testMatch`) to routes that read the flag rather than running the whole suite twice.
+- To exercise both frameworks, follow the existing precedent and toggle the flag in-spec: navigate the same spec with and without the flag across tests.
+  - Prefer looping `for (const { label, query } of [...])` — an array of `{ label, query }` pairs — and folding `label` into the surrounding `test.describe`/`test` name, as `notebook-repos-save-reloads-note-tree.spec.ts` and `notebook-repo-item-workflow.spec.ts` do. The query string is the data the test actually needs, so it travels with the label instead of being reassembled from a bare boolean at each call site (`published-paragraph.spec.ts` predates this and still loops a boolean; match the newer shape in new specs).
+  - Both existing specs import the shared `NOTEBOOK_REPOS_BRANCHES` from `e2e/models/notebook-repos-page.ts` rather than each inlining the pair — export a same-shaped constant next to the relevant Page Object when a second spec needs the same pair, rather than inlining it again.
+  - A separate flag-appending Playwright project is an alternative, but scope it (its own `testMatch`) to routes that read the flag rather than running the whole suite twice.
 
 ### Coverage
 

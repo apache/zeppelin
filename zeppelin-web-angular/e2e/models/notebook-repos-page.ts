@@ -10,13 +10,29 @@
  * limitations under the License.
  */
 
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
+
+// Shared by every spec that runs the same assertions against both branches of the ZEPPELIN-6631 flag, using the
+// `{label, query}` loop documented in e2e/AGENTS.md, so the flag's query string has one place to change. `mount` lets
+// a caller assert which branch actually rendered (see `reactMountedList` below) - without it, a spec whose assertions
+// pass on both branches' markup would still report a "React list" pass if the remote failed to load and the host fell
+// back to Angular.
+export const NOTEBOOK_REPOS_BRANCHES = [
+  { label: 'Angular list', query: '', mount: false },
+  { label: 'React list', query: '?reactNotebookRepos=true', mount: true }
+] as const;
 
 export class NotebookReposPage extends BasePage {
   readonly pageDescription: Locator;
   readonly repositoryItems: Locator;
+  // The outer [data-testid="react-notebook-repo-list"] div is rendered as soon as the flag is on
+  // (notebook-repos.component.html's @if), before ReactMountDirective has even started loading the remote, so it
+  // alone can't tell "mounted" from "flag on, still loading, or loading failed and fell back". The nested
+  // [data-testid="notebook-repo-list"] only exists once NotebookRepoList.tsx itself has actually rendered inside that
+  // host, so this locator is scoped to it, matching react-notebook-repo-list.spec.ts's MOUNTED_LIST.
+  readonly reactMountedList: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -24,6 +40,7 @@ export class NotebookReposPage extends BasePage {
     // Shared id, not the Angular element: /notebook-repos is a migration seam
     // and these models have to survive the flip.
     this.repositoryItems = page.locator('[data-testid="notebook-repo-item"]');
+    this.reactMountedList = page.locator('[data-testid="react-notebook-repo-list"] [data-testid="notebook-repo-list"]');
   }
 
   // `query` carries the ZEPPELIN-6631 React flag (e.g. '?reactNotebookRepos=true'),
@@ -39,6 +56,15 @@ export class NotebookReposPage extends BasePage {
       this.zeppelinPageHeader.filter({ hasText: 'Notebook Repository' }).waitFor({ state: 'visible' }),
       this.repositoryItems.first().waitFor({ state: 'visible' })
     ]);
+  }
+
+  // For specs looping NOTEBOOK_REPOS_BRANCHES: folds the mount assertion into the navigation itself, rather than
+  // leaving it to each call site. A spec that destructures only `{ label, query }` and calls `navigate(query)`
+  // directly would compile and run fine on a remote that failed to load - that's the exact gap a prior review round
+  // found and fixed; this method exists so a future branch-parametrized spec can't reopen it by omission.
+  async navigateBranch(branch: (typeof NOTEBOOK_REPOS_BRANCHES)[number]): Promise<void> {
+    await this.navigate(branch.query);
+    await expect(this.reactMountedList).toHaveCount(branch.mount ? 1 : 0);
   }
 }
 

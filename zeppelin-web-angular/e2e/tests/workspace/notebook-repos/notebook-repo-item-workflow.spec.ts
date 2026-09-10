@@ -11,7 +11,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
+import { NOTEBOOK_REPOS_BRANCHES, NotebookReposPage, NotebookRepoItemPage } from '../../../models/notebook-repos-page';
 import { NotebookRepoItemUtil } from '../../../models/notebook-repo-item.util';
 import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../../utils';
 
@@ -19,10 +19,7 @@ import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../
 // fillSettingInput/getSettingInputValue are the only e2e paths that exercise the React card's
 // markup (button visibility instead of the Angular-only `.edit` class, `.ant-input` instead of
 // `[nz-input]`) - without this, those selectors are only ever proven against the Angular branch.
-for (const branch of [
-  { label: 'Angular list', query: '', mount: false },
-  { label: 'React list', query: '?reactNotebookRepos=true', mount: true }
-]) {
+for (const branch of NOTEBOOK_REPOS_BRANCHES) {
   const { label } = branch;
 
   test.describe(`Notebook Repository Item - Edit Workflow (${label})`, () => {
