@@ -15,120 +15,143 @@ import { NotebookReposPage, NotebookRepoItemPage } from '../../../models/noteboo
 import { NotebookRepoItemUtil } from '../../../models/notebook-repo-item.util';
 import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../../utils';
 
-test.describe('Notebook Repository Item - Edit Workflow', () => {
-  addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS_ITEM);
+// Run on both branches of the ZEPPELIN-6631 flag. verifyDisplayMode/verifyEditMode and
+// fillSettingInput/getSettingInputValue are the only e2e paths that exercise the React card's
+// markup (button visibility instead of the Angular-only `.edit` class, `.ant-input` instead of
+// `[nz-input]`) - without this, those selectors are only ever proven against the Angular branch.
+for (const branch of [
+  { label: 'Angular list', query: '', mount: false },
+  { label: 'React list', query: '?reactNotebookRepos=true', mount: true }
+]) {
+  const { label } = branch;
 
-  let notebookReposPage: NotebookReposPage;
-  let repoItemPage: NotebookRepoItemPage;
-  let repoItemUtil: NotebookRepoItemUtil;
-  let firstRepoName: string;
+  test.describe(`Notebook Repository Item - Edit Workflow (${label})`, () => {
+    addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS_ITEM);
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/#/');
-    await waitForZeppelinReady(page);
-    notebookReposPage = new NotebookReposPage(page);
-    await notebookReposPage.navigate();
+    let notebookReposPage: NotebookReposPage;
+    let repoItemPage: NotebookRepoItemPage;
+    let repoItemUtil: NotebookRepoItemUtil;
+    let firstRepoName: string;
 
-    // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
-    const firstCard = notebookReposPage.repositoryItems.first();
-    firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
-    repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
-    repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
-  });
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/#/');
+      await waitForZeppelinReady(page);
+      notebookReposPage = new NotebookReposPage(page);
+      // navigateBranch(), not navigate(branch.query): folds in the mount assertion so it can't be
+      // forgotten here (see the method's own doc comment).
+      await notebookReposPage.navigateBranch(branch);
 
-  test('should complete full edit workflow with save', async () => {
-    const settingRows = await repoItemPage.settingRows.count();
+      // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
+      const firstCard = notebookReposPage.repositoryItems.first();
+      firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+      repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
+      repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
+    });
 
-    await repoItemUtil.verifyDisplayMode();
+    test('should complete full edit workflow with save', async () => {
+      const settingRows = await repoItemPage.settingRows.count();
 
-    await repoItemPage.clickEdit();
-    await repoItemUtil.verifyEditMode();
+      await repoItemUtil.verifyDisplayMode();
 
-    let savedSettingName = '';
-    let savedValue = '';
-    for (let i = 0; i < settingRows; i++) {
-      // JUSTIFIED: nth(i) iterates all rows deterministically to find the first INPUT-type row
-      const row = repoItemPage.settingRows.nth(i);
-      // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
-      const settingName = (await row.locator('td').first().textContent()) || '';
+      await repoItemPage.clickEdit();
+      await repoItemUtil.verifyEditMode();
 
-      const isInputVisible = await row.locator('input[nz-input]').isVisible();
-      if (isInputVisible) {
-        savedValue = (await repoItemPage.getSettingInputValue(settingName)) || 'test-value';
-        await repoItemPage.fillSettingInput(settingName, savedValue);
-        savedSettingName = settingName;
-        break;
+      let savedSettingName = '';
+      let savedValue = '';
+      for (let i = 0; i < settingRows; i++) {
+        // JUSTIFIED: nth(i) iterates all rows deterministically to find the first INPUT-type row
+        const row = repoItemPage.settingRows.nth(i);
+        // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
+        const settingName = (await row.locator('td').first().textContent()) || '';
+
+        // JUSTIFIED: inline, not lifted to the Page Object - this locator only needs to
+        // distinguish an INPUT row from a DROPDOWN row within this row-scan loop. .ant-input, not
+        // [nz-input]: excludes a DROPDOWN row's Select search input.
+        const isInputVisible = await row.locator('input.ant-input').isVisible();
+        if (isInputVisible) {
+          // Writes the value straight back rather than a distinct one: this repo config is shared
+          // across the whole suite, which runs this spec across both branches and every browser
+          // project in parallel, so a distinct value risks a lost update stomping another
+          // worker's read. The display-mode assertion below still exercises the save/refetch
+          // path; it just can't distinguish a successful round trip from a rejected one that the
+          // UI shows optimistically regardless (true on both branches), which is a weaker but
+          // safe guarantee.
+          savedValue = (await repoItemPage.getSettingInputValue(settingName)) || 'test-value';
+          await repoItemPage.fillSettingInput(settingName, savedValue);
+          savedSettingName = settingName;
+          break;
+        }
       }
-    }
 
-    expect(savedSettingName, 'No INPUT-type setting found — cannot verify save result').not.toBe('');
-    await expect(repoItemPage.saveButton).toBeEnabled();
+      expect(savedSettingName, 'No INPUT-type setting found - cannot verify save result').not.toBe('');
+      await expect(repoItemPage.saveButton).toBeEnabled();
 
-    await repoItemPage.clickSave();
+      await repoItemPage.clickSave();
 
-    await repoItemUtil.verifyDisplayMode();
+      await repoItemUtil.verifyDisplayMode();
 
-    // Verify the saved value is shown in display mode — not just that mode switched
-    const displayValue = await repoItemPage.getSettingValue(savedSettingName);
-    expect(displayValue.trim()).toBe(savedValue.trim());
+      // Verify the saved value is shown in display mode - not just that mode switched
+      const displayValue = await repoItemPage.getSettingValue(savedSettingName);
+      expect(displayValue.trim()).toBe(savedValue.trim());
+    });
+
+    test('should complete full edit workflow with cancel', async () => {
+      await repoItemUtil.verifyDisplayMode();
+
+      // JUSTIFIED: any row is representative - testing that cancel reverts all changes
+      const firstRow = repoItemPage.settingRows.first();
+      // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
+      const settingName = (await firstRow.locator('td').first().textContent()) || '';
+      const originalValue = await repoItemPage.getSettingValue(settingName);
+
+      await repoItemPage.clickEdit();
+      await repoItemUtil.verifyEditMode();
+
+      await repoItemPage.fillSettingInput(settingName, 'temp-modified-value');
+
+      await repoItemPage.clickCancel();
+      await repoItemUtil.verifyDisplayMode();
+
+      const currentValue = await repoItemPage.getSettingValue(settingName);
+      expect(currentValue.trim()).toBe(originalValue.trim());
+    });
+
+    test('should toggle between display and edit modes multiple times', async () => {
+      await repoItemUtil.verifyDisplayMode();
+
+      await repoItemPage.clickEdit();
+      await repoItemUtil.verifyEditMode();
+
+      await repoItemPage.clickCancel();
+      await repoItemUtil.verifyDisplayMode();
+
+      await repoItemPage.clickEdit();
+      await repoItemUtil.verifyEditMode();
+
+      await repoItemPage.clickCancel();
+      await repoItemUtil.verifyDisplayMode();
+    });
+
+    test('should preserve card visibility throughout edit workflow', async () => {
+      await expect(repoItemPage.repositoryCard).toBeVisible();
+
+      await repoItemPage.clickEdit();
+      await expect(repoItemPage.repositoryCard).toBeVisible();
+
+      await repoItemPage.clickCancel();
+      await expect(repoItemPage.repositoryCard).toBeVisible();
+    });
+
+    test('should maintain settings count during mode transitions', async () => {
+      const initialCount = await repoItemPage.getSettingCount();
+
+      await repoItemPage.clickEdit();
+      const editModeCount = await repoItemPage.getSettingCount();
+      expect(editModeCount).toBe(initialCount);
+
+      await repoItemPage.clickCancel();
+      const finalCount = await repoItemPage.getSettingCount();
+      expect(finalCount).toBe(initialCount);
+    });
   });
-
-  test('should complete full edit workflow with cancel', async () => {
-    await repoItemUtil.verifyDisplayMode();
-
-    // JUSTIFIED: any row is representative — testing that cancel reverts all changes
-    const firstRow = repoItemPage.settingRows.first();
-    // JUSTIFIED: td.first() is the Name column in the fixed 2-column settings table
-    const settingName = (await firstRow.locator('td').first().textContent()) || '';
-    const originalValue = await repoItemPage.getSettingValue(settingName);
-
-    await repoItemPage.clickEdit();
-    await repoItemUtil.verifyEditMode();
-
-    await repoItemPage.fillSettingInput(settingName, 'temp-modified-value');
-
-    await repoItemPage.clickCancel();
-    await repoItemUtil.verifyDisplayMode();
-
-    const currentValue = await repoItemPage.getSettingValue(settingName);
-    expect(currentValue.trim()).toBe(originalValue.trim());
-  });
-
-  test('should toggle between display and edit modes multiple times', async () => {
-    await repoItemUtil.verifyDisplayMode();
-
-    await repoItemPage.clickEdit();
-    await repoItemUtil.verifyEditMode();
-
-    await repoItemPage.clickCancel();
-    await repoItemUtil.verifyDisplayMode();
-
-    await repoItemPage.clickEdit();
-    await repoItemUtil.verifyEditMode();
-
-    await repoItemPage.clickCancel();
-    await repoItemUtil.verifyDisplayMode();
-  });
-
-  test('should preserve card visibility throughout edit workflow', async () => {
-    await expect(repoItemPage.repositoryCard).toBeVisible();
-
-    await repoItemPage.clickEdit();
-    await expect(repoItemPage.repositoryCard).toBeVisible();
-
-    await repoItemPage.clickCancel();
-    await expect(repoItemPage.repositoryCard).toBeVisible();
-  });
-
-  test('should maintain settings count during mode transitions', async () => {
-    const initialCount = await repoItemPage.getSettingCount();
-
-    await repoItemPage.clickEdit();
-    const editModeCount = await repoItemPage.getSettingCount();
-    expect(editModeCount).toBe(initialCount);
-
-    await repoItemPage.clickCancel();
-    const finalCount = await repoItemPage.getSettingCount();
-    expect(finalCount).toBe(initialCount);
-  });
-});
+}

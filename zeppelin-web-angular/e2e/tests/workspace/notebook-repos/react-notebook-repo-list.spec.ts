@@ -82,13 +82,18 @@ test.describe('Notebook Repository - React list behind a flag', () => {
     const value = (await settingRows(page, `${MOUNT} ${REPO_ITEM}`).first().locator('td').nth(1).innerText()).trim();
 
     await card.getByRole('button', { name: 'Edit' }).click();
-    const input = card.locator('input').first();
+    // JUSTIFIED: inline rather than NotebookRepoItemPage - this spec locates the card via
+    // MOUNT/REPO_ITEM constants rather than that Page Object, so reusing its selector alone
+    // without its `repositoryCard` root would be inconsistent with the rest of the file.
+    // .ant-input, not a bare 'input': a DROPDOWN row's Select also renders an
+    // <input role="combobox"> that this would otherwise match instead.
+    const input = card.locator('input.ant-input').first();
     await expect(input).toBeVisible();
     await expect(input).toHaveValue(value);
 
     await card.getByRole('button', { name: 'Cancel' }).click();
     await expect(card.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(card.locator('input')).toHaveCount(0);
+    await expect(card.locator('input.ant-input')).toHaveCount(0);
   });
 
   test('when the remote fails to load, the Angular list renders', async ({ page }) => {

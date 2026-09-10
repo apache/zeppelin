@@ -26,13 +26,18 @@ export class NotebookReposPage extends BasePage {
     this.repositoryItems = page.locator('[data-testid="notebook-repo-item"]');
   }
 
-  async navigate(): Promise<void> {
-    await this.navigateToRoute('/notebook-repos', { timeout: 60000 });
-    await this.page.waitForURL('**/#/notebook-repos', { timeout: 60000 });
+  // `query` carries the ZEPPELIN-6631 React flag (e.g. '?reactNotebookRepos=true'),
+  // so callers can drive the same workflow through either branch.
+  async navigate(query = ''): Promise<void> {
+    await this.navigateToRoute(`/notebook-repos${query}`, { timeout: 60000 });
+    await this.page.waitForURL('**/#/notebook-repos*', { timeout: 60000 });
     await waitForZeppelinReady(this.page);
+    // [data-testid="notebook-repo-item"], not the Angular-only zeppelin-notebook-repo-item element,
+    // since that tag never exists on the React branch, so the race would silently lose all its
+    // coverage there the moment the header arm ever got slow.
     await Promise.race([
       this.zeppelinPageHeader.filter({ hasText: 'Notebook Repository' }).waitFor({ state: 'visible' }),
-      this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
+      this.repositoryItems.first().waitFor({ state: 'visible' })
     ]);
   }
 }
@@ -78,13 +83,15 @@ export class NotebookRepoItemPage extends BasePage {
 
   async fillSettingInput(settingName: string, value: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input[nz-input]');
+    // .ant-input, not [nz-input], since ng-zorro's nz-input directive renders that class too,
+    // and it excludes a DROPDOWN row's Select search input.
+    const input = row.locator('input.ant-input');
     await this.fillAndVerifyInput(input, value);
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input[nz-input]');
+    const input = row.locator('input.ant-input');
     return await input.inputValue();
   }
 
