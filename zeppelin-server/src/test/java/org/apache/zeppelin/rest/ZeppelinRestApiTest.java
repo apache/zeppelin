@@ -828,7 +828,7 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  void testUpdateParagraph() throws IOException {
+  void testUpdateParagraph() throws IOException, InterruptedException {
     String noteId = null;
     try {
       noteId = notebook.createNote("note1_testUpdateParagraph", anonymous);
@@ -862,7 +862,9 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
           return null;
         });
 
-      String updateBothRequest = "{\"title\": \"updated title\", \"text\" : \"updated text 2\" }";
+      String restSearchToken = "restSearchUpdatedToken";
+      String updateBothRequest = "{\"title\": \"updated title\", \"text\" : \"" +
+          restSearchToken + "\" }";
       CloseableHttpResponse updatePut = httpPut("/notebook/" + noteId + "/paragraph/" + newParagraphId,
               updateBothRequest);
       updatePut.close();
@@ -871,9 +873,22 @@ class ZeppelinRestApiTest extends AbstractTestRestApi {
         noteP -> {
           Paragraph updatedBothParagraph = noteP.getParagraph(newParagraphId);
           assertEquals("updated title", updatedBothParagraph.getTitle());
-          assertEquals("updated text 2", updatedBothParagraph.getText());
+          assertEquals(restSearchToken, updatedBothParagraph.getText());
           return null;
         });
+
+      // SearchService handles paragraph events asynchronously.
+      Thread.sleep(1000);
+      CloseableHttpResponse search = httpGet("/notebook/search?q=" + restSearchToken);
+      Map<String, Object> searchResponse = gson.fromJson(
+          EntityUtils.toString(search.getEntity(), StandardCharsets.UTF_8),
+          new TypeToken<Map<String, Object>>() {}.getType());
+      search.close();
+      List<Map<String, String>> searchResults =
+          (List<Map<String, String>>) searchResponse.get("body");
+      String expectedResultId = noteId + "/paragraph/" + newParagraphId;
+      assertTrue(searchResults.stream().anyMatch(result ->
+          result.get("id").startsWith(expectedResultId)));
     } finally {
       //cleanup
       if (null != noteId) {

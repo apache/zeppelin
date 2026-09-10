@@ -580,7 +580,7 @@ class NotebookServiceTest {
 
 
   @Test
-  void testParagraphOperations() throws IOException {
+  void testParagraphOperations() throws IOException, InterruptedException {
     // create note
     String note1Id = notebookService.createNote("note1", "python", false, context, callback);
     notebook.processNote(note1Id,
@@ -604,12 +604,21 @@ class NotebookServiceTest {
         return null;
       });
 
-    // update paragraph
+    // update paragraph and verify the asynchronous search listener sees the new text
     reset(callback);
-    notebookService.updateParagraph(note1Id, p.getId(), "my_title", "my_text",
+    String serviceSearchToken = "serviceSearchUpdatedToken";
+    notebookService.updateParagraph(note1Id, p.getId(), "my_title", serviceSearchToken,
         new HashMap<>(), new HashMap<>(), context, callback);
     assertEquals("my_title", p.getTitle());
-    assertEquals("my_text", p.getText());
+    assertEquals(serviceSearchToken, p.getText());
+    while (!searchService.isEventQueueEmpty()) {
+      Thread.sleep(10);
+    }
+    // The queue may be empty while its worker is finishing the current event.
+    Thread.sleep(100);
+    List<Map<String, String>> searchResults = searchService.query(serviceSearchToken);
+    assertTrue(searchResults.stream().anyMatch(result ->
+        result.get("id").startsWith(note1Id)));
 
     // move paragraph
     reset(callback);
