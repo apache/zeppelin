@@ -51,7 +51,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.33.1",
     "vite": "8.2.1",
-    "vitest": "4.1.8",
+    "vitest": "4.1.11",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "6.0.0"
