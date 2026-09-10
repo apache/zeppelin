@@ -1769,7 +1769,19 @@ public class NotebookServer implements AngularObjectRegistryListener,
         .put("paragraphId", paragraphId)
         .put("index", index)
         .put("data", output);
-    connectionManager.broadcast(noteId, msg);
+    try {
+      getNotebook().processNote(noteId, note -> {
+        if (note == null) {
+          LOGGER.warn("Note {} not found", noteId);
+        } else if (!note.isPersonalizedMode()) {
+          // Streaming events do not identify the user that owns the execution.
+          connectionManager.broadcast(noteId, msg);
+        }
+        return null;
+      });
+    } catch (IOException e) {
+      LOGGER.warn("Fail to call onOutputAppend", e);
+    }
   }
 
   /**
@@ -1798,12 +1810,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
           }
           Paragraph paragraph = note.getParagraph(paragraphId);
           paragraph.updateOutputBuffer(index, type, output);
-          if (note.isPersonalizedMode()) {
-            String user = note.getParagraph(paragraphId).getUser();
-            if (null != user) {
-              connectionManager.multicastToUser(user, msg);
-            }
-          } else {
+          // Personalized output falls back to the user-specific terminal paragraph snapshot.
+          if (!note.isPersonalizedMode()) {
             connectionManager.broadcast(noteId, msg);
           }
           return null;
