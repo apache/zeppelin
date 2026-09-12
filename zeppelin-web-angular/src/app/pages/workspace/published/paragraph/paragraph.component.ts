@@ -58,6 +58,10 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   @ViewChildren(NotebookParagraphResultComponent)
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
+  protected get currentNoteId(): string | null {
+    return this.noteId;
+  }
+
   constructor(
     public messageService: MessageService,
     private activatedRoute: ActivatedRoute,
@@ -80,6 +84,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
       }
       this.noteId = params.noteId;
       this.paragraphId = params.paragraphId!;
+      this.setParagraphSnapshot(undefined);
       this.messageService.getNote(params.noteId);
     });
   }
@@ -87,21 +92,19 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   @MessageListener(OP.NOTE)
   getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
     const note = data.note;
-    if (!isNil(note)) {
-      this.paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
+    if (!isNil(note) && note.id === this.noteId) {
+      this.setParagraphSnapshot(note.paragraphs.find(p => p.id === this.paragraphId));
       if (this.paragraph) {
         if (!this.paragraph.results) {
           this.showRunConfirmationModal();
         }
         if (this.useReact && !this.reactFailed) {
-          this.setResults(this.paragraph);
           this.reactProps = this.buildReactProps(this.paragraph);
           this.isLoading = false;
           this.cdr.markForCheck();
           return;
         }
 
-        this.setResults(this.paragraph);
         this.originalText = this.paragraph.text;
         this.initializeDefault(this.paragraph.config, this.paragraph.settings);
       } else {
@@ -153,8 +156,11 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   }
 
   updateParagraphResult(resultIndex: number, config: ParagraphConfigResult, result: ParagraphIResultsMsgItem): void {
-    // In React mode the Angular result components never render, so this query is empty.
-    // The remote is refreshed from updateParagraphObjectWhenUpdated instead.
+    if (this.useReact && !this.reactFailed && this.paragraph) {
+      this.reactProps = this.buildReactProps(this.paragraph);
+      this.cdr.markForCheck();
+      return;
+    }
     const resultComponent = this.notebookParagraphResultComponents.toArray()[resultIndex];
     if (resultComponent) {
       resultComponent.updateResult(config, result);

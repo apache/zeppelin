@@ -102,6 +102,10 @@ export class NotebookParagraphComponent
   @Input() useReactFooter = false;
   reactFooterFailed = false;
 
+  protected get currentNoteId(): string | undefined {
+    return this.note?.id;
+  }
+
   get shouldUseReactFooter(): boolean {
     return this.useReactFooter && !this.reactFooterFailed;
   }
@@ -627,7 +631,7 @@ export class NotebookParagraphComponent
         this.handleKeyEvent(event.action, event.event);
         this.notebookParagraphCodeEditorComponent?.handleKeyEvent(event.action);
       });
-    this.setResults(this.paragraph);
+    this.setParagraphSnapshot(this.paragraph);
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
@@ -756,6 +760,9 @@ export class NotebookParagraphComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes.paragraph || changes.note) {
+      this.setParagraphSnapshot(this.paragraph);
+    }
     const { index, select, scrolled } = changes;
     if (
       (index && index.currentValue !== index.previousValue && this.select) ||
