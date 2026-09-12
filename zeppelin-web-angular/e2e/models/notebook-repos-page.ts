@@ -21,7 +21,9 @@ export class NotebookReposPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.pageDescription = page.locator("text=Manage your Notebook Repositories' settings.");
-    this.repositoryItems = page.locator('zeppelin-notebook-repo-item');
+    // Shared id, not the Angular element: /notebook-repos is a migration seam
+    // and these models have to survive the flip.
+    this.repositoryItems = page.locator('[data-testid="notebook-repo-item"]');
   }
 
   async navigate(): Promise<void> {
@@ -46,13 +48,14 @@ export class NotebookRepoItemPage extends BasePage {
 
   constructor(page: Page, repoName: string) {
     super(page);
-    this.repositoryCard = page.locator('nz-card').filter({ hasText: repoName });
+    this.repositoryCard = page.locator(`[data-testid="notebook-repo-item"][data-repo-name="${repoName}"]`);
     this.repositoryName = this.repositoryCard.locator('.ant-card-head-title');
     this.editButton = this.repositoryCard.locator('button:has-text("Edit")');
     this.saveButton = this.repositoryCard.locator('button:has-text("Save")');
     this.cancelButton = this.repositoryCard.locator('button:has-text("Cancel")');
-    this.settingTable = this.repositoryCard.locator('nz-table');
-    this.settingRows = this.repositoryCard.locator('tbody tr');
+    // .ant-table is what both ng-zorro and antd render.
+    this.settingTable = this.repositoryCard.locator('.ant-table');
+    this.settingRows = this.repositoryCard.locator('tbody tr:not(.ant-table-placeholder)');
   }
 
   async clickEdit(): Promise<void> {

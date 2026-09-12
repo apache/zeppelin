@@ -11,5 +11,6 @@
  */
 
 export { ConfigurationTable, mount as mountConfigurationTable } from './pages/ConfigurationTable';
+export { NotebookRepoList, mount as mountNotebookRepoList } from './pages/NotebookRepoList';
 export { PublishedParagraph, mount } from './pages/PublishedParagraph';
 export { ParagraphFooter, mount as mountParagraphFooter } from './components/paragraph/ParagraphFooter';
