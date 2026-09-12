@@ -837,20 +837,20 @@ class NotebookServiceTest {
       notebookService.normalizeNotePath("my..note");
       fail("Should fail");
     } catch (IOException e) {
-      assertEquals("Note name can not contain '..'", e.getMessage());
+      assertEquals("Path can not contain '..'", e.getMessage());
     }
     try {
       notebookService.normalizeNotePath("%2e%2e/%2e%2e/tmp/test222");
       fail("Should fail");
     } catch (IOException e) {
-      assertEquals("Note name can not contain '..'", e.getMessage());
+      assertEquals("Path can not contain '..'", e.getMessage());
     }
     try {
       // Double URL encoding of ".."
       notebookService.normalizeNotePath("%252e%252e/%252e%252e/tmp/test333");
       fail("Should fail");
     } catch (IOException e) {
-      assertEquals("Note name can not contain '..'", e.getMessage());
+      assertEquals("Path can not contain '..'", e.getMessage());
     }
     try {
       notebookService.normalizeNotePath("%25252525252e%25252525252e/tmp/test444");
@@ -864,5 +864,15 @@ class NotebookServiceTest {
     } catch (IOException e) {
       assertEquals("Note name shouldn't end with '/'", e.getMessage());
     }
+  }
+
+  @Test
+  void testNormalizeFolderPath() throws IOException {
+    assertEquals("/folder", notebookService.normalizeFolderPath("folder"));
+    assertEquals("/folder", notebookService.normalizeFolderPath("/folder"));
+    assertEquals("/folder/subfolder", notebookService.normalizeFolderPath("folder/subfolder"));
+    assertEquals("/folder/subfolder", notebookService.normalizeFolderPath("/folder/subfolder"));
+
+    assertThrows(IOException.class, () -> notebookService.normalizeFolderPath(null));
   }
 }

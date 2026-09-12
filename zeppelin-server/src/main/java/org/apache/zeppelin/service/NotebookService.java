@@ -234,13 +234,11 @@ public class NotebookService {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
     }
-    if (!notePath.startsWith("/")) {
-      notePath = "/" + notePath;
-    }
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = NotebookPathValidator.decodeRepeatedly(notePath);
+    notePath = NotebookPathValidator.normalizePath(notePath);
+
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
@@ -250,10 +248,19 @@ public class NotebookService {
       throw new IOException("Note name must be less than 255");
     }
 
-    if (notePath.contains("..")) {
-      throw new IOException("Note name can not contain '..'");
-    }
     return notePath;
+  }
+
+  /**
+   * Normalizes a folder path to the canonical absolute form used by folder operations.
+   * Accepts paths with or without a leading slash.
+   *
+   * @param folderPath
+   * @return
+   * @throws IOException
+   */
+  String normalizeFolderPath(String folderPath) throws IOException {
+    return NotebookPathValidator.normalizePath(folderPath);
   }
 
   public void removeNote(String noteId,
@@ -744,6 +751,8 @@ public class NotebookService {
   public void restoreFolder(String folderPath,
                             ServiceContext context,
                             ServiceCallback<Void> callback) throws IOException {
+
+    folderPath = normalizeFolderPath(folderPath);
 
     if (!folderPath.startsWith("/" + NoteManager.TRASH_FOLDER)) {
       callback.onFailure(new IOException("Can not restore this folder: " + folderPath +
@@ -1302,16 +1311,17 @@ public class NotebookService {
                               ServiceCallback<Void> callback) throws IOException {
 
     //TODO(zjffdu) folder permission check
-    //TODO(zjffdu) folderPath is relative path, need to fix it in frontend
     LOGGER.info("Move folder {} to trash", folderPath);
 
-    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
+    folderPath = normalizeFolderPath(folderPath);
+
+    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + folderPath;
     if (notebook.containsNote(destFolderPath)) {
       destFolderPath = destFolderPath + " " +
           TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
     }
 
-    notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
+    notebook.moveFolder(folderPath, destFolderPath, context.getAutheInfo());
     callback.onSuccess(null, context);
   }
 
@@ -1331,7 +1341,7 @@ public class NotebookService {
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
     try {
-      notebook.removeFolder(folderPath, context.getAutheInfo());
+      notebook.removeFolder(normalizeFolderPath(folderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
@@ -1349,8 +1359,8 @@ public class NotebookService {
     //TODO(zjffdu) folder permission check
 
     try {
-      notebook.moveFolder(normalizeNotePath(folderPath),
-              normalizeNotePath(newFolderPath), context.getAutheInfo());
+      notebook.moveFolder(normalizeFolderPath(folderPath),
+              normalizeFolderPath(newFolderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);

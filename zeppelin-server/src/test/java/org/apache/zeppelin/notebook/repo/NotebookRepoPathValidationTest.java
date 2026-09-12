@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -109,5 +110,66 @@ class NotebookRepoPathValidationTest {
     // Exactly five layers of "%2e" wrapping ("%252525252e") must decode
     // cleanly; the constant means *layers*, not raw loop iterations.
     assertEquals("/..", NotebookPathValidator.decodeRepeatedly("/%252525252e%252525252e"));
+  }
+
+  @Test
+  void normalizePath_adds_leading_slash() throws IOException {
+    assertEquals("/folder/note", NotebookPathValidator.normalizePath("folder/note"));
+  }
+
+  @Test
+  void normalizePath_keeps_existing_leading_slash() throws IOException {
+    assertEquals("/folder/note", NotebookPathValidator.normalizePath("/folder/note"));
+  }
+
+  @Test
+  void normalizePath_decodes_url_encoding() throws IOException {
+    assertEquals("/folder/My Note", NotebookPathValidator.normalizePath("/folder/My%20Note"));
+  }
+
+  @Test
+  void normalizePath_decodes_repeated_url_encoding() throws IOException {
+    assertEquals("/folder/My Note", NotebookPathValidator.normalizePath("/folder/My%2520Note"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "/foo/../bar",
+      "/foo..bar",
+      "/...",
+      "/%2e%2e/bar",
+      "/%252e%252e/bar"
+  })
+  void normalizePath_rejects_double_dot(String path) {
+    assertThrows(IOException.class, () -> NotebookPathValidator.normalizePath(path));
+  }
+
+  @Test
+  void normalizePath_rejects_null() {
+    assertThrows(IOException.class, () -> NotebookPathValidator.normalizePath(null));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_accepts_absolute_path() {
+    assertDoesNotThrow(
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("/folder/subfolder"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_accepts_root_path() {
+    assertDoesNotThrow(
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("/"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_rejects_relative_path() {
+    assertThrows(IOException.class,
+        () -> NotebookPathValidator.requireAbsoluteFolderPath("folder/subfolder"));
+  }
+
+  @Test
+  void requireAbsoluteFolderPath_rejects_null() {
+    assertThrows(IOException.class,
+        () -> NotebookPathValidator.requireAbsoluteFolderPath(null));
   }
 }

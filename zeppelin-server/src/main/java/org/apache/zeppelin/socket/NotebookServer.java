@@ -1061,7 +1061,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void removeFolder(NotebookSocket conn, ServiceContext context, Message fromMessage) throws IOException {
 
     String folderPath = (String) fromMessage.get("id");
-    folderPath = "/" + folderPath;
     getNotebookService().removeFolder(folderPath, context,
         new WebSocketServiceCallback<List<NoteInfo>>(conn) {
           @Override
@@ -1121,7 +1120,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
                              ServiceContext context,
                              Message fromMessage) throws IOException {
     String folderPath = (String) fromMessage.get("id");
-    folderPath = "/" + folderPath;
     getNotebookService().restoreFolder(folderPath, context,
         new WebSocketServiceCallback<Void>(conn) {
           @Override

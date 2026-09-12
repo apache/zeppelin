@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class VFSNotebookRepoTest {
 
@@ -176,5 +177,19 @@ class VFSNotebookRepoTest {
   private void createNewDirectory(String dirName) {
     File dir = new File(notebookRepo.rootNotebookFolder + "/" + dirName);
     dir.mkdir();
+  }
+
+  @Test
+  void testMoveFolderRequiresAbsolutePath() {
+    assertThrows(IOException.class,
+        () -> notebookRepo.move("my_project", "/new_project", AuthenticationInfo.ANONYMOUS));
+    assertThrows(IOException.class,
+        () -> notebookRepo.move("/my_project", "new_project", AuthenticationInfo.ANONYMOUS));
+  }
+
+  @Test
+  void testRemoveFolderRequiresAbsolutePath(){
+    assertThrows(IOException.class,
+        () -> notebookRepo.remove("my_project", AuthenticationInfo.ANONYMOUS));
   }
 }
