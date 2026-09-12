@@ -1839,11 +1839,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
           if (note == null) {
             // It is possible the note is removed, but the job is still running
             LOGGER.warn("Note {} doesn't existed, it maybe deleted.", noteId);
-          } else {
-            note.clearParagraphOutput(paragraphId);
-            Paragraph paragraph = note.getParagraph(paragraphId);
-            broadcastParagraph(note, paragraph, MSG_ID_NOT_DEFINED);
+            return null;
           }
+          if (note.isPersonalizedMode()) {
+            // Streaming events carry no owner, so they must not mutate shared paragraph state.
+            return null;
+          }
+          note.clearParagraphOutput(paragraphId);
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          broadcastParagraph(note, paragraph, MSG_ID_NOT_DEFINED);
           return null;
         });
 

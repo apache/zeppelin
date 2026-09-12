@@ -38,9 +38,10 @@ export class ParagraphOutputState {
       return undefined;
     }
 
+    // Non-empty UPDATE data replaces stale appends; an empty type declaration adopts them.
     const result = {
       type,
-      data: data + (this.pendingAppends.get(index) ?? '')
+      data: data === '' ? (this.pendingAppends.get(index) ?? '') : data
     };
     this.pendingAppends.delete(index);
     this.results[index] = result;

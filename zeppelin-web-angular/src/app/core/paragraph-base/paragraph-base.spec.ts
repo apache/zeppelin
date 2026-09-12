@@ -234,14 +234,14 @@ describe('ParagraphBase streaming boundaries', () => {
     expect(component.results).toEqual([
       { type: DatasetType.TEXT, data: 'first\n' },
       { type: DatasetType.TABLE, data: 'second' },
-      { type: DatasetType.TEXT, data: 'third tail' }
+      { type: DatasetType.TEXT, data: 'third' }
     ]);
     expect(component.updateParagraphResult).toHaveBeenCalledWith(2, expect.anything(), {
       type: DatasetType.TEXT,
-      data: 'third tail'
+      data: 'third'
     });
     component.onParagraphAppendOutput({ noteId: 'note', paragraphId: 'A', index: 2, data: ' end' });
-    expect(component.results[2].data).toBe('third tail end');
+    expect(component.results[2].data).toBe('third end');
     component.ngOnDestroy();
   });
 });

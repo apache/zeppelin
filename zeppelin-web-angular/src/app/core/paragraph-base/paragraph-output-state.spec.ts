@@ -98,6 +98,23 @@ describe('ParagraphOutputState', () => {
     });
   });
 
+  it('discards pending APPEND chunks when a non-empty UPDATE replaces the result', () => {
+    const state = new ParagraphOutputState();
+    state.reset();
+
+    expect(state.append(0, 'stale\n')).toBeUndefined();
+    expect(state.update(0, DatasetType.TEXT, 'replacement\n')).toEqual({
+      type: DatasetType.TEXT,
+      data: 'replacement\n'
+    });
+    expect(state.snapshot()).toEqual([{ type: DatasetType.TEXT, data: 'replacement\n' }]);
+    expect(state.update(0, DatasetType.TEXT, '')).toEqual({
+      type: DatasetType.TEXT,
+      data: ''
+    });
+    expect(state.snapshot()).toEqual([{ type: DatasetType.TEXT, data: '' }]);
+  });
+
   it('uses the terminal snapshot after UPDATE overtakes a queued APPEND', () => {
     const state = new ParagraphOutputState();
     state.reset([{ type: DatasetType.TEXT, data: 'stale\n' }]);

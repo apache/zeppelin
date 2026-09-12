@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -96,5 +98,34 @@ class NotebookServerStreamingScopeTest {
         otherUserResult == null ? Collections.emptyList() : otherUserResult.message();
     assertTrue(otherUserMessages.stream().noneMatch(m -> m.getData().contains("private update")),
         "another user's paragraph sees the checkpointed output: " + otherUserMessages);
+  }
+
+  @Test
+  void personalizedUnownedClearPreservesSharedOutputForFutureUsers() {
+    note.setPersonalizedMode(true);
+    Paragraph sharedParagraph = note.getParagraph("para");
+    sharedParagraph.setResult(
+        new InterpreterResult(InterpreterResult.Code.SUCCESS, "shared result"));
+    sharedParagraph.updateOutputBuffer(0, InterpreterResult.Type.TEXT, "buffered result");
+    sharedParagraph.getUserParagraph("existing");
+
+    server.onOutputClear("note", "para");
+
+    InterpreterResult futureUserResult =
+        sharedParagraph.getUserParagraph("future").getReturn();
+    assertNotNull(futureUserResult,
+        "unowned clear removed the shared output inherited by a future user");
+    assertEquals(1, futureUserResult.message().size());
+    assertEquals("shared result", futureUserResult.message().get(0).getData());
+
+    sharedParagraph.checkpointOutput();
+    InterpreterResult checkpointedFutureUserResult =
+        sharedParagraph.getUserParagraph("checkpointed-future").getReturn();
+    assertNotNull(checkpointedFutureUserResult,
+        "unowned clear removed the shared output buffer used by checkpoint");
+    assertEquals(1, checkpointedFutureUserResult.message().size());
+    assertEquals("buffered result", checkpointedFutureUserResult.message().get(0).getData());
+    verify(connections, never()).broadcast(eq("note"), any());
+    verify(connections, never()).multicastToUser(any(), any());
   }
 }
