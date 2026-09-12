@@ -21,6 +21,7 @@ package org.apache.zeppelin.interpreter;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
@@ -65,6 +66,7 @@ public abstract class AbstractInterpreterTest {
   protected ZeppelinConfiguration zConf;
   protected ConfigStorage storage;
   protected PluginManager pluginManager;
+  protected ZeppelinEventBus eventBus;
 
   @BeforeEach
   public void setUp() throws Exception {
@@ -100,12 +102,12 @@ public abstract class AbstractInterpreterTest {
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
         "test");
 
-
     NotebookRepo notebookRepo = new InMemoryNotebookRepo();
     NoteManager noteManager = new NoteManager(notebookRepo, zConf);
     noteParser = new GsonNoteParser(zConf);
     storage = ConfigStorage.createConfigStorage(zConf);
     pluginManager = new PluginManager(zConf);
+    eventBus = new ZeppelinEventBus();
     AuthorizationService authorizationService =
         new AuthorizationService(noteManager, zConf, storage);
 
@@ -114,7 +116,7 @@ public abstract class AbstractInterpreterTest {
         mock(ApplicationEventListener.class), storage, pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
     Credentials credentials = new Credentials(zConf, storage);
-    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials);
+    notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, eventBus);
     interpreterSettingManager.setNotebook(notebook);
   }
 
