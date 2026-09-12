@@ -16,6 +16,7 @@ import { expect, Locator, test } from '@playwright/test';
 import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
 import { NotebookVisualizationPage } from 'e2e/models/notebook-visualization-page';
 import {
+  addPageAnnotation,
   addPageAnnotationBeforeEach,
   createTestNotebook,
   PAGES,
@@ -31,11 +32,6 @@ const TABLE_CELLS = ['Seoul', '30', '12', 'Busan', '20', '8', 'Incheon', '10', '
 
 test.describe('Notebook Visualization Rendering', () => {
   addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.TABLE);
-  addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.BAR_CHART);
-  addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.PIE_CHART);
-  addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.LINE_CHART);
-  addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.AREA_CHART);
-  addPageAnnotationBeforeEach(PAGES.VISUALIZATIONS.SCATTER_CHART);
 
   let paragraphPage: NotebookParagraphPage;
   let visualizationPage: NotebookVisualizationPage;
@@ -67,14 +63,35 @@ test.describe('Notebook Visualization Rendering', () => {
     });
   });
 
-  test('renders every G2 chart and preserves table data after switching back', async () => {
-    const charts: Array<{ name: string; mode: Locator; canvas: Locator }> = [
-      { name: 'Bar Chart', mode: visualizationPage.barChartMode, canvas: visualizationPage.barChartCanvas },
-      { name: 'Pie Chart', mode: visualizationPage.pieChartMode, canvas: visualizationPage.pieChartCanvas },
-      { name: 'Line Chart', mode: visualizationPage.lineChartMode, canvas: visualizationPage.lineChartCanvas },
-      { name: 'Area Chart', mode: visualizationPage.areaChartMode, canvas: visualizationPage.areaChartCanvas },
+  test('renders every G2 chart and preserves table data after switching back', async ({}, testInfo) => {
+    const charts: Array<{ name: string; page: string; mode: Locator; canvas: Locator }> = [
+      {
+        name: 'Bar Chart',
+        page: PAGES.VISUALIZATIONS.BAR_CHART,
+        mode: visualizationPage.barChartMode,
+        canvas: visualizationPage.barChartCanvas
+      },
+      {
+        name: 'Pie Chart',
+        page: PAGES.VISUALIZATIONS.PIE_CHART,
+        mode: visualizationPage.pieChartMode,
+        canvas: visualizationPage.pieChartCanvas
+      },
+      {
+        name: 'Line Chart',
+        page: PAGES.VISUALIZATIONS.LINE_CHART,
+        mode: visualizationPage.lineChartMode,
+        canvas: visualizationPage.lineChartCanvas
+      },
+      {
+        name: 'Area Chart',
+        page: PAGES.VISUALIZATIONS.AREA_CHART,
+        mode: visualizationPage.areaChartMode,
+        canvas: visualizationPage.areaChartCanvas
+      },
       {
         name: 'Scatter Chart',
+        page: PAGES.VISUALIZATIONS.SCATTER_CHART,
         mode: visualizationPage.scatterChartMode,
         canvas: visualizationPage.scatterChartCanvas
       }
@@ -82,6 +99,7 @@ test.describe('Notebook Visualization Rendering', () => {
 
     for (const chart of charts) {
       await test.step(`When selecting ${chart.name}`, async () => {
+        addPageAnnotation(chart.page, testInfo);
         await expect(async () => {
           await chart.mode.click();
           await expect(chart.mode.locator('input[type="radio"]')).toBeChecked({ timeout: 1000 });
