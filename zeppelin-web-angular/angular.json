@@ -177,6 +177,27 @@
         }
       }
     },
+    "zeppelin-notebook-core": {
+      "projectType": "library",
+      "root": "projects/zeppelin-notebook-core",
+      "sourceRoot": "projects/zeppelin-notebook-core/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/zeppelin-notebook-core/tsconfig.json",
+            "project": "projects/zeppelin-notebook-core/ng-package.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/zeppelin-notebook-core/**/*.ts"]
+          }
+        }
+      }
+    },
     "zeppelin-sdk": {
       "projectType": "library",
       "root": "projects/zeppelin-sdk",

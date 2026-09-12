@@ -6,10 +6,12 @@
   },
   "include": [
     "**/*.spec.ts",
+    "../projects/zeppelin-notebook-core/**/*.spec.ts",
     "../projects/zeppelin-sdk/**/*.spec.ts",
     "../projects/zeppelin-visualization/**/*.spec.ts",
     "../test/**/*.spec.ts",
     "../test/test-setup.ts",
+    "../vitest.notebook-core.config.mts",
     "../vitest.shell.config.mts"
   ],
   "exclude": []
