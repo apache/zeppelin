@@ -47,7 +47,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
-import java.util.regex.Pattern;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 class TerminalInterpreterTest extends BaseInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalInterpreterTest.class);
@@ -113,9 +114,9 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       LOGGER.info(msg);
       // {"text":"\u001b[?1034hbash-3.2$ \r\u001b[Kbash-3.2$
       // \r\u001b[Kbash-3.2$ ","type":"TERMINAL_PRINT"}
-      String pattern = "\\{\"text\":\".*\"type\":\"TERMINAL_PRINT\"}";
-      boolean isMatch = Pattern.matches(pattern, msg);
-      assertTrue(isMatch);
+      JsonObject message = JsonParser.parseString(msg).getAsJsonObject();
+      assertEquals("TERMINAL_PRINT", message.get("type").getAsString());
+      assertTrue(message.get("text").isJsonPrimitive());
 
       // Send invalid_command message
       String echoHelloWorldCmd = String.format("{\"type\":\"TERMINAL_COMMAND\"," +
@@ -199,9 +200,9 @@ class TerminalInterpreterTest extends BaseInterpreterTest {
       LOGGER.info(msg);
       // {"text":"\u001b[?1034hbash-3.2$ \r\u001b[Kbash-3.2$
       // \r\u001b[Kbash-3.2$ ","type":"TERMINAL_PRINT"}
-      String pattern = "\\{\"text\":\".*\"type\":\"TERMINAL_PRINT\"}";
-      boolean isMatch = Pattern.matches(pattern, msg);
-      assertTrue(isMatch);
+      JsonObject message = JsonParser.parseString(msg).getAsJsonObject();
+      assertEquals("TERMINAL_PRINT", message.get("type").getAsString());
+      assertTrue(message.get("text").isJsonPrimitive());
 
       // Send echo 'hello world!' message
       String echoHelloWorldCmd = String.format("{\"type\":\"TERMINAL_COMMAND\"," +
