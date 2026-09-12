@@ -1808,12 +1808,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
             LOGGER.warn("Note {} not found", noteId);
             return null;
           }
-          Paragraph paragraph = note.getParagraph(paragraphId);
-          paragraph.updateOutputBuffer(index, type, output);
-          // Personalized output falls back to the user-specific terminal paragraph snapshot.
-          if (!note.isPersonalizedMode()) {
-            connectionManager.broadcast(noteId, msg);
+          if (note.isPersonalizedMode()) {
+            // Streaming events carry no owner. The shared outputBuffer is what checkpointOutput
+            // saves as the shared result and what other users' paragraphs are cloned from, so
+            // one user's output must not be written there. Personalized clients get their
+            // user-specific terminal snapshot instead.
+            return null;
           }
+          note.getParagraph(paragraphId).updateOutputBuffer(index, type, output);
+          connectionManager.broadcast(noteId, msg);
           return null;
         });
     } catch (IOException e) {

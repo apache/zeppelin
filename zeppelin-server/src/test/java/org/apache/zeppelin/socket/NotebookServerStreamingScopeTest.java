@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -25,8 +26,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -77,5 +81,20 @@ class NotebookServerStreamingScopeTest {
 
     verify(connections, never()).broadcast(eq("note"), any());
     verify(connections, never()).multicastToUser(any(), any());
+  }
+
+  @Test
+  void personalizedCheckpointDoesNotExposeUnownedOutputToOtherUsers() {
+    note.setPersonalizedMode(true);
+
+    server.onOutputUpdated("note", "para", 0, InterpreterResult.Type.TEXT, "private update");
+    server.checkpointOutput("note", "para");
+
+    InterpreterResult otherUserResult =
+        note.getParagraph("para").getUserParagraph("other").getReturn();
+    List<InterpreterResultMessage> otherUserMessages =
+        otherUserResult == null ? Collections.emptyList() : otherUserResult.message();
+    assertTrue(otherUserMessages.stream().noneMatch(m -> m.getData().contains("private update")),
+        "another user's paragraph sees the checkpointed output: " + otherUserMessages);
   }
 }
