@@ -43,6 +43,7 @@ import py4j.GatewayServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
@@ -198,16 +199,13 @@ public class PythonInterpreter extends Interpreter {
 
   private void copyResourceToPythonWorkDir(String srcResourceName,
                                            String dstFileName) throws IOException {
-    FileOutputStream out = null;
-    try {
-      out = new FileOutputStream(pythonWorkDir.getAbsoluteFile() + "/" + dstFileName);
-      IOUtils.copy(
-          getClass().getClassLoader().getResourceAsStream(srcResourceName),
-          out);
-    } finally {
-      if (out != null) {
-        out.close();
+    try (FileOutputStream out =
+            new FileOutputStream(pythonWorkDir.getAbsoluteFile() + "/" + dstFileName);
+         InputStream in = getClass().getClassLoader().getResourceAsStream(srcResourceName)) {
+      if (in == null) {
+        throw new IOException("Cannot find resource: " + srcResourceName);
       }
+      IOUtils.copy(in, out);
     }
   }
 
