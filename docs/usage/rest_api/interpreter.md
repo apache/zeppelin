@@ -521,6 +521,108 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+### Health check an interpreter
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method probes the interpreter processes of the given interpreter setting
+        and reports whether they answer. Useful right after a restart, which only closes the
+        processes and leaves the next use to start them again. The check never starts an
+        interpreter: a setting with nothing running is reported with the reason
+        ```NOT_RUNNING```. A setting can own one process per user or note, so the response holds
+        an entry per interpreter group. The server bounds how long it waits, and a group whose
+        probe did not answer in time is reported with the reason ```PROBE_TIMEOUT``` rather than
+        holding the request.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]/healthcheck```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 403 if the note of the request may not be acted on, 404 if there is no such interpreter setting </td>
+    </tr>
+    <tr>
+      <td>Sample JSON input (Optional)</td>
+      <td>The note to authorize the caller against, needed only when the caller is not allowed to
+        reach the interpreter endpoints on their own. Running a paragraph of that note is enough.
+
+```json
+{
+  "noteId": "2AVQJVC8N"
+}
+```
+</td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>```healthy``` follows whether the interpreter answered. ```alive``` and ```running```
+        are left out when no probe was made, so that an interpreter found dead stays
+        distinguishable from one that was never asked.
+
+```json
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "settingId": "2CH2VMY7B",
+    "settingName": "spark",
+    "groups": [
+      {
+        "groupId": "2CH2VMY7B-shared_process",
+        "healthy": true,
+        "reason": "OK",
+        "alive": true,
+        "running": true,
+        "probeTookMs": 3
+      },
+      {
+        "groupId": "2CH2VMY7B-user2",
+        "healthy": false,
+        "reason": "NOT_REACHABLE",
+        "alive": true,
+        "running": false,
+        "probeTookMs": 1004
+      },
+      {
+        "groupId": "2CH2VMY7B-user3",
+        "healthy": false,
+        "reason": "PROBE_TIMEOUT",
+        "probeTookMs": 3000
+      }
+    ]
+  }
+}
+```
+</td>
+    </tr>
+    <tr>
+      <td>Sample JSON response of an interpreter that is not running</td>
+      <td>
+
+```json
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "settingId": "2CH2VMY7B",
+    "settingName": "spark",
+    "reason": "NOT_RUNNING",
+    "groups": []
+  }
+}
+```
+</td>
+    </tr>
+  </table>
+
+<br/>
 ### Add a new repository for dependency resolving
 
   <table class="table-configuration">
