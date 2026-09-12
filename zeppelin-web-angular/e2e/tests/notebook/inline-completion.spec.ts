@@ -33,30 +33,32 @@ const openInlineCompletionEditor = async (page: Page) => {
 
   const keyboardPage = new NotebookKeyboardPage(page);
   await expect(keyboardPage.paragraphContainer.first()).toBeVisible({ timeout: 30000 });
-  await keyboardPage.setCodeEditorContent('%python\nprint("history")');
-  await keyboardPage.tryFocusCodeEditor();
-  await keyboardPage.pressSelectAll();
-  await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('Enter');
-  await page.keyboard.type('prin');
+  // Seed the open string without Monaco auto-closing its quote or parenthesis.
+  await keyboardPage.setCodeEditorContent('%python\nprint("history")\nprint("hi');
+  // Complete inside a string so the word-suggestion popup does not consume Escape.
+  await page.keyboard.type('s');
 
-  const viewLines = page.locator('.monaco-editor .view-line');
-  await expect
-    .poll(async () => (await viewLines.last().textContent())?.replace(/\s+/g, ' ') ?? '', { timeout: 15000 })
-    .toContain('print("history")');
+  // JUSTIFIED: Monaco's ghost text has no accessible role; this feature-specific locator distinguishes suggestions from persisted history.
+  const completion = keyboardPage.paragraphContainer
+    .first()
+    .locator('.monaco-editor .ghost-text-decoration, .monaco-editor .ghost-text-decoration-preview');
+  await expect(completion.first()).toBeVisible({ timeout: 15000 });
+  // Monaco can split a suggestion into accepted-word and preview decorations.
+  await expect.poll(async () => (await completion.allTextContents()).join('')).toBe('tory")');
 
-  return { noteId, inputArea: page.locator('.monaco-editor textarea.inputarea').first() };
+  return { noteId, completion, inputArea: page.locator('.monaco-editor textarea.inputarea').first() };
 };
 
 test.describe('Inline completion', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR);
 
   test('shows history completion and preserves focus when dismissed', { tag: '@NB-PARITY-010' }, async ({ page }) => {
-    const { noteId, inputArea } = await openInlineCompletionEditor(page);
+    const { noteId, completion, inputArea } = await openInlineCompletionEditor(page);
 
     try {
       await expect(inputArea).toBeFocused();
       await page.keyboard.press('Escape');
+      await expect(completion).toHaveCount(0);
       await expect(inputArea).toBeFocused();
     } finally {
       await page.request.delete(`/api/notebook/${noteId}`);
@@ -68,11 +70,12 @@ test.describe('Inline completion', () => {
     { tag: '@NB-PARITY-011' },
     async ({ page, browserName }) => {
       test.skip(browserName !== 'chromium', 'Monaco handles the second Escape differently in Firefox and WebKit');
-      const { noteId, inputArea } = await openInlineCompletionEditor(page);
+      const { noteId, completion, inputArea } = await openInlineCompletionEditor(page);
 
       try {
         await expect(inputArea).toBeFocused();
         await page.keyboard.press('Escape');
+        await expect(completion).toHaveCount(0);
         await expect(inputArea).toBeFocused();
         await page.keyboard.press('Escape');
         await expect(inputArea).not.toBeFocused();

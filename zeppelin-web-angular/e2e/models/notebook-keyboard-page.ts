@@ -167,12 +167,10 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async pressSelectAll(): Promise<void> {
-    const isWebkit = this.page.context().browser()?.browserType().name() === 'webkit';
-    if (isWebkit) {
-      await this.page.keyboard.press('Meta+A');
-    } else {
-      await this.page.keyboard.press('ControlOrMeta+A');
-    }
+    // Monaco chooses its keymap from the browser UA, which device emulation can
+    // make different from the host OS used by Playwright's ControlOrMeta.
+    const isMacintosh = await this.page.evaluate(() => navigator.userAgent.includes('Macintosh'));
+    await this.page.keyboard.press(isMacintosh ? 'Meta+A' : 'Control+A');
   }
 
   // Run paragraph - shift.enter

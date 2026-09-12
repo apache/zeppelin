@@ -17,13 +17,18 @@
     "generate:notebook-parity-scenarios": "node scripts/generate-notebook-parity-scenarios.mjs",
     "check:notebook-parity-scenarios": "node --test scripts/check-notebook-parity-scenarios.test.mjs && node scripts/check-notebook-parity-scenarios.mjs",
     "build-project:vis": "ng build --project zeppelin-visualization",
-    "lint": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint && npm run lint:react && prettier --check \"**/*.{ts,tsx,mts,js,json,css,html}\"",
-    "lint:fix": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint --fix && npm run lint:fix:react && prettier --write \"**/*.{ts,tsx,mts,js,json,css,html}\"",
+    "lint": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint && npm run lint:react && prettier --check \"**/*.{ts,tsx,mts,js,mjs,json,css,html}\"",
+    "lint:fix": "cross-env NODE_OPTIONS='--max-old-space-size=8192' ng lint --fix && npm run lint:fix:react && prettier --write \"**/*.{ts,tsx,mts,js,mjs,json,css,html}\"",
     "lint:react": "cd projects/zeppelin-react && npm run lint",
     "lint:fix:react": "cd projects/zeppelin-react && npm run lint:fix",
     "test:shell": "vitest run --config vitest.shell.config.mts",
-    "test:eslint-rules": "node --test eslint-rules/",
+    "test:eslint-rules": "node --test eslint-rules/*.test.js",
     "e2e": "playwright test",
+    "check:core-contract-fixtures": "node --test e2e/core-contract/notebook-transport-fixture.test.mjs e2e/core-contract/playwright-runner.test.mjs",
+    "check:core-contract-auth": "cross-env ZEPPELIN_RUN_AUTH_SETUP_TEST=1 node --test --test-name-pattern='live anonymous setup' e2e/core-contract/playwright-runner.test.mjs",
+    "check:core-contract-server": "node --test e2e/core-contract/capture-server.test.mjs",
+    "e2e:core-contract": "playwright test --config playwright.core-contract.config.js --project=chromium",
+    "e2e:core-contract:live": "cross-env ZEPPELIN_E2E_LIVE_CAPTURE=1 playwright test --config playwright.core-contract.config.js --project=chromium",
     "e2e:fast": "playwright test --project=chromium",
     "e2e:classic": "playwright test --config playwright.classic.config.js",
     "e2e:ui": "playwright test --ui",
@@ -91,6 +96,7 @@
     "@types/node": "22.12.0",
     "@types/parse5": "^5.0.2",
     "@types/webpack-env": "^1.18.8",
+    "@types/ws": "8.18.1",
     "@vitest/coverage-v8": "4.1.8",
     "@vitest/eslint-plugin": "^1.6.27",
     "ajv": "^8.20.0",
@@ -117,7 +123,8 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.33.1",
     "vite": "8.2.1",
-    "vitest": "4.1.8"
+    "vitest": "4.1.8",
+    "ws": "8.18.0"
   },
   "overrides": {
     "@babel/runtime": "^7.27.0"
@@ -127,7 +134,7 @@
       "cross-env NODE_OPTIONS='--max-old-space-size=8192' eslint --fix",
       "./node_modules/.bin/prettier --write"
     ],
-    "**/*.{js,json,css,html}": [
+    "**/*.{js,mjs,json,css,html}": [
       "./node_modules/.bin/prettier --write"
     ]
   }
