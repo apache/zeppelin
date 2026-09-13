@@ -19,6 +19,7 @@ package org.apache.zeppelin.search;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import org.apache.zeppelin.notebook.NoteEventAsyncListener;
 import javax.annotation.PreDestroy;
 
@@ -39,9 +40,23 @@ public abstract class SearchService extends NoteEventAsyncListener {
    * Full-text search in all the notes
    *
    * @param queryStr a query
+   * @param readable tells for a noteId whether the caller may read it. Entries the caller
+   *                 cannot read are dropped before the result set is cut down, so that the
+   *                 caller is not served fewer results than it is allowed to see.
    * @return A list of matching paragraphs (id, text, snippet w/ highlight)
    */
-  public abstract List<Map<String, String>> query(String queryStr);
+  public abstract List<Map<String, String>> query(String queryStr, Predicate<String> readable);
+
+  /**
+   * The id of an indexed document is either a noteId or a noteId followed by the paragraph.
+   *
+   * @see LuceneSearch#formatId(String, org.apache.zeppelin.notebook.Paragraph)
+   * @see EmbeddingSearch#formatId(String, org.apache.zeppelin.notebook.Paragraph)
+   */
+  static String noteIdOf(String documentId) {
+    int separator = documentId.indexOf('/');
+    return separator < 0 ? documentId : documentId.substring(0, separator);
+  }
 
   /**
    * Updates note index for the given note, only update index of note meta info,

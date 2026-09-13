@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -509,15 +510,11 @@ public class EmbeddingSearch extends SearchService {
   // ---- SearchService implementation ----
 
   @Override
-  // TODO(ZEPPELIN-6414): Accept user/roles (or a readability Predicate) and apply the auth
-  // filter before Phase-1 table collection and before the top-K cutoff. Currently the REST
-  // layer filters after truncation, which can hide results the caller is authorized for and
-  // lets inaccessible notes contaminate the table-boost ranking. Requires a SearchService
-  // interface change that also affects LuceneSearch.
-  public List<Map<String, String>> query(String queryStr) {
+  public List<Map<String, String>> query(String queryStr, Predicate<String> readable) {
     if (StringUtils.isBlank(queryStr) || index.isEmpty()) {
       return Collections.emptyList();
     }
+    Map<String, Boolean> readableNotes = new HashMap<>();
 
     float[] queryEmbedding = embed(queryStr);
     String queryLower = queryStr.toLowerCase(Locale.ROOT);
@@ -527,6 +524,12 @@ public class EmbeddingSearch extends SearchService {
     indexLock.readLock().lock();
     try {
       for (Map.Entry<String, IndexEntry> entry : index.entrySet()) {
+        // Dropping the entries here keeps them out of the table weights below and out of
+        // the cutoff, so the caller is served its own top results and not what is left of
+        // everyone's top results.
+        if (!readableNotes.computeIfAbsent(noteIdOf(entry.getKey()), readable::test)) {
+          continue;
+        }
         float sim = cosineSimilarity(queryEmbedding, entry.getValue().embedding);
         IndexEntry ie = entry.getValue();
         if (ie.text != null && ie.text.toLowerCase(Locale.ROOT).contains(queryLower)) {
