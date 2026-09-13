@@ -140,6 +140,7 @@ export interface ParagraphItem {
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   apps: any[];
   progressUpdateIntervalMs: number;
+  progress: number;
   jobName: string;
   id: string;
   dateCreated: string;
@@ -158,6 +159,10 @@ export interface ParagraphItem {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fontSize: any;
 }
+
+export type ImportParagraphItem = Omit<ParagraphItem, 'progress'> & {
+  progress?: number;
+};
 
 export interface SendParagraph {
   id: string;
@@ -214,6 +219,13 @@ export interface AngularObjectRemove {
   noteId: string;
   paragraphId: string;
   name: string;
+  angularObject?: {
+    name: string;
+    object: unknown;
+    noteId: string;
+    paragraphId: string;
+  };
+  interpreterGroupId?: string;
 }
 
 export interface AngularObjectUpdate {
