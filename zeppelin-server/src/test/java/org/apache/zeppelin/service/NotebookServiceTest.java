@@ -616,7 +616,7 @@ class NotebookServiceTest {
     }
     // The queue may be empty while its worker is finishing the current event.
     Thread.sleep(100);
-    List<Map<String, String>> searchResults = searchService.query(serviceSearchToken);
+    List<Map<String, String>> searchResults = searchService.query(serviceSearchToken, id -> true);
     assertTrue(searchResults.stream().anyMatch(result ->
         result.get("id").startsWith(note1Id)));
 
