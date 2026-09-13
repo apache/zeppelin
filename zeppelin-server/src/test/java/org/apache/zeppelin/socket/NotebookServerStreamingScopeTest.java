@@ -18,6 +18,7 @@ package org.apache.zeppelin.socket;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -84,6 +86,97 @@ class NotebookServerStreamingScopeTest {
 
     verify(connections, never()).broadcast(eq("note"), any());
     verify(connections, never()).multicastToUser(any(), any());
+  }
+
+  @Test
+  void personalizedOutputReachesOnlyItsExecutionOwner() {
+    note.setPersonalizedMode(true);
+    note.getParagraph("para").getUserParagraph("owner");
+
+    server.onParagraphOutputAppend("note", "para", 0, "owner", "mine");
+    server.onParagraphOutputUpdated(
+        "note", "para", 0, "owner", InterpreterResult.Type.TEXT, "mine too");
+
+    verify(connections, never()).broadcast(eq("note"), any());
+    verify(connections, times(2)).multicastToUser(eq("owner"), any());
+  }
+
+  // The shared user field only tracks the note owner's runs, so reading it misaddressed
+  // everyone else's output.
+  @Test
+  void personalizedOutputIgnoresTheSharedParagraphUserField() {
+    note.setPersonalizedMode(true);
+    Paragraph sharedParagraph = note.getParagraph("para");
+    sharedParagraph.setAuthenticationInfo(new AuthenticationInfo("stale-owner"));
+    sharedParagraph.getUserParagraph("runner");
+
+    server.onParagraphOutputAppend("note", "para", 0, "runner", "mine");
+
+    verify(connections).multicastToUser(eq("runner"), any());
+    verify(connections, never()).multicastToUser(eq("stale-owner"), any());
+  }
+
+  @Test
+  void personalizedUpdateWritesToTheOwnersCopyNotTheSharedParagraph() {
+    note.setPersonalizedMode(true);
+    Paragraph sharedParagraph = note.getParagraph("para");
+    Paragraph ownerParagraph = sharedParagraph.getUserParagraph("owner");
+
+    server.onParagraphOutputUpdated(
+        "note", "para", 0, "owner", InterpreterResult.Type.TEXT, "owned update");
+
+    // checkpointOutput always produces a result, so assert on what that result carries.
+    sharedParagraph.checkpointOutput();
+    assertTrue(sharedParagraph.getReturn().message().isEmpty(),
+        "the shared paragraph absorbed one user's streaming output: "
+            + sharedParagraph.getReturn().message());
+
+    ownerParagraph.checkpointOutput();
+    assertEquals(1, ownerParagraph.getReturn().message().size(),
+        "the owner's copy did not receive its own output");
+    assertEquals("owned update", ownerParagraph.getReturn().message().get(0).getData());
+  }
+
+  @Test
+  void personalizedClearOnlyDiscardsTheOwnersOutput() {
+    note.setPersonalizedMode(true);
+    Paragraph sharedParagraph = note.getParagraph("para");
+    Paragraph ownerParagraph = sharedParagraph.getUserParagraph("owner");
+    Paragraph otherParagraph = sharedParagraph.getUserParagraph("other");
+    ownerParagraph.setResult(new InterpreterResult(InterpreterResult.Code.SUCCESS, "owned"));
+    otherParagraph.setResult(new InterpreterResult(InterpreterResult.Code.SUCCESS, "untouched"));
+
+    server.onParagraphOutputClear("note", "para", "owner");
+
+    assertNull(ownerParagraph.getReturn(), "the owner's output survived its own clear");
+    assertNotNull(otherParagraph.getReturn(), "another user's output was cleared");
+    assertEquals("untouched", otherParagraph.getReturn().message().get(0).getData());
+    verify(connections).multicastToUser(eq("owner"), any());
+    verify(connections, never()).multicastToUser(eq("other"), any());
+  }
+
+  // With paragraph status and progress events off, no streaming message is sent at all and the
+  // terminal result the user already holds is left alone.
+  @Test
+  void disabledParagraphStatusEventsLeaveTheTerminalResultAlone() {
+    ZeppelinConfiguration disabled = mock(ZeppelinConfiguration.class);
+    when(disabled.getBoolean(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS))
+        .thenReturn(false);
+    server.setZeppelinConfiguration(disabled);
+    note.setPersonalizedMode(true);
+    Paragraph ownerParagraph = note.getParagraph("para").getUserParagraph("owner");
+    ownerParagraph.setResult(new InterpreterResult(InterpreterResult.Code.SUCCESS, "terminal"));
+
+    server.onParagraphOutputAppend("note", "para", 0, "owner", "append");
+    server.onParagraphOutputUpdated(
+        "note", "para", 0, "owner", InterpreterResult.Type.TEXT, "update");
+    server.onParagraphOutputClear("note", "para", "owner");
+
+    verify(connections, never()).broadcast(eq("note"), any());
+    verify(connections, never()).multicastToUser(any(), any());
+    assertNotNull(ownerParagraph.getReturn(), "the terminal result was discarded");
+    assertEquals("terminal", ownerParagraph.getReturn().message().get(0).getData());
   }
 
   @Test
