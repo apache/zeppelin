@@ -35,6 +35,10 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ## Migration Guide
 
+### Upgrading from Zeppelin 0.12 to 0.13
+
+ - The `org.apache.zeppelin:zeppelin-interpreter-shaded` Maven artifact is no longer published. Custom interpreters should depend on `org.apache.zeppelin:zeppelin-interpreter` with `provided` scope instead. The Zeppelin distribution continues to provide the internal shaded runtime JAR to interpreter processes; custom interpreters should not depend on classes packaged only in that internal runtime JAR. Custom interpreters that use Commons Configuration, Commons BeanUtils, JSR 305, the Maven Plugin API, or Sisu Plexus must now declare those libraries directly instead of relying on transitive dependencies from `zeppelin-interpreter`.
+
 ### Upgrading from Zeppelin 0.9, 0.10 to 0.11
  - From 0.11, The type of `Pegdown` for parsing markdown was deprecated ([ZEPPELIN-5529](https://issues.apache.org/jira/browse/ZEPPELIN-2619)). It will use `Flexmark` instead.
 

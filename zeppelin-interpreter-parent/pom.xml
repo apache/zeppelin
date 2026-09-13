@@ -33,13 +33,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter-shaded</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
@@ -117,7 +110,6 @@
                   <exclude>META-INF/*.SF</exclude>
                   <exclude>META-INF/*.DSA</exclude>
                   <exclude>META-INF/*.RSA</exclude>
-                  <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
                 </excludes>
               </filter>
             </filters>
@@ -127,11 +119,6 @@
                 <resource>reference.conf</resource>
               </transformer>
             </transformers>
-            <artifactSet>
-              <excludes>
-                <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
-              </excludes>
-            </artifactSet>
             <outputFile>${project.basedir}/../interpreter/${interpreter.name}/${project.artifactId}-${project.version}.jar</outputFile>
           </configuration>
           <executions>

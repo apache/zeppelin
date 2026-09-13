@@ -84,6 +84,44 @@ jobs:
       - name: run tests # skip spark test because we would run them in other CI
         run: ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
 
+  interpreter-runtime-verify:
+    name: Interpreter runtime (${{ matrix.profile_name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile_name: default
+            profile_args: ''
+          - profile_name: include-hadoop
+            profile_args: '-Pinclude-hadoop'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK 11
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 11
+      - name: Cache local Maven repository
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-zeppelin-
+      - name: Prepare stale interpreter runtime
+        run: |
+          ./mvnw clean -pl zeppelin-interpreter --am ${MAVEN_ARGS}
+          mkdir -p interpreter
+          touch interpreter/zeppelin-interpreter-shaded-stale.jar
+      - name: Verify zeppelin-interpreter
+        run: ./mvnw verify -pl zeppelin-interpreter --am ${{ matrix.profile_args }} ${MAVEN_ARGS}
+
   # test interpreter modules except spark, flink, python, jupyter
   interpreter-test-non-core:
     runs-on: ubuntu-24.04
