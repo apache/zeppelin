@@ -1,0 +1,304 @@
+{
+  "_license": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0.",
+  "metadata": {
+    "captureSource": "live-server",
+    "capturedAt": "2026-09-13T19:33:08.906Z",
+    "configuration": {
+      "zeppelin.websocket.paragraph_status_progress.enable": true
+    },
+    "coveredOperations": [
+      "GET_NOTE",
+      "COLLABORATIVE_MODE_STATUS",
+      "NOTE",
+      "RUN_PARAGRAPH",
+      "SAVE_NOTE_FORMS",
+      "PARAGRAPH",
+      "PARAGRAPH_ADDED",
+      "CANCEL_PARAGRAPH"
+    ],
+    "interpreter": "sh",
+    "knownExclusions": [],
+    "owner": "zeppelin-web-angular",
+    "provenance": {
+      "baseCommit": "e816bf1b76b50282cc32b284cdb8755f932f657e",
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "buildManifest": {
+        "artifacts": [
+          {
+            "exists": true,
+            "fileCount": 0,
+            "path": ".",
+            "selection": "root-jars",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "exists": true,
+            "fileCount": 1,
+            "path": ".",
+            "selection": "all-wars",
+            "sha256": "bf4d480bf55a2683bee76b13e6470acd2bfbe258e23cd6da02f25d36783f73e1"
+          },
+          {
+            "exists": true,
+            "fileCount": 13,
+            "path": "bin",
+            "selection": "tree",
+            "sha256": "37d85b2da8ca20e0d705e0b0e7041507a41c109a64987e20b62cd5fba2ff89eb"
+          },
+          {
+            "exists": true,
+            "fileCount": 10,
+            "path": "conf",
+            "selection": "tree",
+            "sha256": "193334ddf2c654ed7a544b2951a7c2517ba32f183ddbb8fe42e10544688e16b4"
+          },
+          {
+            "exists": false,
+            "fileCount": 0,
+            "path": "lib",
+            "selection": "tree",
+            "sha256": "b7b3aede84b3cb0edbea85abfb62dab3e0d8e43975e68b80a5a411cf67c32ff4"
+          },
+          {
+            "exists": false,
+            "fileCount": 0,
+            "path": "lib/interpreter",
+            "selection": "tree",
+            "sha256": "b7b3aede84b3cb0edbea85abfb62dab3e0d8e43975e68b80a5a411cf67c32ff4"
+          },
+          {
+            "exists": true,
+            "fileCount": 1034,
+            "path": "zeppelin-interpreter/target/classes",
+            "selection": "tree",
+            "sha256": "e3e940f06876febb19f4ffbb9fd4d34d232d6b711fa673ad144d7f5cffaddf03"
+          },
+          {
+            "exists": true,
+            "fileCount": 345,
+            "path": "zeppelin-server/target/classes",
+            "selection": "tree",
+            "sha256": "73509c0b8161145ac9a9f972bbe7948d269109b7a17294a65727d82c710d408e"
+          },
+          {
+            "exists": false,
+            "fileCount": 0,
+            "path": "zeppelin-interpreter/target/lib",
+            "selection": "tree",
+            "sha256": "b7b3aede84b3cb0edbea85abfb62dab3e0d8e43975e68b80a5a411cf67c32ff4"
+          },
+          {
+            "exists": true,
+            "fileCount": 246,
+            "path": "zeppelin-server/target/lib",
+            "selection": "tree",
+            "sha256": "f90f1520c7f09cb2bfe590bbf6ebd131a67e67cae61a65cda174323e2a28b238"
+          },
+          {
+            "exists": false,
+            "fileCount": 0,
+            "path": "zeppelin-web/target/lib",
+            "selection": "tree",
+            "sha256": "b7b3aede84b3cb0edbea85abfb62dab3e0d8e43975e68b80a5a411cf67c32ff4"
+          },
+          {
+            "exists": false,
+            "fileCount": 0,
+            "path": "zeppelin-web-angular/target/lib",
+            "selection": "tree",
+            "sha256": "b7b3aede84b3cb0edbea85abfb62dab3e0d8e43975e68b80a5a411cf67c32ff4"
+          },
+          {
+            "exists": true,
+            "fileCount": 291,
+            "path": "zeppelin-server/target/test-classes",
+            "selection": "tree",
+            "sha256": "4f9dd82ee7bdca57d13b61c219c898af54fb7374aa72249a477e6c6eda1e231c"
+          },
+          {
+            "exists": true,
+            "fileCount": 11,
+            "path": "interpreter",
+            "selection": "tree",
+            "sha256": "a009e8eff2d2736c4c9843a8e06b3b85dc110f13a93624a53e1a7d4fccf9928e"
+          },
+          {
+            "exists": true,
+            "fileCount": 14,
+            "path": "zeppelin-interpreter-shaded/target",
+            "selection": "tree",
+            "sha256": "7b4de0e8a4b24ac3ea74147a3a11cc4e268c0d1a312435421300f6947578fce8"
+          },
+          {
+            "exists": true,
+            "fileCount": 5182,
+            "path": "zeppelin-web-angular/dist/zeppelin",
+            "selection": "tree",
+            "sha256": "ac2af3ebcf9704292c888ce0309345f989583f3b5ce6d4b694429ae6bec0b33f"
+          },
+          {
+            "exists": true,
+            "fileCount": 18,
+            "path": "shell/target/classes",
+            "selection": "tree",
+            "sha256": "c2d25e7912828176d0b85fb6f04904473b33142bf3598265ea555ff420fb2ffa"
+          }
+        ],
+        "baseCommit": "e816bf1b76b50282cc32b284cdb8755f932f657e",
+        "id": "90f6668819d55160f0112ac987f9eedc6f0298fc879bca351869e6ac18292355",
+        "launchTargets": {
+          "angularWeb": {
+            "kind": "directory",
+            "path": "zeppelin-web-angular/dist/zeppelin"
+          },
+          "classicWeb": {
+            "kind": "missing",
+            "path": ""
+          }
+        },
+        "sourceCommit": "e816bf1b76b50282cc32b284cdb8755f932f657e",
+        "sourceTree": {
+          "fileCount": 2644,
+          "sha256": "7c6149a7c0ab8111f096b0f60595636074bfc77adb73695c7923dd5e32b225d6"
+        },
+        "version": 3
+      },
+      "captureMode": "execution",
+      "configuration": {
+        "zeppelin.websocket.paragraph_status_progress.enable": true
+      },
+      "interpreter": "sh",
+      "isolation": {
+        "logs": "<capture-root>/logs",
+        "notebook": "<capture-root>/notebook",
+        "pid": "<capture-root>/run",
+        "recovery": "<capture-root>/recovery",
+        "root": "<capture-root>",
+        "searchIndex": "<capture-root>/index"
+      },
+      "origin": "http://127.0.0.1:18081",
+      "sourceCommit": "e816bf1b76b50282cc32b284cdb8755f932f657e"
+    },
+    "scenario": "Cancel a running paragraph",
+    "zeppelinVersion": "0.13.0-SNAPSHOT"
+  },
+  "records": [
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:1>\",\"data\":{\"id\":\"2N5BSSMFA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"user\":\"<user>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327988894_422040464\",\"id\":\"paragraph_1789327988894_422040464\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"ExecutionContractCapture_1789327988891\",\"id\":\"2N5BSSMFA\",\"defaultInterpreterGroup\":\"sh\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/E2E_TEST_FOLDER/ExecutionContractCapture_1789327988891\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"RUN_PARAGRAPH\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"paragraph_1789327988894_422040464\",\"title\":\"\",\"paragraph\":\"%sh\\nsleep 30\",\"config\":{},\"params\":{}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"title\":\"\",\"text\":\"%sh\\nsleep 30\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327988894_422040464\",\"id\":\"paragraph_1789327988894_422040464\",\"dateCreated\":\"<dateCreated>\",\"status\":\"PENDING\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_ADDED\",\"data\":{\"paragraph\":{\"text\":\"%sh\\n\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327989498_345048741\",\"id\":\"paragraph_1789327989498_345048741\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},\"index\":1},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:2>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"title\":\"\",\"text\":\"%sh\\nsleep 30\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327988894_422040464\",\"id\":\"paragraph_1789327988894_422040464\",\"dateCreated\":\"<dateCreated>\",\"dateStarted\":\"<dateStarted>\",\"status\":\"PENDING\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"title\":\"\",\"text\":\"%sh\\nsleep 30\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327988894_422040464\",\"id\":\"paragraph_1789327988894_422040464\",\"dateCreated\":\"<dateCreated>\",\"dateStarted\":\"<dateStarted>\",\"status\":\"RUNNING\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"CANCEL_PARAGRAPH\",\"msgId\":\"<msgId:3>\",\"data\":{\"id\":\"paragraph_1789327988894_422040464\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 13
+    },
+    {
+      "kind": "websocket",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"title\":\"\",\"text\":\"%sh\\nsleep 30\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"INCOMPLETE\",\"msg\":[{\"type\":\"TEXT\",\"data\":\"Paragraph received a SIGTERM\\nExitValue: 143\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1789327988894_422040464\",\"id\":\"paragraph_1789327988894_422040464\",\"dateCreated\":\"<dateCreated>\",\"dateStarted\":\"<dateStarted>\",\"dateFinished\":\"<dateFinished>\",\"status\":\"ABORT\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 14
+    }
+  ],
+  "version": 1
+}

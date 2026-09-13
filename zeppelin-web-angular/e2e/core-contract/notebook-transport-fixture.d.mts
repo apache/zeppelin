@@ -52,9 +52,48 @@ export interface FixtureMetadata {
   knownExclusions: string[];
   owner: string;
   scenario: string;
-  // Recorded for provenance; neither is read or validated by this module.
+  configuration?: Record<string, boolean | number | string>;
+  interpreter?: string;
+  // Recorded capture identity and environment.
   capturedAt?: string;
   zeppelinVersion?: string;
+  captureSource?: 'live-server';
+  provenance?: {
+    baseCommit: string;
+    authentication: string;
+    browser: { name: string; version: string };
+    buildManifest: {
+      artifacts: Array<{
+        exists: boolean;
+        fileCount: number;
+        path: string;
+        selection: 'all-wars' | 'root-jars' | 'tree';
+        sha256: string;
+      }>;
+      baseCommit: string;
+      id: string;
+      launchTargets: {
+        angularWeb: { kind: 'directory' | 'missing' | 'war'; path: string };
+        classicWeb: { kind: 'directory' | 'missing' | 'war'; path: string };
+      };
+      sourceCommit: string;
+      sourceTree: { fileCount: number; sha256: string };
+      version: number;
+    };
+    captureMode: string;
+    configuration: Record<string, boolean | number | string>;
+    interpreter: string;
+    isolation: {
+      logs: string;
+      notebook: string;
+      pid: string;
+      recovery: string;
+      root: string;
+      searchIndex: string;
+    };
+    origin: string;
+    sourceCommit: string;
+  };
 }
 
 export interface TransportFixture {
@@ -112,6 +151,7 @@ export declare function normalizeFixtureRecord(value: unknown): unknown;
 export declare function sanitizeFixture(fixture: TransportFixture): TransportFixture;
 export declare function validateFixture(fixture: unknown): string[];
 export declare function validateReplayFixture(fixture: unknown): string[];
+export declare function validateCaptureProvenance(metadata: unknown): string[];
 
 export declare function createPlaywrightFixtureAdapter(fixture: TransportFixture): PlaywrightFixtureAdapter;
 export declare function createNotebookTransportRecorder(metadata: FixtureMetadata): NotebookTransportRecorder;

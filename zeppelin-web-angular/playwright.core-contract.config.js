@@ -51,7 +51,7 @@ module.exports = defineConfig({
     ...(live ? [{ name: 'setup', testMatch: /global\.setup\.ts/, metadata: { authStatePath } }] : []),
     {
       name: 'chromium',
-      testMatch: '**/tests/notebook/core-contract/capture-fixtures.spec.ts',
+      testMatch: '**/tests/notebook/core-contract/*.spec.ts',
       grep: live ? /@live/ : undefined,
       grepInvert: live ? undefined : /@live/,
       use: {

@@ -18,7 +18,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>]" >&2
+  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>] [--paragraph-status-progress true|false] [--build-root <dir> --build-manifest <file>]" >&2
 }
 
 command="${1:-}"
@@ -27,6 +27,9 @@ capture_root=""
 capture_mode="anonymous"
 zeppelin_port="8080"
 port_given="no"
+paragraph_status_progress="true"
+build_root=""
+build_manifest=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -48,6 +51,18 @@ while [[ $# -gt 0 ]]; do
       fi
       shift 2
       ;;
+    --paragraph-status-progress)
+      paragraph_status_progress="${2:-}"
+      shift 2
+      ;;
+    --build-root)
+      build_root="${2:-}"
+      shift 2
+      ;;
+    --build-manifest)
+      build_manifest="${2:-}"
+      shift 2
+      ;;
     *)
       usage
       exit 2
@@ -57,6 +72,10 @@ done
 
 if [[ -z "${command}" || -z "${capture_root}" ]]; then
   usage
+  exit 2
+fi
+if [[ "${paragraph_status_progress}" != "true" && "${paragraph_status_progress}" != "false" ]]; then
+  echo "--paragraph-status-progress must be true or false, got '${paragraph_status_progress}'" >&2
   exit 2
 fi
 
@@ -80,6 +99,16 @@ reject_whitespace_path "${physical_parent}" "canonical capture root"
 repo_root="$(cd -P "$(dirname "$0")/../../.." && printf '%s/.' "$PWD")"
 reject_whitespace_path "${repo_root}" "repository"
 repo_root="${repo_root%/.}"
+build_root="${build_root:-${repo_root}}"
+if [[ "${build_root}" != "${repo_root}" || -n "${build_manifest}" ]]; then
+  if [[ -z "${build_manifest}" ]]; then
+    echo "--build-root requires --build-manifest" >&2
+    exit 2
+  fi
+  reject_whitespace_path "${build_root}" "build root"
+  build_root="$(cd -P "${build_root}" && pwd)"
+  node "${repo_root}/zeppelin-web-angular/e2e/core-contract/capture-build-manifest.mjs" verify "${build_manifest}" "${build_root}"
+fi
 # Use the physical path so symlink and direct access produce the same marker.
 capture_root="$(mkdir -p "${capture_root}" && cd "${capture_root}" && pwd -P)"
 capture_marker="-Dzeppelin.capture.root=${capture_root}"
@@ -205,6 +234,10 @@ stop_pid() {
 }
 
 start_zeppelin() {
+  if [[ -z "${CAPTURE_ZEPPELIN_COMMAND:-}" && -z "${build_manifest}" ]]; then
+    echo "real capture startup requires --build-root and --build-manifest" >&2
+    exit 2
+  fi
   # Environment and JVM properties override the temporary site XML.
   # Clear inherited settings that could redirect storage, classpaths or remote connections.
   # Keep JAVA_HOME and PATH to select the installed toolchain.
@@ -221,10 +254,10 @@ start_zeppelin() {
   # different notebook dir or bind address) would silently override the isolation this script
   # promises. This script never writes that file itself, so any copy here is stale.
   rm -f "${capture_root}/conf/zeppelin-env.sh"
-  cp "${repo_root}/conf/log4j2.properties" "${capture_root}/conf/log4j2.properties"
-  cp "${repo_root}/conf/zeppelin-site.xml.template" "${capture_root}/conf/zeppelin-site.xml"
+  cp "${build_root}/conf/log4j2.properties" "${capture_root}/conf/log4j2.properties"
+  cp "${build_root}/conf/zeppelin-site.xml.template" "${capture_root}/conf/zeppelin-site.xml"
   if [[ "${capture_mode}" == "auth" ]]; then
-    cp "${repo_root}/conf/shiro.ini.template" "${capture_root}/conf/shiro.ini"
+    cp "${build_root}/conf/shiro.ini.template" "${capture_root}/conf/shiro.ini"
   else
     rm -f "${capture_root}/conf/shiro.ini"
   fi
@@ -237,7 +270,7 @@ start_zeppelin() {
   export ZEPPELIN_PID_DIR="${capture_root}/run"
   export ZEPPELIN_WAR_TEMPDIR="${capture_root}/webapps"
   # Zeppelin ignores this marker; verify_pid_identity matches it as a whole JVM argument.
-  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
+  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery -Dzeppelin.websocket.paragraph_status_progress.enable=${paragraph_status_progress} ${capture_marker}"
   export ZEPPELIN_CAPTURE_ROOT="${capture_root}"
   export ZEPPELIN_PORT="${zeppelin_port}"
   # Do not inherit Hadoop settings for this fixture server.
@@ -252,7 +285,7 @@ start_zeppelin() {
     bash -c "${CAPTURE_ZEPPELIN_COMMAND} $(printf '%q' "${capture_marker}")" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
     echo "$!" > "${zeppelin_pid_file}"
   else
-    "${repo_root}/bin/zeppelin.sh" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
+    "${build_root}/bin/zeppelin.sh" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
     echo "$!" > "${zeppelin_pid_file}"
   fi
   set +m

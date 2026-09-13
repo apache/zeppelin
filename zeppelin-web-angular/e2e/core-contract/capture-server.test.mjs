@@ -95,6 +95,34 @@ test('capture server rejects a repository path with whitespace before creating t
   assert.equal(existsSync(root), false);
 });
 
+test('capture server refuses an unverified external build before launching it', () => {
+  const parent = createRoot();
+  const root = path.join(parent.root, 'capture');
+  const manifest = path.join(parent.root, 'manifest.json');
+  const launched = path.join(parent.root, 'launched');
+  writeFileSync(manifest, '{}\n');
+
+  const result = run(
+    [
+      'start',
+      '--root',
+      root,
+      '--port',
+      String(parent.zeppelinPort),
+      '--build-root',
+      path.resolve('..'),
+      '--build-manifest',
+      manifest
+    ],
+    { CAPTURE_ZEPPELIN_COMMAND: `touch '${launched}'` }
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must equal origin\/master|required build output|build manifest does not match/);
+  assert.equal(existsSync(root), false);
+  assert.equal(existsSync(launched), false);
+});
+
 for (const action of ['start', 'stop']) {
   test(`capture server refuses concurrent ${action} while startup owns the root`, async () => {
     const root = createRoot();
@@ -233,6 +261,43 @@ await import(${JSON.stringify(stub)});
   } finally {
     if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
   }
+});
+
+test('capture server pins paragraph status and progress streaming for execution fixtures', () => {
+  const root = createRoot();
+  const probe = path.join(root.root, 'probe.mjs');
+  const observed = path.join(root.root, 'jvm-options');
+  writeFileSync(
+    probe,
+    `import { writeFileSync } from 'node:fs';
+writeFileSync(${JSON.stringify(observed)}, process.env.ZEPPELIN_JAVA_OPTS);
+await import(${JSON.stringify(stub)});
+`
+  );
+  const result = run(
+    ['start', '--root', root.root, '--port', String(root.zeppelinPort), '--paragraph-status-progress', 'false'],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${probe}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(readFileSync(observed, 'utf8'), /-Dzeppelin\.websocket\.paragraph_status_progress\.enable=false/);
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
+});
+
+test('capture server rejects an invalid paragraph status and progress setting before side effects', () => {
+  const parent = createRoot();
+  const root = path.join(parent.root, 'invalid-streaming');
+  const launched = path.join(parent.root, 'launched');
+  const result = run(
+    ['start', '--root', root, '--port', String(parent.zeppelinPort), '--paragraph-status-progress', 'sometimes'],
+    { CAPTURE_ZEPPELIN_COMMAND: `touch '${launched}'` }
+  );
+  assert.equal(result.status, 2, result.stderr);
+  assert.match(result.stderr, /must be true or false/);
+  assert.equal(existsSync(root), false);
+  assert.equal(existsSync(launched), false);
 });
 
 test('capture-server starts and stops a server in its own root', () => {

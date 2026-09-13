@@ -32,8 +32,74 @@ import {
   isNotebookRestUrl,
   parseRestBody,
   validateFixture,
+  validateCaptureProvenance,
   webSocketPayloadMatches
 } from './notebook-transport-fixture.mjs';
+
+test('live fixture provenance fails closed when capture identity or isolation is missing', () => {
+  const manifest = JSON.parse(readFileSync(new URL('./fixtures/build-manifest.json', import.meta.url)));
+  const metadata = {
+    ...fixtureMetadata(),
+    captureSource: 'live-server',
+    provenance: {
+      baseCommit: 'e816bf1b76b50282cc32b284cdb8755f932f657e',
+      authentication: 'anonymous',
+      browser: { name: 'chromium', version: '140.0.0.0' },
+      buildManifest: { ...manifest, id: manifest.manifestId, manifestId: undefined },
+      captureMode: 'execution',
+      configuration: { paragraphStatusProgressEnabled: true },
+      interpreter: 'sh',
+      isolation: {
+        logs: '<capture-root>/logs',
+        notebook: '<capture-root>/notebook',
+        pid: '<capture-root>/run',
+        recovery: '<capture-root>/recovery',
+        root: '<capture-root>',
+        searchIndex: '<capture-root>/index'
+      },
+      origin: 'http://127.0.0.1:18080',
+      sourceCommit: 'e816bf1b76b50282cc32b284cdb8755f932f657e'
+    }
+  };
+  assert.deepEqual(validateCaptureProvenance(metadata), []);
+  assert.match(
+    validateCaptureProvenance({ ...metadata, provenance: { ...metadata.provenance, sourceCommit: 'master' } }).join(
+      '\n'
+    ),
+    /exact Git commit/
+  );
+  assert.match(
+    validateCaptureProvenance({ ...metadata, provenance: { ...metadata.provenance, baseCommit: 'master' } }).join('\n'),
+    /baseCommit/
+  );
+  assert.match(
+    validateCaptureProvenance({
+      ...metadata,
+      provenance: {
+        ...metadata.provenance,
+        buildManifest: { id: 'missing', sourceCommit: metadata.provenance.sourceCommit }
+      }
+    }).join('\n'),
+    /verified artifacts/
+  );
+  assert.match(
+    validateCaptureProvenance({ ...metadata, provenance: { ...metadata.provenance, authentication: 'unknown' } }).join(
+      '\n'
+    ),
+    /authentication/
+  );
+  assert.match(
+    validateCaptureProvenance({ ...metadata, provenance: { ...metadata.provenance, configuration: {} } }).join('\n'),
+    /capture configuration/
+  );
+  assert.match(
+    validateCaptureProvenance({
+      ...metadata,
+      provenance: { ...metadata.provenance, isolation: { ...metadata.provenance.isolation, recovery: undefined } }
+    }).join('\n'),
+    /isolated recovery directory/
+  );
+});
 
 // Temporary roots accumulate across repeated suite runs.
 const temporaryRoots = [];
