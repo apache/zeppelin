@@ -28,9 +28,9 @@ public class UpdateOutputBuffer extends AppendOutputBuffer {
 
   private final InterpreterResult.Type type;
 
-  public UpdateOutputBuffer(String noteId, String paragraphId, int index,
+  public UpdateOutputBuffer(String noteId, String paragraphId, int index, String user,
                             InterpreterResult.Type type, String data) {
-    super(noteId, paragraphId, index, data);
+    super(noteId, paragraphId, index, user, data);
     this.type = type;
   }
 

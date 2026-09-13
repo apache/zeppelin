@@ -21,11 +21,12 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -52,7 +53,7 @@ public class AppendOutputRunner implements Runnable {
   @Override
   public synchronized void run() {
 
-    Map<String, StringBuilder> stringBufferMap = new HashMap<>();
+    Map<AppendKey, StringBuilder> stringBufferMap = new LinkedHashMap<>();
     List<AppendOutputBuffer> list = new LinkedList<>();
 
     queue.drainTo(list);
@@ -67,8 +68,8 @@ public class AppendOutputRunner implements Runnable {
         sizeProcessed += flushAppendBuffers(stringBufferMap);
         UpdateOutputBuffer update = (UpdateOutputBuffer) buffer;
         try {
-          listener.onOutputUpdated(update.getNoteId(), update.getParagraphId(), update.getIndex(),
-              update.getType(), update.getData());
+          listener.onParagraphOutputUpdated(update.getNoteId(), update.getParagraphId(),
+              update.getIndex(), update.getUser(), update.getType(), update.getData());
         } catch (RuntimeException e) {
           // A stale callback must not abort another paragraph's synchronous drain.
           LOGGER.warn("Failed to update output for note {} paragraph {}",
@@ -77,16 +78,13 @@ public class AppendOutputRunner implements Runnable {
         continue;
       }
 
-      String noteId = buffer.getNoteId();
-      String paragraphId = buffer.getParagraphId();
-      int index = buffer.getIndex();
-      String stringBufferKey = noteId + ":" + paragraphId + ":" + index;
+      // The execution owner is part of the key: two users running the same paragraph must not
+      // have their output folded into one chunk, because the merged chunk would have no owner.
+      AppendKey key = new AppendKey(buffer.getNoteId(), buffer.getParagraphId(),
+          buffer.getIndex(), buffer.getUser());
 
-      StringBuilder builder = stringBufferMap.containsKey(stringBufferKey) ?
-          stringBufferMap.get(stringBufferKey) : new StringBuilder();
-
-      builder.append(buffer.getData());
-      stringBufferMap.put(stringBufferKey, builder);
+      stringBufferMap.computeIfAbsent(key, unused -> new StringBuilder())
+          .append(buffer.getData());
     }
     sizeProcessed += flushAppendBuffers(stringBufferMap);
     Long processingTime = System.currentTimeMillis() - processingStartTime;
@@ -104,31 +102,75 @@ public class AppendOutputRunner implements Runnable {
     }
   }
 
-  private long flushAppendBuffers(Map<String, StringBuilder> stringBufferMap) {
+  private long flushAppendBuffers(Map<AppendKey, StringBuilder> stringBufferMap) {
     long sizeProcessed = 0;
-    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
-      String stringBufferKey = stringBufferMapEntry.getKey();
+    for (Entry<AppendKey, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
+      AppendKey key = stringBufferMapEntry.getKey();
       StringBuilder buffer = stringBufferMapEntry.getValue();
       sizeProcessed += buffer.length();
       try {
-        String[] keys = stringBufferKey.split(":");
-        listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
+        listener.onParagraphOutputAppend(key.noteId, key.paragraphId, key.index, key.user,
+            buffer.toString());
       } catch (RuntimeException e) {
         // One stale append must not abort another paragraph's synchronous drain.
-        LOGGER.warn("Failed to append output for {}", stringBufferKey, e);
+        LOGGER.warn("Failed to append output for {}", key, e);
       }
     }
     stringBufferMap.clear();
     return sizeProcessed;
   }
 
-  public void appendBuffer(String noteId, String paragraphId, int index, String outputToAppend) {
-    queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
+  /**
+   * Identifies one stream of appended output. A user name can contain any character, so the
+   * parts are kept separate instead of being joined into a delimited string.
+   */
+  private static final class AppendKey {
+    private final String noteId;
+    private final String paragraphId;
+    private final int index;
+    private final String user;
+
+    private AppendKey(String noteId, String paragraphId, int index, String user) {
+      this.noteId = noteId;
+      this.paragraphId = paragraphId;
+      this.index = index;
+      this.user = user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof AppendKey)) {
+        return false;
+      }
+      AppendKey other = (AppendKey) o;
+      return index == other.index
+          && Objects.equals(noteId, other.noteId)
+          && Objects.equals(paragraphId, other.paragraphId)
+          && Objects.equals(user, other.user);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(noteId, paragraphId, index, user);
+    }
+
+    @Override
+    public String toString() {
+      return "note " + noteId + " paragraph " + paragraphId + " index " + index + " user " + user;
+    }
+  }
+
+  public void appendBuffer(String noteId, String paragraphId, int index, String user,
+                           String outputToAppend) {
+    queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, user, outputToAppend));
   }
 
   /** Enqueues a replacement; callers needing completion must also invoke run(). */
-  public void updateBuffer(String noteId, String paragraphId, int index,
+  public void updateBuffer(String noteId, String paragraphId, int index, String user,
                            InterpreterResult.Type type, String output) {
-    queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, type, output));
+    queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, user, type, output));
   }
 }
