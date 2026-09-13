@@ -1758,7 +1758,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * @param output output to append
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
+  public void onParagraphOutputAppend(String noteId, String paragraphId, int index, String user,
+                                      String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1788,8 +1789,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * @param output output to update (replace)
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index,
-                              InterpreterResult.Type type, String output) {
+  public void onParagraphOutputUpdated(String noteId, String paragraphId, int index,
+                                       String user, InterpreterResult.Type type, String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1826,7 +1827,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * This callback is for the paragraph that runs on ZeppelinServer.
    */
   @Override
-  public void onOutputClear(String noteId, String paragraphId) {
+  public void onParagraphOutputClear(String noteId, String paragraphId, String user) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }

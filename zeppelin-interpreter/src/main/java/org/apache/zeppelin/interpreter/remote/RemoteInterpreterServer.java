@@ -955,7 +955,12 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
-    return convert(ric, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+    // The execution owner is fixed here, before any output is produced, so that every event
+    // emitted by this output carries the same owner regardless of what runs later.
+    AuthenticationInfo authenticationInfo =
+        AuthenticationInfo.fromJson(ric.getAuthenticationInfo());
+    String user = authenticationInfo == null ? null : authenticationInfo.getUser();
+    return convert(ric, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId(), user));
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
@@ -982,13 +987,13 @@ public class RemoteInterpreterServer extends Thread
 
 
   protected InterpreterOutput createInterpreterOutput(final String noteId, final String
-      paragraphId) {
+      paragraphId, final String user) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onUpdateAll(InterpreterOutput out) {
         try {
           intpEventClient.onInterpreterOutputUpdateAll(
-              noteId, paragraphId, out.toInterpreterResultMessage());
+              noteId, paragraphId, user, out.toInterpreterResultMessage());
         } catch (IOException e) {
           LOGGER.error(e.getMessage(), e);
         }
@@ -999,7 +1004,7 @@ public class RemoteInterpreterServer extends Thread
         String output = new String(line);
         LOGGER.debug("Output Append: {}", output);
         intpEventClient.onInterpreterOutputAppend(
-            noteId, paragraphId, index, output);
+            noteId, paragraphId, index, user, output);
       }
 
       @Override
@@ -1009,7 +1014,7 @@ public class RemoteInterpreterServer extends Thread
           output = new String(out.toByteArray());
           LOGGER.debug("Output Update for index {}: {}", index, output);
           intpEventClient.onInterpreterOutputUpdate(
-              noteId, paragraphId, index, out.getType(), output);
+              noteId, paragraphId, index, user, out.getType(), output);
         } catch (IOException e) {
           LOGGER.error(e.getMessage(), e);
         }

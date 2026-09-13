@@ -68,8 +68,8 @@ class NotebookServerStreamingScopeTest {
 
   @Test
   void sharedNoteReceivesIncrementalOutput() {
-    server.onOutputAppend("note", "para", 0, "append");
-    server.onOutputUpdated("note", "para", 0, InterpreterResult.Type.TEXT, "update");
+    server.onParagraphOutputAppend("note", "para", 0, null, "append");
+    server.onParagraphOutputUpdated("note", "para", 0, null, InterpreterResult.Type.TEXT, "update");
 
     verify(connections, times(2)).broadcast(eq("note"), any());
   }
@@ -78,8 +78,9 @@ class NotebookServerStreamingScopeTest {
   void personalizedNoteDoesNotReceiveUnownedIncrementalOutput() {
     note.setPersonalizedMode(true);
 
-    server.onOutputAppend("note", "para", 0, "private append");
-    server.onOutputUpdated("note", "para", 0, InterpreterResult.Type.TEXT, "private update");
+    server.onParagraphOutputAppend("note", "para", 0, null, "private append");
+    server.onParagraphOutputUpdated(
+        "note", "para", 0, null, InterpreterResult.Type.TEXT, "private update");
 
     verify(connections, never()).broadcast(eq("note"), any());
     verify(connections, never()).multicastToUser(any(), any());
@@ -89,7 +90,8 @@ class NotebookServerStreamingScopeTest {
   void personalizedCheckpointDoesNotExposeUnownedOutputToOtherUsers() {
     note.setPersonalizedMode(true);
 
-    server.onOutputUpdated("note", "para", 0, InterpreterResult.Type.TEXT, "private update");
+    server.onParagraphOutputUpdated(
+        "note", "para", 0, null, InterpreterResult.Type.TEXT, "private update");
     server.checkpointOutput("note", "para");
 
     InterpreterResult otherUserResult =
@@ -109,7 +111,7 @@ class NotebookServerStreamingScopeTest {
     sharedParagraph.updateOutputBuffer(0, InterpreterResult.Type.TEXT, "buffered result");
     sharedParagraph.getUserParagraph("existing");
 
-    server.onOutputClear("note", "para");
+    server.onParagraphOutputClear("note", "para", null);
 
     InterpreterResult futureUserResult =
         sharedParagraph.getUserParagraph("future").getReturn();
