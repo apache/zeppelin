@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.remote.ExecRemoteInterpreterProcess;
 import org.apache.zeppelin.util.Util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -343,6 +344,37 @@ class SparkInterpreterLauncherTest {
         "Expected scala version 2.12 or 2.13 but got: " + scalaVersion);
   }
   
+  @Test
+  @Timeout(60)
+  void testDetectSparkScalaVersionWithLargeProcessOutput() throws Exception {
+    Path fakeSparkHome = Files.createTempDirectory("zeppelin-spark-home");
+    Path binDir = Files.createDirectories(fakeSparkHome.resolve("bin"));
+    Path sparkSubmit = binDir.resolve("spark-submit");
+    // Writes far more than a pipe buffer holds, so a launcher that waits for the process before
+    // reading its output leaves spark-submit blocked on the write and never returns
+    Files.write(sparkSubmit, Arrays.asList(
+        "#!/bin/sh",
+        "i=0",
+        "while [ $i -lt 4096 ]; do",
+        "  echo \"0123456789012345678901234567890123456789012345678901234567890123\"",
+        "  i=$((i+1))",
+        "done",
+        "echo 'Using Scala version 2.12.18, OpenJDK 64-Bit Server VM, 11.0.28' >&2"));
+    assertTrue(sparkSubmit.toFile().setExecutable(true));
+
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    Method detectSparkScalaVersionMethod = SparkInterpreterLauncher.class.getDeclaredMethod(
+        "detectSparkScalaVersion", String.class, Map.class);
+    detectSparkScalaVersionMethod.setAccessible(true);
+
+    try {
+      assertEquals("2.12", detectSparkScalaVersionMethod.invoke(launcher,
+          fakeSparkHome.toString(), new HashMap<String, String>()));
+    } finally {
+      FileUtils.deleteDirectory(fakeSparkHome.toFile());
+    }
+  }
+
   @Test
   void testDetectSparkScalaVersionByReplClassWithNonExistentDirectory() throws Exception {
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
