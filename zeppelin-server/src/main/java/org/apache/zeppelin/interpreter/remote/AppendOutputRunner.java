@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +30,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * This thread sends paragraph's append-data
- * periodically, rather than continously, with
- * a period of BUFFER_TIME_MS. It handles append-data
- * for all paragraphs across all notebooks.
+ * Sends paragraph output periodically. Adjacent append events are batched, while update events
+ * share the same queue so that they cannot overtake earlier appends.
  */
 public class AppendOutputRunner implements Runnable {
 
@@ -48,29 +47,36 @@ public class AppendOutputRunner implements Runnable {
     this.listener = listener;
   }
 
+  // Serialize scheduled and RPC drains to preserve callback order.
+  // Empty drains must return immediately to RPC callers.
   @Override
-  public void run() {
+  public synchronized void run() {
 
     Map<String, StringBuilder> stringBufferMap = new HashMap<>();
     List<AppendOutputBuffer> list = new LinkedList<>();
 
-    /* "drainTo" method does not wait for any element
-     * to be present in the queue, and thus this loop would
-     * continuosly run (with period of BUFFER_TIME_MS). "take()" method
-     * waits for the queue to become non-empty and then removes
-     * one element from it. Rest elements from queue (if present) are
-     * removed using "drainTo" method. Thus we save on some un-necessary
-     * cpu-cycles.
-     */
-    try {
-      list.add(queue.take());
-    } catch (InterruptedException e) {
-      LOGGER.error("Wait for OutputBuffer queue interrupted: {}", e.getMessage());
+    queue.drainTo(list);
+    if (list.isEmpty()) {
+      return;
     }
     Long processingStartTime = System.currentTimeMillis();
-    queue.drainTo(list);
 
-    for (AppendOutputBuffer buffer: list) {
+    Long sizeProcessed = Long.valueOf(0);
+    for (AppendOutputBuffer buffer : list) {
+      if (buffer instanceof UpdateOutputBuffer) {
+        sizeProcessed += flushAppendBuffers(stringBufferMap);
+        UpdateOutputBuffer update = (UpdateOutputBuffer) buffer;
+        try {
+          listener.onOutputUpdated(update.getNoteId(), update.getParagraphId(), update.getIndex(),
+              update.getType(), update.getData());
+        } catch (RuntimeException e) {
+          // A stale callback must not abort another paragraph's synchronous drain.
+          LOGGER.warn("Failed to update output for note {} paragraph {}",
+              update.getNoteId(), update.getParagraphId(), e);
+        }
+        continue;
+      }
+
       String noteId = buffer.getNoteId();
       String paragraphId = buffer.getParagraphId();
       int index = buffer.getIndex();
@@ -82,21 +88,13 @@ public class AppendOutputRunner implements Runnable {
       builder.append(buffer.getData());
       stringBufferMap.put(stringBufferKey, builder);
     }
+    sizeProcessed += flushAppendBuffers(stringBufferMap);
     Long processingTime = System.currentTimeMillis() - processingStartTime;
 
     if (processingTime > SAFE_PROCESSING_TIME) {
       LOGGER.warn("Processing time for buffered append-output is high: {} milliseconds.", processingTime);
     } else {
       LOGGER.debug("Processing time for append-output took {} milliseconds", processingTime);
-    }
-
-    Long sizeProcessed = Long.valueOf(0);
-    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
-      String stringBufferKey = stringBufferMapEntry.getKey();
-      StringBuilder buffer = stringBufferMapEntry.getValue();
-      sizeProcessed += buffer.length();
-      String[] keys = stringBufferKey.split(":");
-      listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
     }
 
     if (sizeProcessed > SAFE_PROCESSING_STRING_SIZE) {
@@ -106,8 +104,31 @@ public class AppendOutputRunner implements Runnable {
     }
   }
 
+  private long flushAppendBuffers(Map<String, StringBuilder> stringBufferMap) {
+    long sizeProcessed = 0;
+    for (Entry<String, StringBuilder> stringBufferMapEntry : stringBufferMap.entrySet()) {
+      String stringBufferKey = stringBufferMapEntry.getKey();
+      StringBuilder buffer = stringBufferMapEntry.getValue();
+      sizeProcessed += buffer.length();
+      try {
+        String[] keys = stringBufferKey.split(":");
+        listener.onOutputAppend(keys[0], keys[1], Integer.parseInt(keys[2]), buffer.toString());
+      } catch (RuntimeException e) {
+        // One stale append must not abort another paragraph's synchronous drain.
+        LOGGER.warn("Failed to append output for {}", stringBufferKey, e);
+      }
+    }
+    stringBufferMap.clear();
+    return sizeProcessed;
+  }
+
   public void appendBuffer(String noteId, String paragraphId, int index, String outputToAppend) {
     queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
   }
 
+  /** Enqueues a replacement; callers needing completion must also invoke run(). */
+  public void updateBuffer(String noteId, String paragraphId, int index,
+                           InterpreterResult.Type type, String output) {
+    queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, type, output));
+  }
 }

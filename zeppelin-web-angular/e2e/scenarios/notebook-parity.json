@@ -402,6 +402,86 @@
       "verificationEvidence": []
     },
     {
+      "id": "NB-PARITY-022",
+      "name": "Streaming interpreter output accumulates while a paragraph is running",
+      "area": "result",
+      "preconditions": [
+        "A disposable notebook has a shell paragraph that prints several chunks separated by delays.",
+        "The server streams paragraph output (zeppelin.websocket.paragraph_status_progress.enable is true)."
+      ],
+      "action": "Run the paragraph and observe the result panel before and after the paragraph finishes.",
+      "observableOutcomes": [
+        {
+          "id": "NB-PARITY-022-OUTCOME-001",
+          "description": "The first output chunk is visible while the paragraph status is still RUNNING."
+        },
+        {
+          "id": "NB-PARITY-022-OUTCOME-002",
+          "description": "Later chunks are appended after the earlier chunks instead of replacing them while the paragraph remains RUNNING."
+        },
+        {
+          "id": "NB-PARITY-022-OUTCOME-003",
+          "description": "The FINISHED result contains every chunk exactly once, in emission order."
+        }
+      ],
+      "interpreter": "sh",
+      "roleExpectations": {
+        "owner": "allow",
+        "writer": "allow",
+        "reader": "deny",
+        "runner": "allow"
+      },
+      "roleVerification": {
+        "owner": "unverified",
+        "writer": "unverified",
+        "reader": "unverified",
+        "runner": "unverified"
+      },
+      "coverage": {
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts",
+            "tag": "@NB-PARITY-022"
+          }
+        ],
+        "issues": [],
+        "uncoveredOutcomes": []
+      },
+      "implementationEvidence": [
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-output-state.ts",
+          "symbol": "ParagraphOutputState"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-base.ts",
+          "symbol": "ParagraphBase.onParagraphAppendOutput"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-base.ts",
+          "symbol": "ParagraphBase.onParagraphUpdateOutput"
+        },
+        {
+          "path": "zeppelin-server/src/main/java/org/apache/zeppelin/interpreter/remote/AppendOutputRunner.java",
+          "symbol": "AppendOutputRunner"
+        }
+      ],
+      "verificationEvidence": [
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-output-state.spec.ts",
+          "symbol": "ParagraphOutputState"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-output-stream.capture.json",
+          "symbol": "enabled"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-paragraph-page.ts",
+          "symbol": "NotebookParagraphPage"
+        }
+      ]
+    },
+    {
       "id": "NB-PARITY-050",
       "name": "Notebook editor persists the latest text after typing stops",
       "area": "persistence",

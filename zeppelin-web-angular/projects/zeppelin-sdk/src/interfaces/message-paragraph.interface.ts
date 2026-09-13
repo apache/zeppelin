@@ -97,6 +97,17 @@ export class ParagraphIResultsMsgItem {
   data = '';
 }
 
+export interface ParagraphAppendOutput {
+  noteId: string;
+  paragraphId: string;
+  index: number;
+  data: string;
+}
+
+export interface ParagraphUpdateOutput extends ParagraphAppendOutput {
+  type: DatasetType;
+}
+
 export interface ParasInfo {
   id: string;
   infos: RuntimeInfos;

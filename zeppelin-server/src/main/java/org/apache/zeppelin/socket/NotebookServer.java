@@ -1767,7 +1767,19 @@ public class NotebookServer implements AngularObjectRegistryListener,
         .put("paragraphId", paragraphId)
         .put("index", index)
         .put("data", output);
-    connectionManager.broadcast(noteId, msg);
+    try {
+      getNotebook().processNote(noteId, note -> {
+        if (note == null) {
+          LOGGER.warn("Note {} not found", noteId);
+        } else if (!note.isPersonalizedMode()) {
+          // Streaming events do not identify the user that owns the execution.
+          connectionManager.broadcast(noteId, msg);
+        }
+        return null;
+      });
+    } catch (IOException e) {
+      LOGGER.warn("Fail to call onOutputAppend", e);
+    }
   }
 
   /**
@@ -1794,16 +1806,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
             LOGGER.warn("Note {} not found", noteId);
             return null;
           }
-          Paragraph paragraph = note.getParagraph(paragraphId);
-          paragraph.updateOutputBuffer(index, type, output);
           if (note.isPersonalizedMode()) {
-            String user = note.getParagraph(paragraphId).getUser();
-            if (null != user) {
-              connectionManager.multicastToUser(user, msg);
-            }
-          } else {
-            connectionManager.broadcast(noteId, msg);
+            // Streaming events carry no owner. The shared outputBuffer is what checkpointOutput
+            // saves as the shared result and what other users' paragraphs are cloned from, so
+            // one user's output must not be written there. Personalized clients get their
+            // user-specific terminal snapshot instead.
+            return null;
           }
+          note.getParagraph(paragraphId).updateOutputBuffer(index, type, output);
+          connectionManager.broadcast(noteId, msg);
           return null;
         });
     } catch (IOException e) {
@@ -1826,11 +1837,15 @@ public class NotebookServer implements AngularObjectRegistryListener,
           if (note == null) {
             // It is possible the note is removed, but the job is still running
             LOGGER.warn("Note {} doesn't existed, it maybe deleted.", noteId);
-          } else {
-            note.clearParagraphOutput(paragraphId);
-            Paragraph paragraph = note.getParagraph(paragraphId);
-            broadcastParagraph(note, paragraph, MSG_ID_NOT_DEFINED);
+            return null;
           }
+          if (note.isPersonalizedMode()) {
+            // Streaming events carry no owner, so they must not mutate shared paragraph state.
+            return null;
+          }
+          note.clearParagraphOutput(paragraphId);
+          Paragraph paragraph = note.getParagraph(paragraphId);
+          broadcastParagraph(note, paragraph, MSG_ID_NOT_DEFINED);
           return null;
         });
 
