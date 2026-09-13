@@ -6,6 +6,7 @@
       "@zeppelin/*": ["./src/app/*", "./src/environments/*"],
       "@zeppelin/visualization": ["dist/zeppelin-visualization"],
       "@zeppelin/visualization/*": ["dist/zeppelin-visualization/*"],
+      "@zeppelin/notebook-core": ["dist/zeppelin-notebook-core"],
       "@zeppelin/sdk": ["dist/zeppelin-sdk"],
       "@zeppelin/sdk/*": ["dist/zeppelin-sdk/*"]
     },

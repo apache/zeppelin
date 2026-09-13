@@ -39,6 +39,7 @@ module.exports = (_env, argv) => {
       modules: ['node_modules', path.resolve(__dirname, '../../node_modules')],
       alias: {
         '@': path.resolve(__dirname, 'src'),
+        '@zeppelin/notebook-core$': path.resolve(__dirname, '../zeppelin-notebook-core/src/public-api.ts'),
         '@zeppelin/sdk': path.resolve(__dirname, '../zeppelin-sdk/src')
       }
     },

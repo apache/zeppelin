@@ -1,0 +1,8 @@
+{
+  "name": "@zeppelin/notebook-core",
+  "version": "0.0.1",
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^2.0.0"
+  }
+}
