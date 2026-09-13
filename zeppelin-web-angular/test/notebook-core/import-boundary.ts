@@ -162,12 +162,7 @@ export const findReactNotebookConsumerViolations = (
     for (const target of module.dependencies) {
       if (target === main) {
         violations.push(`${path}: notebook consumer must use the contract bridge instead of the public aggregator`);
-      } else if (consumers.has(target)) {
-        // Only walk further into files the upward propagation above already marked as
-        // consumers. Otherwise a shared route/aggregator file that imports both a real
-        // notebook-core consumer and an unrelated pre-existing SDK-backed page would drag
-        // that page's own dependency subtree into this scan, flagging its legitimate
-        // `@zeppelin/sdk`/`rxjs` imports as boundary violations.
+      } else {
         check(target);
       }
     }
