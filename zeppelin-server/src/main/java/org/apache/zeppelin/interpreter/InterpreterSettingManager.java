@@ -131,6 +131,9 @@ public class InterpreterSettingManager implements NoteEventListener {
     new ConcurrentHashMap<>());
   private final Map<String, List<Meter>> interpreterSettingsMeters = new ConcurrentHashMap<>();
 
+  /** Guards {@link #saveToFile()}, the only writer of the interpreter setting file. */
+  private final Object saveLock = new Object();
+
   private final List<Repository> interpreterRepositories;
   private InterpreterOption defaultOption;
   private String defaultInterpreterGroup;
@@ -369,11 +372,19 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
   }
 
+  /**
+   * Snapshotting the settings and writing them out has to be one step. Dependency downloads
+   * save from a thread per interpreter setting, so without this an older snapshot can be
+   * written after a newer one and drop a setting that was added in between from the file,
+   * while it survives in memory until the next restart.
+   */
   public void saveToFile() throws IOException {
-    InterpreterInfoSaving info = new InterpreterInfoSaving();
-    info.interpreterSettings = new HashMap<>(interpreterSettings);
-    info.interpreterRepositories = interpreterRepositories;
-    configStorage.save(info);
+    synchronized (saveLock) {
+      InterpreterInfoSaving info = new InterpreterInfoSaving();
+      info.interpreterSettings = new HashMap<>(interpreterSettings);
+      info.interpreterRepositories = interpreterRepositories;
+      configStorage.save(info);
+    }
   }
 
   private void initMetrics() {
