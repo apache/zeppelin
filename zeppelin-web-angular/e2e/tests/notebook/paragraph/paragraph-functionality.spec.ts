@@ -158,20 +158,11 @@ println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Ove
     await expect(paragraphPage.runButton).toBeVisible();
     await expect(paragraphPage.runButton).toBeEnabled();
 
-    await paragraphPage.doubleClickToEdit();
-    await expect(paragraphPage.codeEditor).toBeVisible();
-
-    // JUSTIFIED: compound selector; first() picks primary Monaco input
-    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
-    await expect(codeEditor).toBeAttached({ timeout: 10000 });
-    await expect(codeEditor).toBeEnabled({ timeout: 10000 });
-
-    await codeEditor.focus();
-    await expect(codeEditor).toBeFocused({ timeout: 5000 });
-
     const notebookKeyboardPage = new NotebookKeyboardPage(page);
-    await notebookKeyboardPage.pressSelectAll();
-    await page.keyboard.type('%python\nimport time;time.sleep(10)\nprint("Done")');
+    const code = '%python\nimport time;time.sleep(10)\nprint("Done")';
+    // Seed the run prerequisite without Monaco's per-keystroke auto-closing edits.
+    await notebookKeyboardPage.setCodeEditorContent(code);
+    await expect.poll(() => notebookKeyboardPage.getParagraphTextByIndex(0)).toBe(code);
 
     await paragraphPage.runParagraph();
 

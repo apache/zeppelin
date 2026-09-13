@@ -455,7 +455,7 @@ const getDefaultInterpreterGroup = async (page: Page): Promise<string | undefine
   return json.body?.find(setting => !!setting.name)?.name;
 };
 
-const createNotebookViaRest = async (
+export const createNotebookViaRest = async (
   page: Page,
   notebookName: string
 ): Promise<{ noteId: string; paragraphId: string }> => {

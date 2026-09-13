@@ -39,6 +39,30 @@ module.exports = tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' }
   },
   {
+    // Plain ESM helpers use base rules without a TypeScript project.
+    files: ['e2e/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        Buffer: 'readonly',
+        URL: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly'
+      }
+    },
+    rules: {
+      'no-undef': 'error',
+      'no-unused-vars': ['error', { args: 'after-used', caughtErrors: 'none' }],
+      'no-redeclare': 'error'
+    }
+  },
+  {
     files: ['**/*.{ts,mts}'],
     // == legacy `plugin:@angular-eslint/recommended` (sets the TS parser and
     // the @angular-eslint plugin). The @typescript-eslint plugin is registered
