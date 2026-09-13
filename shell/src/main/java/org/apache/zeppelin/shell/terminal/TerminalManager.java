@@ -18,13 +18,13 @@
 package org.apache.zeppelin.shell.terminal;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.shell.terminal.service.TerminalService;
 import org.apache.zeppelin.shell.terminal.websocket.TerminalSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_CLOSE;
 import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_CONNECT;
@@ -35,8 +35,7 @@ import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_STAT
 public class TerminalManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalManager.class);
 
-  // TerminalSocket hashCode -> TerminalService
-  private HashMap<Integer, TerminalService> terminalSocket2Service;
+  private final Map<TerminalSocket, TerminalSession> terminalSocket2Session;
 
   // NoteId@ParagraphId -> InterpreterContext
   private HashMap<String, InterpreterContext> noteParagraphId2IntpContext;
@@ -51,27 +50,18 @@ public class TerminalManager {
   }
 
   private TerminalManager() {
-    terminalSocket2Service = new HashMap<>();
+    terminalSocket2Session = new ConcurrentHashMap<>();
     noteParagraphId2IntpContext = new HashMap<>();
   }
 
-  public TerminalService addTerminalService(TerminalSocket terminalSocket) {
-    Integer terminalSocketHashcode = terminalSocket.hashCode();
-    if (terminalSocket2Service.containsKey(terminalSocketHashcode)) {
-      return terminalSocket2Service.get(terminalSocketHashcode);
-    } else {
-      TerminalService terminalService = new TerminalService();
-      terminalSocket2Service.put(terminalSocketHashcode, terminalService);
-      return terminalService;
-    }
+  public void addTerminalSession(TerminalSocket terminalSocket, TerminalSession terminalSession) {
+    terminalSocket2Session.put(terminalSocket, terminalSession);
   }
 
-  public void removeTerminalService(TerminalSocket terminalSocket) {
-    Integer terminalSocketHashcode = terminalSocket.hashCode();
-    if (terminalSocket2Service.containsKey(terminalSocketHashcode)) {
-      terminalSocket2Service.remove(terminalSocketHashcode).close();
-    } else {
-      LOGGER.error("Can't find TerminalSocket: {}", terminalSocketHashcode);
+  public void removeTerminalSession(TerminalSocket terminalSocket) {
+    TerminalSession session = terminalSocket2Session.remove(terminalSocket);
+    if (session != null) {
+      session.close();
     }
   }
 
@@ -87,7 +77,7 @@ public class TerminalManager {
   }
 
   public void runCommand(String command) {
-    for (Map.Entry<Integer, TerminalService> entry : terminalSocket2Service.entrySet()) {
+    for (Map.Entry<TerminalSocket, TerminalSession> entry : terminalSocket2Session.entrySet()) {
       entry.getValue().onCommand(command + "\r");
     }
   }
@@ -122,7 +112,7 @@ public class TerminalManager {
       LOGGER.error("Can't find InterpreterContext from : {}", id);
     }
 
-    removeTerminalService(terminalSocket);
+    removeTerminalSession(terminalSocket);
   }
 
   // Socket error will trigger socket close
