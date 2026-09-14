@@ -17,14 +17,14 @@
 export SPARK_MASTER_PORT=7077
 
 # run spark 
-cd /usr/local/spark/sbin
+cd $SPARK_HOME/sbin
 ./start-master.sh
-./start-slave.sh spark://`hostname`:$SPARK_MASTER_PORT
+./start-worker.sh spark://`hostname`:$SPARK_MASTER_PORT
 
 CMD=${1:-"exit 0"}
 if [[ "$CMD" == "-d" ]];
 then
-	service sshd stop
+	service ssh stop
 	/usr/sbin/sshd -D -d
 else
 	/bin/bash -c "$*"
