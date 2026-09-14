@@ -49,9 +49,12 @@ jobs:
     env:
       # Use VFS storage instead of Git to avoid Git-related issues in CI
       ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
+      ZEPPELIN_JOBMANAGER_ENABLE: 'true'
+      ZEPPELIN_EVENTBUS_ENABLED: ${{ matrix.eventbus == 'eventbus' }}
     strategy:
       matrix:
         mode: [anonymous, auth]
+        eventbus: [legacy, eventbus]
         python: [ 3.9 ]
     steps:
       - name: Checkout
@@ -120,7 +123,7 @@ jobs:
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
         # Classic UI e2e runs only on the anonymous leg, like the legacy Protractor suite
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' || matrix.eventbus != 'legacy' }} ${MAVEN_ARGS}
       - name: Run revision isolation E2E test with Git storage
         env:
           CI: 'true'
@@ -145,7 +148,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: playwright-report-${{ matrix.mode }}
+          name: playwright-report-${{ matrix.mode }}-${{ matrix.eventbus }}
           path: |
             zeppelin-web-angular/playwright-report/
             zeppelin-web-angular/playwright-report-classic/
