@@ -362,6 +362,28 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
+      <exclusions>
+        <!-- using jcl-over-slf4j instead -->
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
       <classifier>jakarta</classifier>
@@ -633,8 +655,9 @@
                   </excludes>
                   <searchTransitive>true</searchTransitive>
                   <message>
-                    zeppelin-interpreter-shaded must NOT appear on the zeppelin-server classpath.
-                    The shaded jar is meant for interpreter JVMs only (loaded from
+                    The legacy zeppelin-interpreter-shaded Maven artifact must NOT appear on the
+                    zeppelin-server classpath. The runtime shaded jar is meant for interpreter JVMs
+                    only (loaded from
                     ${ZEPPELIN_HOME}/interpreter/zeppelin-interpreter-shaded-*.jar). Mixing the shaded
                     and unshaded org.eclipse.aether.* on the server classpath causes ClassCastException
                     in InterpreterSettingManager. See ZEPPELIN-6416.
