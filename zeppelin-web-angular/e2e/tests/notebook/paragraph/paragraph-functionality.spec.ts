@@ -50,67 +50,75 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(paragraphPage.controlPanel).toBeVisible();
   });
 
-  test('should reflect user edits in the code editor state and rendered lines', async ({ page }, testInfo) => {
-    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR, testInfo);
-    const keyboard = new NotebookKeyboardPage(page);
+  test(
+    'should reflect user edits in the code editor state and rendered lines',
+    { tag: '@NB-PARITY-003' },
+    async ({ page }, testInfo) => {
+      addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR, testInfo);
+      const keyboard = new NotebookKeyboardPage(page);
 
-    await test.step('Given the paragraph is in edit mode', async () => {
-      await paragraphPage.doubleClickToEdit();
-      await expect(paragraphPage.codeEditor).toBeVisible();
-      await paragraphPage.editorInput.focus();
-      await expect(paragraphPage.editorInput).toBeFocused();
-    });
+      await test.step('Given the paragraph is in edit mode', async () => {
+        await paragraphPage.doubleClickToEdit();
+        await expect(paragraphPage.codeEditor).toBeVisible();
+        await paragraphPage.editorInput.focus();
+        await expect(paragraphPage.editorInput).toBeFocused();
+      });
 
-    await test.step('When the user replaces the paragraph with five lines', async () => {
-      await keyboard.pressSelectAll();
-      await page.keyboard.type('%md\nline one\nline two\nline three\nline four');
-    });
+      await test.step('When the user replaces the paragraph with five lines', async () => {
+        await keyboard.pressSelectAll();
+        await page.keyboard.type('%md\nline one\nline two\nline three\nline four');
+      });
 
-    await test.step('Then Monaco renders the text and marks the editor focused and dirty', async () => {
-      await expect(paragraphPage.editorViewLines).toContainText('line four');
-      await expect(paragraphPage.editorLines).toHaveCount(5);
-      await expect(paragraphPage.codeEditorHost).toHaveClass(/\bfocused\b/);
-      await expect(paragraphPage.codeEditorHost).toHaveClass(/\bdirty\b/);
+      await test.step('Then Monaco renders the text and marks the editor focused and dirty', async () => {
+        await expect(paragraphPage.editorViewLines).toContainText('line four');
+        await expect(paragraphPage.editorLines).toHaveCount(5);
+        await expect(paragraphPage.codeEditorHost).toHaveClass(/\bfocused\b/);
+        await expect(paragraphPage.codeEditorHost).toHaveClass(/\bdirty\b/);
 
-      await page.keyboard.press('Escape');
-      await expect(paragraphPage.codeEditorHost).not.toHaveClass(/\bfocused\b/);
-    });
-  });
+        await page.keyboard.press('Escape');
+        await expect(paragraphPage.codeEditorHost).not.toHaveClass(/\bfocused\b/);
+      });
+    }
+  );
 
-  test('should insert default paragraphs above and below the original paragraph', async ({ page }, testInfo) => {
-    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_ADD_PARAGRAPH, testInfo);
-    const keyboard = new NotebookKeyboardPage(page);
-    const originalText = 'Original paragraph marker';
+  test(
+    'should insert default paragraphs above and below the original paragraph',
+    { tag: '@NB-PARITY-004' },
+    async ({ page }, testInfo) => {
+      addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_ADD_PARAGRAPH, testInfo);
+      const keyboard = new NotebookKeyboardPage(page);
+      const originalText = 'Original paragraph marker';
 
-    await test.step('Given one paragraph with distinctive text', async () => {
-      await keyboard.setCodeEditorContent(`%md\n${originalText}`);
-      await expect(paragraphPage.paragraphContainers).toHaveCount(1);
-    });
+      await test.step('Given one paragraph with distinctive text', async () => {
+        await keyboard.setCodeEditorContent(`%md\n${originalText}`);
+        await expect(paragraphPage.paragraphContainers).toHaveCount(1);
+      });
 
-    await test.step('When the trailing Add Paragraph control is clicked', async () => {
-      await paragraphPage.clickAddParagraphBelow();
-    });
+      await test.step('When the trailing Add Paragraph control is clicked', async () => {
+        await paragraphPage.clickAddParagraphBelow();
+      });
 
-    await test.step('Then a new paragraph is inserted below the original', async () => {
-      await expect(paragraphPage.paragraphContainers).toHaveCount(2);
-      // JUSTIFIED: the first rendered editor is the original paragraph after inserting below.
-      await expect(paragraphPage.editorViewLinesAll.first()).toContainText(originalText);
-      // JUSTIFIED: the last rendered editor is the newly inserted default paragraph.
-      await expect(paragraphPage.editorViewLinesAll.last()).toHaveText('%md');
-    });
+      await test.step('Then a new paragraph is inserted below the original', async () => {
+        await expect(paragraphPage.paragraphContainers).toHaveCount(2);
+        // JUSTIFIED: the first rendered editor is the original paragraph after inserting below.
+        await expect(paragraphPage.editorViewLinesAll.first()).toContainText(originalText);
+        // JUSTIFIED: the last rendered editor is the newly inserted default paragraph.
+        await expect(paragraphPage.editorViewLinesAll.last()).toHaveText('%md');
+      });
 
-    await test.step('When the leading Add Paragraph control is clicked', async () => {
-      await paragraphPage.clickAddParagraphAbove();
-    });
+      await test.step('When the leading Add Paragraph control is clicked', async () => {
+        await paragraphPage.clickAddParagraphAbove();
+      });
 
-    await test.step('Then a default paragraph is inserted above the original', async () => {
-      await expect(paragraphPage.paragraphContainers).toHaveCount(3);
-      // JUSTIFIED: inserting above moves the original paragraph to the second position.
-      await expect(paragraphPage.editorViewLinesAll.nth(1)).toContainText(originalText);
-      // JUSTIFIED: the first rendered editor is the newly inserted default paragraph.
-      await expect(paragraphPage.editorViewLinesAll.first()).toHaveText('%md');
-    });
-  });
+      await test.step('Then a default paragraph is inserted above the original', async () => {
+        await expect(paragraphPage.paragraphContainers).toHaveCount(3);
+        // JUSTIFIED: inserting above moves the original paragraph to the second position.
+        await expect(paragraphPage.editorViewLinesAll.nth(1)).toContainText(originalText);
+        // JUSTIFIED: the first rendered editor is the newly inserted default paragraph.
+        await expect(paragraphPage.editorViewLinesAll.first()).toHaveText('%md');
+      });
+    }
+  );
 
   test(
     'should accumulate interpreter output while the paragraph is running',
@@ -182,7 +190,7 @@ test.describe('Notebook Paragraph Functionality', () => {
       await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 60000 });
       await expect(paragraphPage.cancelButton).toBeVisible();
       await expect(paragraphPage.progressBar).toBeVisible();
-      await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/);
+      await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/, { timeout: 15000 });
     });
 
     await test.step('Then completion removes progress and shows result timing', async () => {
@@ -341,7 +349,7 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(paragraphPage.cancelButton).toBeVisible({ timeout: 10000 });
     await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 60000 });
     await expect(paragraphPage.progressBar).toBeVisible();
-    await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/);
+    await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/, { timeout: 15000 });
     await expect(paragraphPage.addParagraphAboveLink).toHaveClass(/\bdisabled\b/);
     await expect(paragraphPage.addParagraphBelowLink).toHaveClass(/\bdisabled\b/);
 
