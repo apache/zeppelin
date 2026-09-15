@@ -1021,6 +1021,9 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE("zeppelin.interpreter.connection.poolsize", 100),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
+    ZEPPELIN_INTERPRETER_OUTPUT_WORKER_COUNT("zeppelin.interpreter.output.worker.count", 4),
+    ZEPPELIN_INTERPRETER_OUTPUT_EVENTS_PER_BATCH(
+        "zeppelin.interpreter.output.events.per.batch", 1000),
     ZEPPELIN_INTERPRETER_INCLUDES("zeppelin.interpreter.include", ""),
     ZEPPELIN_INTERPRETER_EXCLUDES("zeppelin.interpreter.exclude", ""),
 
