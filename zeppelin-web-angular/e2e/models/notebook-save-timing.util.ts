@@ -22,7 +22,7 @@ interface NotebookSocketMessage {
   data?: {
     id?: string;
     noteId?: string;
-    paragraph?: string;
+    paragraph?: string | Record<string, unknown>;
   };
 }
 
@@ -105,16 +105,25 @@ export class CommitParagraphSocketProbe {
     return this.forwardedResponseMsgIds.filter(forwardedMsgId => forwardedMsgId === msgId).length;
   }
 
-  releaseHeldResponse(msgId: string): void {
+  releaseHeldResponseWithParagraphTitle(msgId: string, title: string): void {
     const held = this.heldResponses.get(msgId);
     if (!held) {
       throw new Error(`No held PARAGRAPH response for msgId ${msgId}`);
     }
+    const parsed = parseSocketMessage(held.message);
+    if (parsed?.op !== 'PARAGRAPH' || typeof parsed.data?.paragraph !== 'object') {
+      throw new Error(`Held response for msgId ${msgId} is not a PARAGRAPH snapshot`);
+    }
+    const paragraph = parsed.data.paragraph;
+    const config = typeof paragraph.config === 'object' && paragraph.config !== null ? paragraph.config : {};
+    paragraph.title = title;
+    paragraph.config = { ...config, title: true };
+
     this.heldResponses.delete(msgId);
     this.heldResponseMsgId = null;
     this.shouldHoldFirstCommitResponse = false;
     this.forwardedResponseMsgIds.push(msgId);
-    held.socket.send(held.message);
+    held.socket.send(JSON.stringify(parsed));
   }
 
   releaseQueuedResponses(): void {
@@ -124,45 +133,6 @@ export class CommitParagraphSocketProbe {
     }
   }
 }
-
-export const installBrowserParagraphReceiptProbe = async (page: Page): Promise<void> => {
-  await page.addInitScript(() => {
-    const paragraphMsgIdsObservedAfterFrame: string[] = [];
-    Object.defineProperty(window, '__zeppelinParagraphMsgIdsObservedAfterFrame', {
-      configurable: true,
-      get: () => paragraphMsgIdsObservedAfterFrame
-    });
-
-    const parseBrowserSocketMessage = (data: unknown): { op?: string; msgId?: string } | null => {
-      if (typeof data !== 'string') {
-        return null;
-      }
-      try {
-        return JSON.parse(data) as { op?: string; msgId?: string };
-      } catch {
-        return null;
-      }
-    };
-
-    const NativeWebSocket = window.WebSocket;
-    class ProbedWebSocket extends NativeWebSocket {
-      constructor(url: string | URL, protocols?: string | string[]) {
-        super(url, protocols);
-        this.addEventListener('message', event => {
-          const message = parseBrowserSocketMessage(event.data);
-          if (message?.op !== 'PARAGRAPH' || typeof message.msgId !== 'string') {
-            return;
-          }
-          const msgId = message.msgId;
-          requestAnimationFrame(() => {
-            paragraphMsgIdsObservedAfterFrame.push(msgId);
-          });
-        });
-      }
-    }
-    window.WebSocket = ProbedWebSocket;
-  });
-};
 
 export const installCommitParagraphProbe = async (page: Page): Promise<CommitParagraphSocketProbe> => {
   const probe = new CommitParagraphSocketProbe();
@@ -190,19 +160,4 @@ const isCommitParagraphMessage = (message: NotebookSocketMessage | null): messag
     typeof message.data.noteId === 'string' &&
     typeof message.data.paragraph === 'string'
   );
-};
-
-export const waitForBrowserObservedParagraphResponseAfterFrame = async (page: Page, msgId: string): Promise<void> => {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(expectedMsgId => {
-          return (
-            (window as Window & { __zeppelinParagraphMsgIdsObservedAfterFrame?: string[] })
-              .__zeppelinParagraphMsgIdsObservedAfterFrame ?? []
-          ).includes(expectedMsgId);
-        }, msgId),
-      { timeout: PROXY_TIMEOUT_MS }
-    )
-    .toBe(true);
 };

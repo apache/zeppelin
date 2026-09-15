@@ -12,12 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { NotebookKeyboardPage } from '../../../models/notebook-keyboard-page';
-import {
-  CommitParagraphSocketProbe,
-  installBrowserParagraphReceiptProbe,
-  installCommitParagraphProbe,
-  waitForBrowserObservedParagraphResponseAfterFrame
-} from '../../../models/notebook-save-timing.util';
+import { CommitParagraphSocketProbe, installCommitParagraphProbe } from '../../../models/notebook-save-timing.util';
 import { addPageAnnotationBeforeEach, createTestNotebook, PAGES, waitForZeppelinReady } from '../../../utils';
 
 const PERSISTENCE_TIMEOUT_MS = 15000;
@@ -34,7 +29,6 @@ test.describe('Notebook editor save timing', () => {
   test.beforeEach(async ({ page }) => {
     noteId = undefined;
     notebookPage = new NotebookKeyboardPage(page);
-    await installBrowserParagraphReceiptProbe(page);
     commitProbe = await installCommitParagraphProbe(page);
 
     await test.step('Given a disposable notebook with an editable paragraph', async () => {
@@ -96,6 +90,7 @@ test.describe('Notebook editor save timing', () => {
     const firstText = '%md First pending save';
     const latestEdit = '; latest edit wins';
     const latestText = `${firstText}${latestEdit}`;
+    const delayedResponseTitle = 'Delayed save response delivered';
     let firstMsgId: string;
     let secondMsgId: string;
 
@@ -126,9 +121,8 @@ test.describe('Notebook editor save timing', () => {
     });
 
     await test.step('Then receiving the first save response preserves the newer edit', async () => {
-      commitProbe.releaseHeldResponse(firstMsgId);
-      // The next frame follows browser delivery, so this check cannot precede the delayed response.
-      await waitForBrowserObservedParagraphResponseAfterFrame(page, firstMsgId);
+      commitProbe.releaseHeldResponseWithParagraphTitle(firstMsgId, delayedResponseTitle);
+      await expect(notebookPage.firstParagraph.locator('zeppelin-elastic-input')).toHaveText(delayedResponseTitle);
       await expect
         .poll(() => notebookPage.getCodeEditorContentByIndex(0), { timeout: PERSISTENCE_TIMEOUT_MS })
         .toBe(latestText);
