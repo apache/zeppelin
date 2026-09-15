@@ -18,6 +18,7 @@ import {
   fixturePath,
   loadFixture,
   measureBundles,
+  normalizeBundlePath,
   Sample,
   summarize,
   validateFixture,
@@ -32,6 +33,12 @@ describe('Notebook benchmark contract', () => {
     return root;
   };
   afterEach(() => temporaryRoots.splice(0).forEach(root => rmSync(root, { recursive: true, force: true })));
+
+  it('normalizes native Windows bundle paths for browser requests', () => {
+    expect(normalizeBundlePath('dist\\zeppelin\\assets\\react\\remoteEntry.js')).toBe(
+      'dist/zeppelin/assets/react/remoteEntry.js'
+    );
+  });
 
   it('accepts the versioned fixture and rejects changed bytes against its committed hash', () => {
     const { note } = loadFixture(process.cwd());

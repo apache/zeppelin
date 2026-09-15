@@ -19,6 +19,8 @@ export const fixturePath = 'e2e/fixtures/performance/notebook-route-100-paragrap
 const fixtureSha256 = '7f94de1f9a7e529c7baf473a8bba9ab017f410c896f21bd8357922b63bd81fde';
 export type Sample = { cache: 'cold' | 'warm'; run: number; notebookReadyMs: number; fcpMs: number };
 
+export const normalizeBundlePath = (path: string): string => path.replaceAll('\\', '/');
+
 export const loadFixture = (root: string) => {
   const bytes = readFileSync(resolve(root, fixturePath));
   const sha256 = createHash('sha256').update(bytes).digest('hex');
@@ -118,7 +120,7 @@ export const measureBundles = (root: string) => {
   const measure = (path: string) => {
     const bytes = readFileSync(path);
     return {
-      path: relative(root, path),
+      path: normalizeBundlePath(relative(root, path)),
       rawBytes: bytes.length,
       gzipBytes: gzipSync(bytes).length,
       sha256: createHash('sha256').update(bytes).digest('hex')
