@@ -50,7 +50,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 public class ParagraphOutputDispatcher implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ParagraphOutputDispatcher.class);
-  private static final long SAFE_PROCESSING_TIME_MS = 10;
 
   // Guarded by this: notes, mutable NoteQueue state, and worker startup.
   private final Map<String, NoteQueue> notes = new HashMap<>();
@@ -139,11 +138,7 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
         throw e;
       } finally {
         long time = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-        if (time > SAFE_PROCESSING_TIME_MS) {
-          LOGGER.warn("Processing output boundary for note {} took {} milliseconds", noteId, time);
-        } else {
-          LOGGER.debug("Processing output boundary for note {} took {} milliseconds", noteId, time);
-        }
+        LOGGER.debug("Processing output boundary for note {} took {} milliseconds", noteId, time);
       }
     }));
     enqueue(noteId, event, true);
