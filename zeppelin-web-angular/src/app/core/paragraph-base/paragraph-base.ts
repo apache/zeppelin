@@ -63,6 +63,8 @@ export abstract class ParagraphBase extends MessageListenersManager {
     forms: {}
   };
   private readonly outputState = new ParagraphOutputState();
+  private readonly pendingParagraphSaves = new Map<string, number>();
+  private paragraphSaveSequence = 0;
 
   constructor(
     public messageService: Message,
@@ -170,21 +172,28 @@ export abstract class ParagraphBase extends MessageListenersManager {
       this.outputState.finish(newPara.results?.msg);
     }
     if (this.isUpdateRequired(oldPara, newPara)) {
-      this.updateParagraph(oldPara, newPara, () => {
-        if (newPara.results && newPara.results.msg) {
-          newPara.results.msg.forEach((newResult, idx) => {
-            const oldResult =
-              oldPara.results && oldPara.results.msg ? oldPara.results.msg[idx] : new ParagraphIResultsMsgItem();
-            const newConfig = newPara.config.results ? newPara.config.results[idx] : { graph: new GraphConfig() };
-            const oldConfig = oldPara.config.results ? oldPara.config.results[idx] : { graph: new GraphConfig() };
-            if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
-              this.updateParagraphResult(idx, newConfig, newResult);
-            }
-          });
-        }
-        this.cdr.markForCheck();
-      });
+      this.updateParagraph(
+        oldPara,
+        newPara,
+        () => {
+          if (newPara.results && newPara.results.msg) {
+            newPara.results.msg.forEach((newResult, idx) => {
+              const oldResult =
+                oldPara.results && oldPara.results.msg ? oldPara.results.msg[idx] : new ParagraphIResultsMsgItem();
+              const newConfig = newPara.config.results ? newPara.config.results[idx] : { graph: new GraphConfig() };
+              const oldConfig = oldPara.config.results ? oldPara.config.results[idx] : { graph: new GraphConfig() };
+              if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
+                this.updateParagraphResult(idx, newConfig, newResult);
+              }
+            });
+          }
+          this.cdr.markForCheck();
+        },
+        data.msgId
+      );
       this.cdr.markForCheck();
+    } else {
+      this.consumeParagraphSave(data.msgId);
     }
   }
 
@@ -257,7 +266,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     this.cdr.markForCheck();
   }
 
-  updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void) {
+  updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void, msgId?: string) {
     // 1. can't update on revision view
     if (!this.revisionView) {
       // 2. get status, refreshed
@@ -269,7 +278,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
         (newPara.status === ParagraphStatus.FINISHED && statusChanged);
 
       // 3. update texts managed by paragraph
-      this.updateAllScopeTexts(oldPara, newPara);
+      this.updateAllScopeTexts(oldPara, newPara, msgId);
       // 4. execute callback to update result
       updateCallback();
 
@@ -306,21 +315,55 @@ export abstract class ParagraphBase extends MessageListenersManager {
     );
   }
 
-  updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem) {
+  protected trackParagraphSave(msgId: string): void {
+    this.pendingParagraphSaves.set(msgId, ++this.paragraphSaveSequence);
+  }
+
+  private consumeParagraphSave(msgId?: string): { acknowledged: boolean; hasNewerPendingSave: boolean } {
+    if (!msgId) {
+      return { acknowledged: false, hasNewerPendingSave: false };
+    }
+    const acknowledgedSequence = this.pendingParagraphSaves.get(msgId);
+    if (acknowledgedSequence === undefined) {
+      return { acknowledged: false, hasNewerPendingSave: false };
+    }
+    const hasNewerPendingSave = Array.from(this.pendingParagraphSaves.values()).some(
+      sequence => sequence > acknowledgedSequence
+    );
+    this.pendingParagraphSaves.delete(msgId);
+    return { acknowledged: true, hasNewerPendingSave };
+  }
+
+  updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem, msgId?: string) {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');
     }
+    const { acknowledged, hasNewerPendingSave } = this.consumeParagraphSave(msgId);
+
     if (oldPara.text !== newPara.text) {
-      if (this.dirtyText) {
+      if (acknowledged && (this.dirtyText !== undefined || hasNewerPendingSave)) {
+        if (this.dirtyText !== undefined) {
+          this.paragraph.text = this.dirtyText;
+        }
+        this.cdr.markForCheck();
+        return;
+      }
+      if (this.dirtyText !== undefined) {
         // check if editor has local update
         if (this.dirtyText === newPara.text) {
           // when local update is the same from remote, clear local update
           this.paragraph.text = newPara.text;
           this.dirtyText = undefined;
           this.originalText = newPara.text;
+        } else if (this.originalText === newPara.text) {
+          // An earlier save response must not replace an edit made while it was in flight.
+          this.paragraph.text = this.dirtyText;
         } else {
-          // if there're local update, keep it.
+          // A different server value is a remote edit, not an acknowledgement of the
+          // last local save. Accept it and discard the superseded local edit.
           this.paragraph.text = newPara.text;
+          this.dirtyText = undefined;
+          this.originalText = newPara.text;
         }
       } else {
         this.paragraph.text = newPara.text;
