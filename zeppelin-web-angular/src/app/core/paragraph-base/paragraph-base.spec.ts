@@ -247,6 +247,8 @@ describe('ParagraphBase streaming boundaries', () => {
 });
 
 class SaveTestParagraph extends ParagraphBase {
+  protected currentNoteId = 'note';
+
   changeColWidth(): void {}
   updateParagraphResult(): void {}
 
