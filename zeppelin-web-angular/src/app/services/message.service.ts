@@ -52,8 +52,12 @@ export class MessageService extends Message implements OnDestroy {
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     const received = this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
-    if (received.op === OP.PARAGRAPH_ADDED && received.data && received.msgId) {
-      (received.data as MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]).msgId = received.msgId;
+    if (received.data && received.msgId) {
+      if (received.op === OP.PARAGRAPH_ADDED) {
+        (received.data as MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]).msgId = received.msgId;
+      } else if (received.op === OP.PARAGRAPH) {
+        (received.data as MessageReceiveDataTypeMap[OP.PARAGRAPH]).msgId = received.msgId;
+      }
     }
     return received;
   }
@@ -78,8 +82,8 @@ export class MessageService extends Message implements OnDestroy {
     return super.received();
   }
 
-  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
-    super.send<K>(...args);
+  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): string {
+    return super.send<K>(...args);
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
@@ -304,8 +308,8 @@ export class MessageService extends Message implements OnDestroy {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
     noteId: string
-  ): void {
-    super.commitParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId);
+  ): string {
+    return super.commitParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId);
   }
 
   patchParagraph(paragraphId: string, noteId: string, patch: string): void {

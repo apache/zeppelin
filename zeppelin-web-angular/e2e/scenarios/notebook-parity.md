@@ -33,8 +33,8 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 | NB-PARITY-011 | editor | The second Escape after inline completion dismissal blurs the editor | covered | not-applicable | zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts<br>@NB-PARITY-011 |  |
 | NB-PARITY-021 | result | Text and table result displays preserve output semantics after paragraph execution | partial | owner: allow<br>writer: allow<br>reader: deny<br>runner: allow | zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts<br>@NB-PARITY-021 | ZEPPELIN-6514, ZEPPELIN-6516 |
 | NB-PARITY-022 | result | Streaming interpreter output accumulates while a paragraph is running | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: allow | zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts<br>@NB-PARITY-022 |  |
-| NB-PARITY-050 | persistence | Notebook editor persists the latest text after typing stops | gap | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable |  | ZEPPELIN-6661 |
-| NB-PARITY-051 | persistence | Notebook editor does not lose an edit made while a prior save is in flight | gap | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable |  | ZEPPELIN-6661 |
+| NB-PARITY-050 | persistence | Notebook editor persists the latest text after typing stops | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable | zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts<br>@NB-PARITY-050 |  |
+| NB-PARITY-051 | persistence | Notebook editor does not lose an edit made while a prior save is in flight | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable | zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts<br>@NB-PARITY-051 |  |
 | NB-PARITY-060 | theme | Notebook honors host theme selection | gap | not-applicable |  | ZEPPELIN-6640 |
 
 ## Scenario Details
@@ -151,7 +151,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 ### NB-PARITY-050 Notebook editor persists the latest text after typing stops
 
 - Area: persistence
-- Coverage: gap
+- Coverage: covered
 - Interpreter: not-applicable
 - Role verification: owner: unverified; writer: unverified; reader: unverified; runner: not-applicable
 - Preconditions: A disposable notebook with one editable paragraph is open. The user can edit the paragraph.
@@ -163,7 +163,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 ### NB-PARITY-051 Notebook editor does not lose an edit made while a prior save is in flight
 
 - Area: persistence
-- Coverage: gap
+- Coverage: covered
 - Interpreter: not-applicable
 - Role verification: owner: unverified; writer: unverified; reader: unverified; runner: not-applicable
 - Preconditions: A disposable notebook with one editable paragraph is open. The first paragraph save request can be observed before it completes.
