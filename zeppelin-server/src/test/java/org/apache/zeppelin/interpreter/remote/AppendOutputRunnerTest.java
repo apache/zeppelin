@@ -17,309 +17,164 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.time.Duration;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 class AppendOutputRunnerTest {
-
-  private static final int NUM_EVENTS = 10000;
-  private static final int NUM_CLUBBED_EVENTS = 100;
-  private static final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-  private static ScheduledFuture<?> future = null;
-  /* It is being accessed by multiple threads.
-   * While loop for 'loopForBufferCompletion' could
-   * run for-ever.
-   */
-  private volatile static int numInvocations = 0;
-
-  @AfterEach
-  public void afterEach() {
-    if (future != null) {
-      future.cancel(true);
-    }
-  }
-
   @Test
-  void testSingleEvent() throws InterruptedException {
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    String[][] buffer = {{"note", "para", "data\n"}};
-
-    loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend("note", "para", 0, "data\n");
-  }
-
-  @Test
-  public void testMultipleEventsOfSameParagraph() throws InterruptedException {
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    String note1 = "note1";
-    String para1 = "para1";
-    String[][] buffer = {
-        {note1, para1, "data1\n"},
-        {note1, para1, "data2\n"},
-        {note1, para1, "data3\n"}
-    };
-
-    loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\ndata2\ndata3\n");
-  }
-
-  @Test
-  void testUpdateDoesNotOvertakeQueuedAppend() {
+  void batchesAdjacentAppendsAndHandlesEmptyBatches() {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    runner.appendBuffer("note", "para", 0, "before-1\n");
-    runner.appendBuffer("note", "para", 0, "before-2\n");
-    runner.updateBuffer("note", "para", 0, InterpreterResult.Type.TEXT, "replacement\n");
-    runner.appendBuffer("note", "para", 0, "after\n");
-
-    runner.run();
-
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    batch.add(new AppendOutputBuffer("note", "para", 0, "a"));
+    batch.add(new AppendOutputBuffer("note", "para", 0, "b"));
+    verifyNoInteractions(listener);
+    runner.run(batch);
+    batch.clear();
+    batch.add(new AppendOutputBuffer("note", "para", 0, "c"));
+    runner.run(batch);
+    batch.clear();
+    runner.run(batch);
     InOrder order = inOrder(listener);
-    order.verify(listener).onOutputAppend("note", "para", 0, "before-1\nbefore-2\n");
-    order.verify(listener).onOutputUpdated(
-        "note", "para", 0, InterpreterResult.Type.TEXT, "replacement\n");
-    order.verify(listener).onOutputAppend("note", "para", 0, "after\n");
+    order.verify(listener).onOutputAppend("note", "para", 0, "ab");
+    order.verify(listener).onOutputAppend("note", "para", 0, "c");
+    order.verifyNoMoreInteractions();
   }
 
   @Test
-  void testMultipleEventsOfDifferentParagraphs() throws InterruptedException {
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    String note1 = "note1";
-    String note2 = "note2";
-    String para1 = "para1";
-    String para2 = "para2";
-    String[][] buffer = {
-        {note1, para1, "data1\n"},
-        {note1, para2, "data2\n"},
-        {note2, para1, "data3\n"},
-        {note2, para2, "data4\n"}
-    };
-    loopForCompletingEvents(listener, 4, buffer);
-
-    verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\n");
-    verify(listener, times(1)).onOutputAppend(note1, para2, 0, "data2\n");
-    verify(listener, times(1)).onOutputAppend(note2, para1, 0, "data3\n");
-    verify(listener, times(1)).onOutputAppend(note2, para2, 0, "data4\n");
-  }
-
-  @Test
-  void testClubbedData() throws InterruptedException {
+  void preservesOrderAndDoesNotMergeDifferentOutputKeys() {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    future = service.scheduleWithFixedDelay(runner, 0,
-        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
-    Thread thread = new Thread(new BombardEvents(runner));
-    thread.start();
-    thread.join();
-    Thread.sleep(1000);
-
-    /* NUM_CLUBBED_EVENTS is a heuristic number.
-     * It has been observed that for 10,000 continuos event
-     * calls, 30-40 Web-socket calls are made. Keeping
-     * the unit-test to a pessimistic 100 web-socket calls.
-     */
-    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    batch.add(new AppendOutputBuffer("note:1", "p:1", 0, "first"));
+    batch.add(new AppendOutputBuffer("note:1", "p:2", 0, "second"));
+    batch.add(new AppendOutputBuffer("note:1", "p:1", 1, "third"));
+    batch.add(new AppendOutputBuffer("note:2", "p:1", 1, "fourth"));
+    batch.add(new AppendOutputBuffer("note:1", "p:1", 0, "fifth"));
+    runner.run(batch);
+    InOrder order = inOrder(listener);
+    order.verify(listener).onOutputAppend("note:1", "p:1", 0, "first");
+    order.verify(listener).onOutputAppend("note:1", "p:2", 0, "second");
+    order.verify(listener).onOutputAppend("note:1", "p:1", 1, "third");
+    order.verify(listener).onOutputAppend("note:2", "p:1", 1, "fourth");
+    order.verify(listener).onOutputAppend("note:1", "p:1", 0, "fifth");
+    order.verifyNoMoreInteractions();
   }
 
   @Test
-  void testWarnLoggerForLargeData() throws InterruptedException {
+  void staleAppendDoesNotDiscardLaterOutputOrLeakIntoItsBuffer() {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    AppendOutputRunner runner = new AppendOutputRunner(listener);
-    String data = "data\n";
-    int numEvents = 100000;
-
-    for (int i=0; i<numEvents; i++) {
-      runner.appendBuffer("noteId", "paraId", 0, data);
-    }
-
-    TestAppender appender = new TestAppender();
-    Logger logger = Logger.getRootLogger();
-    logger.addAppender(appender);
-
-    runner.run();
-    try {
-      String expected = "Processing size for buffered append-output is high: "
-          + (data.length() * numEvents) + " characters.";
-      assertTrue(appender.getLog().stream().anyMatch(event ->
-          Level.WARN.equals(event.getLevel()) && expected.equals(event.getMessage())));
-    } finally {
-      logger.removeAppender(appender);
-    }
-  }
-
-  @Test
-  void emptyDrainDoesNotBlock() {
-    AppendOutputRunner runner =
-        new AppendOutputRunner(mock(RemoteInterpreterProcessListener.class));
-    assertTimeoutPreemptively(Duration.ofSeconds(1), runner::run);
-  }
-
-  @Test
-  void updateFailureDoesNotDiscardOtherEventsOrLaterDrains() {
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    AppendOutputRunner runner = new AppendOutputRunner(listener);
-    doThrow(new IllegalStateException("removed")).when(listener)
-        .onOutputUpdated("note", "gone", 0, InterpreterResult.Type.TEXT, "bad");
-    runner.appendBuffer("note", "gone", 0, "bad");
-    runner.updateBuffer("note", "gone", 0, InterpreterResult.Type.TEXT, "bad");
-    runner.appendBuffer("note", "present", 0, "good");
-    runner.run();
-    runner.appendBuffer("note", "present", 0, "later");
-    runner.run();
-    verify(listener).onOutputAppend("note", "present", 0, "good");
-    verify(listener).onOutputAppend("note", "present", 0, "later");
-  }
-
-  @Test
-  void appendFailureDoesNotDiscardLaterUpdateOrDrain() {
-    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
-    AppendOutputRunner runner = new AppendOutputRunner(listener);
     doThrow(new IllegalStateException("removed")).when(listener)
         .onOutputAppend("note", "gone", 0, "bad");
-    runner.appendBuffer("note", "gone", 0, "bad");
-    runner.updateBuffer("note", "present", 0, InterpreterResult.Type.TEXT, "current");
-    runner.run();
-    runner.appendBuffer("note", "present", 0, "later");
-    runner.run();
-    verify(listener).onOutputUpdated("note", "present", 0,
-        InterpreterResult.Type.TEXT, "current");
-    verify(listener).onOutputAppend("note", "present", 0, "later");
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    batch.add(new AppendOutputBuffer("note", "gone", 0, "bad"));
+    batch.add(new AppendOutputBuffer("note", "present", 0, "good"));
+    runner.run(batch);
+    InOrder order = inOrder(listener);
+    order.verify(listener).onOutputAppend("note", "gone", 0, "bad");
+    order.verify(listener).onOutputAppend("note", "present", 0, "good");
+    order.verifyNoMoreInteractions();
   }
 
   @Test
-  void concurrentDrainCannotOvertakeInFlightCallback() throws Exception {
+  void largeAppendStreamIsDeliveredAsOneBatchWithoutLosingData() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    List<String> received = new ArrayList<>();
+    doAnswer(call -> {
+      received.add(call.getArgument(3));
+      return null;
+    }).when(listener).onOutputAppend(anyString(), anyString(), anyInt(), anyString());
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    StringBuilder expected = new StringBuilder();
+    for (int i = 0; i < 10000; i++) {
+      String token = i + "\n";
+      expected.append(token);
+      batch.add(new AppendOutputBuffer("note", "para", 0, token));
+    }
+    runner.run(batch);
+    assertEquals(List.of(expected.toString()), received);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {100000, 100001})
+  void warnsOnlyWhenBufferedOutputExceedsTheSizeThreshold(int size) {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    CountDownLatch entered = new CountDownLatch(1);
-    CountDownLatch release = new CountDownLatch(1);
-    doAnswer(invocation -> {
-      entered.countDown();
-      assertTrue(release.await(5, TimeUnit.SECONDS));
-      return null;
-    }).when(listener).onOutputAppend("note", "para", 0, "old");
-    ExecutorService executor = Executors.newFixedThreadPool(2);
-    try {
-      runner.appendBuffer("note", "para", 0, "old");
-      Future<?> first = executor.submit(runner);
-      assertTrue(entered.await(5, TimeUnit.SECONDS));
-      runner.updateBuffer("note", "para", 0, InterpreterResult.Type.TEXT, "new");
-      Future<?> second = executor.submit(runner);
-      assertThrows(TimeoutException.class, () -> second.get(100, TimeUnit.MILLISECONDS));
-      release.countDown();
-      first.get(5, TimeUnit.SECONDS);
-      second.get(5, TimeUnit.SECONDS);
-      InOrder order = inOrder(listener);
-      order.verify(listener).onOutputAppend("note", "para", 0, "old");
-      order.verify(listener).onOutputUpdated("note", "para", 0,
-          InterpreterResult.Type.TEXT, "new");
-    } finally {
-      release.countDown();
-      executor.shutdownNow();
-    }
-  }
-
-  private class BombardEvents implements Runnable {
-
-    private final AppendOutputRunner runner;
-
-    private BombardEvents(AppendOutputRunner runner) {
-      this.runner = runner;
-    }
-
-    @Override
-    public void run() {
-      String noteId = "noteId";
-      String paraId = "paraId";
-      for (int i=0; i<NUM_EVENTS; i++) {
-        runner.appendBuffer(noteId, paraId, 0, "data\n");
-      }
-    }
-  }
-
-  private class TestAppender extends AppenderSkeleton {
-    private final List<LoggingEvent> log = new ArrayList<>();
-
-    @Override
-    public boolean requiresLayout() {
-        return false;
-    }
-
-    @Override
-    protected void append(final LoggingEvent loggingEvent) {
-        log.add(loggingEvent);
-    }
-
-    @Override
-    public void close() {
-    }
-
-    public List<LoggingEvent> getLog() {
-        return new ArrayList<>(log);
-    }
-  }
-
-  private void prepareInvocationCounts(RemoteInterpreterProcessListener listener) {
-    doAnswer(new Answer<Void>() {
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    String output = "a".repeat(size);
+    batch.add(new AppendOutputBuffer("note", "para", 0, output));
+    List<String> sizeWarnings = new ArrayList<>();
+    AppenderSkeleton appender = new AppenderSkeleton() {
       @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        numInvocations += 1;
-        return null;
+      protected void append(LoggingEvent event) {
+        String message = event.getRenderedMessage();
+        if (Level.WARN.equals(event.getLevel())
+            && message.startsWith("Processing size for buffered append-output is high:")) {
+          sizeWarnings.add(message);
+        }
       }
-    }).when(listener).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public boolean requiresLayout() {
+        return false;
+      }
+    };
+    Logger logger = Logger.getLogger(AppendOutputRunner.class);
+    Level previousLevel = logger.getLevel();
+    boolean previousAdditivity = logger.getAdditivity();
+    logger.setLevel(Level.DEBUG);
+    logger.setAdditivity(false);
+    logger.addAppender(appender);
+    try {
+      runner.run(batch);
+      assertEquals(size > 100000 ? List.of(
+          "Processing size for buffered append-output is high: " + size + " characters.")
+          : List.of(), sizeWarnings);
+      verify(listener).onOutputAppend("note", "para", 0, output);
+    } finally {
+      logger.removeAppender(appender);
+      logger.setLevel(previousLevel);
+      logger.setAdditivity(previousAdditivity);
+      appender.close();
+    }
   }
 
-  private void loopForCompletingEvents(RemoteInterpreterProcessListener listener,
-      int numTimes, String[][] buffer) {
-    numInvocations = 0;
-    prepareInvocationCounts(listener);
+  @Test
+  void disallowedDeliverySkipsTheBatchAndDoesNotAffectLaterBatches() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    for (String[] bufferElement: buffer) {
-      runner.appendBuffer(bufferElement[0], bufferElement[1], 0, bufferElement[2]);
-    }
-    future = service.scheduleWithFixedDelay(runner, 0,
-        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
-    long startTimeMs = System.currentTimeMillis();
-    while(numInvocations != numTimes) {
-      if (System.currentTimeMillis() - startTimeMs > 2000) {
-        fail("Buffered events were not sent for 2 seconds");
-      }
-    }
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    batch.add(new AppendOutputBuffer("note", "para", 0, "discarded"));
+    runner.run(batch, () -> false);
+    batch.clear();
+    verifyNoInteractions(listener);
+    batch.add(new AppendOutputBuffer("note", "para", 0, "new"));
+    runner.run(batch);
+    InOrder order = inOrder(listener);
+    order.verify(listener).onOutputAppend("note", "para", 0, "new");
+    order.verifyNoMoreInteractions();
   }
 }
