@@ -175,21 +175,15 @@ export class Message {
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
-    const guard = getMessagePayloadGuard(op);
+    return this.receiveMessage(op).pipe(map(message => message.data)) as Observable<
+      Record<K, MessageReceiveDataTypeMap[K]>[K]
+    >;
+  }
 
-    return this.received$.pipe(
-      filter(message => message.op === op),
-      filter(message => {
-        if (!guard || guard(message.data)) {
-          return true;
-        }
-
-        // The payload can be large and carries note names, so log the OP alone.
-        console.warn(`Dropped WebSocket OP ${String(op)}: payload failed validation`);
-        return false;
-      }),
-      map(message => message.data)
-    ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
+  receiveEnvelope<K extends keyof MessageReceiveDataTypeMap>(
+    op: K
+  ): Observable<WebSocketMessage<MessageReceiveDataTypeMap, K>> {
+    return this.receiveMessage(op) as Observable<WebSocketMessage<MessageReceiveDataTypeMap, K>>;
   }
 
   shortCircuit(message: WebSocketMessage<MessageReceiveDataTypeMap>) {
@@ -564,5 +558,22 @@ export class Message {
       noteId: note.id,
       formName
     });
+  }
+
+  private receiveMessage<K extends keyof MessageReceiveDataTypeMap>(op: K) {
+    const guard = getMessagePayloadGuard(op);
+
+    return this.received$.pipe(
+      filter(message => message.op === op),
+      filter(message => {
+        if (!guard || guard(message.data)) {
+          return true;
+        }
+
+        // The payload can be large and carries note names, so log the OP alone.
+        console.warn(`Dropped WebSocket OP ${String(op)}: payload failed validation`);
+        return false;
+      })
+    );
   }
 }
