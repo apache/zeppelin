@@ -28,7 +28,7 @@ import { distinctUntilChanged, distinctUntilKeyChanged, startWith, takeUntil } f
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 
-import { MessageListener, MessageListenersManager } from '@zeppelin/core';
+import { MessageEnvelopeListener, MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
 import {
   DynamicFormParams,
@@ -36,7 +36,8 @@ import {
   MessageReceiveDataTypeMap,
   Note,
   OP,
-  RevisionListItem
+  RevisionListItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 import {
   MessageService,
@@ -116,8 +117,13 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     }
   }
 
-  @MessageListener(OP.INTERPRETER_BINDINGS)
-  loadInterpreterBindings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS]) {
+  @MessageEnvelopeListener(OP.INTERPRETER_BINDINGS)
+  loadInterpreterBindings(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.INTERPRETER_BINDINGS>) {
+    const data = message.data;
+    if (data === undefined) {
+      return;
+    }
+
     this.interpreterBindings = data.interpreterBindings;
     if (!this.interpreterBindings.some(item => item.selected)) {
       this.activatedExtension = 'interpreter';
@@ -197,8 +203,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     }
   }
 
-  @MessageListener(OP.SET_NOTE_REVISION)
-  setNoteRevision(_data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
+  @MessageEnvelopeListener(OP.SET_NOTE_REVISION)
+  setNoteRevision(_message: WebSocketMessage<MessageReceiveDataTypeMap, OP.SET_NOTE_REVISION>) {
     const { noteId } = this.activatedRoute.snapshot.params;
     this.router.navigate(['/notebook', noteId]).then();
   }
@@ -255,8 +261,13 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
-  @MessageListener(OP.LIST_REVISION_HISTORY)
-  listRevisionHistory(data: MessageReceiveDataTypeMap[OP.LIST_REVISION_HISTORY]) {
+  @MessageEnvelopeListener(OP.LIST_REVISION_HISTORY)
+  listRevisionHistory(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.LIST_REVISION_HISTORY>) {
+    const data = message.data;
+    if (data === undefined) {
+      return;
+    }
+
     this.noteRevisions = data.revisionList;
     if (this.noteRevisions) {
       if (this.noteRevisions.length === 0 || this.noteRevisions[0].id !== 'Head') {
