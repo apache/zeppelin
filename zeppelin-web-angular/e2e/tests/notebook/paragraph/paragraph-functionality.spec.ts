@@ -14,6 +14,7 @@ import { expect, test } from '@playwright/test';
 import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
 import { NotebookKeyboardPage } from 'e2e/models/notebook-keyboard-page';
 import {
+  addPageAnnotation,
   addPageAnnotationBeforeEach,
   createTestNotebook,
   performLoginIfRequired,
@@ -23,8 +24,9 @@ import {
 } from '../../../utils';
 
 test.describe('Notebook Paragraph Functionality', () => {
+  // JUSTIFIED: this legacy spec stores its page object and notebook id in describe scope.
+  test.describe.configure({ mode: 'default' });
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH);
-  addPageAnnotationBeforeEach(PAGES.SHARE.CODE_EDITOR);
 
   let paragraphPage: NotebookParagraphPage;
   let testNotebook: { noteId: string; paragraphId: string };
@@ -43,57 +45,80 @@ test.describe('Notebook Paragraph Functionality', () => {
     await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display paragraph container with proper structure', async () => {
+  test('should display the paragraph container and control panel', async () => {
     await expect(paragraphPage.paragraphContainer).toBeVisible();
     await expect(paragraphPage.controlPanel).toBeVisible();
   });
 
-  test('should support double-click editing functionality', { tag: '@NB-PARITY-003' }, async () => {
-    await expect(paragraphPage.paragraphContainer).toBeVisible();
-    await paragraphPage.doubleClickToEdit();
-    await expect(paragraphPage.codeEditor).toBeVisible();
-  });
+  test(
+    'should reflect user edits in the code editor state and rendered lines',
+    { tag: '@NB-PARITY-003' },
+    async ({ page }, testInfo) => {
+      addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR, testInfo);
+      const keyboard = new NotebookKeyboardPage(page);
 
-  test('should display add paragraph buttons', { tag: '@NB-PARITY-004' }, async () => {
-    await expect(paragraphPage.addParagraphAbove).toBeVisible();
-    await expect(paragraphPage.addParagraphAbove).toHaveCount(1);
-    await expect(paragraphPage.addParagraphBelow).toBeVisible();
-    await expect(paragraphPage.addParagraphBelow).toHaveCount(1);
-  });
+      await test.step('Given the paragraph is in edit mode', async () => {
+        await paragraphPage.doubleClickToEdit();
+        await expect(paragraphPage.codeEditor).toBeVisible();
+        await paragraphPage.editorInput.focus();
+        await expect(paragraphPage.editorInput).toBeFocused();
+      });
 
-  test('should display comprehensive control interface', async () => {
-    await expect(paragraphPage.controlPanel).toBeVisible();
-    await expect(paragraphPage.runButton).toBeVisible();
-    await expect(paragraphPage.runButton).toBeEnabled();
-  });
+      await test.step('When the user replaces the paragraph with five lines', async () => {
+        await keyboard.pressSelectAll();
+        await page.keyboard.type('%md\nline one\nline two\nline three\nline four');
+      });
 
-  test('should display result system properly', { tag: '@NB-PARITY-021' }, async ({ page }) => {
-    await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
-    await page.waitForLoadState('domcontentloaded');
-    await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
-    // JUSTIFIED: codeEditor is visibility:hidden before double-click; toBeAttached confirms it's in the DOM
-    await expect(paragraphPage.codeEditor).toBeAttached({ timeout: 10000 });
+      await test.step('Then Monaco renders the text and marks the editor focused and dirty', async () => {
+        await expect(paragraphPage.editorViewLines).toContainText('line four');
+        await expect(paragraphPage.editorLines).toHaveCount(5);
+        await expect(paragraphPage.codeEditorHost).toHaveClass(/\bfocused\b/);
+        await expect(paragraphPage.codeEditorHost).toHaveClass(/\bdirty\b/);
 
-    await paragraphPage.doubleClickToEdit();
-    await expect(paragraphPage.codeEditor).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(paragraphPage.codeEditorHost).not.toHaveClass(/\bfocused\b/);
+      });
+    }
+  );
 
-    // JUSTIFIED: compound selector; first() picks primary Monaco input
-    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
-    // JUSTIFIED: Monaco textarea may be visibility:hidden before focus; toBeAttached confirms DOM presence
-    await expect(codeEditor).toBeAttached({ timeout: 10000 });
-    await expect(codeEditor).toBeEnabled({ timeout: 10000 });
+  test(
+    'should insert default paragraphs above and below the original paragraph',
+    { tag: '@NB-PARITY-004' },
+    async ({ page }, testInfo) => {
+      addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_ADD_PARAGRAPH, testInfo);
+      const keyboard = new NotebookKeyboardPage(page);
+      const originalText = 'Original paragraph marker';
 
-    await codeEditor.focus();
-    await expect(codeEditor).toBeFocused({ timeout: 5000 });
+      await test.step('Given one paragraph with distinctive text', async () => {
+        await keyboard.setCodeEditorContent(`%md\n${originalText}`);
+        await expect(paragraphPage.paragraphContainers).toHaveCount(1);
+      });
 
-    const notebookKeyboardPage = new NotebookKeyboardPage(page);
-    await notebookKeyboardPage.pressSelectAll();
-    await page.keyboard.type('%python\nprint("Hello World")');
+      await test.step('When the trailing Add Paragraph control is clicked', async () => {
+        await paragraphPage.clickAddParagraphBelow();
+      });
 
-    await paragraphPage.runParagraph();
-    await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 15000 });
-    await expect(paragraphPage.resultDisplay).not.toBeEmpty();
-  });
+      await test.step('Then a new paragraph is inserted below the original', async () => {
+        await expect(paragraphPage.paragraphContainers).toHaveCount(2);
+        // JUSTIFIED: the first rendered editor is the original paragraph after inserting below.
+        await expect(paragraphPage.editorViewLinesAll.first()).toContainText(originalText);
+        // JUSTIFIED: the last rendered editor is the newly inserted default paragraph.
+        await expect(paragraphPage.editorViewLinesAll.last()).toHaveText('%md');
+      });
+
+      await test.step('When the leading Add Paragraph control is clicked', async () => {
+        await paragraphPage.clickAddParagraphAbove();
+      });
+
+      await test.step('Then a default paragraph is inserted above the original', async () => {
+        await expect(paragraphPage.paragraphContainers).toHaveCount(3);
+        // JUSTIFIED: inserting above moves the original paragraph to the second position.
+        await expect(paragraphPage.editorViewLinesAll.nth(1)).toContainText(originalText);
+        // JUSTIFIED: the first rendered editor is the newly inserted default paragraph.
+        await expect(paragraphPage.editorViewLinesAll.first()).toHaveText('%md');
+      });
+    }
+  );
 
   test(
     'should accumulate interpreter output while the paragraph is running',
@@ -126,88 +151,214 @@ test.describe('Notebook Paragraph Functionality', () => {
     }
   );
 
-  test('should display dynamic forms', async ({ page }) => {
-    test.skip(!!process.env.CI, 'Dynamic form tests require a Spark interpreter — skipped on CI');
-
-    await paragraphPage.doubleClickToEdit();
-    await expect(paragraphPage.codeEditor).toBeVisible();
-
-    // JUSTIFIED: compound selector; first() picks primary Monaco input
-    const codeEditor = paragraphPage.codeEditor.locator('textarea, .monaco-editor .input-area').first();
-    await expect(codeEditor).toBeAttached({ timeout: 10000 });
-    await expect(codeEditor).toBeEnabled({ timeout: 10000 });
-
-    await codeEditor.focus();
-    await expect(codeEditor).toBeFocused({ timeout: 5000 });
-
-    const notebookKeyboardPage = new NotebookKeyboardPage(page);
-    await notebookKeyboardPage.pressSelectAll();
-    await page.keyboard.type(`%spark
-println("Name: " + z.input("name", "World"))
-println("Age: " + z.select("age", Seq(("1","Under 18"), ("2","18-65"), ("3","Over 65"))))
-`);
-
-    await paragraphPage.runParagraph();
-    await expect(paragraphPage.resultDisplay).toBeVisible({ timeout: 15000 });
-
-    // Handles error cases gracefully — Spark may not be available
-    // JUSTIFIED: result display may not exist when interpreter is unavailable; null triggers graceful fallback below
-    const resultText = await paragraphPage.resultDisplay.textContent().catch(() => null);
-    const hasInterpreterError =
-      resultText &&
-      ((resultText.toLowerCase().includes('interpreter') && resultText.toLowerCase().includes('not found')) ||
-        resultText.toLowerCase().includes('error'));
-
-    if (hasInterpreterError) {
-      await expect(paragraphPage.resultDisplay).toBeVisible();
-    } else {
-      await expect(paragraphPage.dynamicForms).toBeVisible();
-    }
-  });
-
-  test('should render footer element in paragraph DOM', async () => {
-    // JUSTIFIED: footer is visibility:hidden by default (hover-only); toBeAttached confirms it's rendered in DOM
-    await expect(paragraphPage.footerInfo).toBeAttached();
-  });
-
-  test('should provide paragraph control actions', async ({ page }) => {
-    await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
-    await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
+  test('should expose the settings available for a single paragraph', async ({}, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
 
     await paragraphPage.openSettingsDropdown();
 
-    const dropdownMenu = page.locator('ul.ant-dropdown-menu, .dropdown-menu');
-    await expect(dropdownMenu).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('li:has-text("Insert")')).toBeVisible();
-    await expect(page.locator('li:has-text("Clone")')).toBeVisible();
-
-    await page.keyboard.press('Escape');
+    await expect(paragraphPage.settingsMenu).toBeVisible();
+    await expect(paragraphPage.paragraphIdMenuItem).toHaveText(/paragraph_\d+_\d+/);
+    await expect(paragraphPage.settingsMenuItem('Width')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Font size')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Insert new')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Clone paragraph')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Clear output')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Show Title')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Show line numbers')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Disable run')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Remove')).toHaveCount(0);
+    await expect(paragraphPage.settingsMenuItem('Move paragraph up')).toHaveCount(0);
+    await expect(paragraphPage.settingsMenuItem('Move paragraph down')).toHaveCount(0);
   });
 
-  test('should show cancel button during execution', async ({ page }) => {
-    await expect(page).toHaveURL(/\/notebook\/[^\/]+/, { timeout: 10000 });
-    await expect(paragraphPage.paragraphContainer).toBeVisible({ timeout: 15000 });
+  test('should report running and finished execution state', { tag: '@NB-PARITY-021' }, async ({ page }, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_FOOTER, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_PROGRESS, testInfo);
+    const keyboard = new NotebookKeyboardPage(page);
+
+    await test.step('Given a paragraph that runs long enough to observe', async () => {
+      await keyboard.setCodeEditorContent('%python\nimport time\ntime.sleep(2)\nprint("lifecycle complete")');
+      await expect(paragraphPage.status).toHaveText('READY');
+    });
+
+    await test.step('When the paragraph starts', async () => {
+      await paragraphPage.runParagraph();
+    });
+
+    await test.step('Then running controls, progress, and elapsed time are shown', async () => {
+      await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 60000 });
+      await expect(paragraphPage.cancelButton).toBeVisible();
+      await expect(paragraphPage.progressBar).toBeVisible();
+      await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/, { timeout: 15000 });
+    });
+
+    await test.step('Then completion removes progress and shows result timing', async () => {
+      await expect(paragraphPage.status).toHaveText('FINISHED', { timeout: 60000 });
+      await expect(paragraphPage.resultDisplay).toContainText('lifecycle complete');
+      await expect(paragraphPage.progressIndicator).toHaveCount(0);
+      await paragraphPage.paragraphContainer.hover();
+      await expect(paragraphPage.executionTime).toHaveText(/^Took .+\. Last updated by .+ at .+\./);
+    });
+
+    await test.step('When the finished paragraph is edited', async () => {
+      await paragraphPage.editorInput.focus();
+      await page.keyboard.type(' ');
+      await page.keyboard.press('Escape');
+    });
+
+    await test.step('Then the previous result is marked outdated and can be cleared', async () => {
+      await expect(paragraphPage.executionTime).toContainText('(outdated)');
+      await paragraphPage.openSettingsDropdown();
+      await paragraphPage.settingsMenuItem('Clear output').click();
+      await expect(paragraphPage.resultDisplay).toHaveCount(0);
+    });
+  });
+
+  test('should edit a paragraph title through the elastic input', async ({}, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_ELASTIC_INPUT, testInfo);
+
+    await test.step('Given paragraph titles are enabled', async () => {
+      await paragraphPage.openSettingsDropdown();
+      await paragraphPage.settingsMenuItem('Show Title').click();
+      await expect(paragraphPage.paragraphTitleText).toHaveText('Untitled');
+    });
+
+    await test.step('When a title is entered and committed with Enter', async () => {
+      await paragraphPage.paragraphTitleText.click();
+      await paragraphPage.paragraphTitleInput.fill('My paragraph');
+      await paragraphPage.paragraphTitleInput.press('Enter');
+    });
+
+    await test.step('Then the committed title replaces the input', async () => {
+      await expect(paragraphPage.paragraphTitleInput).toHaveCount(0);
+      await expect(paragraphPage.paragraphTitleText).toHaveText('My paragraph');
+    });
+
+    await test.step('When a different title is cancelled with Escape', async () => {
+      await paragraphPage.paragraphTitleText.click();
+      await paragraphPage.paragraphTitleInput.fill('Temporary title');
+      await paragraphPage.paragraphTitleInput.press('Escape');
+    });
+
+    await test.step('Then the committed title remains unchanged', async () => {
+      await expect(paragraphPage.paragraphTitleText).toHaveText('My paragraph');
+      await expect(paragraphPage.paragraphTitleInput).toHaveCount(0);
+    });
+
+    await test.step('When a longer title is entered and the input loses focus', async () => {
+      await paragraphPage.paragraphTitleText.click();
+      const longTitle = 'A much longer paragraph title that commits on blur';
+      await paragraphPage.paragraphTitleInput.fill(longTitle);
+      await paragraphPage.paragraphTitleInput.blur();
+      await expect(paragraphPage.paragraphTitleText).toHaveText(longTitle);
+      await expect(paragraphPage.paragraphTitleInput).toHaveCount(0);
+    });
+  });
+
+  test('should clone a paragraph with its editor content', async ({ page }, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    const keyboard = new NotebookKeyboardPage(page);
+    const cloneMarker = 'Distinctive clone marker';
+
+    await keyboard.setCodeEditorContent(`%md\n${cloneMarker}`);
+    await paragraphPage.openSettingsDropdown();
+    await paragraphPage.settingsMenuItem('Clone paragraph').click();
+
+    await expect(paragraphPage.paragraphContainers).toHaveCount(2);
+    await expect(paragraphPage.editorViewLinesAll).toHaveText([
+      /Distinctive\s+clone\s+marker/,
+      /Distinctive\s+clone\s+marker/
+    ]);
+  });
+
+  test('should insert, move, and remove paragraphs through the settings menu', async ({ page }, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    const keyboard = new NotebookKeyboardPage(page);
+    const originalMarker = 'Paragraph to move';
+
+    await keyboard.setCodeEditorContent(`%md\n${originalMarker}`);
+    await paragraphPage.openSettingsDropdown();
+    await paragraphPage.settingsMenuItem('Insert new').click();
+    await expect(paragraphPage.paragraphContainers).toHaveCount(2);
+
+    await paragraphPage.openSettingsDropdown();
+    await expect(paragraphPage.settingsMenuItem('Remove')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Move paragraph down')).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Move paragraph up')).toHaveCount(0);
+    await paragraphPage.settingsMenuItem('Move paragraph down').click();
+
+    // JUSTIFIED: after moving the original first paragraph down, its editor is last.
+    await expect(paragraphPage.editorViewLinesAll.last()).toContainText(originalMarker);
+
+    // JUSTIFIED: remove the moved paragraph through its last settings trigger.
+    await paragraphPage.openSettingsDropdown(paragraphPage.settingsDropdowns.last());
+    await paragraphPage.settingsMenuItem('Remove').click();
+    await expect(paragraphPage.confirmButton).toBeVisible();
+    await paragraphPage.confirmButton.click();
+    await expect(paragraphPage.paragraphContainers).toHaveCount(1);
+    // JUSTIFIED: removing the moved original leaves the inserted default paragraph first.
+    await expect(paragraphPage.editorViewLinesAll.first()).toHaveText('%md');
+  });
+
+  test('should toggle paragraph code, output, line numbers, and run state', async ({ page }, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CODE_EDITOR, testInfo);
+
+    await paragraphPage.toggleEditorButton.click();
+    await expect(paragraphPage.codeEditor).toHaveCount(0);
+    await paragraphPage.toggleEditorButton.click();
+    await expect(paragraphPage.codeEditor).toBeVisible();
+
+    await paragraphPage.toggleOutputButton.click();
+    await expect(paragraphPage.dynamicForms).toHaveCount(0);
+    await paragraphPage.toggleOutputButton.click();
+    await expect(paragraphPage.dynamicForms).toHaveCount(1);
+
+    await paragraphPage.openSettingsDropdown();
+    await paragraphPage.settingsMenuItem('Show line numbers').click();
+    await expect(paragraphPage.lineNumbers).toBeVisible();
+    await expect(paragraphPage.settingsMenuItem('Hide line numbers')).toBeVisible();
+    await paragraphPage.settingsMenuItem('Hide line numbers').click();
+    await expect(paragraphPage.lineNumbers).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    await paragraphPage.openSettingsDropdown();
+    await paragraphPage.settingsMenuItem('Disable run').click();
+    await expect(paragraphPage.runButton).toHaveCount(0);
+    await expect(paragraphPage.settingsMenuItem('Enable run')).toBeVisible();
+    await paragraphPage.settingsMenuItem('Enable run').click();
     await expect(paragraphPage.runButton).toBeVisible();
-    await expect(paragraphPage.runButton).toBeEnabled();
+  });
 
-    const notebookKeyboardPage = new NotebookKeyboardPage(page);
-    const code = '%python\nimport time;time.sleep(10)\nprint("Done")';
-    // Seed the run prerequisite without Monaco's per-keystroke auto-closing edits.
-    await notebookKeyboardPage.setCodeEditorContent(code);
-    await expect.poll(() => notebookKeyboardPage.getParagraphTextByIndex(0)).toBe(code);
+  test('should disable insertion and expose cancellation state while running', async ({ page }, testInfo) => {
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_ADD_PARAGRAPH, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_CONTROL, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_FOOTER, testInfo);
+    addPageAnnotation(PAGES.WORKSPACE.NOTEBOOK_PARAGRAPH_PROGRESS, testInfo);
+    const keyboard = new NotebookKeyboardPage(page);
 
-    await paragraphPage.runParagraph();
+    const code = '%python\nimport time\ntime.sleep(10)\nprint("Done")';
+    await keyboard.setCodeEditorContent(code);
+    await expect.poll(() => keyboard.getParagraphTextByIndex(0)).toBe(code);
+    await paragraphPage.runAllButton.click();
+    await expect(paragraphPage.confirmButton).toBeVisible();
+    await paragraphPage.confirmButton.click();
 
-    // The control also renders while the paragraph is PENDING, so wait for the run to start
-    // before cancelling it.
     await expect(paragraphPage.cancelButton).toBeVisible({ timeout: 10000 });
-    await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 30000 });
+    await expect(paragraphPage.status).toHaveText('RUNNING', { timeout: 60000 });
+    await expect(paragraphPage.progressBar).toBeVisible();
+    await expect(paragraphPage.elapsedTime).toHaveText(/^Started .+ ago\.$/, { timeout: 15000 });
+    await expect(paragraphPage.addParagraphAboveLink).toHaveClass(/\bdisabled\b/);
+    await expect(paragraphPage.addParagraphBelowLink).toHaveClass(/\bdisabled\b/);
+
+    await paragraphPage.clickAddParagraphBelow();
+    await expect(paragraphPage.paragraphContainers).toHaveCount(1);
 
     await paragraphPage.cancelButton.click();
-
-    // Waiting for the button to disappear would also pass on natural completion, since the
-    // control is hidden once the paragraph leaves PENDING or RUNNING. Only cancelling reaches
-    // ABORT. The interpreter finishes the statement it is on first, so allow for the sleep.
     await expect(paragraphPage.status).toHaveText('ABORT', { timeout: 30000 });
+    await expect(paragraphPage.progressIndicator).toHaveCount(0);
+    await expect(paragraphPage.elapsedTime).toHaveCount(0);
   });
 });
