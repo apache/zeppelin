@@ -157,7 +157,7 @@ export class Message {
     return this.received$.asObservable();
   }
 
-  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
+  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): string {
     if (!this.ws) {
       throw new Error('WebSocket is not connected. Bootstrap first.');
     }
@@ -172,6 +172,7 @@ export class Message {
 
     this.ws.next(message);
     this.sent$.next(message);
+    return message.msgId;
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
@@ -453,7 +454,7 @@ export class Message {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
     noteId: string
-  ): void {
+  ): string {
     return this.send<OP.COMMIT_PARAGRAPH>(OP.COMMIT_PARAGRAPH, {
       id: paragraphId,
       noteId,
@@ -468,7 +469,7 @@ export class Message {
     // javascript add "," if change contains several patches
     // but java library requires patch list without ","
     const normalPatch = patch.replace(/,@@/g, '@@');
-    return this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
+    this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
       id: paragraphId,
       noteId,
       patch: normalPatch

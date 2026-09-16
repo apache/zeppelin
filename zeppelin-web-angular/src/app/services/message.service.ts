@@ -74,8 +74,8 @@ export class MessageService extends Message implements OnDestroy {
     return super.received();
   }
 
-  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
-    super.send<K>(...args);
+  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): string {
+    return super.send<K>(...args);
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
@@ -300,8 +300,8 @@ export class MessageService extends Message implements OnDestroy {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
     noteId: string
-  ): void {
-    super.commitParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId);
+  ): string {
+    return super.commitParagraph(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId);
   }
 
   patchParagraph(paragraphId: string, noteId: string, patch: string): void {
