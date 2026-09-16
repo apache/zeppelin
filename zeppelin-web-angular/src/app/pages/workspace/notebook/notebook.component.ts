@@ -119,6 +119,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageEnvelopeListener(OP.INTERPRETER_BINDINGS)
   loadInterpreterBindings(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.INTERPRETER_BINDINGS>) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+
+    if (!this.messageService.consumePendingNoteRequest(message.msgId, noteId)) {
+      return;
+    }
+
     const data = message.data;
     if (data === undefined) {
       return;
@@ -204,8 +210,13 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   @MessageEnvelopeListener(OP.SET_NOTE_REVISION)
-  setNoteRevision(_message: WebSocketMessage<MessageReceiveDataTypeMap, OP.SET_NOTE_REVISION>) {
+  setNoteRevision(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.SET_NOTE_REVISION>) {
     const { noteId } = this.activatedRoute.snapshot.params;
+
+    if (!this.messageService.consumePendingNoteRequest(message.msgId, noteId)) {
+      return;
+    }
+
     this.router.navigate(['/notebook', noteId]).then();
   }
 
@@ -263,6 +274,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageEnvelopeListener(OP.LIST_REVISION_HISTORY)
   listRevisionHistory(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.LIST_REVISION_HISTORY>) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+
+    if (!this.messageService.consumePendingNoteRequest(message.msgId, noteId)) {
+      return;
+    }
+
     const data = message.data;
     if (data === undefined) {
       return;

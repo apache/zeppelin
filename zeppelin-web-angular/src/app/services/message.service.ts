@@ -94,6 +94,21 @@ export class MessageService extends Message implements OnDestroy {
     return this.localAddFocusMsgIds.delete(msgId);
   }
 
+  consumePendingNoteRequest(msgId: string | undefined, activeNoteId: string): boolean {
+    if (!msgId) {
+      return false;
+    }
+
+    const requestedNoteId = this.pendingNoteRequests.get(msgId);
+    if (!requestedNoteId) {
+      return false;
+    }
+
+    this.pendingNoteRequests.delete(msgId);
+
+    return requestedNoteId === activeNoteId;
+  }
+
   private captureSentMessage(
     sendMessage: () => void,
     onSent: (message: WebSocketMessage<MessageSendDataTypeMap>) => void
