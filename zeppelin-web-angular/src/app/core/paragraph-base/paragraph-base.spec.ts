@@ -49,6 +49,7 @@ const paragraph = (id: string, status = 'RUNNING', dateStarted = '2026-01-01T00:
   config: {},
   settings: { params: {}, forms: {} },
   apps: [],
+  progress: 0,
   progressUpdateIntervalMs: 500,
   jobName: '',
   aborted: false,

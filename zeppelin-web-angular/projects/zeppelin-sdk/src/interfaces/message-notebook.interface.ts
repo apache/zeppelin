@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { ParagraphItem } from './message-paragraph.interface';
+import { ImportParagraphItem, ParagraphItem } from './message-paragraph.interface';
 
 interface ID {
   id: string;
@@ -59,11 +59,17 @@ export interface Note {
     angularObjects: NoteAngularObjects;
     config: NoteConfig;
     info: NoteInfo;
+    version?: string;
   };
 }
 
+export type ImportNoteData = Omit<NonNullable<Note['note']>, 'paragraphs' | 'version'> & {
+  paragraphs: ImportParagraphItem[];
+  version?: string;
+};
+
 export interface ImportNote {
-  note: Exclude<Required<Note>['note'], 'path'>;
+  note: ImportNoteData;
 }
 
 export interface NoteAngularObjects {
@@ -116,6 +122,7 @@ export interface EditorSettingReceived {
     completionSupport: boolean;
     editOnDblClick: boolean;
     language: string;
+    completionKey?: string;
   };
 }
 
