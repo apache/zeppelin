@@ -522,7 +522,8 @@ export class NotebookParagraphComponent
       config,
       settings: { params }
     } = this.paragraph;
-    this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    const msgId = this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    this.trackParagraphSave(msgId);
     this.cdr.markForCheck();
   }
 

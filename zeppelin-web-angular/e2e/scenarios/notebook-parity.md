@@ -33,8 +33,8 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 | NB-PARITY-011 | editor | The second Escape after inline completion dismissal blurs the editor | covered | not-applicable | zeppelin-web-angular/e2e/tests/notebook/inline-completion.spec.ts<br>@NB-PARITY-011 |  |
 | NB-PARITY-021 | result | Text and table result displays preserve output semantics after paragraph execution | partial | owner: allow<br>writer: allow<br>reader: deny<br>runner: allow | zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts<br>@NB-PARITY-021 | ZEPPELIN-6514, ZEPPELIN-6516 |
 | NB-PARITY-022 | result | Streaming interpreter output accumulates while a paragraph is running | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: allow | zeppelin-web-angular/e2e/tests/notebook/paragraph/paragraph-functionality.spec.ts<br>@NB-PARITY-022 |  |
-| NB-PARITY-050 | persistence | Notebook editor persists the latest text after typing stops | gap | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable |  | ZEPPELIN-6661 |
-| NB-PARITY-051 | persistence | Notebook editor does not lose an edit made while a prior save is in flight | gap | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable |  | ZEPPELIN-6661 |
+| NB-PARITY-050 | persistence | Notebook editor persists the latest text after typing stops | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable | zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts<br>@NB-PARITY-050 |  |
+| NB-PARITY-051 | persistence | Notebook editor does not lose an edit made while a prior save is in flight | covered | owner: allow<br>writer: allow<br>reader: deny<br>runner: not-applicable | zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts<br>@NB-PARITY-051 |  |
 | NB-PARITY-060 | theme | Notebook honors host theme selection | gap | not-applicable |  | ZEPPELIN-6640 |
 
 ## Scenario Details
@@ -151,26 +151,26 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 ### NB-PARITY-050 Notebook editor persists the latest text after typing stops
 
 - Area: persistence
-- Coverage: gap
+- Coverage: covered
 - Interpreter: not-applicable
 - Role verification: owner: unverified; writer: unverified; reader: unverified; runner: not-applicable
 - Preconditions: A disposable notebook with one editable paragraph is open. The user can edit the paragraph.
 - Action: Replace the paragraph text and stop typing long enough for the notebook save path to acknowledge the edit.
 - Observable outcomes: NB-PARITY-050-OUTCOME-001: The persisted paragraph text equals the latest typed text. NB-PARITY-050-OUTCOME-002: The save assertion is based on observable persistence or wire evidence, not an internal timer.
 - Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent)
-- Verification evidence: zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts (NotebookKeyboardPage)
+- Verification evidence: zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts (NotebookKeyboardPage); zeppelin-web-angular/e2e/models/notebook-save-timing.util.ts (CommitParagraphSocketProbe)
 
 ### NB-PARITY-051 Notebook editor does not lose an edit made while a prior save is in flight
 
 - Area: persistence
-- Coverage: gap
+- Coverage: covered
 - Interpreter: not-applicable
 - Role verification: owner: unverified; writer: unverified; reader: unverified; runner: not-applicable
 - Preconditions: A disposable notebook with one editable paragraph is open. The first paragraph save request can be observed before it completes.
 - Action: Edit the paragraph, keep the first save in flight, then make a second edit.
 - Observable outcomes: NB-PARITY-051-OUTCOME-001: The first in-flight save does not overwrite or drop the second edit. NB-PARITY-051-OUTCOME-002: A later observable save or reconciliation persists the second edit.
 - Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent); zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts (NotebookComponent)
-- Verification evidence: not-applicable
+- Verification evidence: zeppelin-web-angular/e2e/models/notebook-save-timing.util.ts (CommitParagraphSocketProbe)
 
 ### NB-PARITY-060 Notebook honors host theme selection
 
