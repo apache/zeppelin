@@ -174,9 +174,53 @@ server. It does not contact `PLAYWRIGHT_BASE_URL` or clean notebooks from anothe
 The focused command runs Chromium. The ordinary E2E suite still includes the synthetic
 browser tests in its Chromium, Firefox and WebKit projects and excludes `@live`.
 
-The capture server requires `lsof` to verify listener ownership and a built checkout
-(`./mvnw clean install -DskipTests -pl zeppelin-web-angular -am`). A startup failure
-reports the server log; a successful HTTP response alone does not establish ownership.
+The capture server requires `lsof` to verify listener ownership. Build a clean detached
+`origin/master` checkout with
+`./mvnw clean install -DskipTests -pl zeppelin-server,zeppelin-web-angular,shell -am`,
+then create a build manifest before starting a committed-fixture capture. The manifest
+hashes every server, frontend and interpreter output used by the launcher. Startup
+recomputes those hashes and refuses a stale or modified build. Symlinked outputs must
+resolve inside the build root. A startup failure reports the server log; a successful
+HTTP response alone does not establish ownership.
+
+A committed fixture is evidence of what the server on `origin/master` sends, so the
+build must come from `origin/master` itself with no tracked changes: a fixture
+captured from a branch would record that branch's behaviour as the contract. The
+manifest refuses a checkout whose `HEAD` is not the local `origin/master` ref; fetch
+first, because the ref is not compared with the remote. A pull request that changes
+server behaviour therefore cannot capture fixtures for its own change. Recapture
+them from `origin/master` after that change is merged.
+
+`fixtures/build-manifest.json` is the manifest, as written by
+`capture-build-manifest.mjs create`, of the build the committed execution fixtures
+were captured from. `npm run check:core-contract-fixtures` requires every committed
+execution fixture to embed that same manifest, so a recapture from a different build
+replaces this file in the same change.
+
+Committed live captures also identify the environment that produced them. Set
+`ZEPPELIN_E2E_SOURCE_COMMIT` to the exact checkout commit used to run the capture,
+`ZEPPELIN_E2E_BASE_COMMIT` to its `origin/master` commit,
+`ZEPPELIN_E2E_BUILD_MANIFEST` to the manifest used to start the server, and
+`ZEPPELIN_E2E_CAPTURE_ROOT` to the server's capture root. On start,
+`capture-server.sh` writes the settings it actually launched with to
+`capture-provenance.json` in that root: authentication mode, port, streaming
+setting, isolated directories and the verified build-manifest id. The capture reads
+that file rather than the test environment, fails if it is missing or belongs to
+another root, fails if its manifest id differs from `ZEPPELIN_E2E_BUILD_MANIFEST`,
+and fails if its port or streaming setting does not match the browser origin or
+`ZEPPELIN_CAPTURE_EXPECT_STREAMING`. The fixture records both commits, the
+build-manifest identity and relative artifact hashes, the browser name and version,
+the explicit loopback origin and port, the `execution` capture mode, authentication
+mode, interpreter configuration, and the isolated notebook, search index, log, pid,
+and recovery directories. Directory values are sanitized relative to
+`<capture-root>` before the fixture is committed. Validation rejects a live capture
+when any of this provenance is missing. The committed manifest data contains no
+checkout path.
+
+Captured execution fixtures are written only when `ZEPPELIN_WRITE_EXECUTION_FIXTURES=1`.
+They go to `e2e/core-contract/fixtures` unless `ZEPPELIN_E2E_FIXTURE_OUTPUT_DIR`
+names another directory.
+
 The capture root and repository paths must not contain whitespace, including in
 physical paths reached through symlinks. The Zeppelin launcher splits JVM arguments
 on whitespace; the capture script rejects these paths before creating files or
@@ -206,12 +250,45 @@ still select the installed toolchain.
 
 ```bash
 CAPTURE_ROOT="$(mktemp -d)"
-e2e/core-contract/capture-server.sh start --root "${CAPTURE_ROOT}" --port 18080
+BUILD_ROOT=/path/to/clean-origin-master-checkout
+BUILD_MANIFEST="$(mktemp)"
+node e2e/core-contract/capture-build-manifest.mjs create "${BUILD_MANIFEST}" "${BUILD_ROOT}"
+e2e/core-contract/capture-server.sh start --root "${CAPTURE_ROOT}" --port 18080 \
+  --build-root "${BUILD_ROOT}" --build-manifest "${BUILD_MANIFEST}"
 ZEPPELIN_E2E_SHIRO_INI="${CAPTURE_ROOT}/conf/shiro.ini" \
+  ZEPPELIN_E2E_BUILD_MANIFEST="${BUILD_MANIFEST}" \
+  ZEPPELIN_E2E_SOURCE_COMMIT="$(git -C "${BUILD_ROOT}" rev-parse HEAD)" \
+  ZEPPELIN_E2E_BASE_COMMIT="$(git -C "${BUILD_ROOT}" rev-parse origin/master)" \
   ZEPPELIN_CORE_CONTRACT_RUN_DIR="${CAPTURE_ROOT}/browser" \
   CI=true PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 npm run e2e:core-contract:live
 e2e/core-contract/capture-server.sh stop --root "${CAPTURE_ROOT}"
 ```
+
+Execution fixtures use a named `sh` interpreter and pin the server-side streaming
+switch explicitly. Start one isolated server for each value; do not rewrite the
+setting in a running server:
+
+```bash
+e2e/core-contract/capture-server.sh start --root "${CAPTURE_ROOT}" --port 18081 \
+  --paragraph-status-progress true --build-root "${BUILD_ROOT}" --build-manifest "${BUILD_MANIFEST}"
+ZEPPELIN_CAPTURE_EXPECT_STREAMING=true \
+  ZEPPELIN_WRITE_EXECUTION_FIXTURES=1 \
+  ZEPPELIN_E2E_CAPTURE_ROOT="${CAPTURE_ROOT}" \
+  ZEPPELIN_E2E_SHIRO_INI="${CAPTURE_ROOT}/conf/shiro.ini" \
+  ZEPPELIN_E2E_BUILD_MANIFEST="${BUILD_MANIFEST}" \
+  ZEPPELIN_E2E_SOURCE_COMMIT="$(git -C "${BUILD_ROOT}" rev-parse HEAD)" \
+  ZEPPELIN_E2E_BASE_COMMIT="$(git -C "${BUILD_ROOT}" rev-parse origin/master)" \
+  ZEPPELIN_CORE_CONTRACT_RUN_DIR="${CAPTURE_ROOT}/browser" \
+  CI=true PLAYWRIGHT_BASE_URL=http://127.0.0.1:18081 npm run e2e:core-contract:live
+e2e/core-contract/capture-server.sh stop --root "${CAPTURE_ROOT}"
+```
+
+Repeat with a new capture root, port 18082, `--paragraph-status-progress false`, and
+`ZEPPELIN_CAPTURE_EXPECT_STREAMING=false` for the disabled fixture. The committed
+fixtures were captured on these ports, and their recorded origin shows which server
+produced each one. The live
+execution scenario skips with a named missing-interpreter reason if `sh` is not
+installed; that result is not evidence that the fixture scenario passed.
 
 For authenticated capture, add `--mode auth` to start. That installs
 `shiro.ini.template` in the capture root; the same `ZEPPELIN_E2E_SHIRO_INI` setting

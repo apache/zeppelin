@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -118,7 +119,196 @@ export function validateFixture(fixture) {
     return errors;
   }
   validateFixtureMetadata(errors, fixture.metadata);
+  validateExecutionCoveredOperations(errors, fixture);
   return errors;
+}
+
+function validateExecutionCoveredOperations(errors, fixture) {
+  if (fixture.metadata?.provenance?.captureMode !== 'execution') return;
+
+  const represented = new Set(
+    (fixture.records ?? [])
+      .filter(record => record?.kind === 'websocket' && typeof record.websocket?.payloadText === 'string')
+      .map(record => parseEnvelope(record.websocket.payloadText)?.op)
+      .filter(nonEmptyString)
+  );
+  const declared = fixture.metadata?.coveredOperations;
+  const declaredSet = new Set(Array.isArray(declared) ? declared : []);
+  if (
+    !Array.isArray(declared) ||
+    declared.length !== declaredSet.size ||
+    stableJson([...declaredSet].sort()) !== stableJson([...represented].sort())
+  ) {
+    errors.push('metadata.coveredOperations must exactly match operations represented by execution records');
+  }
+}
+
+export function validateCaptureProvenance(metadata) {
+  const errors = [];
+  if (metadata?.captureSource !== 'live-server') return errors;
+
+  const provenance = metadata.provenance;
+  if (!provenance || typeof provenance !== 'object' || Array.isArray(provenance)) {
+    return ['metadata.provenance is required for live-server fixtures'];
+  }
+  if (!/^[0-9a-f]{40}$/.test(provenance.sourceCommit ?? '')) {
+    errors.push('metadata.provenance.sourceCommit must be an exact Git commit');
+  }
+  if (!/^[0-9a-f]{40}$/.test(provenance.baseCommit ?? '')) {
+    errors.push('metadata.provenance.baseCommit must be a full Git commit hash');
+  }
+  if (provenance.sourceCommit !== provenance.baseCommit) {
+    errors.push('metadata.provenance.sourceCommit must equal baseCommit');
+  }
+  validateBuildManifest(errors, provenance);
+  if (!nonEmptyString(provenance.browser?.name) || !nonEmptyString(provenance.browser?.version)) {
+    errors.push('metadata.provenance.browser must identify the browser and version');
+  }
+  if (!/^https?:\/\/(127\.0\.0\.1|localhost):[0-9]+$/.test(provenance.origin ?? '')) {
+    errors.push('metadata.provenance.origin must be an explicit loopback origin and port');
+  }
+  for (const field of ['captureMode', 'interpreter']) {
+    if (!nonEmptyString(provenance[field])) {
+      errors.push(`metadata.provenance.${field} must be a non-empty string`);
+    }
+  }
+  if (!['anonymous', 'authenticated'].includes(provenance.authentication)) {
+    errors.push('metadata.provenance.authentication must be anonymous or authenticated');
+  }
+  if (
+    !provenance.configuration ||
+    typeof provenance.configuration !== 'object' ||
+    Array.isArray(provenance.configuration)
+  ) {
+    errors.push('metadata.provenance.configuration must be an object');
+  } else if (Object.keys(provenance.configuration).length === 0) {
+    errors.push('metadata.provenance.configuration must identify the capture configuration');
+  }
+  const isolation = provenance.isolation;
+  if (!isolation || typeof isolation !== 'object' || Array.isArray(isolation)) {
+    errors.push('metadata.provenance.isolation is required');
+  } else {
+    const expected = { logs: 'logs', notebook: 'notebook', pid: 'run', recovery: 'recovery', searchIndex: 'index' };
+    if (isolation.root !== '<capture-root>') {
+      errors.push('metadata.provenance.isolation.root must use the sanitized <capture-root> placeholder');
+    }
+    for (const [field, relativePath] of Object.entries(expected)) {
+      if (isolation[field] !== `<capture-root>/${relativePath}`) {
+        errors.push(`metadata.provenance.isolation.${field} must identify the isolated ${relativePath} directory`);
+      }
+    }
+  }
+  return errors;
+}
+
+const expectedManifestArtifacts = [
+  { path: '.', selection: 'root-jars' },
+  { path: '.', selection: 'all-wars' },
+  'bin',
+  'conf',
+  'interpreter',
+  'lib',
+  'lib/interpreter',
+  'shell/target/classes',
+  'zeppelin-interpreter-shaded/target',
+  'zeppelin-interpreter/target/classes',
+  'zeppelin-interpreter/target/lib',
+  'zeppelin-server/target/classes',
+  'zeppelin-server/target/lib',
+  'zeppelin-server/target/test-classes',
+  'zeppelin-web-angular/dist/zeppelin',
+  'zeppelin-web-angular/target/lib',
+  'zeppelin-web/dist',
+  'zeppelin-web/target/lib'
+].map(artifact => (typeof artifact === 'string' ? { path: artifact, selection: 'tree' } : artifact));
+
+const sha256Pattern = /^[0-9a-f]{64}$/;
+const manifestArtifactKey = artifact => `${artifact.path}\0${artifact.selection}`;
+
+function validateBuildManifest(errors, provenance) {
+  const prefix = 'metadata.provenance.buildManifest';
+  const buildManifest = provenance.buildManifest;
+  if (!buildManifest || typeof buildManifest !== 'object' || Array.isArray(buildManifest)) {
+    errors.push(`${prefix} is required`);
+    return;
+  }
+  if (!sha256Pattern.test(buildManifest.id ?? '')) {
+    errors.push(`${prefix}.id must be a SHA-256 digest`);
+  } else {
+    const manifestBody = {
+      artifacts: buildManifest.artifacts,
+      baseCommit: buildManifest.baseCommit,
+      launchTargets: buildManifest.launchTargets,
+      sourceCommit: buildManifest.sourceCommit,
+      sourceTree: buildManifest.sourceTree,
+      version: buildManifest.version
+    };
+    const computedId = createHash('sha256')
+      .update(`${JSON.stringify(sortJson(manifestBody), null, 2)}\n`)
+      .digest('hex');
+    if (buildManifest.id !== computedId) {
+      errors.push(`${prefix}.id must match the manifest content`);
+    }
+  }
+  if (buildManifest.sourceCommit !== provenance.sourceCommit) {
+    errors.push(`${prefix}.sourceCommit must match metadata.provenance.sourceCommit`);
+  }
+  if (buildManifest.baseCommit !== provenance.baseCommit) {
+    errors.push(`${prefix}.baseCommit must match metadata.provenance.baseCommit`);
+  }
+  if (buildManifest.version !== 3) {
+    errors.push(`${prefix}.version must be 3`);
+  }
+  for (const target of ['angularWeb', 'classicWeb']) {
+    if (!['directory', 'war', 'missing'].includes(buildManifest.launchTargets?.[target]?.kind)) {
+      errors.push(`${prefix}.launchTargets.${target}.kind must be directory, war or missing`);
+    }
+  }
+  const sourceTree = buildManifest.sourceTree;
+  if (!Number.isInteger(sourceTree?.fileCount) || sourceTree.fileCount < 1) {
+    errors.push(`${prefix}.sourceTree.fileCount must be a positive integer`);
+  }
+  if (!sha256Pattern.test(sourceTree?.sha256 ?? '')) {
+    errors.push(`${prefix}.sourceTree.sha256 must be a SHA-256 digest`);
+  }
+  const artifacts = buildManifest.artifacts;
+  if (!Array.isArray(artifacts)) {
+    errors.push(`${prefix}.artifacts must be an array`);
+    return;
+  }
+  let artifactShapesValid = true;
+  for (const [index, artifact] of artifacts.entries()) {
+    const artifactPrefix = `${prefix}.artifacts[${index}]`;
+    if (
+      !artifact ||
+      typeof artifact !== 'object' ||
+      Array.isArray(artifact) ||
+      typeof artifact.path !== 'string' ||
+      typeof artifact.selection !== 'string'
+    ) {
+      errors.push(`${artifactPrefix} must be an object with string path and selection`);
+      artifactShapesValid = false;
+      continue;
+    }
+    if (typeof artifact.exists !== 'boolean') {
+      errors.push(`${artifactPrefix}.exists must be a boolean`);
+    }
+    if (!Number.isInteger(artifact.fileCount) || artifact.fileCount < 0) {
+      errors.push(`${artifactPrefix}.fileCount must be a non-negative integer`);
+    } else if (artifact.exists === false && artifact.fileCount !== 0) {
+      errors.push(`${artifactPrefix}.fileCount must be 0 for a missing artifact`);
+    }
+    if (!sha256Pattern.test(artifact.sha256 ?? '')) {
+      errors.push(`${artifactPrefix}.sha256 must be a SHA-256 digest`);
+    }
+  }
+  if (
+    artifactShapesValid &&
+    stableJson(artifacts.map(manifestArtifactKey).sort()) !==
+      stableJson(expectedManifestArtifacts.map(manifestArtifactKey).sort())
+  ) {
+    errors.push(`${prefix}.artifacts must list exactly the launcher build outputs`);
+  }
 }
 
 export function validateReplayFixture(fixture) {
@@ -788,6 +978,18 @@ function stableJson(value) {
   return JSON.stringify(value);
 }
 
+function sortJson(value) {
+  if (Array.isArray(value)) return value.map(sortJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map(key => [key, sortJson(value[key])])
+    );
+  }
+  return value;
+}
+
 function parseEnvelope(payload) {
   if (typeof payload !== 'string') {
     return undefined;
@@ -1058,7 +1260,10 @@ const validateFixtureMetadata = (errors, metadata) => {
   ) {
     errors.push('metadata.knownExclusions must be a string array');
   }
+  errors.push(...validateCaptureProvenance(metadata));
 };
+
+const nonEmptyString = value => typeof value === 'string' && value.trim().length > 0;
 
 const validateWebSocketRecord = (errors, prefix, record) => {
   if (!record.websocket || typeof record.websocket !== 'object') {

@@ -18,7 +18,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>]" >&2
+  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>] [--paragraph-status-progress true|false] [--build-root <dir> --build-manifest <file>]" >&2
 }
 
 command="${1:-}"
@@ -27,6 +27,10 @@ capture_root=""
 capture_mode="anonymous"
 zeppelin_port="8080"
 port_given="no"
+paragraph_status_progress="true"
+build_root=""
+build_manifest=""
+build_manifest_id=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -48,6 +52,18 @@ while [[ $# -gt 0 ]]; do
       fi
       shift 2
       ;;
+    --paragraph-status-progress)
+      paragraph_status_progress="${2:-}"
+      shift 2
+      ;;
+    --build-root)
+      build_root="${2:-}"
+      shift 2
+      ;;
+    --build-manifest)
+      build_manifest="${2:-}"
+      shift 2
+      ;;
     *)
       usage
       exit 2
@@ -57,6 +73,10 @@ done
 
 if [[ -z "${command}" || -z "${capture_root}" ]]; then
   usage
+  exit 2
+fi
+if [[ "${paragraph_status_progress}" != "true" && "${paragraph_status_progress}" != "false" ]]; then
+  echo "--paragraph-status-progress must be true or false, got '${paragraph_status_progress}'" >&2
   exit 2
 fi
 
@@ -80,11 +100,23 @@ reject_whitespace_path "${physical_parent}" "canonical capture root"
 repo_root="$(cd -P "$(dirname "$0")/../../.." && printf '%s/.' "$PWD")"
 reject_whitespace_path "${repo_root}" "repository"
 repo_root="${repo_root%/.}"
+build_root="${build_root:-${repo_root}}"
+if [[ "${build_root}" != "${repo_root}" || -n "${build_manifest}" ]]; then
+  if [[ -z "${build_manifest}" ]]; then
+    echo "--build-root requires --build-manifest" >&2
+    exit 2
+  fi
+  reject_whitespace_path "${build_root}" "build root"
+  build_root="$(cd -P "${build_root}" && pwd)"
+  node "${repo_root}/zeppelin-web-angular/e2e/core-contract/capture-build-manifest.mjs" verify "${build_manifest}" "${build_root}"
+  build_manifest_id="$(node "${repo_root}/zeppelin-web-angular/e2e/core-contract/capture-build-manifest.mjs" id "${build_manifest}")"
+fi
 # Use the physical path so symlink and direct access produce the same marker.
 capture_root="$(mkdir -p "${capture_root}" && cd "${capture_root}" && pwd -P)"
 capture_marker="-Dzeppelin.capture.root=${capture_root}"
 marker_file="${capture_root}/.zeppelin-capture-root"
 zeppelin_pid_file="${capture_root}/zeppelin.pid"
+provenance_file="${capture_root}/capture-provenance.json"
 operation_lock="${capture_root}/.capture-operation-lock"
 
 acquire_operation_lock() {
@@ -204,7 +236,41 @@ stop_pid() {
   rm -f "${pid_file}"
 }
 
+json_string() {
+  local value="${1//\\/\\\\}"
+  printf '"%s"' "${value//\"/\\\"}"
+}
+
+# Fixture capture reads these settings instead of trusting the capture shell's environment.
+write_capture_provenance() {
+  {
+    echo "{"
+    echo "  \"authentication\": $(json_string "$1"),"
+    if [[ -n "${build_manifest_id}" ]]; then
+      echo "  \"buildManifestId\": $(json_string "${build_manifest_id}"),"
+    else
+      echo "  \"buildManifestId\": null,"
+    fi
+    echo "  \"configuration\": { \"zeppelin.websocket.paragraph_status_progress.enable\": ${paragraph_status_progress} },"
+    echo "  \"isolation\": {"
+    echo "    \"logs\": $(json_string "$4"),"
+    echo "    \"notebook\": $(json_string "$2"),"
+    echo "    \"pid\": $(json_string "$5"),"
+    echo "    \"recovery\": $(json_string "$6"),"
+    echo "    \"root\": $(json_string "${capture_root}"),"
+    echo "    \"searchIndex\": $(json_string "$3")"
+    echo "  },"
+    echo "  \"mode\": $(json_string "${capture_mode}"),"
+    echo "  \"port\": ${zeppelin_port}"
+    echo "}"
+  } > "${provenance_file}"
+}
+
 start_zeppelin() {
+  if [[ -z "${CAPTURE_ZEPPELIN_COMMAND:-}" && -z "${build_manifest}" ]]; then
+    echo "real capture startup requires --build-root and --build-manifest" >&2
+    exit 2
+  fi
   # Environment and JVM properties override the temporary site XML.
   # Clear inherited settings that could redirect storage, classpaths or remote connections.
   # Keep JAVA_HOME and PATH to select the installed toolchain.
@@ -221,23 +287,34 @@ start_zeppelin() {
   # different notebook dir or bind address) would silently override the isolation this script
   # promises. This script never writes that file itself, so any copy here is stale.
   rm -f "${capture_root}/conf/zeppelin-env.sh"
-  cp "${repo_root}/conf/log4j2.properties" "${capture_root}/conf/log4j2.properties"
-  cp "${repo_root}/conf/zeppelin-site.xml.template" "${capture_root}/conf/zeppelin-site.xml"
+  cp "${build_root}/conf/log4j2.properties" "${capture_root}/conf/log4j2.properties"
+  cp "${build_root}/conf/zeppelin-site.xml.template" "${capture_root}/conf/zeppelin-site.xml"
   if [[ "${capture_mode}" == "auth" ]]; then
-    cp "${repo_root}/conf/shiro.ini.template" "${capture_root}/conf/shiro.ini"
+    cp "${build_root}/conf/shiro.ini.template" "${capture_root}/conf/shiro.ini"
   else
     rm -f "${capture_root}/conf/shiro.ini"
   fi
 
+  local notebook_dir="${capture_root}/notebook"
+  local index_dir="${capture_root}/index"
+  local log_dir="${capture_root}/logs"
+  local pid_dir="${capture_root}/run"
+  local recovery_dir="${capture_root}/recovery"
+  local authentication="anonymous"
+  if [[ "${capture_mode}" == "auth" ]]; then
+    authentication="authenticated"
+  fi
+  write_capture_provenance "${authentication}" "${notebook_dir}" "${index_dir}" "${log_dir}" "${pid_dir}" "${recovery_dir}"
+
   export ZEPPELIN_CONF_DIR="${capture_root}/conf"
   export ZEPPELIN_ADDR="127.0.0.1"
   export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
-  export ZEPPELIN_NOTEBOOK_DIR="${capture_root}/notebook"
-  export ZEPPELIN_LOG_DIR="${capture_root}/logs"
-  export ZEPPELIN_PID_DIR="${capture_root}/run"
+  export ZEPPELIN_NOTEBOOK_DIR="${notebook_dir}"
+  export ZEPPELIN_LOG_DIR="${log_dir}"
+  export ZEPPELIN_PID_DIR="${pid_dir}"
   export ZEPPELIN_WAR_TEMPDIR="${capture_root}/webapps"
   # Zeppelin ignores this marker; verify_pid_identity matches it as a whole JVM argument.
-  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
+  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${notebook_dir} -Dzeppelin.search.index.path=${index_dir} -Dzeppelin.recovery.dir=${recovery_dir} -Dzeppelin.websocket.paragraph_status_progress.enable=${paragraph_status_progress} ${capture_marker}"
   export ZEPPELIN_CAPTURE_ROOT="${capture_root}"
   export ZEPPELIN_PORT="${zeppelin_port}"
   # Do not inherit Hadoop settings for this fixture server.
@@ -252,7 +329,7 @@ start_zeppelin() {
     bash -c "${CAPTURE_ZEPPELIN_COMMAND} $(printf '%q' "${capture_marker}")" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
     echo "$!" > "${zeppelin_pid_file}"
   else
-    "${repo_root}/bin/zeppelin.sh" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
+    "${build_root}/bin/zeppelin.sh" </dev/null >"${capture_root}/logs/zeppelin-stdout.log" 2>"${capture_root}/logs/zeppelin-stderr.log" &
     echo "$!" > "${zeppelin_pid_file}"
   fi
   set +m
