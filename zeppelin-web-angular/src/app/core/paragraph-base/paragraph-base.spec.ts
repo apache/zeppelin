@@ -13,7 +13,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { DatasetType, Message, ParagraphItem } from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AngularContextManager } from './angular-context-manager';
 import { ParagraphBase } from './paragraph-base';
@@ -243,5 +243,206 @@ describe('ParagraphBase streaming boundaries', () => {
     component.onParagraphAppendOutput({ noteId: 'note', paragraphId: 'A', index: 2, data: ' end' });
     expect(component.results[2].data).toBe('third end');
     component.ngOnDestroy();
+  });
+});
+
+class SaveTestParagraph extends ParagraphBase {
+  protected currentNoteId = 'note';
+
+  changeColWidth(): void {}
+  updateParagraphResult(): void {}
+
+  trackSave(msgId: string): void {
+    this.trackParagraphSave(msgId);
+  }
+}
+
+const saveTestParagraphs: SaveTestParagraph[] = [];
+
+afterEach(() => {
+  for (const paragraph of saveTestParagraphs.splice(0)) {
+    paragraph.ngOnDestroy();
+  }
+});
+
+const createSaveTestParagraph = (text: string, dirtyText?: string): SaveTestParagraph => {
+  const paragraph = new SaveTestParagraph(
+    { receive: () => EMPTY } as unknown as Message,
+    { isParagraphRunning: () => false, isEntireNoteRunning: () => false },
+    {
+      setContextValue: vi.fn(),
+      unsetContextValue: vi.fn(),
+      contextChanged: () => EMPTY,
+      runParagraphAction: () => EMPTY
+    } as unknown as AngularContextManager,
+    { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
+  );
+  paragraph.paragraph = { text } as ParagraphItem;
+  paragraph.originalText = 'previous save';
+  paragraph.dirtyText = dirtyText;
+  saveTestParagraphs.push(paragraph);
+  return paragraph;
+};
+
+describe('ParagraphBase save responses', () => {
+  it.each(['latest edit', ''])('preserves an unsaved edit %j when a broadcast carries the saved text', dirtyText => {
+    const paragraph = createSaveTestParagraph(dirtyText, dirtyText);
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'previous save' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe(dirtyText);
+    expect(paragraph.dirtyText).toBe(dirtyText);
+    expect(paragraph.originalText).toBe('previous save');
+  });
+
+  it('accepts a remote edit when there is no unsaved local edit', () => {
+    const paragraph = createSaveTestParagraph('previous save');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe('remote edit');
+    expect(paragraph.originalText).toBe('remote edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('keeps the latest edit when a delayed save acknowledgement arrives after the baseline advanced', () => {
+    const paragraph = createSaveTestParagraph('committed edit', 'committed edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'committed edit';
+    paragraph.dirtyText = undefined;
+    paragraph.paragraph!.text = 'latest edit';
+    paragraph.dirtyText = 'latest edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('committed edit');
+  });
+
+  it('keeps an unsaved edit when a commit acknowledgement arrives without an advanced baseline', () => {
+    const paragraph = createSaveTestParagraph('latest edit', 'latest edit');
+    paragraph.trackSave('save-a');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('committed edit');
+  });
+
+  it.each(['latest edit', 'committed edit'])(
+    'keeps a later edit when a broadcast repeats a save acknowledged while the editor showed %j',
+    acknowledgedEditorText => {
+      const paragraph = createSaveTestParagraph(acknowledgedEditorText, acknowledgedEditorText);
+      paragraph.trackSave('save-a');
+
+      paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+      paragraph.paragraph!.text = 'latest edit';
+      paragraph.dirtyText = 'latest edit';
+      paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem);
+
+      expect(paragraph.paragraph?.text).toBe('latest edit');
+      expect(paragraph.dirtyText).toBe('latest edit');
+      expect(paragraph.originalText).toBe('committed edit');
+    }
+  );
+
+  it('does not rewind a baseline that moved after the acknowledged save was sent', () => {
+    const paragraph = createSaveTestParagraph('patched edit', 'patched edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'patched edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('patched edit');
+    expect(paragraph.originalText).toBe('patched edit');
+  });
+
+  it.each([
+    ['an acknowledgement', 'save-a'],
+    ['a broadcast without msgId', undefined]
+  ])('keeps collaborative patches when %s arrives with a stale local edit', (_case, msgId) => {
+    const paragraph = createSaveTestParagraph('patched edit', 'stale edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'committed edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, msgId);
+
+    expect(paragraph.paragraph?.text).toBe('patched edit');
+  });
+
+  it('keeps a collaborative patch applied after a settings commit when its acknowledgement arrives', () => {
+    const paragraph = createSaveTestParagraph('committed edit');
+    paragraph.originalText = 'committed edit';
+    paragraph.trackSave('save-a');
+    paragraph.paragraph!.text = 'patched edit';
+    paragraph.originalText = 'patched edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('patched edit');
+    expect(paragraph.originalText).toBe('patched edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('clears the local edit once its acknowledgement arrives', () => {
+    const paragraph = createSaveTestParagraph('saved edit');
+    paragraph.originalText = 'saved edit';
+    paragraph.dirtyText = 'dirty edit';
+    paragraph.trackSave('save-a');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'dirty edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('saved edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('consumes a tracked save when its acknowledgement does not change the paragraph', () => {
+    const component = createSaveTestParagraph('saved edit');
+    component.paragraph = { ...paragraph('A', 'FINISHED'), text: 'saved edit' };
+    component.trackSave('save-a');
+
+    component.paragraphData({ paragraph: { ...component.paragraph }, msgId: 'save-a' });
+    expect(component.originalText).toBe('saved edit');
+
+    component.originalText = 'previous save';
+    component.paragraphData({ paragraph: { ...component.paragraph }, msgId: 'save-a' });
+    expect(component.originalText).toBe('previous save');
+  });
+
+  it('accepts a remote edit that is not an acknowledgement of the last local save', () => {
+    const paragraph = createSaveTestParagraph('local edit', 'local edit');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe('remote edit');
+    expect(paragraph.originalText).toBe('remote edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('ignores an older acknowledgement after a newer save has been sent', () => {
+    const paragraph = createSaveTestParagraph('latest save');
+    paragraph.originalText = 'latest save';
+    paragraph.trackSave('save-a');
+    paragraph.trackSave('save-b');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'earlier save' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest save');
+    expect(paragraph.originalText).toBe('latest save');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('does not advance the saved baseline for an older acknowledgement while editing', () => {
+    const paragraph = createSaveTestParagraph('latest edit', 'latest edit');
+    paragraph.trackSave('save-a');
+    paragraph.trackSave('save-b');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'earlier save' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('previous save');
   });
 });
