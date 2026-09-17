@@ -63,9 +63,10 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server =
         serverWithRunner(listener, new AppendOutputRunner(listener));
     try {
-      server.updateOutput(new OutputUpdateEvent("note", "para", 0, "TEXT", "final", null));
+      server.updateOutput(new OutputUpdateEvent("note", "para", 0, "TEXT", "final", null, null));
       // A caller may publish terminal status as soon as the RPC returns.
-      verify(listener).onOutputUpdated("note", "para", 0, InterpreterResult.Type.TEXT, "final");
+      verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, null, InterpreterResult.Type.TEXT, "final");
     } finally {
       server.stop();
     }
@@ -77,10 +78,10 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server =
         serverWithRunner(listener, new AppendOutputRunner(listener));
     try {
-      server.appendOutput(new OutputAppendEvent("note", "para", 0, "pending", null));
+      server.appendOutput(new OutputAppendEvent("note", "para", 0, "pending", null, null));
       server.checkpointOutput("note", "para");
       InOrder order = inOrder(listener);
-      order.verify(listener).onOutputAppend("note", "para", 0, "pending");
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "pending");
       order.verify(listener).checkpointOutput("note", "para");
     } finally {
       server.stop();
@@ -93,19 +94,19 @@ public class RemoteInterpreterEventServerTest {
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     RemoteInterpreterEventServer server = serverWithRunner(listener, runner);
     try {
-      runner.appendBuffer("note", "para", 0, "old");
+      runner.appendBuffer("note", "para", 0, null, "old");
       server.updateAllOutput(new OutputUpdateAllEvent("note", "para", Collections.singletonList(
-          new RemoteInterpreterResultMessage("HTML", "replacement"))));
-      verify(listener).onOutputUpdated("note", "para", 0,
-          InterpreterResult.Type.HTML, "replacement");
-      runner.appendBuffer("note", "para", 0, "new");
+          new RemoteInterpreterResultMessage("HTML", "replacement")), null));
+      verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, null, InterpreterResult.Type.HTML, "replacement");
+      runner.appendBuffer("note", "para", 0, null, "new");
       runner.run();
       InOrder order = inOrder(listener);
-      order.verify(listener).onOutputAppend("note", "para", 0, "old");
-      order.verify(listener).onOutputClear("note", "para");
-      order.verify(listener).onOutputUpdated("note", "para", 0,
-          InterpreterResult.Type.HTML, "replacement");
-      order.verify(listener).onOutputAppend("note", "para", 0, "new");
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "old");
+      order.verify(listener).onParagraphOutputClear("note", "para", null);
+      order.verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, null, InterpreterResult.Type.HTML, "replacement");
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "new");
     } finally {
       server.stop();
     }
@@ -123,18 +124,18 @@ public class RemoteInterpreterEventServerTest {
       entered.countDown();
       assertTrue(release.await(5, TimeUnit.SECONDS));
       return null;
-    }).when(listener).onOutputAppend("note", "para", 0, "old");
+    }).when(listener).onParagraphOutputAppend("note", "para", 0, null, "old");
     ExecutorService executor = Executors.newFixedThreadPool(2);
     try {
-      runner.appendBuffer("note", "para", 0, "old");
+      runner.appendBuffer("note", "para", 0, null, "old");
       Future<?> first = executor.submit(runner);
       assertTrue(entered.await(5, TimeUnit.SECONDS));
       Future<?> update = executor.submit(() -> {
         updateStarted.countDown();
         server.updateAllOutput(new OutputUpdateAllEvent("note", "para", Collections.singletonList(
-            new RemoteInterpreterResultMessage("HTML", "replacement"))));
-        verify(listener).onOutputUpdated("note", "para", 0,
-            InterpreterResult.Type.HTML, "replacement");
+            new RemoteInterpreterResultMessage("HTML", "replacement")), null));
+        verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, null, InterpreterResult.Type.HTML, "replacement");
         return null;
       });
       assertTrue(updateStarted.await(5, TimeUnit.SECONDS));
@@ -143,10 +144,10 @@ public class RemoteInterpreterEventServerTest {
       first.get(5, TimeUnit.SECONDS);
       update.get(5, TimeUnit.SECONDS);
       InOrder order = inOrder(listener);
-      order.verify(listener).onOutputAppend("note", "para", 0, "old");
-      order.verify(listener).onOutputClear("note", "para");
-      order.verify(listener).onOutputUpdated("note", "para", 0,
-          InterpreterResult.Type.HTML, "replacement");
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "old");
+      order.verify(listener).onParagraphOutputClear("note", "para", null);
+      order.verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, null, InterpreterResult.Type.HTML, "replacement");
     } finally {
       release.countDown();
       executor.shutdownNow();

@@ -1758,7 +1758,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * @param output output to append
    */
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
+  public void onParagraphOutputAppend(String noteId, String paragraphId, int index, String user,
+                                      String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1772,13 +1773,19 @@ public class NotebookServer implements AngularObjectRegistryListener,
         if (note == null) {
           LOGGER.warn("Note {} not found", noteId);
         } else if (!note.isPersonalizedMode()) {
-          // Streaming events do not identify the user that owns the execution.
           connectionManager.broadcast(noteId, msg);
+        } else if (user != null) {
+          connectionManager.multicastToUser(user, msg);
+        } else {
+          // An interpreter that predates the owner field leaves personalized output unaddressed,
+          // so it is dropped rather than sent to every reader of the note.
+          LOGGER.debug("Dropping ownerless personalized output for note {} paragraph {}",
+              noteId, paragraphId);
         }
         return null;
       });
     } catch (IOException e) {
-      LOGGER.warn("Fail to call onOutputAppend", e);
+      LOGGER.warn("Fail to call onParagraphOutputAppend", e);
     }
   }
 
@@ -1788,8 +1795,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * @param output output to update (replace)
    */
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index,
-                              InterpreterResult.Type type, String output) {
+  public void onParagraphOutputUpdated(String noteId, String paragraphId, int index,
+                                       String user, InterpreterResult.Type type, String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1807,10 +1814,19 @@ public class NotebookServer implements AngularObjectRegistryListener,
             return null;
           }
           if (note.isPersonalizedMode()) {
-            // Streaming events carry no owner. The shared outputBuffer is what checkpointOutput
-            // saves as the shared result and what other users' paragraphs are cloned from, so
-            // one user's output must not be written there. Personalized clients get their
-            // user-specific terminal snapshot instead.
+            if (user == null) {
+              LOGGER.debug("Dropping ownerless personalized output for note {} paragraph {}",
+                  noteId, paragraphId);
+              return null;
+            }
+            // The shared outputBuffer is both what checkpointOutput saves and what new users'
+            // copies are cloned from, so one user's output goes to that user's own copy.
+            Paragraph userParagraph =
+                note.getParagraph(paragraphId).getUserParagraphMap().get(user);
+            if (userParagraph != null) {
+              userParagraph.updateOutputBuffer(index, type, output);
+            }
+            connectionManager.multicastToUser(user, msg);
             return null;
           }
           note.getParagraph(paragraphId).updateOutputBuffer(index, type, output);
@@ -1818,7 +1834,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           return null;
         });
     } catch (IOException e) {
-      LOGGER.warn("Fail to call onOutputUpdated", e);
+      LOGGER.warn("Fail to call onParagraphOutputUpdated", e);
     }
   }
 
@@ -1826,7 +1842,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * This callback is for the paragraph that runs on ZeppelinServer.
    */
   @Override
-  public void onOutputClear(String noteId, String paragraphId) {
+  public void onParagraphOutputClear(String noteId, String paragraphId, String user) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1840,7 +1856,17 @@ public class NotebookServer implements AngularObjectRegistryListener,
             return null;
           }
           if (note.isPersonalizedMode()) {
-            // Streaming events carry no owner, so they must not mutate shared paragraph state.
+            if (user == null) {
+              LOGGER.debug("Dropping ownerless personalized clear for note {} paragraph {}",
+                  noteId, paragraphId);
+              return null;
+            }
+            // Clearing the shared paragraph would discard output the other users still own.
+            if (note.getParagraph(paragraphId).getUserParagraphMap().containsKey(user)) {
+              Paragraph userParagraph = note.clearPersonalizedParagraphOutput(paragraphId, user);
+              connectionManager.multicastToUser(user, new Message(OP.PARAGRAPH)
+                  .withMsgId(MSG_ID_NOT_DEFINED).put("paragraph", userParagraph));
+            }
             return null;
           }
           note.clearParagraphOutput(paragraphId);
@@ -1850,7 +1876,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         });
 
     } catch (IOException e) {
-      LOGGER.warn("Fail to call onOutputClear", e);
+      LOGGER.warn("Fail to call onParagraphOutputClear", e);
     }
   }
 

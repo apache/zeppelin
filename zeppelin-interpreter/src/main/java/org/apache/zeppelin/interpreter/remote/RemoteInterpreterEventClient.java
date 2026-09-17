@@ -222,11 +222,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public void onInterpreterOutputAppend(
-      String noteId, String paragraphId, int outputIndex, String output) {
+      String noteId, String paragraphId, int outputIndex, String user, String output) {
     try {
       callRemoteFunction(client -> {
         client.appendOutput(
-                new OutputAppendEvent(noteId, paragraphId, outputIndex, output, null));
+                new OutputAppendEvent(noteId, paragraphId, outputIndex, output, null, user));
         return null;
       });
     } catch (Exception e) {
@@ -235,12 +235,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public void onInterpreterOutputUpdate(
-      String noteId, String paragraphId, int outputIndex,
+      String noteId, String paragraphId, int outputIndex, String user,
       InterpreterResult.Type type, String output) {
     try {
       callRemoteFunction(client -> {
-        client.updateOutput(
-                new OutputUpdateEvent(noteId, paragraphId, outputIndex, type.name(), output, null));
+        client.updateOutput(new OutputUpdateEvent(
+                noteId, paragraphId, outputIndex, type.name(), output, null, user));
         return null;
       });
 
@@ -250,11 +250,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public void onInterpreterOutputUpdateAll(
-      String noteId, String paragraphId, List<InterpreterResultMessage> messages) {
+      String noteId, String paragraphId, String user, List<InterpreterResultMessage> messages) {
     try {
       callRemoteFunction(client -> {
         client.updateAllOutput(
-                new OutputUpdateAllEvent(noteId, paragraphId, convertToThrift(messages)));
+                new OutputUpdateAllEvent(noteId, paragraphId, convertToThrift(messages), user));
         return null;
       });
 
