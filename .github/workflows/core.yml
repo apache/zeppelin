@@ -332,8 +332,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: [ 3.9 ]
-        java: [ 11, 17 ]
+        include:
+          - java: 11
+            python: '3.9'
+            spark: '3.3'
+            scala: '2.12'
+          - java: 17
+            python: '3.9'
+            spark: '3.4'
+            scala: '2.12'
+          - java: 11
+            python: '3.9'
+            spark: '3.5'
+            scala: '2.12'
+          - java: 17
+            python: '3.9'
+            spark: '3.5'
+            scala: '2.13'
+          - java: 17
+            python: '3.9'
+            spark: '4.0'
+            scala: '2.13'
+          - java: 17
+            python: '3.14'
+            spark: '4.1'
+            scala: '2.13'
+          - java: 17
+            python: '3.14'
+            spark: '4.2'
+            scala: '2.13'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -356,7 +383,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-zeppelin-
       - name: install environment
-        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am ${MAVEN_ARGS}
+        run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-${{ matrix.scala }} -am ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
@@ -367,27 +394,14 @@ jobs:
           channel-priority: strict
           auto-activate: false
           use-mamba: true
-      - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
+      - name: run spark-${{ matrix.spark }} tests with scala-${{ matrix.scala }}
         run: |
+          # Python 3.14 uses protobuf 4+, whose C runtime rejects the legacy generated stub.
+          if python -c 'import sys; sys.exit(sys.version_info < (3, 14))'; then
+            export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+          fi
           rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.12 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-3.3 tests with scala-2.13 and python-${{ matrix.python }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-3.4 tests with scala-2.13 and python-${{ matrix.python }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-3.5 tests with scala-2.13 and python-${{ matrix.python }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
-      - name: run spark-4.0 tests with scala-2.13 and python-${{ matrix.python }}
-        if: ${{ matrix.java == 17 }}
-        run: |
-          rm -rf spark/interpreter/metastore_db
-          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-4.0 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+          ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-${{ matrix.spark }} -Pspark-scala-${{ matrix.scala }} -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
 
   # Livy 0.8.0 tested with Spark 3.2
   # https://github.com/apache/incubator-livy/blob/v0.8.0-incubating/dev/docker/livy-dev-spark/Dockerfile#L20
