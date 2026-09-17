@@ -11,9 +11,9 @@
  */
 
 import { Component, OnDestroy } from '@angular/core';
-import { Subscriber } from 'rxjs';
+import { Observable, Subscriber } from 'rxjs';
 
-import { Message, MessageReceiveDataTypeMap, ReceiveArgumentsType } from '@zeppelin/sdk';
+import { Message, MessageReceiveDataTypeMap } from '@zeppelin/sdk';
 
 @Component({
   template: '',
@@ -34,13 +34,18 @@ export class MessageListenersManager implements OnDestroy {
   }
 }
 
-export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K) {
+type ListenerArgumentsType<T> = T extends undefined ? () => void : (data: T) => void;
+
+const createMessageListener = <K extends keyof MessageReceiveDataTypeMap, T>(
+  op: K,
+  receiver: (messageService: Message, op: K) => Observable<T>
+) => {
   return function (
     target: MessageListenersManager,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<ReceiveArgumentsType<K>>
+    descriptor: TypedPropertyDescriptor<ListenerArgumentsType<T>>
   ) {
-    const oldValue = descriptor.value as ReceiveArgumentsType<K>;
+    const oldValue = descriptor.value as ListenerArgumentsType<T>;
 
     const fn = function (this: MessageListenersManager) {
       if (!this.__zeppelinMessageListeners$__) {
@@ -48,7 +53,7 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
       }
 
       this.__zeppelinMessageListeners$__.add(
-        this.messageService.receive(op).subscribe(data => {
+        receiver(this.messageService, op).subscribe(data => {
           try {
             // @ts-ignore
             oldValue.apply(this, [data]);
@@ -68,4 +73,12 @@ export function MessageListener<K extends keyof MessageReceiveDataTypeMap>(op: K
 
     return descriptor;
   };
-}
+};
+
+export const MessageListener = <K extends keyof MessageReceiveDataTypeMap>(op: K) => {
+  return createMessageListener(op, (messageService, targetOp) => messageService.receive(targetOp));
+};
+
+export const MessageEnvelopeListener = <K extends keyof MessageReceiveDataTypeMap>(op: K) => {
+  return createMessageListener(op, (messageService, targetOp) => messageService.receiveEnvelope(targetOp));
+};
