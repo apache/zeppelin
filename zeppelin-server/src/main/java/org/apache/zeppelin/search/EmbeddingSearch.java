@@ -96,6 +96,15 @@ public class EmbeddingSearch extends SearchService {
    */
   private static final float MIN_SIMILARITY = 0.25f;
   private static final int MAX_TEXT_LENGTH = 1500;
+  /**
+   * Truncation limit applied to the text field when an entry is written to the index file.
+   * Distinct from {@link #MAX_TEXT_LENGTH}, which bounds in-memory processing before embedding.
+   */
+  private static final int MAX_PERSISTED_TEXT_LENGTH = 2000;
+  /**
+   * Truncation limit applied to the output field when an entry is written to the index file.
+   */
+  private static final int MAX_PERSISTED_OUTPUT_LENGTH = 1000;
 
   static final String ID_FIELD = "id";
   private static final String PARAGRAPH = "paragraph";
@@ -868,15 +877,15 @@ public class EmbeddingSearch extends SearchService {
           out.writeUTF(e.getKey());
           out.writeUTF(e.getValue().noteName != null ? e.getValue().noteName : "");
           String text = e.getValue().text != null ? e.getValue().text : "";
-          if (text.length() > 2000) {
-            text = text.substring(0, 2000);
+          if (text.length() > MAX_PERSISTED_TEXT_LENGTH) {
+            text = text.substring(0, MAX_PERSISTED_TEXT_LENGTH);
           }
           out.writeUTF(text);
           out.writeUTF(e.getValue().title != null ? e.getValue().title : "");
           out.writeUTF(e.getValue().tables != null ? e.getValue().tables : "");
           String output = e.getValue().output != null ? e.getValue().output : "";
-          if (output.length() > 1000) {
-            output = output.substring(0, 1000);
+          if (output.length() > MAX_PERSISTED_OUTPUT_LENGTH) {
+            output = output.substring(0, MAX_PERSISTED_OUTPUT_LENGTH);
           }
           out.writeUTF(output);
           for (float v : e.getValue().embedding) {
