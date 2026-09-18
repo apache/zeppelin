@@ -19,18 +19,18 @@ ZEPPELIN-6668 defines the fixture and measurement format. It does not establish 
 
 Build with `npm run build`, then serve `dist/zeppelin` with an isolated local Zeppelin backend. The benchmark imports one note and deletes that note in cleanup. Do not point it at a shared notebook store. It checks the served index's entry script list and the served entry asset hashes against the local build before importing the fixture; server-injected inline markup does not affect this check. The normal E2E suite does not run this benchmark; no development server is started by its config. Each measured navigation's response is checked again after recording readiness, before accepting the sample, so validation does not delay the measured ready time.
 
-To serve the fresh build, start Zeppelin from this source tree after `npm run build`. In `zeppelin-server`'s `ZeppelinConfiguration`, `zeppelin.default.ui` defaults to `new` and `zeppelin.angular.war` defaults to `zeppelin-web-angular/dist/zeppelin`, so the benchmark requests that `dist` at `/` unless either property is overridden.
+To serve the fresh build, start Zeppelin from this source tree after `npm run build`. In `zeppelin-server`'s `ZeppelinConfiguration`, `zeppelin.default.ui` defaults to `new` and `zeppelin.angular.war` defaults to `zeppelin-web-angular/dist/zeppelin`, so the benchmark requests that `dist` at `/` unless either property is overridden. Use `localhost` in `PLAYWRIGHT_BASE_URL`: unless `zeppelin.server.allowed.origins` is set, the server accepts a WebSocket origin only from `localhost` or its own host name, so a `127.0.0.1` origin never loads the note.
 
 `playwright.performance.config.js` intentionally throws when `PLAYWRIGHT_BASE_URL` or `PERF_NOTEBOOK_DISPOSABLE=1` is missing, so `npx playwright test --list --config playwright.performance.config.js` needs them too.
 
 ```sh
 # From zeppelin-web-angular, with the built application served at this origin:
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 \
+PLAYWRIGHT_BASE_URL=http://localhost:8080 \
   PERF_NOTEBOOK_DISPOSABLE=1 \
   npm run perf:notebook-baseline
 
 # Contract validation only: one cold and one warm sample, plus an unrecorded prime.
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080 \
+PLAYWRIGHT_BASE_URL=http://localhost:8080 \
   PERF_NOTEBOOK_DISPOSABLE=1 \
   PERF_NOTEBOOK_DRY_RUN=1 \
   npm run perf:notebook-baseline
