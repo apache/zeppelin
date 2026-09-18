@@ -43,10 +43,11 @@ if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
 fi
 
 function usage() {
-    echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>]"
+    echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>] [--version|-v]"
 }
 
 POSITIONAL=()
+VERSION_ONLY=false
 while [[ $# -gt 0 ]]
 do
   key="$1"
@@ -60,6 +61,10 @@ do
     export ZEPPELIN_NOTEBOOK_RUN_ID="$2"
     shift # past argument
     shift # past value
+    ;;
+    -v|--version)
+    VERSION_ONLY=true
+    shift
     ;;
     -h|--help)
         usage
@@ -81,7 +86,7 @@ bin="$(cd "${bin}">/dev/null; pwd)"
 
 check_java_version
 
-if [ "$1" == "--version" ] || [ "$1" == "-v" ]; then
+if [[ "${VERSION_ONLY}" == true ]]; then
     getZeppelinVersion
 fi
 
