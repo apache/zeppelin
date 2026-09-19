@@ -14,25 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo 'hadoop' |passwd root --stdin
+set -euo pipefail
 
-: ${HADOOP_PREFIX:=/usr/local/hadoop}
+: "${HADOOP_PREFIX:=/usr/local/hadoop}"
 
-$HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
+. "$HADOOP_PREFIX/etc/hadoop/hadoop-env.sh"
 
-rm /tmp/*.pid
+rm -f /tmp/*.pid
 
 # installing libraries if any - (resource urls added comma separated to the ACP system variable)
-cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; curl -LO $cp ; done; cd -
+cd "$HADOOP_PREFIX/share/hadoop/common"
+ACP_URLS="${ACP:-}"
+for cp in ${ACP_URLS//,/ }; do
+  echo "== $cp"
+  curl -fLO -- "$cp"
+done
+cd - > /dev/null
 
-cp $SPARK_HOME/conf/metrics.properties.template $SPARK_HOME/conf/metrics.properties
+cp "$SPARK_HOME/conf/metrics.properties.template" "$SPARK_HOME/conf/metrics.properties" || true
 
 # start hadoop
-service sshd start
-$HADOOP_PREFIX/sbin/start-dfs.sh
-$HADOOP_PREFIX/sbin/start-yarn.sh
+service ssh start
+"$HADOOP_PREFIX/sbin/start-dfs.sh"
+"$HADOOP_PREFIX/sbin/start-yarn.sh"
 
-$HADOOP_PREFIX/bin/hdfs dfsadmin -safemode leave && $HADOOP_PREFIX/bin/hdfs dfs -put $SPARK_HOME-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE/lib /spark
+"$HADOOP_PREFIX/bin/hdfs" dfsadmin -safemode leave \
+  && "$HADOOP_PREFIX/bin/hdfs" dfs -mkdir -p /spark
+if ! "$HADOOP_PREFIX/bin/hdfs" dfs -test -e /spark/.jars-upload-complete; then
+  "$HADOOP_PREFIX/bin/hdfs" dfs -rm -r -f /spark/jars
+  "$HADOOP_PREFIX/bin/hdfs" dfs -put "$SPARK_HOME/jars" /spark
+  "$HADOOP_PREFIX/bin/hdfs" dfs -touchz /spark/.jars-upload-complete
+fi
 
 # start spark
 export SPARK_MASTER_OPTS="-Dspark.driver.port=7001 -Dspark.fileserver.port=7002
@@ -46,14 +58,14 @@ export SPARK_WORKER_OPTS="-Dspark.driver.port=7001 -Dspark.fileserver.port=7002
 
 export SPARK_MASTER_PORT=7077
 
-cd /usr/local/spark/sbin
+cd "$SPARK_HOME/sbin"
 ./start-master.sh
-./start-slave.sh spark://`hostname`:$SPARK_MASTER_PORT
+./start-worker.sh "spark://$(hostname):$SPARK_MASTER_PORT"
 
 CMD=${1:-"exit 0"}
 if [[ "$CMD" == "-d" ]];
 then
-	service sshd stop
+	service ssh stop
 	/usr/sbin/sshd -D -d
 else
 	/bin/bash -c "$*"
