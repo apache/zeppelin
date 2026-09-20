@@ -312,6 +312,7 @@ export class NotebookParagraphCodeEditorComponent
       matchBrackets: 'always',
       wordWrap: 'on',
       inlineSuggest: { enabled: true },
+      acceptSuggestionOnEnter: 'smart',
       scrollbar: {
         handleMouseWheel: false,
         alwaysConsumeMouseWheel: false
