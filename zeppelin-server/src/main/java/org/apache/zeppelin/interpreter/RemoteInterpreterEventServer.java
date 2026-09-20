@@ -219,7 +219,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   public void appendOutput(OutputAppendEvent event) throws InterpreterRPCException, TException {
     if (event.getAppId() == null) {
       runner.appendBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getUser(), event.getData());
+          event.getExecutionOwner(), event.getData());
     } else {
       appListener.onOutputAppend(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           event.getAppId(), event.getData());
@@ -230,7 +230,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   public void updateOutput(OutputUpdateEvent event) throws InterpreterRPCException, TException {
     if (event.getAppId() == null) {
       runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getUser(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
+          event.getExecutionOwner(), InterpreterResult.Type.valueOf(event.getType()),
+          event.getData());
       // Complete replacements before the interpreter can publish its terminal result.
       runner.run();
     } else {
@@ -244,11 +245,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     synchronized (runner) {
       // Finish earlier output before the clear; keep replacements ahead of the next drain.
       runner.run();
-      listener.onParagraphOutputClear(event.getNoteId(), event.getParagraphId(), event.getUser());
+      listener.onParagraphOutputClear(
+          event.getNoteId(), event.getParagraphId(), event.getExecutionOwner());
       for (int i = 0; i < event.getMsg().size(); i++) {
         RemoteInterpreterResultMessage msg = event.getMsg().get(i);
         listener.onParagraphOutputUpdated(event.getNoteId(), event.getParagraphId(), i,
-            event.getUser(), InterpreterResult.Type.valueOf(msg.getType()), msg.getData());
+            event.getExecutionOwner(), InterpreterResult.Type.valueOf(msg.getType()),
+            msg.getData());
       }
     }
   }
