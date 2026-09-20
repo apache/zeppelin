@@ -1777,8 +1777,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
         } else if (user != null) {
           connectionManager.multicastToUser(user, msg);
         } else {
-          // An interpreter that predates the owner field leaves personalized output unaddressed,
-          // so it is dropped rather than sent to every reader of the note.
           LOGGER.debug("Dropping ownerless personalized output for note {} paragraph {}",
               noteId, paragraphId);
         }
