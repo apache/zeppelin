@@ -955,12 +955,14 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
-    // The execution owner is fixed here, before any output is produced, so that every event
-    // emitted by this output carries the same owner regardless of what runs later.
+    return convert(ric, createInterpreterOutput(
+        ric.getNoteId(), ric.getParagraphId(), executionOwnerOf(ric)));
+  }
+
+  private static String executionOwnerOf(RemoteInterpreterContext ric) {
     AuthenticationInfo authenticationInfo =
         AuthenticationInfo.fromJson(ric.getAuthenticationInfo());
-    String user = authenticationInfo == null ? null : authenticationInfo.getUser();
-    return convert(ric, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId(), user));
+    return authenticationInfo == null ? null : authenticationInfo.getUser();
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
