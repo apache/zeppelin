@@ -1758,8 +1758,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * @param output output to append
    */
   @Override
-  public void onParagraphOutputAppend(String noteId, String paragraphId, int index, String user,
-                                      String output) {
+  public void onParagraphOutputAppend(String noteId, String paragraphId, int index,
+                                      String executionOwner, String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1774,8 +1774,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
           LOGGER.warn("Note {} not found", noteId);
         } else if (!note.isPersonalizedMode()) {
           connectionManager.broadcast(noteId, msg);
-        } else if (user != null) {
-          connectionManager.multicastToUser(user, msg);
+        } else if (executionOwner != null) {
+          connectionManager.multicastToUser(executionOwner, msg);
         } else {
           LOGGER.debug("Dropping ownerless personalized output for note {} paragraph {}",
               noteId, paragraphId);
@@ -1794,7 +1794,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
    */
   @Override
   public void onParagraphOutputUpdated(String noteId, String paragraphId, int index,
-                                       String user, InterpreterResult.Type type, String output) {
+                                       String executionOwner, InterpreterResult.Type type,
+                                       String output) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1812,7 +1813,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
             return null;
           }
           if (note.isPersonalizedMode()) {
-            if (user == null) {
+            if (executionOwner == null) {
               LOGGER.debug("Dropping ownerless personalized output for note {} paragraph {}",
                   noteId, paragraphId);
               return null;
@@ -1820,11 +1821,11 @@ public class NotebookServer implements AngularObjectRegistryListener,
             // The shared outputBuffer is both what checkpointOutput saves and what new users'
             // copies are cloned from, so one user's output goes to that user's own copy.
             Paragraph userParagraph =
-                note.getParagraph(paragraphId).getUserParagraphMap().get(user);
+                note.getParagraph(paragraphId).getUserParagraphMap().get(executionOwner);
             if (userParagraph != null) {
               userParagraph.updateOutputBuffer(index, type, output);
             }
-            connectionManager.multicastToUser(user, msg);
+            connectionManager.multicastToUser(executionOwner, msg);
             return null;
           }
           note.getParagraph(paragraphId).updateOutputBuffer(index, type, output);
@@ -1840,7 +1841,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * This callback is for the paragraph that runs on ZeppelinServer.
    */
   @Override
-  public void onParagraphOutputClear(String noteId, String paragraphId, String user) {
+  public void onParagraphOutputClear(String noteId, String paragraphId, String executionOwner) {
     if (!sendParagraphStatusToFrontend()) {
       return;
     }
@@ -1854,15 +1855,17 @@ public class NotebookServer implements AngularObjectRegistryListener,
             return null;
           }
           if (note.isPersonalizedMode()) {
-            if (user == null) {
+            if (executionOwner == null) {
               LOGGER.debug("Dropping ownerless personalized clear for note {} paragraph {}",
                   noteId, paragraphId);
               return null;
             }
             // Clearing the shared paragraph would discard output the other users still own.
-            if (note.getParagraph(paragraphId).getUserParagraphMap().containsKey(user)) {
-              Paragraph userParagraph = note.clearPersonalizedParagraphOutput(paragraphId, user);
-              connectionManager.multicastToUser(user, new Message(OP.PARAGRAPH)
+            if (note.getParagraph(paragraphId).getUserParagraphMap()
+                .containsKey(executionOwner)) {
+              Paragraph userParagraph =
+                  note.clearPersonalizedParagraphOutput(paragraphId, executionOwner);
+              connectionManager.multicastToUser(executionOwner, new Message(OP.PARAGRAPH)
                   .withMsgId(MSG_ID_NOT_DEFINED).put("paragraph", userParagraph));
             }
             return null;

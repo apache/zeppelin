@@ -989,13 +989,13 @@ public class RemoteInterpreterServer extends Thread
 
 
   protected InterpreterOutput createInterpreterOutput(final String noteId, final String
-      paragraphId, final String user) {
+      paragraphId, final String executionOwner) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onUpdateAll(InterpreterOutput out) {
         try {
           intpEventClient.onInterpreterOutputUpdateAll(
-              noteId, paragraphId, user, out.toInterpreterResultMessage());
+              noteId, paragraphId, executionOwner, out.toInterpreterResultMessage());
         } catch (IOException e) {
           LOGGER.error(e.getMessage(), e);
         }
@@ -1006,7 +1006,7 @@ public class RemoteInterpreterServer extends Thread
         String output = new String(line);
         LOGGER.debug("Output Append: {}", output);
         intpEventClient.onInterpreterOutputAppend(
-            noteId, paragraphId, index, user, output);
+            noteId, paragraphId, index, executionOwner, output);
       }
 
       @Override
@@ -1016,7 +1016,7 @@ public class RemoteInterpreterServer extends Thread
           output = new String(out.toByteArray());
           LOGGER.debug("Output Update for index {}: {}", index, output);
           intpEventClient.onInterpreterOutputUpdate(
-              noteId, paragraphId, index, user, out.getType(), output);
+              noteId, paragraphId, index, executionOwner, out.getType(), output);
         } catch (IOException e) {
           LOGGER.error(e.getMessage(), e);
         }

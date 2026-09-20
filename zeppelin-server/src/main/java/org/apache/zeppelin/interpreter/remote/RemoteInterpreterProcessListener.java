@@ -33,31 +33,31 @@ public interface RemoteInterpreterProcessListener {
    * @param noteId
    * @param paragraphId
    * @param index
-   * @param user the execution owner, or null when the interpreter does not report one
+   * @param executionOwner null when the interpreter does not report one
    * @param output
    */
-  void onParagraphOutputAppend(String noteId, String paragraphId, int index, String user,
-      String output);
+  void onParagraphOutputAppend(String noteId, String paragraphId, int index,
+      String executionOwner, String output);
 
   /**
    * Invoked when the whole output is updated
    * @param noteId
    * @param paragraphId
    * @param index
-   * @param user the execution owner, or null when the interpreter does not report one
+   * @param executionOwner null when the interpreter does not report one
    * @param type
    * @param output
    */
-  void onParagraphOutputUpdated(String noteId, String paragraphId, int index, String user,
-      InterpreterResult.Type type, String output);
+  void onParagraphOutputUpdated(String noteId, String paragraphId, int index,
+      String executionOwner, InterpreterResult.Type type, String output);
 
   /**
    * Invoked when output is cleared.
    * @param noteId
    * @param paragraphId
-   * @param user the execution owner, or null when the interpreter does not report one
+   * @param executionOwner null when the interpreter does not report one
    */
-  void onParagraphOutputClear(String noteId, String paragraphId, String user);
+  void onParagraphOutputClear(String noteId, String paragraphId, String executionOwner);
 
   /**
    * Run paragraphs, paragraphs can be specified via indices(paragraphIndices) or ids(paragraphIds)

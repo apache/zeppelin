@@ -26,15 +26,15 @@ public class AppendOutputBuffer {
   private String noteId;
   private String paragraphId;
   private int index;
-  private String user;
+  private String executionOwner;
   private String data;
 
-  public AppendOutputBuffer(String noteId, String paragraphId, int index, String user,
+  public AppendOutputBuffer(String noteId, String paragraphId, int index, String executionOwner,
                             String data) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
     this.index = index;
-    this.user = user;
+    this.executionOwner = executionOwner;
     this.data = data;
   }
 
@@ -50,9 +50,8 @@ public class AppendOutputBuffer {
     return index;
   }
 
-  /** The execution owner, or null when the interpreter does not report one. */
-  public String getUser() {
-    return user;
+  public String getExecutionOwner() {
+    return executionOwner;
   }
 
   public String getData() {

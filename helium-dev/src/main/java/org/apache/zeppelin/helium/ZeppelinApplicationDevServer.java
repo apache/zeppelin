@@ -136,7 +136,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
 
   @Override
   protected InterpreterOutput createInterpreterOutput(
-      final String noteId, final String paragraphId, final String user) {
+      final String noteId, final String paragraphId, final String executionOwner) {
     if (out == null) {
       final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
@@ -149,14 +149,14 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
           @Override
           public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
             eventClient.onInterpreterOutputAppend(
-                noteId, paragraphId, index, user, new String(line));
+                noteId, paragraphId, index, executionOwner, new String(line));
           }
 
           @Override
           public void onUpdate(int index, InterpreterResultMessageOutput out) {
             try {
               eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
-                  index, user, out.getType(), new String(out.toByteArray()));
+                  index, executionOwner, out.getType(), new String(out.toByteArray()));
             } catch (IOException e) {
               LOGGER.error(e.getMessage(), e);
             }

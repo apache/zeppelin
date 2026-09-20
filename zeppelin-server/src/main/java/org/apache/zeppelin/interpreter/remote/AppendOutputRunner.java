@@ -69,7 +69,7 @@ public class AppendOutputRunner implements Runnable {
         UpdateOutputBuffer update = (UpdateOutputBuffer) buffer;
         try {
           listener.onParagraphOutputUpdated(update.getNoteId(), update.getParagraphId(),
-              update.getIndex(), update.getUser(), update.getType(), update.getData());
+              update.getIndex(), update.getExecutionOwner(), update.getType(), update.getData());
         } catch (RuntimeException e) {
           // A stale callback must not abort another paragraph's synchronous drain.
           LOGGER.warn("Failed to update output for note {} paragraph {}",
@@ -78,10 +78,8 @@ public class AppendOutputRunner implements Runnable {
         continue;
       }
 
-      // The execution owner is part of the key: two users running the same paragraph must not
-      // have their output folded into one chunk, because the merged chunk would have no owner.
       AppendKey key = new AppendKey(buffer.getNoteId(), buffer.getParagraphId(),
-          buffer.getIndex(), buffer.getUser());
+          buffer.getIndex(), buffer.getExecutionOwner());
 
       stringBufferMap.computeIfAbsent(key, unused -> new StringBuilder())
           .append(buffer.getData());
@@ -109,8 +107,8 @@ public class AppendOutputRunner implements Runnable {
       StringBuilder buffer = stringBufferMapEntry.getValue();
       sizeProcessed += buffer.length();
       try {
-        listener.onParagraphOutputAppend(key.noteId, key.paragraphId, key.index, key.user,
-            buffer.toString());
+        listener.onParagraphOutputAppend(key.noteId, key.paragraphId, key.index,
+            key.executionOwner, buffer.toString());
       } catch (RuntimeException e) {
         // One stale append must not abort another paragraph's synchronous drain.
         LOGGER.warn("Failed to append output for {}", key, e);
@@ -121,20 +119,20 @@ public class AppendOutputRunner implements Runnable {
   }
 
   /**
-   * Identifies one stream of appended output. A user name can contain any character, so the
+   * Identifies one stream of appended output. An owner name can contain any character, so the
    * parts are kept separate instead of being joined into a delimited string.
    */
   private static final class AppendKey {
     private final String noteId;
     private final String paragraphId;
     private final int index;
-    private final String user;
+    private final String executionOwner;
 
-    private AppendKey(String noteId, String paragraphId, int index, String user) {
+    private AppendKey(String noteId, String paragraphId, int index, String executionOwner) {
       this.noteId = noteId;
       this.paragraphId = paragraphId;
       this.index = index;
-      this.user = user;
+      this.executionOwner = executionOwner;
     }
 
     @Override
@@ -149,28 +147,31 @@ public class AppendOutputRunner implements Runnable {
       return index == other.index
           && Objects.equals(noteId, other.noteId)
           && Objects.equals(paragraphId, other.paragraphId)
-          && Objects.equals(user, other.user);
+          && Objects.equals(executionOwner, other.executionOwner);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(noteId, paragraphId, index, user);
+      return Objects.hash(noteId, paragraphId, index, executionOwner);
     }
 
     @Override
     public String toString() {
-      return "note " + noteId + " paragraph " + paragraphId + " index " + index + " user " + user;
+      return "note " + noteId + " paragraph " + paragraphId + " index " + index
+          + " executionOwner " + executionOwner;
     }
   }
 
-  public void appendBuffer(String noteId, String paragraphId, int index, String user,
+  public void appendBuffer(String noteId, String paragraphId, int index, String executionOwner,
                            String outputToAppend) {
-    queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, user, outputToAppend));
+    queue.offer(
+        new AppendOutputBuffer(noteId, paragraphId, index, executionOwner, outputToAppend));
   }
 
   /** Enqueues a replacement; callers needing completion must also invoke run(). */
-  public void updateBuffer(String noteId, String paragraphId, int index, String user,
+  public void updateBuffer(String noteId, String paragraphId, int index, String executionOwner,
                            InterpreterResult.Type type, String output) {
-    queue.offer(new UpdateOutputBuffer(noteId, paragraphId, index, user, type, output));
+    queue.offer(
+        new UpdateOutputBuffer(noteId, paragraphId, index, executionOwner, type, output));
   }
 }
