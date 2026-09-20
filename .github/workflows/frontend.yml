@@ -180,27 +180,39 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-v1-${{ hashFiles('zeppelin-web/package-lock.json', 'zeppelin-web-angular/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-npm-v1-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: Install Environment
         run: |
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}
