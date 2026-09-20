@@ -37,8 +37,6 @@ struct OutputAppendEvent {
   3: i32 index,
   4: string data,
   5: string appId,
-  // Execution owner. Null when the interpreter predates this field; see
-  // NotebookServer.onOutputAppend for how ownerless output is handled.
   6: string user
 }
 
