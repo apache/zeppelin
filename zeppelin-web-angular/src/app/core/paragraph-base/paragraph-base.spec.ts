@@ -373,18 +373,16 @@ describe('ParagraphBase save responses', () => {
     expect(paragraph.paragraph?.text).toBe('patched edit');
   });
 
-  it('keeps a collaborative patch applied after a settings commit when its acknowledgement arrives', () => {
-    const paragraph = createSaveTestParagraph('committed edit');
-    paragraph.originalText = 'committed edit';
+  it('applies the server text when a remote edit lands between a save and its acknowledgement', () => {
+    const paragraph = createSaveTestParagraph('local save');
     paragraph.trackSave('save-a');
-    paragraph.paragraph!.text = 'patched edit';
-    paragraph.originalText = 'patched edit';
+    paragraph.originalText = 'local save';
 
-    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'local save' } as ParagraphItem, 'save-a');
 
-    expect(paragraph.paragraph?.text).toBe('patched edit');
-    expect(paragraph.originalText).toBe('patched edit');
-    expect(paragraph.dirtyText).toBeUndefined();
+    expect(paragraph.paragraph?.text).toBe('local save');
+    expect(paragraph.originalText).toBe('local save');
   });
 
   it('clears the local edit once its acknowledgement arrives', () => {
@@ -395,7 +393,8 @@ describe('ParagraphBase save responses', () => {
 
     paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'dirty edit' } as ParagraphItem, 'save-a');
 
-    expect(paragraph.paragraph?.text).toBe('saved edit');
+    expect(paragraph.paragraph?.text).toBe('dirty edit');
+    expect(paragraph.originalText).toBe('dirty edit');
     expect(paragraph.dirtyText).toBeUndefined();
   });
 

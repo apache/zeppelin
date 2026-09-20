@@ -349,11 +349,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
     const acknowledged = this.consumeParagraphSave(msgId, newPara.text);
 
     if (oldPara.text !== newPara.text) {
-      // Keep the editor text as is: local edits or collaborative patches can follow the acknowledged save.
-      if (acknowledged) {
-        if (this.dirtyText === newPara.text) {
-          this.dirtyText = undefined;
-        }
+      // Keep an edit typed or saved after this save; otherwise the response is the server copy.
+      // Saves still pending after consumeParagraphSave are newer than the acknowledged one.
+      const hasLocalEdit = this.dirtyText !== undefined && this.dirtyText !== newPara.text;
+      if (acknowledged && (hasLocalEdit || this.pendingParagraphSaves.size > 0)) {
         this.cdr.markForCheck();
         return;
       }
