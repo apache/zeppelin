@@ -11,7 +11,7 @@ Portions of this software were developed at NFLabs, Inc.
 1. libpty binary library
 
    * Pseudo terminal(PTY) implementation in Java
-   * (Eclipse Public License) pty4j - https://www.eclipse.org/legal/epl-v10.html
+   * (Eclipse Public License) pty4j - https://www.eclipse.org/legal/epl/epl-v10.html
 
 2. ONNX Runtime
 
