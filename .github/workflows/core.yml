@@ -444,6 +444,9 @@ jobs:
   # https://github.com/apache/incubator-livy/blob/v0.8.0-incubating/dev/docker/livy-dev-spark/Dockerfile#L20
   livy-0-8-with-spark-3-2-under-python39:
     runs-on: ubuntu-24.04
+    env:
+      SPARK_VERSION: '3.2.4'
+      HADOOP_VERSION: '3.2'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -469,9 +472,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .spark-dist
-          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ hashFiles('testing/downloadSpark.sh', 'pom.xml', 'spark/pom.xml') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-${{ hashFiles('testing/downloadSpark.sh', 'pom.xml', 'spark/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-
+            ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-
       - name: Cache locked Conda packages
         uses: actions/cache@v5
         with:
@@ -482,7 +485,7 @@ jobs:
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl livy -am ${MAVEN_ARGS}
-          ./testing/downloadSpark.sh "3.2.4" "3.2"
+          ./testing/downloadSpark.sh "${SPARK_VERSION}" "${HADOOP_VERSION}"
           ./testing/downloadLivy.sh "0.8.0-incubating" "2.12"
       - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v4
@@ -495,7 +498,7 @@ jobs:
           auto-activate: false
       - name: run tests
         run: |
-          export SPARK_HOME=$PWD/spark-3.2.4-bin-hadoop3.2
+          export SPARK_HOME=$PWD/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
           export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.12-bin
           ./mvnw verify -pl livy ${MAVEN_ARGS}
 
