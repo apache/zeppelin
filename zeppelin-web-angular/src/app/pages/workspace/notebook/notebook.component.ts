@@ -118,6 +118,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.INTERPRETER_BINDINGS)
   loadInterpreterBindings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS]) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
+
     this.interpreterBindings = data.interpreterBindings;
     if (!this.interpreterBindings.some(item => item.selected)) {
       this.activatedExtension = 'interpreter';
@@ -198,8 +203,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   @MessageListener(OP.SET_NOTE_REVISION)
-  setNoteRevision(_data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
+  setNoteRevision(data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
     const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
     this.router.navigate(['/notebook', noteId]).then();
   }
 
@@ -257,6 +265,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.LIST_REVISION_HISTORY)
   listRevisionHistory(data: MessageReceiveDataTypeMap[OP.LIST_REVISION_HISTORY]) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
+
     this.noteRevisions = data.revisionList;
     if (this.noteRevisions) {
       if (this.noteRevisions.length === 0 || this.noteRevisions[0].id !== 'Head') {

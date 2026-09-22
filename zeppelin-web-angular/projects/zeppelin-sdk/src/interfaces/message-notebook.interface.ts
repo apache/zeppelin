@@ -172,10 +172,12 @@ export interface ParagraphAdded {
 }
 
 export interface SetNoteRevisionStatus {
+  noteId: string;
   status: boolean;
 }
 
 export interface ListRevision {
+  noteId: string;
   revisionList: RevisionListItem[];
 }
 
