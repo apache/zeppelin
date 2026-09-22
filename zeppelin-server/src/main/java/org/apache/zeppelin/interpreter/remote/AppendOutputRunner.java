@@ -19,12 +19,14 @@ package org.apache.zeppelin.interpreter.remote;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 /**
- * Synchronously delivers an append batch, merging adjacent events for the same paragraph output.
+ * Synchronously delivers an append batch, merging events for each paragraph output.
  */
 public class AppendOutputRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(AppendOutputRunner.class);
@@ -49,25 +51,22 @@ public class AppendOutputRunner {
     }
     long start = System.currentTimeMillis();
     long size = 0;
-    AppendOutputBuffer previous = null;
-    StringBuilder data = new StringBuilder();
+    Map<ParagraphOutputKey, StringBuilder> groups = new LinkedHashMap<>();
+    ParagraphOutputKey currentKey = null;
+    StringBuilder currentData = null;
     for (AppendOutputBuffer append : batch) {
+      if (currentKey == null || !currentKey.matches(append)) {
+        currentKey = new ParagraphOutputKey(append);
+        currentData = groups.computeIfAbsent(currentKey, key -> new StringBuilder());
+      }
+      currentData.append(append.getData());
+    }
+    for (Map.Entry<ParagraphOutputKey, StringBuilder> group : groups.entrySet()) {
       if (!mayDeliver.getAsBoolean()) {
         return;
       }
-      if (previous != null && !sameOutput(previous, append)) {
-        size += flush(previous, data);
-        if (!mayDeliver.getAsBoolean()) {
-          return;
-        }
-      }
-      previous = append;
-      data.append(append.getData());
+      size += flush(group.getKey(), group.getValue());
     }
-    if (!mayDeliver.getAsBoolean()) {
-      return;
-    }
-    size += flush(previous, data);
     long time = System.currentTimeMillis() - start;
     if (time > SAFE_PROCESSING_TIME) {
       LOGGER.warn("Processing time for buffered append-output is high: {} milliseconds.", time);
@@ -81,24 +80,60 @@ public class AppendOutputRunner {
     }
   }
 
-  private boolean sameOutput(AppendOutputBuffer first, AppendOutputBuffer second) {
-    return first.getIndex() == second.getIndex()
-        && Objects.equals(first.getNoteId(), second.getNoteId())
-        && Objects.equals(first.getParagraphId(), second.getParagraphId())
-        && Objects.equals(first.getExecutionOwner(), second.getExecutionOwner());
-  }
-
-  private long flush(AppendOutputBuffer append, StringBuilder data) {
+  private long flush(ParagraphOutputKey key, StringBuilder data) {
     long size = data.length();
     try {
-      listener.onParagraphOutputAppend(append.getNoteId(), append.getParagraphId(),
-          append.getIndex(), append.getExecutionOwner(), data.toString());
+      listener.onParagraphOutputAppend(
+          key.noteId, key.paragraphId, key.index, key.executionOwner, data.toString());
     } catch (RuntimeException e) {
       // A stale paragraph must not abort delivery of later output in this drain.
       LOGGER.warn("Failed to append output for note {} paragraph {}",
-          append.getNoteId(), append.getParagraphId(), e);
+          key.noteId, key.paragraphId, e);
     }
     data.setLength(0);
     return size;
+  }
+
+  private static final class ParagraphOutputKey {
+    private final String noteId;
+    private final String paragraphId;
+    private final int index;
+    private final String executionOwner;
+
+    private ParagraphOutputKey(AppendOutputBuffer append) {
+      noteId = append.getNoteId();
+      paragraphId = append.getParagraphId();
+      index = append.getIndex();
+      executionOwner = append.getExecutionOwner();
+    }
+
+    private boolean matches(AppendOutputBuffer append) {
+      return index == append.getIndex()
+          && Objects.equals(noteId, append.getNoteId())
+          && Objects.equals(paragraphId, append.getParagraphId())
+          && Objects.equals(executionOwner, append.getExecutionOwner());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (this == other) {
+        return true;
+      }
+      if (!(other instanceof ParagraphOutputKey)) {
+        return false;
+      }
+      ParagraphOutputKey key = (ParagraphOutputKey) other;
+      return index == key.index && Objects.equals(noteId, key.noteId)
+          && Objects.equals(paragraphId, key.paragraphId)
+          && Objects.equals(executionOwner, key.executionOwner);
+    }
+
+    @Override
+    public int hashCode() {
+      int hash = Objects.hashCode(noteId);
+      hash = 31 * hash + Objects.hashCode(paragraphId);
+      hash = 31 * hash + index;
+      return 31 * hash + Objects.hashCode(executionOwner);
+    }
   }
 }

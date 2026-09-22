@@ -76,6 +76,51 @@ class ParagraphOutputDispatcherTest {
   }
 
   @Test
+  void interleavedAppendsMergeWithinEachBoundary() throws Exception {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    try (ParagraphOutputDispatcher dispatcher = new ParagraphOutputDispatcher(listener)) {
+      dispatcher.appendOutput("note", "first", 0, null, "a");
+      dispatcher.appendOutput("note", "second", 0, null, "b");
+      dispatcher.appendOutput("note", "first", 0, null, "c");
+      dispatcher.updateOutput("note", "first", 0, null, InterpreterResult.Type.TEXT, "replace")
+          .get(5, TimeUnit.SECONDS);
+      dispatcher.appendOutput("note", "first", 0, null, "after");
+      dispatcher.checkpointOutput("note", "first").get(5, TimeUnit.SECONDS);
+
+      InOrder order = inOrder(listener);
+      order.verify(listener).onParagraphOutputAppend("note", "first", 0, null, "ac");
+      order.verify(listener).onParagraphOutputAppend("note", "second", 0, null, "b");
+      order.verify(listener).onParagraphOutputUpdated("note", "first", 0, null, InterpreterResult.Type.TEXT, "replace");
+      order.verify(listener).onParagraphOutputAppend("note", "first", 0, null, "after");
+      order.verify(listener).checkpointOutput("note", "first");
+      order.verifyNoMoreInteractions();
+    }
+  }
+
+  @Test
+  void heavilyInterleavedParagraphsUseOneCallbackPerOutputKey() throws Exception {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    StringBuilder expected = new StringBuilder();
+    try (ParagraphOutputDispatcher dispatcher = new ParagraphOutputDispatcher(listener, 1, 1000)) {
+      for (int i = 0; i < 250; i++) {
+        String token = i + ";";
+        expected.append(token);
+        for (int paragraph = 0; paragraph < 4; paragraph++) {
+          dispatcher.appendOutput("note", "p" + paragraph, 0, null, token);
+        }
+      }
+      dispatcher.checkpointOutput("note", "p0").get(5, TimeUnit.SECONDS);
+
+      InOrder order = inOrder(listener);
+      for (int paragraph = 0; paragraph < 4; paragraph++) {
+        order.verify(listener).onParagraphOutputAppend("note", "p" + paragraph, 0, null, expected.toString());
+      }
+      order.verify(listener).checkpointOutput("note", "p0");
+      order.verifyNoMoreInteractions();
+    }
+  }
+
+  @Test
   void scheduledFlushDeliversAppendsWithoutRpcBoundaries() throws Exception {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     CountDownLatch delivered = new CountDownLatch(1);
@@ -153,7 +198,7 @@ class ParagraphOutputDispatcherTest {
     AtomicInteger sizeWhenSmallRan = new AtomicInteger();
     doAnswer(call -> {
       if ("large".equals(call.getArgument(0))) {
-        received.append((String) call.getArgument(3));
+        received.append((String) call.getArgument(4));
         if (callbacks.incrementAndGet() == 1) {
           entered.countDown();
           awaitIgnoringInterrupt(release);
@@ -196,7 +241,7 @@ class ParagraphOutputDispatcherTest {
     doAnswer(call -> {
       maximum.accumulateAndGet(active.incrementAndGet(), Math::max);
       try {
-        String output = call.getArgument(3);
+        String output = call.getArgument(4);
         Collections.addAll(received, output.split("\n"));
       } finally {
         active.decrementAndGet();
