@@ -59,7 +59,7 @@ class AppendOutputRunnerTest {
   }
 
   @Test
-  void preservesOrderAndDoesNotMergeDifferentOutputKeys() {
+  void mergesEachOutputKeyInFirstAppearanceOrder() {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     List<AppendOutputBuffer> batch = new ArrayList<>();
@@ -70,11 +70,27 @@ class AppendOutputRunnerTest {
     batch.add(new AppendOutputBuffer("note:1", "p:1", 0, null, "fifth"));
     runner.run(batch);
     InOrder order = inOrder(listener);
-    order.verify(listener).onParagraphOutputAppend("note:1", "p:1", 0, null, "first");
+    order.verify(listener).onParagraphOutputAppend("note:1", "p:1", 0, null, "firstfifth");
     order.verify(listener).onParagraphOutputAppend("note:1", "p:2", 0, null, "second");
     order.verify(listener).onParagraphOutputAppend("note:1", "p:1", 1, null, "third");
     order.verify(listener).onParagraphOutputAppend("note:2", "p:1", 1, null, "fourth");
-    order.verify(listener).onParagraphOutputAppend("note:1", "p:1", 0, null, "fifth");
+    order.verifyNoMoreInteractions();
+  }
+
+  @Test
+  void doesNotMergeOutputFromDifferentExecutionOwners() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    List<AppendOutputBuffer> batch = new ArrayList<>();
+    batch.add(new AppendOutputBuffer("note", "para", 0, "alice", "a"));
+    batch.add(new AppendOutputBuffer("note", "para", 0, "bob", "b"));
+    batch.add(new AppendOutputBuffer("note", "para", 0, "alice", "c"));
+
+    runner.run(batch);
+
+    InOrder order = inOrder(listener);
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, "alice", "ac");
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, "bob", "b");
     order.verifyNoMoreInteractions();
   }
 
@@ -99,7 +115,7 @@ class AppendOutputRunnerTest {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     List<String> received = new ArrayList<>();
     doAnswer(call -> {
-      received.add(call.getArgument(3));
+      received.add(call.getArgument(4));
       return null;
     }).when(listener).onParagraphOutputAppend(anyString(), anyString(), anyInt(), null, anyString());
     AppendOutputRunner runner = new AppendOutputRunner(listener);

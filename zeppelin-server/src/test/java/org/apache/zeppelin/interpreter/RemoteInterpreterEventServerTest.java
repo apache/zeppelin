@@ -87,6 +87,31 @@ public class RemoteInterpreterEventServerTest {
   }
 
   @Test
+  void outputEventsPreserveTheirExecutionOwner() throws Exception {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    RemoteInterpreterEventServer server = serverWithListener(listener);
+    try {
+      server.appendOutput(new OutputAppendEvent(
+          "note", "para", 0, "append", null, "alice"));
+      server.updateOutput(new OutputUpdateEvent(
+          "note", "para", 0, "TEXT", "update", null, "bob"));
+      server.updateAllOutput(new OutputUpdateAllEvent("note", "para", Collections.singletonList(
+          new RemoteInterpreterResultMessage("HTML", "replacement")), "carol"));
+
+      InOrder order = inOrder(listener);
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, "alice", "append");
+      order.verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, "bob", InterpreterResult.Type.TEXT, "update");
+      order.verify(listener).onParagraphOutputClear("note", "para", "carol");
+      order.verify(listener).onParagraphOutputUpdated(
+          "note", "para", 0, "carol", InterpreterResult.Type.HTML, "replacement");
+      order.verifyNoMoreInteractions();
+    } finally {
+      server.stop();
+    }
+  }
+
+  @Test
   void checkpointDrainsPendingOutputBeforeSaving() throws Exception {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     RemoteInterpreterEventServer server = serverWithListener(listener);
