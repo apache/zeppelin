@@ -34,14 +34,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 
 /**
- * Buffers output in per-note FIFO queues, consumed by a fixed pool of workers. Only one worker
+ * Buffers output in per-note FIFO queues, consumed by a fixed pool of workers. Only one operation
  * owns a note at a time. Callers periodically invoke {@link #flush()} to deliver buffered appends;
  * output boundaries request immediate delivery and expose callback completion to the caller.
+ * Checkpoints pause their note until a separate worker pool of the same configured size finishes
+ * the save callback.
  * Queues are retired as soon as their pending and in-flight output has been processed.
  *
  * <p>Accepted boundaries cannot be cancelled. Their completion acknowledges callback delivery,
@@ -56,6 +59,7 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
   private final BlockingQueue<NoteQueue> ready = new LinkedBlockingQueue<>();
   private final int eventsPerBatch;
   private final ExecutorService workers;
+  private final ExecutorService checkpointExecutor;
   private final int workerCount;
   private final RemoteInterpreterProcessListener listener;
   private final AppendOutputRunner appendRunner;
@@ -84,6 +88,12 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
     appendRunner = new AppendOutputRunner(listener);
     workers = Executors.newFixedThreadPool(workerCount, runnable -> {
       Thread thread = new Thread(runnable, "zeppelin-output-worker");
+      thread.setDaemon(true);
+      return thread;
+    });
+    // Keep save capacity bounded independently from output delivery.
+    checkpointExecutor = Executors.newFixedThreadPool(workerCount, runnable -> {
+      Thread thread = new Thread(runnable, "zeppelin-output-checkpoint");
       thread.setDaemon(true);
       return thread;
     });
@@ -128,10 +138,15 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
   }
 
   public Future<Void> checkpointOutput(String noteId, String paragraphId) {
-    return enqueueBoundary(noteId, () -> listener.checkpointOutput(noteId, paragraphId));
+    return enqueueBoundary(noteId, () -> listener.checkpointOutput(noteId, paragraphId),
+        OutputEvent.Kind.CHECKPOINT);
   }
 
   private Future<Void> enqueueBoundary(String noteId, Runnable callback) {
+    return enqueueBoundary(noteId, callback, OutputEvent.Kind.BOUNDARY);
+  }
+
+  private Future<Void> enqueueBoundary(String noteId, Runnable callback, OutputEvent.Kind kind) {
     OutputEvent event = new OutputEvent(new Boundary(() -> {
       long start = System.nanoTime();
       try {
@@ -143,7 +158,7 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
         long time = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
         LOGGER.debug("Processing output boundary for note {} took {} milliseconds", noteId, time);
       }
-    }));
+    }), kind);
     enqueue(noteId, event, true);
     return event.boundary;
   }
@@ -190,21 +205,28 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
         }
         note.flushRequested = false;
         while (!note.events.isEmpty() && batch.size() < eventsPerBatch) {
-          batch.add(note.events.removeFirst());
+          OutputEvent event = note.events.removeFirst();
+          batch.add(event);
+          if (event.kind == OutputEvent.Kind.CHECKPOINT) {
+            break;
+          }
         }
         note.inFlight = batch;
       }
+      BatchDelivery delivery = BatchDelivery.COMPLETE;
       try {
-        deliver(batch);
+        delivery = deliver(note, batch);
       } finally {
-        synchronized (this) {
-          note.inFlight = null;
-          note.scheduled = false;
-          if (!closed) {
-            if (note.events.isEmpty()) {
-              notes.remove(note.noteId);
-            } else if (note.flushRequested || batch.size() == eventsPerBatch) {
-              makeReady(note);
+        if (delivery == BatchDelivery.COMPLETE) {
+          synchronized (this) {
+            note.inFlight = null;
+            note.scheduled = false;
+            if (!closed) {
+              if (note.events.isEmpty()) {
+                notes.remove(note.noteId);
+              } else if (note.flushRequested || batch.size() == eventsPerBatch) {
+                makeReady(note);
+              }
             }
           }
         }
@@ -212,25 +234,59 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
     }
   }
 
-  private void deliver(List<OutputEvent> batch) {
+  private BatchDelivery deliver(NoteQueue note, List<OutputEvent> batch) {
     List<AppendOutputBuffer> appends = new ArrayList<>();
     for (OutputEvent event : batch) {
       if (closed) {
-        return;
+        return BatchDelivery.COMPLETE;
       }
-      if (event.append != null) {
+      if (event.kind == OutputEvent.Kind.APPEND) {
         appends.add(event.append);
       } else {
         appendRunner.run(appends, () -> !closed);
         appends.clear();
         if (closed) {
-          return;
+          return BatchDelivery.COMPLETE;
+        }
+        if (event.kind == OutputEvent.Kind.CHECKPOINT) {
+          submitCheckpoint(note, event.boundary);
+          return BatchDelivery.CHECKPOINT_SUBMITTED;
         }
         event.boundary.run();
       }
     }
     if (!closed) {
       appendRunner.run(appends, () -> !closed);
+    }
+    return BatchDelivery.COMPLETE;
+  }
+
+  private void submitCheckpoint(NoteQueue note, Boundary boundary) {
+    try {
+      checkpointExecutor.execute(() -> {
+        try {
+          if (!closed) {
+            boundary.run();
+          }
+        } finally {
+          finishCheckpoint(note);
+        }
+      });
+    } catch (RejectedExecutionException e) {
+      boundary.fail(e);
+      finishCheckpoint(note);
+    }
+  }
+
+  private synchronized void finishCheckpoint(NoteQueue note) {
+    note.inFlight = null;
+    note.scheduled = false;
+    if (!closed) {
+      if (note.events.isEmpty()) {
+        notes.remove(note.noteId);
+      } else {
+        makeReady(note);
+      }
     }
   }
 
@@ -257,6 +313,7 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
       ready.clear();
     }
     workers.shutdownNow();
+    checkpointExecutor.shutdownNow();
   }
 
   private void failBoundaries(Iterable<OutputEvent> events, IllegalStateException stopped) {
@@ -277,7 +334,7 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
     private final ArrayDeque<OutputEvent> events = new ArrayDeque<>();
     // Shutdown must release RPCs waiting on boundaries already drained from events.
     private List<OutputEvent> inFlight;
-    // Covers ready and running: releasing ownership before delivery ends would allow two writers.
+    // Covers ready, running, and checkpointed notes until their save finishes.
     private boolean scheduled;
     // A request arriving during delivery must survive until the current owner releases the note.
     private boolean flushRequested;
@@ -287,17 +344,31 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
     }
   }
 
-  // Exactly one of append and boundary is set.
+  private enum BatchDelivery {
+    COMPLETE,
+    CHECKPOINT_SUBMITTED
+  }
+
+  // Exactly one of append and boundary is set, according to kind.
   private static class OutputEvent {
+    private enum Kind {
+      APPEND,
+      BOUNDARY,
+      CHECKPOINT
+    }
+
+    private final Kind kind;
     private final AppendOutputBuffer append;
     private final Boundary boundary;
 
     private OutputEvent(AppendOutputBuffer append) {
+      kind = Kind.APPEND;
       this.append = append;
       boundary = null;
     }
 
-    private OutputEvent(Boundary boundary) {
+    private OutputEvent(Boundary boundary, Kind kind) {
+      this.kind = kind;
       append = null;
       this.boundary = boundary;
     }
