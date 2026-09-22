@@ -1067,15 +1067,17 @@ class NotebookServerTest extends AbstractTestRestApi {
 
       ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
       verify(socket).send(response.capture());
-      assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.AUTH_INFO, responseMessage.op);
 
       reset(socket);
       setNotePermissions(noteId, "binding-owner", "binding-reader");
       notebookServer.getInterpreterBindings(socket, serviceContext("binding-reader"), message);
 
       verify(socket).send(response.capture());
-      assertEquals(OP.INTERPRETER_BINDINGS,
-          notebookServer.deserializeMessage(response.getValue()).op);
+      responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.INTERPRETER_BINDINGS, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
     } finally {
       notebook.removeNote(noteId, owner);
     }
@@ -1100,7 +1102,8 @@ class NotebookServerTest extends AbstractTestRestApi {
           notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
       ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
       verify(socket).send(response.capture());
-      assertEquals(OP.AUTH_INFO, notebookServer.deserializeMessage(response.getValue()).op);
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.AUTH_INFO, responseMessage.op);
 
       reset(socket);
       authorizationService.setWriters(noteId,
@@ -1110,8 +1113,9 @@ class NotebookServerTest extends AbstractTestRestApi {
       assertEquals(replacementGroup,
           notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
       verify(socket).send(response.capture());
-      assertEquals(OP.INTERPRETER_BINDINGS,
-          notebookServer.deserializeMessage(response.getValue()).op);
+      responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.INTERPRETER_BINDINGS, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
     } finally {
       notebook.removeNote(noteId, owner);
     }
@@ -1167,6 +1171,82 @@ class NotebookServerTest extends AbstractTestRestApi {
       if (null != noteId) {
         notebook.removeNote(noteId, anonymous);
       }
+    }
+  }
+
+  @Test
+  void listRevisionHistoryIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("revision-list-note-id", anonymous);
+
+    try {
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.LIST_REVISION_HISTORY)
+          .put("noteId", noteId);
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.LIST_REVISION_HISTORY, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void checkpointNoteIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("checkpoint-note-id", anonymous);
+
+    try {
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.CHECKPOINT_NOTE)
+          .put("noteId", noteId)
+          .put("commitMessage", "checkpoint");
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.LIST_REVISION_HISTORY, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void setNoteRevisionIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("set-revision-note-id", anonymous);
+
+    try {
+      NotebookRepoWithVersionControl.Revision revision =
+          notebook.processNote(noteId,
+              note -> notebook.checkpointNote(
+                  note.getId(),
+                  note.getPath(),
+                  "revision",
+                  anonymous));
+
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.SET_NOTE_REVISION)
+          .put("noteId", noteId)
+          .put("revisionId", revision.id);
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.SET_NOTE_REVISION, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
     }
   }
 
