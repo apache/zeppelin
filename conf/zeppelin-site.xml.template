@@ -442,9 +442,9 @@
 <property>
   <name>zeppelin.interpreter.output.worker.count</name>
   <value>4</value>
-  <description>Number of server workers delivering standard paragraph output. Each note is
-  processed serially; independent notes may run concurrently. Tune for listener latency and
-  available server resources.</description>
+  <description>Number of workers in each of the server output and checkpoint pools. Each note is
+  processed serially; independent notes may run concurrently, and checkpoint saves do not occupy
+  output workers. Tune for listener and repository latency and available server resources.</description>
 </property>
 
 <property>

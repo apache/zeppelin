@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.remote;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -117,7 +118,8 @@ class AppendOutputRunnerTest {
     doAnswer(call -> {
       received.add(call.getArgument(4));
       return null;
-    }).when(listener).onParagraphOutputAppend(anyString(), anyString(), anyInt(), null, anyString());
+    }).when(listener).onParagraphOutputAppend(
+        anyString(), anyString(), anyInt(), isNull(), anyString());
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     List<AppendOutputBuffer> batch = new ArrayList<>();
     StringBuilder expected = new StringBuilder();
