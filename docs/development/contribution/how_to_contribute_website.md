@@ -40,7 +40,7 @@ First of all, you need the website source code. The official location of mirror 
 Get the source code on your development machine using git.
 
 ```bash
-git clone git://gitbox.apache.org/repos/asf/zeppelin.git
+git clone https://gitbox.apache.org/repos/asf/zeppelin.git
 cd docs
 ```
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.
