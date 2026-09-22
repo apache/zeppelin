@@ -696,10 +696,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
                 setting.getInterpreterInfos(), true));
           }
         }
-        conn.send(serializeMessage(
-            new Message(OP.INTERPRETER_BINDINGS)
-                .withMsgId(fromMessage.msgId)
-                .put("interpreterBindings", settingList)));
+        conn.send(serializeMessage(new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
         return null;
       });
   }
@@ -737,9 +734,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
       });
     if (permitted) {
       conn.send(serializeMessage(
-          new Message(OP.INTERPRETER_BINDINGS)
-              .withMsgId(fromMessage.msgId)
-              .put("interpreterBindings", settingList)));
+          new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
     }
   }
 
@@ -1674,10 +1669,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
               List<Revision> revisions = getNotebook().processNote(noteId,
                 note -> getNotebook().listRevisionHistory(noteId, note.getPath(), context.getAutheInfo()));
-              conn.send(serializeMessage(
-                  new Message(OP.LIST_REVISION_HISTORY)
-                      .withMsgId(fromMessage.msgId)
-                      .put("revisionList", revisions)));
+              conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY).put("revisionList", revisions)));
             } else {
               conn.send(serializeMessage(
                   new Message(OP.ERROR_INFO).put("info",
@@ -1697,10 +1689,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           @Override
           public void onSuccess(List<Revision> revisions, ServiceContext context) throws IOException {
             super.onSuccess(revisions, context);
-            conn.send(serializeMessage(
-                new Message(OP.LIST_REVISION_HISTORY)
-                    .withMsgId(fromMessage.msgId)
-                    .put("revisionList", revisions)));
+            conn.send(serializeMessage(new Message(OP.LIST_REVISION_HISTORY).put("revisionList", revisions)));
           }
         });
   }
@@ -1716,10 +1705,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
           public void onSuccess(Note note, ServiceContext context) throws IOException {
             super.onSuccess(note, context);
             Note reloadedNote = getNotebook().loadNoteFromRepo(noteId, context.getAutheInfo());
-            conn.send(serializeMessage(
-                new Message(OP.SET_NOTE_REVISION)
-                    .withMsgId(fromMessage.msgId)
-                    .put("status", true)));
+            conn.send(serializeMessage(new Message(OP.SET_NOTE_REVISION).put("status", true)));
             broadcastNote(reloadedNote);
           }
         });
