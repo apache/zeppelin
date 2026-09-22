@@ -41,7 +41,6 @@ import { TicketService } from './ticket.service';
 })
 export class MessageService extends Message implements OnDestroy {
   private readonly localAddFocusMsgIds = new Set<string>();
-  private readonly pendingNoteRequests = new Map<string, string>();
 
   constructor(
     private baseUrlService: BaseUrlService,
@@ -94,48 +93,21 @@ export class MessageService extends Message implements OnDestroy {
     return this.localAddFocusMsgIds.delete(msgId);
   }
 
-  consumePendingNoteRequest(msgId: string | undefined, activeNoteId: string): boolean {
-    if (!msgId) {
-      return false;
-    }
-
-    const requestedNoteId = this.pendingNoteRequests.get(msgId);
-    if (!requestedNoteId) {
-      return false;
-    }
-
-    this.pendingNoteRequests.delete(msgId);
-
-    return requestedNoteId === activeNoteId;
-  }
-
-  private captureSentMessage(
-    sendMessage: () => void,
-    onSent: (message: WebSocketMessage<MessageSendDataTypeMap>) => void
-  ): void {
-    const subscription = super.sent().pipe(take(1)).subscribe(onSent);
+  private captureLocalAddFocusMsgId(sendMessage: () => void): void {
+    const subscription = super
+      .sent()
+      .pipe(take(1))
+      .subscribe(message => {
+        if (message.msgId) {
+          this.localAddFocusMsgIds.add(message.msgId);
+        }
+      });
     try {
       sendMessage();
     } catch (error) {
       subscription.unsubscribe();
       throw error;
     }
-  }
-
-  private captureLocalAddFocusMsgId(sendMessage: () => void): void {
-    this.captureSentMessage(sendMessage, message => {
-      if (message.msgId) {
-        this.localAddFocusMsgIds.add(message.msgId);
-      }
-    });
-  }
-
-  private capturePendingNoteRequest(noteId: string, sendMessage: () => void): void {
-    this.captureSentMessage(sendMessage, message => {
-      if (message.msgId) {
-        this.pendingNoteRequests.set(message.msgId, noteId);
-      }
-    });
   }
 
   opened(): Observable<Event> {
@@ -345,15 +317,15 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   checkpointNote(noteId: string, commitMessage: string): void {
-    this.capturePendingNoteRequest(noteId, () => super.checkpointNote(noteId, commitMessage));
+    super.checkpointNote(noteId, commitMessage);
   }
 
   setNoteRevision(noteId: string, revisionId: string): void {
-    this.capturePendingNoteRequest(noteId, () => super.setNoteRevision(noteId, revisionId));
+    super.setNoteRevision(noteId, revisionId);
   }
 
   listRevisionHistory(noteId: string): void {
-    this.capturePendingNoteRequest(noteId, () => super.listRevisionHistory(noteId));
+    super.listRevisionHistory(noteId);
   }
 
   noteRevision(noteId: string, revisionId: string): void {
@@ -377,11 +349,11 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   getInterpreterBindings(noteId: string): void {
-    this.capturePendingNoteRequest(noteId, () => super.getInterpreterBindings(noteId));
+    super.getInterpreterBindings(noteId);
   }
 
   saveInterpreterBindings(noteId: string, selectedSettingIds: string[]): void {
-    this.capturePendingNoteRequest(noteId, () => super.saveInterpreterBindings(noteId, selectedSettingIds));
+    super.saveInterpreterBindings(noteId, selectedSettingIds);
   }
 
   getInterpreterSettings(): void {
