@@ -23,7 +23,6 @@ import {
   MessageSendDataTypeMap,
   Note,
   NoteConfig,
-  OP,
   ParagraphConfig,
   ParagraphParams,
   PersonalizedMode,
@@ -52,9 +51,6 @@ export class MessageService extends Message implements OnDestroy {
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
     const received = this.messageInterceptor ? this.messageInterceptor.received(data) : super.interceptReceived(data);
-    if (received.op === OP.PARAGRAPH_ADDED && received.data && received.msgId) {
-      (received.data as MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]).msgId = received.msgId;
-    }
     return received;
   }
 

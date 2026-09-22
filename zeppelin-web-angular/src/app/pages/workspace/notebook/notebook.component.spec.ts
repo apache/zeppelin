@@ -16,7 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ChangeDetectorRef } from '@angular/core';
 import type { Title } from '@angular/platform-browser';
 import type { ActivatedRoute, Router } from '@angular/router';
-import { OP, type MessageReceiveDataTypeMap } from '@zeppelin/sdk';
+import { OP, type MessageReceiveDataTypeMap, type WebSocketMessage } from '@zeppelin/sdk';
 
 import type {
   MessageService,
@@ -37,15 +37,17 @@ import { NotebookComponent } from './notebook.component';
 
 const createComponent = () => {
   const messageService = {
-    receive: vi.fn(() => NEVER)
-  } as unknown as MessageService;
+    receive: vi.fn(() => NEVER),
+    receiveEnvelope: vi.fn(() => NEVER),
+    consumeLocalAddFocusMsgId: vi.fn(() => false)
+  };
 
   const router = {
     navigate: vi.fn(() => Promise.resolve(true))
   } as unknown as Router;
 
   const component = new NotebookComponent(
-    messageService,
+    messageService as unknown as MessageService,
     {} as NgZService,
     {
       snapshot: {
@@ -69,7 +71,8 @@ const createComponent = () => {
 
   return {
     component,
-    router
+    router,
+    messageService
   };
 };
 
@@ -167,5 +170,28 @@ describe('NotebookComponent', () => {
     component.setNoteRevision(data);
 
     expect(router.navigate).toHaveBeenCalledWith(['/notebook', 'note-b']);
+  });
+
+  it('uses the paragraph added envelope msgId for local focus', () => {
+    const { component, messageService } = createComponent();
+
+    component.note = {
+      paragraphs: []
+    } as typeof component.note;
+
+    const message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH_ADDED> = {
+      op: OP.PARAGRAPH_ADDED,
+      msgId: 'local-add-msg',
+      data: {
+        index: 0,
+        paragraph: {
+          id: 'paragraph-1'
+        } as MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]['paragraph']
+      }
+    };
+
+    component.addParagraph(message);
+
+    expect(messageService.consumeLocalAddFocusMsgId).toHaveBeenCalledWith('local-add-msg');
   });
 });

@@ -28,7 +28,7 @@ import { distinctUntilChanged, distinctUntilKeyChanged, startWith, takeUntil } f
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 
-import { MessageListener, MessageListenersManager } from '@zeppelin/core';
+import { MessageEnvelopeListener, MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
 import {
   DynamicFormParams,
@@ -36,7 +36,8 @@ import {
   MessageReceiveDataTypeMap,
   Note,
   OP,
-  RevisionListItem
+  RevisionListItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 import {
   MessageService,
@@ -151,8 +152,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
-  @MessageListener(OP.PARAGRAPH_ADDED)
-  addParagraph(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]) {
+  @MessageEnvelopeListener(OP.PARAGRAPH_ADDED)
+  addParagraph(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH_ADDED>) {
     const { paragraphId } = this.activatedRoute.snapshot.params;
     if (paragraphId || this.revisionView) {
       return;
@@ -160,6 +161,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     if (!this.note) {
       return;
     }
+
+    const data = message.data;
+    if (data === undefined) {
+      return;
+    }
+
     const definedNote = this.note;
     definedNote.paragraphs.splice(data.index, 0, data.paragraph);
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
@@ -169,7 +176,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
     // Focus the editor only for a clone/insert initiated by this client (not auto-append on run or remote inserts).
     // Defer a tick so the new paragraph's editor child exists, since `focus = true` alone misses it.
-    if (this.messageService.consumeLocalAddFocusMsgId(data.msgId)) {
+    if (this.messageService.consumeLocalAddFocusMsgId(message.msgId)) {
       const addedId = data.paragraph.id;
       setTimeout(() => {
         const added = this.listOfNotebookParagraphComponent?.find(e => e.paragraph.id === addedId);
