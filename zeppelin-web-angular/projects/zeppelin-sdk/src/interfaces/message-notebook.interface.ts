@@ -167,15 +167,16 @@ export interface ImportNoteReceived {
 
 export interface ParagraphAdded {
   index: number;
-  msgId?: string;
   paragraph: ParagraphItem;
 }
 
 export interface SetNoteRevisionStatus {
+  noteId: string;
   status: boolean;
 }
 
 export interface ListRevision {
+  noteId: string;
   revisionList: RevisionListItem[];
 }
 

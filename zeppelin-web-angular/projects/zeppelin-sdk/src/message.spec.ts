@@ -143,4 +143,22 @@ describe('Message.receive', () => {
 
     expect(listener).toHaveBeenCalledWith(data);
   });
+
+  it('passes the full message envelope with msgId', () => {
+    const message = new Message();
+    const listener = vi.fn();
+    const data = {};
+
+    message.receiveEnvelope(OP.NOTE).subscribe(listener);
+
+    const envelope = asReceivedMessage({
+      op: OP.NOTE,
+      msgId: 'note-request-1',
+      data
+    });
+
+    message.shortCircuit(envelope);
+
+    expect(listener).toHaveBeenCalledWith(envelope);
+  });
 });

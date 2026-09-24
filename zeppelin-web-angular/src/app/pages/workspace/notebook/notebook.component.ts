@@ -28,7 +28,7 @@ import { distinctUntilChanged, distinctUntilKeyChanged, startWith, takeUntil } f
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 
-import { MessageListener, MessageListenersManager } from '@zeppelin/core';
+import { MessageEnvelopeListener, MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
 import {
   DynamicFormParams,
@@ -36,7 +36,8 @@ import {
   MessageReceiveDataTypeMap,
   Note,
   OP,
-  RevisionListItem
+  RevisionListItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 import {
   MessageService,
@@ -118,6 +119,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.INTERPRETER_BINDINGS)
   loadInterpreterBindings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS]) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
+
     this.interpreterBindings = data.interpreterBindings;
     if (!this.interpreterBindings.some(item => item.selected)) {
       this.activatedExtension = 'interpreter';
@@ -146,8 +152,8 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.cdr.markForCheck();
   }
 
-  @MessageListener(OP.PARAGRAPH_ADDED)
-  addParagraph(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_ADDED]) {
+  @MessageEnvelopeListener(OP.PARAGRAPH_ADDED)
+  addParagraph(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH_ADDED>) {
     const { paragraphId } = this.activatedRoute.snapshot.params;
     if (paragraphId || this.revisionView) {
       return;
@@ -155,6 +161,12 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     if (!this.note) {
       return;
     }
+
+    const data = message.data;
+    if (data === undefined) {
+      return;
+    }
+
     const definedNote = this.note;
     definedNote.paragraphs.splice(data.index, 0, data.paragraph);
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.paragraph.id);
@@ -164,7 +176,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
     // Focus the editor only for a clone/insert initiated by this client (not auto-append on run or remote inserts).
     // Defer a tick so the new paragraph's editor child exists, since `focus = true` alone misses it.
-    if (this.messageService.consumeLocalAddFocusMsgId(data.msgId)) {
+    if (this.messageService.consumeLocalAddFocusMsgId(message.msgId)) {
       const addedId = data.paragraph.id;
       setTimeout(() => {
         const added = this.listOfNotebookParagraphComponent?.find(e => e.paragraph.id === addedId);
@@ -198,8 +210,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   @MessageListener(OP.SET_NOTE_REVISION)
-  setNoteRevision(_data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
+  setNoteRevision(data: MessageReceiveDataTypeMap[OP.SET_NOTE_REVISION]) {
     const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
     this.router.navigate(['/notebook', noteId]).then();
   }
 
@@ -257,6 +272,11 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   @MessageListener(OP.LIST_REVISION_HISTORY)
   listRevisionHistory(data: MessageReceiveDataTypeMap[OP.LIST_REVISION_HISTORY]) {
+    const { noteId } = this.activatedRoute.snapshot.params;
+    if (data.noteId !== noteId) {
+      return;
+    }
+
     this.noteRevisions = data.revisionList;
     if (this.noteRevisions) {
       if (this.noteRevisions.length === 0 || this.noteRevisions[0].id !== 'Head') {

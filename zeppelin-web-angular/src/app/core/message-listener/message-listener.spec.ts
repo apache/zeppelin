@@ -13,9 +13,8 @@
 import { Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { Message, OP, MessageReceiveDataTypeMap } from '@zeppelin/sdk';
-
-import { MessageListener, MessageListenersManager } from './message-listener';
+import { Message, OP, MessageReceiveDataTypeMap, type WebSocketMessage } from '@zeppelin/sdk';
+import { MessageEnvelopeListener, MessageListener, MessageListenersManager } from './message-listener';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -86,5 +85,38 @@ describe('MessageListener', () => {
     received$.next(data);
 
     expect(component.receivedData).toBe(data);
+  });
+});
+
+describe('MessageEnvelopeListener', () => {
+  it('passes the received message envelope with msgId to the handler', () => {
+    const received$ = new Subject<WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE>>();
+    const messageService = {
+      receiveEnvelope: vi.fn(() => received$.asObservable())
+    } as unknown as Message;
+
+    class TestComponent extends MessageListenersManager {
+      receivedMessage?: WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE>;
+
+      handleNote(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE>): void {
+        this.receivedMessage = message;
+      }
+    }
+
+    const descriptor = Object.getOwnPropertyDescriptor(TestComponent.prototype, 'handleNote')!;
+
+    MessageEnvelopeListener(OP.NOTE)(TestComponent.prototype, 'handleNote', descriptor);
+
+    const component = new TestComponent(messageService);
+    const envelope: WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE> = {
+      op: OP.NOTE,
+      msgId: 'note-request-1',
+      data: {} as MessageReceiveDataTypeMap[OP.NOTE]
+    };
+
+    received$.next(envelope);
+
+    expect(component.receivedMessage).toBe(envelope);
+    expect(messageService.receiveEnvelope).toHaveBeenCalledWith(OP.NOTE);
   });
 });
