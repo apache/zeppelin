@@ -13,7 +13,7 @@
 import { globSync } from 'fs';
 import { join, sep } from 'path';
 import { test, expect, Page, TestInfo } from '@playwright/test';
-import { LoginTestUtil } from './models/login-page.util';
+import { LoginTestUtil, TestCredentials } from './models/login-page.util';
 import { E2E_TEST_FOLDER } from './models/base-page';
 import { LoginPage } from './models/login-page';
 
@@ -296,6 +296,41 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   }
 
   return false;
+};
+
+/**
+ * Signs in as one specific account. performLoginIfRequired always takes the first configured
+ * user, which cannot express a test that needs two distinct principals at once.
+ */
+export const loginAs = async (page: Page, credentials: TestCredentials): Promise<void> => {
+  const loginPage = new LoginPage(page);
+  await loginPage.navigate();
+  // Wait for the form rather than probing visibility, which resolves before Angular renders it.
+  await loginPage.userNameInput.waitFor({ state: 'visible', timeout: 30000 });
+  await loginPage.login(credentials.username, credentials.password);
+  await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
+  await page.evaluate(() => {
+    if (window.location.hash.includes('login')) {
+      window.location.hash = '#/';
+    }
+  });
+  // The note list only renders once the authenticated socket has delivered it, so it is the
+  // signal that this principal can open a notebook -- not just that the form was accepted.
+  await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
+  await waitForZeppelinReady(page);
+};
+
+/**
+ * Two distinct shiro accounts, or null when the deployment cannot provide them.
+ */
+export const getTwoTestAccounts = async (): Promise<[TestCredentials, TestCredentials] | null> => {
+  if (!(await LoginTestUtil.isShiroEnabled())) {
+    return null;
+  }
+  const accounts = Object.values(await LoginTestUtil.getTestCredentials()).filter(
+    account => account.username && account.password
+  );
+  return accounts.length >= 2 ? [accounts[0], accounts[1]] : null;
 };
 
 export const skipWhenAuthenticationIsStillRequired = async (page: Page): Promise<void> => {

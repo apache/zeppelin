@@ -36,7 +36,8 @@ struct OutputAppendEvent {
   2: string paragraphId,
   3: i32 index,
   4: string data,
-  5: string appId
+  5: string appId,
+  6: string executionOwner
 }
 
 struct OutputUpdateEvent {
@@ -45,13 +46,15 @@ struct OutputUpdateEvent {
   3: i32 index,
   4: string type,
   5: string data,
-  6: string appId
+  6: string appId,
+  7: string executionOwner
 }
 
 struct OutputUpdateAllEvent {
   1: string noteId,
   2: string paragraphId,
   3: list<RemoteInterpreterService.RemoteInterpreterResultMessage> msg,
+  4: string executionOwner
 }
 
 struct RunParagraphsEvent {
