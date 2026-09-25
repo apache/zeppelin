@@ -23,6 +23,7 @@
     "lint:react": "cd projects/zeppelin-react && npm run lint",
     "lint:fix:react": "cd projects/zeppelin-react && npm run lint:fix",
     "typecheck:notebook-core": "tsc -p projects/zeppelin-notebook-core/tsconfig.json --noEmit && tsc -p projects/zeppelin-notebook-core/tsconfig.spec.json --noEmit && npm run build-project:notebook-core && tsc -p projects/zeppelin-react/tsconfig.notebook-core.dist.json --noEmit && tsc -p projects/zeppelin-react/tsconfig.notebook-core.json --noEmit",
+    "typecheck:sdk-contracts": "tsc -p projects/zeppelin-sdk/tsconfig.spec.json --noEmit",
     "test:notebook-core": "vitest run --config vitest.notebook-core.config.mts",
     "test:shell": "vitest run --config vitest.shell.config.mts",
     "test:eslint-rules": "node --test eslint-rules/*.test.js",
