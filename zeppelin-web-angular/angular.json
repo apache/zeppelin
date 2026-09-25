@@ -156,6 +156,52 @@
         }
       }
     },
+    "notebook-core-port-proof": {
+      "root": "e2e/core-contract/angular-host",
+      "sourceRoot": "e2e/core-contract/angular-host",
+      "projectType": "application",
+      "prefix": "zeppelin",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/notebook-core-port-proof",
+            "index": "e2e/core-contract/angular-host/index.html",
+            "main": "e2e/core-contract/angular-host/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "e2e/core-contract/angular-host/tsconfig.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "./e2e/core-contract/react-remote/dist",
+                "output": "/assets/react/"
+              }
+            ],
+            "styles": [],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "none",
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": false
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
     "zeppelin-visualization": {
       "projectType": "library",
       "root": "projects/zeppelin-visualization",

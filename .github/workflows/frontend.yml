@@ -119,8 +119,8 @@ jobs:
           mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
-        # Classic UI e2e runs only on the anonymous leg, like the legacy Protractor suite
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
+        # Classic UI e2e and the notebook core port proof run only on the anonymous leg
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} -Dweb.e2e.core.port.proof.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
       - name: Run revision isolation E2E test with Git storage
         env:
           CI: 'true'
