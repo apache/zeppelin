@@ -50,6 +50,7 @@ import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
+import jakarta.websocket.PongMessage;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.apache.commons.lang3.StringUtils;
@@ -250,6 +251,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
     if (checkOrigin(origin)) {
       NotebookSocket notebookSocket = sessionIdNotebookSocketMap
           .computeIfAbsent(session.getId(), unused -> new NotebookSocket(session, headers));
+      session.addMessageHandler(PongMessage.class, pong -> notebookSocket.onPong());
       onOpen(notebookSocket);
     } else {
       LOGGER.error("Websocket request is not allowed by {} settings. Origin: {}", ZEPPELIN_ALLOWED_ORIGINS,
@@ -307,12 +309,22 @@ public class NotebookServer implements AngularObjectRegistryListener,
    * point of this heartbeat: it keeps connections alive even when the client-side application
    * keep-alive timer is throttled or stopped (e.g. a backgrounded browser tab). A single
    * session failing to receive a ping must not stop the remaining sessions from being pinged.
-   * Pong responses are not tracked; once the heartbeat is enabled, Jetty's idle timeout no
-   * longer determines connection liveness (see ZEPPELIN-6694).
+   *
+   * <p>Because these writes keep resetting Jetty's idle timer, the idle timeout can no longer
+   * detect dead clients. Liveness is therefore tracked explicitly (ZEPPELIN-6694): a session
+   * that has left {@code zeppelin.websocket.heartbeat.max.missed.pongs} consecutive pings
+   * unanswered is closed instead of being pinged again. A session that is still handling a
+   * message is never closed here, because Jetty reads its pongs only after onMessage returns.
    */
   void sendHeartbeat() {
+    int maxMissedPongs = zConf.getWebsocketHeartbeatMaxMissedPongs();
     for (NotebookSocket conn : connectionManager.connectedSockets) {
       try {
+        if (maxMissedPongs > 0 && !conn.isHandlingMessage()
+            && conn.getPingsSinceLastPong() >= maxMissedPongs) {
+          reapDeadConnection(conn, maxMissedPongs);
+          continue;
+        }
         conn.sendPing();
       } catch (RuntimeException e) {
         LOGGER.warn("Failed to send heartbeat ping to {}", conn, e);
@@ -320,10 +332,37 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
   }
 
+  /**
+   * Removes a connection that stopped answering pings and closes its session. The connection is
+   * dropped from all bookkeeping before closing, because a dead peer never completes the close
+   * handshake and {@link #onClose} may therefore arrive late or not at all. Removing it from
+   * {@code sessionIdNotebookSocketMap} first also makes a later {@code onClose} a no-op.
+   */
+  private void reapDeadConnection(NotebookSocket conn, int maxMissedPongs) {
+    LOGGER.warn("Closing websocket to {}: {} consecutive heartbeat pings unanswered, last pong at {}",
+        conn, maxMissedPongs, new Date(conn.getLastPongTimestamp()));
+    String sessionId = conn.getSessionId();
+    if (sessionId != null) {
+      sessionIdNotebookSocketMap.remove(sessionId);
+    }
+    removeConnection(conn);
+    conn.close(new CloseReason(CloseReason.CloseCodes.GOING_AWAY,
+        "No pong received for " + maxMissedPongs + " consecutive pings"));
+  }
+
   @OnMessage
   public void onMessage(Session session, String msg) {
     NotebookSocket conn = sessionIdNotebookSocketMap.get(session.getId());
-    onMessage(conn, msg);
+    if (conn == null) {
+      onMessage(conn, msg);
+      return;
+    }
+    conn.setHandlingMessage(true);
+    try {
+      onMessage(conn, msg);
+    } finally {
+      conn.setHandlingMessage(false);
+    }
   }
 
   public void onMessage(NotebookSocket conn, String msg) {

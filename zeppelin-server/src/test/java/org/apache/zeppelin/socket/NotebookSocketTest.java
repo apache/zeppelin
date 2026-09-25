@@ -17,6 +17,7 @@
 package org.apache.zeppelin.socket;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.RemoteEndpoint;
 import jakarta.websocket.Session;
 
@@ -58,5 +60,45 @@ class NotebookSocketTest {
     NotebookSocket notebookSocket = new NotebookSocket(session, Collections.emptyMap());
 
     assertDoesNotThrow(notebookSocket::sendPing);
+  }
+
+  @Test
+  void sendPingCountsUnansweredPingsAndPongResetsCount() {
+    Session session = mock(Session.class);
+    when(session.getId()).thenReturn("session-3");
+    when(session.getBasicRemote()).thenReturn(mock(RemoteEndpoint.Basic.class));
+    NotebookSocket notebookSocket = new NotebookSocket(session, Collections.emptyMap());
+
+    notebookSocket.sendPing();
+    notebookSocket.sendPing();
+    assertEquals(2, notebookSocket.getPingsSinceLastPong());
+
+    notebookSocket.onPong();
+    assertEquals(0, notebookSocket.getPingsSinceLastPong());
+  }
+
+  @Test
+  void failedPingStillCountsAsUnanswered() throws IOException {
+    Session session = mock(Session.class);
+    RemoteEndpoint.Basic basicRemote = mock(RemoteEndpoint.Basic.class);
+    when(session.getId()).thenReturn("session-4");
+    when(session.getBasicRemote()).thenReturn(basicRemote);
+    doThrow(new IOException("broken pipe")).when(basicRemote).sendPing(any(ByteBuffer.class));
+    NotebookSocket notebookSocket = new NotebookSocket(session, Collections.emptyMap());
+
+    notebookSocket.sendPing();
+
+    assertEquals(1, notebookSocket.getPingsSinceLastPong());
+  }
+
+  @Test
+  void closeSwallowsIOException() throws IOException {
+    Session session = mock(Session.class);
+    when(session.getId()).thenReturn("session-5");
+    doThrow(new IOException("already closed")).when(session).close(any(CloseReason.class));
+    NotebookSocket notebookSocket = new NotebookSocket(session, Collections.emptyMap());
+
+    assertDoesNotThrow(() -> notebookSocket.close(
+        new CloseReason(CloseReason.CloseCodes.GOING_AWAY, "test")));
   }
 }

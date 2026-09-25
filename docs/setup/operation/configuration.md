@@ -419,6 +419,12 @@ Sources descending by priority:
     <td>Interval(in milliseconds) at which the server sends a websocket ping frame to each session to keep it alive. Set to 0 or a negative value to disable server-initiated heartbeats.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_WEBSOCKET_HEARTBEAT_MAX_MISSED_PONGS</h6></td>
+    <td><h6 class="properties">zeppelin.websocket.heartbeat.max.missed.pongs</h6></td>
+    <td>3</td>
+    <td>Number of consecutive heartbeat pings left unanswered (no pong) before the server closes the websocket session as dead. Set to 0 or a negative value to disable reaping. Has no effect when heartbeats are disabled.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED</h6></td>
     <td><h6 class="properties">zeppelin.server.default.dir.allowed</h6></td>
     <td>false</td>
