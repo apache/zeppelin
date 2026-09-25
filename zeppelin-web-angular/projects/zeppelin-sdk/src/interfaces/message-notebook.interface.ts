@@ -150,7 +150,6 @@ export interface ParagraphMoved {
 }
 
 export interface UpdateParagraph {
-  msgId?: string;
   paragraph: ParagraphItem;
 }
 

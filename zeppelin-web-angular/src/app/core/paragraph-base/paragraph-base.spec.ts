@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectorRef } from '@angular/core';
-import { DatasetType, Message, ParagraphItem } from '@zeppelin/sdk';
+import { DatasetType, Message, OP, ParagraphItem } from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -29,7 +29,7 @@ class TestParagraph extends ParagraphBase {
 
   constructor(paragraph: ParagraphItem) {
     super(
-      { receive: () => EMPTY } as unknown as Message,
+      { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
       { isParagraphRunning: item => item.status === 'RUNNING', isEntireNoteRunning: () => false },
       {} as AngularContextManager,
       { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
@@ -94,7 +94,10 @@ describe('ParagraphBase streaming state isolation', () => {
       const component = new TestParagraph(paragraph('A'));
       beginOutput(component);
 
-      component.paragraphData({ paragraph: paragraph('B', status, '2026-01-01T00:00:01Z') });
+      component.paragraphData({
+        op: OP.PARAGRAPH,
+        data: { paragraph: paragraph('B', status, '2026-01-01T00:00:01Z') }
+      });
       appendOutput(component);
 
       expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
@@ -108,7 +111,7 @@ describe('ParagraphBase streaming state isolation', () => {
     beginOutput(component);
     const finished = { ...paragraph('A', 'FINISHED'), results: { msg: [{ type: DatasetType.TEXT, data: 'final\n' }] } };
 
-    component.paragraphData({ paragraph: finished });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: finished } });
     appendOutput(component);
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'final\n' }]);
@@ -118,8 +121,11 @@ describe('ParagraphBase streaming state isolation', () => {
   it('accepts fresh output when its own paragraph starts a new run', () => {
     const component = new TestParagraph(paragraph('A'));
     beginOutput(component);
-    component.paragraphData({ paragraph: paragraph('A', 'FINISHED') });
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A', 'FINISHED') } });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
 
     beginOutput(component);
     appendOutput(component);
@@ -137,10 +143,13 @@ describe('ParagraphBase streaming boundaries', () => {
     component.results = saved;
     component.revisionView = true;
 
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
     beginOutput(component);
     appendOutput(component);
-    component.paragraphData({ paragraph: paragraph('A') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
 
     expect(component.results).toEqual(saved);
     expect(component.paragraph?.status).toBe('FINISHED');
@@ -156,12 +165,15 @@ describe('ParagraphBase streaming boundaries', () => {
     const statusOnly = paragraph('A');
     delete statusOnly.dateStarted;
 
-    component.paragraphData({ paragraph: statusOnly });
-    component.paragraphData({ paragraph: statusOnly });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: statusOnly } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: statusOnly } });
 
     expect(update).not.toHaveBeenCalled();
     expect(component.paragraph?.dateStarted).toBe('2026-01-01T00:00:00Z');
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
     expect(update).toHaveBeenCalledOnce();
     expect(component.paragraph?.dateStarted).toBe('2026-01-01T00:00:01Z');
     component.ngOnDestroy();
@@ -175,7 +187,7 @@ describe('ParagraphBase streaming boundaries', () => {
     delete finished.dateStarted;
     finished.results = { msg: [{ type: DatasetType.TEXT, data: 'first\nfinal\n' }] };
 
-    component.paragraphData({ paragraph: finished });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: finished } });
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nfinal\n' }]);
     expect(component.updateParagraphResult).toHaveBeenCalledWith(0, expect.anything(), {
@@ -190,8 +202,8 @@ describe('ParagraphBase streaming boundaries', () => {
     beginOutput(component);
     const running = paragraph('A');
     delete running.dateStarted;
-    component.paragraphData({ paragraph: running });
-    component.paragraphData({ paragraph: paragraph('A') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: running } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
     appendOutput(component);
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
@@ -202,8 +214,8 @@ describe('ParagraphBase streaming boundaries', () => {
   it('preserves streaming output across ordinary RUNNING and unrelated paragraph snapshots', () => {
     const component = new TestParagraph(paragraph('A'));
     beginOutput(component);
-    component.paragraphData({ paragraph: paragraph('A') });
-    component.paragraphData({ paragraph: paragraph('B') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('B') } });
     appendOutput(component);
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
     component.ngOnDestroy();
@@ -268,7 +280,7 @@ afterEach(() => {
 
 const createSaveTestParagraph = (text: string, dirtyText?: string): SaveTestParagraph => {
   const paragraph = new SaveTestParagraph(
-    { receive: () => EMPTY } as unknown as Message,
+    { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
     { isParagraphRunning: () => false, isEntireNoteRunning: () => false },
     {
       setContextValue: vi.fn(),
@@ -403,12 +415,29 @@ describe('ParagraphBase save responses', () => {
     component.paragraph = { ...paragraph('A', 'FINISHED'), text: 'saved edit' };
     component.trackSave('save-a');
 
-    component.paragraphData({ paragraph: { ...component.paragraph }, msgId: 'save-a' });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: { ...component.paragraph } }, msgId: 'save-a' });
     expect(component.originalText).toBe('saved edit');
 
     component.originalText = 'previous save';
-    component.paragraphData({ paragraph: { ...component.paragraph }, msgId: 'save-a' });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: { ...component.paragraph } }, msgId: 'save-a' });
     expect(component.originalText).toBe('previous save');
+  });
+
+  it.each([
+    ['its own save acknowledgement', 'save-a', 'latest edit'],
+    ['a broadcast without msgId', undefined, 'committed edit']
+  ])('reads the msgId from the envelope when paragraphData delivers %s', (_case, msgId, expectedText) => {
+    const component = createSaveTestParagraph('latest edit', 'latest edit');
+    component.paragraph = { ...paragraph('A', 'FINISHED'), text: 'latest edit' };
+    component.trackSave('save-a');
+
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: { ...component.paragraph, text: 'committed edit' } },
+      msgId
+    });
+
+    expect(component.paragraph.text).toBe(expectedText);
   });
 
   it('accepts a remote edit that is not an acknowledgement of the last local save', () => {

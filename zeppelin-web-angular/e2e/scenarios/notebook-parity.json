@@ -592,6 +592,10 @@
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts",
           "symbol": "NotebookComponent"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-base.ts",
+          "symbol": "ParagraphBase"
         }
       ],
       "verificationEvidence": [

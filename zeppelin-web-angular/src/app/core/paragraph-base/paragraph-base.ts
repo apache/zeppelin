@@ -23,13 +23,18 @@ import {
   ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 
 import { diff_match_patch as DiffMatchPatch } from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
-import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
+import {
+  MessageEnvelopeListener,
+  MessageListener,
+  MessageListenersManager
+} from '../message-listener/message-listener';
 import { AngularContextManager } from './angular-context-manager';
 import { NoteStatus } from './note-status';
 import { ParagraphOutputState } from './paragraph-output-state';
@@ -147,13 +152,13 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  @MessageListener(OP.PARAGRAPH)
-  paragraphData(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
+  @MessageEnvelopeListener(OP.PARAGRAPH)
+  paragraphData(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH>) {
     const oldPara = this.paragraph;
-    if (!oldPara) {
+    if (!oldPara || message.data === undefined) {
       return;
     }
-    const newPara = data.paragraph;
+    const newPara = message.data.paragraph;
     if (this.revisionView || newPara.id !== oldPara.id) {
       return;
     }
@@ -189,11 +194,11 @@ export abstract class ParagraphBase extends MessageListenersManager {
           }
           this.cdr.markForCheck();
         },
-        data.msgId
+        message.msgId
       );
       this.cdr.markForCheck();
     } else {
-      this.consumeParagraphSave(data.msgId, newPara.text);
+      this.consumeParagraphSave(message.msgId, newPara.text);
     }
   }
 
@@ -319,61 +324,44 @@ export abstract class ParagraphBase extends MessageListenersManager {
     this.pendingParagraphSaves.set(msgId, { sequence: ++this.paragraphSaveSequence, originalText: this.originalText });
   }
 
-  private consumeParagraphSave(msgId: string | undefined, savedText: string): boolean {
-    if (!msgId) {
-      return false;
-    }
-    const pendingSave = this.pendingParagraphSaves.get(msgId);
+  private consumeParagraphSave(
+    msgId: string | undefined,
+    savedText: string
+  ): { acknowledged: boolean; hasNewerSave: boolean } {
+    const pendingSave = msgId === undefined ? undefined : this.pendingParagraphSaves.get(msgId);
     if (pendingSave === undefined) {
-      return false;
+      return { acknowledged: false, hasNewerSave: false };
     }
-    const hasNewerPendingSave = Array.from(this.pendingParagraphSaves.values()).some(
+    const hasNewerSave = Array.from(this.pendingParagraphSaves.values()).some(
       ({ sequence }) => sequence > pendingSave.sequence
     );
+    // The server answers COMMIT_PARAGRAPH in send order on one socket,
+    // so an older save is never acknowledged after a newer one.
     for (const [pendingMsgId, { sequence }] of this.pendingParagraphSaves) {
       if (sequence <= pendingSave.sequence) {
         this.pendingParagraphSaves.delete(pendingMsgId);
       }
     }
     // Skip when a newer save or a patch has already moved the saved baseline past this acknowledgement.
-    if (!hasNewerPendingSave && this.originalText === pendingSave.originalText) {
+    if (!hasNewerSave && this.originalText === pendingSave.originalText) {
       this.originalText = savedText;
     }
-    return true;
+    return { acknowledged: true, hasNewerSave };
   }
 
   updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem, msgId?: string) {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');
     }
-    const acknowledged = this.consumeParagraphSave(msgId, newPara.text);
+    const { acknowledged, hasNewerSave } = this.consumeParagraphSave(msgId, newPara.text);
 
     if (oldPara.text !== newPara.text) {
-      // Keep an edit typed or saved after this save; otherwise the response is the server copy.
-      // Saves still pending after consumeParagraphSave are newer than the acknowledged one.
       const hasLocalEdit = this.dirtyText !== undefined && this.dirtyText !== newPara.text;
-      if (acknowledged && (hasLocalEdit || this.pendingParagraphSaves.size > 0)) {
-        this.cdr.markForCheck();
-        return;
-      }
-      if (this.dirtyText !== undefined) {
-        // check if editor has local update
-        if (this.dirtyText === newPara.text) {
-          // when local update is the same from remote, clear local update
-          this.paragraph.text = newPara.text;
-          this.dirtyText = undefined;
-          this.originalText = newPara.text;
-        } else if (this.originalText === newPara.text) {
-          // An earlier save response must not replace an edit made while it was in flight.
-        } else {
-          // A different server value is a remote edit, not an acknowledgement of the
-          // last local save. Accept it and discard the superseded local edit.
-          this.paragraph.text = newPara.text;
-          this.dirtyText = undefined;
-          this.originalText = newPara.text;
-        }
-      } else {
+      const staleSaveAcknowledgement = acknowledged && (hasLocalEdit || hasNewerSave);
+      const staleBroadcastOfSavedText = hasLocalEdit && this.originalText === newPara.text;
+      if (!staleSaveAcknowledgement && !staleBroadcastOfSavedText) {
         this.paragraph.text = newPara.text;
+        this.dirtyText = undefined;
         this.originalText = newPara.text;
       }
     }

@@ -169,7 +169,7 @@ Coverage note: `covered` mechanically means this registry points to a matching e
 - Preconditions: A disposable notebook with one editable paragraph is open. The first paragraph save request can be observed before it completes.
 - Action: Edit the paragraph, keep the first save in flight, then make a second edit.
 - Observable outcomes: NB-PARITY-051-OUTCOME-001: The first in-flight save does not overwrite or drop the second edit. NB-PARITY-051-OUTCOME-002: A later observable save or reconciliation persists the second edit.
-- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent); zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts (NotebookComponent)
+- Implementation evidence: zeppelin-web-angular/src/app/pages/workspace/notebook/paragraph/code-editor/code-editor.component.ts (NotebookParagraphCodeEditorComponent); zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts (NotebookComponent); zeppelin-web-angular/src/app/core/paragraph-base/paragraph-base.ts (ParagraphBase)
 - Verification evidence: zeppelin-web-angular/e2e/models/notebook-save-timing.util.ts (CommitParagraphSocketProbe)
 
 ### NB-PARITY-060 Notebook honors host theme selection
