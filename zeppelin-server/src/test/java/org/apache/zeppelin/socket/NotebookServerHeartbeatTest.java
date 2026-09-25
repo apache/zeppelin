@@ -19,11 +19,14 @@ package org.apache.zeppelin.socket;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.ScheduledExecutorService;
+import org.apache.zeppelin.MiniZeppelinServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.junit.jupiter.api.AfterEach;
@@ -105,5 +108,48 @@ class NotebookServerHeartbeatTest {
     server.startHeartbeatScheduler();
 
     assertNull(server.heartbeatScheduler);
+  }
+
+  @Test
+  void stopHeartbeatSchedulerAllowsRepeatedStartStopCycles() {
+    NotebookServer server = buildNotebookServer(50L);
+
+    for (int i = 0; i < 3; i++) {
+      server.startHeartbeatScheduler();
+      ScheduledExecutorService scheduler = server.heartbeatScheduler;
+      assertNotNull(scheduler);
+
+      server.stopHeartbeatScheduler();
+
+      assertTrue(scheduler.isShutdown());
+      assertNull(server.heartbeatScheduler);
+    }
+  }
+
+  @Test
+  void stopHeartbeatSchedulerIsSafeWhenNeverStarted() {
+    NotebookServer server = buildNotebookServer(50L);
+
+    assertDoesNotThrow(server::stopHeartbeatScheduler);
+    assertDoesNotThrow(server::stopHeartbeatScheduler);
+  }
+
+  @Test
+  void zeppelinServerShutdownStopsHeartbeatScheduler() throws Exception {
+    MiniZeppelinServer zepServer =
+        new MiniZeppelinServer(NotebookServerHeartbeatTest.class.getSimpleName());
+    try {
+      zepServer.start();
+      NotebookServer server = zepServer.getService(NotebookServer.class);
+      server.startHeartbeatScheduler();
+      ScheduledExecutorService scheduler = server.heartbeatScheduler;
+      assertNotNull(scheduler);
+
+      zepServer.shutDown();
+
+      assertTrue(scheduler.isShutdown());
+    } finally {
+      zepServer.destroy();
+    }
   }
 }

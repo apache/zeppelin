@@ -150,7 +150,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
   // Package-private (not private) so NotebookServerHeartbeatTest can observe scheduler
   // lifecycle without exposing it as part of the public API.
   ScheduledExecutorService heartbeatScheduler;
-  private Thread heartbeatShutdownHook;
   private boolean heartbeatInitialized;
 
   // TODO(jl): This will be removed by handling session directly
@@ -287,28 +286,17 @@ public class NotebookServer implements AngularObjectRegistryListener,
     });
     heartbeatScheduler.scheduleAtFixedRate(
         this::sendHeartbeat, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
-    heartbeatShutdownHook = new Thread(this::stopHeartbeatScheduler);
-    Runtime.getRuntime().addShutdownHook(heartbeatShutdownHook);
     LOGGER.info("Started websocket heartbeat scheduler with interval {} ms", intervalMs);
   }
 
   /**
-   * Stops the websocket heartbeat scheduler, if running, and deregisters its shutdown hook so
-   * repeated start/stop cycles do not accumulate hooks. Safe to call multiple times and safe
-   * to call when the scheduler was never started.
+   * Stops the websocket heartbeat scheduler, if running. Safe to call multiple times and safe
+   * to call when the scheduler was never started; a later connection starts it again.
    */
-  synchronized void stopHeartbeatScheduler() {
+  public synchronized void stopHeartbeatScheduler() {
     if (heartbeatScheduler != null) {
       heartbeatScheduler.shutdownNow();
       heartbeatScheduler = null;
-    }
-    if (heartbeatShutdownHook != null && Thread.currentThread() != heartbeatShutdownHook) {
-      try {
-        Runtime.getRuntime().removeShutdownHook(heartbeatShutdownHook);
-      } catch (IllegalStateException e) {
-        // JVM is already shutting down; the hook will simply run (as a harmless no-op).
-      }
-      heartbeatShutdownHook = null;
     }
     heartbeatInitialized = false;
   }
