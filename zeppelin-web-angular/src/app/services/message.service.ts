@@ -12,7 +12,6 @@
 
 import { Inject, Injectable, OnDestroy, Optional } from '@angular/core';
 import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
@@ -87,23 +86,6 @@ export class MessageService extends Message implements OnDestroy {
       return false;
     }
     return this.localAddFocusMsgIds.delete(msgId);
-  }
-
-  private captureLocalAddFocusMsgId(sendMessage: () => void): void {
-    const subscription = super
-      .sent()
-      .pipe(take(1))
-      .subscribe(message => {
-        if (message.msgId) {
-          this.localAddFocusMsgIds.add(message.msgId);
-        }
-      });
-    try {
-      sendMessage();
-    } catch (error) {
-      subscription.unsubscribe();
-      throw error;
-    }
   }
 
   opened(): Observable<Event> {
@@ -194,8 +176,10 @@ export class MessageService extends Message implements OnDestroy {
     super.moveParagraph(paragraphId, newIndex);
   }
 
-  insertParagraph(newIndex: number): void {
-    this.captureLocalAddFocusMsgId(() => super.insertParagraph(newIndex));
+  insertParagraph(newIndex: number): string {
+    const msgId = super.insertParagraph(newIndex);
+    this.localAddFocusMsgIds.add(msgId);
+    return msgId;
   }
 
   copyParagraph(
@@ -204,10 +188,10 @@ export class MessageService extends Message implements OnDestroy {
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
-  ): void {
-    this.captureLocalAddFocusMsgId(() =>
-      super.copyParagraph(newIndex, paragraphTitle, paragraphData, paragraphConfig, paragraphParams)
-    );
+  ): string {
+    const msgId = super.copyParagraph(newIndex, paragraphTitle, paragraphData, paragraphConfig, paragraphParams);
+    this.localAddFocusMsgIds.add(msgId);
+    return msgId;
   }
 
   angularObjectUpdate(

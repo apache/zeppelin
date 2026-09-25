@@ -300,8 +300,8 @@ export class Message {
     this.send<OP.MOVE_PARAGRAPH>(OP.MOVE_PARAGRAPH, { id: paragraphId, index: newIndex });
   }
 
-  insertParagraph(newIndex: number): void {
-    this.send<OP.INSERT_PARAGRAPH>(OP.INSERT_PARAGRAPH, { index: newIndex });
+  insertParagraph(newIndex: number): string {
+    return this.send<OP.INSERT_PARAGRAPH>(OP.INSERT_PARAGRAPH, { index: newIndex });
   }
 
   copyParagraph(
@@ -310,8 +310,8 @@ export class Message {
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
-  ): void {
-    this.send<OP.COPY_PARAGRAPH>(OP.COPY_PARAGRAPH, {
+  ): string {
+    return this.send<OP.COPY_PARAGRAPH>(OP.COPY_PARAGRAPH, {
       index: newIndex,
       title: paragraphTitle,
       paragraph: paragraphData,
