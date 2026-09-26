@@ -33,6 +33,7 @@
     "check:core-contract-server": "node --test e2e/core-contract/capture-server.test.mjs",
     "e2e:core-contract": "playwright test --config playwright.core-contract.config.js --project=chromium",
     "e2e:core-contract:live": "cross-env ZEPPELIN_E2E_LIVE_CAPTURE=1 playwright test --config playwright.core-contract.config.js --project=chromium",
+    "perf:notebook-baseline": "playwright test --config playwright.performance.config.js --project chromium",
     "e2e:fast": "playwright test --project=chromium",
     "e2e:classic": "playwright test --config playwright.classic.config.js",
     "e2e:ui": "playwright test --ui",
