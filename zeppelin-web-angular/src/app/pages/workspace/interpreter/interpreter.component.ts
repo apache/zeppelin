@@ -55,9 +55,8 @@ export class InterpreterComponent implements OnInit, OnDestroy {
   }
 
   filterInterpreters(value: string) {
-    this.filteredInterpreterSettings = this.interpreterSettings.filter(
-      e => e.name.search(new RegExp(value, 'i')) !== -1
-    );
+    const query = value.toLowerCase();
+    this.filteredInterpreterSettings = this.interpreterSettings.filter(e => e.name.toLowerCase().includes(query));
 
     this.cdr.markForCheck();
   }
