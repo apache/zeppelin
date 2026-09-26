@@ -15,6 +15,9 @@
 import { Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
+export const TABLE_PARAGRAPH = `%sh
+printf '%%table city\\tsales\\tcost\\nSeoul\\t30\\t12\\nBusan\\t20\\t8\\nIncheon\\t10\\t5\\n'`;
+
 export class NotebookVisualizationPage extends BasePage {
   readonly tableMode: Locator;
   readonly barChartMode: Locator;
@@ -30,6 +33,9 @@ export class NotebookVisualizationPage extends BasePage {
   readonly lineChartCanvas: Locator;
   readonly areaChartCanvas: Locator;
   readonly scatterChartCanvas: Locator;
+  readonly settingTrigger: Locator;
+  readonly pivotSetting: Locator;
+  readonly scatterSetting: Locator;
   private readonly resultDisplay: Locator;
 
   constructor(page: Page) {
@@ -49,6 +55,29 @@ export class NotebookVisualizationPage extends BasePage {
     this.lineChartCanvas = this.resultDisplay.locator('zeppelin-line-chart-visualization canvas');
     this.areaChartCanvas = this.resultDisplay.locator('zeppelin-area-chart-visualization canvas');
     this.scatterChartCanvas = this.resultDisplay.locator('zeppelin-scatter-chart-visualization canvas');
+    this.settingTrigger = this.resultDisplay.getByText('Setting', { exact: true });
+    this.pivotSetting = this.resultDisplay.locator('zeppelin-visualization-pivot-setting');
+    this.scatterSetting = this.resultDisplay.locator('zeppelin-visualization-scatter-setting');
+  }
+
+  modeRadio(mode: Locator): Locator {
+    return mode.locator('input[type="radio"]');
+  }
+
+  settingCards(setting: Locator): Locator {
+    return setting.locator('.ant-card');
+  }
+
+  settingCardHeads(setting: Locator): Locator {
+    return setting.locator('.ant-card-head');
+  }
+
+  settingCardTitles(setting: Locator): Locator {
+    return setting.locator('.ant-card-head-title');
+  }
+
+  settingFieldTags(setting: Locator): Locator {
+    return setting.locator('.drag-tag');
   }
 
   async renderedPixelCount(canvas: Locator): Promise<number> {
