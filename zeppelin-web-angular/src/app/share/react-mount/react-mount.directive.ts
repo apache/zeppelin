@@ -14,6 +14,8 @@ import { Directive, ElementRef, Input, NgZone, OnChanges, OnDestroy, SimpleChang
 import { ReactRemoteLoaderService } from './react-remote-loader.service';
 import { ReactExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 
+type HostCallback = (...args: unknown[]) => unknown;
+
 @Directive({
   selector: '[zeppelin-react-mount]',
   standalone: false
@@ -25,6 +27,8 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   private latestRawProps: ReactProps & ReactHostCallbacks = {};
   private latestProps: ReactProps & ReactHostCallbacks = {};
   private destroyed = false;
+  // Stable wrappers keep a host callback's identity across prop updates, so React effects on it do not re-run.
+  private readonly wrappedCallbacks = new WeakMap<HostCallback, HostCallback>();
   private loading = false;
   private handle: ReactMountHandle | null = null;
   private mountedModule: string | null = null;
@@ -137,18 +141,25 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
     }
 
     const wrapped: ReactProps = { ...props };
-    for (const [name, callback] of entries) {
-      wrapped[name] = (...args: unknown[]): void => {
-        this.ngZone.run(() => {
-          try {
-            (callback as (...callbackArgs: unknown[]) => void)(...args);
-          } catch (error) {
-            // Swallowed rather than rethrown: the caller is React, which would
-            // turn it into a render error in a tree the host does not own.
-            console.error(`[ReactMountDirective] host callback "${name}" threw`, error);
-          }
-        });
-      };
+    for (const [name, value] of entries) {
+      const callback = value as HostCallback;
+      let wrapper = this.wrappedCallbacks.get(callback);
+      if (!wrapper) {
+        // Return the result, e.g. the unsubscribe a subscribe-style callback hands back.
+        wrapper = (...args: unknown[]): unknown =>
+          this.ngZone.run(() => {
+            try {
+              return callback(...args);
+            } catch (error) {
+              // Swallowed rather than rethrown: the caller is React, which would
+              // turn it into a render error in a tree the host does not own.
+              console.error(`[ReactMountDirective] host callback "${name}" threw`, error);
+              return undefined;
+            }
+          });
+        this.wrappedCallbacks.set(callback, wrapper);
+      }
+      wrapped[name] = wrapper;
     }
     return wrapped;
   }
