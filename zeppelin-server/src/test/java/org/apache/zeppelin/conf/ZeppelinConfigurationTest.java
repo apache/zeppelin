@@ -185,4 +185,17 @@ class ZeppelinConfigurationTest {
     zConf.setProperty(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL.getVarName(), "0");
     assertEquals(0L, zConf.getWebsocketHeartbeatInterval());
   }
+
+  @Test
+  void getWebsocketHeartbeatMaxMissedPongsDefaultTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    assertEquals(3, zConf.getWebsocketHeartbeatMaxMissedPongs());
+  }
+
+  @Test
+  void getWebsocketHeartbeatMaxMissedPongsOverrideTest() {
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.load("zeppelin-test-site.xml");
+    zConf.setProperty(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_MAX_MISSED_PONGS.getVarName(), "5");
+    assertEquals(5, zConf.getWebsocketHeartbeatMaxMissedPongs());
+  }
 }
