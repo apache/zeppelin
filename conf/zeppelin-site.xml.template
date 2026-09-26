@@ -440,6 +440,21 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.output.worker.count</name>
+  <value>4</value>
+  <description>Number of workers in each of the server output and checkpoint pools. Each note is
+  processed serially; independent notes may run concurrently, and checkpoint saves do not occupy
+  output workers. Tune for listener and repository latency and available server resources.</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.output.events.per.batch</name>
+  <value>1000</value>
+  <description>Maximum output events processed for one note before yielding to other ready notes.
+  This controls scheduling granularity, not queue capacity or output truncation.</description>
+</property>
+
+<property>
   <name>zeppelin.ssl</name>
   <value>false</value>
   <description>Should SSL be used by the servers?</description>
