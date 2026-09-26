@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -53,10 +52,8 @@ import org.slf4j.LoggerFactory;
 import org.eclipse.aether.RepositoryException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1936,13 +1933,21 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
       notebook.moveNote(noteId, newPath, anonymous);
 
-      // read note json file to check the name field is updated
+      // The note file must live at the new location. Its JSON name field is not rewritten
+      // on rename (ZEPPELIN-6595); the location is carried by the file name instead.
       File noteFile = notebook.processNote(noteId,
         note -> {
           return new File(zConf.getNotebookDir() + "/" + notebookRepo.buildNoteFileName(note));
         });
-      String noteJson = IOUtils.toString(new FileInputStream(noteFile), StandardCharsets.UTF_8);
-      assertTrue(noteJson.contains(newName), noteJson);
+      assertTrue(noteFile.exists(), "note file not found at " + noteFile);
+
+      // A reload from the repo must report the new path and name.
+      notebook.processNote(noteId, true,
+        note -> {
+          assertEquals(newPath, note.getPath());
+          assertEquals(newName, note.getName());
+          return null;
+        });
     } finally {
       if (noteId != null) {
         notebook.removeNote(noteId, anonymous);
