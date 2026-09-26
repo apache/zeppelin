@@ -11,9 +11,9 @@
  */
 
 import { ChangeDetectorRef } from '@angular/core';
-import { DatasetType, Message, ParagraphItem } from '@zeppelin/sdk';
+import { DatasetType, Message, OP, ParagraphItem } from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AngularContextManager } from './angular-context-manager';
 import { ParagraphBase } from './paragraph-base';
@@ -29,7 +29,7 @@ class TestParagraph extends ParagraphBase {
 
   constructor(paragraph: ParagraphItem) {
     super(
-      { receive: () => EMPTY } as unknown as Message,
+      { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
       { isParagraphRunning: item => item.status === 'RUNNING', isEntireNoteRunning: () => false },
       {} as AngularContextManager,
       { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
@@ -94,7 +94,10 @@ describe('ParagraphBase streaming state isolation', () => {
       const component = new TestParagraph(paragraph('A'));
       beginOutput(component);
 
-      component.paragraphData({ paragraph: paragraph('B', status, '2026-01-01T00:00:01Z') });
+      component.paragraphData({
+        op: OP.PARAGRAPH,
+        data: { paragraph: paragraph('B', status, '2026-01-01T00:00:01Z') }
+      });
       appendOutput(component);
 
       expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
@@ -108,7 +111,7 @@ describe('ParagraphBase streaming state isolation', () => {
     beginOutput(component);
     const finished = { ...paragraph('A', 'FINISHED'), results: { msg: [{ type: DatasetType.TEXT, data: 'final\n' }] } };
 
-    component.paragraphData({ paragraph: finished });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: finished } });
     appendOutput(component);
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'final\n' }]);
@@ -118,8 +121,11 @@ describe('ParagraphBase streaming state isolation', () => {
   it('accepts fresh output when its own paragraph starts a new run', () => {
     const component = new TestParagraph(paragraph('A'));
     beginOutput(component);
-    component.paragraphData({ paragraph: paragraph('A', 'FINISHED') });
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A', 'FINISHED') } });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
 
     beginOutput(component);
     appendOutput(component);
@@ -137,10 +143,13 @@ describe('ParagraphBase streaming boundaries', () => {
     component.results = saved;
     component.revisionView = true;
 
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
     beginOutput(component);
     appendOutput(component);
-    component.paragraphData({ paragraph: paragraph('A') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
 
     expect(component.results).toEqual(saved);
     expect(component.paragraph?.status).toBe('FINISHED');
@@ -156,12 +165,15 @@ describe('ParagraphBase streaming boundaries', () => {
     const statusOnly = paragraph('A');
     delete statusOnly.dateStarted;
 
-    component.paragraphData({ paragraph: statusOnly });
-    component.paragraphData({ paragraph: statusOnly });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: statusOnly } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: statusOnly } });
 
     expect(update).not.toHaveBeenCalled();
     expect(component.paragraph?.dateStarted).toBe('2026-01-01T00:00:00Z');
-    component.paragraphData({ paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') });
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: paragraph('A', 'RUNNING', '2026-01-01T00:00:01Z') }
+    });
     expect(update).toHaveBeenCalledOnce();
     expect(component.paragraph?.dateStarted).toBe('2026-01-01T00:00:01Z');
     component.ngOnDestroy();
@@ -175,7 +187,7 @@ describe('ParagraphBase streaming boundaries', () => {
     delete finished.dateStarted;
     finished.results = { msg: [{ type: DatasetType.TEXT, data: 'first\nfinal\n' }] };
 
-    component.paragraphData({ paragraph: finished });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: finished } });
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nfinal\n' }]);
     expect(component.updateParagraphResult).toHaveBeenCalledWith(0, expect.anything(), {
@@ -190,8 +202,8 @@ describe('ParagraphBase streaming boundaries', () => {
     beginOutput(component);
     const running = paragraph('A');
     delete running.dateStarted;
-    component.paragraphData({ paragraph: running });
-    component.paragraphData({ paragraph: paragraph('A') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: running } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
     appendOutput(component);
 
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
@@ -202,8 +214,8 @@ describe('ParagraphBase streaming boundaries', () => {
   it('preserves streaming output across ordinary RUNNING and unrelated paragraph snapshots', () => {
     const component = new TestParagraph(paragraph('A'));
     beginOutput(component);
-    component.paragraphData({ paragraph: paragraph('A') });
-    component.paragraphData({ paragraph: paragraph('B') });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('A') } });
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: paragraph('B') } });
     appendOutput(component);
     expect(component.results).toEqual([{ type: DatasetType.TEXT, data: 'first\nsecond\n' }]);
     component.ngOnDestroy();
@@ -244,5 +256,222 @@ describe('ParagraphBase streaming boundaries', () => {
     component.onParagraphAppendOutput({ noteId: 'note', paragraphId: 'A', index: 2, data: ' end' });
     expect(component.results[2].data).toBe('third end');
     component.ngOnDestroy();
+  });
+});
+
+class SaveTestParagraph extends ParagraphBase {
+  protected currentNoteId = 'note';
+
+  changeColWidth(): void {}
+  updateParagraphResult(): void {}
+
+  trackSave(msgId: string): void {
+    this.trackParagraphSave(msgId);
+  }
+}
+
+const saveTestParagraphs: SaveTestParagraph[] = [];
+
+afterEach(() => {
+  for (const paragraph of saveTestParagraphs.splice(0)) {
+    paragraph.ngOnDestroy();
+  }
+});
+
+const createSaveTestParagraph = (text: string, dirtyText?: string): SaveTestParagraph => {
+  const paragraph = new SaveTestParagraph(
+    { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
+    { isParagraphRunning: () => false, isEntireNoteRunning: () => false },
+    {
+      setContextValue: vi.fn(),
+      unsetContextValue: vi.fn(),
+      contextChanged: () => EMPTY,
+      runParagraphAction: () => EMPTY
+    } as unknown as AngularContextManager,
+    { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
+  );
+  paragraph.paragraph = { text } as ParagraphItem;
+  paragraph.originalText = 'previous save';
+  paragraph.dirtyText = dirtyText;
+  saveTestParagraphs.push(paragraph);
+  return paragraph;
+};
+
+describe('ParagraphBase save responses', () => {
+  it.each(['latest edit', ''])('preserves an unsaved edit %j when a broadcast carries the saved text', dirtyText => {
+    const paragraph = createSaveTestParagraph(dirtyText, dirtyText);
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'previous save' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe(dirtyText);
+    expect(paragraph.dirtyText).toBe(dirtyText);
+    expect(paragraph.originalText).toBe('previous save');
+  });
+
+  it('accepts a remote edit when there is no unsaved local edit', () => {
+    const paragraph = createSaveTestParagraph('previous save');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe('remote edit');
+    expect(paragraph.originalText).toBe('remote edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('keeps the latest edit when a delayed save acknowledgement arrives after the baseline advanced', () => {
+    const paragraph = createSaveTestParagraph('committed edit', 'committed edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'committed edit';
+    paragraph.dirtyText = undefined;
+    paragraph.paragraph!.text = 'latest edit';
+    paragraph.dirtyText = 'latest edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('committed edit');
+  });
+
+  it('keeps an unsaved edit when a commit acknowledgement arrives without an advanced baseline', () => {
+    const paragraph = createSaveTestParagraph('latest edit', 'latest edit');
+    paragraph.trackSave('save-a');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('committed edit');
+  });
+
+  it.each(['latest edit', 'committed edit'])(
+    'keeps a later edit when a broadcast repeats a save acknowledged while the editor showed %j',
+    acknowledgedEditorText => {
+      const paragraph = createSaveTestParagraph(acknowledgedEditorText, acknowledgedEditorText);
+      paragraph.trackSave('save-a');
+
+      paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+      paragraph.paragraph!.text = 'latest edit';
+      paragraph.dirtyText = 'latest edit';
+      paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem);
+
+      expect(paragraph.paragraph?.text).toBe('latest edit');
+      expect(paragraph.dirtyText).toBe('latest edit');
+      expect(paragraph.originalText).toBe('committed edit');
+    }
+  );
+
+  it('does not rewind a baseline that moved after the acknowledged save was sent', () => {
+    const paragraph = createSaveTestParagraph('patched edit', 'patched edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'patched edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('patched edit');
+    expect(paragraph.originalText).toBe('patched edit');
+  });
+
+  it.each([
+    ['an acknowledgement', 'save-a'],
+    ['a broadcast without msgId', undefined]
+  ])('keeps collaborative patches when %s arrives with a stale local edit', (_case, msgId) => {
+    const paragraph = createSaveTestParagraph('patched edit', 'stale edit');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'committed edit';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'committed edit' } as ParagraphItem, msgId);
+
+    expect(paragraph.paragraph?.text).toBe('patched edit');
+  });
+
+  it('applies the server text when a remote edit lands between a save and its acknowledgement', () => {
+    const paragraph = createSaveTestParagraph('local save');
+    paragraph.trackSave('save-a');
+    paragraph.originalText = 'local save';
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'local save' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('local save');
+    expect(paragraph.originalText).toBe('local save');
+  });
+
+  it('clears the local edit once its acknowledgement arrives', () => {
+    const paragraph = createSaveTestParagraph('saved edit');
+    paragraph.originalText = 'saved edit';
+    paragraph.dirtyText = 'dirty edit';
+    paragraph.trackSave('save-a');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'dirty edit' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('dirty edit');
+    expect(paragraph.originalText).toBe('dirty edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('consumes a tracked save when its acknowledgement does not change the paragraph', () => {
+    const component = createSaveTestParagraph('saved edit');
+    component.paragraph = { ...paragraph('A', 'FINISHED'), text: 'saved edit' };
+    component.trackSave('save-a');
+
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: { ...component.paragraph } }, msgId: 'save-a' });
+    expect(component.originalText).toBe('saved edit');
+
+    component.originalText = 'previous save';
+    component.paragraphData({ op: OP.PARAGRAPH, data: { paragraph: { ...component.paragraph } }, msgId: 'save-a' });
+    expect(component.originalText).toBe('previous save');
+  });
+
+  it.each([
+    ['its own save acknowledgement', 'save-a', 'latest edit'],
+    ['a broadcast without msgId', undefined, 'committed edit']
+  ])('reads the msgId from the envelope when paragraphData delivers %s', (_case, msgId, expectedText) => {
+    const component = createSaveTestParagraph('latest edit', 'latest edit');
+    component.paragraph = { ...paragraph('A', 'FINISHED'), text: 'latest edit' };
+    component.trackSave('save-a');
+
+    component.paragraphData({
+      op: OP.PARAGRAPH,
+      data: { paragraph: { ...component.paragraph, text: 'committed edit' } },
+      msgId
+    });
+
+    expect(component.paragraph.text).toBe(expectedText);
+  });
+
+  it('accepts a remote edit that is not an acknowledgement of the last local save', () => {
+    const paragraph = createSaveTestParagraph('local edit', 'local edit');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'remote edit' } as ParagraphItem);
+
+    expect(paragraph.paragraph?.text).toBe('remote edit');
+    expect(paragraph.originalText).toBe('remote edit');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('ignores an older acknowledgement after a newer save has been sent', () => {
+    const paragraph = createSaveTestParagraph('latest save');
+    paragraph.originalText = 'latest save';
+    paragraph.trackSave('save-a');
+    paragraph.trackSave('save-b');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'earlier save' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest save');
+    expect(paragraph.originalText).toBe('latest save');
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('does not advance the saved baseline for an older acknowledgement while editing', () => {
+    const paragraph = createSaveTestParagraph('latest edit', 'latest edit');
+    paragraph.trackSave('save-a');
+    paragraph.trackSave('save-b');
+
+    paragraph.updateAllScopeTexts(paragraph.paragraph!, { text: 'earlier save' } as ParagraphItem, 'save-a');
+
+    expect(paragraph.paragraph?.text).toBe('latest edit');
+    expect(paragraph.dirtyText).toBe('latest edit');
+    expect(paragraph.originalText).toBe('previous save');
   });
 });

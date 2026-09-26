@@ -162,3 +162,23 @@ describe('Message.receive', () => {
     expect(listener).toHaveBeenCalledWith(envelope);
   });
 });
+
+describe('Message.send', () => {
+  const connectedMessage = () => {
+    const message = new Message();
+    const next = vi.fn();
+    (message as unknown as { ws: { next: typeof next } }).ws = { next };
+    return { message, next };
+  };
+
+  it('returns the msgId of each sent message', () => {
+    const { message, next } = connectedMessage();
+
+    const commitMsgId = message.commitParagraph('p1', undefined, 'text', {}, {}, 'n1');
+    const insertMsgId = message.insertParagraph(0);
+    const copyMsgId = message.copyParagraph(1, undefined, 'text', {}, {});
+
+    expect(next.mock.calls.map(([sent]) => sent.msgId)).toEqual([commitMsgId, insertMsgId, copyMsgId]);
+    expect(new Set([commitMsgId, insertMsgId, copyMsgId]).size).toBe(3);
+  });
+});

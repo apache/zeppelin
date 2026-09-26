@@ -514,9 +514,14 @@
         "runner": "not-applicable"
       },
       "coverage": {
-        "status": "gap",
-        "tests": [],
-        "issues": ["ZEPPELIN-6661"],
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts",
+            "tag": "@NB-PARITY-050"
+          }
+        ],
+        "issues": [],
         "uncoveredOutcomes": []
       },
       "implementationEvidence": [
@@ -529,6 +534,10 @@
         {
           "path": "zeppelin-web-angular/e2e/models/notebook-keyboard-page.ts",
           "symbol": "NotebookKeyboardPage"
+        },
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-save-timing.util.ts",
+          "symbol": "CommitParagraphSocketProbe"
         }
       ]
     },
@@ -565,9 +574,14 @@
         "runner": "not-applicable"
       },
       "coverage": {
-        "status": "gap",
-        "tests": [],
-        "issues": ["ZEPPELIN-6661"],
+        "status": "covered",
+        "tests": [
+          {
+            "path": "zeppelin-web-angular/e2e/tests/notebook/persistence/notebook-save-timing.spec.ts",
+            "tag": "@NB-PARITY-051"
+          }
+        ],
+        "issues": [],
         "uncoveredOutcomes": []
       },
       "implementationEvidence": [
@@ -578,9 +592,18 @@
         {
           "path": "zeppelin-web-angular/src/app/pages/workspace/notebook/notebook.component.ts",
           "symbol": "NotebookComponent"
+        },
+        {
+          "path": "zeppelin-web-angular/src/app/core/paragraph-base/paragraph-base.ts",
+          "symbol": "ParagraphBase"
         }
       ],
-      "verificationEvidence": []
+      "verificationEvidence": [
+        {
+          "path": "zeppelin-web-angular/e2e/models/notebook-save-timing.util.ts",
+          "symbol": "CommitParagraphSocketProbe"
+        }
+      ]
     },
     {
       "id": "NB-PARITY-060",
