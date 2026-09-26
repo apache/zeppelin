@@ -888,6 +888,26 @@ public class ZeppelinConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SEARCH_SEMANTIC_ENABLE);
   }
 
+  public boolean isAssistantEnabled() {
+    return getBoolean(ConfVars.ZEPPELIN_ASSISTANT_ENABLE);
+  }
+
+  public String getAssistantApiKey() {
+    return getString(ConfVars.ZEPPELIN_ASSISTANT_OPENAI_API_KEY);
+  }
+
+  public String getAssistantEndpoint() {
+    return getString(ConfVars.ZEPPELIN_ASSISTANT_OPENAI_ENDPOINT);
+  }
+
+  public String getAssistantModel() {
+    return getString(ConfVars.ZEPPELIN_ASSISTANT_OPENAI_MODEL);
+  }
+
+  public String getAssistantDir() {
+    return getAbsoluteDir(ConfVars.ZEPPELIN_ASSISTANT_DIR);
+  }
+
   public boolean isOnlyYarnCluster() {
     return getBoolean(ConfVars.ZEPPELIN_SPARK_ONLY_YARN_CLUSTER);
   }
@@ -1193,7 +1213,16 @@ public class ZeppelinConfiguration {
     ZEPPELIN_SPARK_ONLY_YARN_CLUSTER("zeppelin.spark.only_yarn_cluster", false),
     ZEPPELIN_SESSION_CHECK_INTERVAL("zeppelin.session.check_interval", 60 * 10 * 1000),
     ZEPPELIN_NOTE_CACHE_THRESHOLD("zeppelin.note.cache.threshold", 50),
-    ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", "");
+    ZEPPELIN_NOTE_FILE_EXCLUDE_FIELDS("zeppelin.note.file.exclude.fields", ""),
+    ZEPPELIN_ASSISTANT_ENABLE("zeppelin.assistant.enable", false),
+    ZEPPELIN_ASSISTANT_DIR("zeppelin.assistant.dir", "assistant"),
+    ZEPPELIN_ASSISTANT_OPENAI_API_KEY("zeppelin.assistant.openai.api.key", ""),
+    ZEPPELIN_ASSISTANT_OPENAI_ENDPOINT(
+        "zeppelin.assistant.openai.endpoint", "https://api.openai.com/v1"
+    ),
+    ZEPPELIN_ASSISTANT_OPENAI_MODEL(
+        "zeppelin.assistant.openai.model", "gpt-6-luna"
+    );
 
     private String varName;
     private Class<?> varClass;
