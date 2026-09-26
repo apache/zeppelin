@@ -99,7 +99,7 @@ limitations under the License.
   * [Spark Cluster Mode: Mesos](./setup/deployment/spark_cluster_mode.html#spark-on-mesos-mode)
   * [Zeppelin with Flink and Spark Cluster](./setup/deployment/flink_and_spark_cluster.html)
   * [Zeppelin on CDH](./setup/deployment/cdh.html)
-  * [Zeppelin on VM: Vagrant](./setup/deployment/virtual_machine.html)
+  * [Zeppelin on VM: Vagrant (deprecated)](./setup/deployment/virtual_machine.html)
 * Security: available security support in Apache Zeppelin
   * [HTTP Basic Auth using NGINX](./setup/security/authentication_nginx.html)
   * [Shiro Authentication](./setup/security/shiro_authentication.html)

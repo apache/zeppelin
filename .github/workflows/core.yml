@@ -51,18 +51,30 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-            ~/conda_pkgs_dir
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-v1-${{ hashFiles('zeppelin-web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-npm-v1-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install application with some interpreter
         run: ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
       - name: install and test plugins
@@ -71,12 +83,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.9.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: Show conda environment
         run: |
           conda list
@@ -103,29 +114,35 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked TensorFlow Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-tensorflow-v1-${{ hashFiles('testing/locks/python-3.9-tensorflow-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-tensorflow-v1-
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install environment
         run: ./mvnw install -DskipTests -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
       - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3_with_tensorflow
-          environment-file: testing/env_python_3_with_tensorflow.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-tensorflow-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: verify interpreter
         run: ./mvnw verify -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
 
@@ -147,27 +164,32 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_${{ matrix.python }}.yml
-          python-version: ${{ matrix.python }}
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl python,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
@@ -195,17 +217,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install environment
         run: |
           ./mvnw install -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-1.20 ${MAVEN_ARGS}
@@ -214,12 +242,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: run tests
         run: ./mvnw test -pl zeppelin-interpreter-integration -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
       - name: Print zeppelin logs
@@ -250,17 +277,30 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+      - name: Cache locked PyFlink packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ runner.arch }}-pip-pyflink-${{ matrix.flink-profile }}-v1-${{ hashFiles(format('testing/locks/pyflink-{0}-python-3.9.requirements.lock', matrix.flink-profile)) }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-pip-pyflink-${{ matrix.flink-profile }}-v1-
       - name: install environment for flink
         run: |
           ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink-profile }} -Pintegration ${MAVEN_ARGS}
@@ -269,12 +309,13 @@ jobs:
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3_with_flink
-          environment-file: testing/env_python_3_with_flink_${{ matrix.flink }}.yml
-          python-version: ${{ matrix.python }}
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
+      - name: Install locked PyFlink ${{ matrix.flink-profile }} packages
+        run: python -m pip install --no-deps -r testing/locks/pyflink-${{ matrix.flink-profile }}-python-3.9.requirements.lock
       - name: run tests for flink
         run: ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink-profile }} -am -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
       - name: Print zeppelin logs
@@ -298,17 +339,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Pweb-classic -Pintegration ${MAVEN_ARGS}
@@ -317,12 +364,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: run tests
         run: ./mvnw test -pl zeppelin-interpreter-integration -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
 
@@ -344,29 +390,34 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install environment
         run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_${{ matrix.python }}.yml
-          python-version: ${{ matrix.python }}
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: run spark-3.3 tests with scala-2.12 and python-${{ matrix.python }}
         run: |
           rm -rf spark/interpreter/metastore_db
@@ -393,6 +444,9 @@ jobs:
   # https://github.com/apache/incubator-livy/blob/v0.8.0-incubating/dev/docker/livy-dev-spark/Dockerfile#L20
   livy-0-8-with-spark-3-2-under-python39:
     runs-on: ubuntu-24.04
+    env:
+      SPARK_VERSION: '3.2.4'
+      HADOOP_VERSION: '3.2'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -403,35 +457,48 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      # Only this job downloads a standalone Spark archive; spark-test uses Maven artifacts.
+      - name: Cache Spark distributions
+        uses: actions/cache@v5
+        with:
+          path: .spark-dist
+          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-${{ hashFiles('testing/downloadSpark.sh', 'pom.xml', 'spark/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl livy -am ${MAVEN_ARGS}
-          ./testing/downloadSpark.sh "3.2.4" "3.2"
+          ./testing/downloadSpark.sh "${SPARK_VERSION}" "${HADOOP_VERSION}"
           ./testing/downloadLivy.sh "0.8.0-incubating" "2.12"
       - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.9.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: run tests
         run: |
-          export SPARK_HOME=$PWD/spark-3.2.4-bin-hadoop3.2
+          export SPARK_HOME=$PWD/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
           export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.12-bin
           ./mvnw verify -pl livy ${MAVEN_ARGS}
 

@@ -55,7 +55,7 @@ afterEach(() => components.splice(0).forEach(component => component.ngOnDestroy(
 const setup = (useReact = false) => {
   const params = new BehaviorSubject({ noteId: 'note-A', paragraphId: 'same-paragraph' });
   const component = new PublishedParagraphComponent(
-    { receive: () => EMPTY, getNote: vi.fn() } as never,
+    { receive: () => EMPTY, receiveEnvelope: () => EMPTY, getNote: vi.fn() } as never,
     { params, queryParamMap: of(convertToParamMap({})) } as never,
     {} as never,
     {} as never,

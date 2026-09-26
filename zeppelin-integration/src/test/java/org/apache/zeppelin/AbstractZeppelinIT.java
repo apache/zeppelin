@@ -51,9 +51,12 @@ abstract public class AbstractZeppelinIT {
   protected static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   protected static final long MAX_PARAGRAPH_TIMEOUT_SEC = 120;
   private static final String CLASSIC_LOGIN_PATH = "/classic/api/login";
+  private static final By LOGIN_MODAL = By.id("loginModal");
+  private static final long MODAL_CLOSE_TIMEOUT_SEC = 10;
+  private static final long MODAL_CLEANUP_TIMEOUT_SEC = 2;
 
   protected void authenticationUser(String userName, String password) {
-    WebElement loginModal = manager.getWebDriver().findElement(By.id("loginModal"));
+    WebElement loginModal = manager.getWebDriver().findElement(LOGIN_MODAL);
     if (!loginModal.isDisplayed()) {
       try {
         clickableWait(
@@ -62,7 +65,7 @@ abstract public class AbstractZeppelinIT {
       } catch (ElementClickInterceptedException e) {
         // Authentication-required pages can open the modal between the visibility check
         // and the click. Continue only when that modal is now actually visible.
-        if (!manager.getWebDriver().findElement(By.id("loginModal")).isDisplayed()) {
+        if (!manager.getWebDriver().findElement(LOGIN_MODAL).isDisplayed()) {
           throw e;
         }
       }
@@ -94,17 +97,49 @@ abstract public class AbstractZeppelinIT {
         userNameInput, passwordInput, loginButton, userName, password);
 
     // Wait for the logged-in navbar user dropdown to appear (indicates login completed
-    // and Angular digest cycle has updated the DOM), then dismiss any leftover modal overlay
+    // and Angular digest cycle has updated the DOM), then wait out the login modal
     visibilityWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li//button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
         MAX_BROWSER_TIMEOUT_SEC);
+    dismissLoginModal();
+  }
+
+  /**
+   * Waits until the login modal no longer covers the page, and only takes it down by hand if
+   * that does not happen.
+   *
+   * <p>The classic UI closes the modal itself: login.controller.js calls modal('toggle') once
+   * the login request succeeds. Removing the backdrop and forcing modal('hide') while that is
+   * still running fights the application instead of waiting for it, and leaves no evidence when
+   * the modal is in fact still displayed. Waiting first keeps the forced cleanup as a fallback
+   * for the cases it was meant for.
+   */
+  private void dismissLoginModal() {
+    if (loginModalClosed(MODAL_CLOSE_TIMEOUT_SEC)) {
+      return;
+    }
+    LOGGER.warn("Login modal still displayed after {}s, taking it down from the page",
+        MODAL_CLOSE_TIMEOUT_SEC);
     try {
       ((JavascriptExecutor) manager.getWebDriver()).executeScript(
           "$('.modal-backdrop').remove(); $('#loginModal').modal('hide');");
     } catch (Exception e) {
       // ignore if jQuery/Bootstrap not ready
     }
-    ZeppelinITUtils.sleep(500, false);
+    if (!loginModalClosed(MODAL_CLEANUP_TIMEOUT_SEC)) {
+      LOGGER.warn("Login modal is still displayed; the next click may be intercepted by it");
+    }
+  }
+
+  /** Returns true once the login modal is hidden or gone, false if it is still displayed. */
+  private boolean loginModalClosed(final long timeWait) {
+    try {
+      new WebDriverWait(manager.getWebDriver(), Duration.ofSeconds(timeWait))
+          .until(ExpectedConditions.invisibilityOfElementLocated(LOGIN_MODAL));
+      return true;
+    } catch (TimeoutException e) {
+      return false;
+    }
   }
 
   private WebElement angularModelWait(By locator) {
@@ -168,9 +203,20 @@ abstract public class AbstractZeppelinIT {
 
   protected void logoutUser(String userName) throws URISyntaxException {
     ZeppelinITUtils.sleep(500, false);
-    clickableWait(
-        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
+    By userMenu =
+        By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]");
+    dismissLoginModal();
+    try {
+      clickableWait(userMenu, MAX_BROWSER_TIMEOUT_SEC).click();
+    } catch (ElementClickInterceptedException e) {
+      // The login modal can come back after it was closed: on a SESSION_LOGOUT message
+      // login.controller.js re-opens it one second later, so it can appear between the
+      // wait above and this click. An intercepted click never reached the menu, so the
+      // dropdown is still closed and opening it again is safe.
+      LOGGER.warn("Navbar user menu click was intercepted, retrying once", e);
+      dismissLoginModal();
+      clickableWait(userMenu, MAX_BROWSER_TIMEOUT_SEC).click();
+    }
     ZeppelinITUtils.sleep(500, false);
     clickableWait(
         By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" + userName + "')]//a[@ng-click='navbar.logout()']"),
