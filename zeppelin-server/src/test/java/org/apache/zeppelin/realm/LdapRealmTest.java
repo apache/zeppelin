@@ -19,8 +19,12 @@
 package org.apache.zeppelin.realm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +41,7 @@ import java.util.Set;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -135,6 +140,159 @@ class LdapRealmTest {
     assertEquals("uid=<{0}>", realm.getUserSearchFilter());
     realm.setUserSearchFilter("gid=\\{0}\\");
     assertEquals("gid=\\{0}\\", realm.getUserSearchFilter());
+  }
+
+  @Test
+  void testRolesForMemberOfNestedGroups() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMemberOf(true);
+    HashMap<String, String> rolesByGroups = new HashMap<>();
+    rolesByGroups.put("nested-group", "nested-role");
+    realm.setRolesByGroup(rolesByGroups);
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    String userDn = realm.getUserDnForSearch("principal");
+
+    // 389 DS MemberOf plugin already flattens direct + nested membership onto
+    // the user entry, so a single base-scope search returns both group DNs.
+    BasicAttribute memberOf = new BasicAttribute("memberOf");
+    memberOf.add("cn=direct-group,cn=groups,cn=accounts,dc=example,dc=com");
+    memberOf.add("cn=nested-group,cn=groups,cn=accounts,dc=example,dc=com");
+    BasicAttributes userEntry = new BasicAttributes();
+    userEntry.put(memberOf);
+
+    NamingEnumeration<SearchResult> results = enumerationOf(userEntry);
+    when(ldapCtx.search(eq(userDn), eq("(objectclass=*)"), any(SearchControls.class)))
+        .thenReturn(results);
+
+    Set<String> roles = realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+
+    assertEquals(new HashSet<>(Arrays.asList("direct-group", "nested-role")), roles);
+  }
+
+  @Test
+  void testRolesForMatchingRuleInChainTakesPrecedenceOverMemberOf() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMatchingRuleInChain(true);
+    realm.setGroupSearchEnableMemberOf(true);
+    realm.setGroupSearchBase("cn=groups,dc=apache");
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    BasicAttributes group1 = new BasicAttributes();
+    group1.put(realm.getGroupIdAttribute(), "group-one");
+
+    NamingEnumeration<SearchResult> results = enumerationOf(group1);
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
+        .thenReturn(results);
+
+    realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+
+    verify(ldapCtx, never()).search(anyString(), eq("(objectclass=*)"), any(SearchControls.class));
+  }
+
+  @Test
+  void testRolesForMemberOfWithNoMemberOfAttribute() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMemberOf(true);
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    String userDn = realm.getUserDnForSearch("principal");
+
+    // The user entry is found, but it carries no memberOf attribute at all
+    // (e.g. the user belongs to no groups) -> must not NPE, just no roles.
+    BasicAttributes userEntry = new BasicAttributes();
+
+    NamingEnumeration<SearchResult> results = enumerationOf(userEntry);
+    when(ldapCtx.search(eq(userDn), eq("(objectclass=*)"), any(SearchControls.class)))
+        .thenReturn(results);
+
+    Set<String> roles = realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+
+    assertEquals(new HashSet<>(), roles);
+  }
+
+  @Test
+  void testRolesForMemberOfWhenUserEntryNotFound() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMemberOf(true);
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    String userDn = realm.getUserDnForSearch("principal");
+
+    // The base-scope search for the user entry itself returns nothing
+    // (e.g. the user DN doesn't exist) -> must not NPE, just no roles.
+    NamingEnumeration<SearchResult> results = enumerationOf();
+    when(ldapCtx.search(eq(userDn), eq("(objectclass=*)"), any(SearchControls.class)))
+        .thenReturn(results);
+
+    Set<String> roles = realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+
+    assertEquals(new HashSet<>(), roles);
+  }
+
+  @Test
+  void testWarnBothGroupSearchModesLogsOnlyOnce() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMatchingRuleInChain(true);
+    realm.setGroupSearchEnableMemberOf(true);
+    realm.setGroupSearchBase("cn=groups,dc=apache");
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    BasicAttributes group1 = new BasicAttributes();
+    group1.put(realm.getGroupIdAttribute(), "group-one");
+
+    // Fresh enumeration per call since NamingEnumeration is single-use.
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
+        .thenAnswer(invocation -> enumerationOf(group1));
+
+    // Repeated calls with both flags enabled must keep working the same way
+    // after the WARN-once guard trips on the first call.
+    Set<String> firstCall = realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+    Set<String> secondCall = realm.rolesFor(
+        new SimplePrincipalCollection("principal", "ldapRealm"),
+        "principal", ldapCtx, ldapContextFactory, session);
+
+    assertEquals(firstCall, secondCall);
+  }
+
+  @Test
+  void testGroupNameFromMemberOfDnFallback() {
+    LdapRealm realm = new LdapRealm();
+
+    // groupIdAttribute (default "cn") does not match any RDN type in the DN
+    // below -> fall back to the leaf (left-most) RDN value.
+    realm.setGroupIdAttribute("gidNumber");
+    assertEquals("admins",
+        realm.groupNameFromMemberOfDn("cn=admins,cn=groups,cn=accounts,dc=example,dc=com"));
+
+    // A malformed DN must be skipped, not thrown, so one bad memberOf value
+    // doesn't fail the whole login.
+    assertNull(realm.groupNameFromMemberOfDn(",,,"));
   }
 
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {

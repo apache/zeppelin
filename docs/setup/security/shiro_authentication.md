@@ -174,8 +174,19 @@ ldapRealm.groupSearchScope = subtree;
 ldapRealm.memberAttributeValueTemplate = cn={0},ou=people,dc=hadoop,dc=apache,dc=org
 ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc=apache,dc=org
 ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
-# enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
+# enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator (Active Directory only)
 ldapRealm.groupSearchEnableMatchingRuleInChain = true
+# enable support for nested groups on directories that lack LDAP_MATCHING_RULE_IN_CHAIN
+# (e.g. FreeIPA / 389 Directory Server) by reading the user entry's own memberOf attribute,
+# which the MemberOf plugin pre-flattens to include direct and indirect group membership.
+# If both this and groupSearchEnableMatchingRuleInChain are enabled, the matching-rule-in-chain
+# path takes precedence and this setting is ignored.
+# Note: the LDAP bind used by ldapRealm.contextFactory must be authenticated (not anonymous) or
+# the directory may not return memberOf; if group members span multiple backends/replicas, the
+# directory's own server-side scope configuration must be set up for memberOf to be complete.
+ldapRealm.groupSearchEnableMemberOf = false
+# customize the attribute name read by groupSearchEnableMemberOf (defaults to memberOf)
+ldapRealm.memberOfAttribute = memberOf
 # optional mapping from physical groups to logical application roles
 ldapRealm.rolesByGroup = LDN_USERS: user_role, NYK_USERS: user_role, HKG_USERS: user_role, GLOBAL_ADMIN: admin_role
 # optional list of roles that are allowed to authenticate. Incase not present all groups are allowed to authenticate (login).
