@@ -14,8 +14,11 @@ import ts from 'typescript';
 
 export const createFixtureHost = (options: ts.CompilerOptions, files: ReadonlyMap<string, string>): ts.CompilerHost => {
   const host = ts.createCompilerHost(options);
-  const { readFile, fileExists } = host;
+  const { readFile, fileExists, directoryExists } = host;
   host.readFile = file => files.get(file) ?? readFile(file);
   host.fileExists = file => files.has(file) || fileExists(file);
+  // Module resolution does not probe files in directories it considers missing.
+  host.directoryExists = directory =>
+    [...files.keys()].some(file => file.startsWith(`${directory}/`)) || (directoryExists?.(directory) ?? true);
   return host;
 };

@@ -1,0 +1,16 @@
+{
+  "extends": "../../../projects/zeppelin-react/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../../../",
+    "noEmit": false,
+    "paths": {
+      "@zeppelin/notebook-core": ["projects/zeppelin-notebook-core/src/public-api.ts"],
+      "@zeppelin/notebook-core/*": ["projects/zeppelin-notebook-core/src/*"],
+      "react": ["projects/zeppelin-react/node_modules/@types/react/index.d.ts"],
+      "react-dom/client": ["projects/zeppelin-react/node_modules/@types/react-dom/client.d.ts"],
+      "react/jsx-runtime": ["projects/zeppelin-react/node_modules/@types/react/jsx-runtime.d.ts"]
+    },
+    "typeRoots": ["projects/zeppelin-react/node_modules/@types", "node_modules/@types"]
+  },
+  "include": ["*.ts", "*.tsx"]
+}

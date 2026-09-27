@@ -11,7 +11,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
@@ -20,11 +20,16 @@ import { createFixtureHost } from './compiler-fixture';
 import {
   sourceRoot,
   zeppelinWebAngularRoot,
+  reactNotebookCoreProofConsumer,
+  reactNotebookCoreProofConsumers,
+  reactNotebookCoreProofRoot,
   reactNotebookCoreBoundaryFiles,
   forbiddenModulePrefixes,
   forbiddenReactNotebookCoreConsumerModulePrefixes,
   sourceFiles,
   findReactNotebookConsumerViolations,
+  findNotebookCoreValueImportViolations,
+  findNotebookRemoteConsumerViolations,
   findNotebookContractViolations,
   findViolations,
   formatViolations,
@@ -32,6 +37,18 @@ import {
 } from './import-boundary';
 
 describe('notebook core import boundary', () => {
+  it('runs the browser-dependent separate-build proof with the browser e2e gate', () => {
+    const pom = readFileSync(resolve(zeppelinWebAngularRoot, 'pom.xml'), 'utf8');
+    expect(pom).toMatch(
+      /<web\.e2e\.core\.port\.proof\.disabled>\$\{web\.e2e\.disabled\}<\/web\.e2e\.core\.port\.proof\.disabled>/
+    );
+    for (const id of ['npm build notebook core port identity proof', 'npm test notebook core port identity']) {
+      const execution = pom.match(new RegExp(`<execution>\\s*<id>${id}</id>([\\s\\S]*?)</execution>`))?.[1];
+      expect(execution).toMatch(/<phase>integration-test<\/phase>/);
+      expect(execution).toMatch(/<skip>\$\{web\.e2e\.core\.port\.proof\.disabled\}<\/skip>/);
+    }
+  });
+
   it('resolves the React public contract without exposing source subpaths', () => {
     const path = reactNotebookCoreBoundaryFiles[1];
     const options = readCompilerOptions(resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/tsconfig.json'));
@@ -135,10 +152,12 @@ describe('notebook core import boundary', () => {
     }
   );
 
-  it('rejects direct transport imports in the React entry point and notebook core contract', () => {
-    const violations = reactNotebookCoreBoundaryFiles.flatMap(path => {
+  it('rejects direct transport imports in the React entry point, contract bridge and remote probe', () => {
+    const violations = [...reactNotebookCoreBoundaryFiles, reactNotebookCoreProofConsumer].flatMap(path => {
       const source = readFileSync(path, 'utf8');
-      return findViolations(path, source, forbiddenReactNotebookCoreConsumerModulePrefixes);
+      return path === reactNotebookCoreProofConsumer
+        ? findNotebookRemoteConsumerViolations(path, source)
+        : findViolations(path, source, forbiddenReactNotebookCoreConsumerModulePrefixes);
     });
 
     expect(formatViolations(violations)).toEqual([]);
@@ -148,6 +167,217 @@ describe('notebook core import boundary', () => {
   // Vitest's default 5s timeout on slower machines/CI runners even with no violations.
   it('checks all production React consumers of the notebook contract', () => {
     expect(findReactNotebookConsumerViolations()).toEqual([]);
+  }, 30_000);
+
+  it('rejects a runtime or factory import in the separate-build remote probe', () => {
+    expect(
+      findNotebookRemoteConsumerViolations(
+        reactNotebookCoreProofConsumer,
+        "import { createNotebookCore } from '@zeppelin/notebook-core';"
+      )
+    ).toEqual([
+      `${reactNotebookCoreProofConsumer}: runtime notebook core import`,
+      `${reactNotebookCoreProofConsumer}: remote must import only NotebookCorePort contract types`
+    ]);
+    expect(
+      findNotebookCoreValueImportViolations(
+        resolve(zeppelinWebAngularRoot, 'e2e/core-contract/react-remote/helper.ts'),
+        "export { createNotebookCore } from '@zeppelin/notebook-core';"
+      )
+    ).toEqual([
+      `${resolve(zeppelinWebAngularRoot, 'e2e/core-contract/react-remote/helper.ts')}: runtime notebook core import`
+    ]);
+  });
+
+  it('rejects require.resolve of the core runtime', () => {
+    expect(
+      findNotebookCoreValueImportViolations(
+        reactNotebookCoreProofConsumer,
+        "export const corePath = require.resolve('@zeppelin/notebook-core');"
+      )
+    ).toEqual([`${reactNotebookCoreProofConsumer}: runtime notebook core import`]);
+  });
+
+  it.each([
+    "import '../../../projects/zeppelin-notebook-core/src/public-api';",
+    "export { createNotebookCore } from '../../../projects/zeppelin-notebook-core/src/public-api';"
+  ])('rejects a runtime core dependency by its resolved target: %s', source => {
+    const path = resolve(zeppelinWebAngularRoot, 'e2e/core-contract/react-remote/helper.ts');
+    expect(findNotebookCoreValueImportViolations(path, source)).toEqual([`${path}: runtime notebook core import`]);
+  });
+
+  it('allows a type-only core dependency by its resolved target and restricts its public contract types', () => {
+    const path = reactNotebookCoreProofConsumer;
+    const target = resolve(sourceRoot, 'public-api.ts');
+    const relativeTarget = `./${relative(dirname(path), target).replace(/\\/g, '/').replace(/\.ts$/, '')}`;
+    const source = `import type { NotebookCorePort } from '${relativeTarget}';\nexport type Port = NotebookCorePort;`;
+
+    expect(findNotebookCoreValueImportViolations(path, source)).toEqual([]);
+    expect(findNotebookRemoteConsumerViolations(path, source)).toEqual([]);
+
+    expect(
+      findNotebookRemoteConsumerViolations(path, `export type Port = import('${relativeTarget}').NotebookCorePort;`)
+    ).toEqual([]);
+
+    const invalidSource = `import type { NotebookCoreUnsubscribe } from '${relativeTarget}';`;
+    expect(findNotebookRemoteConsumerViolations(path, invalidSource)).toContain(
+      `${path}: remote notebook core import NotebookCoreUnsubscribe`
+    );
+    expect(
+      findNotebookRemoteConsumerViolations(
+        path,
+        `export type Unsubscribe = import('${relativeTarget}').NotebookCoreUnsubscribe;`
+      )
+    ).toContain(`${path}: remote notebook core import NotebookCoreUnsubscribe`);
+  });
+
+  it('enforces the core boundary for built-package aliases and relative targets', () => {
+    const path = reactNotebookCoreProofConsumer;
+    const builtDeclaration = resolve(
+      zeppelinWebAngularRoot,
+      'dist/zeppelin-notebook-core/types/zeppelin-notebook-core.d.ts'
+    );
+    const options = {
+      ...readCompilerOptions(resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/tsconfig.json')),
+      baseUrl: zeppelinWebAngularRoot,
+      paths: { '@built-core': ['dist/zeppelin-notebook-core/types/zeppelin-notebook-core.d.ts'] }
+    };
+    const host = createFixtureHost(
+      options,
+      new Map([
+        [
+          builtDeclaration,
+          'export type NotebookCorePort = Readonly<{}>; export declare const createNotebookCore: () => void;'
+        ]
+      ])
+    );
+    const relativeTarget = relative(dirname(path), builtDeclaration)
+      .replace(/\\/g, '/')
+      .replace(/\.d\.ts$/, '');
+
+    for (const source of [
+      "import '@built-core';",
+      "export { createNotebookCore } from '@built-core';",
+      `import '${relativeTarget.startsWith('.') ? relativeTarget : `./${relativeTarget}`}';`
+    ]) {
+      expect(findNotebookCoreValueImportViolations(path, source, options, host)).toEqual([
+        `${path}: runtime notebook core import`
+      ]);
+    }
+    expect(
+      findNotebookRemoteConsumerViolations(
+        path,
+        "import type { NotebookCorePort } from '@built-core'; export type Port = NotebookCorePort;",
+        options,
+        host
+      )
+    ).toEqual([]);
+    expect(
+      findNotebookRemoteConsumerViolations(
+        path,
+        "import type { createNotebookCore } from '@built-core';",
+        options,
+        host
+      )
+    ).toContain(`${path}: remote notebook core import createNotebookCore`);
+  }, 30_000);
+
+  it('rejects a transitive runtime re-export of the core reached through a consumer helper', () => {
+    const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
+    const consumer = resolve(root, 'NotebookBoundaryFixture.tsx');
+    const helper = resolve(root, 'NotebookBoundaryHelper.ts');
+    const publicApi = resolve(sourceRoot, 'public-api.ts');
+    const helperTarget = relative(dirname(helper), publicApi).replace(/\\/g, '/').replace(/\.ts$/, '');
+    const files = new Map<string, string>([
+      [
+        consumer,
+        "import type { NotebookCoreRemoteProps } from './notebookCoreContract'; export type Props = NotebookCoreRemoteProps; export * from './NotebookBoundaryHelper';"
+      ],
+      [
+        helper,
+        `export { createNotebookCore } from '${helperTarget.startsWith('.') ? helperTarget : `./${helperTarget}`}';`
+      ]
+    ]);
+    const options = readCompilerOptions(resolve(root, '../tsconfig.json'));
+    const host = createFixtureHost(options, files);
+
+    expect(findReactNotebookConsumerViolations([...reactNotebookCoreBoundaryFiles, consumer], options, host)).toContain(
+      `${helper}: runtime notebook core import`
+    );
+  }, 30_000);
+
+  it('rejects a transitive runtime re-export through a resolved node_modules package', () => {
+    const wrapper = resolve(zeppelinWebAngularRoot, 'node_modules/zeppelin-notebook-boundary-fixture/index.ts');
+    const wrapperSpecifier = relative(dirname(reactNotebookCoreProofConsumer), wrapper).replace(/\\/g, '/');
+    const source = `import type { NotebookCorePort } from '@zeppelin/notebook-core'; export type Port = NotebookCorePort; export * from '${
+      wrapperSpecifier.startsWith('.') ? wrapperSpecifier : `./${wrapperSpecifier}`
+    }';`;
+    const options = readCompilerOptions(resolve(dirname(reactNotebookCoreProofConsumer), 'tsconfig.json'));
+    const violationsWithWrapper = (wrapperSource: string): string[] =>
+      findReactNotebookConsumerViolations(
+        [reactNotebookCoreProofConsumer],
+        options,
+        createFixtureHost(
+          options,
+          new Map([
+            [reactNotebookCoreProofConsumer, source],
+            [wrapper, wrapperSource]
+          ])
+        )
+      );
+
+    expect(violationsWithWrapper("export { createNotebookCore } from '@zeppelin/notebook-core';\n")).toContain(
+      `${wrapper}: runtime notebook core import`
+    );
+    expect(violationsWithWrapper("export type { NotebookCorePort } from '@zeppelin/notebook-core';\n")).toEqual([]);
+  }, 30_000);
+
+  it('restricts notebook core types throughout the separate remote dependency graph', () => {
+    const helper = resolve(dirname(reactNotebookCoreProofConsumer), 'contract-helper.ts');
+    const files = new Map<string, string>([
+      [
+        reactNotebookCoreProofConsumer,
+        "import type { Factory } from './contract-helper'; export type RemoteFactory = Factory;"
+      ],
+      [helper, "export type Factory = import('@zeppelin/notebook-core').NotebookCoreUnsubscribe;"]
+    ]);
+    const options = readCompilerOptions(resolve(dirname(reactNotebookCoreProofConsumer), 'tsconfig.json'));
+    const host = createFixtureHost(options, files);
+
+    expect(
+      ts
+        .getPreEmitDiagnostics(ts.createProgram([reactNotebookCoreProofConsumer], options, host))
+        .filter(diagnostic => (diagnostic.file ? files.has(diagnostic.file.fileName) : false))
+    ).toEqual([]);
+    expect(findReactNotebookConsumerViolations([reactNotebookCoreProofConsumer], options, host)).toContain(
+      `${helper}: remote notebook core import NotebookCoreUnsubscribe`
+    );
+  }, 30_000);
+
+  it('scans every source of the separate-build remote, not only the probe', () => {
+    const consumers = reactNotebookCoreProofConsumers();
+    expect(consumers).toContain(reactNotebookCoreProofConsumer);
+    expect(consumers).toContain(resolve(reactNotebookCoreProofRoot, 'empty.ts'));
+    expect(
+      consumers.filter(path =>
+        /^(?:dist|build|node_modules)\/|webpack\.config/.test(relative(reactNotebookCoreProofRoot, path))
+      )
+    ).toEqual([]);
+
+    const exposed = resolve(reactNotebookCoreProofRoot, 'SecondProbe.tsx');
+    const options = readCompilerOptions(resolve(reactNotebookCoreProofRoot, 'tsconfig.json'));
+    const host = createFixtureHost(
+      options,
+      new Map([
+        [
+          exposed,
+          "import type { NotebookCoreUnsubscribe } from '@zeppelin/notebook-core'; export type U = NotebookCoreUnsubscribe;"
+        ]
+      ])
+    );
+    expect(findReactNotebookConsumerViolations([exposed], options, host)).toContain(
+      `${exposed}: remote notebook core import NotebookCoreUnsubscribe`
+    );
   }, 30_000);
 
   it.each(['direct', 'helper', 'route', 'barrel', 'javascript', 'cycle', 'computed', 'require-outside'])(
@@ -183,7 +413,11 @@ describe('notebook core import boundary', () => {
       const options = readCompilerOptions(resolve(root, '../tsconfig.json'));
       const host = createFixtureHost(options, files);
       const roots = [consumer, route, barrel, ...reactNotebookCoreBoundaryFiles];
-      expect(ts.getPreEmitDiagnostics(ts.createProgram(roots, options, host))).toEqual([]);
+      expect(
+        ts
+          .getPreEmitDiagnostics(ts.createProgram(roots, options, host))
+          .filter(diagnostic => (diagnostic.file ? files.has(diagnostic.file.fileName) : false))
+      ).toEqual([]);
       const violations = findReactNotebookConsumerViolations(roots, options, host);
       const offender = ['helper', 'javascript', 'cycle', 'require-outside'].includes(form)
         ? helper
@@ -193,7 +427,8 @@ describe('notebook core import boundary', () => {
       expect(violations).toContain(
         `${offender}: import ${form === 'computed' ? '<computed module dependency>' : 'rxjs/webSocket'}`
       );
-    }
+    },
+    30_000
   );
 
   it.each([
@@ -202,16 +437,20 @@ describe('notebook core import boundary', () => {
     ["export type { ClientHttp2Session } from 'node:http2';", 'import node:http2'],
     ['export const request = fetch;', 'global fetch'],
     ['export const socket = WebSocket;', 'global WebSocket']
-  ])('rejects transport access in a consumer of the public core API: %s', (transport, violation) => {
-    const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
-    const consumer = resolve(root, 'NotebookBoundaryFixture.tsx');
-    const source = `import type { NotebookCoreRemoteProps } from '@zeppelin/notebook-core';
+  ])(
+    'rejects transport access in a consumer of the public core API: %s',
+    (transport, violation) => {
+      const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
+      const consumer = resolve(root, 'NotebookBoundaryFixture.tsx');
+      const source = `import type { NotebookCoreRemoteProps } from '@zeppelin/notebook-core';
       export const read = (props: NotebookCoreRemoteProps) => props.core.getSnapshot(); ${transport}`;
-    const options = readCompilerOptions(resolve(root, '../tsconfig.json'));
-    const host = createFixtureHost(options, new Map([[consumer, source]]));
-    expect(ts.getPreEmitDiagnostics(ts.createProgram([consumer], options, host))).toEqual([]);
-    expect(findReactNotebookConsumerViolations([consumer], options, host)).toContain(`${consumer}: ${violation}`);
-  });
+      const options = readCompilerOptions(resolve(root, '../tsconfig.json'));
+      const host = createFixtureHost(options, new Map([[consumer, source]]));
+      expect(ts.getPreEmitDiagnostics(ts.createProgram([consumer], options, host))).toEqual([]);
+      expect(findReactNotebookConsumerViolations([consumer], options, host)).toContain(`${consumer}: ${violation}`);
+    },
+    30_000
+  );
 
   it('rejects the mixed public aggregator as an internal notebook consumer dependency', () => {
     const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
@@ -222,7 +461,7 @@ describe('notebook core import boundary', () => {
     expect(findReactNotebookConsumerViolations([consumer], options, host)).toContain(
       `${consumer}: notebook consumer must use the contract bridge instead of the public aggregator`
     );
-  });
+  }, 30_000);
 
   it('allows a neutral notebook consumer without traversing unrelated legacy page exports', () => {
     const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
@@ -234,7 +473,7 @@ describe('notebook core import boundary', () => {
     expect(findReactNotebookConsumerViolations([...reactNotebookCoreBoundaryFiles, consumer], options, host)).toEqual(
       []
     );
-  });
+  }, 30_000);
 
   it('keeps the React contract dependent only on the public core entry point', () => {
     const path = reactNotebookCoreBoundaryFiles[1];
@@ -451,15 +690,19 @@ describe('notebook core import boundary', () => {
     ['let fetch: typeof window.fetch; ({ fetch } = window); export const request = fetch;', 'global fetch'],
     ['export const browser = { fetch };', 'global fetch'],
     ['type fetch = string; export const request = fetch;', 'global fetch']
-  ])('rejects wrapped transport globals: %s', (source, violation) => {
-    const path = reactNotebookCoreBoundaryFiles[1];
-    const options = readCompilerOptions(resolve(dirname(path), '../tsconfig.json'));
-    const host = createFixtureHost(options, new Map([[path, source]]));
-    expect(ts.getPreEmitDiagnostics(ts.createProgram([path], options, host))).toEqual([]);
-    expect(findViolations(path, source, forbiddenReactNotebookCoreConsumerModulePrefixes)).toContain(
-      `${path}: ${violation}`
-    );
-  });
+  ])(
+    'rejects wrapped transport globals: %s',
+    (source, violation) => {
+      const path = reactNotebookCoreBoundaryFiles[1];
+      const options = readCompilerOptions(resolve(dirname(path), '../tsconfig.json'));
+      const host = createFixtureHost(options, new Map([[path, source]]));
+      expect(ts.getPreEmitDiagnostics(ts.createProgram([path], options, host))).toEqual([]);
+      expect(findViolations(path, source, forbiddenReactNotebookCoreConsumerModulePrefixes)).toContain(
+        `${path}: ${violation}`
+      );
+    },
+    30_000
+  );
 
   it.each([
     "export const fetch = () => 'cached'; export const result = fetch();",
