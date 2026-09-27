@@ -51,6 +51,7 @@ Thumbs.db
 /test-results-classic/
 /playwright/.cache/
 /playwright/.auth/
+/e2e/performance/baselines/*.json
 
 #
 .env

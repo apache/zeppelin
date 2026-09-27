@@ -1,1 +1,3 @@
 *.js text eol=lf
+# Byte-exact: the benchmark pins this fixture's SHA-256.
+zeppelin-web-angular/e2e/fixtures/performance/*.json -text
