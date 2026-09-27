@@ -443,8 +443,9 @@
   <name>zeppelin.interpreter.output.worker.count</name>
   <value>4</value>
   <description>Number of workers in each server pool: one pool delivers paragraph output, and the
-  other saves output checkpoints. Output for a note stays in order, while different notes can be
-  processed concurrently. Checkpoint saves do not occupy output workers.</description>
+  other saves output checkpoints. Each paragraph's output stays in order, and updates or checkpoints
+  never overtake earlier appends. Different notes can be processed concurrently. Checkpoint saves
+  do not occupy output workers.</description>
 </property>
 
 <property>

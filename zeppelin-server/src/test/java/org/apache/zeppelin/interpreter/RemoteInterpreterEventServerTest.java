@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.interpreter;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,7 +46,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -174,26 +174,67 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server = serverWithListener(listener);
     CountDownLatch entered = new CountDownLatch(1);
     CountDownLatch release = new CountDownLatch(1);
-    CountDownLatch started = new CountDownLatch(1);
+    AtomicReference<Thread> callerThread = new AtomicReference<>();
+    AtomicBoolean appendCallbackActive = new AtomicBoolean();
+    AtomicBoolean appendCompleted = new AtomicBoolean();
+    AtomicBoolean boundaryOverlappedAppend = new AtomicBoolean();
+    AtomicBoolean rpcReturnedEarly = new AtomicBoolean();
+
     doAnswer(invocation -> {
+      appendCallbackActive.set(true);
       entered.countDown();
-      assertTrue(release.await(5, TimeUnit.SECONDS));
+      try {
+        assertTrue(release.await(5, TimeUnit.SECONDS));
+      } finally {
+        appendCallbackActive.set(false);
+        appendCompleted.set(true);
+      }
       return null;
     }).when(listener).onParagraphOutputAppend("note", "first", 0, null, "old");
+    doAnswer(call -> {
+      if (appendCallbackActive.get() || !appendCompleted.get()) {
+        boundaryOverlappedAppend.set(true);
+      }
+      return null;
+    }).when(listener).onParagraphOutputUpdated(
+        "note", "second", 0, null, InterpreterResult.Type.TEXT, "replacement");
+    doAnswer(call -> {
+      if (appendCallbackActive.get() || !appendCompleted.get()) {
+        boundaryOverlappedAppend.set(true);
+      }
+      return null;
+    }).when(listener).onParagraphOutputClear("note", "second", null);
+    doAnswer(call -> {
+      if (appendCallbackActive.get() || !appendCompleted.get()) {
+        boundaryOverlappedAppend.set(true);
+      }
+      return null;
+    }).when(listener).checkpointOutput("note", "second");
+
     ExecutorService callers = Executors.newSingleThreadExecutor();
     try {
       server.appendOutput(new OutputAppendEvent("note", "first", 0, "old", null, null));
       dispatcherOf(server).flush();
       assertTrue(entered.await(5, TimeUnit.SECONDS));
       Future<?> boundary = callers.submit(() -> {
-        started.countDown();
+        callerThread.set(Thread.currentThread());
         callBoundary(server, "note", "second", operation);
+        rpcReturnedEarly.set(!appendCompleted.get());
         return null;
       });
-      assertTrue(started.await(5, TimeUnit.SECONDS));
-      assertThrows(TimeoutException.class, () -> boundary.get(100, TimeUnit.MILLISECONDS));
+      await().atMost(5, TimeUnit.SECONDS).until(() -> boundary.isDone()
+          || (callerThread.get() != null
+              && callerThread.get().getState() == Thread.State.WAITING));
+
+      assertFalse(appendCompleted.get());
+      assertFalse(boundary.isDone());
+
       release.countDown();
       boundary.get(5, TimeUnit.SECONDS);
+
+      assertFalse(rpcReturnedEarly.get(), "RPC must wait for the earlier append");
+      assertFalse(boundaryOverlappedAppend.get(), "Boundary must wait for append completion");
+
       InOrder order = inOrder(listener);
       order.verify(listener).onParagraphOutputAppend("note", "first", 0, null, "old");
       if ("UPDATE".equals(operation)) {
@@ -259,47 +300,73 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server = serverWithListener(listener);
     CountDownLatch entered = new CountDownLatch(1);
     CountDownLatch release = new CountDownLatch(1);
+    AtomicBoolean boundaryCallbackActive = new AtomicBoolean();
     AtomicBoolean boundaryCompleted = new AtomicBoolean();
+    AtomicBoolean rpcReturnedEarly = new AtomicBoolean();
     AtomicBoolean appendOverlappedBoundary = new AtomicBoolean();
+
     doAnswer(call -> {
+      boundaryCallbackActive.set(true);
       entered.countDown();
-      assertTrue(release.await(5, TimeUnit.SECONDS));
+      try {
+        assertTrue(release.await(5, TimeUnit.SECONDS));
+      } finally {
+        boundaryCallbackActive.set(false);
+      }
       return null;
     }).when(listener).onParagraphOutputClear("note", "para", null);
     doAnswer(call -> {
+      boundaryCallbackActive.set(true);
       entered.countDown();
-      assertTrue(release.await(5, TimeUnit.SECONDS));
-      boundaryCompleted.set(true);
+      try {
+        assertTrue(release.await(5, TimeUnit.SECONDS));
+      } finally {
+        boundaryCallbackActive.set(false);
+        boundaryCompleted.set(true);
+      }
       return null;
     }).when(listener).checkpointOutput("note", "para");
     doAnswer(call -> {
+      boundaryCallbackActive.set(true);
       entered.countDown();
-      assertTrue(release.await(5, TimeUnit.SECONDS));
-      boundaryCompleted.set(true);
+      try {
+        assertTrue(release.await(5, TimeUnit.SECONDS));
+      } finally {
+        boundaryCallbackActive.set(false);
+        boundaryCompleted.set(true);
+      }
       return null;
     }).when(listener).onParagraphOutputUpdated("note", "para", 0, null, InterpreterResult.Type.TEXT, "replacement");
     doAnswer(call -> {
-      if (!boundaryCompleted.get()) {
+      if (boundaryCallbackActive.get() || !boundaryCompleted.get()) {
         appendOverlappedBoundary.set(true);
       }
       return null;
     }).when(listener).onParagraphOutputAppend("note", "para", 0, null, "later");
+
     ExecutorService callers = Executors.newSingleThreadExecutor();
     try {
       Future<?> boundary = callers.submit(() -> {
         callBoundary(server, "note", "para", operation);
+        rpcReturnedEarly.set(!boundaryCompleted.get());
         return null;
       });
       assertTrue(entered.await(5, TimeUnit.SECONDS));
       server.appendOutput(new OutputAppendEvent("note", "para", 0, "later", null, null));
       dispatcherOf(server).flush();
+
       verify(listener, never()).onParagraphOutputAppend("note", "para", 0, null, "later");
-      assertThrows(TimeoutException.class, () -> boundary.get(100, TimeUnit.MILLISECONDS));
+      assertFalse(boundaryCompleted.get());
+      assertFalse(boundary.isDone());
+
       release.countDown();
       boundary.get(5, TimeUnit.SECONDS);
       server.checkpointOutput("note", "drained");
+
       assertTrue(boundaryCompleted.get());
+      assertFalse(rpcReturnedEarly.get(), "RPC must wait for boundary completion");
       assertFalse(appendOverlappedBoundary.get(), "Append must wait for the entire boundary");
+
       InOrder order = inOrder(listener);
       if ("UPDATE".equals(operation)) {
         order.verify(listener).onParagraphOutputUpdated("note", "para", 0, null, InterpreterResult.Type.TEXT, "replacement");
