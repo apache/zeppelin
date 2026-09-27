@@ -235,11 +235,18 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
       }
 
       boolean checkpointHandled = false;
+      boolean failed = false;
       try {
         checkpointHandled = deliver(note, batch);
+      } catch (Throwable t) {
+        // Fail the remaining boundaries before logging so callers cannot remain blocked.
+        // Append callbacks not yet delivered from this batch are discarded.
+        failed = true;
+        failInFlightBoundaries(note, t);
+        LOGGER.error("Failed to deliver output for note {}", note.noteId, t);
       } finally {
         if (!checkpointHandled) {
-          releaseNote(note, batch.size() == eventsPerBatch);
+          releaseNote(note, failed || batch.size() == eventsPerBatch);
         }
       }
     }
@@ -309,6 +316,13 @@ public class ParagraphOutputDispatcher implements AutoCloseable {
 
   private synchronized void removeInFlightBoundary(NoteQueue note, Boundary boundary) {
     note.inFlightBoundaries.remove(boundary);
+  }
+
+  private synchronized void failInFlightBoundaries(NoteQueue note, Throwable failure) {
+    for (Boundary boundary : note.inFlightBoundaries) {
+      boundary.fail(failure);
+    }
+    note.inFlightBoundaries.clear();
   }
 
   private synchronized void releaseNote(NoteQueue note, boolean scheduleRemainingEvents) {
