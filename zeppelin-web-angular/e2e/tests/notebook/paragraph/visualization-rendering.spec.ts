@@ -14,7 +14,7 @@
 
 import { expect, Locator, test } from '@playwright/test';
 import { NotebookParagraphPage } from 'e2e/models/notebook-paragraph-page';
-import { NotebookVisualizationPage } from 'e2e/models/notebook-visualization-page';
+import { NotebookVisualizationPage, TABLE_PARAGRAPH } from 'e2e/models/notebook-visualization-page';
 import {
   addPageAnnotation,
   addPageAnnotationBeforeEach,
@@ -25,8 +25,6 @@ import {
   waitForZeppelinReady
 } from '../../../utils';
 
-const TABLE_PARAGRAPH = `%sh
-printf '%%table city\\tsales\\tcost\\nSeoul\\t30\\t12\\nBusan\\t20\\t8\\nIncheon\\t10\\t5\\n'`;
 const TABLE_HEADERS = ['city', 'sales', 'cost'];
 const TABLE_CELLS = ['Seoul', '30', '12', 'Busan', '20', '8', 'Incheon', '10', '5'];
 
