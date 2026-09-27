@@ -341,10 +341,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private void reapDeadConnection(NotebookSocket conn, int maxMissedPongs) {
     LOGGER.warn("Closing websocket to {}: {} consecutive heartbeat pings unanswered, last pong at {}",
         conn, maxMissedPongs, new Date(conn.getLastPongTimestamp()));
-    String sessionId = conn.getSessionId();
-    if (sessionId != null) {
-      sessionIdNotebookSocketMap.remove(sessionId);
-    }
+    sessionIdNotebookSocketMap.remove(conn.getSessionId());
     removeConnection(conn);
     conn.close(new CloseReason(CloseReason.CloseCodes.GOING_AWAY,
         "No pong received for " + maxMissedPongs + " consecutive pings"));
