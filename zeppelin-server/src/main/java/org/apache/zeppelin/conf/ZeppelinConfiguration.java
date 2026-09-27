@@ -743,6 +743,10 @@ public class ZeppelinConfiguration {
     return getLong(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL);
   }
 
+  public int getWebsocketHeartbeatMaxMissedPongs() {
+    return getInt(ConfVars.ZEPPELIN_WEBSOCKET_HEARTBEAT_MAX_MISSED_PONGS);
+  }
+
   public String getJettyName() {
     return getString(ConfVars.ZEPPELIN_SERVER_JETTY_NAME);
   }
@@ -1105,6 +1109,8 @@ public class ZeppelinConfiguration {
     // per-connection traffic low. 60s gives 5 pings within the 300s default idle window.
     // <= 0 disables server-initiated heartbeats.
     ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL("zeppelin.websocket.heartbeat.interval", 60000L),
+    // Consecutive unanswered pings before a session is closed as dead. <= 0 disables reaping.
+    ZEPPELIN_WEBSOCKET_HEARTBEAT_MAX_MISSED_PONGS("zeppelin.websocket.heartbeat.max.missed.pongs", 3),
     ZEPPELIN_WEBSOCKET_PARAGRAPH_STATUS_PROGRESS("zeppelin.websocket.paragraph_status_progress.enable", true),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),

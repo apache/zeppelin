@@ -572,6 +572,12 @@
 </property>
 
 <property>
+  <name>zeppelin.websocket.heartbeat.max.missed.pongs</name>
+  <value>3</value>
+  <description>Number of consecutive heartbeat pings left unanswered (no pong) before the server closes the websocket session as dead. Defaults to 3. Set to 0 or a negative value to disable reaping.</description>
+</property>
+
+<property>
   <name>zeppelin.server.default.dir.allowed</name>
   <value>false</value>
   <description>Enable directory listings on server.</description>
