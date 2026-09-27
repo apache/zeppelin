@@ -374,7 +374,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_WORKER_COUNT</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.output.worker.count</h6></td>
     <td>4</td>
-    <td>Number of workers in each server pool: one pool delivers paragraph output, and the other saves output checkpoints. Output for a note stays in order, while different notes can be processed concurrently. Checkpoint saves do not occupy output workers.</td>
+    <td>Number of workers in each server pool: one pool delivers paragraph output, and the other saves output checkpoints. Each paragraph's output stays in order, and updates or checkpoints never overtake earlier appends. Different notes can be processed concurrently. Checkpoint saves do not occupy output workers.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_EVENTS_PER_BATCH</h6></td>

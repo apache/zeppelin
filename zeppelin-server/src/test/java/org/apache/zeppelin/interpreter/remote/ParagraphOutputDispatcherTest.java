@@ -53,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -361,40 +362,53 @@ class ParagraphOutputDispatcherTest {
     CountDownLatch release = new CountDownLatch(1);
     CountDownLatch unrelatedOutput = new CountDownLatch(1);
     CountDownLatch laterOutput = new CountDownLatch(1);
+    AtomicReference<Future<Void>> firstCheckpoint = new AtomicReference<>();
+    AtomicBoolean appendOverlappedCheckpoint = new AtomicBoolean();
+
     doAnswer(call -> {
       entered.countDown();
       awaitIgnoringInterrupt(release);
       return null;
     }).when(listener).checkpointOutput(anyString(), anyString());
+
     doAnswer(call -> {
       unrelatedOutput.countDown();
       return null;
     }).when(listener).onParagraphOutputAppend("C", "para", 0, null, "unrelated");
     doAnswer(call -> {
+      appendOverlappedCheckpoint.set(!firstCheckpoint.get().isDone());
       laterOutput.countDown();
       return null;
     }).when(listener).onParagraphOutputAppend("A", "para", 0, null, "later");
+
     try (ParagraphOutputDispatcher dispatcher = new ParagraphOutputDispatcher(listener, 2)) {
       Future<Void> first = dispatcher.checkpointOutput("A", "para");
+      firstCheckpoint.set(first);
       Future<Void> second = dispatcher.checkpointOutput("B", "para");
       assertTrue(entered.await(5, TimeUnit.SECONDS));
+
       dispatcher.appendOutput("A", "para", 0, null, "later");
       dispatcher.appendOutput("C", "para", 0, null, "unrelated");
       Future<Void> third = dispatcher.checkpointOutput("C", "para");
       dispatcher.flush();
+
       assertTrue(unrelatedOutput.await(5, TimeUnit.SECONDS));
-      assertFalse(laterOutput.await(100, TimeUnit.MILLISECONDS));
+      assertEquals(1, laterOutput.getCount());
       assertFalse(first.isDone());
       assertFalse(second.isDone());
       assertFalse(third.isDone());
       verify(listener, never()).checkpointOutput("C", "para");
+
       release.countDown();
       first.get(5, TimeUnit.SECONDS);
       second.get(5, TimeUnit.SECONDS);
       third.get(5, TimeUnit.SECONDS);
       assertTrue(laterOutput.await(5, TimeUnit.SECONDS));
+
+      assertFalse(appendOverlappedCheckpoint.get(), "Append must wait for checkpoint release");
       verify(listener).checkpointOutput("A", "para");
       verify(listener).checkpointOutput("B", "para");
+
       InOrder order = inOrder(listener);
       order.verify(listener).checkpointOutput("A", "para");
       order.verify(listener).onParagraphOutputAppend("A", "para", 0, null, "later");
