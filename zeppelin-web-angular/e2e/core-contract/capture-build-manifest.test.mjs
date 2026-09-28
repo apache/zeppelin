@@ -23,6 +23,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 const script = new URL('./capture-build-manifest.mjs', import.meta.url).pathname;
+const launcherScript = new URL('../../../bin/common.sh', import.meta.url).pathname;
 const roots = [
   'interpreter',
   'bin',
@@ -136,7 +137,7 @@ test('build manifest rejects fallback WAR additions and symlink retargeting', ()
   }
 });
 
-test('build manifest WAR search skips VCS metadata and frontend toolchain directories', () => {
+test('build manifest and launcher WAR searches skip VCS metadata and frontend toolchain directories', () => {
   const root = createRepository();
   try {
     const manifest = join(root, 'manifest.json');
@@ -146,6 +147,30 @@ test('build manifest WAR search skips VCS metadata and frontend toolchain direct
       writeFileSync(join(root, directory, 'zeppelin-web-0.13.0.war'), 'ignored');
     }
     execFileSync(process.execPath, [script, 'verify', manifest, root]);
+
+    rmSync(join(root, 'zeppelin-web', 'dist'), { recursive: true });
+    rmSync(join(root, 'zeppelin-web-angular', 'dist'), { recursive: true });
+    mkdirSync(join(root, 'fallback'), { recursive: true });
+    const classicWar = join(root, 'fallback', 'zeppelin-web-0.13.0.war');
+    const angularWar = join(root, 'fallback', 'zeppelin-web-angular-0.13.0.war');
+    writeFileSync(classicWar, 'classic');
+    writeFileSync(angularWar, 'angular');
+    const selectedWars = execFileSync(
+      'bash',
+      ['-c', '. "$1"; printf "%s\\n%s\\n" "$ZEPPELIN_WAR" "$ZEPPELIN_ANGULAR_WAR"', 'bash', launcherScript],
+      {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          ZEPPELIN_ANGULAR_WAR: '',
+          ZEPPELIN_HOME: root,
+          ZEPPELIN_WAR: ''
+        }
+      }
+    )
+      .trim()
+      .split('\n');
+    assert.deepEqual(selectedWars, [classicWar, angularWar]);
   } finally {
     rmSync(root, { force: true, recursive: true });
   }
