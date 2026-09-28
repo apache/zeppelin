@@ -43,7 +43,7 @@
         "envName": null,
         "propertyName": "default.completer.schemaFilters",
         "defaultValue": "",
-        "description": "Сomma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)",
+        "description": "Comma separated schema (schema = catalog = database) filters to get metadata for completions. Supports '%' symbol is equivalent to any set of characters. (ex. prod_v_%,public%,info)",
         "type": "textarea"
       },
       "default.precode": {

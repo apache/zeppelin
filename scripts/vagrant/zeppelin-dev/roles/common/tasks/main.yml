@@ -27,5 +27,5 @@
 - name: Install git
   apt: pkg=git state=present
 
-- name: Install libfontconfig to avoid phatomJs missing dependency issues
+- name: Install libfontconfig to avoid PhantomJS missing dependency issues
   apt: pkg=libfontconfig state=present
