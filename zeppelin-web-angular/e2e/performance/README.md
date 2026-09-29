@@ -15,11 +15,11 @@ limitations under the License.
 
 # Notebook route benchmark contract
 
-ZEPPELIN-6668 defines the fixture and measurement format. It does not establish a pinned Angular baseline. Generated JSON is ignored by Git.
+ZEPPELIN-6668 defines the fixture and measurement format. ZEPPELIN-6722 records the pinned Angular baseline described under [Recorded Angular baseline](#recorded-angular-baseline). Generated JSON is ignored by Git; only that recorded baseline is committed.
 
 Build with `npm run build`, then serve `dist/zeppelin` with an isolated local Zeppelin backend. The benchmark imports one note and deletes that note in cleanup. Do not point it at a shared notebook store. It checks the served index's entry script list and the served entry asset hashes against the local build before importing the fixture; server-injected inline markup does not affect this check. The normal E2E suite does not run this benchmark; no development server is started by its config. Each measured navigation's response is checked again after recording readiness, before accepting the sample, so validation does not delay the measured ready time.
 
-To serve the fresh build, start Zeppelin from this source tree after `npm run build`. In `zeppelin-server`'s `ZeppelinConfiguration`, `zeppelin.default.ui` defaults to `new` and `zeppelin.angular.war` defaults to `zeppelin-web-angular/dist/zeppelin`, so the benchmark requests that `dist` at `/` unless either property is overridden. Use `localhost` in `PLAYWRIGHT_BASE_URL`: unless `zeppelin.server.allowed.origins` is set, the server accepts a WebSocket origin only from `localhost` or its own host name, so a `127.0.0.1` origin never loads the note.
+To serve the fresh build, start Zeppelin from this source tree after `npm run build`. In `zeppelin-server`'s `ZeppelinConfiguration`, `zeppelin.default.ui` defaults to `new` and `zeppelin.angular.war` defaults to `zeppelin-web-angular/dist/zeppelin`, so the benchmark requests that `dist` at `/` unless either property is overridden. Use `localhost` in `PLAYWRIGHT_BASE_URL`: unless `zeppelin.server.allowed.origins` is set, the server accepts a WebSocket origin only from `localhost` or its own host name, so a `127.0.0.1` origin never loads the note. Note import needs a default interpreter setting, so at least one interpreter must be installed; the fixture's paragraphs use `%sh`, so building the `shell` module (`./mvnw install -DskipTests -pl shell`) is enough. Without any interpreter, import fails with HTTP 500.
 
 `playwright.performance.config.js` intentionally throws when `PLAYWRIGHT_BASE_URL` or `PERF_NOTEBOOK_DISPOSABLE=1` is missing, so `npx playwright test --list --config playwright.performance.config.js` needs them too.
 
@@ -47,3 +47,18 @@ Outputs are `baselines/<run-id>.raw.json` and `<run-id>.summary.json`. Both cont
 `bundles.angularEntryChunks` lists JavaScript entry scripts from the built Angular `index.html`. `bundles.reactRemoteEntry` measures the separately served `assets/react/remoteEntry.js`. Each file records relative path, SHA-256, raw bytes and gzip bytes. These are entry asset measurements, not the whole `dist` tree or a claim about the complete notebook route's lazy-loaded bundle size.
 
 Focused static checks: `npm run test:shell -- test/notebook-baseline.spec.ts` and `npx eslint e2e/performance/*.ts e2e/models/notebook-performance-page.ts`.
+
+## Recorded Angular baseline
+
+`baselines/70eef3f8-b75c-427a-b8b4-bfcd65b71264.raw.json` and `.summary.json` are the pinned Angular notebook route baseline, recorded before the React route host (ZEPPELIN-6675) lands. They are a single run of 10 cold and 10 warm samples in one environment; no outlier was removed and no other run is merged into them.
+
+* Zeppelin commit: `7f7b995c35978c4a3ef3df31ec8faf206ce179f9`, clean working tree
+* Environment: macOS (Darwin 23.6.0), Apple M3 Pro, 36 GiB memory, Playwright Chromium 140.0.7339.186, Node v22.21.1, on AC power
+* Server: Zeppelin built from the same commit (`zeppelin-server` with its dependencies, and `shell`), anonymous access, an empty isolated notebook directory
+
+| Metric (ms) | Cold median | Cold p95 | Warm median | Warm p95 |
+| --- | --- | --- | --- | --- |
+| `notebookReadyMs` | 1102.9 | 1181.9 | 806.2 | 871.6 |
+| `fcpMs` | 28 | 44 | 36 | 40 |
+
+The table rounds the summary file to 0.1 ms; the JSON files are authoritative. Compare a later run with this baseline only when it was recorded in the same environment.
