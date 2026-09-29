@@ -55,6 +55,34 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
+    recoverInterruptedSaves();
+  }
+
+  /**
+   * A save interrupted by a crash may leave only the .tmp or .bak file of a note, which
+   * {@link #list} does not pick up. Restore those notes before they are listed.
+   */
+  private void recoverInterruptedSaves() {
+    try {
+      List<Path> recovered =
+          fs.recoverInterruptedWrites(notebookDir, ".zpln", this::isValidNote);
+      if (!recovered.isEmpty()) {
+        LOGGER.warn("Recovered {} note(s) whose last save was interrupted: {}",
+            recovered.size(), recovered);
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Fail to recover notes whose last save was interrupted", e);
+    }
+  }
+
+  private boolean isValidNote(Path noteFile, String content) {
+    try {
+      noteParser.fromJson(getNoteId(noteFile.getName()), content);
+      return true;
+    } catch (IOException | RuntimeException e) {
+      LOGGER.warn("Content of the temp file of {} is not a valid note", noteFile);
+      return false;
+    }
   }
 
   @Override

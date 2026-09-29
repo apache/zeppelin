@@ -40,8 +40,10 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 
 /**
@@ -52,6 +54,8 @@ public class FileSystemStorage {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemStorage.class);
   private static final String S3A = "s3a";
   private static final String FS_DEFAULTFS = "fs.defaultFS";
+  static final String TMP_SUFFIX = ".tmp";
+  static final String BACKUP_SUFFIX = ".bak";
 
   // only do UserGroupInformation.loginUserFromKeytab one time, otherwise you will still get
   // your ticket expired.
@@ -239,14 +243,117 @@ public class FileSystemStorage {
       public Void call() throws IOException {
         InputStream in = new ByteArrayInputStream(content.getBytes(
             zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
-        Path tmpFile = new Path(file.toString() + ".tmp");
+        Path tmpFile = new Path(file.toString() + TMP_SUFFIX);
         IOUtils.copyBytes(in, fs.create(tmpFile), hadoopConf);
         fs.setPermission(tmpFile, fsPermission);
-        fs.delete(file, true);
-        fs.rename(tmpFile, file);
+        replaceFile(tmpFile, file);
         return null;
       }
     });
+  }
+
+  /**
+   * Replaces file with tmpFile without deleting the original first. The original is renamed to
+   * a backup and deleted only after tmpFile is in place, so an interrupted write always leaves a
+   * complete copy behind.
+   */
+  private void replaceFile(Path tmpFile, Path file) throws IOException {
+    Path backupFile = new Path(file.toString() + BACKUP_SUFFIX);
+    boolean hasOriginal = fs.exists(file);
+    if (hasOriginal) {
+      // A backup next to an existing file is left over from an earlier write and is older
+      // than the file itself.
+      fs.delete(backupFile, false);
+      if (!fs.rename(file, backupFile)) {
+        throw new IOException("Fail to back up " + file + " to " + backupFile);
+      }
+    }
+    if (!fs.rename(tmpFile, file)) {
+      if (hasOriginal && !fs.rename(backupFile, file)) {
+        LOGGER.error("Fail to restore {} from {}, please restore it manually", file, backupFile);
+      }
+      throw new IOException("Fail to rename " + tmpFile + " to " + file);
+    }
+    if (hasOriginal && !fs.delete(backupFile, false)) {
+      LOGGER.warn("Fail to delete backup file {}", backupFile);
+    }
+  }
+
+  /**
+   * Restores files under dir (recursively) whose last {@link #writeFile} was interrupted.
+   * A file is restored only when it is missing: from its temp file if isComplete accepts the
+   * content, otherwise from its backup file. Leftover files next to an existing file are kept.
+   *
+   * @param dir folder to scan recursively
+   * @param targetSuffix suffix of the files to restore, e.g. ".zpln"
+   * @param isComplete given the file to restore and the content of its temp file, tells whether
+   *                   that content is complete
+   * @return the restored files
+   */
+  public List<Path> recoverInterruptedWrites(final Path dir, final String targetSuffix,
+      final BiPredicate<Path, String> isComplete) throws IOException {
+    return callHdfsOperation(new HdfsOperation<List<Path>>() {
+      @Override
+      public List<Path> call() throws IOException {
+        List<Path> recovered = new ArrayList<>();
+        if (!fs.exists(dir)) {
+          return recovered;
+        }
+        Set<Path> missingFiles = new LinkedHashSet<>();
+        collectMissingFiles(dir, targetSuffix, missingFiles);
+        for (Path file : missingFiles) {
+          if (recoverFile(file, isComplete)) {
+            recovered.add(file);
+          }
+        }
+        return recovered;
+      }
+    });
+  }
+
+  private void collectMissingFiles(Path folder, String targetSuffix, Set<Path> missingFiles)
+      throws IOException {
+    for (FileStatus status : fs.listStatus(folder)) {
+      Path path = status.getPath();
+      if (status.isDirectory()) {
+        collectMissingFiles(path, targetSuffix, missingFiles);
+        continue;
+      }
+      for (String suffix : new String[] {TMP_SUFFIX, BACKUP_SUFFIX}) {
+        if (path.getName().endsWith(targetSuffix + suffix)) {
+          String pathString = path.toString();
+          Path file = new Path(pathString.substring(0, pathString.length() - suffix.length()));
+          if (!fs.exists(file)) {
+            missingFiles.add(file);
+          }
+        }
+      }
+    }
+  }
+
+  private boolean recoverFile(Path file, BiPredicate<Path, String> isComplete)
+      throws IOException {
+    Path tmpFile = new Path(file.toString() + TMP_SUFFIX);
+    Path backupFile = new Path(file.toString() + BACKUP_SUFFIX);
+    // The temp file is newer than the backup, but it may be incomplete if the write stopped
+    // while it was being written.
+    if (fs.exists(tmpFile) && isComplete.test(file, readContent(tmpFile))
+        && fs.rename(tmpFile, file)) {
+      LOGGER.warn("Recovered {} from {}", file, tmpFile);
+      return true;
+    }
+    if (fs.exists(backupFile) && fs.rename(backupFile, file)) {
+      LOGGER.warn("Recovered {} from {}", file, backupFile);
+      return true;
+    }
+    LOGGER.error("Fail to recover {}, please check {} manually", file, tmpFile);
+    return false;
+  }
+
+  private String readContent(Path file) throws IOException {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    IOUtils.copyBytes(fs.open(file), bytes, hadoopConf);
+    return bytes.toString(zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
   }
 
   public void move(Path src, Path dest) throws IOException {
