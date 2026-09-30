@@ -38,7 +38,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Launches a stand-in interpreter process that never registers with the server, so the launch
- * stays in LAUNCHED until it times out or is cancelled.
+ * stays in LAUNCHED until it times out or is cancelled. It records a SIGTERM, which in a real
+ * interpreter process would run the shutdown hook that unregisters its interpreter group id.
  */
 @DisabledOnOs(OS.WINDOWS)
 class ExecRemoteInterpreterProcessTest {
@@ -55,6 +56,7 @@ class ExecRemoteInterpreterProcessTest {
     assertThrows(IOException.class, () -> process.start("anonymous"));
 
     assertExits(readPid(pidFile));
+    assertNoShutdownHookRan();
   }
 
   @Test
@@ -80,13 +82,15 @@ class ExecRemoteInterpreterProcessTest {
         assertThrows(ExecutionException.class, () -> launch.get(10, TimeUnit.SECONDS));
     assertTrue(launchFailure.getCause() instanceof IOException, launchFailure.toString());
     assertExits(pid);
+    assertNoShutdownHookRan();
   }
 
   private Path neverRegisteringRunner(Path pidFile) throws IOException {
     Path runner = tempDir.resolve("interpreter.sh");
     Files.write(runner, ("#!/bin/sh\n"
+        + "trap 'echo TERM > " + tempDir.resolve("sigterm") + "; exit 143' TERM\n"
         + "echo $$ > " + pidFile + "\n"
-        + "exec sleep 600\n").getBytes(StandardCharsets.UTF_8));
+        + "while true; do sleep 1; done\n").getBytes(StandardCharsets.UTF_8));
     runner.toFile().setExecutable(true);
     return runner;
   }
@@ -117,6 +121,11 @@ class ExecRemoteInterpreterProcessTest {
       Thread.sleep(50);
     }
     assertFalse(isAlive(pid), "the launched process " + pid + " is still running");
+  }
+
+  private void assertNoShutdownHookRan() {
+    assertFalse(Files.exists(tempDir.resolve("sigterm")),
+        "the process received SIGTERM, so a real interpreter process would run its shutdown hook");
   }
 
   private static boolean isAlive(long pid) {

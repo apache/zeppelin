@@ -183,6 +183,12 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
         : "";
   }
 
+  /**
+   * A launch that is given up, on timeout or when the process is stopped while launching, kills
+   * the process forcibly. It has not been initialized, so it has no open interpreter to close, and
+   * its shutdown hook would unregister its interpreter group id, which by then can belong to
+   * another group (ZEPPELIN-6723).
+   */
   private class InterpreterProcessLauncher extends ProcessLauncher {
 
     public InterpreterProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
@@ -240,7 +246,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
     public void cancelLaunch() {
       synchronized (this) {
-        destroyProcess();
+        destroyProcessForcibly();
         if (state == State.LAUNCHED) {
           errorMessage = "The launch is cancelled, because the interpreter process is stopped";
           transition(State.TERMINATED);
@@ -253,7 +259,7 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     public void onTimeout() {
       super.onTimeout();
       // The process never reported that it is running, so stop() leaves it alive.
-      destroyProcess();
+      destroyProcessForcibly();
     }
 
     @Override
