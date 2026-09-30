@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -25,6 +26,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -51,6 +55,31 @@ class ExecRemoteInterpreterProcessTest {
     assertThrows(IOException.class, () -> process.start("anonymous"));
 
     assertExits(readPid(pidFile));
+  }
+
+  @Test
+  @Timeout(60)
+  void stopWhileLaunchingEndsTheLaunchAndDestroysTheProcess() throws Exception {
+    Path pidFile = tempDir.resolve("pid");
+    ExecRemoteInterpreterProcess process =
+        createProcess(neverRegisteringRunner(pidFile), (int) TimeUnit.MINUTES.toMillis(10));
+
+    CompletableFuture<Void> launch = CompletableFuture.runAsync(() -> {
+      try {
+        process.start("anonymous");
+      } catch (IOException e) {
+        throw new CompletionException(e);
+      }
+    });
+    long pid = readPid(pidFile);
+
+    // What ManagedInterpreterGroup.close() does when the group is closed during the launch.
+    process.stop();
+
+    ExecutionException launchFailure =
+        assertThrows(ExecutionException.class, () -> launch.get(10, TimeUnit.SECONDS));
+    assertTrue(launchFailure.getCause() instanceof IOException, launchFailure.toString());
+    assertExits(pid);
   }
 
   private Path neverRegisteringRunner(Path pidFile) throws IOException {

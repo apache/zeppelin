@@ -40,6 +40,8 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
 
   private final String interpreterRunner;
   private InterpreterProcessLauncher interpreterProcessLauncher;
+  // Guarded by this. Set once stop() is called before the process reports that it is running.
+  private boolean launchCancelled;
 
   public ExecRemoteInterpreterProcess(
       int intpEventServerPort,
@@ -82,8 +84,14 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     cmdLine.addArgument("-g", false);
     cmdLine.addArgument(getInterpreterSettingName(), false);
 
-    interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, getEnv());
-    interpreterProcessLauncher.launch();
+    synchronized (this) {
+      if (launchCancelled) {
+        throw new IOException("Interpreter process of interpreter group " + getInterpreterGroupId()
+            + " is stopped before it is launched");
+      }
+      interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, getEnv());
+      interpreterProcessLauncher.launch();
+    }
     interpreterProcessLauncher.waitForReady(getConnectTimeout());
     if (interpreterProcessLauncher.isLaunchTimeout()) {
       throw new IOException(
@@ -137,7 +145,19 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     } else {
       // Shutdown connection
       super.close();
+      cancelLaunch();
       LOGGER.warn("Try to stop a not running interpreter process of interpreter group: {}", getInterpreterGroupId());
+    }
+  }
+
+  /**
+   * A process that is still launching has not registered yet, so the server cannot ask it to shut
+   * down. Destroy it and end the launch, instead of leaving start() to wait for the connect timeout.
+   */
+  private synchronized void cancelLaunch() {
+    launchCancelled = true;
+    if (interpreterProcessLauncher != null) {
+      interpreterProcessLauncher.cancelLaunch();
     }
   }
 
@@ -215,6 +235,17 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
       this.stopCatchLaunchOutput();
       if (state == State.LAUNCHED) {
         onTimeout();
+      }
+    }
+
+    public void cancelLaunch() {
+      synchronized (this) {
+        destroyProcess();
+        if (state == State.LAUNCHED) {
+          errorMessage = "The launch is cancelled, because the interpreter process is stopped";
+          transition(State.TERMINATED);
+        }
+        notifyAll();
       }
     }
 
