@@ -733,13 +733,6 @@ public class InterpreterSettingManager implements NoteEventListener {
     return statuses;
   }
 
-  // TODO(zjffdu) Current approach is not optimized. we have to iterate all interpreter settings.
-  public void removeInterpreterGroup(String intpGroupId) {
-    for (InterpreterSetting interpreterSetting : interpreterSettings.values()) {
-      interpreterSetting.removeInterpreterGroup(intpGroupId);
-    }
-  }
-
   //TODO(zjffdu) move Resource related api to ResourceManager
   public ResourceSet getAllResources() {
     return getAllResourcesExcept(null);
