@@ -183,6 +183,7 @@ class FileSystemNotebookRepoTest {
 
     assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
     assertEquals("value_2", getConfigValue(note));
+    assertFalse(Files.exists(noteFile(note, ".bak")));
   }
 
   @Test
@@ -200,15 +201,43 @@ class FileSystemNotebookRepoTest {
   }
 
   @Test
-  void testRecoverNoteLostByPreviousVersion() throws IOException {
-    // Earlier versions deleted the note file first, so only the complete .tmp file was left
+  void testDoNotRecoverFromTempFileOnly() throws IOException {
+    // A lone .tmp cannot be told apart from a leftover of a deleted note
     Note note = createNote("/title_1", "value_1");
     writeString(noteFile(note, ".tmp"), note.toJson());
 
     restartRepo();
 
-    assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
-    assertEquals("value_1", getConfigValue(note));
+    assertEquals(0, hdfsNotebookRepo.list(authInfo).size());
+    assertTrue(Files.exists(noteFile(note, ".tmp")));
+  }
+
+  @Test
+  void testRemovedNoteIsNotRestoredFromLeftoverTmp() throws IOException {
+    Note note = createNote("/title_1", "value_1");
+    hdfsNotebookRepo.save(note, authInfo);
+    writeString(noteFile(note, ".tmp"), note.toJson());
+    hdfsNotebookRepo.remove(note.getId(), note.getPath(), authInfo);
+
+    restartRepo();
+
+    assertEquals(0, hdfsNotebookRepo.list(authInfo).size());
+  }
+
+  @Test
+  void testMovedNoteIsNotDuplicatedFromLeftoverTmp() throws IOException {
+    Note note = createNote("/title_1", "value_1");
+    hdfsNotebookRepo.save(note, authInfo);
+    writeString(noteFile(note, ".tmp"), note.toJson());
+    hdfsNotebookRepo.move(note.getId(), "/title_1", "/dir/title_2", authInfo);
+
+    restartRepo();
+
+    long zplnCount;
+    try (Stream<java.nio.file.Path> files = Files.walk(Paths.get(notebookDir))) {
+      zplnCount = files.filter(f -> f.toString().endsWith(".zpln")).count();
+    }
+    assertEquals(1, zplnCount);
   }
 
   @Test

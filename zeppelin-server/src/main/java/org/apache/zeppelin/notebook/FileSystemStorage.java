@@ -269,8 +269,15 @@ public class FileSystemStorage {
       }
     }
     if (!fs.rename(tmpFile, file)) {
-      if (hasOriginal && !fs.rename(backupFile, file)) {
-        LOGGER.error("Fail to restore {} from {}, please restore it manually", file, backupFile);
+      if (hasOriginal) {
+        if (fs.rename(backupFile, file)) {
+          // The original is back in place, so the temp file is no longer needed. Leaving it
+          // would let it be mistaken for an interrupted write later.
+          fs.delete(tmpFile, false);
+        } else {
+          LOGGER.error("Fail to restore {} from {}, please restore it manually",
+              file, backupFile);
+        }
       }
       throw new IOException("Fail to rename " + tmpFile + " to " + file);
     }
@@ -281,8 +288,9 @@ public class FileSystemStorage {
 
   /**
    * Restores files under dir (recursively) whose last {@link #writeFile} was interrupted.
-   * A file is restored only when it is missing: from its temp file if isComplete accepts the
-   * content, otherwise from its backup file. Leftover files next to an existing file are kept.
+   * A file is restored only when it is missing and both its temp and backup files exist:
+   * from the temp file if isComplete accepts its content, otherwise from the backup file.
+   * A single leftover file is only logged. Leftover files next to an existing file are kept.
    *
    * @param dir folder to scan recursively
    * @param targetSuffix suffix of the files to restore, e.g. ".zpln"
@@ -335,18 +343,27 @@ public class FileSystemStorage {
       throws IOException {
     Path tmpFile = new Path(file.toString() + TMP_SUFFIX);
     Path backupFile = new Path(file.toString() + BACKUP_SUFFIX);
+    // writeFile leaves both files only when it stops between its two renames. A single leftover
+    // may belong to a file that was deleted or moved on purpose, so it is not restored.
+    if (!fs.exists(tmpFile) || !fs.exists(backupFile)) {
+      LOGGER.warn("Found {} without {}, not restoring it automatically. "
+          + "Rename it manually if it should be restored.",
+          fs.exists(tmpFile) ? tmpFile : backupFile, file);
+      return false;
+    }
     // The temp file is newer than the backup, but it may be incomplete if the write stopped
     // while it was being written.
-    if (fs.exists(tmpFile) && isComplete.test(file, readContent(tmpFile))
-        && fs.rename(tmpFile, file)) {
+    if (isComplete.test(file, readContent(tmpFile)) && fs.rename(tmpFile, file)) {
+      fs.delete(backupFile, false);
       LOGGER.warn("Recovered {} from {}", file, tmpFile);
       return true;
     }
-    if (fs.exists(backupFile) && fs.rename(backupFile, file)) {
+    if (fs.rename(backupFile, file)) {
       LOGGER.warn("Recovered {} from {}", file, backupFile);
       return true;
     }
-    LOGGER.error("Fail to recover {}, please check {} manually", file, tmpFile);
+    LOGGER.error("Fail to recover {}, please check {} and {} manually",
+        file, tmpFile, backupFile);
     return false;
   }
 
