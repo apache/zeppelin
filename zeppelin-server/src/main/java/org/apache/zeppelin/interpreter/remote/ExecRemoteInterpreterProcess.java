@@ -219,6 +219,13 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
     }
 
     @Override
+    public void onTimeout() {
+      super.onTimeout();
+      // The process never reported that it is running, so stop() leaves it alive.
+      destroyProcess();
+    }
+
+    @Override
     public void onProcessRunning() {
       super.onProcessRunning();
       synchronized (this) {

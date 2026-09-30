@@ -161,7 +161,17 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   }
 
   public void stop() {
-    if (watchdog != null && isRunning()) {
+    if (isRunning()) {
+      destroyProcess();
+    }
+  }
+
+  /**
+   * Destroys the process whatever its state, e.g. for a launch that is given up before the
+   * process reports that it is running.
+   */
+  protected void destroyProcess() {
+    if (watchdog != null) {
       watchdog.destroyProcess();
       watchdog = null;
     }
