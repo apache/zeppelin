@@ -70,13 +70,13 @@
 <property>
   <name>zeppelin.interpreter.include</name>
   <value></value>
-  <description>All the inteprreters that you would like to include. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
+  <description>All the interpreters that you would like to include. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
 </property>
 
 <property>
   <name>zeppelin.interpreter.exclude</name>
   <value></value>
-  <description>All the inteprreters that you would like to exclude. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
+  <description>All the interpreters that you would like to exclude. You can only specify either 'zeppelin.interpreter.include' or 'zeppelin.interpreter.exclude'. Specifying them together is not allowed.</description>
 </property>
 
 <property>
