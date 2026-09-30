@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { Directive, ElementRef, HostBinding, Input, OnChanges } from '@angular/core';
+import { Directive, ElementRef, HostBinding, Input, OnChanges, SecurityContext } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Directive({
   // eslint-disable-next-line
@@ -22,10 +23,15 @@ export class ExternalLinkDirective implements OnChanges {
   @HostBinding('attr.target') targetAttr: HTMLAnchorElement['target'] | null = null;
   @Input() href?: string;
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(
+    private elementRef: ElementRef,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnChanges() {
-    this.elementRef.nativeElement.href = this.href;
+    // This directive captures the `href` input, so Angular's built-in URL sanitization
+    // for `[href]` bindings is skipped. Sanitize explicitly before writing to the DOM.
+    this.elementRef.nativeElement.href = this.sanitizer.sanitize(SecurityContext.URL, this.href ?? null) ?? '';
 
     if (this.isLinkExternal()) {
       // https://developers.google.com/web/tools/lighthouse/audits/noopener
