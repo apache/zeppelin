@@ -29,6 +29,8 @@
     "test:notebook-core-port-identity": "node --test e2e/core-contract/notebook-core-port-identity.test.mjs",
     "test:notebook-core": "vitest run --config vitest.notebook-core.config.mts",
     "test:shell": "vitest run --config vitest.shell.config.mts",
+    "test:react": "npm --prefix projects/zeppelin-react test",
+    "typecheck:react": "npm --prefix projects/zeppelin-react run typecheck",
     "test:eslint-rules": "node --test eslint-rules/*.test.js",
     "e2e": "playwright test",
     "check:core-contract-fixtures": "node --test e2e/core-contract/notebook-transport-fixture.test.mjs e2e/core-contract/playwright-runner.test.mjs e2e/core-contract/reject-notebook-core-runtime-plugin.test.mjs",
