@@ -29,13 +29,13 @@
         <nz-form-control [nzSpan]="4">
           <nz-select
             nzSize="small"
-            [(ngModel)]="permissions.owners"
+            [(ngModel)]="draftPermissions.owners"
             nzServerSearch
             (nzOnSearch)="searchUser($event)"
             nzMode="multiple"
             name="owners"
           >
-            @for (item of permissions.owners; track item) {
+            @for (item of draftPermissions.owners; track item) {
               <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
             }
             @for (item of listOfUserAndRole; track item) {
@@ -56,13 +56,13 @@
         <nz-form-control [nzSpan]="4">
           <nz-select
             nzSize="small"
-            [(ngModel)]="permissions.writers"
+            [(ngModel)]="draftPermissions.writers"
             nzServerSearch
             (nzOnSearch)="searchUser($event)"
             nzMode="multiple"
             name="writers"
           >
-            @for (item of permissions.writers; track item) {
+            @for (item of draftPermissions.writers; track item) {
               <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
             }
             @for (item of listOfUserAndRole; track item) {
@@ -83,13 +83,13 @@
         <nz-form-control [nzSpan]="4">
           <nz-select
             nzSize="small"
-            [(ngModel)]="permissions.runners"
+            [(ngModel)]="draftPermissions.runners"
             nzServerSearch
             (nzOnSearch)="searchUser($event)"
             nzMode="multiple"
             name="runners"
           >
-            @for (item of permissions.runners; track item) {
+            @for (item of draftPermissions.runners; track item) {
               <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
             }
             @for (item of listOfUserAndRole; track item) {
@@ -110,13 +110,13 @@
         <nz-form-control [nzSpan]="4">
           <nz-select
             nzSize="small"
-            [(ngModel)]="permissions.readers"
+            [(ngModel)]="draftPermissions.readers"
             nzServerSearch
             (nzOnSearch)="searchUser($event)"
             nzMode="multiple"
             name="readers"
           >
-            @for (item of permissions.readers; track item) {
+            @for (item of draftPermissions.readers; track item) {
               <nz-option [nzLabel]="item" [nzValue]="item"></nz-option>
             }
             @for (item of listOfUserAndRole; track item) {
