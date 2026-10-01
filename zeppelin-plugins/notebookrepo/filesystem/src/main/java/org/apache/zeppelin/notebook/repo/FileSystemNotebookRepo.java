@@ -59,8 +59,10 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
   }
 
   /**
-   * A save interrupted by a crash may leave only the .tmp or .bak file of a note, which
-   * {@link #list} does not pick up. Restore those notes before they are listed.
+   * A save interrupted between its two renames leaves the .bak and .tmp files of a note but
+   * no .zpln file, so {@link #list} does not pick it up. Restore those notes before they are
+   * listed. A single leftover .tmp or .bak file is not restored, because it can't be told apart
+   * from a leftover of a removed or moved note. It is only logged.
    */
   private void recoverInterruptedSaves() {
     try {
