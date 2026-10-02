@@ -277,7 +277,7 @@ export interface Completion {
 }
 
 export interface CompletionItem {
-  meta: string;
+  meta?: string;
   value: string;
   name: string;
 }
