@@ -39,8 +39,9 @@ The repository root `AGENTS.md` asks every change to include unit tests. This fi
 | `npm run test:shell -- foo.spec.ts` | Run one file |
 | `npm run test:notebook-core` | Run the dedicated notebook-core Node suite |
 | `npm run typecheck:notebook-core` | Check core source and specs, rebuild the package, and check the React type-only contract against built declarations and the same core source |
+| `npm run typecheck:sdk-contracts` | Check the `zeppelin-sdk` specs |
 
-`test:shell`, `test:notebook-core`, and `typecheck:notebook-core` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. It does not run where you would expect. `frontend.yml` builds this module with `-DskipTests`, which frontend-maven-plugin honours by skipping `test`-phase executions, so the run that counts is `mvnw verify -Pweb-e2e` inside the `run-playwright-e2e-tests` job. A failing spec surfaces there, under an e2e job name. Giving the unit tests a step of their own is [ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566).
+`test:shell`, `test:notebook-core`, `typecheck:notebook-core`, and `typecheck:sdk-contracts` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. It does not run where you would expect. `frontend.yml` builds this module with `-DskipTests`, which frontend-maven-plugin honours by skipping `test`-phase executions, so the run that counts is `mvnw verify -Pweb-e2e` inside the `run-playwright-e2e-tests` job. A failing spec surfaces there, under an e2e job name. Giving the unit tests a step of their own is [ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566).
 
 ## Where a test belongs
 
@@ -144,4 +145,4 @@ This is a different measurement from `e2e/reporter.coverage.ts`, which counts an
 3. Import from `vitest` (`describe`, `expect`, `it`), not from Jasmine or Jest.
    Check the target has callers before you invest in it. `get-keyword-positions.spec.ts` is a worked example of a function that turned out to have none.
 4. Construct the class directly unless the behavior depends on Angular wiring; use `TestBed` when it does.
-5. Run `npm run test:shell` for shell/SDK/visualization changes. For notebook-core changes, run `npm run test:notebook-core` and `npm run typecheck:notebook-core`. Confirm the relevant checks pass before opening a PR.
+5. Run `npm run test:shell` for shell/SDK/visualization changes, plus `npm run typecheck:sdk-contracts` for SDK changes. For notebook-core changes, run `npm run test:notebook-core` and `npm run typecheck:notebook-core`. Confirm the relevant checks pass before opening a PR.
