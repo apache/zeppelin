@@ -70,7 +70,8 @@ class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             new NoteManager(notebookRepo, ZeppelinConfiguration.load()),
             interpreterFactory,
             interpreterSettingManager,
-            new Credentials());
+            new Credentials(),
+            eventBus);
 
     heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
