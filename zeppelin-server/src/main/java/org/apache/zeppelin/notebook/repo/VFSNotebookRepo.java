@@ -24,6 +24,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -175,8 +178,34 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
         out.close();
       }
     }
-    noteJson.moveTo(rootNotebookFileObject.resolveFile(
+    moveReplacing(noteJson, rootNotebookFileObject.resolveFile(
         buildNoteFileName(note), NameScope.DESCENDENT));
+  }
+
+  /**
+   * Moves src over dest. FileObject.moveTo deletes dest before renaming src, so a crash in
+   * between loses the note. For local files, replace dest in a single atomic rename instead.
+   * Other file systems, and local ones without atomic rename, keep using moveTo.
+   */
+  private void moveReplacing(FileObject src, FileObject dest) throws IOException {
+    if ("file".equals(src.getName().getScheme())) {
+      try {
+        Files.move(src.getPath(), dest.getPath(),
+            StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        // The move bypassed VFS, so drop the state it cached for these files.
+        src.refresh();
+        dest.refresh();
+        FileObject parent = dest.getParent();
+        if (parent != null) {
+          parent.refresh();
+        }
+        return;
+      } catch (AtomicMoveNotSupportedException e) {
+        LOGGER.warn("Atomic move is not supported for {}, falling back to a non-atomic move",
+            dest.getName(), e);
+      }
+    }
+    src.moveTo(dest);
   }
 
   @Override

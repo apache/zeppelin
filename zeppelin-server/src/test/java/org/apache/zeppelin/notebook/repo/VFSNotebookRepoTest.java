@@ -116,6 +116,27 @@ class VFSNotebookRepoTest {
   }
 
   @Test
+  void testSaveReplacesExistingNote() throws IOException {
+    Note note = new Note();
+    note.setPath("/my_project/my_note1");
+    note.setNoteParser(noteParser);
+    Paragraph p = note.insertNewParagraph(0, AuthenticationInfo.ANONYMOUS);
+    p.setText("%md hello world");
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+
+    p.setText("%md hello world2");
+    notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+
+    assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+    Note savedNote = notebookRepo.get(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+    assertEquals("%md hello world2", savedNote.getParagraphs().get(0).getText());
+    File[] files = new File(notebookRepo.rootNotebookFolder, "my_project").listFiles();
+    assertEquals(1, files.length);
+    assertEquals(notebookRepo.buildNoteFileName(note),
+        "my_project/" + files[0].getName());
+  }
+
+  @Test
   void testNoteNameWithColon() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
