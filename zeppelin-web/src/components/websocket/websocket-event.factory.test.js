@@ -20,6 +20,7 @@ describe('Factory: websocketEvents', function() {
   let messageCallback;
   let ngToast;
   let rootScope;
+  let saveAsService;
   let websocketEvents;
 
   beforeEach(function() {
@@ -34,6 +35,7 @@ describe('Factory: websocketEvents', function() {
       socket: {readyState: 1},
     };
     ngToast = {info: jasmine.createSpy('info')};
+    saveAsService = {saveAs: jasmine.createSpy('saveAs')};
 
     angular.mock.module('zeppelinWebApp', function($provide) {
       $provide.value('$websocket', function() {
@@ -42,7 +44,7 @@ describe('Factory: websocketEvents', function() {
       $provide.value('baseUrlSrv', {getWebsocketUrl: function() {
         return 'ws://localhost/ws';
       }});
-      $provide.value('saveAsService', {saveAs: angular.noop});
+      $provide.value('saveAsService', saveAsService);
       $provide.value('ngToast', ngToast);
     });
   });
@@ -90,5 +92,19 @@ describe('Factory: websocketEvents', function() {
     expect(ngToast.info).toHaveBeenCalledWith(payloadSecret);
     expect(console.log).toHaveBeenCalledWith('Receive << %o', 'NOTICE');
     expect(JSON.stringify(console.log.calls.allArgs())).not.toContain(payloadSecret);
+  });
+
+  it('passes the ipynb extension without a leading dot when saving a converted note', function() {
+    const nbformat = '{"cells": []}';
+
+    messageCallback({
+      data: JSON.stringify({
+        op: 'CONVERTED_NOTE_NBFORMAT',
+        data: {nbformat: nbformat, noteName: 'test sh'},
+      }),
+    });
+
+    // saveAsService.saveAs() joins the file name and the extension with a dot itself
+    expect(saveAsService.saveAs).toHaveBeenCalledWith(nbformat, 'test sh', 'ipynb');
   });
 });
