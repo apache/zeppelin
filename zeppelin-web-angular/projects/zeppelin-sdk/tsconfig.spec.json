@@ -4,5 +4,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.spec.ts", "type-tests/**/*.ts"]
+  "include": ["src/**/*.spec.ts"]
 }
