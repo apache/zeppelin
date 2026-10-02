@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, expectTypeOf, it } from 'vitest';
+import { assertType, expectTypeOf, it } from 'vitest';
 
 import { MessageReceiveDataTypeMap } from './message-data-type-map.interface';
 import { OP } from './message-operator.interface';
@@ -23,12 +23,10 @@ it('declares the asymmetric paragraph output payloads sent by the server', () =>
     index: 0,
     data: 'chunk'
   };
-  const update: MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT] = {
+  assertType<MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT]>({
     ...append,
     type: DatasetType.TEXT
-  };
-  expect(append).not.toHaveProperty('type');
-  expect(update.type).toBe(DatasetType.TEXT);
+  });
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]>().toEqualTypeOf<ParagraphAppendOutput>();
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]>().not.toHaveProperty('type');
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT]>().toEqualTypeOf<ParagraphUpdateOutput>();
