@@ -221,6 +221,11 @@ module.exports = tseslint.config(
     }
   },
   {
+    // Only specs a Maven tsc pass compiles; anywhere else a type-only test cannot fail.
+    files: ['projects/zeppelin-{notebook-core,sdk}/**/*.spec.ts', 'test/notebook-core/**/*.spec.ts'],
+    settings: { vitest: { typecheck: true } }
+  },
+  {
     // The shell test setup intentionally loads Zone.js for its side effects.
     files: ['test/test-setup.ts'],
     rules: {
