@@ -11,6 +11,10 @@ body {
   font-size: 15px;
 }
 
+html {
+  scroll-padding-top: 60px;
+}
+
 .jumbotron {
   background-color: #3071a9;
 }
