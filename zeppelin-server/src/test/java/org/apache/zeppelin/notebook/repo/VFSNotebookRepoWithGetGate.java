@@ -26,13 +26,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Test-only subclass of {@link VFSNotebookRepo} that parks the first {@code get()} call after
- * arming, once the note has already been read from disk. This reproduces the reload path taken
- * by {@code NoteManager#moveNote} when the re-save block (leaf name changed) misses the note
- * cache: {@code loadAndProcessNote} calls {@code NotebookRepo#get()} to reload the note before
- * re-saving it at the (possibly stale) target path passed into the outer {@code moveNote} call.
- * Parking here, after the disk read, lets a second, concurrent {@code moveNote} call for the
- * same note run to completion (including its own re-save skip, when the leaf name did not
- * change) before the parked call resumes and saves using its now-stale destination path.
+ * arming, once the note has already been read from disk. Tests use it to detect whether an
+ * operation reloads a note from the repo, and to hold such a reload in place while other
+ * operations run.
  */
 public class VFSNotebookRepoWithGetGate extends VFSNotebookRepo {
 

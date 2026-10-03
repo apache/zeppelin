@@ -127,8 +127,48 @@ class NoteManagerTest {
             "Note '/prod/note-1' existed");
   }
 
+  @Test
+  void testReloadAfterRenameDerivesLeafNameFromTree() throws IOException {
+    JsonRoundTripNotebookRepo repo = new JsonRoundTripNotebookRepo(noteParser);
+    NoteManager manager = new NoteManager(repo, zConf);
+    Note note = createNote("/folder/before");
+    manager.saveNote(note);
+
+    manager.moveNote(note.getId(), "/folder/after", AuthenticationInfo.ANONYMOUS);
+
+    // moveNote does not re-save, so the stored JSON still carries the old name.
+    assertEquals("before",
+        repo.get(note.getId(), "/folder/after", AuthenticationInfo.ANONYMOUS).getName());
+    // A reload must still report the renamed path.
+    assertEquals("/folder/after", manager.processNote(note.getId(), true, Note::getPath));
+  }
+
   private Note createNote(String notePath) {
     return new Note(notePath, "test", null, null, null, null, null, zConf, noteParser);
+  }
+
+  /**
+   * Stores notes as JSON and parses them on every get(), like the file based repositories
+   * other than VFS. The returned note has no path, because path is not serialized.
+   */
+  private static class JsonRoundTripNotebookRepo extends InMemoryNotebookRepo {
+    private final NoteParser parser;
+    private final Map<String, String> notesJson = new ConcurrentHashMap<>();
+
+    JsonRoundTripNotebookRepo(NoteParser parser) {
+      this.parser = parser;
+    }
+
+    @Override
+    public void save(Note note, AuthenticationInfo subject) throws IOException {
+      notesJson.put(note.getId(), note.toJson());
+    }
+
+    @Override
+    public Note get(String noteId, String notePath, AuthenticationInfo subject)
+        throws IOException {
+      return parser.fromJson(noteId, notesJson.get(noteId));
+    }
   }
 
   @Test

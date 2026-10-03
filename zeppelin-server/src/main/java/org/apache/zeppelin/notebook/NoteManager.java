@@ -267,29 +267,8 @@ public class NoteManager {
         }
       }
     }
-
-    // save note if note name is changed, because we need to update the note field in note json.
-    String oldNoteName = getNoteName(notePath);
-    String newNoteName = getNoteName(newNotePath);
-    if (!StringUtils.equals(oldNoteName, newNoteName)) {
-      processNote(noteId,
-        note -> {
-          // null when the noteId already left the mapping, e.g. a concurrent remove.
-          if (note == null) {
-            return null;
-          }
-          // newNotePath was fixed at method entry, so re-read the current path and save
-          // it under the same monitor to keep a concurrent move out of the gap.
-          synchronized (this) {
-            String currentPath = this.noteTree.notesInfo.get(noteId);
-            if (currentPath != null) {
-              note.setPath(currentPath);
-              saveNote(note, subject);
-            }
-          }
-          return null;
-        });
-    }
+    // No resave is needed after a rename: a reload derives the path, including the leaf
+    // name, from the note tree rather than from the name field in the note JSON.
   }
 
   public void moveFolder(String folderPath,
@@ -697,11 +676,9 @@ public class NoteManager {
         note = noteCache.getNote(noteInfo.getId());
         if (note == null || reload) {
           note = notebookRepo.get(noteInfo.getId(), noteInfo.getPath(), AuthenticationInfo.ANONYMOUS);
-          if (parent.toString().equals("/")) {
-            note.setPath("/" + note.getName());
-          } else {
-            note.setPath(parent.toString() + "/" + note.getName());
-          }
+          // Derive both the folder and the leaf name from the tree. The name field in the
+          // note JSON can lag behind a rename until the note is next saved.
+          note.setPath(getNotePath());
           note.setCronSupported(zConf);
           noteCache.putNote(note);
         }
