@@ -23,9 +23,11 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class RemoteInterpreterServerTest {
 
@@ -64,6 +67,23 @@ class RemoteInterpreterServerTest {
 
     server.intpEventClient.onAppStatusUpdate("", "", "", "");
     stopRemoteInterpreterServer(server, 10 * 10000);
+  }
+
+  @Test
+  void testShutdownUnregistersWithItsHostAndPort() throws Exception {
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+    server.intpEventClient = mock(RemoteInterpreterEventClient.class);
+    startRemoteInterpreterServer(server, 10 * 1000);
+
+    stopRemoteInterpreterServer(server, 10 * 10000);
+
+    // The server compares these with what the process registered with.
+    ArgumentCaptor<RegisterInfo> registerInfo = ArgumentCaptor.forClass(RegisterInfo.class);
+    verify(server.intpEventClient).unRegisterInterpreterProcess(registerInfo.capture());
+    assertNotNull(registerInfo.getValue().getHost());
+    assertEquals(server.getPort(), registerInfo.getValue().getPort());
+    assertEquals("groupId", registerInfo.getValue().getInterpreterGroupId());
   }
 
   private void startRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
