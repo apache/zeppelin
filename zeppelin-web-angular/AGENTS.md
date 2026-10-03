@@ -39,8 +39,9 @@ The repository root `AGENTS.md` asks every change to include unit tests. This fi
 | `npm run test:shell -- foo.spec.ts` | Run one file |
 | `npm run test:notebook-core` | Run the dedicated notebook-core Node suite |
 | `npm run typecheck:notebook-core` | Check core source and specs, rebuild the package, and check the React type-only contract against built declarations and the same core source |
+| `npm run typecheck:sdk-contracts` | Check the `zeppelin-sdk` specs, including their [type assertions](#type-assertions) |
 
-`test:shell`, `test:notebook-core`, and `typecheck:notebook-core` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. It does not run where you would expect. `frontend.yml` builds this module with `-DskipTests`, which frontend-maven-plugin honours by skipping `test`-phase executions, so the run that counts is `mvnw verify -Pweb-e2e` inside the `run-playwright-e2e-tests` job. A failing spec surfaces there, under an e2e job name. Giving the unit tests a step of their own is [ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566).
+`test:shell`, `test:notebook-core`, `typecheck:notebook-core`, and `typecheck:sdk-contracts` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. It does not run where you would expect. `frontend.yml` builds this module with `-DskipTests`, which frontend-maven-plugin honours by skipping `test`-phase executions, so the run that counts is `mvnw verify -Pweb-e2e` inside the `run-playwright-e2e-tests` job. A failing spec surfaces there, under an e2e job name. Giving the unit tests a step of their own is [ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566).
 
 ## Where a test belongs
 
@@ -88,6 +89,26 @@ A spec with no assertion, or one whose assertion sits inside an `if`, passes by 
 | `vitest/no-disabled-tests` | `it.skip` left behind (warning) |
 
 The e2e suite gets the same protection from `eslint-plugin-playwright`.
+
+## Type assertions
+
+`expectTypeOf`, `assertType` and `@ts-expect-error` are erased before a spec runs, so Vitest passes them whatever they say. Only a `tsc` pass over the spec checks them, and only two spec programs have one in Maven:
+
+| Specs | Checked by |
+| --- | --- |
+| `projects/zeppelin-sdk` | `typecheck:sdk-contracts` |
+| `projects/zeppelin-notebook-core`, `test/notebook-core` | `typecheck:notebook-core` |
+| `src/`, the rest of `test/`, `projects/zeppelin-visualization` | nothing yet |
+| `projects/zeppelin-react` | nothing yet ([ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566)) |
+
+Lint encodes the table: `vitest/expect-expect` accepts a type assertion as a test's only assertion in the first two rows and rejects it elsewhere. A type assertion in an unchecked spec, even beside an `expect`, cannot fail. When a program gains a `tsc` pass in Maven, add its glob to the `settings: { vitest: { typecheck: true } }` block in `eslint.config.js`, or set the same in `projects/zeppelin-react/eslint.config.js`.
+
+- Put type assertions in an ordinary `.spec.ts`, never a separate type-test file or directory. One SDK interface file declares many unrelated types, so a type contract spec sits beside that file and is named for the contract it pins: `notebook-wire-fields.spec.ts`, `completion-item.spec.ts`.
+- To show a value is accepted, pass it to `assertType<T>(...)`. A typed variable then needs a use, and a runtime `expect` on a literal only restates the literal.
+- Prefer an exact matcher to `@ts-expect-error`. `expectTypeOf<CompletionItem>().toHaveProperty('name').toEqualTypeOf<string>()` fails when `name` becomes optional; `@ts-expect-error` is satisfied by any error on the next line, a typo included. Keep the directive for what no matcher can say, such as assigning to a `readonly` member (`host-remote-contract.spec.ts`), with one statement under it and the expected failure after it.
+- A type assertion pins what the SDK declares, not what the server sends. Payload shapes are evidenced by the server code that builds them, and later by the captured-traffic contract specs described above.
+
+`vitest --typecheck` with `*.test-d.ts` files is not used: it is still experimental, and it reports a file its tsconfig does not include as passed ([vitest#7988](https://github.com/vitest-dev/vitest/issues/7988)). [TSTyche](https://tstyche.org) checks the message after `@ts-expect-error` and has no such gap, but it is a second runner for a handful of files. Revisit it if must-not-compile contracts multiply or a swallowed error is found.
 
 ## monaco-editor and path aliases in specs
 
@@ -144,4 +165,4 @@ This is a different measurement from `e2e/reporter.coverage.ts`, which counts an
 3. Import from `vitest` (`describe`, `expect`, `it`), not from Jasmine or Jest.
    Check the target has callers before you invest in it. `get-keyword-positions.spec.ts` is a worked example of a function that turned out to have none.
 4. Construct the class directly unless the behavior depends on Angular wiring; use `TestBed` when it does.
-5. Run `npm run test:shell` for shell/SDK/visualization changes. For notebook-core changes, run `npm run test:notebook-core` and `npm run typecheck:notebook-core`. Confirm the relevant checks pass before opening a PR.
+5. Run `npm run test:shell` for shell/SDK/visualization changes, plus `npm run typecheck:sdk-contracts` for SDK changes. For notebook-core changes, run `npm run test:notebook-core` and `npm run typecheck:notebook-core`. Confirm the relevant checks pass before opening a PR.

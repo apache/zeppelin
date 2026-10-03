@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, expectTypeOf, it } from 'vitest';
+import { assertType, expectTypeOf, it } from 'vitest';
 
 import { EditorSettingReceived, ImportNote, Note } from './message-notebook.interface';
 import { AngularObjectRemove, ImportParagraphItem, ParagraphItem } from './message-paragraph.interface';
@@ -45,7 +45,7 @@ it('separates received wire fields from backward-compatible import input', () =>
     lineNumbers: false,
     fontSize: 9
   } satisfies ImportParagraphItem;
-  const importWithoutVersion: ImportNote = {
+  assertType<ImportNote>({
     note: {
       paragraphs: [legacyImportParagraph],
       name: 'Imported note',
@@ -63,20 +63,18 @@ it('separates received wire fields from backward-compatible import input', () =>
       },
       info: {}
     }
-  };
+  });
 
   expectTypeOf<ImportNote['note']>().toHaveProperty('version').toEqualTypeOf<string | undefined>();
   expectTypeOf<ImportNote['note']['paragraphs'][number]>()
     .toHaveProperty('progress')
     .toEqualTypeOf<number | undefined>();
-  expect(importWithoutVersion.note).not.toHaveProperty('version');
-  expect(importWithoutVersion.note.paragraphs[0]).not.toHaveProperty('progress');
 });
 
 it('accepts the personalized GET_NOTE response without a version', () => {
   // NotebookService.getNote returns Note.getUserNote for personalized notebooks.
   // That copy is constructed with Note(), so its nullable version is omitted by Message serialization.
-  const personalizedNote: Note = {
+  assertType<Note>({
     note: {
       paragraphs: [],
       name: 'Personalized note',
@@ -94,8 +92,7 @@ it('accepts the personalized GET_NOTE response without a version', () => {
       },
       info: {}
     }
-  };
+  });
 
   expectTypeOf<NonNullable<Note['note']>['version']>().toEqualTypeOf<string | undefined>();
-  expect(personalizedNote.note).not.toHaveProperty('version');
 });
