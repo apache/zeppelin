@@ -163,7 +163,7 @@
       "prefix": "zeppelin",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/notebook-core-port-proof",
             "index": "e2e/core-contract/angular-host/index.html",
@@ -178,7 +178,13 @@
               }
             ],
             "styles": [],
-            "scripts": []
+            "scripts": [],
+            "customWebpackConfig": {
+              "path": "./webpack.config.js"
+            },
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles/theme", "src/styles/theme/dark", "src/styles/theme/light"]
+            }
           },
           "configurations": {
             "production": {

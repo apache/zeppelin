@@ -345,3 +345,37 @@ holds.
 
 Do not rely on any of this for a fixture captured from a server holding real
 credentials. Capture from the isolated server this directory starts.
+
+## Notebook route boundary proof
+
+`npm run build:notebook-core-port-proof` builds the React consumer and Angular
+route host separately. `npm run test:notebook-route-boundary` then checks the
+current `/notebook/:noteId` and `/notebook/:noteId/revision/:revisionId` route
+shapes in Chromium. The proof bootstraps the production `WorkspaceModule` lazy
+route, follows its `NotebookModule` lazy route, and asserts that the activated
+component is the production `NotebookComponent`. Its browser-only message-service
+double records the production component's `getNote`, `noteRevision`, and revision
+history requests. The Angular harness reads the resulting activated-route snapshot
+into one host-owned test Core; the remote receives only its stable
+`NotebookCorePort`, reads the selected note and revision snapshot, and observes
+route-driven subscription updates. The browser assertion records the two production
+paths explicitly, so a route-shape change requires an intentional proof update. It
+also fails on uncaught page errors and on errors that Angular's `ErrorHandler`
+logs, so a production component that throws against an incomplete double does not
+pass silently.
+
+Maven runs the proof build, this proof and the port identity proof in the
+`integration-test` phase of `-Pweb-e2e`. `web.e2e.core.port.proof.disabled` gates
+all three, and `frontend.yml` enables them only on the anonymous leg of
+`run-playwright-e2e-tests`.
+
+These responsibilities stay host-side: route parameters, the physical WebSocket
+connect, close and reconnect lifecycle, the SDK, and Angular services. The port
+exposes only `getSnapshot` and `subscribe`, and the proof asserts that route
+activation and port consumption make no `bootstrap`, `connect` or `close` call.
+Future Core work owns note re-subscription and state recovery. ZEPPELIN-6683
+already rejects stale revision and interpreter-binding replies inside the Angular
+`NotebookComponent`; this proof does not move that rule into the Core, and detailed
+reconnect recovery remains outside it until the lifecycle rules have an enforceable
+stale-reply mechanism. The harness does not implement those lifecycle rules, switch
+the production renderer, or move production notebook state out of Angular.

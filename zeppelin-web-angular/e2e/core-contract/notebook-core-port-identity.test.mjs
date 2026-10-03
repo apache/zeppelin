@@ -11,112 +11,27 @@
  */
 
 import assert from 'node:assert/strict';
-import { createReadStream, existsSync, statSync } from 'node:fs';
-import { createServer } from 'node:http';
-import { extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { after, before, test } from 'node:test';
-import { pathToFileURL } from 'node:url';
 
-import { chromium, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 
-const angularDistRoot = resolve('dist/notebook-core-port-proof');
-const angularIndexPath = join(angularDistRoot, 'index.html');
-const remoteEntryPath = join(angularDistRoot, 'assets/react/remoteEntry.js');
+import { startNotebookCoreProofHarness } from './proof-browser-harness.mjs';
 
-let browser;
-let server;
-let baseUrl;
-
-const contentTypes = new Map([
-  ['.css', 'text/css; charset=utf-8'],
-  ['.html', 'text/html; charset=utf-8'],
-  ['.js', 'text/javascript; charset=utf-8']
-]);
-
-function resolveInsideAngularDist(requestPath) {
-  const decodedPath = decodeURIComponent(requestPath.replace(/^\//, ''));
-  const filePath = resolve(angularDistRoot, decodedPath);
-  const rootRelativePath = relative(angularDistRoot, filePath);
-
-  if (rootRelativePath.startsWith('..') || isAbsolute(rootRelativePath)) {
-    return null;
-  }
-
-  return filePath;
-}
-
-function isFile(filePath) {
-  return statSync(filePath, { throwIfNoEntry: false })?.isFile() ?? false;
-}
-
-function serveStaticFile(response, requestPath) {
-  const filePath = resolveInsideAngularDist(requestPath);
-
-  if (!filePath || !isFile(filePath)) {
-    response.writeHead(404);
-    response.end('not found');
-    return;
-  }
-
-  response.writeHead(200, {
-    'cache-control': 'no-store',
-    'content-type': contentTypes.get(extname(filePath)) ?? 'application/octet-stream'
-  });
-  createReadStream(filePath).pipe(response);
-}
-
+let harness;
 before(async () => {
-  assert.ok(
-    existsSync(angularIndexPath),
-    `Angular host build output is missing: run "npm run build:notebook-core-port-proof" before this proof (${pathToFileURL(
-      angularIndexPath
-    )})`
-  );
-  assert.ok(
-    existsSync(remoteEntryPath),
-    `React remote asset is missing: run "npm run build:notebook-core-port-proof" before this proof (${pathToFileURL(
-      remoteEntryPath
-    )})`
-  );
-
-  server = createServer((request, response) => {
-    const requestPath = request.url?.split('?')[0] ?? '/';
-    if (requestPath === '/') {
-      response.writeHead(200, {
-        'cache-control': 'no-store',
-        'content-type': 'text/html; charset=utf-8'
-      });
-      createReadStream(angularIndexPath).pipe(response);
-      return;
-    }
-
-    if (isFile(resolveInsideAngularDist(requestPath) ?? '')) {
-      serveStaticFile(response, requestPath);
-      return;
-    }
-
-    response.writeHead(404, { 'cache-control': 'no-store' });
-    response.end();
-  });
-
-  await new Promise(resolveListen => {
-    server.listen(0, '127.0.0.1', resolveListen);
-  });
-  const address = server.address();
-  assert.ok(address && typeof address === 'object');
-  baseUrl = `http://127.0.0.1:${address.port}`;
-  browser = await chromium.launch();
+  harness = await startNotebookCoreProofHarness();
 });
 
 after(async () => {
-  await browser?.close();
-  await new Promise(resolveClose => server?.close(resolveClose));
+  await harness?.close();
 });
 
 test('React remote receives the exact host-owned NotebookCorePort object', async () => {
-  const page = await browser.newPage();
+  const page = await harness.browser.newPage();
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
 
-  await page.goto(baseUrl);
+  await page.goto(`${harness.baseUrl}/#/port-identity`);
 
   const probe = page.getByTestId('notebook-core-port-probe');
   await expect(probe).toHaveAttribute('data-same-identity', 'true', { timeout: 15_000 });
@@ -144,6 +59,7 @@ test('React remote receives the exact host-owned NotebookCorePort object', async
       snapshot: { noteId: 'note-host-owned', revisionId: 'revision-from-angular-host' },
       updateCount: 1
     });
+  assert.deepEqual(pageErrors, []);
 
   await page.close();
 });
