@@ -89,7 +89,7 @@ public class AzureNotebookRepo extends AbstractNotebookRepo {
 
   private Map<String, NoteInfo> list(CloudFileDirectory folder) throws IOException {
     Map<String, NoteInfo> notesInfo = new HashMap<>();
-    for (ListFileItem item : rootDir.listFilesAndDirectories()) {
+    for (ListFileItem item : folder.listFilesAndDirectories()) {
       if (item instanceof CloudFileDirectory) {
         CloudFileDirectory dir = (CloudFileDirectory) item;
         notesInfo.putAll(list(dir));
