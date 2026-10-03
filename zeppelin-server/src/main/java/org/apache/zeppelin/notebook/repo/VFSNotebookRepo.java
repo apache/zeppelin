@@ -70,18 +70,15 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     URI filesystemRoot = null;
     try {
       LOGGER.info("Using notebookDir: {}", notebookDirPath);
-      if (zConf.isWindowsPath(notebookDirPath)) {
-        filesystemRoot = new File(notebookDirPath).toURI();
+      if (zConf.isWindowsPath(notebookDirPath) || !zConf.isPathWithScheme(notebookDirPath)) {
+        // A local path is not parsed as a URI: it can contain characters that a URI does not
+        // allow, such as spaces or the backslashes of a Windows path like the default ./\notebook.
+        filesystemRoot = new File(zConf.getAbsoluteDir(notebookDirPath)).toURI();
       } else {
         filesystemRoot = new URI(notebookDirPath);
       }
     } catch (URISyntaxException e) {
       throw new IOException(e);
-    }
-
-    if (filesystemRoot.getScheme() == null) { // it is local path
-      File f = new File(zConf.getAbsoluteDir(filesystemRoot.getPath()));
-      filesystemRoot = f.toURI();
     }
     this.fsManager = VFS.getManager();
     this.rootNotebookFileObject = fsManager.resolveFile(filesystemRoot);
@@ -90,17 +87,27 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
       LOGGER.info("Notebook dir doesn't exist: {}, creating it.",
           rootNotebookFileObject.getName().getPath());
     }
-    // getPath() method returns a string without root directory in windows, so we use getURI() instead
-    // windows does not support paths with "file:///" prepended, so we replace it by "/"
-    this.rootNotebookFolder = rootNotebookFileObject.getName().getURI().replace("file:///", "/");
+    this.rootNotebookFolder = toRootNotebookFolder(rootNotebookFileObject.getName().getURI());
   }
 
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
     // Must to create rootNotebookFileObject each time when call method list, otherwise we can not
     // get the updated data under this folder.
-    this.rootNotebookFileObject = fsManager.resolveFile(this.rootNotebookFolder);
+    this.rootNotebookFileObject = fsManager.resolveFile(rootNotebookFileObject.getName().getURI());
     return listFolder(rootNotebookFileObject);
+  }
+
+  /**
+   * A local root is kept as a decoded path, like the note file names in {@link #listFolder}, so
+   * that {@link #getNotePath} can strip it from them and GitNotebookRepo can open the repository
+   * in it. Windows does not support paths with "file:///" prepended, so it starts with "/".
+   */
+  private static String toRootNotebookFolder(String rootUri) {
+    if (rootUri.startsWith("file:")) {
+      return URI.create(rootUri).getPath();
+    }
+    return rootUri;
   }
 
   private Map<String, NoteInfo> listFolder(FileObject fileObject) throws IOException {
