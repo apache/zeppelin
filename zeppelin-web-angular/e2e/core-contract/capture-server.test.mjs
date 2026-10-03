@@ -95,6 +95,106 @@ test('capture server rejects a repository path with whitespace before creating t
   assert.equal(existsSync(root), false);
 });
 
+const buildOutputs = [
+  'bin',
+  'conf',
+  'interpreter',
+  'shell/target/classes',
+  'zeppelin-interpreter-shaded/target',
+  'zeppelin-interpreter/target/classes',
+  'zeppelin-server/target/classes',
+  'zeppelin-server/target/lib',
+  'zeppelin-server/target/test-classes',
+  'zeppelin-web-angular/dist/zeppelin'
+];
+
+for (const [name, prepare, expected] of [
+  [
+    'a checkout that is not origin/master',
+    buildRoot => {
+      writeFileSync(path.join(buildRoot, 'tracked'), 'local commit');
+      git(buildRoot, 'commit', '-qam', 'local');
+    },
+    /^Error: build checkout [0-9a-f]{40} must equal origin\/master [0-9a-f]{40}$/m
+  ],
+  [
+    'a checkout with tracked changes',
+    buildRoot => writeFileSync(path.join(buildRoot, 'tracked'), 'uncommitted'),
+    /^Error: build checkout has tracked changes$/m
+  ],
+  [
+    'a build with a missing required output',
+    buildRoot => rmSync(path.join(buildRoot, 'zeppelin-server/target/lib'), { recursive: true }),
+    /^Error: required build output is missing: zeppelin-server\/target\/lib$/m
+  ],
+  [
+    'a manifest that does not match the build',
+    () => {},
+    /^Error: build manifest does not match the current source and launched artifacts$/m
+  ]
+]) {
+  test(`capture server refuses ${name} before launching it`, () => {
+    const parent = createRoot();
+    const buildRoot = createBuildRepository(parent.root);
+    prepare(buildRoot);
+    const root = path.join(parent.root, 'capture');
+    const manifest = path.join(parent.root, 'manifest.json');
+    const launched = path.join(parent.root, 'launched');
+    writeFileSync(manifest, '{}\n');
+
+    const result = run(
+      [
+        'start',
+        '--root',
+        root,
+        '--port',
+        String(parent.zeppelinPort),
+        '--build-root',
+        buildRoot,
+        '--build-manifest',
+        manifest
+      ],
+      { CAPTURE_ZEPPELIN_COMMAND: `touch '${launched}'` }
+    );
+
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, expected);
+    assert.equal(existsSync(root), false);
+    assert.equal(existsSync(launched), false);
+  });
+}
+
+test('capture server requires a manifest for an external build root', () => {
+  const parent = createRoot();
+  const buildRoot = createBuildRepository(parent.root);
+  const root = path.join(parent.root, 'capture');
+  const result = run(['start', '--root', root, '--port', String(parent.zeppelinPort), '--build-root', buildRoot]);
+  assert.equal(result.status, 2, result.stderr);
+  assert.equal(result.stderr, '--build-root requires --build-manifest\n');
+  assert.equal(existsSync(root), false);
+});
+
+function git(root, ...args) {
+  return spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
+}
+
+function createBuildRepository(parent) {
+  const buildRoot = path.join(parent, 'build');
+  mkdirSync(buildRoot);
+  git(buildRoot, 'init', '-q');
+  git(buildRoot, 'config', 'user.email', 'fixture@example.test');
+  git(buildRoot, 'config', 'user.name', 'Fixture Test');
+  for (const directory of buildOutputs) {
+    mkdirSync(path.join(buildRoot, directory), { recursive: true });
+    writeFileSync(path.join(buildRoot, directory, 'artifact'), directory);
+  }
+  writeFileSync(path.join(buildRoot, 'tracked'), 'source');
+  git(buildRoot, 'add', 'tracked');
+  git(buildRoot, 'commit', '-qm', 'source');
+  git(buildRoot, 'update-ref', 'refs/remotes/origin/master', 'HEAD');
+  return buildRoot;
+}
+
 for (const action of ['start', 'stop']) {
   test(`capture server refuses concurrent ${action} while startup owns the root`, async () => {
     const root = createRoot();
@@ -235,6 +335,43 @@ await import(${JSON.stringify(stub)});
   }
 });
 
+test('capture server pins paragraph status and progress streaming for execution fixtures', () => {
+  const root = createRoot();
+  const probe = path.join(root.root, 'probe.mjs');
+  const observed = path.join(root.root, 'jvm-options');
+  writeFileSync(
+    probe,
+    `import { writeFileSync } from 'node:fs';
+writeFileSync(${JSON.stringify(observed)}, process.env.ZEPPELIN_JAVA_OPTS);
+await import(${JSON.stringify(stub)});
+`
+  );
+  const result = run(
+    ['start', '--root', root.root, '--port', String(root.zeppelinPort), '--paragraph-status-progress', 'false'],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${probe}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(readFileSync(observed, 'utf8'), /-Dzeppelin\.websocket\.paragraph_status_progress\.enable=false/);
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
+});
+
+test('capture server rejects an invalid paragraph status and progress setting before side effects', () => {
+  const parent = createRoot();
+  const root = path.join(parent.root, 'invalid-streaming');
+  const launched = path.join(parent.root, 'launched');
+  const result = run(
+    ['start', '--root', root, '--port', String(parent.zeppelinPort), '--paragraph-status-progress', 'sometimes'],
+    { CAPTURE_ZEPPELIN_COMMAND: `touch '${launched}'` }
+  );
+  assert.equal(result.status, 2, result.stderr);
+  assert.match(result.stderr, /must be true or false/);
+  assert.equal(existsSync(root), false);
+  assert.equal(existsSync(launched), false);
+});
+
 test('capture-server starts and stops a server in its own root', () => {
   const root = createRoot();
 
@@ -256,6 +393,79 @@ test('capture-server writes anonymous and auth config in an isolated temp root',
 
   assert.equal(existsSync(path.join(anonymous.root, 'conf/shiro.ini')), false);
   assert.equal(existsSync(path.join(auth.root, 'conf/shiro.ini')), true);
+});
+
+test('capture-server records the settings it launched with for fixture provenance', () => {
+  const root = createRoot();
+  const result = run(
+    [
+      'start',
+      '--root',
+      root.root,
+      '--mode',
+      'auth',
+      '--port',
+      String(root.zeppelinPort),
+      '--paragraph-status-progress',
+      'false'
+    ],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${stub}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(readFileSync(path.join(root.root, 'capture-provenance.json'), 'utf8')), {
+      authentication: 'authenticated',
+      buildManifestId: null,
+      configuration: { 'zeppelin.websocket.paragraph_status_progress.enable': false },
+      isolation: {
+        logs: `${root.root}/logs`,
+        notebook: `${root.root}/notebook`,
+        pid: `${root.root}/run`,
+        recovery: `${root.root}/recovery`,
+        root: root.root,
+        searchIndex: `${root.root}/index`
+      },
+      mode: 'auth',
+      port: root.zeppelinPort
+    });
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
+});
+
+test('capture-server records the verified build manifest id for fixture provenance', () => {
+  const parent = createRoot();
+  const buildRoot = createBuildRepository(parent.root);
+  for (const file of ['log4j2.properties', 'zeppelin-site.xml.template']) {
+    writeFileSync(path.join(buildRoot, 'conf', file), '');
+  }
+  const manifest = path.join(parent.root, 'manifest.json');
+  const manifestScript = path.resolve('e2e/core-contract/capture-build-manifest.mjs');
+  const created = spawnSync(process.execPath, [manifestScript, 'create', manifest, buildRoot], { encoding: 'utf8' });
+  assert.equal(created.status, 0, created.stderr);
+  const root = { root: path.join(parent.root, 'capture'), zeppelinPort: parent.zeppelinPort };
+  const result = run(
+    [
+      'start',
+      '--root',
+      root.root,
+      '--port',
+      String(root.zeppelinPort),
+      '--build-root',
+      buildRoot,
+      '--build-manifest',
+      manifest
+    ],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${stub}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    const provenance = JSON.parse(readFileSync(path.join(root.root, 'capture-provenance.json'), 'utf8'));
+    assert.equal(provenance.buildManifestId, JSON.parse(readFileSync(manifest, 'utf8')).manifestId);
+    assert.match(provenance.buildManifestId, /^[0-9a-f]{64}$/);
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
 });
 
 test('capture-server reports explicit port conflicts', async () => {
