@@ -10,16 +10,11 @@
  * limitations under the License.
  */
 
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Type } from '@angular/core';
+import { Routes } from '@angular/router';
 
-import { NotebookComponent } from './notebook.component';
-import { createNotebookChildRoutes } from './notebook-route-boundary';
+export const NOTEBOOK_ROUTE_PATH = 'notebook';
+export const NOTEBOOK_CHILD_ROUTE_PATHS = [':noteId', ':noteId/revision/:revisionId'] as const;
 
-const routes: Routes = createNotebookChildRoutes(NotebookComponent);
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
-})
-export class NotebookRoutingModule {}
+export const createNotebookChildRoutes = (component: Type<unknown>): Routes =>
+  NOTEBOOK_CHILD_ROUTE_PATHS.map(path => ({ path, component }));

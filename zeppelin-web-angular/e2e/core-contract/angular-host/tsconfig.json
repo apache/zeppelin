@@ -3,7 +3,7 @@
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "outDir": "../../../out-tsc/notebook-core-port-proof",
-    "types": []
+    "types": ["mathjax"]
   },
   "files": ["main.ts"],
   "angularCompilerOptions": {

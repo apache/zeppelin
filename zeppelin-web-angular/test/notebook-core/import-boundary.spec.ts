@@ -42,7 +42,11 @@ describe('notebook core import boundary', () => {
     expect(pom).toMatch(
       /<web\.e2e\.core\.port\.proof\.disabled>\$\{web\.e2e\.disabled\}<\/web\.e2e\.core\.port\.proof\.disabled>/
     );
-    for (const id of ['npm build notebook core port identity proof', 'npm test notebook core port identity']) {
+    for (const id of [
+      'npm build notebook core port identity proof',
+      'npm test notebook core port identity',
+      'npm test notebook route boundary'
+    ]) {
       const execution = pom.match(new RegExp(`<execution>\\s*<id>${id}</id>([\\s\\S]*?)</execution>`))?.[1];
       expect(execution).toMatch(/<phase>integration-test<\/phase>/);
       expect(execution).toMatch(/<skip>\$\{web\.e2e\.core\.port\.proof\.disabled\}<\/skip>/);

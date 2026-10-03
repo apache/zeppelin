@@ -15,6 +15,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { WorkspaceComponent } from './workspace.component';
 import { WorkspaceGuard } from './workspace.guard';
+import { NOTEBOOK_ROUTE_PATH } from './notebook/notebook-route-boundary';
 
 const routes: Routes = [
   {
@@ -27,7 +28,7 @@ const routes: Routes = [
         loadChildren: () => import('@zeppelin/pages/workspace/home/home.module').then(m => m.HomeModule)
       },
       {
-        path: 'notebook',
+        path: NOTEBOOK_ROUTE_PATH,
         loadChildren: () => import('@zeppelin/pages/workspace/notebook/notebook.module').then(m => m.NotebookModule)
       },
       {

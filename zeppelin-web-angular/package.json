@@ -27,6 +27,7 @@
     "typecheck:notebook-core": "tsc -p projects/zeppelin-notebook-core/tsconfig.json --noEmit && tsc -p projects/zeppelin-notebook-core/tsconfig.spec.json --noEmit && npm run build-project:notebook-core && tsc -p projects/zeppelin-react/tsconfig.notebook-core.dist.json --noEmit && tsc -p projects/zeppelin-react/tsconfig.notebook-core.json --noEmit && tsc -p e2e/core-contract/react-remote/tsconfig.json --noEmit",
     "typecheck:sdk-contracts": "tsc -p projects/zeppelin-sdk/tsconfig.spec.json --noEmit",
     "test:notebook-core-port-identity": "node --test e2e/core-contract/notebook-core-port-identity.test.mjs",
+    "test:notebook-route-boundary": "node --test e2e/core-contract/notebook-route-boundary.test.mjs",
     "test:notebook-core": "vitest run --config vitest.notebook-core.config.mts",
     "test:shell": "vitest run --config vitest.shell.config.mts",
     "test:eslint-rules": "node --test eslint-rules/*.test.js",
