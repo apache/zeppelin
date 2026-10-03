@@ -23,7 +23,7 @@ WORKDIR /zeppelin
 
 RUN chmod +x ./mvnw
 
-RUN ./mvnw clean package -am -pl zeppelin-interpreter-shaded,zeppelin-interpreter,jdbc -DskipTests
+RUN ./mvnw clean package -am -pl zeppelin-interpreter,jdbc -DskipTests
 
 
 FROM openjdk:11
@@ -32,7 +32,7 @@ COPY --from=builder /zeppelin/bin /zeppelin/bin/
 COPY --from=builder /zeppelin/conf /zeppelin/conf
 
 COPY --from=builder /zeppelin/interpreter/jdbc /zeppelin/interpreter/jdbc
-COPY --from=builder /zeppelin/zeppelin-interpreter-shaded/target /zeppelin/zeppelin-interpreter-shaded/target
+COPY --from=builder /zeppelin/interpreter/zeppelin-interpreter-shaded-*.jar /zeppelin/interpreter/
 
 WORKDIR /zeppelin
 
