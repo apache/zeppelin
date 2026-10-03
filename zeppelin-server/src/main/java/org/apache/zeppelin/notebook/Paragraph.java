@@ -843,9 +843,15 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public void setInterpreterNotFound(InterpreterNotFoundException e) {
+    String message;
+    if (StringUtils.isBlank(this.intpText)) {
+      message = "No interpreter is bound to this note. "
+              + "Please check the interpreter settings.";
+    } else {
+      message = String.format("Interpreter %s not found", this.intpText);
+    }
     InterpreterResult intpResult =
-      new InterpreterResult(InterpreterResult.Code.ERROR,
-              String.format("Interpreter %s not found", this.intpText));
+      new InterpreterResult(InterpreterResult.Code.ERROR, message);
     setReturn(intpResult, e);
     setStatus(Job.Status.ERROR);
   }

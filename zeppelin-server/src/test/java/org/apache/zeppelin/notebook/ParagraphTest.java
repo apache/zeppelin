@@ -406,4 +406,33 @@ class ParagraphTest extends AbstractInterpreterTest {
     verify(mockInterpreter, times(2)).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
   }
+
+  @Test
+  void testInterpreterNotFoundMessageWhenIntpTextIsNull() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null);
+    // When no interpreter is specified, intpText is empty
+    paragraph.setText("some code without interpreter");
+    paragraph.setInterpreterNotFound(
+        new org.apache.zeppelin.interpreter.InterpreterNotFoundException("test"));
+
+    InterpreterResult result = paragraph.getReturn();
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("No interpreter is bound to this note. "
+        + "Please check the interpreter settings.",
+        result.message().get(0).getData());
+  }
+
+  @Test
+  void testInterpreterNotFoundMessageWhenIntpTextIsPresent() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null);
+    paragraph.setText("%invalid some code");
+    paragraph.setInterpreterNotFound(
+        new org.apache.zeppelin.interpreter.InterpreterNotFoundException("test"));
+
+    InterpreterResult result = paragraph.getReturn();
+    assertEquals(Code.ERROR, result.code());
+    assertEquals("Interpreter invalid not found", result.message().get(0).getData());
+  }
 }
