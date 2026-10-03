@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -52,6 +59,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
   public static final String SPARK_MASTER_KEY = "spark.master";
   private static final String DEFAULT_MASTER = "local[*]";
+  private static final int SPARK_SUBMIT_TIMEOUT_SECONDS = 30;
   Optional<String> sparkMaster = Optional.empty();
 
   public SparkInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
@@ -269,13 +277,30 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     LOGGER.info("Detect scala version from SPARK_HOME: {}", sparkHome);
     ProcessBuilder builder = new ProcessBuilder(sparkHome + "/bin/spark-submit", "--version");
     builder.environment().putAll(env);
-    
+    // spark-submit writes the banner to stderr, but anything it writes to stdout has to be drained
+    // as well, so merge both into the single stream this method reads
+    builder.redirectErrorStream(true);
+
     Process process = builder.start();
-    process.waitFor();
-    
-    // Capture the error stream directly without using a temp file
-    String processOutput = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-    
+    String processOutput;
+    try {
+      // Read before waiting: spark-submit blocks once it has filled the pipe buffer nobody drains,
+      // and a wait that comes first would then never return
+      processOutput = readProcessOutput(process);
+      if (!process.waitFor(SPARK_SUBMIT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        throw new IOException("spark-submit --version closed its output but did not exit within "
+            + SPARK_SUBMIT_TIMEOUT_SECONDS + " seconds");
+      }
+      int exitValue = process.exitValue();
+      if (exitValue != 0) {
+        LOGGER.warn("spark-submit --version exited with {}: {}", exitValue, processOutput);
+      }
+    } finally {
+      if (process.isAlive()) {
+        process.destroyForcibly();
+      }
+    }
+
     Pattern pattern = Pattern.compile(".*Using Scala version (.*),.*");
     Matcher matcher = pattern.matcher(processOutput);
     if (matcher.find()) {
@@ -289,6 +314,36 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       }
     } else {
       return detectSparkScalaVersionByReplClass(sparkHome);
+    }
+  }
+
+  /**
+   * Reads what spark-submit prints, on a separate thread so that a process which stops producing
+   * output without exiting cannot block the launcher forever.
+   */
+  private String readProcessOutput(Process process) throws IOException {
+    ExecutorService reader = Executors.newSingleThreadExecutor(runnable -> {
+      Thread thread = new Thread(runnable, "spark-submit-version-reader");
+      thread.setDaemon(true);
+      return thread;
+    });
+    try {
+      Future<String> output = reader.submit(() -> {
+        try (InputStream stream = process.getInputStream()) {
+          return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        }
+      });
+      return output.get(SPARK_SUBMIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+    } catch (TimeoutException e) {
+      throw new IOException("spark-submit --version did not finish within "
+          + SPARK_SUBMIT_TIMEOUT_SECONDS + " seconds", e);
+    } catch (ExecutionException e) {
+      throw new IOException("Failed to read the output of spark-submit --version", e.getCause());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Interrupted while reading the output of spark-submit --version", e);
+    } finally {
+      reader.shutdownNow();
     }
   }
 
