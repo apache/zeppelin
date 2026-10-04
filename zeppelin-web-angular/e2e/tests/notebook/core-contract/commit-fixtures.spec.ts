@@ -25,6 +25,7 @@ import {
 } from '../../../core-contract/lifecycle-capture';
 import { replayLifecycleTrace } from '../../../core-contract/replay-lifecycle-trace';
 import { NotebookTransportPage } from '../../../models/notebook-transport-page';
+import { openTransportNote, waitForTransportReply } from '../../../models/notebook-transport-page.util';
 import { NotebookKeyboardPage } from '../../../models/notebook-keyboard-page';
 import { installCommitParagraphProbe } from '../../../models/notebook-save-timing.util';
 import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
@@ -46,7 +47,6 @@ test.describe('Notebook commit loss transport evidence', () => {
   test.beforeEach(async ({ page }) => {
     view = new NotebookTransportPage(page);
     editor = new NotebookKeyboardPage(page);
-    await view.install();
   });
 
   test.afterEach(async ({}, info) => {
@@ -62,6 +62,7 @@ test.describe('Notebook commit loss transport evidence', () => {
       { tag: '@live' },
       async ({ page, browser }) => {
         const probe = await installCommitParagraphProbe(page);
+        await view.install();
         if (scenario.loss === 'request') {
           probe.dropFirstCommitParagraph();
         } else {
@@ -70,14 +71,6 @@ test.describe('Notebook commit loss transport evidence', () => {
 
         await page.goto('/#/');
         await waitForZeppelinReady(page);
-        const created = await page.request.post('/api/notebook', {
-          data: {
-            notePath: `LifecycleCapture/commit-${scenario.loss}-${Date.now()}`,
-            paragraphs: [{ text: originalText }]
-          }
-        });
-        expect(created.ok()).toBe(true);
-        const noteId = (await created.json()).body as string;
         const metadata = {
           ...(await captureMetadata(page, `Commit ${scenario.loss} loss`, operations)),
           commitLoss: {
@@ -93,14 +86,26 @@ test.describe('Notebook commit loss transport evidence', () => {
           }
         };
         const recorder = createLifecycleRecorder(metadata);
-        recorder.install(page, 'viewer-a');
-        probe.onDroppedCommit(message => recorder.droppedSend('viewer-a', message.toString()));
-
+        const noteIds: string[] = [];
+        let recording = false;
         try {
+          const created = await page.request.post('/api/notebook', {
+            data: {
+              notePath: `LifecycleCapture/commit-${scenario.loss}-${Date.now()}`,
+              paragraphs: [{ text: originalText }]
+            }
+          });
+          expect(created.ok()).toBe(true);
+          const noteId = (await created.json()).body as string;
+          noteIds.push(noteId);
+          recorder.install(page, 'viewer-a');
+          recording = true;
+          probe.onDroppedCommit(message => recorder.droppedSend('viewer-a', message.toString()));
+
           await test.step('Given a live editor whose next commit or correlated reply is dropped', async () => {
             await page.reload();
             recorder.context('viewer-a', { state: 'active', noteId, revisionId: null });
-            await view.open(noteId);
+            await openTransportNote(view, noteId);
             await editor.firstEditorInput.focus();
             await editor.pressSelectAll();
             await page.keyboard.insertText(draftText);
@@ -118,7 +123,7 @@ test.describe('Notebook commit loss transport evidence', () => {
           });
 
           await test.step('Then targeted refetch reveals the server-confirmed text independently of the draft', async () => {
-            await view.reply('NOTE', await view.send('GET_NOTE', { id: noteId }));
+            await waitForTransportReply(view, 'NOTE', await view.send('GET_NOTE', { id: noteId }));
             await expect(view.editorText.first()).toContainText(scenario.canonicalText.slice(4));
             await recorder.stop();
             if (scenario.loss === 'reply') {
@@ -152,7 +157,7 @@ test.describe('Notebook commit loss transport evidence', () => {
             expect(note.note.paragraphs[0].text).toBe(scenario.canonicalText);
           });
         } finally {
-          await cleanUpLifecycleCapture(page, recorder, [noteId]);
+          await cleanUpLifecycleCapture(page, recording ? recorder : undefined, noteIds);
         }
       }
     );

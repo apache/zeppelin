@@ -47,6 +47,30 @@ export interface LifecycleFixture {
 }
 
 export interface LifecycleMetadata extends FixtureMetadata {
+  source?: { repository: string; commit: string; serverCommit: string };
+  environment?: {
+    authentication: 'anonymous' | 'auth';
+    browser: { name: string; version: string };
+    origin: string;
+    serverPort: number;
+    paragraphStatusProgress: string;
+    interpreterExecution: 'none';
+    configuredInterpreterGroups?: string[];
+    configurationSource: 'capture-helper' | 'configuration-api-and-capture-helper';
+    storage: string;
+    directories: { notebook: string; search: string; recovery: string; logs: string; pid: string };
+    serverPidFile: string;
+  };
+  collaboration?: { independentBrowserContexts: true; distinctAuthenticatedUsers: boolean | null };
+  routeTransition?: {
+    boundary: 'browser-message';
+    intervention: string;
+    sessionId: string;
+    noteId: string;
+    heldNoteSequence: number;
+    releaseAfterSequence: number;
+    deliveredSequences: number[];
+  };
   commitLoss?: {
     loss: 'request' | 'reply';
     faults: LifecycleFault[];
@@ -73,6 +97,7 @@ export interface LifecycleRecorder {
   install(page: Page, sessionId: string): void;
   context(sessionId: string, context: RouteContext): void;
   droppedSend(sessionId: string, payloadText: string): void;
+  clientDelivery(sessionId: string, envelopes: unknown[]): number[];
   snapshot(): LifecycleFixture;
   stop(): Promise<void>;
   write(file: string): Promise<LifecycleFixture>;

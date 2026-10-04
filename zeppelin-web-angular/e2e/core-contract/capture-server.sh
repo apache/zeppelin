@@ -267,11 +267,18 @@ start_zeppelin() {
   export ZEPPELIN_PID_DIR="${capture_root}/run"
   export ZEPPELIN_WAR_TEMPDIR="${capture_root}/webapps"
   # Zeppelin ignores this marker; verify_pid_identity matches it as a whole JVM argument.
-  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
+  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.websocket.paragraph_status_progress.enable=true -Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
   export ZEPPELIN_CAPTURE_ROOT="${capture_root}"
   export ZEPPELIN_PORT="${zeppelin_port}"
   # Do not inherit Hadoop settings for this fixture server.
   export USE_HADOOP=false
+
+  # Persist launch-only values that are not exposed by the configuration API.
+  local json_root="${capture_root//\\/\\\\}"
+  json_root="${json_root//\"/\\\"}"
+  printf '{"root":"%s","authentication":"%s","storage":"%s","port":%s,"paragraphStatusProgress":true}\n' \
+    "${json_root}" "${capture_mode}" "${capture_storage}" "${zeppelin_port}" \
+    > "${capture_root}/capture-environment.json"
 
   # Give the server its own process group so stop can signal its children too.
   set -m
@@ -356,6 +363,7 @@ start_server() {
 
   write_marker
   start_zeppelin
+  echo "export ZEPPELIN_CAPTURE_ENVIRONMENT=${capture_root}/capture-environment.json"
   if [[ "${capture_mode}" == "auth" ]]; then
     # Direct the login helper to this capture's credentials instead of the repository config.
     echo "shiro config: ${capture_root}/conf/shiro.ini"

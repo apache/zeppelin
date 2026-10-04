@@ -581,3 +581,23 @@ test('capture server retains the PID claim when termination cannot stop its proc
     await exited;
   }
 });
+
+test('capture environment records launch provenance without secrets and quotes literal root paths', () => {
+  const parent = createRoot();
+  const root = { root: path.join(parent.root, 'quoted"root'), zeppelinPort: parent.zeppelinPort };
+  mkdirSync(root.root);
+  start(root, { mode: 'auth' });
+  try {
+    const environment = JSON.parse(readFileSync(path.join(root.root, 'capture-environment.json'), 'utf8'));
+    assert.deepEqual(environment, {
+      root: root.root,
+      authentication: 'auth',
+      storage: 'vfs',
+      port: root.zeppelinPort,
+      paragraphStatusProgress: true
+    });
+    assert.equal(Object.hasOwn(environment, 'credentials'), false);
+  } finally {
+    stop(root);
+  }
+});

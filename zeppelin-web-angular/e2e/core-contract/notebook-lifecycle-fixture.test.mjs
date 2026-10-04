@@ -83,7 +83,7 @@ test('v2 rejects stale schemas, sequence gaps, session drift and frames after cl
   );
 });
 
-test('independent users can reuse a msgId without aliasing their reply correlation', async () => {
+test('identical captured msgIds retain equality across independent viewers', async () => {
   const replay = createLifecycleReplay(
     fixture([
       open('a', 'a1'),
@@ -99,9 +99,9 @@ test('independent users can reuse a msgId without aliasing their reply correlati
   a.connect();
   a.send(JSON.stringify({ op: 'INSERT_PARAGRAPH', msgId: 'live-a' }));
   b.connect();
-  b.send(JSON.stringify({ op: 'INSERT_PARAGRAPH', msgId: 'live-b' }));
+  b.send(JSON.stringify({ op: 'INSERT_PARAGRAPH', msgId: 'live-a' }));
   assert.deepEqual(a.received, [{ op: 'PARAGRAPH_ADDED', msgId: 'live-a' }]);
-  assert.deepEqual(b.received, [{ op: 'PARAGRAPH_ADDED', msgId: 'live-b' }]);
+  assert.deepEqual(b.received, [{ op: 'PARAGRAPH_ADDED', msgId: 'live-a' }]);
   replay.assertComplete();
 });
 
@@ -337,6 +337,17 @@ test('committed lifecycle inventory validates every capture and its Apache maste
     assert.match(capture.metadata.source.commit, /^[a-f0-9]{40}$/);
     assert.match(capture.metadata.source.serverCommit, /^[a-f0-9]{7,40}$/);
     assert.ok(capture.metadata.source.commit.startsWith(capture.metadata.source.serverCommit));
+    const environment = capture.metadata.environment;
+    assert.equal(environment.authentication, entry.file === 'collaboration-auth.json' ? 'auth' : 'anonymous');
+    assert.match(environment.paragraphStatusProgress, /^(true|false)$/);
+    assert.equal(environment.browser.name, 'chromium');
+    assert.ok(environment.browser.version);
+    assert.ok(new URL(environment.origin).port);
+    assert.ok(Number.isInteger(environment.serverPort));
+    assert.equal(environment.interpreterExecution, 'none');
+    for (const directory of ['notebook', 'search', 'recovery', 'logs', 'pid'])
+      assert.ok(environment.directories[directory]);
+    assert.ok(environment.serverPidFile);
   }
 });
 
@@ -473,5 +484,134 @@ test('deferred frames cannot be delivered into the replacement socket generation
 
   assert.throws(() => replay.assertComplete(), /closed connection/);
   assert.equal(viewer.received.length, 1);
+  replay.dispose();
+});
+
+test('sender correlation is preserved across broadcast recipients and unrelated local sends', async () => {
+  const replay = createLifecycleReplay(
+    fixture([
+      open('a', 'a1'),
+      open('b', 'b1'),
+      frame('b', 'b1', 'send', { op: 'GET_NOTE', msgId: 'b-local' }),
+      frame('b', 'b1', 'receive', { op: 'NOTE', msgId: 'b-local' }),
+      frame('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'a-commit' }),
+      frame('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' }),
+      frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' })
+    ])
+  );
+  const a = await harness(replay, 'a');
+  const b = await harness(replay, 'b');
+  a.connect();
+  b.connect();
+  await new Promise(resolve => setImmediate(resolve));
+  b.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'live-b-local' }));
+  await new Promise(resolve => setImmediate(resolve));
+  a.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'live-a-commit' }));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(a.received[0].msgId, 'live-a-commit');
+  assert.deepEqual(
+    b.received.map(envelope => envelope.msgId),
+    ['live-b-local', 'live-a-commit']
+  );
+  replay.assertComplete();
+  replay.dispose();
+});
+
+test('client delivery records actual reordered receive occurrences and rejects missing or invented frames', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+  const socket = Object.assign(new EventEmitter(), { url: () => 'ws://fixture.test/ws' });
+  page.emit('websocket', socket);
+  const envelopes = [
+    { op: 'NOTE', data: { note: { id: 'n' } } },
+    { op: 'NOTE_UPDATED', data: {} },
+    { op: 'NOTE_UPDATED', data: {} }
+  ];
+  for (const envelope of envelopes) socket.emit('framereceived', { payload: JSON.stringify(envelope) });
+  await recorder.stop();
+  assert.deepEqual(recorder.clientDelivery('a', [envelopes[1], envelopes[2], envelopes[0]]), [3, 4, 2]);
+  assert.throws(() => recorder.clientDelivery('a', envelopes.slice(1)), /lost upstream/);
+  assert.throws(() => recorder.clientDelivery('a', [...envelopes, envelopes[0]]), /no matching/);
+});
+
+test('timer delivery failure rejects a parked REST request with the original cause', async () => {
+  const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
+  const replay = createLifecycleReplay(
+    fixture([
+      open('a', 'a1'),
+      frame('a', 'a1', 'receive', { op: 'NOTE' }),
+      { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
+      { kind: 'context', sessionId: 'a', context: { state: 'active', noteId: 'n', revisionId: null } },
+      {
+        kind: 'rest',
+        sessionId: 'a',
+        requestId: 'r',
+        rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyJson: {} }
+      }
+    ]),
+    [{ sequence: 2, delayMs: 10 }]
+  );
+  let connect, route;
+  await replay.install(
+    {
+      route: async (_pattern, handler) => {
+        route = handler;
+      },
+      routeWebSocket: async (_pattern, handler) => {
+        connect = () =>
+          handler({
+            send: () => {
+              throw new Error('route is closed');
+            },
+            close: () => {},
+            onMessage: () => {}
+          });
+      }
+    },
+    'a'
+  );
+  connect();
+  await new Promise(resolve => setImmediate(resolve));
+  const pending = route({ fulfill: async () => {} }, request('GET', 'http://fixture.test/api/notebook/n', '', {}));
+  await assert.rejects(pending, /route is closed/);
+  assert.throws(() => replay.assertComplete(), /route is closed/);
+  replay.dispose();
+});
+
+test('route delivery validation rejects missing occurrences, invalid release boundaries and undeclared reorders', () => {
+  const captured = readCapture('association.json');
+  assert.deepEqual(validateLifecycleFixture(captured), []);
+  const missing = globalThis.structuredClone(captured);
+  missing.metadata.routeTransition.deliveredSequences.pop();
+  assert.match(validateLifecycleFixture(missing).join(), /every upstream receive/);
+  const wrongBoundary = globalThis.structuredClone(captured);
+  wrongBoundary.metadata.routeTransition.releaseAfterSequence = wrongBoundary.metadata.routeTransition.heldNoteSequence;
+  assert.match(validateLifecycleFixture(wrongBoundary).join(), /release boundary/);
+  const reordered = globalThis.structuredClone(captured);
+  const sequences = reordered.metadata.routeTransition.deliveredSequences;
+  [sequences[0], sequences[1]] = [sequences[1], sequences[0]];
+  assert.match(validateLifecycleFixture(reordered).join(), /beyond the declared/);
+});
+
+test('a shared recorded msgId cannot be rebound to a different runtime ID by a later sender', async () => {
+  const replay = createLifecycleReplay(
+    fixture([
+      open('a', 'a1'),
+      open('b', 'b1'),
+      frame('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' }),
+      frame('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'shared-id' }),
+      frame('b', 'b1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' })
+    ])
+  );
+  const a = await harness(replay, 'a'),
+    b = await harness(replay, 'b');
+  a.connect();
+  b.connect();
+  await new Promise(resolve => setImmediate(resolve));
+  a.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'runtime-a' }));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(b.received[0].msgId, 'runtime-a');
+  assert.throws(() => b.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'runtime-b' })), /correlation mismatch/);
   replay.dispose();
 });

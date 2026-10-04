@@ -13,12 +13,40 @@
       "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
       "Untagged broadcasts do not identify a note; route context is evidence, not a wire acknowledgement."
     ],
-    "capturedAt": "2026-10-04T22:38:15.331Z",
+    "environment": {
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18082",
+      "serverPort": 18081,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configuredInterpreterGroups": [
+        "md"
+      ],
+      "configurationSource": "configuration-api-and-capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
+      "directories": {
+        "notebook": "/home/mjang/.cache/zeppelin-6672-linux-capture/notebook",
+        "search": "/home/mjang/.cache/zeppelin-6672-linux-capture/index",
+        "recovery": "/home/mjang/.cache/zeppelin-6672-linux-capture/recovery",
+        "logs": "/home/mjang/.cache/zeppelin-6672-linux-capture/logs",
+        "pid": "/home/mjang/.cache/zeppelin-6672-linux-capture/run"
+      },
+      "serverPidFile": "/home/mjang/.cache/zeppelin-6672-linux-capture/zeppelin.pid"
+    },
+    "capturedAt": "2026-10-04T23:11:04.594Z",
     "zeppelinVersion": "0.13.0-SNAPSHOT",
     "source": {
       "repository": "apache/zeppelin",
       "commit": "74b51b28d6f3c1c170f44822beadba299df9a959",
       "serverCommit": "74b51b2"
+    },
+    "collaboration": {
+      "independentBrowserContexts": true,
+      "distinctAuthenticatedUsers": null
     }
   },
   "records": [
@@ -27,7 +55,7 @@
       "sessionId": "viewer-a",
       "context": {
         "state": "active",
-        "noteId": "2N4KFZ9GX",
+        "noteId": "2N6RCXQZ6",
         "revisionId": null
       },
       "sequence": 1
@@ -55,7 +83,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 4
     },
@@ -65,7 +93,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 5
     },
@@ -75,7 +103,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N6RCXQZ6\",\"path\":\"/LifecycleCapture/collaboration-1791155467087\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 6
     },
@@ -95,7 +123,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791153495207_795355579\",\"id\":\"paragraph_1791153495207_795355579\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791153495288\",\"id\":\"2N4KFZ9GX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791153495288\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155466906_805179738\",\"id\":\"paragraph_1791155466906_805179738\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155467087\",\"id\":\"2N6RCXQZ6\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155467087\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 8
     },
@@ -105,7 +133,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:4>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:4>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 9
     },
@@ -116,12 +144,12 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         }
       },
       "sequence": 10
@@ -133,12 +161,12 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/capabilities"
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
         }
       },
       "sequence": 11
@@ -149,24 +177,34 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:5>\",\"data\":{\"paragraphId\":\"paragraph_1791153495207_795355579\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:5>\",\"data\":{\"paragraphId\":\"paragraph_1791155466906_805179738\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 12
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N6RCXQZ6\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 13
     },
     {
       "kind": "rest",
       "sessionId": "viewer-a",
       "requestId": "viewer-a:request:1",
-      "sequence": 13,
+      "sequence": 14,
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -188,16 +226,16 @@
       "kind": "rest",
       "sessionId": "viewer-a",
       "requestId": "viewer-a:request:2",
-      "sequence": 14,
+      "sequence": 15,
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/capabilities"
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -218,17 +256,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4KFZ9GX\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
-      },
-      "sequence": 15
-    },
-    {
-      "kind": "websocket",
-      "sessionId": "viewer-a",
-      "connectionId": "viewer-a:socket:1",
-      "websocket": {
-        "direction": "receive",
-        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4KFZ9GX\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N6RCXQZ6\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 16
     },
@@ -238,7 +266,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791153495207_795355579\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155466906_805179738\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 17
     },
@@ -257,7 +285,7 @@
       "sessionId": "viewer-b",
       "context": {
         "state": "active",
-        "noteId": "2N4KFZ9GX",
+        "noteId": "2N6RCXQZ6",
         "revisionId": null
       },
       "sequence": 19
@@ -285,7 +313,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:7>\",\"data\":{\"id\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:7>\",\"data\":{\"id\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 22
     },
@@ -295,7 +323,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:8>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:8>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 23
     },
@@ -305,19 +333,9 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N6RCXQZ6\",\"path\":\"/LifecycleCapture/collaboration-1791155467087\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 24
-    },
-    {
-      "kind": "websocket",
-      "sessionId": "viewer-b",
-      "connectionId": "viewer-b:socket:1",
-      "websocket": {
-        "direction": "receive",
-        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
-      },
-      "sequence": 25
     },
     {
       "kind": "websocket",
@@ -327,7 +345,7 @@
         "direction": "receive",
         "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
-      "sequence": 26
+      "sequence": 25
     },
     {
       "kind": "websocket",
@@ -335,9 +353,9 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791153495207_795355579\",\"id\":\"paragraph_1791153495207_795355579\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791153495288\",\"id\":\"2N4KFZ9GX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791153495288\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
-      "sequence": 27
+      "sequence": 26
     },
     {
       "kind": "websocket",
@@ -347,6 +365,16 @@
         "direction": "receive",
         "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
+      "sequence": 27
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155466906_805179738\",\"id\":\"paragraph_1791155466906_805179738\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155467087\",\"id\":\"2N6RCXQZ6\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155467087\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
       "sequence": 28
     },
     {
@@ -355,7 +383,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:9>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:9>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 29
     },
@@ -366,12 +394,12 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         }
       },
       "sequence": 30
@@ -383,12 +411,12 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/capabilities"
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
         }
       },
       "sequence": 31
@@ -399,7 +427,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:10>\",\"data\":{\"paragraphId\":\"paragraph_1791153495207_795355579\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:10>\",\"data\":{\"paragraphId\":\"paragraph_1791155466906_805179738\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 32
     },
@@ -409,7 +437,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4KFZ9GX\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N6RCXQZ6\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 33
     },
@@ -421,12 +449,12 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -452,12 +480,12 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/capabilities"
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -478,7 +506,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4KFZ9GX\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N6RCXQZ6\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 36
     },
@@ -488,7 +516,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791153495207_795355579\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155466906_805179738\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 37
     },
@@ -499,10 +527,10 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         }
       },
       "sequence": 38
@@ -515,10 +543,10 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -542,14 +570,14 @@
                 "apps": [],
                 "runtimeInfos": {},
                 "progressUpdateIntervalMs": 500,
-                "jobName": "paragraph_1791153495207_795355579",
-                "id": "paragraph_1791153495207_795355579",
+                "jobName": "paragraph_1791155466906_805179738",
+                "id": "paragraph_1791155466906_805179738",
                 "dateCreated": "<dateCreated>",
                 "status": "READY"
               }
             ],
-            "name": "collaboration-1791153495288",
-            "id": "2N4KFZ9GX",
+            "name": "collaboration-1791155467087",
+            "id": "2N6RCXQZ6",
             "defaultInterpreterGroup": "spark",
             "version": "0.13.0-SNAPSHOT",
             "noteParams": {},
@@ -559,7 +587,7 @@
               "isZeppelinNotebookCronEnable": false
             },
             "info": {},
-            "path": "/LifecycleCapture/collaboration-1791153495288"
+            "path": "/LifecycleCapture/collaboration-1791155467087"
           }
         }
       }
@@ -570,7 +598,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"paragraph_1791153495207_795355579\",\"noteId\":\"2N4KFZ9GX\",\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"paragraph_1791155466906_805179738\",\"noteId\":\"2N6RCXQZ6\",\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 40
     },
@@ -580,7 +608,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"data\":{\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\",\"paragraphId\":\"paragraph_1791153495207_795355579\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"data\":{\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\",\"paragraphId\":\"paragraph_1791155466906_805179738\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 41
     },
@@ -590,7 +618,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"NOTE_UPDATE\",\"msgId\":\"<msgId:12>\",\"data\":{\"id\":\"2N4KFZ9GX\",\"name\":\"collaboration-1791153499057\",\"config\":{\"looknfeel\":\"simple\"}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE_UPDATE\",\"msgId\":\"<msgId:12>\",\"data\":{\"id\":\"2N6RCXQZ6\",\"name\":\"collaboration-1791155468525\",\"config\":{\"looknfeel\":\"simple\"}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 42
     },
@@ -600,7 +628,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791153499057\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791155468525\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 43
     },
@@ -610,7 +638,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791153499057\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791155468525\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 44
     },
@@ -620,7 +648,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153499057\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N6RCXQZ6\",\"path\":\"/LifecycleCapture/collaboration-1791155468525\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 45
     },
@@ -630,7 +658,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153499057\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N6RCXQZ6\",\"path\":\"/LifecycleCapture/collaboration-1791155468525\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 46
     },
@@ -640,7 +668,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:13>\",\"data\":{\"id\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:13>\",\"data\":{\"id\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 47
     },
@@ -670,7 +698,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791153495207_795355579\",\"id\":\"paragraph_1791153495207_795355579\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791153499057\",\"id\":\"2N4KFZ9GX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791153499057\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155466906_805179738\",\"id\":\"paragraph_1791155466906_805179738\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155468525\",\"id\":\"2N6RCXQZ6\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155468525\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 50
     },
@@ -690,7 +718,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:14>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:14>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 52
     },
@@ -701,12 +729,12 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         }
       },
       "sequence": 53
@@ -717,7 +745,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:15>\",\"data\":{\"paragraphId\":\"paragraph_1791153495207_795355579\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:15>\",\"data\":{\"paragraphId\":\"paragraph_1791155466906_805179738\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 54
     },
@@ -727,7 +755,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4KFZ9GX\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N6RCXQZ6\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 55
     },
@@ -739,12 +767,12 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -768,7 +796,7 @@
       "connectionId": "viewer-a:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791153495207_795355579\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155466906_805179738\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 57
     },
@@ -778,19 +806,9 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 58
-    },
-    {
-      "kind": "websocket",
-      "sessionId": "viewer-b",
-      "connectionId": "viewer-b:socket:1",
-      "websocket": {
-        "direction": "receive",
-        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
-      },
-      "sequence": 59
     },
     {
       "kind": "websocket",
@@ -800,6 +818,16 @@
         "direction": "receive",
         "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
+      "sequence": 59
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
       "sequence": 60
     },
     {
@@ -808,36 +836,9 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791153495207_795355579\",\"id\":\"paragraph_1791153495207_795355579\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791153499057\",\"id\":\"2N4KFZ9GX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791153499057\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155466906_805179738\",\"id\":\"paragraph_1791155466906_805179738\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155468525\",\"id\":\"2N6RCXQZ6\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155468525\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 61
-    },
-    {
-      "kind": "websocket",
-      "sessionId": "viewer-b",
-      "connectionId": "viewer-b:socket:1",
-      "websocket": {
-        "direction": "send",
-        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:16>\",\"data\":{\"noteId\":\"2N4KFZ9GX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
-      },
-      "sequence": 62
-    },
-    {
-      "kind": "rest",
-      "sessionId": "viewer-b",
-      "requestId": "viewer-b:request:3",
-      "rest": {
-        "direction": "request",
-        "request": {
-          "bodyRaw": "",
-          "headers": {
-            "accept": "application/json, text/plain, */*"
-          },
-          "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
-        }
-      },
-      "sequence": 63
     },
     {
       "kind": "websocket",
@@ -847,6 +848,33 @@
         "direction": "receive",
         "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
+      "sequence": 62
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:16>\",\"data\":{\"noteId\":\"2N6RCXQZ6\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 63
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
+        }
+      },
       "sequence": 64
     },
     {
@@ -855,7 +883,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "send",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:17>\",\"data\":{\"paragraphId\":\"paragraph_1791153495207_795355579\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:17>\",\"data\":{\"paragraphId\":\"paragraph_1791155466906_805179738\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 65
     },
@@ -865,7 +893,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4KFZ9GX\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N6RCXQZ6\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 66
     },
@@ -877,12 +905,12 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {
             "accept": "application/json, text/plain, */*"
           },
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX/permissions"
+          "url": "/api/notebook/2N6RCXQZ6/permissions",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -906,7 +934,7 @@
       "connectionId": "viewer-b:socket:1",
       "websocket": {
         "direction": "receive",
-        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791153495207_795355579\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155466906_805179738\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
       },
       "sequence": 68
     },
@@ -917,10 +945,10 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         }
       },
       "sequence": 69
@@ -933,10 +961,10 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -960,14 +988,14 @@
                 "apps": [],
                 "runtimeInfos": {},
                 "progressUpdateIntervalMs": 500,
-                "jobName": "paragraph_1791153495207_795355579",
-                "id": "paragraph_1791153495207_795355579",
+                "jobName": "paragraph_1791155466906_805179738",
+                "id": "paragraph_1791155466906_805179738",
                 "dateCreated": "<dateCreated>",
                 "status": "READY"
               }
             ],
-            "name": "collaboration-1791153499057",
-            "id": "2N4KFZ9GX",
+            "name": "collaboration-1791155468525",
+            "id": "2N6RCXQZ6",
             "defaultInterpreterGroup": "spark",
             "version": "0.13.0-SNAPSHOT",
             "noteParams": {},
@@ -977,7 +1005,7 @@
               "looknfeel": "simple"
             },
             "info": {},
-            "path": "/LifecycleCapture/collaboration-1791153499057"
+            "path": "/LifecycleCapture/collaboration-1791155468525"
           }
         }
       }
@@ -989,10 +1017,10 @@
       "rest": {
         "direction": "request",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         }
       },
       "sequence": 71
@@ -1005,10 +1033,10 @@
       "rest": {
         "direction": "response",
         "request": {
-          "bodyRaw": "",
           "headers": {},
           "method": "GET",
-          "url": "/api/notebook/2N4KFZ9GX"
+          "url": "/api/notebook/2N6RCXQZ6",
+          "bodyRaw": ""
         },
         "status": 200,
         "headers": {
@@ -1032,14 +1060,14 @@
                 "apps": [],
                 "runtimeInfos": {},
                 "progressUpdateIntervalMs": 500,
-                "jobName": "paragraph_1791153495207_795355579",
-                "id": "paragraph_1791153495207_795355579",
+                "jobName": "paragraph_1791155466906_805179738",
+                "id": "paragraph_1791155466906_805179738",
                 "dateCreated": "<dateCreated>",
                 "status": "READY"
               }
             ],
-            "name": "collaboration-1791153499057",
-            "id": "2N4KFZ9GX",
+            "name": "collaboration-1791155468525",
+            "id": "2N6RCXQZ6",
             "defaultInterpreterGroup": "spark",
             "version": "0.13.0-SNAPSHOT",
             "noteParams": {},
@@ -1049,7 +1077,7 @@
               "looknfeel": "simple"
             },
             "info": {},
-            "path": "/LifecycleCapture/collaboration-1791153499057"
+            "path": "/LifecycleCapture/collaboration-1791155468525"
           }
         }
       }

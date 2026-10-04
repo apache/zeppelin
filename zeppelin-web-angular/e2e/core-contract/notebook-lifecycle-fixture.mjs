@@ -68,7 +68,7 @@ function createMessageCorrelation(fixture) {
     const envelope = JSON.parse(record.websocket.payloadText);
     if (typeof envelope.msgId === 'string') {
       const ids = record.websocket.direction === 'send' ? sentIds : receivedIds;
-      ids.add(`${record.sessionId}:${envelope.msgId}`);
+      ids.add(envelope.msgId);
     }
   }
 
@@ -76,11 +76,10 @@ function createMessageCorrelation(fixture) {
 
   return {
     matchSend(record, payload) {
-      const sessionId = record.sessionId;
       const expected = JSON.parse(record.websocket.payloadText);
       const actual = JSON.parse(String(payload));
-      const idKey = `${sessionId}:${expected.msgId}`;
-      const liveKey = `${sessionId}:${actual.msgId}`;
+      const idKey = expected.msgId;
+      const liveKey = actual.msgId;
       if (typeof expected.msgId === 'string') {
         if (
           typeof actual.msgId !== 'string' ||
@@ -103,11 +102,12 @@ function createMessageCorrelation(fixture) {
     },
     replyPayload(record) {
       const envelope = JSON.parse(record.websocket.payloadText);
-      const binding = recordedIds.get(`${record.sessionId}:${envelope.msgId}`);
+      const binding = recordedIds.get(envelope.msgId);
       return binding ? JSON.stringify({ ...envelope, msgId: binding }) : record.websocket.payloadText;
     }
   };
 }
+
 function validateConnection(errors, prefix, record, state) {
   const { sessionId, connectionId, event } = record;
 
@@ -221,6 +221,55 @@ const recordValidators = {
   websocket: validateLifecycleFrame
 };
 
+function validateClientDelivery(errors, fixture) {
+  const observation = fixture.metadata?.routeTransition;
+  if (!observation) return;
+  const receives = fixture.records.filter(
+    record =>
+      record?.kind === 'websocket' &&
+      record.sessionId === observation.sessionId &&
+      record.websocket?.direction === 'receive'
+  );
+  const sequences = observation.deliveredSequences;
+  if (
+    observation.boundary !== 'browser-message' ||
+    !observation.intervention ||
+    !Array.isArray(sequences) ||
+    sequences.length !== receives.length ||
+    new Set(sequences).size !== sequences.length ||
+    sequences.some(sequence => !receives.some(record => record.sequence === sequence))
+  ) {
+    errors.push('client delivery must reference every upstream receive occurrence exactly once');
+    return;
+  }
+  const held = receives.find(record => record.sequence === observation.heldNoteSequence);
+  let envelope;
+  try {
+    envelope = held && JSON.parse(held.websocket.payloadText);
+  } catch {
+    errors.push('client delivery references an invalid envelope');
+    return;
+  }
+  const index = sequences.indexOf(observation.heldNoteSequence);
+  if (
+    envelope?.op !== 'NOTE' ||
+    envelope.data?.note?.id !== observation.noteId ||
+    index < 1 ||
+    sequences[index - 1] !== observation.releaseAfterSequence ||
+    observation.releaseAfterSequence <= observation.heldNoteSequence
+  ) {
+    errors.push('client delivery must identify the held NOTE and observed release boundary');
+    return;
+  }
+  const expected = receives
+    .map(record => record.sequence)
+    .filter(sequence => sequence !== observation.heldNoteSequence);
+  expected.splice(expected.indexOf(observation.releaseAfterSequence) + 1, 0, observation.heldNoteSequence);
+  if (stableJson(expected) !== stableJson(sequences)) {
+    errors.push('client delivery changed order beyond the declared NOTE hold');
+  }
+}
+
 // Context belongs to the capture, never to an untagged server frame.
 export function validateLifecycleFixture(fixture) {
   const errors = [];
@@ -273,6 +322,8 @@ export function validateLifecycleFixture(fixture) {
       errors.push(`${prefix}: unknown record kind`);
     }
   }
+
+  validateClientDelivery(errors, fixture);
 
   if (state.requests.size) {
     errors.push('unfinished REST requests');
@@ -415,6 +466,28 @@ export function createLifecycleRecorder(metadata) {
         websocket: { direction: 'send', payloadText }
       });
     },
+    clientDelivery(sessionId, envelopes) {
+      if (!stopped || !sessions.some(session => session.id === sessionId)) {
+        throw new Error('Client delivery requires a stopped recorder and known session');
+      }
+      const received = records.filter(
+        entry => entry.sessionId === sessionId && entry.kind === 'websocket' && entry.websocket.direction === 'receive'
+      );
+      const occurrences = new Map();
+      for (const entry of received) {
+        const key = stableJson(JSON.parse(entry.websocket.payloadText));
+        const queue = occurrences.get(key) ?? [];
+        queue.push(entry.sequence);
+        occurrences.set(key, queue);
+      }
+      const sequences = envelopes.map(envelope => {
+        const sequence = occurrences.get(stableJson(envelope))?.shift();
+        if (!sequence) throw new Error('Client delivery has no matching upstream receive occurrence');
+        return sequence;
+      });
+      if (sequences.length !== received.length) throw new Error('Client delivery observation lost upstream frames');
+      return sequences;
+    },
     snapshot,
     async stop() {
       stopped = true;
@@ -456,9 +529,14 @@ export function createLifecycleReplay(fixture, faults = []) {
   let draining = false;
   let drainRequested = false;
 
-  const fail = error => {
+  const abortPending = error => {
     fatalError ??= error;
     pendingRestRequests.splice(0).forEach(pending => pending.reject(fatalError));
+    inFlightRestDeliveries.forEach(pending => pending.reject(fatalError));
+  };
+
+  const fail = error => {
+    abortPending(error);
     throw fatalError;
   };
 
@@ -472,9 +550,7 @@ export function createLifecycleReplay(fixture, faults = []) {
     for (let copy = 0; copy < copies; copy++) socket.send(payload);
   };
 
-  const deliveries = createLifecycleDeliveryScheduler(fixture, faults, deliver, error => {
-    fatalError ??= error;
-  });
+  const deliveries = createLifecycleDeliveryScheduler(fixture, faults, deliver, abortPending);
 
   const drain = async () => {
     if (draining) {

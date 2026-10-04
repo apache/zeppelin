@@ -412,7 +412,9 @@ does this automatically. Recording never derives noteId from an untagged frame.
 Replay binds each session to its own page and context. Consecutive REST requests may
 arrive in any order within their recorded batch; they cannot cross a socket,
 context or response barrier. Response order remains global. msgId substitutions
-are isolated per session and preserve reply correlation.
+preserve raw ID equality across all viewers, including broadcast replies. If two
+actors use the same recorded ID, they must use the same substituted ID; replay
+rejects attempts to invent a sender distinction absent from the wire.
 
 A fault plan selects a received record by `sequence`. `copies: 0` drops it,
 `copies: 2` duplicates it, `delayMs` defers delivery, and `afterSequence` holds it
@@ -449,6 +451,7 @@ Run from the candidate's `zeppelin-web-angular` directory:
 
 ```bash
 export ZEPPELIN_CAPTURE_MASTER_COMMIT=<verified-full-Apache-master-commit>
+export ZEPPELIN_CAPTURE_ENVIRONMENT=/tmp/zeppelin-lifecycle-capture/capture-environment.json
 export PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080
 npm run e2e:core-contract:live -- lifecycle-fixtures
 npm run e2e:core-contract:live -- commit-fixtures
@@ -462,6 +465,24 @@ replacing committed fixtures. The manifest records passed, skipped and failed
 capture results. Committed inventory tests require all seven baseline captures to
 be supported, valid and attributed to Apache master.
 
+The helper writes `capture-environment.json` for launch-only root, mode and port
+provenance. Live capture cross-checks its isolated notebook/search/recovery paths
+and server port against the configuration API in anonymous mode, and records
+log/PID paths, browser version, origin, configured interpreter groups and the
+progress flag. In authenticated mode the configuration and interpreter-settings
+APIs require an admin role; ordinary-user collaboration captures instead name the
+helper manifest as their configuration source and record no interpreter execution. The helper
+explicitly sets the progress flag to Apache master's default `true` so the API
+reports it. The authenticated collaboration fixture records the distinct-user
+check without storing principals or credentials.
+
+`metadata.routeTransition` records all actual browser receive occurrences by their
+upstream record sequence. The proxy delays only the first matching NOTE_B; its
+payload stays unchanged. Native browser message observations establish the delivery
+order independently of the replay plan. Validation rejects missing or extra
+occurrences, wrong release boundaries and additional undeclared reorders. Replay
+must reproduce the complete observed sequence, including implicit replies.
+
 ### Evidence and remaining lifecycle gates
 
 | Capture | Transport and browser evidence |
@@ -469,7 +490,7 @@ be supported, valid and attributed to Apache master.
 | `structural.json` | WS insert/copy/move/remove and correlated commit; REST insert/move/remove. REST full NOTE and WS granular paragraph authority are declared separately, without converting payload shapes. |
 | `revision-reconnect.json` | Checkpoint, history, compare and restore; live/revision reconnect requests; raw live add/move/remove/update on a revision route while its rendered text and paragraph count stay unchanged. |
 | `collaboration-anonymous.json`, `collaboration-auth.json` | Independent viewers and distinct users in auth mode; patch/update/mode status; canonical REST reads and final GET_NOTE refetches; delay/duplicate/drop/reorder delivery plans. |
-| `association.json` | A inactive to B active, Job Manager, GET_NOTE, reload, home, new and clone; Angular's implicit GET_NOTE after NEW_NOTE; controlled permutations putting B's events before or after its matching NOTE. |
+| `association.json` | A inactive to B active, Job Manager, GET_NOTE, reload, home, new and clone; Angular's implicit GET_NOTE after NEW_NOTE; actual browser-message delivery references, with one unchanged NOTE_B held by a proxy while genuine B events arrive; a second batch arrives after release. The upstream sequence is retained separately. |
 | `commit-request-loss.json`, `commit-reply-loss.json` | Same local editor draft and missing client ACK over a declared 250 ms observation window; different canonical server text; explicit targeted REST/GET_NOTE reconciliation. The real correlated reply in the reply-loss capture is preserved and dropped only by the replay plan. |
 
 The ordinary trace replay mounts a wire observer, **not a Notebook reducer or Shared

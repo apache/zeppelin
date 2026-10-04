@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { expect, type Locator, type Page } from '@playwright/test';
-import { waitForZeppelinReady } from '../utils';
+import type { Locator, Page } from '@playwright/test';
 import { NotebookParagraphPage } from './notebook-paragraph-page';
 
 export interface TransportEnvelope {
@@ -72,12 +71,12 @@ export class NotebookTransportPage {
     });
   }
 
-  async open(noteId: string, revisionId?: string): Promise<void> {
-    const after = await this.count();
+  async navigateToNote(noteId: string, revisionId?: string): Promise<void> {
     await this.page.goto(`/#/notebook/${noteId}${revisionId ? `/revision/${revisionId}` : ''}`);
-    await waitForZeppelinReady(this.page);
-    await this.reply(revisionId ? 'NOTE_REVISION' : 'NOTE', after);
-    await expect(this.editorText.first()).toBeVisible({ timeout: 15000 });
+  }
+
+  async receivedFrames(after = 0): Promise<TransportEnvelope[]> {
+    return this.page.evaluate(start => window.notebookCapture.frames.slice(start), after);
   }
 
   async count(): Promise<number> {
@@ -100,23 +99,6 @@ export class NotebookTransportPage {
     return after;
   }
 
-  async reply(op: string, after: number): Promise<TransportEnvelope> {
-    await expect
-      .poll(
-        () =>
-          this.page.evaluate(
-            ({ operation, start }) => window.notebookCapture.frames.slice(start).some(frame => frame.op === operation),
-            { operation: op, start: after }
-          ),
-        { timeout: 15000, message: `Waiting for ${op}` }
-      )
-      .toBe(true);
-    return this.page.evaluate(
-      ({ operation, start }) => window.notebookCapture.frames.slice(start).find(frame => frame.op === operation)!,
-      { operation: op, start: after }
-    );
-  }
-
   async canonical(noteId: string): Promise<{ id: string; paragraphs: { id: string; text: string }[] }> {
     return this.page.evaluate(async id => {
       const response = await fetch(`/api/notebook/${id}`);
@@ -125,15 +107,15 @@ export class NotebookTransportPage {
     }, noteId);
   }
 
-  async reconnect(): Promise<number> {
-    const generation = await this.page.evaluate(() => {
+  async disconnect(): Promise<number> {
+    return this.page.evaluate(() => {
       const capture = window.notebookCapture;
       capture.socket.close(4001, 'Lifecycle capture disconnect');
       return capture.generation;
     });
-    await expect
-      .poll(() => this.page.evaluate(() => window.notebookCapture.generation), { timeout: 15000 })
-      .toBe(generation + 1);
-    return generation;
+  }
+
+  async generation(): Promise<number> {
+    return this.page.evaluate(() => window.notebookCapture.generation);
   }
 }

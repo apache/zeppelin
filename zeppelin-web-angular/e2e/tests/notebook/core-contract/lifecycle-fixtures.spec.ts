@@ -16,7 +16,7 @@
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test, type BrowserContext } from '@playwright/test';
 import {
   captureMetadata,
   lifecycleFixtureDirectory,
@@ -30,6 +30,13 @@ import {
 } from '../../../core-contract/notebook-lifecycle-fixture.mjs';
 import { replayLifecycleTrace } from '../../../core-contract/replay-lifecycle-trace';
 import { NotebookTransportPage } from '../../../models/notebook-transport-page';
+import {
+  openTransportNote,
+  waitForTransportReply,
+  reconnectTransport,
+  installNoteDeliveryProbe,
+  editAssociatedTransportNote
+} from '../../../models/notebook-transport-page.util';
 import { LoginTestUtil } from '../../../models/login-page.util';
 import { LoginPage } from '../../../models/login-page';
 import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
@@ -98,12 +105,19 @@ test.describe('Notebook lifecycle transport fixtures', () => {
           readFileSync(path.join(lifecycleFixtureDirectory(), entry.file), 'utf8')
         ) as LifecycleFixture;
         expect(validateLifecycleFixture(fixture)).toEqual([]);
-        const faults = fixture.metadata.commitLoss?.faults ?? [];
+        const transition = fixture.metadata.routeTransition;
+        const faults = transition
+          ? [{ sequence: transition.heldNoteSequence, afterSequence: transition.releaseAfterSequence }]
+          : (fixture.metadata.commitLoss?.faults ?? []);
         const frames = await replayLifecycleTrace(browser, fixture, faults);
         expect(frames.size).toBe(fixture.sessions.length);
         for (const session of fixture.sessions) {
+          const records =
+            transition?.sessionId === session.id
+              ? transition.deliveredSequences.map(sequence => fixture.records[sequence - 1])
+              : fixture.records;
           expect(frames.get(session.id)).toEqual(
-            fixture.records
+            records
               .filter(
                 record =>
                   record.sessionId === session.id &&
@@ -125,14 +139,6 @@ test.describe('Notebook lifecycle transport fixtures', () => {
       await view.install();
       await page.goto('/#/');
       await waitForZeppelinReady(page);
-      const created = await page.request.post('/api/notebook', {
-        data: {
-          notePath: `LifecycleCapture/structural-${Date.now()}`,
-          paragraphs: [{ text: '%md first' }, { text: '%md second' }]
-        }
-      });
-      expect(created.ok()).toBe(true);
-      const noteId = (await created.json()).body as string;
       const recorder = createLifecycleRecorder({
         ...(await captureMetadata(page, 'Structural paragraph ingresses', operationSets.structural)),
         authoritativeInputs: [
@@ -145,22 +151,38 @@ test.describe('Notebook lifecycle transport fixtures', () => {
           { ingress: 'websocket', commands: ['COMMIT_PARAGRAPH'], frames: ['PARAGRAPH with the matching msgId'] }
         ]
       });
-      recorder.install(page, 'viewer-a');
+      const noteIds: string[] = [];
+      const contexts: BrowserContext[] = [];
+      let recording = false;
       try {
+        const created = await page.request.post('/api/notebook', {
+          data: {
+            notePath: `LifecycleCapture/structural-${Date.now()}`,
+            paragraphs: [{ text: '%md first' }, { text: '%md second' }]
+          }
+        });
+        expect(created.ok()).toBe(true);
+        const noteId = (await created.json()).body as string;
+        noteIds.push(noteId);
+        recorder.install(page, 'viewer-a');
+        recording = true;
+
         await test.step('Given a live note associated with the current socket', async () => {
           // Capture starts before the socket exists; opening a fresh document creates that socket.
           await page.reload();
           recorder.context('viewer-a', { state: 'active', noteId, revisionId: null });
-          await view.open(noteId);
+          await openTransportNote(view, noteId);
         });
 
         await test.step('When insert, copy, move, commit and remove use WebSocket commands', async () => {
-          const added = await view.reply(
+          const added = await waitForTransportReply(
+            view,
             'PARAGRAPH_ADDED',
             await view.send('INSERT_PARAGRAPH', { index: 1, config: {} })
           );
           const paragraph = added.data.paragraph as { id: string };
-          await view.reply(
+          await waitForTransportReply(
+            view,
             'PARAGRAPH',
             await view.send('COMMIT_PARAGRAPH', {
               id: paragraph.id,
@@ -171,8 +193,13 @@ test.describe('Notebook lifecycle transport fixtures', () => {
               config: {}
             })
           );
-          await view.reply('PARAGRAPH_MOVED', await view.send('MOVE_PARAGRAPH', { id: paragraph.id, index: 0 }));
-          await view.reply(
+          await waitForTransportReply(
+            view,
+            'PARAGRAPH_MOVED',
+            await view.send('MOVE_PARAGRAPH', { id: paragraph.id, index: 0 })
+          );
+          await waitForTransportReply(
+            view,
             'PARAGRAPH_ADDED',
             await view.send('COPY_PARAGRAPH', {
               index: 1,
@@ -182,7 +209,11 @@ test.describe('Notebook lifecycle transport fixtures', () => {
               config: {}
             })
           );
-          await view.reply('PARAGRAPH_REMOVED', await view.send('PARAGRAPH_REMOVE', { id: paragraph.id }));
+          await waitForTransportReply(
+            view,
+            'PARAGRAPH_REMOVED',
+            await view.send('PARAGRAPH_REMOVE', { id: paragraph.id })
+          );
           expect((await view.canonical(noteId)).paragraphs.map(value => value.text)).toContain('%md copy');
         });
 
@@ -197,7 +228,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
             if (!response.ok) throw new Error('REST insert failed');
             return (await response.json()).body as string;
           }, noteId);
-          await view.reply('NOTE', after);
+          await waitForTransportReply(view, 'NOTE', after);
           const movedAt = await view.count();
           expect(
             await page.evaluate(
@@ -206,7 +237,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
               { id: noteId, paragraphId: inserted }
             )
           ).toBe(true);
-          await view.reply('NOTE', movedAt);
+          await waitForTransportReply(view, 'NOTE', movedAt);
           const removedAt = await view.count();
           expect(
             await page.evaluate(
@@ -215,7 +246,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
               { id: noteId, paragraphId: inserted }
             )
           ).toBe(true);
-          await view.reply('NOTE', removedAt);
+          await waitForTransportReply(view, 'NOTE', removedAt);
           expect((await view.canonical(noteId)).paragraphs.map(value => value.id)).not.toContain(inserted);
         });
 
@@ -231,7 +262,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
           expect(replay.get('viewer-a')!.length).toBeGreaterThan(0);
         });
       } finally {
-        await cleanUpLifecycleCapture(page, recorder, [noteId]);
+        await cleanUpLifecycleCapture(page, recording ? recorder : undefined, noteIds, contexts);
       }
     }
   );
@@ -246,33 +277,40 @@ test.describe('Notebook lifecycle transport fixtures', () => {
       await view.install();
       await page.goto('/#/');
       await waitForZeppelinReady(page);
-      const created = await page.request.post('/api/notebook', {
-        data: { notePath: `LifecycleCapture/revision-${Date.now()}`, paragraphs: [{ text: '%md snapshot' }] }
-      });
-      expect(created.ok()).toBe(true);
-      const noteId = (await created.json()).body as string;
       const recorder = createLifecycleRecorder(
         await captureMetadata(page, 'Revision routes and physical reconnect', [
           ...operationSets.revision,
           ...operationSets.reconnect
         ])
       );
-      recorder.install(page, 'viewer-a');
-
-      const liveContext = await browser.newContext({ storageState: await page.context().storageState() });
-      const livePage = await liveContext.newPage();
-      const liveView = new NotebookTransportPage(livePage);
-      await liveView.install();
-      recorder.install(livePage, 'viewer-b');
+      const noteIds: string[] = [];
+      const contexts: BrowserContext[] = [];
+      let recording = false;
       try {
+        const created = await page.request.post('/api/notebook', {
+          data: { notePath: `LifecycleCapture/revision-${Date.now()}`, paragraphs: [{ text: '%md snapshot' }] }
+        });
+        expect(created.ok()).toBe(true);
+        const noteId = (await created.json()).body as string;
+        noteIds.push(noteId);
+        recorder.install(page, 'viewer-a');
+        recording = true;
+
+        const liveContext = await browser.newContext({ storageState: await page.context().storageState() });
+        contexts.push(liveContext);
+        const livePage = await liveContext.newPage();
+        const liveView = new NotebookTransportPage(livePage);
+        await liveView.install();
+        recorder.install(livePage, 'viewer-b');
         await page.reload();
         recorder.context('viewer-a', { state: 'active', noteId, revisionId: null });
-        await view.open(noteId);
+        await openTransportNote(view, noteId);
         let revisionId = '';
 
         await test.step('When a paragraph is committed and checkpointed', async () => {
           const note = await view.canonical(noteId);
-          await view.reply(
+          await waitForTransportReply(
+            view,
             'PARAGRAPH',
             await view.send('COMMIT_PARAGRAPH', {
               id: note.paragraphs[0].id,
@@ -283,7 +321,8 @@ test.describe('Notebook lifecycle transport fixtures', () => {
               config: {}
             })
           );
-          const history = await view.reply(
+          const history = await waitForTransportReply(
+            view,
             'LIST_REVISION_HISTORY',
             await view.send('CHECKPOINT_NOTE', { noteId, commitMessage: 'capture snapshot' })
           );
@@ -293,63 +332,75 @@ test.describe('Notebook lifecycle transport fixtures', () => {
 
         await test.step('Then the live route refetches NOTE and revision history after reconnect', async () => {
           const after = await view.count();
-          await view.reconnect();
-          await view.reply('NOTE', after);
-          await view.reply('LIST_REVISION_HISTORY', after);
+          await reconnectTransport(view);
+          await waitForTransportReply(view, 'NOTE', after);
+          await waitForTransportReply(view, 'LIST_REVISION_HISTORY', after);
           await expect(view.editorText.first()).toContainText('snapshot committed');
         });
 
         await test.step('When the route switches to a revision and the socket reconnects', async () => {
           recorder.context('viewer-a', { state: 'inactive', noteId, revisionId: null });
           recorder.context('viewer-a', { state: 'active', noteId, revisionId });
-          await view.open(noteId, revisionId);
+          await openTransportNote(view, noteId, revisionId);
           await livePage.goto('/#/');
           await waitForZeppelinReady(livePage);
           recorder.context('viewer-b', { state: 'active', noteId, revisionId: null });
-          await liveView.open(noteId);
+          await openTransportNote(liveView, noteId);
           const liveEventAt = await view.count();
-          const added = await liveView.reply(
+          const added = await waitForTransportReply(
+            liveView,
             'PARAGRAPH_ADDED',
             await liveView.send('INSERT_PARAGRAPH', { index: 0, config: {} })
           );
           const liveParagraph = added.data.paragraph as { id: string };
-          await liveView.reply(
+          await waitForTransportReply(
+            liveView,
             'PARAGRAPH_MOVED',
             await liveView.send('MOVE_PARAGRAPH', { id: liveParagraph.id, index: 1 })
           );
-          await liveView.reply('PARAGRAPH_REMOVED', await liveView.send('PARAGRAPH_REMOVE', { id: liveParagraph.id }));
-          await liveView.reply(
+          await waitForTransportReply(
+            liveView,
+            'PARAGRAPH_REMOVED',
+            await liveView.send('PARAGRAPH_REMOVE', { id: liveParagraph.id })
+          );
+          await waitForTransportReply(
+            liveView,
             'NOTE_UPDATED',
             await liveView.send('NOTE_UPDATE', { id: noteId, name: 'live-change', config: { looknfeel: 'simple' } })
           );
-          await view.reply('NOTE_UPDATED', liveEventAt);
-          await view.reply('PARAGRAPH_ADDED', liveEventAt);
-          await view.reply('PARAGRAPH_MOVED', liveEventAt);
-          await view.reply('PARAGRAPH_REMOVED', liveEventAt);
+          await waitForTransportReply(view, 'NOTE_UPDATED', liveEventAt);
+          await waitForTransportReply(view, 'PARAGRAPH_ADDED', liveEventAt);
+          await waitForTransportReply(view, 'PARAGRAPH_MOVED', liveEventAt);
+          await waitForTransportReply(view, 'PARAGRAPH_REMOVED', liveEventAt);
           await expect(view.editorText.first()).toContainText('snapshot committed');
           await expect(view.paragraphs).toHaveCount(1);
           const after = await view.count();
-          await view.reconnect();
-          await view.reply('NOTE_REVISION', after);
-          await view.reply('LIST_REVISION_HISTORY', after);
+          await reconnectTransport(view);
+          await waitForTransportReply(view, 'NOTE_REVISION', after);
+          await waitForTransportReply(view, 'LIST_REVISION_HISTORY', after);
           await expect(page).toHaveURL(new RegExp(`/revision/${revisionId}`));
           await expect(view.editorText.first()).toContainText('snapshot committed');
         });
 
         await test.step('Then compare and restore preserve revision payloads', async () => {
-          const compared = await view.reply(
+          const compared = await waitForTransportReply(
+            view,
             'NOTE_REVISION_FOR_COMPARE',
             await view.send('NOTE_REVISION_FOR_COMPARE', { noteId, revisionId, position: 'left' })
           );
           expect(compared.data.revisionId).toBe(revisionId);
-          await view.reply('SET_NOTE_REVISION', await view.send('SET_NOTE_REVISION', { noteId, revisionId }));
+          await waitForTransportReply(
+            view,
+            'SET_NOTE_REVISION',
+            await view.send('SET_NOTE_REVISION', { noteId, revisionId })
+          );
           await expect(page).toHaveURL(new RegExp(`/notebook/${noteId}$`));
           const fixture = await recorder.write(path.join(lifecycleFixtureDirectory(), 'revision-reconnect.json'));
           const replay = await replayLifecycleTrace(browser, fixture);
           expect(replay.get('viewer-a')!.some(frame => frame.op === 'NOTE_REVISION')).toBe(true);
         });
       } finally {
-        await cleanUpLifecycleCapture(page, recorder, [noteId], [liveContext]);
+        await cleanUpLifecycleCapture(page, recording ? recorder : undefined, noteIds, contexts);
       }
     }
   );
@@ -364,55 +415,69 @@ test.describe('Notebook lifecycle transport fixtures', () => {
         authenticated && new Set(credentials.map(value => value.username)).size < 2,
         'Authenticated collaboration requires two distinct capture users'
       );
-      const context = await browser.newContext({
-        storageState: authenticated ? undefined : await page.context().storageState()
-      });
-      const follower = await context.newPage();
-      const a = view;
-      const b = new NotebookTransportPage(follower);
-      await a.install();
-      await b.install();
-      await page.goto('/#/');
-      await waitForZeppelinReady(page);
-      await follower.goto('/#/');
-      await waitForZeppelinReady(follower);
-      if (authenticated) {
-        const current = (await (await page.request.get('/api/security/ticket')).json()).body.principal as string;
-        const other = credentials.find(value => value.username !== current)!;
-        await new LoginPage(follower).login(other.username, other.password);
-      }
-      const principals = await Promise.all(
-        [page, follower].map(
-          async viewer => (await (await viewer.request.get('/api/security/ticket')).json()).body.principal as string
-        )
+      const metadata: LifecycleFixture['metadata'] = await captureMetadata(
+        page,
+        'Independent collaboration viewers',
+        operationSets.collaboration
       );
-      expect(!authenticated || principals[0] !== principals[1]).toBe(true);
-      const created = await page.request.post('/api/notebook', {
-        data: { notePath: `LifecycleCapture/collaboration-${Date.now()}`, paragraphs: [{ text: '%md original' }] }
-      });
-      expect(created.ok()).toBe(true);
-      const noteId = (await created.json()).body as string;
-      // ACL is setup for the two actors, rather than a permission fixture.
-      expect(
-        (
-          await page.request.put(`/api/notebook/${noteId}/permissions`, {
-            data: { owners: [], readers: [], writers: [], runners: [] }
-          })
-        ).ok()
-      ).toBe(true);
-      const recorder = createLifecycleRecorder(
-        await captureMetadata(page, 'Independent collaboration viewers', operationSets.collaboration)
-      );
-      recorder.install(page, 'viewer-a');
-      recorder.install(follower, 'viewer-b');
+      const recorder = createLifecycleRecorder(metadata);
+      const noteIds: string[] = [];
+      const contexts: BrowserContext[] = [];
+      let recording = false;
       try {
+        const context = await browser.newContext({
+          storageState: authenticated ? undefined : await page.context().storageState()
+        });
+        contexts.push(context);
+        const follower = await context.newPage();
+        const a = view;
+        const b = new NotebookTransportPage(follower);
+        await a.install();
+        await b.install();
+        await page.goto('/#/');
+        await waitForZeppelinReady(page);
+        await follower.goto('/#/');
+        await waitForZeppelinReady(follower);
+        if (authenticated) {
+          const current = (await (await page.request.get('/api/security/ticket')).json()).body.principal as string;
+          const other = credentials.find(value => value.username !== current)!;
+          await new LoginPage(follower).login(other.username, other.password);
+        }
+        const principals = await Promise.all(
+          [page, follower].map(
+            async viewer => (await (await viewer.request.get('/api/security/ticket')).json()).body.principal as string
+          )
+        );
+        expect(!authenticated || principals[0] !== principals[1]).toBe(true);
+        metadata.collaboration = {
+          independentBrowserContexts: true,
+          distinctAuthenticatedUsers: authenticated ? principals[0] !== principals[1] : null
+        };
+        const created = await page.request.post('/api/notebook', {
+          data: { notePath: `LifecycleCapture/collaboration-${Date.now()}`, paragraphs: [{ text: '%md original' }] }
+        });
+        expect(created.ok()).toBe(true);
+        const noteId = (await created.json()).body as string;
+        noteIds.push(noteId);
+        // ACL is setup for the two actors, rather than a permission fixture.
+        expect(
+          (
+            await page.request.put(`/api/notebook/${noteId}/permissions`, {
+              data: { owners: [], readers: [], writers: [], runners: [] }
+            })
+          ).ok()
+        ).toBe(true);
+        recorder.install(page, 'viewer-a');
+        recording = true;
+        recorder.install(follower, 'viewer-b');
+
         await test.step('Given two separately associated browser sessions', async () => {
           await page.reload();
           recorder.context('viewer-a', { state: 'active', noteId, revisionId: null });
-          await a.open(noteId);
+          await openTransportNote(a, noteId);
           await follower.reload();
           recorder.context('viewer-b', { state: 'active', noteId, revisionId: null });
-          await b.open(noteId);
+          await openTransportNote(b, noteId);
         });
 
         await test.step('When a collaborative patch and note update are broadcast', async () => {
@@ -423,7 +488,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
             noteId,
             patch: '@@ -1,12 +1,12 @@\n %25md \n-original\n+modified\n'
           });
-          await b.reply('PATCH_PARAGRAPH', after);
+          await waitForTransportReply(b, 'PATCH_PARAGRAPH', after);
           await expect(b.editorText.first()).toContainText('modified');
           const updatedAt = await b.count();
           await a.send('NOTE_UPDATE', {
@@ -431,9 +496,9 @@ test.describe('Notebook lifecycle transport fixtures', () => {
             name: `collaboration-${Date.now()}`,
             config: { looknfeel: 'simple' }
           });
-          await b.reply('NOTE_UPDATED', updatedAt);
-          await a.reply('NOTE', await a.send('GET_NOTE', { id: noteId }));
-          await b.reply('NOTE', await b.send('GET_NOTE', { id: noteId }));
+          await waitForTransportReply(b, 'NOTE_UPDATED', updatedAt);
+          await waitForTransportReply(a, 'NOTE', await a.send('GET_NOTE', { id: noteId }));
+          await waitForTransportReply(b, 'NOTE', await b.send('GET_NOTE', { id: noteId }));
           await expect(a.editorText.first()).toContainText('modified');
           await expect(b.editorText.first()).toContainText('modified');
           await expect(a.paragraphs).toHaveCount(1);
@@ -473,7 +538,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
           expect(snapshots[0]).toEqual(snapshots[1]);
         });
       } finally {
-        await cleanUpLifecycleCapture(page, recorder, [noteId], [context]);
+        await cleanUpLifecycleCapture(page, recording ? recorder : undefined, noteIds, contexts);
       }
     }
   );
@@ -482,6 +547,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
     'captures association transitions and live route changes without tagging broadcasts',
     { tag: '@live' },
     async ({ page, browser }) => {
+      const delivery = await installNoteDeliveryProbe(page);
       await view.install();
       await page.goto('/#/');
       await waitForZeppelinReady(page);
@@ -489,55 +555,59 @@ test.describe('Notebook lifecycle transport fixtures', () => {
       const settings = (await settingsResponse.json()).body as { name: string }[];
       test.skip(settings.length === 0, 'Association clone capture requires a configured default interpreter setting');
       const defaultInterpreterGroup = settings[0].name;
-      const notes: string[] = [];
-      for (const label of ['a', 'b']) {
-        const response = await page.request.post('/api/notebook', {
-          data: {
-            notePath: `LifecycleCapture/association-${label}-${Date.now()}`,
-            paragraphs: [{ text: `%md route ${label}` }]
-          }
-        });
-        expect(response.ok()).toBe(true);
-        notes.push((await response.json()).body as string);
-      }
-      const [a, b] = notes;
-      const recorder = createLifecycleRecorder(
-        await captureMetadata(page, 'Socket association transitions', operationSets.association)
+      const metadata: LifecycleFixture['metadata'] = await captureMetadata(
+        page,
+        'Socket association transitions',
+        operationSets.association
       );
-      recorder.install(page, 'viewer-a');
+      const recorder = createLifecycleRecorder(metadata);
+      const noteIds: string[] = [];
+      const contexts: BrowserContext[] = [];
+      let recording = false;
       try {
+        for (const label of ['a', 'b']) {
+          const response = await page.request.post('/api/notebook', {
+            data: {
+              notePath: `LifecycleCapture/association-${label}-${Date.now()}`,
+              paragraphs: [{ text: `%md route ${label}` }]
+            }
+          });
+          expect(response.ok()).toBe(true);
+          noteIds.push((await response.json()).body as string);
+        }
+        const [a, b] = noteIds;
+        recorder.install(page, 'viewer-a');
+        recording = true;
+
         await test.step('Given an associated live route A', async () => {
           await page.reload();
           recorder.context('viewer-a', { state: 'active', noteId: a, revisionId: null });
-          await view.open(a);
+          await openTransportNote(view, a);
         });
 
         await test.step('When route B establishes its association and receives incremental edits', async () => {
           recorder.context('viewer-a', { state: 'inactive', noteId: a, revisionId: null });
           recorder.context('viewer-a', { state: 'active', noteId: b, revisionId: null });
-          await view.open(b);
-          const added = await view.reply(
-            'PARAGRAPH_ADDED',
-            await view.send('INSERT_PARAGRAPH', { index: 1, config: {} })
-          );
-          const paragraphId = (added.data.paragraph as { id: string }).id;
-          await view.reply('PARAGRAPH_MOVED', await view.send('MOVE_PARAGRAPH', { id: paragraphId, index: 0 }));
-          await view.reply('PARAGRAPH_REMOVED', await view.send('PARAGRAPH_REMOVE', { id: paragraphId }));
-          await view.reply(
-            'NOTE_UPDATED',
-            await view.send('NOTE_UPDATE', { id: b, name: 'route-b-updated', config: { looknfeel: 'default' } })
-          );
+          delivery.hold(b);
+          await view.navigateToNote(b);
+          await expect.poll(() => delivery.hasHeldNote(), { timeout: 15000 }).toBe(true);
+          await editAssociatedTransportNote(view, b, 'route-b-before-note');
+          const releasedAt = await view.count();
+          delivery.release();
+          const released = await waitForTransportReply(view, 'NOTE', releasedAt);
+          expect((released.data.note as { id: string }).id).toBe(b);
+          await editAssociatedTransportNote(view, b, 'route-b-after-note');
           await expect(view.editorText.first()).toContainText('route b');
         });
 
         await test.step('When Job Manager, reload, home, create and clone change socket association', async () => {
           recorder.context('viewer-a', { state: 'inactive', noteId: b, revisionId: null });
-          await view.reply('LIST_NOTE_JOBS', await view.send('LIST_NOTE_JOBS', {}));
+          await waitForTransportReply(view, 'LIST_NOTE_JOBS', await view.send('LIST_NOTE_JOBS', {}));
           recorder.context('viewer-a', { state: 'active', noteId: a, revisionId: null });
-          await view.open(a);
-          await view.reply('NOTE', await view.send('RELOAD_NOTE', { id: a }));
+          await openTransportNote(view, a);
+          await waitForTransportReply(view, 'NOTE', await view.send('RELOAD_NOTE', { id: a }));
           recorder.context('viewer-a', { state: 'inactive', noteId: a, revisionId: null });
-          const home = await view.reply('NOTE', await view.send('GET_HOME_NOTE', {}));
+          const home = await waitForTransportReply(view, 'NOTE', await view.send('GET_HOME_NOTE', {}));
           expect(home.data).toHaveProperty('note');
           const homeNote = home.data.note as { id: string } | null;
           if (homeNote) {
@@ -545,69 +615,69 @@ test.describe('Notebook lifecycle transport fixtures', () => {
             recorder.context('viewer-a', { state: 'inactive', noteId: homeNote.id, revisionId: null });
           }
           recorder.context('viewer-a', { state: 'active', noteId: b, revisionId: null });
-          await view.open(b);
+          await openTransportNote(view, b);
           recorder.context('viewer-a', { state: 'inactive', noteId: b, revisionId: null });
           const createdAt = await view.send('NEW_NOTE', {
             name: `LifecycleCapture/new-${Date.now()}`,
             defaultInterpreterGroup
           });
-          const created = await view.reply('NEW_NOTE', createdAt);
+          const created = await waitForTransportReply(view, 'NEW_NOTE', createdAt);
           const createdId = (created.data.note as { id: string }).id;
-          notes.push(createdId);
+          noteIds.push(createdId);
           recorder.context('viewer-a', { state: 'active', noteId: createdId, revisionId: null });
           await expect(page).toHaveURL(new RegExp(`/notebook/${createdId}$`));
-          const createdNote = await view.reply('NOTE', createdAt);
+          const createdNote = await waitForTransportReply(view, 'NOTE', createdAt);
           expect((createdNote.data.note as { id: string }).id).toBe(createdId);
           recorder.context('viewer-a', { state: 'inactive', noteId: createdId, revisionId: null });
           const clonedAt = await view.send('CLONE_NOTE', { id: b, name: `LifecycleCapture/clone-${Date.now()}` });
-          const cloned = await view.reply('NEW_NOTE', clonedAt);
+          const cloned = await waitForTransportReply(view, 'NEW_NOTE', clonedAt);
           const cloneId = (cloned.data.note as { id: string }).id;
-          notes.push(cloneId);
+          noteIds.push(cloneId);
           recorder.context('viewer-a', { state: 'active', noteId: cloneId, revisionId: null });
           await expect(page).toHaveURL(new RegExp(`/notebook/${cloneId}$`));
-          const clonedNote = await view.reply('NOTE', clonedAt);
+          const clonedNote = await waitForTransportReply(view, 'NOTE', clonedAt);
           expect((clonedNote.data.note as { id: string }).id).toBe(cloneId);
         });
 
-        await test.step('Then live incremental events replay both before and after route B NOTE', async () => {
-          const fixture = await recorder.write(path.join(lifecycleFixtureDirectory(), 'association.json'));
-          const note = fixture.records.find(
+        await test.step('Then replay reproduces the observed client delivery before and after route B NOTE', async () => {
+          await recorder.stop();
+          const capture = recorder.snapshot();
+          const note = capture.records.find(
             record =>
               record.kind === 'websocket' &&
               record.websocket.direction === 'receive' &&
-              (JSON.parse(record.websocket.payloadText!) as { op: string; data: { note?: { id: string } } }).data?.note
-                ?.id === b &&
-              (JSON.parse(record.websocket.payloadText!) as { op: string }).op === 'NOTE'
+              JSON.parse(record.websocket.payloadText).op === 'NOTE' &&
+              JSON.parse(record.websocket.payloadText).data.note?.id === b
           )!;
-          const events = fixture.records.filter(
-            record =>
-              record.kind === 'websocket' &&
-              record.websocket.direction === 'receive' &&
-              ['PARAGRAPH_ADDED', 'PARAGRAPH_MOVED', 'PARAGRAPH_REMOVED', 'NOTE_UPDATED'].includes(
-                (JSON.parse(record.websocket.payloadText!) as { op: string }).op
-              )
-          );
-          expect(events.length).toBeGreaterThanOrEqual(4);
-          const normal = await replayLifecycleTrace(browser, fixture);
-          const reordered = await replayLifecycleTrace(browser, fixture, [
-            { sequence: note.sequence, afterSequence: events.at(-1)!.sequence }
+          const deliveredSequences = recorder.clientDelivery('viewer-a', await view.receivedFrames());
+          const noteIndex = deliveredSequences.indexOf(note.sequence);
+          const releaseAfterSequence = deliveredSequences[noteIndex - 1];
+          metadata.routeTransition = {
+            boundary: 'browser-message',
+            intervention: 'Proxy held the first matching NOTE_B unchanged while the server processed genuine B edits.',
+            sessionId: 'viewer-a',
+            noteId: b,
+            heldNoteSequence: note.sequence,
+            releaseAfterSequence,
+            deliveredSequences
+          };
+          const fixture = await recorder.write(path.join(lifecycleFixtureDirectory(), 'association.json'));
+          const replay = await replayLifecycleTrace(browser, fixture, [
+            { sequence: note.sequence, afterSequence: releaseAfterSequence }
           ]);
-          const matchingNote = (frame: Record<string, unknown>) =>
-            frame.op === 'NOTE' && (frame.data as { note?: { id: string } }).note?.id === b;
-          const eventOperations = ['PARAGRAPH_ADDED', 'PARAGRAPH_REMOVED', 'PARAGRAPH_MOVED', 'NOTE_UPDATED'];
-          const normalFrames = normal.get('viewer-a')!;
-          const reorderedFrames = reordered.get('viewer-a')!;
-
-          for (const operation of eventOperations) {
-            const normalEvent = normalFrames.findIndex(frame => frame.op === operation);
-            const reorderedEvent = reorderedFrames.findIndex(frame => frame.op === operation);
-            expect(normalEvent).toBeGreaterThan(normalFrames.findIndex(matchingNote));
-            expect(reorderedEvent).toBeLessThan(reorderedFrames.findIndex(matchingNote));
-            expect(reorderedFrames[reorderedEvent]).toEqual(normalFrames[normalEvent]);
+          const observed = deliveredSequences.map(sequence => {
+            const record = fixture.records[sequence - 1];
+            if (record.kind !== 'websocket') throw new Error('Client delivery must reference a WebSocket receive');
+            return JSON.parse(record.websocket.payloadText) as Record<string, unknown>;
+          });
+          expect(replay.get('viewer-a')).toEqual(observed);
+          for (const op of ['PARAGRAPH_ADDED', 'PARAGRAPH_REMOVED', 'PARAGRAPH_MOVED', 'NOTE_UPDATED']) {
+            expect(observed.slice(0, noteIndex).some(frame => frame.op === op)).toBe(true);
+            expect(observed.slice(noteIndex + 1).some(frame => frame.op === op)).toBe(true);
           }
         });
       } finally {
-        await cleanUpLifecycleCapture(page, recorder, notes);
+        await cleanUpLifecycleCapture(page, recording ? recorder : undefined, noteIds, contexts);
       }
     }
   );
