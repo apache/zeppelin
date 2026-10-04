@@ -615,3 +615,26 @@ test('a shared recorded msgId cannot be rebound to a different runtime ID by a l
   assert.throws(() => b.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'runtime-b' })), /correlation mismatch/);
   replay.dispose();
 });
+
+test('an ID delivered before its first send cannot subsequently be rewritten', async () => {
+  const replay = createLifecycleReplay(fixture([
+    open('a', 'a1'),
+    frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'early-id' }),
+    frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'early-id' })
+  ]));
+  const a = await harness(replay, 'a');
+  a.connect();
+  assert.equal(a.received[0].msgId, 'early-id');
+  assert.throws(() => a.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'changed-id' })), /correlation mismatch/);
+  replay.dispose();
+});
+
+test('a captured null msgId cannot be converted into a correlated request', async () => {
+  const replay = createLifecycleReplay(fixture([
+    open('a', 'a1'), frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: null })
+  ]));
+  const a = await harness(replay, 'a');
+  a.connect();
+  assert.throws(() => a.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'invented-id' })), /correlation mismatch/);
+  replay.dispose();
+});

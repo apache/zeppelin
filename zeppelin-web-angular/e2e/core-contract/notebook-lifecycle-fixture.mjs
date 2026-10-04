@@ -80,6 +80,9 @@ function createMessageCorrelation(fixture) {
       const actual = JSON.parse(String(payload));
       const idKey = expected.msgId;
       const liveKey = actual.msgId;
+      if (expected.msgId === null && actual.msgId !== null) {
+        throw new Error('Lifecycle msgId correlation mismatch');
+      }
       if (typeof expected.msgId === 'string') {
         if (
           typeof actual.msgId !== 'string' ||
@@ -103,6 +106,13 @@ function createMessageCorrelation(fixture) {
     replyPayload(record) {
       const envelope = JSON.parse(record.websocket.payloadText);
       const binding = recordedIds.get(envelope.msgId);
+      if (typeof envelope.msgId === 'string' && !binding) {
+        if (runtimeIds.has(envelope.msgId) && runtimeIds.get(envelope.msgId) !== envelope.msgId) {
+          throw new Error('Lifecycle msgId correlation mismatch');
+        }
+        recordedIds.set(envelope.msgId, envelope.msgId);
+        runtimeIds.set(envelope.msgId, envelope.msgId);
+      }
       return binding ? JSON.stringify({ ...envelope, msgId: binding }) : record.websocket.payloadText;
     }
   };
