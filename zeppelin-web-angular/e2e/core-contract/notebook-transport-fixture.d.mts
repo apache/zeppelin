@@ -112,6 +112,11 @@ export declare function normalizeFixtureRecord(value: unknown): unknown;
 export declare function sanitizeFixture(fixture: TransportFixture): TransportFixture;
 export declare function validateFixture(fixture: unknown): string[];
 export declare function validateReplayFixture(fixture: unknown): string[];
+export declare function validateFixtureMetadata(errors: string[], metadata: unknown): void;
+export declare function validateRestRecord(errors: string[], prefix: string, record: unknown): void;
+export declare function validateWebSocketRecord(errors: string[], prefix: string, record: unknown): void;
+export declare function summarizeRequest(request: FixtureRequestLike): FixtureRestRequest;
+export declare function stableJson(value: unknown): string | undefined;
 
 export declare function createPlaywrightFixtureAdapter(fixture: TransportFixture): PlaywrightFixtureAdapter;
 export declare function createNotebookTransportRecorder(metadata: FixtureMetadata): NotebookTransportRecorder;

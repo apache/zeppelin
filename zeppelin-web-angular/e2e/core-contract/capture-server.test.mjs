@@ -245,6 +245,62 @@ test('capture-server starts and stops a server in its own root', () => {
   assert.equal(existsSync(path.join(root.root, 'zeppelin.pid')), false);
 });
 
+test('capture server selects local Git storage and association prerequisites explicitly', () => {
+  const root = createRoot();
+  const observed = path.join(root.root, 'capture-options.json');
+  const probe = path.join(root.root, 'capture-options.mjs');
+  writeFileSync(
+    probe,
+    `import { writeFileSync } from 'node:fs';
+writeFileSync(${JSON.stringify(observed)}, JSON.stringify({
+  storage: process.env.ZEPPELIN_NOTEBOOK_STORAGE,
+  jobManager: process.env.ZEPPELIN_JOBMANAGER_ENABLE,
+  homeNote: process.env.ZEPPELIN_NOTEBOOK_HOMESCREEN
+}));
+await import(${JSON.stringify(stub)});
+`
+  );
+  const result = run(
+    [
+      'start',
+      '--root',
+      root.root,
+      '--port',
+      String(root.zeppelinPort),
+      '--storage',
+      'git',
+      '--job-manager',
+      '--home-note',
+      'HOMECP'
+    ],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${probe}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(readFileSync(observed, 'utf8')), {
+      storage: 'org.apache.zeppelin.notebook.repo.GitNotebookRepo',
+      jobManager: 'true',
+      homeNote: 'HOMECP'
+    });
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
+});
+
+for (const [option, value, message] of [
+  ['--storage', 'remote', /storage must be vfs or git/],
+  ['--home-note', '../../outside', /alphanumeric note ID/]
+]) {
+  test(`capture server rejects invalid ${option} before creating the root`, () => {
+    const parent = createRoot();
+    const root = path.join(parent.root, 'invalid-options');
+    const result = run(['start', '--root', root, option, value]);
+    assert.equal(result.status, 2, result.stderr);
+    assert.match(result.stderr, message);
+    assert.equal(existsSync(root), false);
+  });
+}
+
 test('capture-server writes anonymous and auth config in an isolated temp root', () => {
   const anonymous = createRoot();
   const auth = createRoot();

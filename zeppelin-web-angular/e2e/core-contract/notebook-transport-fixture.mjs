@@ -685,7 +685,7 @@ export function webSocketPayloadMatches(expectedPayload, actualMessage) {
   return redactRawSensitiveValues(expectedPayload) === redactRawSensitiveValues(actualPayload);
 }
 
-function summarizeRequest(request) {
+export function summarizeRequest(request) {
   const body = request.postData() ?? '';
   return {
     headers: filterHeaders(request.headers()),
@@ -775,7 +775,7 @@ function urlPath(value) {
   return `${url.pathname}${url.search}`;
 }
 
-function stableJson(value) {
+export function stableJson(value) {
   if (Array.isArray(value)) {
     return `[${value.map(entry => stableJson(entry)).join(',')}]`;
   }
@@ -1002,7 +1002,7 @@ function toBinaryBuffer(value) {
   return null;
 }
 
-const validateRestRecord = (errors, prefix, record) => {
+export const validateRestRecord = (errors, prefix, record) => {
   if (!record.rest || typeof record.rest !== 'object') {
     errors.push(`${prefix}.rest is required`);
     return;
@@ -1034,7 +1034,7 @@ const validateRestRecord = (errors, prefix, record) => {
   }
 };
 
-const validateFixtureMetadata = (errors, metadata) => {
+export const validateFixtureMetadata = (errors, metadata) => {
   if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
     errors.push('metadata must be an object');
     return;
@@ -1060,7 +1060,7 @@ const validateFixtureMetadata = (errors, metadata) => {
   }
 };
 
-const validateWebSocketRecord = (errors, prefix, record) => {
+export const validateWebSocketRecord = (errors, prefix, record) => {
   if (!record.websocket || typeof record.websocket !== 'object') {
     errors.push(`${prefix}.websocket is required`);
     return;

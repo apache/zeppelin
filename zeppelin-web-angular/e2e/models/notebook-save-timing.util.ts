@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, Page, WebSocketRoute } from '@playwright/test';
+import { expect, type Page, type WebSocketRoute } from '@playwright/test';
 
 const IDLE_SAVE_TIMEOUT_MS = 30000;
 const PROXY_TIMEOUT_MS = 15000;
@@ -39,6 +39,10 @@ interface CommitParagraphMessage extends NotebookSocketMessage {
 }
 
 export class CommitParagraphSocketProbe {
+  private droppedCommitObserver?: (message: string | Buffer) => void;
+  private shouldDropFirstCommit = false;
+  private shouldDropFirstCommitResponse = false;
+  private droppedResponseMsgId: string | null = null;
   private shouldHoldFirstCommitResponse = false;
   private shouldQueueServerMessages = false;
   private heldResponseMsgId: string | null = null;
@@ -55,6 +59,13 @@ export class CommitParagraphSocketProbe {
     }
     if (isCommitParagraphMessage(parsed)) {
       this.commits.push(parsed);
+      if (this.commits.length === 1 && this.shouldDropFirstCommit) {
+        this.droppedCommitObserver?.(message);
+        return;
+      }
+      if (this.commits.length === 1 && this.shouldDropFirstCommitResponse) {
+        this.droppedResponseMsgId = parsed.msgId;
+      }
       if (this.shouldHoldFirstCommitResponse && this.heldResponseMsgId === null) {
         this.heldResponseMsgId = parsed.msgId;
       }
@@ -68,6 +79,9 @@ export class CommitParagraphSocketProbe {
       this.collaborativeModeSignal ??= 'server sent COLLABORATIVE_MODE_STATUS with status true';
     }
     if (parsed?.op === 'PARAGRAPH' && parsed.msgId) {
+      if (parsed.msgId === this.droppedResponseMsgId) {
+        return;
+      }
       if (parsed.msgId === this.heldResponseMsgId && !this.heldResponses.has(parsed.msgId)) {
         this.heldResponses.set(parsed.msgId, { socket, message });
         this.shouldQueueServerMessages = true;
@@ -87,6 +101,18 @@ export class CommitParagraphSocketProbe {
 
   holdFirstCommitParagraphResponse(): void {
     this.shouldHoldFirstCommitResponse = true;
+  }
+
+  dropFirstCommitParagraph(): void {
+    this.shouldDropFirstCommit = true;
+  }
+
+  dropFirstCommitParagraphResponse(): void {
+    this.shouldDropFirstCommitResponse = true;
+  }
+
+  onDroppedCommit(observer: (message: string | Buffer) => void): void {
+    this.droppedCommitObserver = observer;
   }
 
   async waitForCommitCount(expectedCount: number): Promise<CommitParagraphMessage[]> {
@@ -128,6 +154,20 @@ export class CommitParagraphSocketProbe {
 
   forwardedResponseCount(msgId: string): number {
     return this.forwardedResponseMsgIds.filter(forwardedMsgId => forwardedMsgId === msgId).length;
+  }
+
+  async expectNoForwardedResponse(msgId: string, observationMs: number): Promise<void> {
+    const deadline = Date.now() + observationMs;
+
+    await expect
+      .poll(
+        () => {
+          const count = this.forwardedResponseCount(msgId);
+          return count > 0 || Date.now() >= deadline ? count : null;
+        },
+        { timeout: observationMs + PROXY_TIMEOUT_MS }
+      )
+      .toBe(0);
   }
 
   releaseHeldResponseWithParagraphTitle(msgId: string, title: string): void {

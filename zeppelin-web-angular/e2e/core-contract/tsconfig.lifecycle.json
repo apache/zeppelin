@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2023", "DOM"]
+  },
+  "include": [
+    "lifecycle-capture.ts",
+    "replay-lifecycle-trace.ts",
+    "../models/notebook-transport-page.ts",
+    "../models/notebook-save-timing.util.ts",
+    "../tests/notebook/core-contract/lifecycle-fixtures.spec.ts",
+    "../tests/notebook/core-contract/commit-fixtures.spec.ts"
+  ]
+}

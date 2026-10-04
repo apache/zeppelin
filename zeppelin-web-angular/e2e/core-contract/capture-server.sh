@@ -18,13 +18,16 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>]" >&2
+  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--storage vfs|git] [--job-manager] [--home-note <id>] [--port <port>]" >&2
 }
 
 command="${1:-}"
 shift || true
 capture_root=""
 capture_mode="anonymous"
+capture_storage="vfs"
+capture_job_manager=false
+capture_home_note=""
 zeppelin_port="8080"
 port_given="no"
 
@@ -32,6 +35,26 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --root)
       capture_root="${2:-}"
+      shift 2
+      ;;
+    --job-manager)
+      capture_job_manager=true
+      shift
+      ;;
+    --home-note)
+      capture_home_note="${2:-}"
+      if [[ ! "${capture_home_note}" =~ ^[A-Za-z0-9]+$ ]]; then
+        echo "home note must be an alphanumeric note ID in the isolated notebook directory" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --storage)
+      capture_storage="${2:-}"
+      if [[ "${capture_storage}" != "vfs" && "${capture_storage}" != "git" ]]; then
+        echo "storage must be vfs or git" >&2
+        exit 2
+      fi
       shift 2
       ;;
     --mode)
@@ -232,6 +255,13 @@ start_zeppelin() {
   export ZEPPELIN_CONF_DIR="${capture_root}/conf"
   export ZEPPELIN_ADDR="127.0.0.1"
   export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+  if [[ "${capture_storage}" == "git" ]]; then
+    export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo"
+  fi
+  export ZEPPELIN_JOBMANAGER_ENABLE="${capture_job_manager}"
+  if [[ -n "${capture_home_note}" ]]; then
+    export ZEPPELIN_NOTEBOOK_HOMESCREEN="${capture_home_note}"
+  fi
   export ZEPPELIN_NOTEBOOK_DIR="${capture_root}/notebook"
   export ZEPPELIN_LOG_DIR="${capture_root}/logs"
   export ZEPPELIN_PID_DIR="${capture_root}/run"

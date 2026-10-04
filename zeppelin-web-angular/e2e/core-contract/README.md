@@ -379,3 +379,110 @@ already rejects stale revision and interpreter-binding replies inside the Angula
 reconnect recovery remains outside it until the lifecycle rules have an enforceable
 stale-reply mechanism. The harness does not implement those lifecycle rules, switch
 the production renderer, or move production notebook state out of Angular.
+
+## Lifecycle fixtures (version 2, ZEPPELIN-6672)
+
+`notebook-lifecycle-fixture.mjs` extends the foundation for multiple independent
+sessions, socket generations, route context and delivery faults. Version 1 remains
+available for its existing consumers. The lifecycle runner rejects version 1 rather
+than guessing missing session or connection boundaries.
+
+A version 2 fixture adds `sessions: [{ "id": "viewer-a" }]`. Every record has a
+`sessionId` and a contiguous global `sequence`, beginning at 1. Record kinds are:
+
+- `connection`: `event: "open" | "close"` and a unique `connectionId` for each
+  socket generation. Frames outside an open generation fail validation.
+- `context`: `{ state: "active" | "inactive", noteId, revisionId }`. This is a
+  test observer's route context, recorded outside the payload. It is neither a
+  server association acknowledgement nor a note identifier added to a broadcast.
+- `websocket`: the foundation's raw text envelope and direction, plus
+  `connectionId`. Binary frames are rejected because there is no lifecycle binary
+  redaction policy. A proxy-observed client command dropped before forwarding has
+  `delivery: "dropped-before-server"` outside its raw payload. It does not claim a
+  server receipt.
+- `rest`: the foundation's request/response shape and a `requestId` shared by the
+  pair. IDs are scoped to the session. Complete response-body reads retain the
+  `requestfinished` position even if reading the body finishes later.
+
+The foundation's identifier preservation, credential redaction and msgId
+placeholder mapping are reused. Participant identities are redacted while session
+IDs keep the two actors separate. Call `stop()` before reading a snapshot; `write()`
+does this automatically. Recording never derives noteId from an untagged frame.
+
+Replay binds each session to its own page and context. Consecutive REST requests may
+arrive in any order within their recorded batch; they cannot cross a socket,
+context or response barrier. Response order remains global. msgId substitutions
+are isolated per session and preserve reply correlation.
+
+A fault plan selects a received record by `sequence`. `copies: 0` drops it,
+`copies: 2` duplicates it, `delayMs` defers delivery, and `afterSequence` holds it
+until another record has been consumed. Plans never edit the capture. Completion
+requires all records, REST deliveries and scheduled frames to settle. A deferred
+frame targeting an already closed socket fails. Recorded disconnects are replayed
+with code 1012; Playwright's capture close event provides no original close code.
+
+### Reproduce the captures
+
+Build and run the **verified Apache master checkout**, not the candidate PR build.
+Record its full commit before capture; `/api/version` must report a matching hash.
+The committed baseline is `apache/zeppelin@74b51b28d6f3c1c170f44822beadba299df9a959`.
+Use JDK 11 and the pinned Node version from `.nvmrc`. The Git notebook revision
+scenario requires GitNotebookRepo. Clone requires a registered interpreter setting
+(for example the built markdown interpreter); no interpreter code is executed.
+Missing capabilities are recorded as skipped with a reason, never as supported.
+
+From the Apache master checkout, invoke this candidate's helper, substituting its
+absolute path below:
+
+```bash
+/path/to/candidate/zeppelin-web-angular/e2e/core-contract/capture-server.sh start \
+  --root /tmp/zeppelin-lifecycle-capture --port 8080 --storage git --job-manager
+```
+
+`--home-note <id>` selects a note already prepared in the isolated notebook directory.
+Without it, GET_HOME_NOTE records the null-note path that removes the previous
+association. The helper also supports `--mode auth` with the isolated Shiro template;
+set `ZEPPELIN_E2E_SHIRO_INI` to that template as printed by the helper. Authenticated
+collaboration uses two distinct configured users in separate browser contexts.
+
+Run from the candidate's `zeppelin-web-angular` directory:
+
+```bash
+export ZEPPELIN_CAPTURE_MASTER_COMMIT=<verified-full-Apache-master-commit>
+export PLAYWRIGHT_BASE_URL=http://127.0.0.1:8080
+npm run e2e:core-contract:live -- lifecycle-fixtures
+npm run e2e:core-contract:live -- commit-fixtures
+npm run check:core-contract-fixtures
+npm run e2e:core-contract
+```
+
+Capture once in anonymous mode and once in authenticated mode for the collaboration
+scenario. `ZEPPELIN_LIFECYCLE_FIXTURE_DIR` can select a review directory instead of
+replacing committed fixtures. The manifest records passed, skipped and failed
+capture results. Committed inventory tests require all seven baseline captures to
+be supported, valid and attributed to Apache master.
+
+### Evidence and remaining lifecycle gates
+
+| Capture | Transport and browser evidence |
+| --- | --- |
+| `structural.json` | WS insert/copy/move/remove and correlated commit; REST insert/move/remove. REST full NOTE and WS granular paragraph authority are declared separately, without converting payload shapes. |
+| `revision-reconnect.json` | Checkpoint, history, compare and restore; live/revision reconnect requests; raw live add/move/remove/update on a revision route while its rendered text and paragraph count stay unchanged. |
+| `collaboration-anonymous.json`, `collaboration-auth.json` | Independent viewers and distinct users in auth mode; patch/update/mode status; canonical REST reads and final GET_NOTE refetches; delay/duplicate/drop/reorder delivery plans. |
+| `association.json` | A inactive to B active, Job Manager, GET_NOTE, reload, home, new and clone; Angular's implicit GET_NOTE after NEW_NOTE; controlled permutations putting B's events before or after its matching NOTE. |
+| `commit-request-loss.json`, `commit-reply-loss.json` | Same local editor draft and missing client ACK over a declared 250 ms observation window; different canonical server text; explicit targeted REST/GET_NOTE reconciliation. The real correlated reply in the reply-loss capture is preserved and dropped only by the replay plan. |
+
+The ordinary trace replay mounts a wire observer, **not a Notebook reducer or Shared
+Core runtime**. Its assertions prove payload and order fidelity. The live captures
+assert Angular's rendered state and the real server's canonical note. Neither
+proves Shared Core paragraph snapshots converge under faults: the current public
+Core port exposes only noteId and revisionId. That Done condition remains a
+ZEPPELIN-6687 integration gate and must not be counted as passing or as closure of
+ZEPPELIN-6672. These fixtures supply its transport inputs and reconciliation oracle.
+
+Angular currently tracks correlated commit replies but has no automatic save-ACK
+timeout/refetch outcome. The commit scenarios explicitly declare the observation
+deadline and trigger reconciliation as a test action. They do not pretend that a
+local draft is server-confirmed or that absence of ACK distinguishes request loss
+from reply loss. Reconnect storm/backoff and terminal teardown remain ZEPPELIN-6696;
+legacy/EventBus parity remains ZEPPELIN-6698.
