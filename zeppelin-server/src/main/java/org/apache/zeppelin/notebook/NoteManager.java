@@ -196,8 +196,10 @@ public class NoteManager {
   }
 
   public void addNote(Note note, AuthenticationInfo subject) throws IOException {
-    addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), true);
-    noteCache.putNote(note);
+    synchronized (this) {
+      addOrUpdateNoteNode(this.noteTree, new NoteInfo(note), true);
+      noteCache.putNote(note);
+    }
   }
 
   /**
@@ -334,21 +336,23 @@ public class NoteManager {
    */
   public List<NoteInfo> removeFolder(String folderPath, AuthenticationInfo subject) throws IOException {
 
-    // update notebookrepo
-    this.notebookRepo.remove(folderPath, subject);
+    synchronized (this) {
+      // update notebookrepo
+      this.notebookRepo.remove(folderPath, subject);
 
-    // update filesystem tree
-    NoteTree tree = this.noteTree;
-    Folder folder = getFolder(tree, folderPath);
-    List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
+      // update filesystem tree
+      NoteTree tree = this.noteTree;
+      Folder folder = getFolder(tree, folderPath);
+      List<NoteInfo> noteInfos = folder.getParent().removeFolder(folder.getName(), subject);
 
-    // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
-    for (NoteInfo noteInfo : noteInfos) {
-      tree.notesInfo.remove(noteInfo.getId());
-      this.noteCache.removeNote(noteInfo.getId());
+      // update notesInfo and evict the deleted notes from the cache, mirroring removeNote
+      for (NoteInfo noteInfo : noteInfos) {
+        tree.notesInfo.remove(noteInfo.getId());
+        this.noteCache.removeNote(noteInfo.getId());
+      }
+
+      return noteInfos;
     }
-
-    return noteInfos;
   }
 
   /**

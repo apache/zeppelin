@@ -31,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -264,6 +267,111 @@ class NoteManagerTest {
     if (!failures.isEmpty()) {
       throw new AssertionError(failures.size()
           + " note operation(s) failed while the note tree was being reloaded", failures.get(0));
+    }
+  }
+
+  @Test
+  void testConcurrentAddNoteAndMoveNoteOnSamePath() throws Exception {
+    int rounds = 100, adders = 4;
+    for (int r = 0; r < rounds; r++) {
+      String targetPath = "/dst_" + r + "/note";
+      Note moving = createNote("/src_" + r + "/note");
+      noteManager.saveNote(moving);
+
+      List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+      AtomicInteger winners = new AtomicInteger();
+      List<Runnable> tasks = new ArrayList<>();
+      for (int i = 0; i < adders; i++) {
+        Note added = createNote(targetPath);
+        tasks.add(() -> {
+          try {
+            noteManager.addNote(added, AuthenticationInfo.ANONYMOUS);
+            winners.incrementAndGet();
+          } catch (NotePathAlreadyExistsException e) {
+            // expected for every loser
+          } catch (Throwable t) {
+            failures.add(t);
+          }
+        });
+      }
+      tasks.add(() -> {
+        try {
+          noteManager.moveNote(moving.getId(), targetPath, AuthenticationInfo.ANONYMOUS);
+          winners.incrementAndGet();
+        } catch (NotePathAlreadyExistsException e) {
+          // expected when an addNote won
+        } catch (Throwable t) {
+          failures.add(t);
+        }
+      });
+      runConcurrently(tasks);
+
+      assertTrue(failures.isEmpty(), () -> "Unexpected failures: " + failures);
+      assertEquals(1, winners.get(), "exactly one operation may claim " + targetPath);
+      assertEquals(1, noteManager.getNotesInfo().values().stream()
+          .filter(targetPath::equals).count(), "notesInfo must map one note to " + targetPath);
+    }
+  }
+
+  @Test
+  void testConcurrentRemoveFolderAndMoveNote() throws Exception {
+    int rounds = 100;
+    for (int r = 0; r < rounds; r++) {
+      String folder = "/folder_" + r;
+      Note inFolder = createNote(folder + "/in_folder");
+      Note moving = createNote("/src_" + r + "/moving");
+      noteManager.saveNote(inFolder);
+      noteManager.saveNote(moving);
+
+      List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+      List<Runnable> tasks = new ArrayList<>();
+      for (int i = 0; i < 2; i++) {
+        tasks.add(() -> {
+          try {
+            noteManager.removeFolder(folder, AuthenticationInfo.ANONYMOUS);
+          } catch (IOException e) {
+            // the folder was already removed by the other removeFolder call
+          } catch (Throwable t) {
+            failures.add(t);
+          }
+        });
+      }
+      tasks.add(() -> {
+        try {
+          noteManager.moveNote(moving.getId(), folder + "/moving", AuthenticationInfo.ANONYMOUS);
+        } catch (Throwable t) {
+          failures.add(t);
+        }
+      });
+      runConcurrently(tasks);
+
+      assertTrue(failures.isEmpty(), () -> "Unexpected failures: " + failures);
+      assertFalse(noteManager.getNotesInfo().containsKey(inFolder.getId()));
+      // every remaining mapping entry must still resolve to a note in the tree
+      for (String noteId : noteManager.getNotesInfo().keySet()) {
+        assertNotNull(noteManager.processNote(noteId, note -> note),
+            "notesInfo entry " + noteId + " no longer resolves to a note");
+      }
+    }
+  }
+
+  private void runConcurrently(List<Runnable> tasks) throws Exception {
+    CyclicBarrier start = new CyclicBarrier(tasks.size());
+    ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
+    try {
+      List<Future<?>> futures = new ArrayList<>();
+      for (Runnable task : tasks) {
+        futures.add(pool.submit(() -> {
+          start.await();
+          task.run();
+          return null;
+        }));
+      }
+      for (Future<?> future : futures) {
+        future.get(30, TimeUnit.SECONDS);
+      }
+    } finally {
+      pool.shutdownNow();
     }
   }
 
