@@ -140,10 +140,10 @@
   "lint-staged": {
     "**/*.{ts,mts}": [
       "cross-env NODE_OPTIONS='--max-old-space-size=8192' eslint --fix",
-      "./node_modules/.bin/prettier --write"
+      "prettier --write"
     ],
     "**/*.{js,mjs,json,css,html}": [
-      "./node_modules/.bin/prettier --write"
+      "prettier --write"
     ]
   }
 }
