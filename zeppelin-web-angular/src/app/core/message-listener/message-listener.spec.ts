@@ -70,14 +70,11 @@ describe('MessageListener', () => {
     class TestComponent extends MessageListenersManager {
       receivedData?: MessageReceiveDataTypeMap[OP.NOTE];
 
+      @MessageListener(OP.NOTE)
       handleNote(data: MessageReceiveDataTypeMap[OP.NOTE]): void {
         this.receivedData = data;
       }
     }
-
-    const descriptor = Object.getOwnPropertyDescriptor(TestComponent.prototype, 'handleNote')!;
-
-    MessageListener(OP.NOTE)(TestComponent.prototype, 'handleNote', descriptor);
 
     const component = new TestComponent(messageService);
     const data = {} as MessageReceiveDataTypeMap[OP.NOTE];
