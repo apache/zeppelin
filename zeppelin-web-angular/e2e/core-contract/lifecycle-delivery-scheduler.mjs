@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+const maximumTimerDelay = 2_147_483_647;
+
 function requireIntegerRange(value, minimum, maximum, field) {
   const valid = Number.isInteger(value) && value >= minimum && value <= maximum;
   if (!valid) throw new Error(`Fault ${field} must be an integer between ${minimum} and ${maximum}`);
@@ -29,7 +31,10 @@ function validateFault(fault, records) {
   requireIntegerRange(fault.copies ?? 1, 0, 10, 'copies');
   requireIntegerRange(fault.afterSequence ?? fault.sequence, fault.sequence, records.length, 'afterSequence');
   const delay = fault.delayMs ?? 0;
-  if (!Number.isFinite(delay) || delay < 0) throw new Error('Fault delayMs must be finite and non-negative');
+  if (!Number.isFinite(delay)) throw new Error('Fault delayMs must be finite');
+  if (delay < 0 || delay > maximumTimerDelay) {
+    throw new Error(`Fault delayMs must be between 0 and ${maximumTimerDelay}`);
+  }
 }
 
 export function createLifecycleDeliveryScheduler(fixture, faults, deliver, onError) {

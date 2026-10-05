@@ -715,5 +715,7 @@ test('fault selection rejects coercible sequence IDs and diagnoses invalid sched
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, copies: 1.5 }]), /Fault copies/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, afterSequence: 1 }]), /Fault afterSequence/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: Infinity }]), /Fault delayMs/);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_648 }]), /Fault delayMs/);
+  createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_647 }]).dispose();
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2 }, { sequence: 2 }]), /must be unique/);
 });

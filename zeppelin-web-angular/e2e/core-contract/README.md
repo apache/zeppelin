@@ -418,7 +418,10 @@ rejects attempts to invent a sender distinction absent from the wire.
 
 A fault plan selects a received record by `sequence`. `copies: 0` drops it,
 `copies: 2` duplicates it, `delayMs` defers delivery, and `afterSequence` holds it
-until another record has been consumed. Plans never edit the capture. Completion
+until another record has been consumed. Plans never edit the capture. Delays
+use Node timers; `delayMs` must fit the supported `0..2147483647` range so
+[setTimeout](https://nodejs.org/api/timers.html#settimeoutcallback-delay-args)
+does not silently replace an overflowing delay. Completion
 requires all records, REST deliveries and scheduled frames to settle. A deferred
 frame targeting an already closed socket fails. Recorded disconnects are replayed
 with code 1012; Playwright's capture close event provides no original close code.
