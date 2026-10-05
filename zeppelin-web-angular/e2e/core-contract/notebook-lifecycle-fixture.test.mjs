@@ -446,7 +446,7 @@ test('a dropped client command is recorded as an observation rather than a serve
   assert.equal(capture.records[1].delivery, 'dropped-before-server');
   assert.equal(JSON.stringify(capture).includes('private-user'), false);
   assert.equal(JSON.stringify(capture).includes('private-id'), false);
-  assert.throws(() => recorder.droppedSend('viewer-a', '{}'), /active captured socket/);
+  assert.throws(() => recorder.droppedSend('viewer-a', '{}'), /after stop/);
 });
 
 test('runtime request IDs cannot alias another viewer operation received on the same session', async () => {
@@ -617,11 +617,13 @@ test('a shared recorded msgId cannot be rebound to a different runtime ID by a l
 });
 
 test('an ID delivered before its first send cannot subsequently be rewritten', async () => {
-  const replay = createLifecycleReplay(fixture([
-    open('a', 'a1'),
-    frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'early-id' }),
-    frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'early-id' })
-  ]));
+  const replay = createLifecycleReplay(
+    fixture([
+      open('a', 'a1'),
+      frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'early-id' }),
+      frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'early-id' })
+    ])
+  );
   const a = await harness(replay, 'a');
   a.connect();
   assert.equal(a.received[0].msgId, 'early-id');
@@ -630,11 +632,79 @@ test('an ID delivered before its first send cannot subsequently be rewritten', a
 });
 
 test('a captured null msgId cannot be converted into a correlated request', async () => {
-  const replay = createLifecycleReplay(fixture([
-    open('a', 'a1'), frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: null })
-  ]));
+  const replay = createLifecycleReplay(
+    fixture([open('a', 'a1'), frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: null })])
+  );
   const a = await harness(replay, 'a');
   a.connect();
   assert.throws(() => a.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'invented-id' })), /correlation mismatch/);
   replay.dispose();
 });
+
+test('fatal send during REST fulfillment terminates delivery and preserves the failure cause', async () => {
+  const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
+  const replay = createLifecycleReplay(
+    fixture([
+      open('a', 'a1'),
+      { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
+      {
+        kind: 'rest',
+        sessionId: 'a',
+        requestId: 'r',
+        rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyRaw: '' }
+      },
+      frame('a', 'a1', 'receive', { op: 'NOTE' })
+    ])
+  );
+  const viewer = await harness(replay, 'a');
+  viewer.connect();
+  const failedResponse = viewer.rest(
+    {
+      fulfill: async () => {
+        assert.throws(() => viewer.send('{"op":"GET_NOTE"}'), /send out of order/);
+      }
+    },
+    request('GET', 'http://fixture.test/api/notebook/n', '', {})
+  );
+  await assert.rejects(failedResponse, /send out of order/);
+  assert.deepEqual(viewer.received, []);
+  assert.throws(() => replay.position(), /send out of order/);
+  assert.throws(() => replay.isComplete(), /send out of order/);
+  replay.dispose();
+});
+
+for (const succeeds of [true, false]) {
+  test(`concurrent recorder stops wait for body reads and preserve ${succeeds ? 'completion' : 'failure'}`, async () => {
+    const page = new EventEmitter();
+    const recorder = createLifecycleRecorder(fixtureMetadata());
+    recorder.install(page, 'a');
+    let finishBody;
+    const body = new Promise((resolve, reject) => {
+      finishBody = succeeds ? resolve : reject;
+    });
+    const source = request('GET', 'http://fixture.test/api/notebook/n', '', {});
+    source.response = async () => ({
+      headers: () => ({ 'content-type': 'application/json' }),
+      status: () => 200,
+      text: () => body
+    });
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+    const first = recorder.stop();
+    const second = recorder.stop();
+    assert.equal(first, second);
+    assert.throws(() => recorder.clientDelivery('a', []), /stopped recorder/);
+    const error = new Error('body read failed');
+    finishBody(succeeds ? '{}' : error);
+    if (succeeds) {
+      await first;
+      assert.deepEqual(recorder.clientDelivery('a', []), []);
+    } else {
+      await assert.rejects(first, candidate => candidate === error);
+      await assert.rejects(second, candidate => candidate === error);
+      assert.throws(() => recorder.clientDelivery('a', []), /stopped recorder/);
+    }
+    assert.equal(page.listenerCount('requestfinished'), 0);
+    assert.equal(page.listenerCount('request'), 0);
+  });
+}

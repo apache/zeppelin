@@ -493,13 +493,54 @@ must reproduce the complete observed sequence, including implicit replies.
 | `association.json` | A inactive to B active, Job Manager, GET_NOTE, reload, home, new and clone; Angular's implicit GET_NOTE after NEW_NOTE; actual browser-message delivery references, with one unchanged NOTE_B held by a proxy while genuine B events arrive; a second batch arrives after release. The upstream sequence is retained separately. |
 | `commit-request-loss.json`, `commit-reply-loss.json` | Same local editor draft and missing client ACK over a declared 250 ms observation window; different canonical server text; explicit targeted REST/GET_NOTE reconciliation. The real correlated reply in the reply-loss capture is preserved and dropped only by the replay plan. |
 
-The ordinary trace replay mounts a wire observer, **not a Notebook reducer or Shared
-Core runtime**. Its assertions prove payload and order fidelity. The live captures
-assert Angular's rendered state and the real server's canonical note. Neither
-proves Shared Core paragraph snapshots converge under faults: the current public
-Core port exposes only noteId and revisionId. That Done condition remains a
-ZEPPELIN-6687 integration gate and must not be counted as passing or as closure of
-ZEPPELIN-6672. These fixtures supply its transport inputs and reconciliation oracle.
+The ordinary trace replay mounts a wire observer. Its assertions prove payload and
+order fidelity. Validation, recording and ordered replay have separate modules;
+`notebook-lifecycle-fixture.mjs` retains the public entry points. REST replay owns
+pending and in-flight requests, and all cursor advancement flushes the delivery
+scheduler through one function. Permanent failures terminate replay and surface
+their original cause; pending deliveries are reported separately.
+
+### Replay with an actual Core consumer
+
+The baseline checkout's public Core port is a type scaffold. The official
+[migration proposal](https://cwiki.apache.org/confluence/spaces/ZEPPELIN/pages/393677314/Micro+Frontend+Migration+Angular+to+React+Proposal)
+links to a fork with an implemented Core and Angular adapter. The convergence
+tests consume that implementation from a separate checkout pinned to
+`voidmatcha/zeppelin@36b5f356c63413e43c26ebcd448af91b0f353ba2`. They compile its
+unchanged `NotebookCoreRouteAdapter` and Core sources into a test-only browser
+bundle. They do not vendor or implement production Core code in this change.
+
+Prepare the reference outside the candidate's tracked sources, then run from
+`zeppelin-web-angular`:
+
+```bash
+git clone https://github.com/voidmatcha/zeppelin.git /tmp/zeppelin-core-reference
+git -C /tmp/zeppelin-core-reference checkout --detach 36b5f356c63413e43c26ebcd448af91b0f353ba2
+export ZEPPELIN_NOTEBOOK_CORE_REFERENCE=/tmp/zeppelin-core-reference
+npm run e2e:core-contract -- -g 'converges actual Core'
+```
+
+The builder rejects a different HEAD or modifications to the reference Core and
+adapter. Test attachments record the repository, commit and SHA-256 source hashes,
+fault plan and actual Core observations. Without the reference checkout, these two
+tests explicitly skip; ordinary wire replay does not count as convergence evidence.
+
+Both anonymous and authenticated captures run two independent browser contexts,
+each with its own actual Core. The sender's local patch updates its dirty draft.
+Selected collaboration events are dropped, duplicated, delayed and reordered;
+the test waits for all selected deliveries before the recorded GET_NOTE recovery.
+It asserts actual intermediate paragraph changes and divergent viewer state,
+then compares each ready, clean Core snapshot with that viewer's captured real
+server REST note. Canonical comparisons cover note identity/title, paragraph
+order/IDs/text/status/progress/language/results/result configuration, note forms,
+parameters, scheduler and display settings. Collaboration users are checked against
+the last delivered mode frame. The two final Core snapshots must match except for
+their notification version. REST note bodies do not contain ACL or revision-history
+state, so those fields have no canonical REST oracle in this scenario.
+
+This evidence establishes convergence for the named reference implementation and
+these captures. Production integration and the wider Core capability program remain
+ZEPPELIN-6687; the reference is not claimed to be merged into Apache master.
 
 Angular currently tracks correlated commit replies but has no automatic save-ACK
 timeout/refetch outcome. The commit scenarios explicitly declare the observation

@@ -116,6 +116,7 @@ export declare function validateFixtureMetadata(errors: string[], metadata: unkn
 export declare function validateRestRecord(errors: string[], prefix: string, record: unknown): void;
 export declare function validateWebSocketRecord(errors: string[], prefix: string, record: unknown): void;
 export declare function summarizeRequest(request: FixtureRequestLike): FixtureRestRequest;
+export declare function captureRestRequest(request: FixtureRequestLike): FixtureRestRequest;
 export declare function stableJson(value: unknown): string | undefined;
 
 export declare function createPlaywrightFixtureAdapter(fixture: TransportFixture): PlaywrightFixtureAdapter;

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { expect, test, type BrowserContext } from '@playwright/test';
 import {
@@ -29,6 +30,7 @@ import {
   type LifecycleFixture
 } from '../../../core-contract/notebook-lifecycle-fixture.mjs';
 import { replayLifecycleTrace } from '../../../core-contract/replay-lifecycle-trace';
+import { replayCollaborationCore } from '../../../core-contract/replay-lifecycle-core';
 import { NotebookTransportPage } from '../../../models/notebook-transport-page';
 import {
   openTransportNote,
@@ -131,6 +133,42 @@ test.describe('Notebook lifecycle transport fixtures', () => {
       });
     }
   });
+
+  for (const file of ['collaboration-anonymous.json', 'collaboration-auth.json']) {
+    test(`converges actual Core states after collaboration faults in ${file}`, async ({ browser }, info) => {
+      const reference = process.env.ZEPPELIN_NOTEBOOK_CORE_REFERENCE;
+      test.skip(
+        !reference,
+        'Actual Core convergence requires the pinned reference checkout; see core-contract/README.md'
+      );
+      const bundle = JSON.parse(
+        execFileSync(
+          process.execPath,
+          [path.resolve('e2e/core-contract/build-lifecycle-core-reference.mjs'), path.resolve(reference!)],
+          { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
+        )
+      ) as { script: string; provenance: unknown };
+      const fixture = JSON.parse(
+        readFileSync(path.join(lifecycleFixtureDirectory(), file), 'utf8')
+      ) as LifecycleFixture;
+      expect(validateLifecycleFixture(fixture)).toEqual([]);
+
+      await test.step('Given the unchanged pinned Core and adapter in two independent viewers', async () => {
+        await info.attach('core-reference-provenance', {
+          body: JSON.stringify(bundle.provenance, null, 2),
+          contentType: 'application/json'
+        });
+      });
+
+      await test.step('When delayed, duplicated, dropped and reordered events are followed by captured GET_NOTE recovery', async () => {
+        const proof = await replayCollaborationCore(browser, fixture, bundle.script);
+        await info.attach('core-convergence-proof', {
+          body: JSON.stringify(proof, null, 2),
+          contentType: 'application/json'
+        });
+      });
+    });
+  }
 
   test(
     'captures paragraph edits through separate REST and WebSocket ingresses',

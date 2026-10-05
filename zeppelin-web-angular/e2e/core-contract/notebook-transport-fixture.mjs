@@ -1107,3 +1107,5 @@ const hasRestBody = value =>
   Boolean(value) && ('bodyJson' in value || ('bodyRaw' in value && typeof value.bodyRaw === 'string'));
 
 const looksLikeJson = value => /^[{[]/.test(String(value).trim());
+
+export const captureRestRequest = request => normalizeFixtureRecord(summarizeRequest(request));

@@ -106,6 +106,7 @@ export interface LifecycleReplay {
   install(page: Page, sessionId: string): Promise<void>;
   context(sessionId: string, context: RouteContext): void;
   assertComplete(): void;
+  isComplete(): boolean;
   position(): number;
   dispose(): void;
 }

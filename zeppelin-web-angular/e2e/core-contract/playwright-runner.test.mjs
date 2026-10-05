@@ -22,6 +22,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { verifyLifecycleCoreReference } from './build-lifecycle-core-reference.mjs';
+import { replayLifecycleTrace } from './replay-lifecycle-trace.ts';
+import { fixtureMetadata } from './fixture-doubles.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const scripts = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url))).scripts;
@@ -138,4 +141,31 @@ test('regular suite ignores an inherited capture run directory', () => {
   for (const project of config.projects.filter(project => project.name !== 'setup')) {
     assert.equal(project.use.storageState, 'playwright/.auth/user.json');
   }
+});
+
+test('Core consumer rejects the candidate checkout as an unpinned runtime reference', () => {
+  assert.throws(() => verifyLifecycleCoreReference(root), /Core reference must be checked out at/);
+});
+
+test('trace replay closes an allocated context when page creation fails', async () => {
+  const failure = new Error('page creation failed');
+  let closed = false;
+  const browser = {
+    newContext: async () => ({
+      newPage: async () => {
+        throw failure;
+      },
+      close: async () => {
+        closed = true;
+      }
+    })
+  };
+  const fixture = {
+    version: 2,
+    metadata: fixtureMetadata(),
+    sessions: [{ id: 'a' }],
+    records: [{ sequence: 1, kind: 'connection', event: 'open', sessionId: 'a', connectionId: 'a1' }]
+  };
+  await assert.rejects(replayLifecycleTrace(browser, fixture), error => error === failure);
+  assert.equal(closed, true);
 });

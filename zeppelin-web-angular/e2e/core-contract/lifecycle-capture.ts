@@ -26,7 +26,7 @@ const metadata = (scenario: string, operations: string[]) => ({
   scenario,
   coveredOperations: operations,
   knownExclusions: [
-    'Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.',
+    'This capture proves Angular and wire behavior; actual Core convergence is checked separately with a pinned reference consumer.',
     'Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.',
     'Untagged broadcasts do not identify a note; route context is evidence, not a wire acknowledgement.'
   ]
