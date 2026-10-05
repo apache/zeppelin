@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.GsonNoteParser;
 import org.apache.zeppelin.notebook.Note;
@@ -40,6 +41,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VFSNotebookRepoTest {
 
@@ -129,6 +131,21 @@ class VFSNotebookRepoTest {
     notebookRepo.save(note1, AuthenticationInfo.ANONYMOUS);
     Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, noteInfos.size());
+  }
+
+  @Test
+  void testFailedSaveKeepsExistingParentFolder() throws IOException {
+    File existingFolder = new File(notebookRepo.rootNotebookFolder, "existing_folder");
+    FileUtils.forceMkdir(existingFolder);
+    Note note = new Note();
+    note.setPath("/existing_folder/" + StringUtils.repeat("a", 250));
+    note.setNoteParser(noteParser);
+
+    assertThrows(IOException.class,
+        () -> notebookRepo.save(note, AuthenticationInfo.ANONYMOUS));
+
+    assertTrue(existingFolder.isDirectory());
+    assertEquals(0, existingFolder.list().length);
   }
 
   @Test
