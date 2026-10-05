@@ -18,8 +18,6 @@ limitations under the License.
 # Notebook transport contract fixtures
 
 These tests record and replay notebook REST requests and WebSocket messages.
-They provide repeatable transport evidence for the notebook Core migration, including
-[ZEPPELIN-6672](https://issues.apache.org/jira/browse/ZEPPELIN-6672).
 A fixture is a JSON file containing captured traffic, its order, and its capture environment.
 
 Use the stored fixtures to test replay without a Zeppelin server.
@@ -65,10 +63,8 @@ Live capture requires an explicit command.
 
 ### Test convergence with the reference Core
 
-Convergence means that both viewers reach the captured server state after recovery.
-These tests use the implemented Core and Angular adapter from a separate, pinned checkout.
-The [migration proposal](https://cwiki.apache.org/confluence/spaces/ZEPPELIN/pages/393677314/Micro+Frontend+Migration+Angular+to+React+Proposal)
-links to this implementation.
+These tests check that both viewers reach the captured server state after recovery.
+They require a separate checkout containing the reference Core and Angular adapter at the commit shown below.
 
 From `zeppelin-web-angular/`, prepare the reference and run:
 
