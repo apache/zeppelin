@@ -34,6 +34,20 @@ interface UI {
   offset: { top: number; left: number };
 }
 
+type LegacyScope = angular.IScope & Record<string, unknown>;
+
+interface LegacyCallbackOwner extends Record<string, unknown> {
+  length?: number;
+}
+
+type LegacyCallback = (...args: unknown[]) => unknown;
+
+const isLegacyCallbackOwner = (value: unknown): value is LegacyCallbackOwner => {
+  return typeof value === 'object' && value !== null && typeof value.constructor === 'function';
+};
+
+const isLegacyCallback = (value: unknown): value is LegacyCallback => typeof value === 'function';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -61,11 +75,12 @@ export class AngularDragDropService {
             const { targetCallback, targetScope, args: extractedArgs } = extract(callbackStr);
             const fullArgs = [event, ui].concat(extractedArgs);
 
-            if (typeof targetCallback === 'function') {
+            if (isLegacyCallback(targetCallback)) {
               return targetCallback.apply(targetScope, fullArgs);
             }
 
             function extract(_callbackStr: string) {
+              const legacyScope = scope as LegacyScope;
               const atStartBracket = _callbackStr.indexOf('(') !== -1 ? _callbackStr.indexOf('(') : _callbackStr.length;
               const atEndBracket =
                 _callbackStr.lastIndexOf(')') !== -1 ? _callbackStr.lastIndexOf(')') : _callbackStr.length;
@@ -76,17 +91,15 @@ export class AngularDragDropService {
 
               const dotIndex = _callbackStr.indexOf('.');
               const constructorName = dotIndex !== -1 ? _callbackStr.slice(0, dotIndex) : null;
-              // @ts-ignore
-              const constructorCandid = constructorName && scope[constructorName];
-              const constructor =
-                constructorCandid && typeof constructorCandid.constructor === 'function' ? constructorCandid : null;
+              const constructorCandidate = constructorName ? legacyScope[constructorName] : null;
+              const constructor = isLegacyCallbackOwner(constructorCandidate) ? constructorCandidate : null;
 
-              const callbackName = _callbackStr.substring((constructor && constructor.length + 1) || 0, atStartBracket);
-              // @ts-ignore
-              const callbackCandid = scope[callbackName];
+              const callbackOffset = typeof constructor?.length === 'number' ? constructor.length + 1 : 0;
+              const callbackName = _callbackStr.substring(callbackOffset, atStartBracket);
+              const callbackCandidate = legacyScope[callbackName];
               // If the expression is a method call, then the parsed constructor becomes its bound scope.
-              const _scope = callbackCandid ? scope : constructor;
-              const callback = callbackCandid || constructor[callbackName];
+              const _scope = callbackCandidate ? scope : constructor;
+              const callback = callbackCandidate || constructor?.[callbackName];
 
               return {
                 args,
