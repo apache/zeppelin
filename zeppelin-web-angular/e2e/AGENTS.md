@@ -37,37 +37,22 @@ Config: `zeppelin-web-angular/playwright.config.js` (Angular UI) and `playwright
 - One `test.describe` per feature; construct the feature's own POM in `beforeEach`. A secondary POM that only one test needs, such as the second viewer in a collaboration test or a page reached mid-test, can be built in the test body.
 - `test.describe.serial` is a last resort: one failure skips every later test in the group, which hides the rest instead of reporting them. Playwright recommends against it (https://playwright.dev/docs/test-parallel#serial-mode). Prefer making each test set up its own state.
 
-## Escape hatches
+## Detailed Guidance
 
-Two comment forms mark a deliberate rule violation, and both require a reason:
+Before changing locators, assertions, deliberate rule exceptions, migration
+feature-flag coverage, or Classic UI tests, read the
+[detailed E2E guidance](../../.agents/e2e.md).
 
-- `// JUSTIFIED: <why>` for the conventions in this document, either trailing the offending line or in the comment block directly above it. It is a contract with the reviewer: the marker says the deviation is deliberate and the reason says why. A `test.describe.serial` group needs one too.
-- `// eslint-disable-next-line <rule> -- <why>` for a lint rule. Give a reason after the `--`; if the violation is tracked elsewhere, the ticket key is that reason.
+The rules that apply to every test are:
 
-When a rule is both a convention here and a lint rule, `// JUSTIFIED:` is the one to use: an `eslint-disable` silences the linter but leaves the convention unmet.
-
-Neither hatch is a way to opt out of thinking. One without a concrete reason will be challenged in review.
-
-## Locators
-
-Prefer user-facing, in this order:
-
-1. `getByRole('button' | 'link' | 'textbox', { name })`, `getByLabel`, `getByText`. Pass `exact: true` alongside `name`. The default matches the accessible name as a case-insensitive substring, which collides with note titles and other page content and fails strict mode.
-2. `data-testid` (attribute selector) when a role or label is unavailable. Adding one to the Angular or React template is allowed, and is better than reaching into component internals with a CSS selector.
-3. A CSS selector only when the element offers neither, which is common for ng-zorro internals and icon-only controls. It belongs in the Page Object, named for what it does (`cancelButton`, not `.cancel-para`), never inline in a spec. An accessible name that is really an icon glyph (`pause-circle`) is not an improvement; it rots on the next icon swap.
-
-XPath is forbidden outright.
-
-Much of the suite predates this section: it inlines CSS and mostly omits `exact: true`. The ratchet is that new or modified code complies. When you touch a test that inlines a selector, move it into the Page Object as part of that change.
-
-## Assertions
-
-- Web-first, auto-waiting assertions only: `toBeVisible`, `toHaveURL`, `toHaveText`, `toHaveCount`. The suite still asserts on values it extracted first in a few places, which `playwright/prefer-web-first-assertions` reports; the ratchet applies here too.
-- No `waitForTimeout` without a `// JUSTIFIED:` rationale. When waiting on a count, use `toHaveCount`.
-- No one-shot boolean checks (`expect(await el.isVisible())`) and no always-true assertions on a locator (`toBeDefined`, `not.toBeNull`). A Locator is always a defined, non-null object, so those pass whether or not the element exists. Asserting a non-locator value is not this smell: `expect.poll(...).not.toBeNull()` and a null-guard on a regex match are both legitimate.
-- A conditional may gate a setup action on dual-mode UI (auth vs anonymous, the optional welcome modal), which is why `playwright/no-conditional-in-test` is off. Do not put an `expect` inside one: an assertion that runs on only one branch passes by skipping the check it exists to make. `playwright/no-conditional-expect` reports those and the suite still carries some, so the ratchet applies here too.
-- A network wait is synchronization, not proof. `waitForLoadState('networkidle')` is discouraged by Playwright and the suite still has several, one of them inside `waitForZeppelinReady`; in new code wait on a user-visible signal instead. When you do wait on the network, assert the rendered result afterwards.
-- The lint config covers part of this section, not all of it. `eslint-plugin-playwright` has no rule for always-true assertions, so those are a review responsibility.
+- Prefer role, label, or text locators with exact accessible names, then
+  `data-testid`; keep CSS in Page Objects and never use XPath.
+- Use web-first assertions and observable readiness signals. Fixed waits and
+  one-shot visibility checks require a documented exception.
+- Mark a convention exception with `// JUSTIFIED: <reason>`; use a reasoned
+  `eslint-disable-next-line` only for lint-only exceptions.
+- Keep migration specs framework-neutral. The detailed guide records the
+  feature flags and the explicit exceptions for the frozen Classic UI.
 
 ## Readiness & Auth
 
@@ -90,28 +75,6 @@ test.describe('Home Page - Core Elements', () => {
 
 Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one there if the page is missing. The reporter discovers `src/app/**/*.component.ts` automatically and removes only the entries in `COVERAGE_EXCLUDED_COMPONENTS`, so component additions, deletions and moves update the denominator automatically. `PAGES` separately supplies the annotation names and must match those discovered targets. `test/reporter.coverage.spec.ts` enforces that match, rejects duplicate entries and verifies that every explicit exclusion still exists. Purely structural / non-page components (lifecycle hooks, shared UI primitives like the spinner or resize handle) are exercised transitively and are not counted.
 
-## Running
-
-- Node: `nvm use` (version pinned in `.nvmrc`).
-- Dev server: `npm run start` at `http://localhost:4200` (Playwright reuses a running one via `webServer.reuseExistingServer`).
-
-| Command | Purpose |
-| --- | --- |
-| `npm run e2e` | Full suite |
-| `npm run e2e:fast` | Chromium only (fast) |
-| `npm run e2e:fast -- tests/<area>/<feature>.spec.ts` | One spec (path is relative to `e2e/`) |
-| `npm run e2e:fast -- -g '<test title>'` | One test, matched by title |
-| `npx eslint e2e/tests/<area>/<feature>.spec.ts` | Lint one file; `npm run lint` covers the whole app |
-| `npm run e2e:classic` | Classic `/classic` UI suite against `:8080` (needs `-Pweb-classic`) |
-| `npm run e2e:ui` | Playwright Test UI |
-| `npm run e2e:headed` | Headed run |
-| `npm run e2e:debug` | Step-by-step debugger |
-| `npm run e2e:report` | Open last HTML report |
-| `npm run e2e:report:classic` | Open last classic HTML report |
-| `npm run e2e:ci` | CI mode (`CI=true`, baseURL `:8080`), main then classic suite |
-| `npm run e2e:codegen` | Record against `:4200` |
-| `npm run e2e:cleanup` | Delete leftover test notebooks (`e2e/cleanup-util.ts`) |
-
 ## Adding a Test (Agents Start Here)
 
 1. Pick/confirm the target route and the `PAGES` key.
@@ -119,41 +82,3 @@ Use an existing key from the `PAGES` object in `e2e/utils.ts`; add a new one the
 3. Annotate the page (`addPageAnnotationBeforeEach`), navigate, then `waitForZeppelinReady`.
 4. If the test covers a scenario in `e2e/scenarios/notebook-parity.json`, add its stable ID as a Playwright tag such as `{ tag: '@NB-PARITY-001' }`. Keep the title human-readable; the registry links coverage by tag and path. Browser execution controls such as project lists and skip conditions stay in the spec rather than being copied into the registry. Keep browser assumptions in the registry only when they define the scenario's behavior or expected outcome.
 5. Run `npm run e2e:fast` and iterate until green.
-
-## Migration (Angular to React Microfrontend)
-
-Pages are moving from Angular to React fragments incrementally. Today this is narrow: the published paragraph route reads a `?react=true` flag (`published/paragraph/paragraph.component`), the notebook footer swaps via a `?reactFooter=true` flag (read into the notebook component's `useReactFooter` input), the configuration table swaps via a `?reactConfiguration=true` flag (`configuration/configuration.component`), and the notebook repository list swaps via a `?reactNotebookRepos=true` flag (`notebook-repos/notebook-repos.component`). All four are query params inside the hash. There is no app-wide "flip this route to React" flag and no separate cross-framework Playwright project in this config. The notebook parity registry records the Angular behavior baseline and links it to existing framework-neutral tests; add scenarios as migration work reaches them rather than duplicating the suite for both frameworks.
-
-### Write Framework-Neutral Specs
-
-- Assert observable behavior only: what the user sees, the URL, network effects. Avoid asserting framework internals (`[ng-version]`, Angular component classes, `zeppelin-*` custom-element tags) except in a deliberate feature-flag test.
-- Keep the locator order from the Locators section (role/label/text first). At a seam that will flip frameworks, prefer a shared `data-testid` that both implementations render.
-- Never use fixed waits at a fragment seam. Wait on a user-visible post-mount signal or the specific remote response (`page.waitForResponse` on the fragment chunk), then assert the rendered result. `react-footer.spec.ts` shows the fallback pattern (`page.route('**/remoteEntry.js', route => route.abort())`).
-
-### When a Route Gains a React Flag
-
-- The flag is a route query param read via `ActivatedRoute.queryParams`, so with the hash router it goes INSIDE the hash: `/#/notebook/<id>/paragraph/<id>?react=true`, not before the `#`. Popups opened by app code (`window.open`) will not carry a flag added only to `page.goto`.
-- To exercise both frameworks, follow the existing precedent and toggle the flag in-spec: navigate the same spec with and without the flag across tests.
-  - Prefer looping `for (const { label, query } of [...])` — an array of `{ label, query }` pairs — and folding `label` into the surrounding `test.describe`/`test` name, as `notebook-repos-save-reloads-note-tree.spec.ts` and `notebook-repo-item-workflow.spec.ts` do. The query string is the data the test actually needs, so it travels with the label instead of being reassembled from a bare boolean at each call site (`published-paragraph.spec.ts` predates this and still loops a boolean; match the newer shape in new specs).
-  - Both existing specs import the shared `NOTEBOOK_REPOS_BRANCHES` from `e2e/models/notebook-repos-page.ts` rather than each inlining the pair — export a same-shaped constant next to the relevant Page Object when a second spec needs the same pair, rather than inlining it again.
-  - A separate flag-appending Playwright project is an alternative, but scope it (its own `testMatch`) to routes that read the flag rather than running the whole suite twice.
-
-### Coverage
-
-- Coverage attribution is tracked by `PAGES` key while the denominator is discovered from the Angular component tree. The key is the stable identity; the path behind it is an implementation detail. While Angular still hosts the route, keep the key mapped to that host component and cover fragment-only behavior in the React package tests. When the Angular host component is removed, revise the composed E2E target policy in the same change instead of silently deleting the key. Specs keep the same `addPageAnnotationBeforeEach(PAGES.KEY)` call across the migration.
-
-### Suite Shape
-
-- Keep the composed suite focused on real cross-seam user flows. Behavior that lives entirely inside one fragment belongs in that fragment's own tests; do not grow the composed suite into a per-fragment unit suite.
-- The capture suite in `tests/notebook/core-contract/` tags its live-capture test `@live`, because it needs an isolated Zeppelin server. `playwright.config.js` excludes `@live`; `e2e:core-contract:live` selects it through `playwright.core-contract.config.js` and requires an explicit server URL. The live test deletes its own note in `finally`. The dedicated non-live runner has no auth setup, global hooks or backend cleanup. Tag live tests rather than excluding a whole file and hiding its synthetic tests.
-
-## Classic UI Tests (`e2e/tests/classic/`)
-
-`e2e/tests/classic/` runs Playwright against the legacy AngularJS app served at `/classic`, ported from the retired `zeppelin-web` Protractor suite. Treat it as a frozen legacy surface: keep it at parity coverage and test new features only in the Angular/React suites.
-
-- **Locators (classic exception):** the classic templates predate roles and `data-testid`, so the role/label/text-first rule cannot apply. Sanctioned here: element ids (`#findInput`), `ng-click="..."` / `ng-controller="..."` attribute selectors, class selectors the legacy templates already expose (`.username`, `.interpreterHead`), and Ace/Select2 internals. Do not add `data-testid` to the frozen `zeppelin-web` sources.
-- **Readiness:** `waitForZeppelinReady` is Angular-specific (`[ng-version]`) and does not resolve on `/classic`; gate on a classic-visible signal instead (e.g. the first `ParagraphCtrl` paragraph, or `.ace_text-input` attached).
-- **Coverage:** classic pages are outside the discovered Angular component target set, so `addPageAnnotationBeforeEach` is not used here.
-- **Running:** the classic suite has its own config, `playwright.classic.config.js` (Desktop Chrome only, targets `http://localhost:8080`), and needs a Zeppelin server built with `-Pweb-classic`. The `:4200` dev server does not serve `/classic`, so a plain `npm run e2e` never includes it. Run it with `npm run e2e:classic` (single spec: `npm run e2e:classic -- tests/classic/<spec>`). In CI the workflow enables it on the anonymous matrix leg only (`-Dweb.e2e.classic.disabled=false`), matching the anonymous-only legacy Protractor suite.
-- **POM:** inlining locators/helpers is acceptable while the suite is this small; if it grows, move them behind `models/classic-*.ts` / `*.util.ts`.
-- The React-migration / framework-neutral-spec guidance does not apply to `tests/classic/`.
