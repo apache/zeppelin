@@ -17,11 +17,14 @@
 
 package org.apache.zeppelin.eventbus;
 
-import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
 
 public interface EventBus {
 
   void post(ZeppelinEvent event);
 
-  <T extends ZeppelinEvent> Observable<T> observe(Class<T> eventType);
+  <T extends ZeppelinEvent> Disposable subscribe(
+      Class<T> eventType, Consumer<? super T> handler
+  );
 }

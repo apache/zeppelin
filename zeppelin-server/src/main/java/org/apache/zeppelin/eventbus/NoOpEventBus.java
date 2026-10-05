@@ -17,7 +17,8 @@
 
 package org.apache.zeppelin.eventbus;
 
-import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,8 @@ public class NoOpEventBus implements EventBus {
   }
 
   @Override
-  public <T extends ZeppelinEvent> Observable<T> observe(Class<T> eventType) {
-    return Observable.empty();
+  public <T extends ZeppelinEvent> Disposable subscribe(
+      Class<T> eventType, Consumer<? super T> handler) {
+    return Disposable.disposed();
   }
 }

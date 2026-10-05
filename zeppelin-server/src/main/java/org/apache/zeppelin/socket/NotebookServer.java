@@ -67,7 +67,6 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.eventbus.EventBus;
-import org.apache.zeppelin.eventbus.NoteEvent;
 import org.apache.zeppelin.eventbus.NoteRemovedEvent;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
@@ -190,14 +189,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
     subscriptions = new CompositeDisposable();
 
-    subscriptions.add(eventBus.observe(NoteEvent.class)
-        .subscribe(event -> {
-          try {
-            handleNoteEvent(event);
-          } catch (Exception e) {
-            LOGGER.error("Failed to handle note event: {}", event, e);
-          }
-        }));
+    subscriptions.add(eventBus.subscribe(
+        NoteRemovedEvent.class, event -> handleNoteRemove(event.getNote()))
+    );
   }
 
   @Override
@@ -2460,15 +2454,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
   }
 
-  private void handleNoteEvent(NoteEvent event) {
-    if (event instanceof NoteRemovedEvent) {
-      Note note = event.getNote();
-      handleNoteRemove(note);
-    } else {
-      LOGGER.warn("Unknown event type: {}", event.getClass().getName());
-    }
-  }
-
   private void handleNoteRemove(Note note) {
     try {
       broadcastUpdateNoteJobInfo(note, System.currentTimeMillis() - 5000);
@@ -2477,8 +2462,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
     }
 
     try {
-      getJobManagerService().removeNoteJobInfo(note.getId(), null,
-          new JobManagerServiceCallback());
+      getJobManagerService().removeNoteJobInfo(
+              note.getId(), null, new JobManagerServiceCallback()
+      );
     } catch (IOException e) {
       LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
     }

@@ -17,7 +17,8 @@
 
 package org.apache.zeppelin.eventbus;
 
-import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import jakarta.inject.Inject;
@@ -45,9 +46,15 @@ public class ZeppelinEventBus implements EventBus {
   }
 
   @Override
-  public <T extends ZeppelinEvent> Observable<T> observe(Class<T> eventType) {
-    LOGGER.debug("Observing event: {}", eventType.getName());
-
-    return eventBus.ofType(eventType);
+  public <T extends ZeppelinEvent> Disposable subscribe(
+      Class<T> eventType, Consumer<? super T> handler
+  ) {
+    return eventBus.ofType(eventType).subscribe(event -> {
+      try {
+        handler.accept(event);
+      } catch (Exception e) {
+        LOGGER.error("Failed to handle event: {}", eventType.getName(), e);
+      }
+    });
   }
 }
