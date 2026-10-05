@@ -2,6 +2,10 @@
 @import url('../font/fonts-patua-one.css');
 @import url('../font/fonts-open-sans.css');
 
+:root {
+  --navbar-height: 60px;
+}
+
 body {
   padding-top: 50px;
   padding-bottom: 20px;
@@ -12,7 +16,7 @@ body {
 }
 
 html {
-  scroll-padding-top: 60px;
+  scroll-padding-top: var(--navbar-height);
 }
 
 .jumbotron {
@@ -90,7 +94,7 @@ html {
 .navbar {
   background: #3071a9;
   border-bottom: 0px;
-  height: 60px;
+  height: var(--navbar-height);
   box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.4);
 }
 
@@ -552,7 +556,7 @@ a.anchor {
 }
 
 .navbar-collapse.collapse {
-  max-height: 60px;
+  max-height: var(--navbar-height);
 }
 
 .navbar-inverse .navbar-nav a .caret,
