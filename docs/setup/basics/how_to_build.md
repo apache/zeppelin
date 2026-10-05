@@ -168,7 +168,6 @@ python.py4j.version # default 0.10.7
 ```
 
 `python.py4j.version` is the Maven dependency version used for `net.sf.py4j:py4j` in the Python build.
-It does not configure any Py4J download URL, and there are no corresponding configurable download properties in the current build.
 
 The bundled Python-side Py4J source ZIP used at runtime is a separate artifact from the Maven dependency and is not controlled by this property.
 
