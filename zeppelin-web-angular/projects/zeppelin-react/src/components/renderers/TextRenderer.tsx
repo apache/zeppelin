@@ -10,17 +10,66 @@
  * limitations under the License.
  */
 
-import Ansi from 'ansi-to-react';
+import Anser from 'anser';
+import { CSSProperties } from 'react';
 
 export interface TextRendererProps {
   text: string;
 }
 
+const toStyle = ({ fg, bg, decorations }: Anser.AnserJsonEntry): CSSProperties => {
+  const style: CSSProperties = {};
+  const textDecorations: string[] = [];
+  if (fg) {
+    style.color = `rgb(${fg})`;
+  }
+  if (bg) {
+    style.backgroundColor = `rgb(${bg})`;
+  }
+  decorations.forEach(decoration => {
+    switch (decoration) {
+      case 'bold':
+        style.fontWeight = 'bold';
+        break;
+      case 'dim':
+        style.opacity = 0.5;
+        break;
+      case 'italic':
+        style.fontStyle = 'italic';
+        break;
+      case 'hidden':
+        style.visibility = 'hidden';
+        break;
+      case 'underline':
+        textDecorations.push('underline');
+        break;
+      case 'strikethrough':
+        textDecorations.push('line-through');
+        break;
+      case 'blink':
+        textDecorations.push('blink');
+        break;
+    }
+  });
+  if (textDecorations.length > 0) {
+    style.textDecoration = textDecorations.join(' ');
+  }
+  return style;
+};
+
 // Matches Angular: result.component.ts renderText()
+// Carriage returns are resolved by the caller (checkAndReplaceCarriageReturn).
 export const TextRenderer = ({ text }: TextRendererProps) => {
+  const entries = Anser.ansiToJson(text, { json: true, remove_empty: true });
   return (
     <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
-      <Ansi>{text}</Ansi>
+      <code>
+        {entries.map((entry, i) => (
+          <span key={i} style={toStyle(entry)}>
+            {entry.content}
+          </span>
+        ))}
+      </code>
     </pre>
   );
 };
