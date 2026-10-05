@@ -18,34 +18,58 @@
 package org.apache.zeppelin.eventbus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import io.reactivex.rxjava3.disposables.Disposable;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Test;
+
+import io.reactivex.rxjava3.disposables.Disposable;
 
 class ZeppelinEventBusTest {
 
   @Test
-  void eventBusFlow() throws InterruptedException {
-    ZeppelinEventBus bus = new ZeppelinEventBus();
-    Publisher publisher = new Publisher(bus);
-    Subscriber subscriber = new Subscriber(bus);
+  void testSubscription() {
+    EventBus bus = new ZeppelinEventBus();
+    List<String> received = new ArrayList<>();
+    Disposable subscription = bus.subscribe(MockEvent.class, event -> received.add(event.payload));
 
-    String payload = "data";
-    publisher.createNote(payload);
+    bus.post(new ZeppelinEvent() { });
+    bus.post(new MockEvent("received"));
+    assertEquals(List.of("received"), received);
 
-    assertTrue(subscriber.awaitEvent());
+    subscription.dispose();
+    bus.post(new MockEvent("ignored"));
+    assertEquals(List.of("received"), received);
+  }
 
-    List<String> received = subscriber.collection;
-    assertEquals(1, received.size());
-    assertEquals(payload, received.get(0));
-    assertTrue(received.contains(payload));
+  @Test
+  void testContinueAfterException() {
+    EventBus bus = new ZeppelinEventBus();
+    List<String> received = new ArrayList<>();
+    Disposable subscription = bus.subscribe(MockEvent.class, event -> {
+      if ("checked".equals(event.payload)) {
+        throw new IOException("Handler failed");
+      }
+      if ("runtime".equals(event.payload)) {
+        throw new IllegalStateException("Handler failed");
+      }
+      received.add(event.payload);
+    });
 
-    subscriber.stopListening();
+    try {
+      bus.post(new MockEvent("checked"));
+      bus.post(new MockEvent("after checked"));
+      bus.post(new MockEvent("runtime"));
+      bus.post(new MockEvent("after runtime"));
+
+      assertFalse(subscription.isDisposed());
+      assertEquals(List.of("after checked", "after runtime"), received);
+    } finally {
+      subscription.dispose();
+    }
   }
 
   private static class MockEvent implements ZeppelinEvent {
@@ -53,44 +77,6 @@ class ZeppelinEventBusTest {
 
     MockEvent(String payload) {
       this.payload = payload;
-    }
-  }
-
-  private static class Publisher {
-    private final ZeppelinEventBus eventBus;
-
-    Publisher(ZeppelinEventBus eventBus) {
-      this.eventBus = eventBus;
-    }
-
-    void createNote(String noteId) {
-      eventBus.post(new MockEvent(noteId));
-    }
-  }
-
-  private static class Subscriber {
-    private final List<String> collection = new ArrayList<>();
-
-    private final CountDownLatch eventReceived = new CountDownLatch(1);
-
-    private final Disposable disposable;
-
-    Subscriber(ZeppelinEventBus eventBus) {
-      this.disposable = eventBus.observe(MockEvent.class)
-          .subscribe(event -> {
-            collection.add(event.payload);
-            eventReceived.countDown();
-          });
-    }
-
-    boolean awaitEvent() throws InterruptedException {
-      return eventReceived.await(1, TimeUnit.SECONDS);
-    }
-
-    void stopListening() {
-      if (!disposable.isDisposed()) {
-        disposable.dispose();
-      }
     }
   }
 }
