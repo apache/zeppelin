@@ -203,8 +203,8 @@ describe('notebook core import boundary', () => {
   });
 
   it.each([
-    "import '../../../projects/zeppelin-notebook-core/src/public-api';",
-    "export { createNotebookCore } from '../../../projects/zeppelin-notebook-core/src/public-api';"
+    "import '../../../../projects/zeppelin-notebook-core/src/public-api';",
+    "export { createNotebookCore } from '../../../../projects/zeppelin-notebook-core/src/public-api';"
   ])('rejects a runtime core dependency by its resolved target: %s', source => {
     const path = resolve(zeppelinWebAngularRoot, 'e2e/core-contract/port-proof/react-remote/helper.ts');
     expect(findNotebookCoreValueImportViolations(path, source)).toEqual([`${path}: runtime notebook core import`]);
