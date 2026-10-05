@@ -55,30 +55,24 @@ Apache Zeppelin is a web-based notebook for interactive data analytics. It provi
 
 ## Build Gotchas
 
-### Shaded JAR Rebuild Chain
+### Interpreter Runtime JAR
 
-The most common build mistake: modifying `zeppelin-interpreter` without rebuilding `zeppelin-interpreter-shaded`. The shaded JAR is an uber JAR that all interpreter processes use. If it's stale, you get `ClassNotFoundException` or `NoSuchMethodError` at runtime.
+Packaging `zeppelin-interpreter` produces both the normal Maven artifact and the relocated runtime JAR that every interpreter process uses:
 
 ```bash
-# After changing zeppelin-interpreter, ALWAYS rebuild in order:
-./mvnw clean package -pl zeppelin-interpreter -DskipTests
-./mvnw clean package -pl zeppelin-interpreter-shaded -DskipTests
-# Then rebuild affected interpreter modules
-
-# Shorthand:
-./mvnw clean package -pl zeppelin-interpreter,zeppelin-interpreter-shaded -DskipTests
+./mvnw clean package -pl zeppelin-interpreter --am -DskipTests
 ```
 
-The shaded JAR is also copied to `interpreter/` directory by maven-antrun-plugin after packaging. If this directory has a stale JAR, interpreter processes will load old code.
+The normal `zeppelin-interpreter-${version}.jar` remains under `zeppelin-interpreter/target` and is installed or deployed as the module artifact. The build stages the runtime-only `zeppelin-interpreter-shaded-${version}.jar` under `target/`, publishes the complete file to `interpreter/`, and then deletes older versions so interpreter launchers never see multiple matching JARs.
 
 ### Module Build Order
 
 Maven modules are ordered in the root `pom.xml`. Key sequence:
 ```
-zeppelin-interpreter → zeppelin-interpreter-shaded → zeppelin-server
+zeppelin-interpreter → interpreter modules / zeppelin-server
 ```
 
-All interpreter modules build after `zeppelin-interpreter-shaded`. A second shading chain exists for Jupyter:
+A separate shading chain exists for Jupyter:
 ```
 zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python
 ```
@@ -88,17 +82,17 @@ zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python
 ### Dependency Flow
 
 ```
-zeppelin-interpreter          Base API: Interpreter, InterpreterContext, Thrift services
+zeppelin-interpreter          Base API + normal Maven JAR + relocated runtime JAR
         ↓
-zeppelin-interpreter-shaded   Uber JAR (maven-shade-plugin, relocated packages)
-        ↓
+interpreter modules           Spark, Flink, Python, JDBC, etc.
+
 zeppelin-server               Core engine + Jetty 11, REST/WebSocket APIs, HK2 DI, entry point
 ```
 
 ### Core Modules
 
 #### `zeppelin-interpreter/`
-The base framework that all interpreters depend on. Defines the interpreter API and the Thrift communication protocol. This module is shaded into an uber JAR (`zeppelin-interpreter-shaded`) and placed on each interpreter process's classpath.
+The base framework that all interpreters depend on. Defines the interpreter API and the Thrift communication protocol. Its package phase also builds a relocated runtime JAR under `interpreter/`; that internal file is placed on each interpreter process's classpath but is not installed or deployed as a Maven artifact.
 
 Key classes:
 - `Interpreter` (abstract) / `AbstractInterpreter` — base class every interpreter extends
@@ -136,9 +130,6 @@ Engine / runtime (`org.apache.zeppelin.notebook`, `interpreter`, `scheduler`, `s
 - `ZeppelinConfiguration` — config management (env vars → system properties → `zeppelin-site.xml` → defaults)
 - `RecoveryStorage` — persists interpreter process info for server-restart recovery
 - `ConfigStorage` — persists interpreter settings to JSON
-
-#### `zeppelin-interpreter-shaded/`
-Uses maven-shade-plugin to package `zeppelin-interpreter` + dependencies into an uber JAR with relocated packages (e.g., `org.apache.thrift` → `org.apache.zeppelin.shaded.org.apache.thrift`). This JAR is placed on each interpreter process's classpath.
 
 #### `zeppelin-client/`
 REST/WebSocket client library for programmatic access to Zeppelin.
