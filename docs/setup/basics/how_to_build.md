@@ -165,14 +165,11 @@ Py4J package
 
 ```bash
 python.py4j.version # default 0.10.7
-pypi.repo.url # default https://files.pythonhosted.org
-python.py4j.repo.folder # default /packages/dd/03/d83f659f045d819fc7550dd472b3831fe8c8fa7204c6428270a46a4a5ab9/
 ```
 
-final URL location for Py4J package will be produced as following:
+`python.py4j.version` is the Maven dependency version used for `net.sf.py4j:py4j` in the Python build.
 
-`${pypi.repo.url}${python.py4j.repo.folder}py4j-${python.py4j.version}.zip`
-
+The bundled Python-side Py4J source ZIP used at runtime is a separate artifact from the Maven dependency and is not controlled by this property.
 
 Frontend Maven Plugin configurations
 
