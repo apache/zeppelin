@@ -32,10 +32,14 @@ const receive = envelope => {
   const { op, data } = envelope;
   switch (op) {
     case 'NOTE':
-      if (adapter.acceptNote(data.note, null) === null) throw new Error('Core rejected the associated NOTE');
+      if (adapter.acceptNote(data.note, null) === null) {
+        throw new Error('Core rejected the associated NOTE');
+      }
       break;
     case 'PATCH_PARAGRAPH':
-      if (!adapter.acceptParagraphPatch(data.paragraphId, data.patch)) recoveryRequested = true;
+      if (!adapter.acceptParagraphPatch(data.paragraphId, data.patch)) {
+        recoveryRequested = true;
+      }
       break;
     case 'NOTE_UPDATED':
       adapter.acceptNoteUpdated(data.name);
@@ -73,9 +77,15 @@ globalThis.window.lifecycleCore = {
     if (envelope.op === 'PATCH_PARAGRAPH') {
       const { id, patch } = envelope.data;
       const paragraph = adapter.port.getSnapshot().paragraphs.find(candidate => candidate.id === id);
-      if (!paragraph) throw new Error('Local patch requires a loaded paragraph');
+      if (!paragraph) {
+        throw new Error('Local patch requires a loaded paragraph');
+      }
+
       const [text, applied] = patcher.patch_apply(patcher.patch_fromText(patch), paragraph.text);
-      if (!applied.every(Boolean)) throw new Error('Local captured edit cannot be applied');
+      if (!applied.every(Boolean)) {
+        throw new Error('Local captured edit cannot be applied');
+      }
+
       adapter.acceptParagraphText(id, text);
     }
   },

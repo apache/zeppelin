@@ -87,12 +87,14 @@ export interface LifecycleMetadata extends FixtureMetadata {
     frames: string[];
   }[];
 }
+
 export interface LifecycleFault {
   sequence: number;
   copies?: number;
   delayMs?: number;
   afterSequence?: number;
 }
+
 export interface LifecycleRecorder {
   install(page: Page, sessionId: string): void;
   context(sessionId: string, context: RouteContext): void;
@@ -102,6 +104,7 @@ export interface LifecycleRecorder {
   stop(): Promise<void>;
   write(file: string): Promise<LifecycleFixture>;
 }
+
 export interface LifecycleReplay {
   install(page: Page, sessionId: string): Promise<void>;
   context(sessionId: string, context: RouteContext): void;
@@ -112,6 +115,7 @@ export interface LifecycleReplay {
   waitForComplete(): Promise<void>;
   dispose(error?: Error): void;
 }
+
 export declare const lifecycleFixtureVersion: number;
 export declare function validateLifecycleFixture(fixture: unknown): string[];
 export declare function createLifecycleRecorder(metadata: LifecycleMetadata): LifecycleRecorder;

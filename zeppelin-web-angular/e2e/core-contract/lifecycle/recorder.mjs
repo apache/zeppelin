@@ -79,6 +79,7 @@ function observeRest(page, session) {
       };
     })
   );
+
   const finished = fromEvent(page, 'requestfinished').pipe(
     filter(request => requests.has(request)),
     map(request => {
@@ -90,18 +91,21 @@ function observeRest(page, session) {
       };
     })
   );
+
   const failed = fromEvent(page, 'requestfailed').pipe(
     filter(request => requests.has(request)),
     map(() => {
       throw new Error('Notebook REST request failed during capture');
     })
   );
+
   return merge(sent, finished, failed);
 }
 
 function observeSocket(socket, session, connectionId) {
   const sessionId = session.id;
   session.activeConnection = connectionId;
+
   const frames = direction =>
     map(frame => {
       if (typeof frame.payload !== 'string') throw new Error('Binary lifecycle capture has no redaction policy');
@@ -109,17 +113,20 @@ function observeSocket(socket, session, connectionId) {
         entry: { kind: 'websocket', sessionId, connectionId, websocket: { direction, payloadText: frame.payload } }
       };
     });
+
   const closed = fromEvent(socket, 'close').pipe(
     map(() => {
       if (session.activeConnection === connectionId) session.activeConnection = undefined;
       return { entry: { kind: 'connection', event: 'close', sessionId, connectionId } };
     })
   );
+
   const failed = fromEvent(socket, 'socketerror').pipe(
     map(error => {
       throw new Error(`Notebook socket error: ${error}`);
     })
   );
+
   return merge(
     fromEvent(socket, 'framesent').pipe(frames('send')),
     fromEvent(socket, 'framereceived').pipe(frames('receive')),
@@ -144,6 +151,7 @@ function settleObservation({ entry, readBody, error }, index) {
   if (error) return of({ error });
   const record = { ...entry, sequence: index + 1 };
   if (!readBody) return of({ record });
+
   return defer(readBody).pipe(
     map(rest => ({ record: { ...record, rest } })),
     catchError(error => of({ error }))
@@ -151,8 +159,12 @@ function settleObservation({ entry, readBody, error }, index) {
 }
 
 function accumulateObservation(state, outcome) {
-  if (outcome.error) state.failure ??= outcome.error;
-  else state.records.push(outcome.record);
+  if (outcome.error) {
+    state.failure ??= outcome.error;
+  } else {
+    state.records.push(outcome.record);
+  }
+
   return state;
 }
 
@@ -161,6 +173,7 @@ function matchClientDelivery(records, sessionId, envelopes) {
   const received = records.filter(
     entry => entry.sessionId === sessionId && entry.kind === 'websocket' && entry.websocket.direction === 'receive'
   );
+
   const occurrences = new Map();
   for (const entry of received) {
     const key = stableJson(JSON.parse(entry.websocket.payloadText));
@@ -168,12 +181,17 @@ function matchClientDelivery(records, sessionId, envelopes) {
     queue.push(entry.sequence);
     occurrences.set(key, queue);
   }
+
   const sequences = envelopes.map(envelope => {
     const sequence = occurrences.get(stableJson(envelope))?.shift();
     if (!sequence) throw new Error('Client delivery has no matching upstream receive occurrence');
     return sequence;
   });
-  if (sequences.length !== received.length) throw new Error('Client delivery observation lost upstream frames');
+
+  if (sequences.length !== received.length) {
+    throw new Error('Client delivery observation lost upstream frames');
+  }
+
   return sequences;
 }
 
@@ -201,6 +219,7 @@ class LifecycleRecorder {
       this.#installations$.pipe(mergeMap(({ page, session }) => observePage(page, session))),
       this.#explicit$
     );
+
     return lastValueFrom(
       observations$.pipe(
         // Stop listening immediately, then settle every body read already observed.
@@ -220,25 +239,42 @@ class LifecycleRecorder {
 
   install(page, sessionId) {
     this.#requireRecording();
-    if (typeof sessionId !== 'string' || sessionId.length === 0)
+
+    if (typeof sessionId !== 'string' || sessionId.length === 0) {
       throw new Error('Recorder requires a non-empty session ID');
-    if (this.#sessions.has(sessionId)) throw new Error('Recorder requires a new session ID');
+    }
+    if (this.#sessions.has(sessionId)) {
+      throw new Error('Recorder requires a new session ID');
+    }
+
     const session = { id: sessionId, outstandingRequests: new Set(), activeConnection: undefined };
+
     this.#sessions.set(sessionId, session);
     this.#installations$.next({ page, session });
   }
 
   context(sessionId, context) {
     this.#requireRecording();
-    if (!this.#sessions.has(sessionId)) throw new Error('Unknown session');
+
+    if (!this.#sessions.has(sessionId)) {
+      throw new Error('Unknown session');
+    }
+
     this.#explicit$.next({ entry: { kind: 'context', sessionId, context: { ...context } } });
   }
 
   droppedSend(sessionId, payloadText) {
     this.#requireRecording();
+
     const connectionId = this.#sessions.get(sessionId)?.activeConnection;
-    if (!connectionId) throw new Error('Dropped-send observation requires an active captured socket');
-    if (typeof payloadText !== 'string') throw new Error('Dropped-send observation requires a text payload');
+    if (!connectionId) {
+      throw new Error('Dropped-send observation requires an active captured socket');
+    }
+
+    if (typeof payloadText !== 'string') {
+      throw new Error('Dropped-send observation requires a text payload');
+    }
+
     this.#explicit$.next({
       entry: {
         kind: 'websocket',
@@ -251,9 +287,12 @@ class LifecycleRecorder {
   }
 
   clientDelivery(sessionId, envelopes) {
-    if (this.#status !== 'stopped') throw new Error('Client delivery requires a stopped recorder and known session');
-    if (!this.#sessions.has(sessionId))
+    if (this.#status !== 'stopped') {
       throw new Error('Client delivery requires a stopped recorder and known session');
+    }
+    if (!this.#sessions.has(sessionId)) {
+      throw new Error('Client delivery requires a stopped recorder and known session');
+    }
     return matchClientDelivery(this.#captureState.records, sessionId, envelopes);
   }
 
@@ -281,9 +320,13 @@ class LifecycleRecorder {
   async #finish() {
     const result = await this.#settled;
     if (result.failure) throw result.failure;
+
     for (const session of this.#sessions.values()) {
-      if (session.outstandingRequests.size) throw new Error('unfinished notebook REST capture');
+      if (session.outstandingRequests.size) {
+        throw new Error('unfinished notebook REST capture');
+      }
     }
+
     const errors = validateLifecycleFixture(this.snapshot());
     if (errors.length) throw new Error(errors.join('\n'));
     this.#status = 'stopped';

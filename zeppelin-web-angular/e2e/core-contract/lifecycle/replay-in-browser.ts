@@ -47,6 +47,7 @@ const openRecordedSocket = async (page: Page, connectionId: string) => {
     state.traceSockets[id] = socket;
     socket.addEventListener('message', event => state.traceFrames.push(String(event.data)));
   }, connectionId);
+
   await expect.poll(() => page.evaluate(id => window.traceSockets[id].readyState, connectionId)).toBe(1);
 };
 
@@ -60,6 +61,7 @@ const requestOptions = (request: FixtureRestRequest): RequestInit => {
   const options: RequestInit = { method: request.method, headers: request.headers };
   if (request.method === 'GET' || request.method === 'HEAD') return options;
   if (request.bodyRaw === '' && request.bodyJson === undefined) return options;
+
   options.body = request.bodyRaw ?? JSON.stringify(request.bodyJson);
   return options;
 };
@@ -79,7 +81,9 @@ const driveRecord = async (
 ) => {
   switch (record.kind) {
     case 'connection':
-      if (record.event === 'open') await openRecordedSocket(page, record.connectionId);
+      if (record.event === 'open') {
+        await openRecordedSocket(page, record.connectionId);
+      }
       return;
     case 'context':
       await consumer?.enterContext(page, record.context);
@@ -92,7 +96,10 @@ const driveRecord = async (
       }
       return;
     case 'rest':
-      if (record.rest.direction === 'request') registerRequest(startRecordedRequest(page, record.rest.request));
+      if (record.rest.direction === 'request') {
+        registerRequest(startRecordedRequest(page, record.rest.request));
+      }
+      return;
   }
 };
 
@@ -111,6 +118,7 @@ const observeFrames = async (
       )
       .reduce((count, record) => count + (copies.get(record.sequence) ?? 1), 0);
     await expect.poll(() => page.evaluate(() => window.traceFrames.length)).toBe(expectedCount);
+
     observed.set(
       sessionId,
       await page.evaluate(() => window.traceFrames.map(frame => JSON.parse(frame) as Record<string, unknown>))
@@ -132,6 +140,7 @@ export const replayLifecycleTrace = async (
   const requests$ = new Subject<Promise<unknown>>();
   let failure: unknown;
   const cleanupErrors: unknown[] = [];
+
   const settledRequests = lastValueFrom(
     requests$.pipe(
       mergeMap(request =>
@@ -158,14 +167,17 @@ export const replayLifecycleTrace = async (
     for (const session of fixture.sessions) {
       const context = await browser.newContext();
       contexts.push(context);
+
       const page = await context.newPage();
       viewers.set(session.id, page);
+
       await page.route('http://fixture.test/', route =>
         route.fulfill({
           contentType: 'text/html',
           body: '<html><body></body></html>'
         })
       );
+
       await replay.install(page, session.id);
       await page.goto('http://fixture.test/');
       await page.evaluate(() => Object.assign(window, { traceSockets: {}, traceFrames: [] }));
@@ -175,17 +187,21 @@ export const replayLifecycleTrace = async (
     for (const record of fixture.records) {
       const index = record.sequence - 1;
       if (replay.position() > index) continue;
+
       await replay.waitForPosition(index);
-      if (replay.position() === index)
+      if (replay.position() === index) {
         await driveRecord(viewers.get(record.sessionId)!, record, replay, registerRequest, consumer);
+      }
     }
 
     requests$.complete();
     await settledRequests;
     await replay.waitForComplete();
+
     const observed = await observeFrames(viewers, fixture, faults);
     replay.assertComplete();
     await consumer?.complete(viewers);
+
     return observed;
   } catch (error) {
     failure = error;
@@ -196,6 +212,7 @@ export const replayLifecycleTrace = async (
       Promise.resolve().then(() => replay.dispose()),
       ...contexts.map(context => Promise.resolve().then(() => context.close()))
     ]);
+
     cleanupErrors.push(...cleanup.flatMap(result => (result.status === 'rejected' ? [result.reason] : [])));
     if (cleanupErrors.length) {
       throw new AggregateError(

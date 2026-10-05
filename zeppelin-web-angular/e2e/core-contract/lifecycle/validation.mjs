@@ -58,11 +58,15 @@ function validateConnection(errors, prefix, record, state) {
 function validateRouteContext(errors, prefix, record) {
   const context = record.context;
 
-  if (!context) return errors.push(`${prefix}: invalid route context: missing context`);
+  if (!context) {
+    return errors.push(`${prefix}: invalid route context: missing context`);
+  }
   if (!['active', 'inactive'].includes(context.state)) {
     errors.push(`${prefix}: invalid route context: unknown state`);
   }
-  if (!nonEmptyString(context.noteId)) errors.push(`${prefix}: invalid route context: noteId required`);
+  if (!nonEmptyString(context.noteId)) {
+    errors.push(`${prefix}: invalid route context: noteId required`);
+  }
   if (context.revisionId !== null && !nonEmptyString(context.revisionId)) {
     errors.push(`${prefix}: invalid route context: revisionId must be null or a non-empty string`);
   }
@@ -148,6 +152,7 @@ const recordValidators = {
 function validateClientDelivery(errors, fixture) {
   const observation = fixture.metadata?.routeTransition;
   if (!observation) return;
+
   const receives = fixture.records.filter(
     record =>
       record?.kind === 'websocket' &&
@@ -155,24 +160,32 @@ function validateClientDelivery(errors, fixture) {
       record.websocket?.direction === 'receive'
   );
   const sequences = observation.deliveredSequences;
+
   if (observation.boundary !== 'browser-message') {
     errors.push('client delivery requires the browser-message observation boundary');
   }
-  if (!nonEmptyString(observation.intervention)) errors.push('client delivery intervention required');
+
+  if (!nonEmptyString(observation.intervention)) {
+    errors.push('client delivery intervention required');
+  }
+
   if (!Array.isArray(sequences)) {
     errors.push('client delivery sequences must be an array');
     return;
   }
+
   const receivedSequences = new Set(receives.map(record => record.sequence));
   const referencesEveryOccurrence =
     sequences.length === receivedSequences.size &&
     new Set(sequences).size === sequences.length &&
     sequences.every(sequence => receivedSequences.has(sequence));
+
   if (!referencesEveryOccurrence) {
     errors.push('client delivery must reference every upstream receive occurrence exactly once');
     return;
   }
   const held = receives.find(record => record.sequence === observation.heldNoteSequence);
+
   let envelope;
   try {
     envelope = held && JSON.parse(held.websocket.payloadText);
@@ -180,12 +193,14 @@ function validateClientDelivery(errors, fixture) {
     errors.push('client delivery references an invalid envelope');
     return;
   }
+
   const index = sequences.indexOf(observation.heldNoteSequence);
   const identifiesHeldNote = envelope?.op === 'NOTE' && envelope.data?.note?.id === observation.noteId;
   const followsReleaseBoundary =
     index > 0 &&
     sequences[index - 1] === observation.releaseAfterSequence &&
     observation.releaseAfterSequence > observation.heldNoteSequence;
+
   if (!identifiesHeldNote) {
     errors.push('client delivery must identify the held NOTE and observed release boundary: wrong NOTE');
     return;
@@ -194,10 +209,12 @@ function validateClientDelivery(errors, fixture) {
     errors.push('client delivery must identify the held NOTE and observed release boundary');
     return;
   }
+
   const expected = receives
     .map(record => record.sequence)
     .filter(sequence => sequence !== observation.heldNoteSequence);
   expected.splice(expected.indexOf(observation.releaseAfterSequence) + 1, 0, observation.heldNoteSequence);
+
   if (stableJson(expected) !== stableJson(sequences)) {
     errors.push('client delivery changed order beyond the declared NOTE hold');
   }

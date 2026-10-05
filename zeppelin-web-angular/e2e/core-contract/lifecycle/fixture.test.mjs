@@ -24,33 +24,41 @@ import { createLifecycleDeliveryScheduler } from './delivery-scheduler.mjs';
 import { createLifecycleRecorder, createLifecycleReplay, validateLifecycleFixture } from './fixture.mjs';
 import { fixtureMetadata, request } from '../transport/doubles.mjs';
 
-const open = (sessionId, connectionId) => ({ kind: 'connection', event: 'open', sessionId, connectionId });
-const frame = (sessionId, connectionId, direction, payload) => ({
+const createConnectionRecord = (sessionId, connectionId, event = 'open') => ({
+  kind: 'connection',
+  event,
+  sessionId,
+  connectionId
+});
+
+const createWebSocketRecord = (sessionId, connectionId, direction, payload) => ({
   kind: 'websocket',
   sessionId,
   connectionId,
   websocket: { direction, payloadText: JSON.stringify(payload) }
 });
-const fixture = records => ({
+
+const createLifecycleFixture = records => ({
   version: 2,
   sessions: [{ id: 'a' }, { id: 'b' }],
   metadata: fixtureMetadata(),
   records: records.map((record, index) => ({ ...record, sequence: index + 1 }))
 });
-const harness = async (replay, sessionId) => {
-  const result = { received: [], closed: [] };
+
+const installReplaySessionDouble = async (replay, sessionId) => {
+  const session = { received: [], closed: [] };
   await replay.install(
     {
       route: async (_pattern, handler) => {
-        result.rest = handler;
+        session.rest = handler;
       },
       routeWebSocket: async (_pattern, handler) => {
-        result.connect = () => {
+        session.connect = () => {
           const socket = {
-            send: payload => result.received.push(JSON.parse(payload)),
-            close: options => result.closed.push(options),
+            send: payload => session.received.push(JSON.parse(payload)),
+            close: options => session.closed.push(options),
             onMessage: callback => {
-              result.send = callback;
+              session.send = callback;
             }
           };
           handler(socket);
@@ -59,23 +67,33 @@ const harness = async (replay, sessionId) => {
     },
     sessionId
   );
-  return result;
+  return session;
 };
 
 test('v2 rejects stale schemas, sequence gaps, session drift and frames after close', () => {
-  const valid = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]);
+  const valid = createLifecycleFixture([
+    createConnectionRecord('a', 'a1'),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
+  ]);
   assert.deepEqual(validateLifecycleFixture(valid), []);
   assert.match(validateLifecycleFixture({ ...valid, version: 1 }).join(), /Unsupported/);
+
   const missing = JSON.parse(JSON.stringify(valid));
   missing.records[1].sequence = 3;
   assert.match(validateLifecycleFixture(missing).join(), /ordering or records lost/);
   assert.match(
-    validateLifecycleFixture(fixture([open('a', 'a1'), frame('b', 'a1', 'receive', {})])).join(),
+    validateLifecycleFixture(
+      createLifecycleFixture([createConnectionRecord('a', 'a1'), createWebSocketRecord('b', 'a1', 'receive', {})])
+    ).join(),
     /inactive/
   );
   assert.match(
     validateLifecycleFixture(
-      fixture([open('a', 'a1'), { ...open('a', 'a1'), event: 'close' }, frame('a', 'a1', 'receive', {})])
+      createLifecycleFixture([
+        createConnectionRecord('a', 'a1'),
+        createConnectionRecord('a', 'a1', 'close'),
+        createWebSocketRecord('a', 'a1', 'receive', {})
+      ])
     ).join(),
     /inactive/
   );
@@ -83,28 +101,35 @@ test('v2 rejects stale schemas, sequence gaps, session drift and frames after cl
 
 test('lifecycle validation rejects missing or invalid operations before replay', () => {
   for (const op of [undefined, null, '', 42, {}]) {
-    const capture = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op, data: { note: { id: 'n' } } })]);
+    const capture = createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op, data: { note: { id: 'n' } } })
+    ]);
     assert.match(validateLifecycleFixture(capture).join('\n'), /envelope op must be a non-empty string/);
     assert.throws(() => createLifecycleReplay(capture), /envelope op must be a non-empty string/);
   }
 
-  const futureOperation = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'FUTURE_OPERATION' })]);
+  const futureOperation = createLifecycleFixture([
+    createConnectionRecord('a', 'a1'),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'FUTURE_OPERATION' })
+  ]);
   assert.deepEqual(validateLifecycleFixture(futureOperation), []);
 });
 
 test('identical captured msgIds retain equality across independent viewers', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      frame('a', 'a1', 'send', { op: 'INSERT_PARAGRAPH', msgId: '<msgId:1>' }),
-      open('b', 'b1'),
-      frame('b', 'b1', 'send', { op: 'INSERT_PARAGRAPH', msgId: '<msgId:1>' }),
-      frame('b', 'b1', 'receive', { op: 'PARAGRAPH_ADDED', msgId: '<msgId:1>' }),
-      frame('a', 'a1', 'receive', { op: 'PARAGRAPH_ADDED', msgId: '<msgId:1>' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'INSERT_PARAGRAPH', msgId: '<msgId:1>' }),
+      createConnectionRecord('b', 'b1'),
+      createWebSocketRecord('b', 'b1', 'send', { op: 'INSERT_PARAGRAPH', msgId: '<msgId:1>' }),
+      createWebSocketRecord('b', 'b1', 'receive', { op: 'PARAGRAPH_ADDED', msgId: '<msgId:1>' }),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'PARAGRAPH_ADDED', msgId: '<msgId:1>' })
     ])
   );
-  const a = await harness(replay, 'a');
-  const b = await harness(replay, 'b');
+  const a = await installReplaySessionDouble(replay, 'a');
+  const b = await installReplaySessionDouble(replay, 'b');
+
   a.connect();
   a.send(JSON.stringify({ op: 'INSERT_PARAGRAPH', msgId: 'live-a' }));
   b.connect();
@@ -115,13 +140,16 @@ test('identical captured msgIds retain equality across independent viewers', asy
 });
 
 test('validation rejects missing metadata, erased correlation and lost REST request bodies', () => {
-  const source = fixture([open('a', 'a1')]);
+  const source = createLifecycleFixture([createConnectionRecord('a', 'a1')]);
   delete source.metadata;
   assert.match(validateLifecycleFixture(source).join(), /metadata/);
 
   assert.match(
     validateLifecycleFixture(
-      fixture([open('a', 'a1'), frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: '<msgId>' })])
+      createLifecycleFixture([
+        createConnectionRecord('a', 'a1'),
+        createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE', msgId: '<msgId>' })
+      ])
     ).join(),
     /msgId/
   );
@@ -129,7 +157,7 @@ test('validation rejects missing metadata, erased correlation and lost REST requ
   const shape = { method: 'POST', url: '/api/notebook/n/paragraph', headers: {} };
   assert.match(
     validateLifecycleFixture(
-      fixture([
+      createLifecycleFixture([
         { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
         {
           kind: 'rest',
@@ -146,8 +174,8 @@ test('validation rejects missing metadata, erased correlation and lost REST requ
 test('REST requests cannot arrive before a recorded socket or context barrier', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
       { kind: 'context', sessionId: 'a', context: { state: 'active', noteId: 'n', revisionId: null } },
       { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
       {
@@ -158,9 +186,9 @@ test('REST requests cannot arrive before a recorded socket or context barrier', 
       }
     ])
   );
-  const viewer = await harness(replay, 'a');
-  viewer.connect();
+  const viewer = await installReplaySessionDouble(replay, 'a');
 
+  viewer.connect();
   await assert.rejects(
     viewer.rest({ fulfill: async () => {} }, request('GET', 'http://fixture.test/api/notebook/n', '', {})),
     /Unexpected lifecycle REST/
@@ -171,8 +199,8 @@ test('REST requests cannot arrive before a recorded socket or context barrier', 
 test('a browser can send its next frame while REST fulfillment is still in flight', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
       { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
       {
         kind: 'rest',
@@ -180,10 +208,10 @@ test('a browser can send its next frame while REST fulfillment is still in fligh
         requestId: 'r',
         rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyRaw: '' }
       },
-      frame('a', 'a1', 'send', { op: 'GET_NOTE' })
+      createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE' })
     ])
   );
-  const viewer = await harness(replay, 'a');
+  const viewer = await installReplaySessionDouble(replay, 'a');
   viewer.connect();
 
   await viewer.rest(
@@ -203,22 +231,30 @@ test('a browser can send its next frame while REST fulfillment is still in fligh
 test('reconnect keeps raw requests and requires the recorded route context', async () => {
   const context = { state: 'active', noteId: 'note-a', revisionId: 'rev-a' };
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
       { kind: 'context', sessionId: 'a', context },
-      frame('a', 'a1', 'send', { op: 'NOTE_REVISION', data: { noteId: 'note-a', revisionId: 'rev-a' } }),
-      { ...open('a', 'a1'), event: 'close' },
-      open('a', 'a2'),
-      frame('a', 'a2', 'send', { op: 'NOTE_REVISION', data: { noteId: 'note-a', revisionId: 'rev-a' } }),
-      frame('a', 'a2', 'receive', { op: 'NOTE_REVISION', data: { note: { id: 'note-a' } } })
+      createWebSocketRecord('a', 'a1', 'send', {
+        op: 'NOTE_REVISION',
+        data: { noteId: 'note-a', revisionId: 'rev-a' }
+      }),
+      createConnectionRecord('a', 'a1', 'close'),
+      createConnectionRecord('a', 'a2'),
+      createWebSocketRecord('a', 'a2', 'send', {
+        op: 'NOTE_REVISION',
+        data: { noteId: 'note-a', revisionId: 'rev-a' }
+      }),
+      createWebSocketRecord('a', 'a2', 'receive', { op: 'NOTE_REVISION', data: { note: { id: 'note-a' } } })
     ])
   );
-  const a = await harness(replay, 'a');
+  const a = await installReplaySessionDouble(replay, 'a');
+
   a.connect();
   assert.throws(() => replay.assertComplete(), /unconsumed/);
   replay.context('a', context);
   a.send(JSON.stringify({ op: 'NOTE_REVISION', data: { noteId: 'note-a', revisionId: 'rev-a' } }));
   assert.equal(a.closed[0].code, 1012);
+
   a.connect();
   a.send(JSON.stringify({ op: 'NOTE_REVISION', data: { noteId: 'note-a', revisionId: 'rev-a' } }));
   assert.deepEqual(a.received[0].data, { note: { id: 'note-a' } });
@@ -226,18 +262,19 @@ test('reconnect keeps raw requests and requires the recorded route context', asy
 });
 
 test('fault plan drops, duplicates and reorders receive frames without rewriting the capture', async () => {
-  const source = fixture([
-    open('a', 'a1'),
-    frame('a', 'a1', 'receive', { op: 'PATCH_PARAGRAPH' }),
-    frame('a', 'a1', 'receive', { op: 'NOTE_UPDATED' }),
-    frame('a', 'a1', 'receive', { op: 'NOTE' })
+  const source = createLifecycleFixture([
+    createConnectionRecord('a', 'a1'),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'PATCH_PARAGRAPH' }),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE_UPDATED' }),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
   ]);
   const original = JSON.parse(JSON.stringify(source));
   const replay = createLifecycleReplay(source, [
     { sequence: 2, copies: 2, afterSequence: 4 },
     { sequence: 3, copies: 0 }
   ]);
-  const a = await harness(replay, 'a');
+  const a = await installReplaySessionDouble(replay, 'a');
+
   a.connect();
   assert.deepEqual(
     a.received.map(value => value.op),
@@ -249,10 +286,14 @@ test('fault plan drops, duplicates and reorders receive frames without rewriting
 });
 
 test('delayed deliveries cannot pass completion until they settle', async () => {
-  const replay = createLifecycleReplay(fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]), [
-    { sequence: 2, delayMs: 10 }
-  ]);
-  const a = await harness(replay, 'a');
+  const replay = createLifecycleReplay(
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
+    ]),
+    [{ sequence: 2, delayMs: 10 }]
+  );
+  const a = await installReplaySessionDouble(replay, 'a');
   a.connect();
   assert.throws(() => replay.assertComplete(), /pending deliveries/);
   await new Promise(resolve => setTimeout(resolve, 25));
@@ -264,7 +305,7 @@ test('delayed deliveries cannot pass completion until they settle', async () => 
 test('REST requests belong to a session and retain their observed response order', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
   const replay = createLifecycleReplay(
-    fixture([
+    createLifecycleFixture([
       { kind: 'rest', sessionId: 'a', requestId: 'a-r', rest: { direction: 'request', request: shape } },
       { kind: 'rest', sessionId: 'b', requestId: 'b-r', rest: { direction: 'request', request: shape } },
       {
@@ -281,8 +322,9 @@ test('REST requests belong to a session and retain their observed response order
       }
     ])
   );
-  const a = await harness(replay, 'a');
-  const b = await harness(replay, 'b');
+  const a = await installReplaySessionDouble(replay, 'a');
+  const b = await installReplaySessionDouble(replay, 'b');
+
   const order = [];
   const rb = b.rest(
     { fulfill: async () => order.push('b') },
@@ -293,6 +335,7 @@ test('REST requests belong to a session and retain their observed response order
     request('GET', 'http://fixture.test/api/notebook/n', '', {})
   );
   await Promise.all([ra, rb]);
+
   assert.deepEqual(order, ['b', 'a']);
   replay.assertComplete();
 });
@@ -300,16 +343,21 @@ test('REST requests belong to a session and retain their observed response order
 test('capture preserves reconnect generations and redacts identities without inventing noteId', async () => {
   const page = new EventEmitter();
   const recorder = createLifecycleRecorder(fixtureMetadata());
+
   recorder.install(page, 'viewer-a');
   const socket = () => Object.assign(new EventEmitter(), { url: () => 'ws://fixture.test/ws' });
   const first = socket();
+
   page.emit('websocket', first);
   recorder.context('viewer-a', { state: 'active', noteId: 'n', revisionId: null });
+
   first.emit('framereceived', { payload: '{"op":"NOTE_UPDATED","principal":"private-user","data":{"name":"n"}}' });
   first.emit('close');
   page.emit('websocket', socket());
+
   await recorder.stop();
   const captured = recorder.snapshot();
+
   assert.deepEqual(validateLifecycleFixture(captured), []);
   assert.deepEqual(
     captured.records.filter(value => value.kind === 'connection').map(value => value.connectionId),
@@ -340,12 +388,14 @@ test('committed lifecycle inventory validates every capture and its Apache maste
 
   for (const entry of manifest.fixtures) {
     assert.equal(entry.status, 'supported', `${entry.file}: ${entry.reason ?? 'capture must pass before committing'}`);
+
     const capture = readCapture(entry.file);
     assert.deepEqual(validateLifecycleFixture(capture), [], entry.file);
     assert.equal(capture.metadata.source.repository, 'apache/zeppelin');
     assert.match(capture.metadata.source.commit, /^[a-f0-9]{40}$/);
     assert.match(capture.metadata.source.serverCommit, /^[a-f0-9]{7,40}$/);
     assert.ok(capture.metadata.source.commit.startsWith(capture.metadata.source.serverCommit));
+
     const environment = capture.metadata.environment;
     assert.equal(environment.authentication, entry.file === 'collaboration-auth.json' ? 'auth' : 'anonymous');
     assert.match(environment.paragraphStatusProgress, /^(true|false)$/);
@@ -354,8 +404,10 @@ test('committed lifecycle inventory validates every capture and its Apache maste
     assert.ok(new URL(environment.origin).port);
     assert.ok(Number.isInteger(environment.serverPort));
     assert.equal(environment.interpreterExecution, 'none');
-    for (const directory of ['notebook', 'search', 'recovery', 'logs', 'pid'])
+
+    for (const directory of ['notebook', 'search', 'recovery', 'logs', 'pid']) {
       assert.ok(environment.directories[directory]);
+    }
     assert.ok(environment.serverPidFile);
   }
 });
@@ -363,6 +415,7 @@ test('committed lifecycle inventory validates every capture and its Apache maste
 test('structural captures keep REST full-note authority separate from granular WebSocket authority', () => {
   const capture = readCapture('structural.json');
   assert.deepEqual(capture.metadata.authoritativeInputs[0].frames, ['NOTE']);
+
   const operations = new Set(
     capture.records
       .filter(record => record.kind === 'websocket')
@@ -460,13 +513,13 @@ test('a dropped client command is recorded as an observation rather than a serve
 
 test('runtime request IDs cannot alias another viewer operation received on the same session', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'local-id' }),
-      frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'remote-id' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'local-id' }),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'remote-id' })
     ])
   );
-  const viewer = await harness(replay, 'a');
+  const viewer = await installReplaySessionDouble(replay, 'a');
   viewer.connect();
 
   assert.throws(() => viewer.send('{"op":"GET_NOTE","msgId":"remote-id"}'), /correlation mismatch/);
@@ -476,17 +529,17 @@ test('runtime request IDs cannot alias another viewer operation received on the 
 
 test('deferred frames cannot be delivered into the replacement socket generation', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      frame('a', 'a1', 'receive', { op: 'NOTE' }),
-      { ...open('a', 'a1'), event: 'close' },
-      open('a', 'a2'),
-      frame('a', 'a2', 'send', { op: 'GET_NOTE' }),
-      frame('a', 'a2', 'receive', { op: 'NOTE' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' }),
+      createConnectionRecord('a', 'a1', 'close'),
+      createConnectionRecord('a', 'a2'),
+      createWebSocketRecord('a', 'a2', 'send', { op: 'GET_NOTE' }),
+      createWebSocketRecord('a', 'a2', 'receive', { op: 'NOTE' })
     ]),
     [{ sequence: 2, afterSequence: 6 }]
   );
-  const viewer = await harness(replay, 'a');
+  const viewer = await installReplaySessionDouble(replay, 'a');
   viewer.connect();
   viewer.connect();
   viewer.send('{"op":"GET_NOTE"}');
@@ -498,18 +551,19 @@ test('deferred frames cannot be delivered into the replacement socket generation
 
 test('sender correlation is preserved across broadcast recipients and unrelated local sends', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      open('b', 'b1'),
-      frame('b', 'b1', 'send', { op: 'GET_NOTE', msgId: 'b-local' }),
-      frame('b', 'b1', 'receive', { op: 'NOTE', msgId: 'b-local' }),
-      frame('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'a-commit' }),
-      frame('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' }),
-      frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createConnectionRecord('b', 'b1'),
+      createWebSocketRecord('b', 'b1', 'send', { op: 'GET_NOTE', msgId: 'b-local' }),
+      createWebSocketRecord('b', 'b1', 'receive', { op: 'NOTE', msgId: 'b-local' }),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'a-commit' }),
+      createWebSocketRecord('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' }),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'a-commit' })
     ])
   );
-  const a = await harness(replay, 'a');
-  const b = await harness(replay, 'b');
+  const a = await installReplaySessionDouble(replay, 'a');
+  const b = await installReplaySessionDouble(replay, 'b');
+
   a.connect();
   b.connect();
   await new Promise(resolve => setImmediate(resolve));
@@ -517,6 +571,7 @@ test('sender correlation is preserved across broadcast recipients and unrelated 
   await new Promise(resolve => setImmediate(resolve));
   a.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'live-a-commit' }));
   await new Promise(resolve => setImmediate(resolve));
+
   assert.equal(a.received[0].msgId, 'live-a-commit');
   assert.deepEqual(
     b.received.map(envelope => envelope.msgId),
@@ -530,15 +585,20 @@ test('client delivery records actual reordered receive occurrences and rejects m
   const page = new EventEmitter();
   const recorder = createLifecycleRecorder(fixtureMetadata());
   recorder.install(page, 'a');
+
   const socket = Object.assign(new EventEmitter(), { url: () => 'ws://fixture.test/ws' });
   page.emit('websocket', socket);
+
   const envelopes = [
     { op: 'NOTE', data: { note: { id: 'n' } } },
     { op: 'NOTE_UPDATED', data: {} },
     { op: 'NOTE_UPDATED', data: {} }
   ];
-  for (const envelope of envelopes) socket.emit('framereceived', { payload: JSON.stringify(envelope) });
+  for (const envelope of envelopes) {
+    socket.emit('framereceived', { payload: JSON.stringify(envelope) });
+  }
   await recorder.stop();
+
   assert.deepEqual(recorder.clientDelivery('a', [envelopes[1], envelopes[2], envelopes[0]]), [3, 4, 2]);
   assert.throws(() => recorder.clientDelivery('a', envelopes.slice(1)), /lost upstream/);
   assert.throws(() => recorder.clientDelivery('a', [...envelopes, envelopes[0]]), /no matching/);
@@ -547,9 +607,9 @@ test('client delivery records actual reordered receive occurrences and rejects m
 test('timer delivery failure rejects a parked REST request with the original cause', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      frame('a', 'a1', 'receive', { op: 'NOTE' }),
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' }),
       { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
       { kind: 'context', sessionId: 'a', context: { state: 'active', noteId: 'n', revisionId: null } },
       {
@@ -580,9 +640,11 @@ test('timer delivery failure rejects a parked REST request with the original cau
     },
     'a'
   );
+
   connect();
   await new Promise(resolve => setImmediate(resolve));
   const pending = route({ fulfill: async () => {} }, request('GET', 'http://fixture.test/api/notebook/n', '', {}));
+
   await assert.rejects(pending, /route is closed/);
   assert.throws(() => replay.assertComplete(), /route is closed/);
   replay.dispose();
@@ -591,12 +653,15 @@ test('timer delivery failure rejects a parked REST request with the original cau
 test('route delivery validation rejects missing occurrences, invalid release boundaries and undeclared reorders', () => {
   const captured = readCapture('association.json');
   assert.deepEqual(validateLifecycleFixture(captured), []);
+
   const missing = globalThis.structuredClone(captured);
   missing.metadata.routeTransition.deliveredSequences.pop();
   assert.match(validateLifecycleFixture(missing).join(), /every upstream receive/);
+
   const wrongBoundary = globalThis.structuredClone(captured);
   wrongBoundary.metadata.routeTransition.releaseAfterSequence = wrongBoundary.metadata.routeTransition.heldNoteSequence;
   assert.match(validateLifecycleFixture(wrongBoundary).join(), /release boundary/);
+
   const reordered = globalThis.structuredClone(captured);
   const sequences = reordered.metadata.routeTransition.deliveredSequences;
   [sequences[0], sequences[1]] = [sequences[1], sequences[0]];
@@ -605,21 +670,24 @@ test('route delivery validation rejects missing occurrences, invalid release bou
 
 test('a shared recorded msgId cannot be rebound to a different runtime ID by a later sender', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      open('b', 'b1'),
-      frame('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' }),
-      frame('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'shared-id' }),
-      frame('b', 'b1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createConnectionRecord('b', 'b1'),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' }),
+      createWebSocketRecord('b', 'b1', 'receive', { op: 'PARAGRAPH', msgId: 'shared-id' }),
+      createWebSocketRecord('b', 'b1', 'send', { op: 'COMMIT_PARAGRAPH', msgId: 'shared-id' })
     ])
   );
-  const a = await harness(replay, 'a'),
-    b = await harness(replay, 'b');
+  const a = await installReplaySessionDouble(replay, 'a');
+  const b = await installReplaySessionDouble(replay, 'b');
+
   a.connect();
   b.connect();
   await new Promise(resolve => setImmediate(resolve));
+
   a.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'runtime-a' }));
   await new Promise(resolve => setImmediate(resolve));
+
   assert.equal(b.received[0].msgId, 'runtime-a');
   assert.throws(() => b.send(JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId: 'runtime-b' })), /correlation mismatch/);
   replay.dispose();
@@ -627,13 +695,14 @@ test('a shared recorded msgId cannot be rebound to a different runtime ID by a l
 
 test('an ID delivered before its first send cannot subsequently be rewritten', async () => {
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
-      frame('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'early-id' }),
-      frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'early-id' })
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'PARAGRAPH', msgId: 'early-id' }),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE', msgId: 'early-id' })
     ])
   );
-  const a = await harness(replay, 'a');
+  const a = await installReplaySessionDouble(replay, 'a');
+
   a.connect();
   assert.equal(a.received[0].msgId, 'early-id');
   assert.throws(() => a.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'changed-id' })), /correlation mismatch/);
@@ -642,9 +711,13 @@ test('an ID delivered before its first send cannot subsequently be rewritten', a
 
 test('a captured null msgId cannot be converted into a correlated request', async () => {
   const replay = createLifecycleReplay(
-    fixture([open('a', 'a1'), frame('a', 'a1', 'send', { op: 'GET_NOTE', msgId: null })])
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE', msgId: null })
+    ])
   );
-  const a = await harness(replay, 'a');
+  const a = await installReplaySessionDouble(replay, 'a');
+
   a.connect();
   assert.throws(() => a.send(JSON.stringify({ op: 'GET_NOTE', msgId: 'invented-id' })), /correlation mismatch/);
   replay.dispose();
@@ -653,8 +726,8 @@ test('a captured null msgId cannot be converted into a correlated request', asyn
 test('fatal send during REST fulfillment terminates delivery and preserves the failure cause', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
   const replay = createLifecycleReplay(
-    fixture([
-      open('a', 'a1'),
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
       { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
       {
         kind: 'rest',
@@ -662,11 +735,12 @@ test('fatal send during REST fulfillment terminates delivery and preserves the f
         requestId: 'r',
         rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyRaw: '' }
       },
-      frame('a', 'a1', 'receive', { op: 'NOTE' })
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
     ])
   );
-  const viewer = await harness(replay, 'a');
+  const viewer = await installReplaySessionDouble(replay, 'a');
   viewer.connect();
+
   const failedResponse = viewer.rest(
     {
       fulfill: async () => {
@@ -675,6 +749,7 @@ test('fatal send during REST fulfillment terminates delivery and preserves the f
     },
     request('GET', 'http://fixture.test/api/notebook/n', '', {})
   );
+
   await assert.rejects(failedResponse, /send out of order/);
   assert.deepEqual(viewer.received, []);
   assert.throws(() => replay.position(), /send out of order/);
@@ -687,6 +762,7 @@ for (const succeeds of [true, false]) {
     const page = new EventEmitter();
     const recorder = createLifecycleRecorder(fixtureMetadata());
     recorder.install(page, 'a');
+
     let finishBody;
     const body = new Promise((resolve, reject) => {
       finishBody = succeeds ? resolve : reject;
@@ -697,14 +773,18 @@ for (const succeeds of [true, false]) {
       status: () => 200,
       text: () => body
     });
+
     page.emit('request', source);
     page.emit('requestfinished', source);
+
     const first = recorder.stop();
     const second = recorder.stop();
     assert.equal(first, second);
     assert.throws(() => recorder.clientDelivery('a', []), /stopped recorder/);
+
     const error = new Error('body read failed');
     finishBody(succeeds ? '{}' : error);
+
     if (succeeds) {
       await first;
       assert.deepEqual(recorder.clientDelivery('a', []), []);
@@ -713,18 +793,24 @@ for (const succeeds of [true, false]) {
       await assert.rejects(second, candidate => candidate === error);
       assert.throws(() => recorder.clientDelivery('a', []), /stopped recorder/);
     }
+
     assert.equal(page.listenerCount('requestfinished'), 0);
     assert.equal(page.listenerCount('request'), 0);
   });
 }
 
 test('fault selection rejects coercible sequence IDs and diagnoses invalid schedule fields', () => {
-  const source = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]);
+  const source = createLifecycleFixture([
+    createConnectionRecord('a', 'a1'),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
+  ]);
+
   assert.throws(() => createLifecycleReplay(source, [{ sequence: '2', copies: 0 }]), /Fault sequence/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, copies: 1.5 }]), /Fault copies/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, afterSequence: 1 }]), /Fault afterSequence/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: Infinity }]), /Fault delayMs/);
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_648 }]), /Fault delayMs/);
+
   createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_647 }]).dispose();
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2 }, { sequence: 2 }]), /must be unique/);
 });
@@ -754,10 +840,12 @@ test('stop waits for every observed body read after one fails and detaches event
     .then(() => {
       settled = true;
     });
+
   assert.equal(page.listenerCount('requestfinished'), 0);
   assert.equal(page.listenerCount('request'), 0);
   finishes[0].reject(cause);
   await new Promise(resolve => setImmediate(resolve));
+
   assert.equal(settled, false);
   finishes[1].resolve('{}');
   await rejection;
@@ -767,6 +855,7 @@ test('capture normalization errors reject stop with their original cause', async
   const page = new EventEmitter();
   const recorder = createLifecycleRecorder(fixtureMetadata());
   recorder.install(page, 'a');
+
   const cause = new Error('request URL unavailable');
   page.emit('request', {
     url: () => {
@@ -779,8 +868,8 @@ test('capture normalization errors reject stop with their original cause', async
 
 test('all consecutive inputs remain admissible while a REST response is being fulfilled', async () => {
   const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
-  const source = fixture([
-    open('a', 'a1'),
+  const source = createLifecycleFixture([
+    createConnectionRecord('a', 'a1'),
     { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
     {
       kind: 'rest',
@@ -789,12 +878,13 @@ test('all consecutive inputs remain admissible while a REST response is being fu
       rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyRaw: '' }
     },
     { kind: 'context', sessionId: 'a', context: { state: 'active', noteId: 'n', revisionId: null } },
-    frame('a', 'a1', 'send', { op: 'GET_NOTE' }),
-    frame('a', 'a1', 'send', { op: 'LIST_REVISION_HISTORY' }),
-    frame('a', 'a1', 'receive', { op: 'NOTE' })
+    createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE' }),
+    createWebSocketRecord('a', 'a1', 'send', { op: 'LIST_REVISION_HISTORY' }),
+    createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
   ]);
   const replay = createLifecycleReplay(source);
-  const viewer = await harness(replay, 'a');
+  const viewer = await installReplaySessionDouble(replay, 'a');
+
   viewer.connect();
   await viewer.rest(
     {
@@ -809,16 +899,21 @@ test('all consecutive inputs remain admissible while a REST response is being fu
     request('GET', 'http://fixture.test/api/notebook/n', '', {})
   );
   await replay.waitForComplete();
+
   assert.deepEqual(viewer.received, [{ op: 'NOTE' }]);
   replay.dispose();
 });
 
 test('dispose closes an accepted socket waiting behind an earlier connection input', async () => {
-  const replay = createLifecycleReplay(fixture([open('a', 'a1'), open('b', 'b1')]));
-  const viewer = await harness(replay, 'b');
+  const replay = createLifecycleReplay(
+    createLifecycleFixture([createConnectionRecord('a', 'a1'), createConnectionRecord('b', 'b1')])
+  );
+  const viewer = await installReplaySessionDouble(replay, 'b');
   viewer.connect();
+
   const waiting = replay.waitForPosition(2);
   replay.dispose();
+
   await assert.rejects(waiting, /disposed/);
   assert.equal(viewer.closed.length, 1);
 });
@@ -829,7 +924,9 @@ test('native delivery matching uses raw identity and closing a socket releases i
   socket.url = () => 'ws://fixture.test/ws';
   const recorder = createLifecycleRecorder(fixtureMetadata());
   recorder.install(page, 'a');
+
   const envelope = { op: 'NOTE', msgId: 'capture:1', principal: 'private-user', data: { timestamp: 1740000000000 } };
+
   page.emit('websocket', socket);
   socket.emit('framereceived', { payload: JSON.stringify(envelope) });
   socket.emit('close');
@@ -837,12 +934,18 @@ test('native delivery matching uses raw identity and closing a socket releases i
   assert.equal(socket.listenerCount('close'), 0);
   assert.equal(socket.listenerCount('socketerror'), 0);
   await recorder.stop();
+
   assert.deepEqual(recorder.clientDelivery('a', [envelope]), [2]);
   assert.doesNotMatch(JSON.stringify(recorder.snapshot()), /private-user|capture:1/);
 });
 
 test('automatic delivery failure rejects completion with the original cause', async () => {
-  const replay = createLifecycleReplay(fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]));
+  const replay = createLifecycleReplay(
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'receive', { op: 'NOTE' })
+    ])
+  );
   let connect;
   await replay.install(
     {
@@ -855,6 +958,7 @@ test('automatic delivery failure rejects completion with the original cause', as
   );
   const cause = new Error('socket send failure');
   const completion = replay.waitForComplete();
+
   connect({
     onMessage: () => {},
     close: () => {},
@@ -862,6 +966,7 @@ test('automatic delivery failure rejects completion with the original cause', as
       throw cause;
     }
   });
+
   await assert.rejects(completion, error => error === cause);
   assert.throws(
     () => replay.position(),
@@ -878,6 +983,7 @@ test('a large delivery plan observes only the next release boundary', () => {
     websocket: { direction: 'receive' }
   }));
   const positions = new BehaviorSubject(0);
+
   let active = 0;
   let maximum = 0;
   const consumed$ = new Observable(subscriber => {
@@ -900,7 +1006,11 @@ test('a large delivery plan observes only the next release boundary', () => {
       throw error;
     }
   );
-  for (let sequence = 1; sequence <= count; sequence++) positions.next(sequence);
+
+  for (let sequence = 1; sequence <= count; sequence++) {
+    positions.next(sequence);
+  }
+
   assert.equal(maximum, 1);
   assert.equal(active, 0);
   assert.equal(delivered, count);
@@ -912,6 +1022,7 @@ test('recorder settles independent sessions while preserving their shared observ
   const recorder = createLifecycleRecorder(fixtureMetadata());
   const finishes = [];
   const pages = [];
+
   for (const sessionId of ['a', 'b']) {
     const page = new EventEmitter();
     pages.push(page);
@@ -957,7 +1068,9 @@ test('recorder settles independent sessions while preserving their shared observ
 });
 
 test('dispose attempts every owned socket and releases ownership when close fails', async () => {
-  const replay = createLifecycleReplay(fixture([open('a', 'a1'), open('b', 'b1')]));
+  const replay = createLifecycleReplay(
+    createLifecycleFixture([createConnectionRecord('a', 'a1'), createConnectionRecord('b', 'b1')])
+  );
   const cause = new Error('first socket close failed');
   const closed = [];
   for (const sessionId of ['a', 'b']) {

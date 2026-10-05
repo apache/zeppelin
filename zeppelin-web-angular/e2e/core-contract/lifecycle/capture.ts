@@ -19,8 +19,10 @@ import path from 'node:path';
 import { expect, type Page, type BrowserContext, type TestInfo } from '@playwright/test';
 import { LoginTestUtil } from '../../models/login-page.util';
 import type { LifecycleRecorder } from './fixture.mjs';
+
 export const lifecycleFixtureDirectory = () =>
   process.env.ZEPPELIN_LIFECYCLE_FIXTURE_DIR ?? path.resolve('e2e/fixtures/notebook-lifecycle');
+
 const metadata = (scenario: string, operations: string[]) => ({
   owner: 'zeppelin-web-angular',
   scenario,
@@ -37,8 +39,10 @@ export const captureMetadata = async (page: Page, scenario: string, operations: 
   if (!expected || !/^[a-f0-9]{40}$/.test(expected)) {
     throw new Error('Live baseline requires ZEPPELIN_CAPTURE_MASTER_COMMIT from the verified Apache master ref');
   }
+
   const environmentFile = process.env.ZEPPELIN_CAPTURE_ENVIRONMENT;
   if (!environmentFile) throw new Error('Live capture requires capture/server.sh capture-environment.json');
+
   const launch = JSON.parse(readFileSync(environmentFile, 'utf8')) as {
     root: string;
     authentication: 'anonymous' | 'auth';
@@ -46,11 +50,13 @@ export const captureMetadata = async (page: Page, scenario: string, operations: 
     port: number;
     paragraphStatusProgress: boolean;
   };
+
   expect(typeof launch.root).toBe('string');
   expect(launch.root.startsWith('/')).toBe(true);
   expect(launch.authentication).toBe((await LoginTestUtil.isShiroEnabled()) ? 'auth' : 'anonymous');
   expect(launch.storage).toMatch(/^(vfs|git)$/);
   expect(launch.paragraphStatusProgress).toBe(true);
+
   let configuration: Record<string, string> = {
     'zeppelin.notebook.dir': `${launch.root}/notebook`,
     'zeppelin.search.index.path': `${launch.root}/index`,
@@ -59,23 +65,29 @@ export const captureMetadata = async (page: Page, scenario: string, operations: 
     'zeppelin.websocket.paragraph_status_progress.enable': String(launch.paragraphStatusProgress)
   };
   let configuredInterpreterGroups: string[] | undefined;
+
   if (launch.authentication === 'anonymous') {
     const configurationResponse = await page.request.get('/api/configurations/prefix/zeppelin.');
     expect(configurationResponse.ok()).toBe(true);
+
     const resolved = (await configurationResponse.json()).body as Record<string, string>;
     for (const [key, value] of Object.entries(configuration)) expect(resolved[key]).toBe(value);
     expect(Number(resolved['zeppelin.server.port'])).toBe(launch.port);
+
     configuration = resolved;
     const settingsResponse = await page.request.get('/api/interpreter/setting');
     expect(settingsResponse.ok()).toBe(true);
+
     configuredInterpreterGroups = ((await settingsResponse.json()).body as { name: string }[]).map(
       setting => setting.name
     );
   }
+
   const response = await page.request.get('/api/version');
   const version = (await response.json()).body as { 'git-commit-id': string; version: string };
   expect(version['git-commit-id']).toMatch(/^[a-f0-9]{7,40}$/);
   expect(expected.startsWith(version['git-commit-id'])).toBe(true);
+
   return {
     ...metadata(scenario, operations),
     environment: {

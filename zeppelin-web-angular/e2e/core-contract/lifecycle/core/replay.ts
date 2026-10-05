@@ -28,6 +28,7 @@ type ParagraphState = {
   results?: { type: string; data: string }[];
   resultConfigs?: unknown;
 };
+
 type CoreState = {
   noteId: string;
   revisionId: string | null;
@@ -42,11 +43,13 @@ type CoreState = {
   scheduler?: { cron?: string; releaseResource: boolean };
   collaborativeUsers?: string[];
 };
+
 type CoreObservation = {
   snapshot: CoreState;
   events: { op: string; snapshot: CoreState }[];
   recoveryRequested: boolean;
 };
+
 type CanonicalNote = {
   id: string;
   name: string;
@@ -80,11 +83,16 @@ declare global {
 }
 
 const observe = (page: Page) => page.evaluate(() => window.lifecycleCore.observe());
+
 const canonicalLanguage = (paragraph: CanonicalNote['paragraphs'][number]) => {
-  if (paragraph.config.editorSetting?.language) return paragraph.config.editorSetting.language;
+  if (paragraph.config.editorSetting?.language) {
+    return paragraph.config.editorSetting.language;
+  }
+
   const directive = paragraph.text.trimStart().match(/^%(\w+)/)?.[1];
   return directive === 'md' ? 'markdown' : directive;
 };
+
 const canonicalState = (note: CanonicalNote) => ({
   noteId: note.id,
   title: note.name,
@@ -106,6 +114,7 @@ const canonicalState = (note: CanonicalNote) => ({
     ? { cron: note.config.cron, releaseResource: Boolean(note.config.releaseresource) }
     : undefined
 });
+
 const projectedState = (snapshot: CoreState) => ({
   noteId: snapshot.noteId,
   title: snapshot.title,
@@ -132,12 +141,14 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
     return ['PATCH_PARAGRAPH', 'NOTE_UPDATED'].includes(JSON.parse(record.websocket.payloadText).op);
   });
   expect(selected).toHaveLength(3);
+
   const recovery = fixture.records.find(record => {
     if (record.sequence <= selected[selected.length - 1].sequence) return false;
     if (record.kind !== 'websocket' || record.websocket.direction !== 'send') return false;
     return JSON.parse(record.websocket.payloadText).op === 'GET_NOTE';
   })!;
   expect(recovery).toBeDefined();
+
   const faults: LifecycleFault[] = selected.map((record, index) => ({
     sequence: record.sequence,
     copies: index === 1 ? 0 : 2,
@@ -189,11 +200,13 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
   const frames = await replayLifecycleTrace(browser, fixture, faults, consumer);
   expect(browserErrors).toEqual([]);
   expect(beforeRecovery.size).toBe(2);
+
   const sender = beforeRecovery.get('viewer-a')!;
   const follower = beforeRecovery.get('viewer-b')!;
   expect(sender.snapshot.paragraphs[0].text).toBe('%md modified');
   expect(sender.snapshot.paragraphs[0].isDirty).toBe(true);
   expect(sender.snapshot.title).not.toBe(follower.snapshot.title);
+
   const changes = follower.events.filter(event => ['PATCH_PARAGRAPH', 'NOTE_UPDATED'].includes(event.op));
   expect(changes.map(event => event.op)).toEqual([
     'NOTE_UPDATED',
@@ -212,25 +225,31 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
         /^\/api\/notebook\/[^/]+$/.test(record.rest.request.url)
     );
     expect(canonical?.kind).toBe('rest');
-    if (canonical?.kind !== 'rest') throw new Error('A canonical server REST response is required');
+    if (canonical?.kind !== 'rest') {
+      throw new Error('A canonical server REST response is required');
+    }
     expect(canonical.rest.status).toBe(200);
     expect(canonical.sequence).toBeGreaterThan(recovery.sequence);
+
     const note = (canonical.rest.bodyJson as { status: string; body: CanonicalNote }).body;
     const result = afterRecovery.get(session.id)!;
     expect(result.recoveryRequested).toBe(false);
     expect(result.snapshot.phase).toBe('ready');
     expect(result.snapshot.revisionId).toBeNull();
     expect(result.snapshot.error).toBeNull();
+
     const mode = frames.get(session.id)!.findLast(envelope => envelope.op === 'COLLABORATIVE_MODE_STATUS')!;
     const modeData = mode.data as { status: boolean; users?: string[] };
     expect(result.snapshot.collaborativeUsers).toEqual(modeData.status ? modeData.users : undefined);
     expect(projectedState(result.snapshot)).toEqual(canonicalState(note));
   }
+
   const domainState = (snapshot: CoreState) =>
     Object.fromEntries(Object.entries(snapshot).filter(([key]) => key !== 'version'));
   expect(domainState(afterRecovery.get('viewer-a')!.snapshot)).toEqual(
     domainState(afterRecovery.get('viewer-b')!.snapshot)
   );
+
   return {
     faults,
     beforeRecovery: Object.fromEntries(beforeRecovery),
