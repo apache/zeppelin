@@ -335,3 +335,31 @@ describe('result type transitions', () => {
     }
   );
 });
+
+describe('NotebookParagraphResultComponent HTML highlighting', () => {
+  it('preserves HTML and highlights code with the patched highlight.js release', () => {
+    const sanitizer = { bypassSecurityTrustHtml: (html: string) => html } as unknown as DomSanitizer;
+    const component = new NotebookParagraphResultComponent(
+      {} as Injector,
+      {} as ViewContainerRef,
+      {} as ChangeDetectorRef,
+      {} as RuntimeCompilerService,
+      sanitizer,
+      {} as NgZService,
+      {} as HeliumService,
+      {} as ClassicVisualizationService
+    );
+    component.result = {
+      type: DatasetType.HTML,
+      data: '<p>Result</p><pre><code class="language-javascript">const value = 42;</code></pre>'
+    };
+
+    component.renderHTML();
+
+    const output = document.createElement('div');
+    output.innerHTML = component.innerHTML as string;
+    expect(output.querySelector('p')?.textContent).toBe('Result');
+    expect(output.querySelector('code')?.textContent).toBe('const value = 42;');
+    expect(output.querySelector('.hljs-keyword')?.textContent).toBe('const');
+  });
+});
