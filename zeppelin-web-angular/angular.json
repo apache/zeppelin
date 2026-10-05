@@ -157,8 +157,8 @@
       }
     },
     "notebook-core-port-proof": {
-      "root": "e2e/core-contract/angular-host",
-      "sourceRoot": "e2e/core-contract/angular-host",
+      "root": "e2e/core-contract/port-proof/angular-host",
+      "sourceRoot": "e2e/core-contract/port-proof/angular-host",
       "projectType": "application",
       "prefix": "zeppelin",
       "architect": {
@@ -166,14 +166,14 @@
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/notebook-core-port-proof",
-            "index": "e2e/core-contract/angular-host/index.html",
-            "main": "e2e/core-contract/angular-host/main.ts",
+            "index": "e2e/core-contract/port-proof/angular-host/index.html",
+            "main": "e2e/core-contract/port-proof/angular-host/main.ts",
             "polyfills": ["zone.js"],
-            "tsConfig": "e2e/core-contract/angular-host/tsconfig.json",
+            "tsConfig": "e2e/core-contract/port-proof/angular-host/tsconfig.json",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "./e2e/core-contract/react-remote/dist",
+                "input": "./e2e/core-contract/port-proof/react-remote/dist",
                 "output": "/assets/react/"
               }
             ],

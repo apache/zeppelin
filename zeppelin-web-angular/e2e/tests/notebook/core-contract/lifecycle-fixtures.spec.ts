@@ -23,14 +23,14 @@ import {
   lifecycleFixtureDirectory,
   recordCaptureResult,
   cleanUpLifecycleCapture
-} from '../../../core-contract/lifecycle-capture';
+} from '../../../core-contract/lifecycle/capture';
 import {
   createLifecycleRecorder,
   validateLifecycleFixture,
   type LifecycleFixture
-} from '../../../core-contract/notebook-lifecycle-fixture.mjs';
-import { replayLifecycleTrace } from '../../../core-contract/replay-lifecycle-trace';
-import { replayCollaborationCore } from '../../../core-contract/replay-lifecycle-core';
+} from '../../../core-contract/lifecycle/fixture.mjs';
+import { replayLifecycleTrace } from '../../../core-contract/lifecycle/replay-in-browser';
+import { replayCollaborationCore } from '../../../core-contract/lifecycle/core/replay';
 import { NotebookTransportPage } from '../../../models/notebook-transport-page';
 import {
   openTransportNote,
@@ -144,7 +144,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
       const bundle = JSON.parse(
         execFileSync(
           process.execPath,
-          [path.resolve('e2e/core-contract/build-lifecycle-core-reference.mjs'), path.resolve(reference!)],
+          [path.resolve('e2e/core-contract/lifecycle/core/build-reference.mjs'), path.resolve(reference!)],
           { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
         )
       ) as { script: string; provenance: unknown };
@@ -311,7 +311,7 @@ test.describe('Notebook lifecycle transport fixtures', () => {
     async ({ page, browser }) => {
       const capability = await page.request.get('/api/notebook/capabilities');
       const capabilities = (await capability.json()).body as { isRevisionSupported: boolean };
-      test.skip(!capabilities.isRevisionSupported, 'Revision capture requires capture-server.sh --storage git');
+      test.skip(!capabilities.isRevisionSupported, 'Revision capture requires capture/server.sh --storage git');
       await view.install();
       await page.goto('/#/');
       await waitForZeppelinReady(page);

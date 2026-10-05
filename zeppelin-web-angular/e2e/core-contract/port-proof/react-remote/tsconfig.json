@@ -1,7 +1,7 @@
 {
-  "extends": "../../../projects/zeppelin-react/tsconfig.json",
+  "extends": "../../../../projects/zeppelin-react/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "../../../",
+    "baseUrl": "../../../../",
     "noEmit": false,
     "paths": {
       "@zeppelin/notebook-core": ["projects/zeppelin-notebook-core/src/public-api.ts"],

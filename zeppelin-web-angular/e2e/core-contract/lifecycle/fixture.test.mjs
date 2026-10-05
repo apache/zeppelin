@@ -19,12 +19,8 @@ import { EventEmitter } from 'node:events';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import {
-  createLifecycleRecorder,
-  createLifecycleReplay,
-  validateLifecycleFixture
-} from './notebook-lifecycle-fixture.mjs';
-import { fixtureMetadata, request } from './fixture-doubles.mjs';
+import { createLifecycleRecorder, createLifecycleReplay, validateLifecycleFixture } from './fixture.mjs';
+import { fixtureMetadata, request } from '../transport/doubles.mjs';
 
 const open = (sessionId, connectionId) => ({ kind: 'connection', event: 'open', sessionId, connectionId });
 const frame = (sessionId, connectionId, direction, payload) => ({
@@ -81,6 +77,17 @@ test('v2 rejects stale schemas, sequence gaps, session drift and frames after cl
     ).join(),
     /inactive/
   );
+});
+
+test('lifecycle validation rejects missing or invalid operations before replay', () => {
+  for (const op of [undefined, null, '', 42, {}]) {
+    const capture = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op, data: { note: { id: 'n' } } })]);
+    assert.match(validateLifecycleFixture(capture).join('\n'), /envelope op must be a non-empty string/);
+    assert.throws(() => createLifecycleReplay(capture), /envelope op must be a non-empty string/);
+  }
+
+  const futureOperation = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'FUTURE_OPERATION' })]);
+  assert.deepEqual(validateLifecycleFixture(futureOperation), []);
 });
 
 test('identical captured msgIds retain equality across independent viewers', async () => {
@@ -718,4 +725,52 @@ test('fault selection rejects coercible sequence IDs and diagnoses invalid sched
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_648 }]), /Fault delayMs/);
   createLifecycleReplay(source, [{ sequence: 2, delayMs: 2_147_483_647 }]).dispose();
   assert.throws(() => createLifecycleReplay(source, [{ sequence: 2 }, { sequence: 2 }]), /must be unique/);
+});
+
+test('stop waits for every observed body read after one fails and detaches event sources immediately', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+  const finishes = [];
+  for (const id of ['first', 'second']) {
+    const body = new Promise((resolve, reject) => finishes.push({ resolve, reject }));
+    const source = request('GET', `http://fixture.test/api/notebook/${id}`, '', {});
+    source.response = async () => ({
+      headers: () => ({ 'content-type': 'application/json' }),
+      status: () => 200,
+      text: () => body
+    });
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+  }
+
+  let settled = false;
+  const stopping = recorder.stop();
+  const cause = new Error('first body failed');
+  const rejection = assert
+    .rejects(stopping, error => error === cause)
+    .then(() => {
+      settled = true;
+    });
+  assert.equal(page.listenerCount('requestfinished'), 0);
+  assert.equal(page.listenerCount('request'), 0);
+  finishes[0].reject(cause);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(settled, false);
+  finishes[1].resolve('{}');
+  await rejection;
+});
+
+test('capture normalization errors reject stop with their original cause', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+  const cause = new Error('request URL unavailable');
+  page.emit('request', {
+    url: () => {
+      throw cause;
+    }
+  });
+  await assert.rejects(recorder.stop(), error => error === cause);
+  assert.equal(page.listenerCount('request'), 0);
 });

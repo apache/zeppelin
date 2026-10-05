@@ -32,8 +32,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-const script = path.resolve('e2e/core-contract/capture-server.sh');
-const stub = path.resolve('e2e/core-contract/capture-stub-zeppelin.mjs');
+const script = path.resolve('e2e/core-contract/capture/server.sh');
+const stub = path.resolve('e2e/core-contract/capture/stub-zeppelin.mjs');
 
 const temporaryRoots = [];
 process.on('exit', () => {
@@ -84,7 +84,7 @@ for (const existing of [false, true]) {
 
 test('capture server rejects a repository path with whitespace before creating the root', () => {
   const parent = createRoot();
-  const directory = path.join(parent.root, 'repo with spaces', 'zeppelin-web-angular', 'e2e', 'core-contract');
+  const directory = path.join(parent.root, 'repo with spaces', 'zeppelin-web-angular', 'e2e', 'core-contract', 'capture');
   mkdirSync(directory, { recursive: true });
   const copy = path.join(directory, 'capture-server.sh');
   writeFileSync(copy, readFileSync(script));

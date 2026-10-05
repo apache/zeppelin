@@ -22,9 +22,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { verifyLifecycleCoreReference } from './build-lifecycle-core-reference.mjs';
-import { replayLifecycleTrace } from './replay-lifecycle-trace.ts';
-import { fixtureMetadata } from './fixture-doubles.mjs';
+import { verifyLifecycleCoreReference } from './lifecycle/core/build-reference.mjs';
+import { replayLifecycleTrace } from './lifecycle/replay-in-browser.ts';
+import { fixtureMetadata } from './transport/doubles.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const scripts = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url))).scripts;

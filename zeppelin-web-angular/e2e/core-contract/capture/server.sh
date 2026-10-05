@@ -100,7 +100,7 @@ done
 # The suffix preserves trailing newlines in directory names during substitution.
 physical_parent="$(cd -P "${existing_parent}" && printf '%s/.' "$PWD")"
 reject_whitespace_path "${physical_parent}" "canonical capture root"
-repo_root="$(cd -P "$(dirname "$0")/../../.." && printf '%s/.' "$PWD")"
+repo_root="$(cd -P "$(dirname "$0")/../../../.." && printf '%s/.' "$PWD")"
 reject_whitespace_path "${repo_root}" "repository"
 repo_root="${repo_root%/.}"
 # Use the physical path so symlink and direct access produce the same marker.

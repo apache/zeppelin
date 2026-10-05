@@ -17,8 +17,8 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { expect, type Page, type BrowserContext, type TestInfo } from '@playwright/test';
-import { LoginTestUtil } from '../models/login-page.util';
-import type { LifecycleRecorder } from './notebook-lifecycle-fixture.mjs';
+import { LoginTestUtil } from '../../models/login-page.util';
+import type { LifecycleRecorder } from './fixture.mjs';
 export const lifecycleFixtureDirectory = () =>
   process.env.ZEPPELIN_LIFECYCLE_FIXTURE_DIR ?? path.resolve('e2e/fixtures/notebook-lifecycle');
 const metadata = (scenario: string, operations: string[]) => ({
@@ -38,7 +38,7 @@ export const captureMetadata = async (page: Page, scenario: string, operations: 
     throw new Error('Live baseline requires ZEPPELIN_CAPTURE_MASTER_COMMIT from the verified Apache master ref');
   }
   const environmentFile = process.env.ZEPPELIN_CAPTURE_ENVIRONMENT;
-  if (!environmentFile) throw new Error('Live capture requires capture-server.sh capture-environment.json');
+  if (!environmentFile) throw new Error('Live capture requires capture/server.sh capture-environment.json');
   const launch = JSON.parse(readFileSync(environmentFile, 'utf8')) as {
     root: string;
     authentication: 'anonymous' | 'auth';

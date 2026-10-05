@@ -20,7 +20,7 @@ import {
   validateFixtureMetadata,
   validateRestRecord,
   validateWebSocketRecord
-} from './notebook-transport-fixture.mjs';
+} from '../transport/fixture.mjs';
 
 export const lifecycleFixtureVersion = 2;
 
@@ -122,7 +122,14 @@ function validateLifecycleFrame(errors, prefix, record, state) {
 
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     errors.push(`${prefix}: lifecycle replay requires a JSON envelope`);
-  } else if (
+    return;
+  }
+
+  if (!nonEmptyString(envelope.op)) {
+    errors.push(`${prefix}: lifecycle envelope op must be a non-empty string`);
+  }
+
+  if (
     envelope.msgId !== undefined &&
     envelope.msgId !== null &&
     (typeof envelope.msgId !== 'string' || !envelope.msgId || envelope.msgId === '<msgId>')
@@ -256,13 +263,4 @@ export function validateLifecycleFixture(fixture) {
   }
 
   return [...new Set(errors)];
-}
-
-export function assertValidLifecycleFixture(fixture) {
-  const errors = validateLifecycleFixture(fixture);
-  if (errors.length) {
-    throw new Error(errors.join('\n'));
-  }
-
-  return fixture;
 }

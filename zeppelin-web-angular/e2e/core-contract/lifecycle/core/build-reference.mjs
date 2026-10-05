@@ -26,7 +26,7 @@ export const lifecycleCoreReference = Object.freeze({
   commit: '36b5f356c63413e43c26ebcd448af91b0f353ba2'
 });
 
-const frontend = fileURLToPath(new URL('../../', import.meta.url));
+const frontend = fileURLToPath(new URL('../../../../', import.meta.url));
 const corePath = 'zeppelin-web-angular/projects/zeppelin-notebook-core/src';
 const adapterPath = 'zeppelin-web-angular/src/app/pages/workspace/notebook/notebook-core-route.adapter.ts';
 const git = (root, ...args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim();
@@ -55,7 +55,7 @@ export function verifyLifecycleCoreReference(root) {
 export async function buildLifecycleCoreReference(root) {
   const provenance = verifyLifecycleCoreReference(root);
   const result = await build({
-    entryPoints: [fileURLToPath(new URL('./lifecycle-core-consumer.mjs', import.meta.url))],
+    entryPoints: [fileURLToPath(new URL('./consumer.mjs', import.meta.url))],
     bundle: true,
     write: false,
     format: 'iife',

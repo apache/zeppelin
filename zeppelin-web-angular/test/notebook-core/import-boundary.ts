@@ -18,7 +18,7 @@ import ts from 'typescript';
 
 export const zeppelinWebAngularRoot = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 export const sourceRoot = fileURLToPath(new URL('../../projects/zeppelin-notebook-core/src/', import.meta.url));
-export const reactNotebookCoreProofRoot = resolve(zeppelinWebAngularRoot, 'e2e/core-contract/react-remote');
+export const reactNotebookCoreProofRoot = resolve(zeppelinWebAngularRoot, 'e2e/core-contract/port-proof/react-remote');
 export const reactNotebookCoreProofConsumer = resolve(reactNotebookCoreProofRoot, 'NotebookCorePortProbe.tsx');
 export const reactNotebookCoreBoundaryFiles = [
   resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src/main.ts'),

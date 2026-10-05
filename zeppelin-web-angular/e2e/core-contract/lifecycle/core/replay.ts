@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 import { expect, type Browser, type Page } from '@playwright/test';
-import type { LifecycleFixture, LifecycleFault } from './notebook-lifecycle-fixture.mjs';
-import { replayLifecycleTrace, type LifecycleReplayConsumer } from './replay-lifecycle-trace';
+import type { LifecycleFixture, LifecycleFault } from '../fixture.mjs';
+import { replayLifecycleTrace, type LifecycleReplayConsumer } from '../replay-in-browser';
 
 type ParagraphState = {
   id: string;

@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+import { Subscription, finalize, tap, timer } from 'rxjs';
+
 const maximumTimerDelay = 2_147_483_647;
 
 function requireIntegerRange(value, minimum, maximum, field) {
@@ -46,22 +48,23 @@ export function createLifecycleDeliveryScheduler(fixture, faults, deliver, onErr
   }
 
   const deferred = [];
-  const timers = new Set();
+  const subscriptions = new Subscription();
+  let pendingTimers = 0;
   const flush = cursor => {
     for (let index = deferred.length - 1; index >= 0; index--) {
       const entry = deferred[index];
       if (entry.afterSequence > cursor) continue;
       deferred.splice(index, 1);
       if (entry.delayMs) {
-        const timer = setTimeout(() => {
-          timers.delete(timer);
-          try {
-            deliver(entry.record, entry.copies);
-          } catch (error) {
-            onError(error);
-          }
-        }, entry.delayMs);
-        timers.add(timer);
+        pendingTimers++;
+        subscriptions.add(
+          timer(entry.delayMs)
+            .pipe(
+              tap(() => deliver(entry.record, entry.copies)),
+              finalize(() => pendingTimers--)
+            )
+            .subscribe({ error: onError })
+        );
       } else deliver(entry.record, entry.copies);
     }
   };
@@ -77,11 +80,10 @@ export function createLifecycleDeliveryScheduler(fixture, faults, deliver, onErr
     },
     flush,
     hasPending() {
-      return deferred.length > 0 || timers.size > 0;
+      return deferred.length > 0 || pendingTimers > 0;
     },
     dispose() {
-      timers.forEach(timer => clearTimeout(timer));
-      timers.clear();
+      subscriptions.unsubscribe();
       deferred.length = 0;
     }
   };

@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-import { createLifecycleDeliveryScheduler } from './lifecycle-delivery-scheduler.mjs';
-import {
-  isNotebookRestUrl,
-  captureRestRequest,
-  stableJson,
-  webSocketPayloadMatches
-} from './notebook-transport-fixture.mjs';
-import { assertValidLifecycleFixture } from './lifecycle-fixture-validation.mjs';
+import { EMPTY, Subject, concatMap, defer, from } from 'rxjs';
+import { createLifecycleDeliveryScheduler } from './delivery-scheduler.mjs';
+import { isNotebookRestUrl, captureRestRequest, stableJson, webSocketPayloadMatches } from '../transport/fixture.mjs';
+import { validateLifecycleFixture } from './validation.mjs';
 
 const notebookSocket = url => new URL(url).pathname === '/ws';
 
@@ -164,7 +160,10 @@ function createRestReplayQueue() {
 
 // Faults change delivery only. Captured records, payloads and sequence numbers stay immutable.
 export function createLifecycleReplay(fixture, faults = []) {
-  assertValidLifecycleFixture(fixture);
+  const errors = validateLifecycleFixture(fixture);
+  if (errors.length) {
+    throw new Error(errors.join('\n'));
+  }
   const sockets = new Map();
   const connectingSockets = new Map();
   const installedSessions = new Set();
@@ -173,13 +172,15 @@ export function createLifecycleReplay(fixture, faults = []) {
   const correlation = createMessageCorrelation(fixture);
   let cursor = 0;
   let fatalError;
-  let draining = false;
-  let drainRequested = false;
+  const drainRequests = new Subject();
+  let drainSubscription;
 
   const abortPending = error => {
     fatalError ??= error;
     restQueue.abort(fatalError);
     deliveries.dispose();
+    drainSubscription?.unsubscribe();
+    drainRequests.complete();
   };
 
   const fail = error => {
@@ -232,42 +233,26 @@ export function createLifecycleReplay(fixture, faults = []) {
     }
   };
 
-  const drain = async () => {
-    if (draining) {
-      drainRequested = true;
-      return;
+  const drain = () => {
+    while (cursor < fixture.records.length) {
+      if (fatalError) throw fatalError;
+      const record = fixture.records[cursor];
+      if (record.kind === 'rest' && record.rest.direction === 'response') {
+        const response = restQueue.takeResponse(record);
+        if (!response) break;
+        // Advance before fulfillment so the next input may cross this response barrier.
+        advance();
+        return from(restQueue.respond(response, record.rest)).pipe(concatMap(() => defer(drain)));
+      }
+
+      if (!consumeAvailable(record)) break;
+      advance();
     }
-    draining = true;
-    try {
-      do {
-        drainRequested = false;
-        while (cursor < fixture.records.length) {
-          if (fatalError) throw fatalError;
-          const record = fixture.records[cursor];
-          if (record.kind === 'rest' && record.rest.direction === 'response') {
-            const response = restQueue.takeResponse(record);
-            if (!response) break;
-            // Advancing before fulfillment allows the next request to cross this completed response barrier.
-            advance();
-            await restQueue.respond(response, record.rest);
-          } else {
-            if (!consumeAvailable(record)) break;
-            advance();
-          }
-        }
-      } while (drainRequested);
-    } catch (error) {
-      fail(error);
-    } finally {
-      draining = false;
-    }
+    return EMPTY;
   };
 
-  const scheduleDrain = () => {
-    void drain().catch(error => {
-      fatalError ??= error;
-    });
-  };
+  drainSubscription = drainRequests.pipe(concatMap(() => defer(drain))).subscribe({ error: abortPending });
+  const scheduleDrain = () => drainRequests.next();
 
   return {
     async install(page, sessionId) {

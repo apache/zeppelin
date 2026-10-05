@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
+import type { FixtureRestRequest } from '../transport/fixture.mjs';
 import {
   createLifecycleReplay,
   type LifecycleFixture,
@@ -22,8 +23,7 @@ import {
   type LifecycleRecord,
   type LifecycleReplay,
   type RouteContext
-} from './notebook-lifecycle-fixture.mjs';
-import type { FixtureRestRequest } from './notebook-transport-fixture.mjs';
+} from './fixture.mjs';
 
 declare global {
   interface Window {

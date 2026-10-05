@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 import type { Page } from '@playwright/test';
-import type { FixtureMetadata, FixtureRest, FixtureWebSocket } from './notebook-transport-fixture.mjs';
+import type { FixtureMetadata, FixtureRest, FixtureWebSocket } from '../transport/fixture.mjs';
 
 export interface RouteContext {
   state: 'active' | 'inactive';

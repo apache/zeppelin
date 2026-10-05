@@ -16,14 +16,14 @@
  */
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
-import { createLifecycleRecorder, type LifecycleFault } from '../../../core-contract/notebook-lifecycle-fixture.mjs';
+import { createLifecycleRecorder, type LifecycleFault } from '../../../core-contract/lifecycle/fixture.mjs';
 import {
   captureMetadata,
   cleanUpLifecycleCapture,
   lifecycleFixtureDirectory,
   recordCaptureResult
-} from '../../../core-contract/lifecycle-capture';
-import { replayLifecycleTrace } from '../../../core-contract/replay-lifecycle-trace';
+} from '../../../core-contract/lifecycle/capture';
+import { replayLifecycleTrace } from '../../../core-contract/lifecycle/replay-in-browser';
 import { NotebookTransportPage } from '../../../models/notebook-transport-page';
 import { openTransportNote, waitForTransportReply } from '../../../models/notebook-transport-page.util';
 import { NotebookKeyboardPage } from '../../../models/notebook-keyboard-page';

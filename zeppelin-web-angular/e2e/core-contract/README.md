@@ -21,6 +21,18 @@ This directory defines the versioned REST and WebSocket fixture format used by
 Notebook adapter tests. It is an in-repository contract test, not a Pact
 consumer/provider contract and not a replacement for live-server E2E tests.
 
+## Directory layout
+
+- `capture/`: isolated server lifecycle helper and its tests.
+- `transport/`: shared wire format, redaction, recorder/replay foundation and test doubles.
+- `lifecycle/`: multi-session validation, recording, ordered replay and browser capture/replay drivers.
+- `lifecycle/core/`: pinned external Core consumer build and convergence checks.
+- `port-proof/`: Angular/React port identity harness and runtime import boundary checks.
+
+Tests sit beside their helpers. Browser scenarios remain in
+`e2e/tests/notebook/core-contract/`; captured wire data remains in `e2e/fixtures/`.
+`runner.test.mjs` checks the shared Playwright runner configuration.
+
 ## Fixture ownership
 
 Every committed fixture includes these required fields.
@@ -141,7 +153,7 @@ npm run check:core-contract-fixtures
 
 That covers the format, the redaction rules and the replay adapter against records,
 and takes a couple of seconds. The capture server has a suite of its own, which starts
-`capture-server.sh` for real against a stub to cover start, stop and pid-file
+`capture/server.sh` for real against a stub to cover start, stop and pid-file
 behaviour. It spawns processes and binds a free local port, so it takes tens of
 seconds and runs in Maven's integration-test phase rather than on every build:
 
@@ -206,11 +218,11 @@ still select the installed toolchain.
 
 ```bash
 CAPTURE_ROOT="$(mktemp -d)"
-e2e/core-contract/capture-server.sh start --root "${CAPTURE_ROOT}" --port 18080
+e2e/core-contract/capture/server.sh start --root "${CAPTURE_ROOT}" --port 18080
 ZEPPELIN_E2E_SHIRO_INI="${CAPTURE_ROOT}/conf/shiro.ini" \
   ZEPPELIN_CORE_CONTRACT_RUN_DIR="${CAPTURE_ROOT}/browser" \
   CI=true PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080 npm run e2e:core-contract:live
-e2e/core-contract/capture-server.sh stop --root "${CAPTURE_ROOT}"
+e2e/core-contract/capture/server.sh stop --root "${CAPTURE_ROOT}"
 ```
 
 For authenticated capture, add `--mode auth` to start. That installs
@@ -382,7 +394,7 @@ the production renderer, or move production notebook state out of Angular.
 
 ## Lifecycle fixtures (version 2, ZEPPELIN-6672)
 
-`notebook-lifecycle-fixture.mjs` extends the foundation for multiple independent
+`lifecycle/fixture.mjs` extends the foundation for multiple independent
 sessions, socket generations, route context and delivery faults. Version 1 remains
 available for its existing consumers. The lifecycle runner rejects version 1 rather
 than guessing missing session or connection boundaries.
@@ -440,7 +452,7 @@ From the Apache master checkout, invoke this candidate's helper, substituting it
 absolute path below:
 
 ```bash
-/path/to/candidate/zeppelin-web-angular/e2e/core-contract/capture-server.sh start \
+/path/to/candidate/zeppelin-web-angular/e2e/core-contract/capture/server.sh start \
   --root /tmp/zeppelin-lifecycle-capture --port 8080 --storage git --job-manager
 ```
 
@@ -498,10 +510,18 @@ must reproduce the complete observed sequence, including implicit replies.
 
 The ordinary trace replay mounts a wire observer. Its assertions prove payload and
 order fidelity. Validation, recording and ordered replay have separate modules;
-`notebook-lifecycle-fixture.mjs` retains the public entry points. REST replay owns
+`lifecycle/fixture.mjs` retains the public entry points. REST replay owns
 pending and in-flight requests, and all cursor advancement flushes the delivery
 scheduler through one function. Permanent failures terminate replay and surface
 their original cause; pending deliveries are reported separately.
+
+Recorder event listeners are owned by RxJS `Subscription`s. Stop detaches all
+sources and completes the body-read stream; `mergeMap` lets already observed body
+reads finish concurrently before validation. Replay drain requests use a `Subject`
+and `concatMap` to serialize REST fulfillment while synchronous fixture steps stay
+synchronous. Delayed deliveries use RxJS `timer`; disposal unsubscribes pending
+timers. Request correlation and recorded sequence barriers remain explicit state.
+
 
 ### Replay with an actual Core consumer
 

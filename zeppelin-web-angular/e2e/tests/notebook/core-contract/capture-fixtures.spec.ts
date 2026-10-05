@@ -28,8 +28,8 @@ import {
   createNotebookTransportRecorder,
   createPlaywrightFixtureAdapter,
   validateFixture
-} from '../../../core-contract/notebook-transport-fixture.mjs';
-import { fixtureMetadata } from '../../../core-contract/fixture-doubles.mjs';
+} from '../../../core-contract/transport/fixture.mjs';
+import { fixtureMetadata } from '../../../core-contract/transport/doubles.mjs';
 import { E2E_TEST_FOLDER } from '../../../models/base-page';
 import { LoginTestUtil } from '../../../models/login-page.util';
 import {

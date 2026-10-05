@@ -22,8 +22,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { fixtureMetadata, request, response, wsRecord } from './fixture-doubles.mjs';
-import * as fixtureModule from './notebook-transport-fixture.mjs';
+import { fixtureMetadata, request, response, wsRecord } from './doubles.mjs';
+import * as fixtureModule from './fixture.mjs';
 import {
   createNotebookTransportRecorder,
   normalizeFixtureRecord,
@@ -33,7 +33,7 @@ import {
   parseRestBody,
   validateFixture,
   webSocketPayloadMatches
-} from './notebook-transport-fixture.mjs';
+} from './fixture.mjs';
 
 // Temporary roots accumulate across repeated suite runs.
 const temporaryRoots = [];

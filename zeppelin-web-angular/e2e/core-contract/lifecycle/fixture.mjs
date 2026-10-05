@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 
-export { lifecycleFixtureVersion, validateLifecycleFixture } from './lifecycle-fixture-validation.mjs';
-export { createLifecycleRecorder } from './lifecycle-recorder.mjs';
-export { createLifecycleReplay } from './lifecycle-replay.mjs';
+export { lifecycleFixtureVersion, validateLifecycleFixture } from './validation.mjs';
+export { createLifecycleRecorder } from './recorder.mjs';
+export { createLifecycleReplay } from './replay.mjs';

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import type { FixtureMetadata, FixtureRecord, FixtureRequestLike, FixtureRest } from './notebook-transport-fixture.mjs';
+import type { FixtureMetadata, FixtureRecord, FixtureRequestLike, FixtureRest } from './fixture.mjs';
 
 export declare const fixtureMetadata: () => FixtureMetadata;
 

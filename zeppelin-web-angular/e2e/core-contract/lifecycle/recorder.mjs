@@ -17,6 +17,7 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { Subject, Subscription, fromEvent, ignoreElements, lastValueFrom, mergeMap, tap } from 'rxjs';
 import {
   isNotebookRestUrl,
   captureRestRequest,
@@ -24,8 +25,8 @@ import {
   sanitizeFixture,
   stableJson,
   validateFixtureMetadata
-} from './notebook-transport-fixture.mjs';
-import { assertValidLifecycleFixture, lifecycleFixtureVersion } from './lifecycle-fixture-validation.mjs';
+} from '../transport/fixture.mjs';
+import { validateLifecycleFixture, lifecycleFixtureVersion } from './validation.mjs';
 
 const notebookSocket = url => new URL(url).pathname === '/ws';
 
@@ -38,9 +39,9 @@ export function createLifecycleRecorder(metadata) {
 
   const records = [];
   const sessions = [];
-  const pendingBodyReads = new Set();
+  const bodyReads = new Subject();
+  const subscriptions = new Subscription();
   const outstandingRequests = new Set();
-  const eventSubscriptions = [];
   const activeConnections = new Map();
   let failure;
   let status = 'recording';
@@ -56,9 +57,28 @@ export function createLifecycleRecorder(metadata) {
     return value;
   };
 
+  const bodyReadsFinished = lastValueFrom(
+    bodyReads.pipe(
+      mergeMap(read =>
+        read().catch(error => {
+          failure ??= error;
+        })
+      ),
+      ignoreElements()
+    ),
+    { defaultValue: undefined }
+  );
+
   const subscribe = (target, event, handler) => {
-    target.on(event, handler);
-    eventSubscriptions.push([target, event, handler]);
+    subscriptions.add(
+      fromEvent(target, event)
+        .pipe(tap(handler))
+        .subscribe({
+          error: error => {
+            failure ??= error;
+          }
+        })
+    );
   };
 
   const captureRest = (page, sessionId) => {
@@ -79,7 +99,7 @@ export function createLifecycleRecorder(metadata) {
     subscribe(page, 'requestfinished', request => {
       if (!requests.has(request)) return;
       const entry = record({ kind: 'rest', sessionId, requestId: requests.get(request) });
-      const completion = (async () => {
+      bodyReads.next(async () => {
         const response = await request.response();
         const headers = Object.fromEntries(
           Object.entries(response.headers()).filter(([name]) => ['accept', 'content-type'].includes(name.toLowerCase()))
@@ -92,11 +112,7 @@ export function createLifecycleRecorder(metadata) {
           ...parseRestBody(await response.text(), headers)
         };
         outstandingRequests.delete(request);
-      })().catch(error => {
-        failure ??= error;
       });
-      pendingBodyReads.add(completion);
-      void completion.finally(() => pendingBodyReads.delete(completion));
     });
     subscribe(page, 'requestfailed', request => {
       if (requests.has(request)) failure ??= new Error('Notebook REST request failed during capture');
@@ -202,20 +218,17 @@ export function createLifecycleRecorder(metadata) {
       if (stopPromise) return stopPromise;
       status = 'stopping';
       stopPromise = (async () => {
-        // Detach input listeners now; finish reading already observed responses before completing stop.
-        const detach = ([target, event, handler]) => target.off(event, handler);
-        const inputs = eventSubscriptions.filter(item => item[1] !== 'requestfinished');
-        const completions = eventSubscriptions.filter(item => item[1] === 'requestfinished');
-        inputs.forEach(detach);
-        try {
-          while (pendingBodyReads.size) await Promise.all([...pendingBodyReads]);
-          if (failure) throw failure;
-          if (outstandingRequests.size) throw new Error('unfinished notebook REST capture');
-          assertValidLifecycleFixture(snapshot());
-          status = 'stopped';
-        } finally {
-          completions.forEach(detach);
+        // Stop observing events; mergeMap completes after every already observed body read settles.
+        subscriptions.unsubscribe();
+        bodyReads.complete();
+        await bodyReadsFinished;
+        if (failure) throw failure;
+        if (outstandingRequests.size) throw new Error('unfinished notebook REST capture');
+        const errors = validateLifecycleFixture(snapshot());
+        if (errors.length) {
+          throw new Error(errors.join('\n'));
         }
+        status = 'stopped';
       })();
       return stopPromise;
     },

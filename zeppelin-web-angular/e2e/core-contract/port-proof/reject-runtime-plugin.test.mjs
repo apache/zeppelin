@@ -18,13 +18,13 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const reactRemoteRoot = fileURLToPath(new URL('../../projects/zeppelin-react/', import.meta.url));
+const reactRemoteRoot = fileURLToPath(new URL('../../../projects/zeppelin-react/', import.meta.url));
 const requireFromReactRemote = createRequire(join(reactRemoteRoot, 'package.json'));
 const webpack = requireFromReactRemote('webpack');
 const ModuleFederationPlugin = requireFromReactRemote('webpack/lib/container/ModuleFederationPlugin');
 const proofConfig = createRequire(import.meta.url)('./react-remote/webpack.config.js');
 const coreEntryPoint = fileURLToPath(
-  new URL('../../projects/zeppelin-notebook-core/src/public-api.ts', import.meta.url)
+  new URL('../../../projects/zeppelin-notebook-core/src/public-api.ts', import.meta.url)
 );
 
 test('rejects a React remote that bundles the Shared Notebook Core runtime', async () => {
