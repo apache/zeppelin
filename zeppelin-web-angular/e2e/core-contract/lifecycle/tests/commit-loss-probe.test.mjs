@@ -12,7 +12,7 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CommitParagraphSocketProbe } from '../../models/notebook-save-timing.util.ts';
+import { CommitParagraphSocketProbe } from '../../../models/notebook-save-timing.util.ts';
 
 const commit = msgId =>
   JSON.stringify({ op: 'COMMIT_PARAGRAPH', msgId, data: { id: 'p', noteId: 'n', paragraph: 'draft' } });

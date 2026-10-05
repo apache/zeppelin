@@ -314,7 +314,9 @@ Use separate E2E tests for production notebook integration, reconnection policy,
 | [port-proof/](port-proof/)                                           | Angular/React port identity and runtime import checks                     |
 | [../tests/notebook/core-contract/](../tests/notebook/core-contract/) | Browser scenarios                                                         |
 
-Helper tests sit beside their implementations. [runner.test.mjs](runner.test.mjs) covers the shared Playwright configuration.
+Lifecycle tests are grouped by responsibility in [lifecycle/tests/](lifecycle/tests/).
+Their record builders and replay session helpers live in `lifecycle/tests/helpers/`.
+[runner.test.mjs](runner.test.mjs) covers the shared Playwright configuration.
 
 ## Notebook route boundary proof
 
