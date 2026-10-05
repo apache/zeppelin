@@ -10,16 +10,18 @@
  * limitations under the License.
  */
 
-export interface ImageRendererProps {
-  imageData: string;
-  format?: 'png' | 'svg';
-}
+import { ParagraphState } from './interfaces/message-paragraph.interface';
 
-export const ImageRenderer = ({ imageData, format = 'png' }: ImageRendererProps) => {
-  const imgSrc =
-    format === 'svg'
-      ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(imageData)}`
-      : `data:image/png;base64,${imageData}`;
-
-  return <img src={imgSrc} alt="Result" style={{ maxWidth: '100%', height: 'auto' }} />;
+// Job.Status.isCompleted: FINISHED, ERROR and ABORT terminate a run.
+const terminalStates: Record<ParagraphState, boolean> = {
+  UNKNOWN: false,
+  READY: false,
+  PENDING: false,
+  RUNNING: false,
+  FINISHED: true,
+  ERROR: true,
+  ABORT: true
 };
+
+export const isTerminalParagraphState = (status: ParagraphState | undefined): boolean =>
+  status !== undefined && terminalStates[status];

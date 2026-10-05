@@ -33,6 +33,8 @@ export const SingleResultRenderer = ({ result, index, config }: SingleResultRend
       return <TextRenderer text={checkAndReplaceCarriageReturn(result.data)} />;
     case DatasetType.IMG:
       return <ImageRenderer imageData={result.data} />;
+    case DatasetType.SVG:
+      return <ImageRenderer imageData={result.data} format="svg" />;
     case DatasetType.ANGULAR:
       return (
         <Alert
@@ -42,7 +44,12 @@ export const SingleResultRenderer = ({ result, index, config }: SingleResultRend
           showIcon
         />
       );
-    default:
+    case DatasetType.NULL:
+    case DatasetType.NETWORK:
       return null;
+    default: {
+      const _unhandled: never = result.type;
+      return null;
+    }
   }
 };

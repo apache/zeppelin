@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectorRef } from '@angular/core';
-import { DatasetType, Message, OP, ParagraphItem } from '@zeppelin/sdk';
+import { DatasetType, Message, OP, ParagraphItem, ParagraphState } from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -38,7 +38,11 @@ class TestParagraph extends ParagraphBase {
   }
 }
 
-const paragraph = (id: string, status = 'RUNNING', dateStarted = '2026-01-01T00:00:00Z'): ParagraphItem => ({
+const paragraph = (
+  id: string,
+  status: ParagraphState = 'RUNNING',
+  dateStarted = '2026-01-01T00:00:00Z'
+): ParagraphItem => ({
   id,
   status,
   dateStarted,

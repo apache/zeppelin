@@ -10,16 +10,15 @@
  * limitations under the License.
  */
 
-export interface ImageRendererProps {
-  imageData: string;
-  format?: 'png' | 'svg';
-}
+import { expect, it } from 'vitest';
 
-export const ImageRenderer = ({ imageData, format = 'png' }: ImageRendererProps) => {
-  const imgSrc =
-    format === 'svg'
-      ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(imageData)}`
-      : `data:image/png;base64,${imageData}`;
+import { ParagraphStates } from './interfaces/message-paragraph.interface';
+import { isTerminalParagraphState } from './paragraph-state';
 
-  return <img src={imgSrc} alt="Result" style={{ maxWidth: '100%', height: 'auto' }} />;
-};
+it.each(Object.values(ParagraphStates))('classifies %s using Job.Status.isCompleted', status => {
+  expect(isTerminalParagraphState(status)).toBe(['FINISHED', 'ERROR', 'ABORT'].includes(status));
+});
+
+it('does not treat a missing paragraph as a completed run', () => {
+  expect(isTerminalParagraphState(undefined)).toBe(false);
+});

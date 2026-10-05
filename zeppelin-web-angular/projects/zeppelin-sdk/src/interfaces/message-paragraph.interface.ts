@@ -79,9 +79,23 @@ export interface ParagraphConfig {
 export interface ParagraphResults {
   [index: number]: Record<string, unknown>;
 
-  code?: string;
+  code?: ParagraphResultCode;
   msg?: ParagraphIResultsMsgItem[];
 }
+
+export type ParagraphResultCode = 'SUCCESS' | 'INCOMPLETE' | 'ERROR' | 'KEEP_PREVIOUS_RESULT';
+
+export const ParagraphStates = {
+  UNKNOWN: 'UNKNOWN',
+  READY: 'READY',
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  FINISHED: 'FINISHED',
+  ERROR: 'ERROR',
+  ABORT: 'ABORT'
+} as const;
+
+export type ParagraphState = (typeof ParagraphStates)[keyof typeof ParagraphStates];
 
 export enum DatasetType {
   NETWORK = 'NETWORK',
@@ -89,7 +103,9 @@ export enum DatasetType {
   HTML = 'HTML',
   TEXT = 'TEXT',
   ANGULAR = 'ANGULAR',
-  IMG = 'IMG'
+  IMG = 'IMG',
+  SVG = 'SVG',
+  NULL = 'NULL'
 }
 
 export class ParagraphIResultsMsgItem {
@@ -148,7 +164,7 @@ export interface ParagraphItem {
   dateFinished?: string;
   errorMessage?: string;
   runtimeInfos?: RuntimeInfos;
-  status: string;
+  status: ParagraphState;
   title?: string;
   focus?: boolean;
   // TODO(hsuanxyz): define proper type
@@ -348,7 +364,7 @@ export interface Progress {
 
 export interface ParagraphStatus {
   id: string;
-  status: string;
+  status: ParagraphState;
 }
 
 interface GraphConfigSetting {

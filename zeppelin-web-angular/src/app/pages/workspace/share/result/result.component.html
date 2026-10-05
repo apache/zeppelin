@@ -69,7 +69,7 @@
   }
   <ng-template cdkPortalOutlet></ng-template>
   <!-- Transformation setting container for classic visualizations -->
-  @if (getCurrentVisualization()?.isClassic) {
+  @if (result.type !== datasetType.SVG && result.type !== datasetType.NULL && getCurrentVisualization()?.isClassic) {
     <div
       [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
       [id]="'trsetting' + id + '_' + config?.graph?.mode"
@@ -77,14 +77,14 @@
     ></div>
   }
   <!-- Visualization setting container for classic visualizations -->
-  @if (getCurrentVisualization()?.isClassic) {
+  @if (result.type !== datasetType.SVG && result.type !== datasetType.NULL && getCurrentVisualization()?.isClassic) {
     <div
       [style.display]="config?.graph?.optionOpen ? 'block' : 'none'"
       [id]="'vizsetting' + id + '_' + config?.graph?.mode"
       class="visualization-setting"
     ></div>
   }
-  @if (getCurrentVisualization()?.isClassic) {
+  @if (result.type !== datasetType.SVG && result.type !== datasetType.NULL && getCurrentVisualization()?.isClassic) {
     <div [id]="'p' + id + '_' + config?.graph?.mode" class="classic-visualization-container"></div>
   }
   @switch (result?.type) {
@@ -102,6 +102,9 @@
     }
     @case (datasetType.IMG) {
       <div class="img"><img [src]="imgData" alt="img" /></div>
+    }
+    @case (datasetType.SVG) {
+      <div class="img"><img [src]="imgData" alt="svg" /></div>
     }
   }
   @if (frontEndError) {
