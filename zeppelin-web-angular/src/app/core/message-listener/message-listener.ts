@@ -34,7 +34,7 @@ export class MessageListenersManager implements OnDestroy {
   }
 }
 
-type ListenerArgumentsType<T> = T extends undefined ? () => void : (data: T) => void;
+type MessageHandler<T> = (data: T) => void;
 
 const createMessageListener = <K extends keyof MessageReceiveDataTypeMap, T>(
   op: K,
@@ -43,9 +43,9 @@ const createMessageListener = <K extends keyof MessageReceiveDataTypeMap, T>(
   return function (
     target: MessageListenersManager,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<ListenerArgumentsType<T>>
+    descriptor: TypedPropertyDescriptor<MessageHandler<T>>
   ) {
-    const oldValue = descriptor.value as ListenerArgumentsType<T>;
+    const oldValue = descriptor.value!;
 
     const fn = function (this: MessageListenersManager) {
       if (!this.__zeppelinMessageListeners$__) {
@@ -55,8 +55,7 @@ const createMessageListener = <K extends keyof MessageReceiveDataTypeMap, T>(
       this.__zeppelinMessageListeners$__.add(
         receiver(this.messageService, op).subscribe(data => {
           try {
-            // @ts-ignore
-            oldValue.apply(this, [data]);
+            oldValue.call(this, data);
           } catch (error) {
             console.error(`Failed to handle WebSocket OP ${String(op)}`, error);
             throw error;
@@ -76,7 +75,9 @@ const createMessageListener = <K extends keyof MessageReceiveDataTypeMap, T>(
 };
 
 export const MessageListener = <K extends keyof MessageReceiveDataTypeMap>(op: K) => {
-  return createMessageListener(op, (messageService, targetOp) => messageService.receive(targetOp));
+  return createMessageListener<K, MessageReceiveDataTypeMap[K]>(op, (messageService, targetOp) =>
+    messageService.receive(targetOp)
+  );
 };
 
 export const MessageEnvelopeListener = <K extends keyof MessageReceiveDataTypeMap>(op: K) => {
