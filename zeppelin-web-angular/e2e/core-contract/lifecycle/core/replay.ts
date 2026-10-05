@@ -18,37 +18,8 @@ import { expect, type Browser, type Page } from '@playwright/test';
 import type { LifecycleFixture, LifecycleFault } from '../fixture.mjs';
 import { replayLifecycleTrace, type LifecycleReplayConsumer } from '../replay-in-browser';
 
-type ParagraphState = {
-  id: string;
-  text: string;
-  status: string;
-  isDirty: boolean;
-  progress: number;
-  language?: string;
-  results?: { type: string; data: string }[];
-  resultConfigs?: unknown;
-};
-
-type CoreState = {
-  noteId: string;
-  revisionId: string | null;
-  phase: string;
-  title: string | null;
-  error: string | null;
-  paragraphs: ParagraphState[];
-  noteForms: unknown;
-  noteParams: unknown;
-  lookAndFeel: string;
-  personalizedMode: boolean;
-  scheduler?: { cron?: string; releaseResource: boolean };
-  collaborativeUsers?: string[];
-};
-
-type CoreObservation = {
-  snapshot: CoreState;
-  events: { op: string; snapshot: CoreState }[];
-  recoveryRequested: boolean;
-};
+import { LifecycleCoreConsumer, type CoreObservation } from './consumer.ts';
+import type { NotebookCoreSnapshot } from './runtime/host-remote-contract';
 
 type CanonicalNote = {
   id: string;
@@ -71,18 +42,6 @@ type CanonicalNote = {
     releaseresource?: boolean;
   };
 };
-
-declare global {
-  interface Window {
-    lifecycleCore: {
-      enterContext(context: { state: string; noteId: string; revisionId: string | null }): void;
-      beforeSend(envelope: unknown): void;
-      observe(): CoreObservation;
-    };
-  }
-}
-
-const observe = (page: Page) => page.evaluate(() => window.lifecycleCore.observe());
 
 const canonicalLanguage = (paragraph: CanonicalNote['paragraphs'][number]) => {
   if (paragraph.config.editorSetting?.language) {
@@ -115,7 +74,7 @@ const canonicalState = (note: CanonicalNote) => ({
     : undefined
 });
 
-const projectedState = (snapshot: CoreState) => ({
+const projectedState = (snapshot: NotebookCoreSnapshot) => ({
   noteId: snapshot.noteId,
   title: snapshot.title,
   paragraphs: snapshot.paragraphs.map(paragraph => ({
@@ -135,7 +94,7 @@ const projectedState = (snapshot: CoreState) => ({
   scheduler: snapshot.scheduler
 });
 
-export const replayCollaborationCore = async (browser: Browser, fixture: LifecycleFixture, script: string) => {
+export const replayCollaborationCore = async (browser: Browser, fixture: LifecycleFixture) => {
   const selected = fixture.records.filter(record => {
     if (record.kind !== 'websocket' || record.websocket.direction !== 'receive') return false;
     return ['PATCH_PARAGRAPH', 'NOTE_UPDATED'].includes(JSON.parse(record.websocket.payloadText).op);
@@ -159,16 +118,16 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
   const pages = new Map<string, Page>();
   const beforeRecovery = new Map<string, CoreObservation>();
   const afterRecovery = new Map<string, CoreObservation>();
-  const browserErrors: Error[] = [];
+  const consumers = new Map<Page, LifecycleCoreConsumer>();
 
   const consumer: LifecycleReplayConsumer = {
     initialize: async (page, sessionId) => {
       pages.set(sessionId, page);
-      page.on('pageerror', error => browserErrors.push(error));
-      await page.addScriptTag({ content: script });
+      consumers.set(page, new LifecycleCoreConsumer());
     },
+    receive: (page, payload) => consumers.get(page)!.receive(payload),
     enterContext: async (page, context) => {
-      await page.evaluate(value => window.lifecycleCore.enterContext(value), context);
+      consumers.get(page)!.enterContext(context);
     },
     beforeSend: async (page, record) => {
       if (record.sequence === recovery.sequence) {
@@ -184,21 +143,21 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
             )
             .reduce((count, entry) => count + (copies.get(entry.sequence) ?? 1), 0);
           await expect.poll(() => viewer.evaluate(() => window.traceFrames.length)).toBe(expected);
-          beforeRecovery.set(sessionId, await observe(viewer));
+          beforeRecovery.set(sessionId, consumers.get(viewer)!.observe());
         }
       }
-      await page.evaluate(
-        payload => window.lifecycleCore.beforeSend(JSON.parse(payload)),
-        record.websocket.payloadText
-      );
+      const core = consumers.get(page)!;
+      if (JSON.parse(record.websocket.payloadText).op === 'PATCH_PARAGRAPH') {
+        await expect.poll(() => core.observe().snapshot.phase).toBe('ready');
+      }
+      core.beforeSend(record.websocket.payloadText);
     },
     complete: async viewers => {
-      for (const [sessionId, page] of viewers) afterRecovery.set(sessionId, await observe(page));
+      for (const [sessionId, page] of viewers) afterRecovery.set(sessionId, consumers.get(page)!.observe());
     }
   };
 
   const frames = await replayLifecycleTrace(browser, fixture, faults, consumer);
-  expect(browserErrors).toEqual([]);
   expect(beforeRecovery.size).toBe(2);
 
   const sender = beforeRecovery.get('viewer-a')!;
@@ -233,7 +192,7 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
 
     const note = (canonical.rest.bodyJson as { status: string; body: CanonicalNote }).body;
     const result = afterRecovery.get(session.id)!;
-    expect(result.recoveryRequested).toBe(false);
+    expect(result.recoveryRequired).toBe(false);
     expect(result.snapshot.phase).toBe('ready');
     expect(result.snapshot.revisionId).toBeNull();
     expect(result.snapshot.error).toBeNull();
@@ -244,7 +203,7 @@ export const replayCollaborationCore = async (browser: Browser, fixture: Lifecyc
     expect(projectedState(result.snapshot)).toEqual(canonicalState(note));
   }
 
-  const domainState = (snapshot: CoreState) =>
+  const domainState = (snapshot: NotebookCoreSnapshot) =>
     Object.fromEntries(Object.entries(snapshot).filter(([key]) => key !== 'version'));
   expect(domainState(afterRecovery.get('viewer-a')!.snapshot)).toEqual(
     domainState(afterRecovery.get('viewer-b')!.snapshot)

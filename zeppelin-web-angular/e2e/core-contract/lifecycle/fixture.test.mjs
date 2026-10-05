@@ -70,6 +70,25 @@ const installReplaySessionDouble = async (replay, sessionId) => {
   return session;
 };
 
+test('socket messages arriving after disposal preserve the original replay failure', async () => {
+  const replay = createLifecycleReplay(
+    createLifecycleFixture([
+      createConnectionRecord('a', 'a1'),
+      createWebSocketRecord('a', 'a1', 'send', { op: 'GET_NOTE' })
+    ])
+  );
+  const viewer = await installReplaySessionDouble(replay, 'a');
+  viewer.connect();
+  const failure = new Error('Consumer rejected the captured message');
+  replay.dispose(failure);
+
+  assert.doesNotThrow(() => viewer.send('{"op":"GET_NOTE"}'));
+  assert.throws(
+    () => replay.assertComplete(),
+    error => error === failure
+  );
+});
+
 test('v2 rejects stale schemas, sequence gaps, session drift and frames after close', () => {
   const valid = createLifecycleFixture([
     createConnectionRecord('a', 'a1'),

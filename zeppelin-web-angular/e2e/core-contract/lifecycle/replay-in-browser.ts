@@ -30,11 +30,13 @@ declare global {
   interface Window {
     traceSockets: Record<string, WebSocket>;
     traceFrames: string[];
+    receiveTraceFrame?: (payload: string) => Promise<void>;
   }
 }
 
 export interface LifecycleReplayConsumer {
   initialize(page: Page, sessionId: string): Promise<void>;
+  receive?(page: Page, payload: string): void;
   enterContext(page: Page, context: RouteContext): Promise<void>;
   beforeSend(page: Page, record: Extract<LifecycleRecord, { kind: 'websocket' }>): Promise<void>;
   complete(viewers: ReadonlyMap<string, Page>): Promise<void>;
@@ -45,7 +47,11 @@ const openRecordedSocket = async (page: Page, connectionId: string) => {
     const state = window;
     const socket = new WebSocket('ws://fixture.test/ws');
     state.traceSockets[id] = socket;
-    socket.addEventListener('message', event => state.traceFrames.push(String(event.data)));
+    socket.addEventListener('message', async event => {
+      const payload = String(event.data);
+      await state.receiveTraceFrame?.(payload);
+      state.traceFrames.push(payload);
+    });
   }, connectionId);
 
   await expect.poll(() => page.evaluate(id => window.traceSockets[id].readyState, connectionId)).toBe(1);
@@ -139,6 +145,7 @@ export const replayLifecycleTrace = async (
   const viewers = new Map<string, Page>();
   const requests$ = new Subject<Promise<unknown>>();
   let failure: unknown;
+  let receiveFailure: Error | undefined;
   const cleanupErrors: unknown[] = [];
 
   const settledRequests = lastValueFrom(
@@ -182,6 +189,20 @@ export const replayLifecycleTrace = async (
       await page.goto('http://fixture.test/');
       await page.evaluate(() => Object.assign(window, { traceSockets: {}, traceFrames: [] }));
       await consumer?.initialize(page, session.id);
+      if (consumer?.receive) {
+        await page.exposeFunction('receiveTraceFrame', (payload: string) => {
+          try {
+            consumer.receive?.(page, payload);
+          } catch (error) {
+            receiveFailure ??= error instanceof Error ? error : new Error('Replay consumer failed', { cause: error });
+            try {
+              replay.dispose(receiveFailure);
+            } catch (cleanupError) {
+              cleanupErrors.push(cleanupError);
+            }
+          }
+        });
+      }
     }
 
     for (const record of fixture.records) {
@@ -200,6 +221,7 @@ export const replayLifecycleTrace = async (
 
     const observed = await observeFrames(viewers, fixture, faults);
     replay.assertComplete();
+    if (receiveFailure !== undefined) throw receiveFailure;
     await consumer?.complete(viewers);
 
     return observed;

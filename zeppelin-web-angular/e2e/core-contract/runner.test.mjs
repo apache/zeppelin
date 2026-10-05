@@ -22,7 +22,6 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { verifyLifecycleCoreReference } from './lifecycle/core/build-reference.mjs';
 import { replayLifecycleTrace } from './lifecycle/replay-in-browser.ts';
 import { fixtureMetadata } from './transport/doubles.mjs';
 
@@ -141,10 +140,6 @@ test('regular suite ignores an inherited capture run directory', () => {
   for (const project of config.projects.filter(project => project.name !== 'setup')) {
     assert.equal(project.use.storageState, 'playwright/.auth/user.json');
   }
-});
-
-test('Core consumer rejects the candidate checkout as an unpinned runtime reference', () => {
-  assert.throws(() => verifyLifecycleCoreReference(root), /Core reference must be checked out at/);
 });
 
 test('trace replay closes an allocated context when page creation fails', async () => {

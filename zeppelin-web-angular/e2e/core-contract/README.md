@@ -17,17 +17,17 @@ limitations under the License.
 
 # Notebook transport contract fixtures
 
-These tests record and replay notebook REST requests and WebSocket messages.
-A fixture is a JSON file containing captured traffic, its order, and its capture environment.
+Use these tests to replay recorded notebook REST requests and WebSocket messages without a Zeppelin server.
+A fixture stores the messages, their order, and the environment that produced them.
+The browser tests also compare two viewers' notebook states after disrupted collaboration messages and a full-note refetch.
 
-Use the stored fixtures to test replay without a Zeppelin server.
-Use live capture when you need to update the recorded behavior of Apache Zeppelin.
-The tests distinguish transport replay from convergence of actual Core state.
+To run the stored fixtures, follow [Run the tests](#run-the-tests).
+To record new server behavior, follow [Recreate the lifecycle captures](#recreate-the-lifecycle-captures).
 
 ## Run the tests
 
-Run these commands from `zeppelin-web-angular/` in the candidate checkout.
-Use the Node version in `.nvmrc` and install the frontend dependencies first:
+Run these commands from `zeppelin-web-angular/` in your working checkout.
+Use the Node version in `.nvmrc`:
 
 ```bash
 nvm use
@@ -35,8 +35,9 @@ npm ci
 npm run check:core-contract-fixtures
 ```
 
-The fixture command checks the formats, redaction, ordering, committed capture inventory,
-and TypeScript types. It does not require a browser or a Zeppelin server.
+This command runs the fixture and Core consumer tests, then checks TypeScript types.
+It covers fixture formats, redaction, message order, and the required set of stored captures.
+The tests do not start a browser or a Zeppelin server.
 
 For browser replay, install Chromium and run:
 
@@ -46,9 +47,9 @@ npm run e2e:core-contract
 ```
 
 This command uses [the dedicated Playwright configuration](../../playwright.core-contract.config.js).
-It runs without a Zeppelin server, authentication setup, or shared notebook cleanup.
-It checks recorded payloads and delivery order. Two Core convergence tests skip until you
-provide the reference checkout described below.
+It checks recorded messages, delivery order, and whether both viewers reach the recorded server state after recovery.
+The anonymous and authenticated collaboration captures both run by default.
+Replaying them requires no running Zeppelin server or login.
 
 Additional checks cover the capture infrastructure:
 
@@ -61,33 +62,25 @@ Additional checks cover the capture infrastructure:
 Maven runs the fixture checks in the test phase and server-helper checks in integration-test.
 Live capture requires an explicit command.
 
-### Test convergence with the reference Core
+### How the collaboration tests compare state
 
-These tests check that both viewers reach the captured server state after recovery.
-They require a separate checkout containing the reference Core and Angular adapter at the commit shown below.
+Each viewer runs in a separate browser context and has its own Core instance in Node.
+[consumer.ts](lifecycle/core/consumer.ts) converts messages received by that browser into events for the [test runtime](lifecycle/core/runtime/).
+Replay counts a message as delivered only after the consumer handles it.
+A consumer error fails the test.
 
-From `zeppelin-web-angular/`, prepare the reference and run:
+The tests delay, duplicate, drop, and reorder selected collaboration messages.
+Before recovery, they check unsaved local text, received patches, differing viewer titles, and the actual delivery order.
+The recorded `GET_NOTE` requests then fetch complete notes.
+The tests compare each Core snapshot with its separately recorded REST note and with the other viewer's snapshot.
 
-```bash
-git clone https://github.com/voidmatcha/zeppelin.git /tmp/zeppelin-core-reference
-git -C /tmp/zeppelin-core-reference checkout --detach 36b5f356c63413e43c26ebcd448af91b0f353ba2
-export ZEPPELIN_NOTEBOOK_CORE_REFERENCE=/tmp/zeppelin-core-reference
-npm run e2e:core-contract -- -g 'converges actual Core'
-```
+The comparison includes note IDs, paragraph IDs and order, text, execution status, progress, output, forms, and scheduler and display configuration.
+It also requires all paragraphs to be clean, with no unsaved local text.
+The latest collaboration-mode message supplies the expected participant list.
 
-The builder requires this exact commit and unchanged Core and adapter sources.
-It produces a test-only browser bundle and attaches source hashes to the test results.
-The reference code is not part of Apache master.
-
-Each test runs two independent Core instances against a collaboration capture.
-It applies a local draft and delays, duplicates, drops, or reorders selected received messages.
-After all fault deliveries settle, it replays the captured GET_NOTE recovery.
-The test compares both clean Core snapshots with their captured REST notes and with each other.
-The comparison covers note and paragraph identity, order, text, execution fields, results, forms,
-and scheduler/display configuration. Collaboration users come from the last delivered mode message.
-ACL and revision-history state have no REST-note comparison in these scenarios.
-
-Without the reference, successful wire replay does not establish Core convergence.
+These tests exercise message replay and the test runtime's state changes.
+They do not mount the production Angular notebook or test when it decides to recover.
+Permissions and revision history are outside the state comparison in these two scenarios.
 
 ## Captured lifecycle scenarios
 
@@ -97,25 +90,25 @@ The [manifest](../fixtures/notebook-lifecycle/manifest.json) records capture out
 All seven committed captures use Apache Zeppelin commit
 `74b51b28d6f3c1c170f44822beadba299df9a959`.
 
-| Fixture                        | Behavior covered                                                                                                                                                                                                                    |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `structural.json`              | WebSocket insert, copy, move, remove, and correlated commit. REST insert, move, and remove return full NOTE payloads. The fixture declares the two update sources separately.                                                       |
-| `revision-reconnect.json`      | Checkpoint, history, compare, restore, and live/revision reconnect requests. Live updates arrive on a revision route while its displayed text and paragraph count remain unchanged.                                                 |
-| `collaboration-anonymous.json` | Two independent browser contexts, patches, note updates, collaboration status, and final refetches.                                                                                                                                 |
-| `collaboration-auth.json`      | The collaboration flow with two distinct authenticated users. Credentials and principals are redacted.                                                                                                                              |
-| `association.json`             | A-to-B navigation, Job Manager, open, reload, home, new, and clone. A proxy holds one unchanged NOTE_B while B updates arrive before and after its release. The fixture records native browser delivery order and implicit replies. |
-| `commit-request-loss.json`     | A commit request drops before server delivery. The local draft remains unconfirmed until explicit reconciliation.                                                                                                                   |
-| `commit-reply-loss.json`       | The server accepts a commit, but replay drops its captured correlated reply. The same reconciliation reveals the accepted server text.                                                                                              |
+| Fixture                        | Behavior covered                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `structural.json`              | Paragraph insert, copy, move, remove, and commit. Captures separate WebSocket and REST operations and their replies.            |
+| `revision-reconnect.json`      | Checkpoint, history, comparison, restore, and reconnect. Captures live updates while the viewer remains on a revision.          |
+| `collaboration-anonymous.json` | Two independent browser contexts, patches, note updates, collaboration status, and final refetches.                             |
+| `collaboration-auth.json`      | The collaboration flow with two distinct authenticated users. Credentials and principals are redacted.                          |
+| `association.json`             | Navigation between notes, Job Manager, open, reload, home, new, and clone. Captures delivery order when a full note is delayed. |
+| `commit-request-loss.json`     | A commit request never reaches the server. A later refetch shows that the server still has the original text.                   |
+| `commit-reply-loss.json`       | The server accepts a commit, but its reply is lost. A later refetch shows that the server has the saved text.                   |
 
-The commit scenarios use a 250 ms observation deadline and explicit REST/GET_NOTE reconciliation.
-Angular does not provide an automatic save-ACK timeout/refetch outcome in these tests.
+The commit scenarios wait up to 250 ms for the save reply, then request the server state through REST and `GET_NOTE`.
+The test initiates this refetch, not an automatic Angular save timeout.
 A missing reply alone cannot distinguish request loss from reply loss.
 
 ## Recreate the lifecycle captures
 
-Use two checkouts: the candidate contains the capture tests, and the baseline supplies the server and UI.
+Live capture uses two checkouts: your working checkout supplies the tests, and a baseline checkout supplies the server and UI.
 To reproduce the committed baseline, use the Apache commit listed above.
-For a new baseline, record its full Apache master commit and build that exact checkout.
+For a new baseline, select a commit from Apache master and build that exact checkout.
 Live capture requires `/api/version` to report the selected commit.
 
 Use a Bash environment with JDK 11, the pinned Node version, curl, and lsof.
@@ -124,7 +117,7 @@ The Zeppelin launcher splits JVM arguments on whitespace, so the helper rejects 
 
 ### Prepare the baseline
 
-Start in the candidate repository root. Replace the baseline path with a location for your separate checkout:
+Start in your working repository root. Replace the baseline path with a location for the server checkout:
 
 ```bash
 export CANDIDATE_CHECKOUT="$(pwd)"
@@ -142,7 +135,7 @@ git -C "$BASELINE_CHECKOUT" checkout --detach 74b51b28d6f3c1c170f44822beadba299d
 GitNotebookRepo is required for revision capture. A registered interpreter, such as the built
 markdown interpreter, is required for clone. The scenarios do not execute interpreter code.
 
-Install the candidate's server helper at the same relative path in the baseline checkout:
+Copy the server helper from your working checkout to the same relative path in the baseline checkout:
 
 ```bash
 mkdir -p "$BASELINE_CHECKOUT/zeppelin-web-angular/e2e/core-contract/capture"
@@ -152,7 +145,7 @@ export CAPTURE_HELPER="$BASELINE_CHECKOUT/zeppelin-web-angular/e2e/core-contract
 ```
 
 The helper selects the repository from its own file location, not the current working directory.
-Invoking the helper from the candidate would launch the candidate server.
+Running the original helper in your working checkout launches that checkout's server instead of the baseline.
 
 ### Capture in anonymous mode
 
@@ -181,8 +174,8 @@ The server uses isolated configuration, notebook, search, recovery, log, and PID
 It clears inherited Zeppelin and JVM configuration and binds to loopback.
 `JAVA_HOME` and `PATH` still select your toolchain.
 
-Set `ZEPPELIN_E2E_SHIRO_INI` even in anonymous mode. The absent isolated `shiro.ini`
-prevents the login helper from selecting credentials from another checkout.
+Set `ZEPPELIN_E2E_SHIRO_INI` even in anonymous mode, where that file does not exist.
+This path prevents the login helper from selecting credentials from another checkout.
 The browser runner creates a unique temporary directory for auth state and results.
 Set `ZEPPELIN_CORE_CONTRACT_RUN_DIR` to retain them at a chosen location, using a separate directory for each run.
 
@@ -211,9 +204,8 @@ A test failure remains a failure in the manifest.
 
 Review all seven files and the manifest in `ZEPPELIN_LIFECYCLE_FIXTURE_DIR` before replacing committed fixtures.
 Check the scenario, covered operations, exclusions, baseline commit, and capture environment.
-The environment includes the origin, browser version, storage paths, authentication mode,
-interpreter groups, and progress configuration. Authenticated ordinary-user capture uses the helper
-manifest for configuration provenance because the configuration APIs require an administrator.
+The environment includes the server address, browser version, storage paths, authentication mode, interpreter groups, and progress configuration.
+In authenticated mode, the helper records configuration that the ordinary capture user cannot read through administrator-only APIs.
 
 Review redaction as described below. New note and paragraph IDs make recaptures differ even when the protocol stays unchanged.
 After replacing the committed files in `e2e/fixtures/notebook-lifecycle/`, run:
@@ -224,7 +216,7 @@ npm run e2e:core-contract
 ```
 
 The inventory check requires all seven captures to be valid, supported, and attributed to Apache master.
-Run the reference Core tests as well when reviewing collaboration recovery.
+The browser command includes both collaboration convergence tests.
 
 ## Fixture format and replay rules
 
@@ -280,7 +272,8 @@ A delayed frame that targets a closed socket fails replay.
 
 Replay fails on unexpected requests, mismatched frames, unconsumed records, or failed deliveries.
 Completion requires all REST responses and scheduled frames to settle.
-An expected input that never arrives reaches the Playwright test timeout.
+Replay waits up to 15 seconds for the next expected input or for completion.
+Playwright also applies the test's overall timeout.
 Recorded disconnects replay with code 1012 because the capture event does not expose the original close code.
 
 ## Redaction and capture limits
@@ -308,10 +301,7 @@ These fixtures replay complete REST bodies, not HTTP chunks, header availability
 Version 1 also lacks timing faults and reconnect boundaries.
 Binary rejection under native Playwright dispatch has no live-server test.
 
-The reference tests establish Core convergence for the named implementation and these captures.
-Production Core integration belongs to ZEPPELIN-6687. Reconnect storm/backoff and terminal teardown belong to ZEPPELIN-6696.
-Legacy/EventBus parity belongs to ZEPPELIN-6698. Authorization scenarios belong to ZEPPELIN-6673.
-Live interpreter execution, performance, and accessibility require separate E2E coverage.
+Use separate E2E tests for production notebook integration, reconnection policy, authorization, interpreter execution, performance, and accessibility.
 
 ## Where to make changes
 
@@ -320,7 +310,7 @@ Live interpreter execution, performance, and accessibility require separate E2E 
 | [capture/](capture/)                                                 | Isolated server start/stop helper and its tests                           |
 | [transport/](transport/)                                             | Version 1 format, redaction, transport recording/replay, and test doubles |
 | [lifecycle/](lifecycle/)                                             | Version 2 validation, recording, replay, and browser drivers              |
-| [lifecycle/core/](lifecycle/core/)                                   | Reference Core build and convergence checks                               |
+| [lifecycle/core/](lifecycle/core/)                                   | Wire-to-Core mapping, test runtime, and convergence checks                |
 | [port-proof/](port-proof/)                                           | Angular/React port identity and runtime import checks                     |
 | [../tests/notebook/core-contract/](../tests/notebook/core-contract/) | Browser scenarios                                                         |
 

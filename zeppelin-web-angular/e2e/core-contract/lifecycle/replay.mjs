@@ -230,7 +230,11 @@ class LifecycleReplay {
 
     // Own the socket on admission, even while its execution gate is waiting for another session.
     this.#ownedSockets.add(socket);
-    socket.onMessage(payload => this.#acceptSend(sessionId, socket, payload));
+    socket.onMessage(payload => {
+      if (this.#fatalError) return;
+
+      this.#acceptSend(sessionId, socket, payload);
+    });
     this.#publish(record, socket);
   }
 

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 import { readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { expect, test, type BrowserContext } from '@playwright/test';
 import {
@@ -134,34 +133,51 @@ test.describe('Notebook lifecycle transport fixtures', () => {
     }
   });
 
+  for (const delivery of ['first', 'last'] as const) {
+    test(`rejects replay when the consumer fails on the ${delivery} browser delivery`, async ({ browser }) => {
+      const fixture = JSON.parse(
+        readFileSync(path.join(lifecycleFixtureDirectory(), 'collaboration-anonymous.json'), 'utf8')
+      ) as LifecycleFixture;
+      const deliveryCount = fixture.records.filter(
+        record => record.kind === 'websocket' && record.websocket.direction === 'receive'
+      ).length;
+      const failingDelivery = delivery === 'first' ? 1 : deliveryCount;
+      const failure = new Error('Consumer rejected the captured message');
+      let received = 0;
+      let completed = false;
+
+      await test.step('When a native browser delivery fails in the consumer, replay preserves that failure', async () => {
+        await expect(
+          replayLifecycleTrace(browser, fixture, [], {
+            initialize: async () => undefined,
+            enterContext: async () => undefined,
+            beforeSend: async () => undefined,
+            receive: () => {
+              received += 1;
+              if (received === failingDelivery) throw failure;
+            },
+            complete: async () => {
+              completed = true;
+            }
+          })
+        ).rejects.toBe(failure);
+      });
+
+      await test.step('Then replay does not report consumer completion', async () => {
+        expect(completed).toBe(false);
+      });
+    });
+  }
+
   for (const file of ['collaboration-anonymous.json', 'collaboration-auth.json']) {
-    test(`converges actual Core states after collaboration faults in ${file}`, async ({ browser }, info) => {
-      const reference = process.env.ZEPPELIN_NOTEBOOK_CORE_REFERENCE;
-      test.skip(
-        !reference,
-        'Actual Core convergence requires the pinned reference checkout; see core-contract/README.md'
-      );
-      const bundle = JSON.parse(
-        execFileSync(
-          process.execPath,
-          [path.resolve('e2e/core-contract/lifecycle/core/build-reference.mjs'), path.resolve(reference!)],
-          { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }
-        )
-      ) as { script: string; provenance: unknown };
+    test(`converges Core states after collaboration faults in ${file}`, async ({ browser }, info) => {
       const fixture = JSON.parse(
         readFileSync(path.join(lifecycleFixtureDirectory(), file), 'utf8')
       ) as LifecycleFixture;
       expect(validateLifecycleFixture(fixture)).toEqual([]);
 
-      await test.step('Given the unchanged pinned Core and adapter in two independent viewers', async () => {
-        await info.attach('core-reference-provenance', {
-          body: JSON.stringify(bundle.provenance, null, 2),
-          contentType: 'application/json'
-        });
-      });
-
       await test.step('When delayed, duplicated, dropped and reordered events are followed by captured GET_NOTE recovery', async () => {
-        const proof = await replayCollaborationCore(browser, fixture, bundle.script);
+        const proof = await replayCollaborationCore(browser, fixture);
         await info.attach('core-convergence-proof', {
           body: JSON.stringify(proof, null, 2),
           contentType: 'application/json'
