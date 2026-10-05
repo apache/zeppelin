@@ -22,9 +22,10 @@ import {
   ParagraphConfigResult,
   ParagraphConfigResults,
   ParagraphEditorSetting,
-  ParagraphItem,
+  ParagraphSettings,
   ParagraphStates,
   isTerminalParagraphState,
+  ParagraphItem,
   ParagraphIResultsMsgItem,
   WebSocketMessage
 } from '@zeppelin/sdk';
@@ -55,10 +56,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
   configs: ParagraphConfigResults = {};
   progress = 0;
   colWidthOption = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  editorSetting: ParagraphEditorSetting = {
-    params: {},
-    forms: {}
-  };
+  editorSetting: ParagraphEditorSetting = {};
   private readonly outputState = new ParagraphOutputState();
   private readonly pendingParagraphSaves = new Map<string, { sequence: number; originalText?: string }>();
   private paragraphSaveSequence = 0;
@@ -110,10 +108,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
   getEditorSetting(data: MessageReceiveDataTypeMap[OP.EDITOR_SETTING]) {
     if (this.paragraph?.id === data.paragraphId) {
       this.paragraph.config.editorSetting = {
-        ...(this.paragraph.config.editorSetting ?? {
-          params: {},
-          forms: {}
-        }),
+        ...this.paragraph.config.editorSetting,
         ...data.editor
       };
       this.cdr.markForCheck();
@@ -404,7 +399,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  initializeDefault(config: ParagraphConfig, settings: ParagraphEditorSetting) {
+  initializeDefault(config: ParagraphConfig, settings: ParagraphSettings) {
     const forms = settings.forms;
 
     if (!config.colWidth) {
@@ -434,10 +429,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
 
     if (!config.editorSetting) {
-      config.editorSetting = {
-        params: {},
-        forms: {}
-      };
+      config.editorSetting = {};
     } else if (config.editorSetting.editOnDblClick) {
       this.editorSetting.isOutputHidden = config.editorSetting.editOnDblClick;
     }

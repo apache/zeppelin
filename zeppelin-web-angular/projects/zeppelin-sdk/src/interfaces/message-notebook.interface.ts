@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { ImportParagraphItem, ParagraphItem } from './message-paragraph.interface';
+import { DynamicFormParams, DynamicForms, ImportParagraphItem, ParagraphItem } from './message-paragraph.interface';
 
 interface ID {
   id: string;
@@ -73,24 +73,24 @@ export interface ImportNote {
 }
 
 export interface NoteAngularObjects {
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [interpreterGroupId: string]: NoteAngularObject[];
+}
+
+export interface NoteAngularObject {
+  name: string;
+  // Gson omits null object values and scope identifiers.
+  object?: unknown;
+  noteId?: string;
+  paragraphId?: string;
 }
 
 export interface NoteInfo {
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export interface NoteParams {
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
+export type NoteParams = DynamicFormParams;
 
-export interface NoteForms {
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
+export type NoteForms = DynamicForms;
 
 export interface RemoveNoteForms {
   noteId: string;

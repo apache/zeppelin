@@ -324,7 +324,7 @@ export class Message {
     noteId: string,
     paragraphId: string,
     name: string,
-    value: string,
+    value: unknown,
     interpreterGroupId: string
   ): void {
     this.send<OP.ANGULAR_OBJECT_UPDATED>(OP.ANGULAR_OBJECT_UPDATED, {
@@ -336,8 +336,7 @@ export class Message {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  angularObjectClientBind(noteId: string, name: string, value: any, paragraphId: string): void {
+  angularObjectClientBind(noteId: string, name: string, value: unknown, paragraphId: string): void {
     this.send<OP.ANGULAR_OBJECT_CLIENT_BIND>(OP.ANGULAR_OBJECT_CLIENT_BIND, {
       noteId,
       name,

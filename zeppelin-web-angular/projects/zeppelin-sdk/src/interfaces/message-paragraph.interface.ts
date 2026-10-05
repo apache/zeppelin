@@ -16,17 +16,23 @@ export enum DynamicFormsType {
   TextBox = 'TextBox',
   Password = 'Password',
   Select = 'Select',
-  CheckBox = 'CheckBox'
+  CheckBox = 'CheckBox',
+  Input = 'input',
+  LegacySelect = 'select',
+  LegacyCheckBox = 'checkbox'
 }
 
+// JSON representation of Java Object values in GUI and Input payloads.
+export type FormValue = string | number | boolean | null | FormValue[] | { [key: string]: FormValue };
+
 export interface DynamicFormsItem {
-  defaultValue: string | string[];
+  defaultValue: FormValue;
   hidden: boolean;
   name: string;
   displayName?: string;
   type: DynamicFormsType;
   argument?: string;
-  options?: Array<{ value: string; displayName?: string }>;
+  options?: Array<{ value: FormValue; displayName?: string }>;
 }
 
 export interface DynamicForms {
@@ -34,7 +40,12 @@ export interface DynamicForms {
 }
 
 export interface DynamicFormParams {
-  [key: string]: string | string[];
+  [key: string]: FormValue;
+}
+
+export interface ParagraphSettings {
+  params: DynamicFormParams;
+  forms: DynamicForms;
 }
 
 export interface ParagraphEditorSetting {
@@ -43,8 +54,6 @@ export interface ParagraphEditorSetting {
   isOutputHidden?: boolean;
   completionKey?: EditorCompletionKey;
   completionSupport?: boolean;
-  params: DynamicFormParams;
-  forms: DynamicForms;
 }
 
 // TODO(hsuanxyz)
@@ -130,10 +139,10 @@ export interface ParasInfo {
 }
 
 export interface RuntimeInfos {
-  jobUrl: RuntimeInfosJobUrl;
+  [propertyName: string]: ParagraphRuntimeInfo;
 }
 
-interface RuntimeInfosJobUrl {
+export interface ParagraphRuntimeInfo {
   propertyName: string;
   label: string;
   tooltip: string;
@@ -142,8 +151,8 @@ interface RuntimeInfosJobUrl {
   interpreterSettingId: string;
 }
 
-interface RuntimeInfosValuesItem {
-  jobUrl: string;
+export interface RuntimeInfosValuesItem {
+  [key: string]: string;
 }
 
 export interface ParagraphItem {
@@ -151,7 +160,7 @@ export interface ParagraphItem {
   user: string;
   dateUpdated: string;
   config: ParagraphConfig;
-  settings: ParagraphEditorSetting;
+  settings: ParagraphSettings;
   results?: ParagraphResults;
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   apps: any[];
@@ -227,7 +236,7 @@ export interface AngularObjectUpdated {
   noteId: string;
   paragraphId: string;
   name: string;
-  value: string;
+  value: unknown;
   interpreterGroupId: string;
 }
 
@@ -260,7 +269,7 @@ export interface AngularObjectUpdate {
 export interface AngularObjectClientBind {
   noteId: string;
   name: string;
-  value: string;
+  value: unknown;
   paragraphId: string;
 }
 
