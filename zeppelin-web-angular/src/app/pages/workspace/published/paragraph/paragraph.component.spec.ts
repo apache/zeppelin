@@ -12,7 +12,7 @@
 
 import { QueryList } from '@angular/core';
 import { convertToParamMap } from '@angular/router';
-import { DatasetType, Note, ParagraphItem } from '@zeppelin/sdk';
+import { DatasetType, Note, ParagraphItem, ParagraphState } from '@zeppelin/sdk';
 import { BehaviorSubject, EMPTY, of } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -32,7 +32,7 @@ vi.mock('../../share/result/result.component', () => ({ NotebookParagraphResultC
 
 import { PublishedParagraphComponent } from './paragraph.component';
 
-const snapshot = (noteId: string, status: string, text: string): Note => ({
+const snapshot = (noteId: string, status: ParagraphState, text: string): Note => ({
   note: {
     id: noteId,
     name: noteId,

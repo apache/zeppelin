@@ -109,6 +109,8 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @ViewChild(CdkPortalOutlet, { static: false }) portalOutlet!: CdkPortalOutlet;
 
   private destroy$ = new Subject<void>();
+  private outputResetVersion = 0;
+  private destroyed = false;
   datasetType = DatasetType;
   angularComponent: DynamicTemplate | null = null;
   innerHTML: string | SafeHtml = '';
@@ -332,6 +334,14 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
 
   renderDefaultDisplay() {
     this.frontEndError = '';
+    if (this.result.type === DatasetType.SVG || this.result.type === DatasetType.NULL) {
+      this.outputResetVersion++;
+      this.angularComponent = null;
+      this.destroyVisualizations();
+      if (this.portalOutlet?.hasAttached()) {
+        this.portalOutlet.detach();
+      }
+    }
     switch (this.result.type) {
       case DatasetType.TABLE:
         this.renderGraph();
@@ -345,9 +355,21 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       case DatasetType.IMG:
         this.renderImg();
         break;
+      case DatasetType.SVG:
+        this.renderSvg();
+        break;
       case DatasetType.ANGULAR:
         this.renderAngular();
         break;
+      case DatasetType.NULL:
+        break;
+      case DatasetType.NETWORK:
+        // NULL has no display; NETWORK has no renderer in the Angular UI.
+        break;
+      default: {
+        const _unhandled: never = this.result.type;
+        break;
+      }
     }
     this.cdr.detectChanges();
   }
@@ -363,13 +385,20 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderAngular(): void {
+    const resetVersion = this.outputResetVersion;
     this.runtimeCompilerService
       .createAndCompileTemplate(this.id, this.result.data)
       .then(data => {
+        if (resetVersion !== this.outputResetVersion) {
+          return;
+        }
         this.angularComponent = data;
         this.cdr.markForCheck();
       })
       .catch(error => {
+        if (resetVersion !== this.outputResetVersion) {
+          return;
+        }
         this.angularComponent = null;
         this.frontEndError = error.message;
         this.cdr.markForCheck();
@@ -410,6 +439,10 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.imgData = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${this.result.data}`);
   }
 
+  renderSvg(): void {
+    this.imgData = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.result.data)}`;
+  }
+
   setGraphConfig() {
     const config = this.config;
     if (!config || !config.graph) {
@@ -448,6 +481,11 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
       if (visualizationItem.isClassic) {
         // Classic visualization - delegate to ClassicVisualizationService
         const targetElementId = `p${this.id}_${config.graph.mode}`;
+        const resetVersion = this.outputResetVersion;
+        const isCurrentRender = () =>
+          !this.destroyed &&
+          resetVersion === this.outputResetVersion &&
+          targetElementId === `p${this.id}_${this.config?.graph?.mode}`;
         const emitter = (c: GraphConfig) => {
           if (!this.config) {
             throw new Error('config is not defined');
@@ -457,8 +495,22 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         };
 
         this.classicVisualizationService
-          .createClassicVisualization(visualizationItem.Class, targetElementId, config.graph, this.tableData, emitter)
+          .createClassicVisualization(
+            visualizationItem.Class,
+            targetElementId,
+            config.graph,
+            this.tableData,
+            emitter,
+            isCurrentRender
+          )
           .then(classicInstance => {
+            if (!classicInstance) {
+              return;
+            }
+            if (!isCurrentRender()) {
+              this.classicVisualizationService.destroyInstance(targetElementId, false, classicInstance);
+              return;
+            }
             visualizationItem.instance = classicInstance;
             this.cdr.markForCheck();
           })
@@ -590,6 +642,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.destroyVisualizations();
     this.classicVisualizationService.destroyAllInstances(true);
     this.destroy$.next();

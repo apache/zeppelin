@@ -63,6 +63,40 @@ describe('SingleResultRenderer', () => {
     expect(screen.getByRole('img').getAttribute('src')).toBe('data:image/png;base64,QUJD');
   });
 
+  it('renders SVG as an encoded image without inserting its markup into the page', () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>서울 # &</text><script>ignored()</script></svg>';
+    const { container } = render(<SingleResultRenderer index={0} result={result(DatasetType.SVG, svg)} />);
+
+    expect(screen.getByRole('img').getAttribute('src')).toBe(
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    );
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('script')).toBeNull();
+  });
+
+  it('updates the image format when an IMG result becomes SVG and back', () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" />';
+    const view = render(<SingleResultRenderer index={0} result={result(DatasetType.IMG, 'QUJD')} />);
+
+    view.rerender(<SingleResultRenderer index={0} result={result(DatasetType.SVG, svg)} />);
+    expect(screen.getByRole('img').getAttribute('src')).toBe(
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    );
+
+    view.rerender(<SingleResultRenderer index={0} result={result(DatasetType.IMG, 'REVG')} />);
+    expect(screen.getByRole('img').getAttribute('src')).toBe('data:image/png;base64,REVG');
+  });
+
+  it('clears the previous image when the result becomes NULL', () => {
+    const view = render(<SingleResultRenderer index={0} result={result(DatasetType.SVG, '<svg />')} />);
+    expect(screen.getByRole('img')).toBeTruthy();
+
+    view.rerender(<SingleResultRenderer index={0} result={result(DatasetType.NULL, 'ignored')} />);
+
+    expect(screen.queryByRole('img')).toBeNull();
+    expect(view.container.innerHTML).toBe('');
+  });
+
   it('renders HTML as markup rather than as text', () => {
     render(<SingleResultRenderer index={0} result={result(DatasetType.HTML, '<p>markup output</p>')} />);
 
@@ -76,8 +110,7 @@ describe('SingleResultRenderer', () => {
     expect(screen.getByText(/not supported in React environment/)).toBeTruthy();
   });
 
-  it('renders nothing for a type it has no renderer for', () => {
-    // NETWORK is declared by the SDK and reaches the default arm.
+  it('renders nothing for NETWORK, which has no renderer', () => {
     const { container } = render(<SingleResultRenderer index={0} result={result(DatasetType.NETWORK, 'graph')} />);
 
     expect(container.innerHTML).toBe('');
