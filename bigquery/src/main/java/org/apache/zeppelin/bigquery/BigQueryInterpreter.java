@@ -17,6 +17,7 @@
 package org.apache.zeppelin.bigquery;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.GenericJson;
@@ -130,6 +131,19 @@ public class BigQueryInterpreter extends Interpreter {
     }
   }
 
+  // BigQuery getQueryResults responds within ~200 seconds regardless of job completion,
+  // so a 200 second client timeout covers any wait_time.
+  static final int CONNECTION_TIMEOUT_MS = 200 * 1000;
+  static final int READ_TIMEOUT_MS = 200 * 1000;
+
+  static HttpRequestInitializer setTimeout(final HttpRequestInitializer requestInitializer) {
+    return request -> {
+      requestInitializer.initialize(request);
+      request.setConnectTimeout(CONNECTION_TIMEOUT_MS);
+      request.setReadTimeout(READ_TIMEOUT_MS);
+    };
+  }
+
   //Function that Creates an authorized client to Google Bigquery.
   private static Bigquery createAuthorizedClient() throws IOException {
     HttpTransport transport = new NetHttpTransport();
@@ -141,7 +155,7 @@ public class BigQueryInterpreter extends Interpreter {
       credential = credential.createScoped(bigqueryScopes);
     }
 
-    return new Bigquery.Builder(transport, jsonFactory, credential)
+    return new Bigquery.Builder(transport, jsonFactory, setTimeout(credential))
         .setApplicationName("Zeppelin/1.0 (GPN:Apache Zeppelin;)").build();
   }
 
