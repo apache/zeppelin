@@ -19,6 +19,8 @@ import { EventEmitter } from 'node:events';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { createLifecycleDeliveryScheduler } from './delivery-scheduler.mjs';
 import { createLifecycleRecorder, createLifecycleReplay, validateLifecycleFixture } from './fixture.mjs';
 import { fixtureMetadata, request } from '../transport/doubles.mjs';
 
@@ -773,4 +775,135 @@ test('capture normalization errors reject stop with their original cause', async
   });
   await assert.rejects(recorder.stop(), error => error === cause);
   assert.equal(page.listenerCount('request'), 0);
+});
+
+test('all consecutive inputs remain admissible while a REST response is being fulfilled', async () => {
+  const shape = { method: 'GET', url: '/api/notebook/n', headers: {}, bodyRaw: '' };
+  const source = fixture([
+    open('a', 'a1'),
+    { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
+    {
+      kind: 'rest',
+      sessionId: 'a',
+      requestId: 'r',
+      rest: { direction: 'response', request: shape, status: 200, headers: {}, bodyRaw: '' }
+    },
+    { kind: 'context', sessionId: 'a', context: { state: 'active', noteId: 'n', revisionId: null } },
+    frame('a', 'a1', 'send', { op: 'GET_NOTE' }),
+    frame('a', 'a1', 'send', { op: 'LIST_REVISION_HISTORY' }),
+    frame('a', 'a1', 'receive', { op: 'NOTE' })
+  ]);
+  const replay = createLifecycleReplay(source);
+  const viewer = await harness(replay, 'a');
+  viewer.connect();
+  await viewer.rest(
+    {
+      fulfill: async () => {
+        replay.context('a', source.records[3].context);
+        viewer.send('{"op":"GET_NOTE"}');
+        viewer.send('{"op":"LIST_REVISION_HISTORY"}');
+        assert.equal(replay.position(), 6);
+        assert.deepEqual(viewer.received, []);
+      }
+    },
+    request('GET', 'http://fixture.test/api/notebook/n', '', {})
+  );
+  await replay.waitForComplete();
+  assert.deepEqual(viewer.received, [{ op: 'NOTE' }]);
+  replay.dispose();
+});
+
+test('dispose closes an accepted socket waiting behind an earlier connection input', async () => {
+  const replay = createLifecycleReplay(fixture([open('a', 'a1'), open('b', 'b1')]));
+  const viewer = await harness(replay, 'b');
+  viewer.connect();
+  const waiting = replay.waitForPosition(2);
+  replay.dispose();
+  await assert.rejects(waiting, /disposed/);
+  assert.equal(viewer.closed.length, 1);
+});
+
+test('native delivery matching uses raw identity and closing a socket releases its listeners', async () => {
+  const page = new EventEmitter();
+  const socket = new EventEmitter();
+  socket.url = () => 'ws://fixture.test/ws';
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+  const envelope = { op: 'NOTE', msgId: 'capture:1', principal: 'private-user', data: { timestamp: 1740000000000 } };
+  page.emit('websocket', socket);
+  socket.emit('framereceived', { payload: JSON.stringify(envelope) });
+  socket.emit('close');
+  assert.equal(socket.listenerCount('framereceived'), 0);
+  assert.equal(socket.listenerCount('close'), 0);
+  assert.equal(socket.listenerCount('socketerror'), 0);
+  await recorder.stop();
+  assert.deepEqual(recorder.clientDelivery('a', [envelope]), [2]);
+  assert.doesNotMatch(JSON.stringify(recorder.snapshot()), /private-user|capture:1/);
+});
+
+test('automatic delivery failure rejects completion with the original cause', async () => {
+  const replay = createLifecycleReplay(fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]));
+  let connect;
+  await replay.install(
+    {
+      route: async () => {},
+      routeWebSocket: async (_pattern, handler) => {
+        connect = handler;
+      }
+    },
+    'a'
+  );
+  const cause = new Error('socket send failure');
+  const completion = replay.waitForComplete();
+  connect({
+    onMessage: () => {},
+    close: () => {},
+    send: () => {
+      throw cause;
+    }
+  });
+  await assert.rejects(completion, error => error === cause);
+  assert.throws(
+    () => replay.position(),
+    error => error === cause
+  );
+  replay.dispose();
+});
+
+test('a large delivery plan observes only the next release boundary', () => {
+  const count = 4000;
+  const records = Array.from({ length: count }, (_, index) => ({
+    sequence: index + 1,
+    kind: 'websocket',
+    websocket: { direction: 'receive' }
+  }));
+  const positions = new BehaviorSubject(0);
+  let active = 0;
+  let maximum = 0;
+  const consumed$ = new Observable(subscriber => {
+    maximum = Math.max(maximum, ++active);
+    const subscription = positions.subscribe(subscriber);
+    return () => {
+      active--;
+      subscription.unsubscribe();
+    };
+  });
+  let delivered = 0;
+  const scheduler = createLifecycleDeliveryScheduler(
+    { records },
+    [],
+    consumed$,
+    () => {
+      delivered++;
+    },
+    error => {
+      throw error;
+    }
+  );
+  for (let sequence = 1; sequence <= count; sequence++) positions.next(sequence);
+  assert.equal(maximum, 1);
+  assert.equal(active, 0);
+  assert.equal(delivered, count);
+  assert.equal(scheduler.hasPending(), false);
+  scheduler.dispose();
 });

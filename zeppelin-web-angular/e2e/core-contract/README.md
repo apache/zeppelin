@@ -509,19 +509,28 @@ must reproduce the complete observed sequence, including implicit replies.
 | `commit-request-loss.json`, `commit-reply-loss.json` | Same local editor draft and missing client ACK over a declared 250 ms observation window; different canonical server text; explicit targeted REST/GET_NOTE reconciliation. The real correlated reply in the reply-loss capture is preserved and dropped only by the replay plan. |
 
 The ordinary trace replay mounts a wire observer. Its assertions prove payload and
-order fidelity. Validation, recording and ordered replay have separate modules;
-`lifecycle/fixture.mjs` retains the public entry points. REST replay owns
-pending and in-flight requests, and all cursor advancement flushes the delivery
-scheduler through one function. Permanent failures terminate replay and surface
-their original cause; pending deliveries are reported separately.
+order fidelity. `lifecycle/replay-plan.mjs` contains request matching, correlation
+binding rules and fault-plan compilation without event subscriptions or I/O.
+The replay engine owns runtime identity maps and executes the captured records
+with `from(records)` and `concatMap`; it has no manual drain or Promise-resolver
+queue. Input gates are bounded to the recorded inputs. Unexpected runtime traffic
+is rejected synchronously before it reaches a gate. Automatic delivery failures
+reject progress/completion waiters with the original cause.
 
-Recorder event listeners are owned by RxJS `Subscription`s. Stop detaches all
-sources and completes the body-read stream; `mergeMap` lets already observed body
-reads finish concurrently before validation. Replay drain requests use a `Subject`
-and `concatMap` to serialize REST fulfillment while synchronous fixture steps stay
-synchronous. Delayed deliveries use RxJS `timer`; disposal unsubscribes pending
-timers. Request correlation and recorded sequence barriers remain explicit state.
+The admission boundary may advance for valid context/send inputs during REST
+fulfillment. Automatic outputs still wait for fulfillment. Fault delivery observes
+only the next compiled release boundary; independent `timer` deliveries do not
+block later boundaries. Completion waits for both the trace and delayed delivery.
+The browser driver awaits progress/completion streams rather than polling them.
 
+Recorder inputs are merged Playwright event streams. RxJS assigns sequence at
+observation before `mergeMap` starts asynchronous body reading; completed response
+records replace no earlier placeholder. Live snapshots expose completed records
+and may have gaps while reads are pending. Only a successful stop produces a
+complete, validated replay fixture. Stop detaches event sources and waits for all
+already observed reads, preserving the first failure. Closed socket streams include
+the close record and then release their listeners. Raw native delivery occurrence
+matching happens before public snapshots redact identities.
 
 ### Replay with an actual Core consumer
 

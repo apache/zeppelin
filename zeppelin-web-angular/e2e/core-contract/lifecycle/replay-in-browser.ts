@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 import { expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
+import { EMPTY, Subject, catchError, from, ignoreElements, lastValueFrom, mergeMap } from 'rxjs';
 import type { FixtureRestRequest } from '../transport/fixture.mjs';
 import {
   createLifecycleReplay,
@@ -128,18 +129,26 @@ export const replayLifecycleTrace = async (
   const replay = createLifecycleReplay(fixture, faults);
   const contexts: BrowserContext[] = [];
   const viewers = new Map<string, Page>();
-  const requests: Promise<unknown>[] = [];
+  const requests$ = new Subject<Promise<unknown>>();
   let failure: unknown;
-  const registerRequest = (request: Promise<unknown>) => {
-    requests.push(request);
-    void request.catch(error => {
-      failure ??= error;
-    });
-  };
-  const position = () => {
-    if (failure !== undefined) throw failure;
-    return replay.position();
-  };
+  const settledRequests = lastValueFrom(
+    requests$.pipe(
+      mergeMap(request =>
+        from(request).pipe(
+          catchError(error => {
+            replay.dispose(
+              error instanceof Error ? error : new Error('Replay browser request failed', { cause: error })
+            );
+            return EMPTY;
+          })
+        )
+      ),
+      ignoreElements()
+    ),
+    { defaultValue: undefined }
+  );
+  const registerRequest = (request: Promise<unknown>) => requests$.next(request);
+
   try {
     for (const session of fixture.sessions) {
       const context = await browser.newContext();
@@ -160,14 +169,15 @@ export const replayLifecycleTrace = async (
 
     for (const record of fixture.records) {
       const index = record.sequence - 1;
-      if (position() > index) continue;
-      await expect.poll(position, { timeout: 15000 }).toBeGreaterThanOrEqual(index);
-      if (position() === index)
+      if (replay.position() > index) continue;
+      await replay.waitForPosition(index);
+      if (replay.position() === index)
         await driveRecord(viewers.get(record.sessionId)!, record, replay, registerRequest, consumer);
     }
 
-    await Promise.all(requests);
-    await expect.poll(() => replay.isComplete(), { timeout: 15000 }).toBe(true);
+    requests$.complete();
+    await settledRequests;
+    await replay.waitForComplete();
     const observed = await observeFrames(viewers, fixture, faults);
     replay.assertComplete();
     await consumer?.complete(viewers);
@@ -176,6 +186,7 @@ export const replayLifecycleTrace = async (
     failure = error;
     throw error;
   } finally {
+    requests$.complete();
     replay.dispose();
     const cleanup = await Promise.allSettled(contexts.map(context => context.close()));
     const errors = cleanup.flatMap(result => (result.status === 'rejected' ? [result.reason] : []));

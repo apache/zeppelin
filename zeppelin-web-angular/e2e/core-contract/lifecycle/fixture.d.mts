@@ -108,7 +108,9 @@ export interface LifecycleReplay {
   assertComplete(): void;
   isComplete(): boolean;
   position(): number;
-  dispose(): void;
+  waitForPosition(sequence: number): Promise<number>;
+  waitForComplete(): Promise<void>;
+  dispose(error?: Error): void;
 }
 export declare const lifecycleFixtureVersion: number;
 export declare function validateLifecycleFixture(fixture: unknown): string[];

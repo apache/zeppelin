@@ -15,76 +15,40 @@
  * limitations under the License.
  */
 
-import { Subscription, finalize, tap, timer } from 'rxjs';
+import { BehaviorSubject, concatMap, filter, from, map, mergeMap, of, take, tap, timer } from 'rxjs';
+import { compileDeliveryPlan } from './replay-plan.mjs';
 
-const maximumTimerDelay = 2_147_483_647;
+export function createLifecycleDeliveryScheduler(fixture, faults, consumed$, deliver, onError) {
+  const releases = compileDeliveryPlan(fixture, faults);
 
-function requireIntegerRange(value, minimum, maximum, field) {
-  const valid = Number.isInteger(value) && value >= minimum && value <= maximum;
-  if (!valid) throw new Error(`Fault ${field} must be an integer between ${minimum} and ${maximum}`);
-}
+  const completed$ = new BehaviorSubject(false);
+  const subscription = from(releases)
+    .pipe(
+      // Only the next release boundary is observed; timer deliveries continue independently.
+      concatMap(([boundary, batch]) =>
+        consumed$.pipe(
+          filter(sequence => sequence >= boundary),
+          take(1),
+          map(() => batch)
+        )
+      ),
+      mergeMap(batch =>
+        from(batch).pipe(
+          mergeMap(entry =>
+            (entry.delayMs ? timer(entry.delayMs) : of(0)).pipe(tap(() => deliver(entry.record, entry.copies)))
+          )
+        )
+      )
+    )
+    .subscribe({ complete: () => completed$.next(true), error: onError });
 
-function validateFault(fault, records) {
-  requireIntegerRange(fault.sequence, 1, records.length, 'sequence');
-  const record = records[fault.sequence - 1];
-  if (record.kind !== 'websocket') throw new Error('Fault must select a receive frame');
-  if (record.websocket.direction !== 'receive') throw new Error('Fault must select a receive frame');
-
-  requireIntegerRange(fault.copies ?? 1, 0, 10, 'copies');
-  requireIntegerRange(fault.afterSequence ?? fault.sequence, fault.sequence, records.length, 'afterSequence');
-  const delay = fault.delayMs ?? 0;
-  if (!Number.isFinite(delay)) throw new Error('Fault delayMs must be finite');
-  if (delay < 0 || delay > maximumTimerDelay) {
-    throw new Error(`Fault delayMs must be between 0 and ${maximumTimerDelay}`);
-  }
-}
-
-export function createLifecycleDeliveryScheduler(fixture, faults, deliver, onError) {
-  const faultMap = new Map();
-  for (const fault of faults) {
-    validateFault(fault, fixture.records);
-    if (faultMap.has(fault.sequence)) throw new Error('Fault sequence must be unique');
-    faultMap.set(fault.sequence, fault);
-  }
-
-  const deferred = [];
-  const subscriptions = new Subscription();
-  let pendingTimers = 0;
-  const flush = cursor => {
-    for (let index = deferred.length - 1; index >= 0; index--) {
-      const entry = deferred[index];
-      if (entry.afterSequence > cursor) continue;
-      deferred.splice(index, 1);
-      if (entry.delayMs) {
-        pendingTimers++;
-        subscriptions.add(
-          timer(entry.delayMs)
-            .pipe(
-              tap(() => deliver(entry.record, entry.copies)),
-              finalize(() => pendingTimers--)
-            )
-            .subscribe({ error: onError })
-        );
-      } else deliver(entry.record, entry.copies);
-    }
-  };
   return {
-    enqueue(record) {
-      const fault = faultMap.get(record.sequence) ?? {};
-      deferred.push({
-        record,
-        copies: fault.copies ?? 1,
-        delayMs: fault.delayMs ?? 0,
-        afterSequence: fault.afterSequence ?? record.sequence
-      });
-    },
-    flush,
+    completed$,
     hasPending() {
-      return deferred.length > 0 || pendingTimers > 0;
+      return !completed$.value;
     },
     dispose() {
-      subscriptions.unsubscribe();
-      deferred.length = 0;
+      subscription.unsubscribe();
     }
   };
 }

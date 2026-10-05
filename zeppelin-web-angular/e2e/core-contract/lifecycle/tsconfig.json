@@ -6,13 +6,8 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": [
-      "node"
-    ],
-    "lib": [
-      "ES2023",
-      "DOM"
-    ]
+    "types": ["node"],
+    "lib": ["ES2023", "DOM"]
   },
   "include": [
     "capture.ts",

@@ -15,361 +15,256 @@
  * limitations under the License.
  */
 
-import { EMPTY, Subject, concatMap, defer, from } from 'rxjs';
+import {
+  AsyncSubject,
+  BehaviorSubject,
+  EMPTY,
+  ReplaySubject,
+  Subject,
+  combineLatest,
+  concatMap,
+  defer,
+  filter,
+  firstValueFrom,
+  from,
+  take,
+  takeUntil,
+  tap,
+  timeout
+} from 'rxjs';
 import { createLifecycleDeliveryScheduler } from './delivery-scheduler.mjs';
-import { isNotebookRestUrl, captureRestRequest, stableJson, webSocketPayloadMatches } from '../transport/fixture.mjs';
+import { isNotebookRestUrl, captureRestRequest, stableJson } from '../transport/fixture.mjs';
+import {
+  matchesRequest,
+  consecutiveRecords,
+  createMessageCorrelation,
+  matchOutgoingFrame,
+  incomingFrame,
+  requiresRuntimeInput
+} from './replay-plan.mjs';
 import { validateLifecycleFixture } from './validation.mjs';
 
 const notebookSocket = url => new URL(url).pathname === '/ws';
 
-const matchesRequest = (expected, actual) => {
-  const normalize = value => ({ ...value, headers: { accept: '*/*', ...value.headers } });
-  return stableJson(normalize(expected)) === stableJson(normalize(actual));
-};
-
-function consecutiveRecords(records, cursor, predicate) {
-  const batch = [];
-
-  for (const record of records.slice(cursor)) {
-    if (!predicate(record)) {
-      break;
-    }
-    batch.push(record);
-  }
-
-  return batch;
-}
-
-function createMessageCorrelation(fixture) {
-  const recordedIds = new Map();
-  const runtimeIds = new Map();
-  const sentIds = new Set();
-  const receivedIds = new Set();
-
-  for (const record of fixture.records) {
-    if (record.kind !== 'websocket') {
-      continue;
-    }
-    const envelope = JSON.parse(record.websocket.payloadText);
-    if (typeof envelope.msgId === 'string') {
-      const ids = record.websocket.direction === 'send' ? sentIds : receivedIds;
-      ids.add(envelope.msgId);
-    }
-  }
-
-  const remoteIds = new Set([...receivedIds].filter(id => !sentIds.has(id)));
-
-  return {
-    matchSend(record, payload) {
-      const expected = JSON.parse(record.websocket.payloadText);
-      const actual = JSON.parse(String(payload));
-      const idKey = expected.msgId;
-      const liveKey = actual.msgId;
-      if (expected.msgId === null && actual.msgId !== null) {
-        throw new Error('Lifecycle msgId correlation mismatch');
-      }
-      if (typeof expected.msgId === 'string') {
-        if (typeof liveKey !== 'string' || liveKey.length === 0) {
-          throw new Error('Lifecycle msgId correlation mismatch: runtime ID must be a non-empty string');
-        }
-        if (remoteIds.has(liveKey)) {
-          throw new Error('Lifecycle msgId correlation mismatch: runtime ID collides with a remote ID');
-        }
-        if (recordedIds.has(idKey) && recordedIds.get(idKey) !== liveKey) {
-          throw new Error('Lifecycle msgId correlation mismatch: recorded ID already has a different binding');
-        }
-        if (runtimeIds.has(liveKey) && runtimeIds.get(liveKey) !== idKey) {
-          throw new Error('Lifecycle msgId correlation mismatch: runtime ID already belongs to another recorded ID');
-        }
-        expected.msgId = actual.msgId;
-      }
-      if (!webSocketPayloadMatches(JSON.stringify(expected), payload)) {
-        throw new Error('Lifecycle frame mismatch');
-      }
-      if (typeof expected.msgId === 'string') {
-        recordedIds.set(idKey, actual.msgId);
-        runtimeIds.set(liveKey, idKey);
-      }
-    },
-    replyPayload(record) {
-      const envelope = JSON.parse(record.websocket.payloadText);
-      const binding = recordedIds.get(envelope.msgId);
-      if (typeof envelope.msgId === 'string' && !binding) {
-        if (runtimeIds.has(envelope.msgId) && runtimeIds.get(envelope.msgId) !== envelope.msgId) {
-          throw new Error('Lifecycle msgId correlation mismatch');
-        }
-        recordedIds.set(envelope.msgId, envelope.msgId);
-        runtimeIds.set(envelope.msgId, envelope.msgId);
-      }
-      return binding ? JSON.stringify({ ...envelope, msgId: binding }) : record.websocket.payloadText;
-    }
-  };
-}
-
-function createRestReplayQueue() {
-  const waiting = [];
-  const delivering = new Set();
-
-  return {
-    enqueue(route, sessionId, shape) {
-      return new Promise((resolve, reject) => waiting.push({ route, sessionId, shape, resolve, reject }));
-    },
-    match(record) {
-      const request = waiting.find(entry => {
-        if (entry.requestId !== undefined) return false;
-        if (entry.sessionId !== record.sessionId) return false;
-        return matchesRequest(record.rest.request, entry.shape);
-      });
-      if (!request) return false;
-      request.requestId = record.requestId;
-      return true;
-    },
-    takeResponse(record) {
-      const index = waiting.findIndex(
-        entry => entry.sessionId === record.sessionId && entry.requestId === record.requestId
-      );
-      if (index < 0) return null;
-      const request = waiting.splice(index, 1)[0];
-      delivering.add(request);
-      return request;
-    },
-    async respond(request, response) {
-      try {
-        await request.route.fulfill({
-          status: response.status,
-          headers: response.headers,
-          body: response.bodyRaw ?? JSON.stringify(response.bodyJson)
-        });
-        request.resolve();
-      } catch (error) {
-        request.reject(error);
-        throw error;
-      } finally {
-        delivering.delete(request);
-      }
-    },
-    abort(error) {
-      waiting.splice(0).forEach(request => request.reject(error));
-      delivering.forEach(request => request.reject(error));
-    },
-    pending() {
-      return { requests: waiting.length, responses: delivering.size };
-    }
-  };
-}
-
-// Faults change delivery only. Captured records, payloads and sequence numbers stay immutable.
+// Each recorded input has one bounded gate. Unmatched runtime traffic is rejected before entering the stream.
 export function createLifecycleReplay(fixture, faults = []) {
   const errors = validateLifecycleFixture(fixture);
-  if (errors.length) {
-    throw new Error(errors.join('\n'));
-  }
+  if (errors.length) throw new Error(errors.join('\n'));
+
+  const inputs = new Map(
+    fixture.records.filter(requiresRuntimeInput).map(record => [record.sequence, new ReplaySubject(1)])
+  );
   const sockets = new Map();
-  const connectingSockets = new Map();
+  const ownedSockets = new Set();
+  const requests = new Map();
   const installedSessions = new Set();
-  const restQueue = createRestReplayQueue();
-
+  // Admission may lead effect execution: valid context/send inputs can arrive during REST fulfillment.
+  // Automatic outputs remain serialized by the trace stream; this boundary only moves forward.
+  const admitted$ = new BehaviorSubject(0);
+  const stopped$ = new Subject();
+  const traceDone$ = new BehaviorSubject(false);
   const correlation = createMessageCorrelation(fixture);
-  let cursor = 0;
   let fatalError;
-  const drainRequests = new Subject();
-  let drainSubscription;
 
-  const abortPending = error => {
-    fatalError ??= error;
-    restQueue.abort(fatalError);
+  const abort = error => {
+    if (fatalError) return;
+    fatalError = error;
+    stopped$.error(error);
+    admitted$.error(error);
     deliveries.dispose();
-    drainSubscription?.unsubscribe();
-    drainRequests.complete();
+    inputs.clear();
+    requests.clear();
   };
-
   const fail = error => {
-    abortPending(error);
+    abort(error);
     throw fatalError;
   };
-
+  const position = () => {
+    if (fatalError) throw fatalError;
+    return admitted$.value;
+  };
+  const publish = (record, value) => {
+    position();
+    const gate = inputs.get(record.sequence);
+    if (gate.isStopped) return fail(new Error('Lifecycle input was already consumed'));
+    gate.next(value);
+    gate.complete();
+    if (!fatalError && (record.kind === 'context' || record.kind === 'websocket')) advance(record);
+  };
+  const requestKey = record => `${record.sessionId}:${record.requestId}`;
+  const bindMessageId = binding => {
+    if (!binding) return;
+    const [recorded, runtime] = binding;
+    correlation.recorded.set(recorded, runtime);
+    correlation.runtime.set(runtime, recorded);
+  };
   const deliver = (record, copies) => {
     if (!copies) return;
     const socket = sockets.get(record.connectionId);
-    if (!socket) {
-      return fail(new Error('Delayed frame targets a closed connection'));
-    }
-    const payload = correlation.replyPayload(record);
+    if (!socket) throw new Error('Delayed frame targets a closed connection');
+    const { binding, payload } = incomingFrame(record, correlation);
+    bindMessageId(binding);
     for (let copy = 0; copy < copies; copy++) socket.send(payload);
   };
-
-  const deliveries = createLifecycleDeliveryScheduler(fixture, faults, deliver, abortPending);
-
-  const advance = () => {
-    cursor++;
-    deliveries.flush(cursor);
+  const deliveries = createLifecycleDeliveryScheduler(fixture, faults, admitted$, deliver, abort);
+  const advance = record => {
+    const consumed = Math.max(admitted$.value, record.sequence);
+    admitted$.next(consumed);
   };
 
-  const consumeConnection = record => {
-    if (record.event === 'close') {
-      sockets.get(record.connectionId).close({ code: 1012, reason: 'Recorded disconnect' });
-      sockets.delete(record.connectionId);
-      return true;
-    }
-    const socket = connectingSockets.get(record.sessionId);
-    if (!socket) return false;
-    connectingSockets.delete(record.sessionId);
-    sockets.set(record.connectionId, socket);
-    return true;
-  };
-
-  const consumeAvailable = record => {
+  const execute = (record, input) => {
+    inputs.delete(record.sequence);
     switch (record.kind) {
       case 'connection':
-        return consumeConnection(record);
+        if (record.event === 'open') sockets.set(record.connectionId, input);
+        else {
+          sockets.get(record.connectionId).close({ code: 1012, reason: 'Recorded disconnect' });
+          ownedSockets.delete(sockets.get(record.connectionId));
+          sockets.delete(record.connectionId);
+        }
+        break;
       case 'websocket':
-        if (record.websocket.direction === 'send') return false;
-        deliveries.enqueue(record);
-        return true;
+        break;
       case 'rest':
-        return restQueue.match(record);
-      case 'context':
-        return false;
+        if (record.rest.direction === 'response') {
+          const request = requests.get(requestKey(record));
+          // The next input becomes admissible before fulfillment; later delivery still waits for it.
+          advance(record);
+          return defer(() =>
+            request.route.fulfill({
+              status: record.rest.status,
+              headers: record.rest.headers,
+              body: record.rest.bodyRaw ?? JSON.stringify(record.rest.bodyJson)
+            })
+          ).pipe(
+            tap(() => {
+              requests.delete(requestKey(record));
+              request.completed.next();
+              request.completed.complete();
+            })
+          );
+        }
+        break;
     }
-  };
-
-  const drain = () => {
-    while (cursor < fixture.records.length) {
-      if (fatalError) throw fatalError;
-      const record = fixture.records[cursor];
-      if (record.kind === 'rest' && record.rest.direction === 'response') {
-        const response = restQueue.takeResponse(record);
-        if (!response) break;
-        // Advance before fulfillment so the next input may cross this response barrier.
-        advance();
-        return from(restQueue.respond(response, record.rest)).pipe(concatMap(() => defer(drain)));
-      }
-
-      if (!consumeAvailable(record)) break;
-      advance();
-    }
+    advance(record);
     return EMPTY;
   };
 
-  drainSubscription = drainRequests.pipe(concatMap(() => defer(drain))).subscribe({ error: abortPending });
-  const scheduleDrain = () => drainRequests.next();
+  from(fixture.records)
+    .pipe(
+      concatMap(record => {
+        const gate = inputs.get(record.sequence);
+        return gate
+          ? gate.pipe(
+              take(1),
+              concatMap(input => execute(record, input))
+            )
+          : defer(() => execute(record));
+      }),
+      takeUntil(stopped$)
+    )
+    .subscribe({ error: abort, complete: () => traceDone$.next(true) });
 
   return {
     async install(page, sessionId) {
-      if (fatalError) {
-        throw fatalError;
-      }
+      position();
       if (installedSessions.has(sessionId)) throw new Error('Replay session is already installed');
       if (!fixture.sessions.some(session => session.id === sessionId))
         throw new Error('Replay requires a recorded session');
       installedSessions.add(sessionId);
       await page.route('**/api/**', async (route, request) => {
-        if (!isNotebookRestUrl(request.url())) {
-          return route.fallback();
-        }
-        if (fatalError) {
-          throw fatalError;
-        }
+        if (!isNotebookRestUrl(request.url())) return route.fallback();
         const shape = captureRestRequest(request);
-        // Only consecutive requests may arrive in a different order.
-        const requestBatch = consecutiveRecords(
+        const batch = consecutiveRecords(
           fixture.records,
-          cursor,
+          position(),
           record => record.kind === 'rest' && record.rest.direction === 'request'
         );
-
-        if (
-          !requestBatch.some(record => record.sessionId === sessionId && matchesRequest(record.rest.request, shape))
-        ) {
-          return fail(new Error(`Unexpected lifecycle REST request: ${stableJson(shape)}`));
-        }
-        const response = restQueue.enqueue(route, sessionId, shape);
-        scheduleDrain();
+        const record = batch.find(
+          record =>
+            record.sessionId === sessionId &&
+            !inputs.get(record.sequence).isStopped &&
+            matchesRequest(record.rest.request, shape)
+        );
+        if (!record) return fail(new Error(`Unexpected lifecycle REST request: ${stableJson(shape)}`));
+        const completed = new AsyncSubject();
+        requests.set(requestKey(record), { route, completed });
+        const response = firstValueFrom(completed.pipe(takeUntil(stopped$)));
+        publish(record, request);
         await response;
       });
       await page.routeWebSocket(notebookSocket, socket => {
-        const connectionBatch = consecutiveRecords(
+        const batch = consecutiveRecords(
           fixture.records,
-          cursor,
+          position(),
           record => record.kind === 'connection' && record.event === 'open'
         );
-
-        if (fatalError) return fail(fatalError);
-        if (connectingSockets.has(sessionId)) {
-          return fail(new Error('Unexpected lifecycle WebSocket connection: session already connecting'));
-        }
-        if (!connectionBatch.some(record => record.sessionId === sessionId)) {
-          return fail(new Error('Unexpected lifecycle WebSocket connection'));
-        }
-        connectingSockets.set(sessionId, socket);
+        const record = batch.find(record => record.sessionId === sessionId && !inputs.get(record.sequence).isStopped);
+        if (!record) return fail(new Error('Unexpected lifecycle WebSocket connection'));
+        ownedSockets.add(socket);
         socket.onMessage(payload => {
-          const record = fixture.records[cursor];
-          if (fatalError) return fail(fatalError);
-          if (record?.kind !== 'websocket') {
+          const expected = fixture.records[position()];
+          if (expected?.kind !== 'websocket')
             return fail(new Error('Lifecycle WebSocket send out of order: expected another record kind'));
-          }
-          if (record.websocket.direction !== 'send') {
+          if (expected.websocket.direction !== 'send')
             return fail(new Error('Lifecycle WebSocket send out of order: expected a receive'));
-          }
-          const ownsSocket = record.sessionId === sessionId && sockets.get(record.connectionId) === socket;
-          if (!ownsSocket) {
+          if (expected.sessionId !== sessionId || sockets.get(expected.connectionId) !== socket)
             return fail(new Error('Lifecycle WebSocket send out of order'));
-          }
           try {
-            correlation.matchSend(record, payload);
+            bindMessageId(matchOutgoingFrame(expected, payload, correlation));
           } catch (error) {
             return fail(error);
           }
-          advance();
-          scheduleDrain();
+          publish(expected, payload);
         });
-        scheduleDrain();
+        publish(record, socket);
       });
     },
     context(sessionId, context) {
-      if (fatalError) return fail(fatalError);
-      const record = fixture.records[cursor];
+      const record = fixture.records[position()];
       if (record?.kind !== 'context')
         return fail(new Error('Lifecycle route context out of order: expected another record kind'));
       if (record.sessionId !== sessionId) return fail(new Error('Lifecycle route context out of order: wrong session'));
       if (stableJson(record.context) !== stableJson(context))
         return fail(new Error('Lifecycle route context out of order: different route'));
-      advance();
-      scheduleDrain();
+      publish(record, context);
     },
     assertComplete() {
-      if (!this.isComplete()) {
-        const pending = restQueue.pending();
+      if (!this.isComplete())
         throw new Error(
-          `Lifecycle fixture has unconsumed records or pending deliveries: ${JSON.stringify({
-            records: fixture.records.length - cursor,
-            restRequests: pending.requests,
-            restResponses: pending.responses,
-            scheduledDelivery: deliveries.hasPending(),
-            connectingSockets: connectingSockets.size
-          })}`
+          `Lifecycle fixture has unconsumed records or pending deliveries: ${JSON.stringify({ records: fixture.records.length - position(), restRequests: requests.size, scheduledDelivery: deliveries.hasPending() })}`
         );
-      }
     },
     isComplete() {
-      if (fatalError) throw fatalError;
-      if (cursor !== fixture.records.length) return false;
-      const pending = restQueue.pending();
-      if (pending.requests > 0) return false;
-      if (pending.responses > 0) return false;
-      if (deliveries.hasPending()) return false;
-      return connectingSockets.size === 0;
+      position();
+      return traceDone$.value && !deliveries.hasPending();
     },
-    position() {
-      if (fatalError) throw fatalError;
-      return cursor;
+    position,
+    waitForComplete() {
+      return firstValueFrom(
+        combineLatest([traceDone$, deliveries.completed$]).pipe(
+          filter(([trace, delivery]) => trace && delivery),
+          take(1),
+          timeout(15000),
+          takeUntil(stopped$)
+        )
+      ).then(() => undefined);
     },
-    dispose() {
-      abortPending(new Error('Lifecycle replay disposed'));
-      sockets.forEach(socket => socket.close());
+    waitForPosition(sequence) {
+      return firstValueFrom(
+        admitted$.pipe(
+          filter(position => position >= sequence),
+          take(1),
+          timeout(15000),
+          takeUntil(stopped$)
+        )
+      );
+    },
+    dispose(error = new Error('Lifecycle replay disposed')) {
+      abort(error);
+      ownedSockets.forEach(socket => socket.close());
+      ownedSockets.clear();
       sockets.clear();
-      connectingSockets.forEach(socket => socket.close());
-      connectingSockets.clear();
     }
   };
 }
