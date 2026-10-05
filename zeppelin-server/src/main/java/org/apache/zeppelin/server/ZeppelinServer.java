@@ -565,7 +565,11 @@ public class ZeppelinServer implements AutoCloseable {
 
     String shiroIniPath = zConf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
-      webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
+      // Shiro's ResourceUtils strips the "file:" prefix and opens the remainder directly
+      // with a FileInputStream, without decoding any URI escaping. Using File#toURI() here
+      // would percent-encode characters such as spaces (e.g. a space becomes %20), which
+      // Shiro would then fail to find on disk, so prepend the raw path instead.
+      webapp.setInitParameter("shiroConfigLocations", "file:" + shiroIniPath);
       webapp
           .addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
           .setInitParameter("staticSecurityManagerEnabled", "true");
