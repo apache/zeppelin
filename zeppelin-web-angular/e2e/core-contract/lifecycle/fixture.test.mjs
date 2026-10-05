@@ -907,3 +907,80 @@ test('a large delivery plan observes only the next release boundary', () => {
   assert.equal(scheduler.hasPending(), false);
   scheduler.dispose();
 });
+
+test('recorder settles independent sessions while preserving their shared observation order', async () => {
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  const finishes = [];
+  const pages = [];
+  for (const sessionId of ['a', 'b']) {
+    const page = new EventEmitter();
+    pages.push(page);
+    recorder.install(page, sessionId);
+    const body = new Promise(resolve => finishes.push(resolve));
+    const source = request('GET', 'http://fixture.test/api/notebook/n', '', {});
+    source.response = async () => ({
+      headers: () => ({ 'content-type': 'application/json' }),
+      status: () => 200,
+      text: () => body
+    });
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+  }
+
+  let settled = false;
+  const stopping = recorder.stop().then(() => {
+    settled = true;
+  });
+  for (const page of pages) assert.equal(page.listenerCount('requestfinished'), 0);
+  finishes[1]('{"viewer":"b"}');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(settled, false);
+  finishes[0]('{"viewer":"a"}');
+  await stopping;
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  assert.deepEqual(capture.sessions, [{ id: 'a' }, { id: 'b' }]);
+  assert.deepEqual(
+    capture.records.map(record => [record.sequence, record.sessionId, record.requestId]),
+    [
+      [1, 'a', 'a:request:1'],
+      [2, 'a', 'a:request:1'],
+      [3, 'b', 'b:request:1'],
+      [4, 'b', 'b:request:1']
+    ]
+  );
+  assert.deepEqual(
+    capture.records.filter(record => record.rest.direction === 'response').map(record => record.rest.bodyJson),
+    [{ viewer: 'a' }, { viewer: 'b' }]
+  );
+});
+
+test('dispose attempts every owned socket and releases ownership when close fails', async () => {
+  const replay = createLifecycleReplay(fixture([open('a', 'a1'), open('b', 'b1')]));
+  const cause = new Error('first socket close failed');
+  const closed = [];
+  for (const sessionId of ['a', 'b']) {
+    await replay.install(
+      {
+        route: async () => {},
+        routeWebSocket: async (_pattern, connect) =>
+          connect({
+            onMessage: () => {},
+            close: () => {
+              closed.push(sessionId);
+              if (sessionId === 'a') throw cause;
+            }
+          })
+      },
+      sessionId
+    );
+  }
+  assert.throws(
+    () => replay.dispose(),
+    error => error instanceof AggregateError && error.errors[0] === cause
+  );
+  assert.deepEqual(closed, ['a', 'b']);
+  replay.dispose();
+  assert.deepEqual(closed, ['a', 'b']);
+});

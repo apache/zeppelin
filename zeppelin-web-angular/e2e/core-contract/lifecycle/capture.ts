@@ -132,7 +132,7 @@ export const recordCaptureResult = (info: TestInfo, entry: { file: string; opera
 
 export const cleanUpLifecycleCapture = async (
   page: Page,
-  recorder: LifecycleRecorder | undefined,
+  recorder: Pick<LifecycleRecorder, 'stop'> | undefined,
   noteIds: string[],
   contexts: BrowserContext[] = []
 ) => {

@@ -131,14 +131,19 @@ export const replayLifecycleTrace = async (
   const viewers = new Map<string, Page>();
   const requests$ = new Subject<Promise<unknown>>();
   let failure: unknown;
+  const cleanupErrors: unknown[] = [];
   const settledRequests = lastValueFrom(
     requests$.pipe(
       mergeMap(request =>
         from(request).pipe(
           catchError(error => {
-            replay.dispose(
-              error instanceof Error ? error : new Error('Replay browser request failed', { cause: error })
-            );
+            try {
+              replay.dispose(
+                error instanceof Error ? error : new Error('Replay browser request failed', { cause: error })
+              );
+            } catch (cleanupError) {
+              cleanupErrors.push(cleanupError);
+            }
             return EMPTY;
           })
         )
@@ -187,11 +192,16 @@ export const replayLifecycleTrace = async (
     throw error;
   } finally {
     requests$.complete();
-    replay.dispose();
-    const cleanup = await Promise.allSettled(contexts.map(context => context.close()));
-    const errors = cleanup.flatMap(result => (result.status === 'rejected' ? [result.reason] : []));
-    if (errors.length) {
-      throw new AggregateError(failure === undefined ? errors : [failure, ...errors], 'Replay browser cleanup failed');
+    const cleanup = await Promise.allSettled([
+      Promise.resolve().then(() => replay.dispose()),
+      ...contexts.map(context => Promise.resolve().then(() => context.close()))
+    ]);
+    cleanupErrors.push(...cleanup.flatMap(result => (result.status === 'rejected' ? [result.reason] : [])));
+    if (cleanupErrors.length) {
+      throw new AggregateError(
+        failure === undefined ? cleanupErrors : [failure, ...cleanupErrors],
+        'Replay browser cleanup failed'
+      );
     }
   }
 };
