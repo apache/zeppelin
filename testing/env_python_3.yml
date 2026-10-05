@@ -1,8 +1,8 @@
 name: python_3
 channels:
   - conda-forge
-  - defaults
 dependencies:
+  - python=3.9
   - pycodestyle
   - scipy
   - numpy=1.19.5

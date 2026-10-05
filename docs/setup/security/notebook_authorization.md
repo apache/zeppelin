@@ -40,7 +40,7 @@ As you can see, each Zeppelin notebooks has 3 entities :
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/permission_setting.png"></center>
 
-Fill out the each forms with comma seperated **users** and **groups** configured in `conf/shiro.ini` file.
+Fill out the each forms with comma separated **users** and **groups** configured in `conf/shiro.ini` file.
 If the form is empty (*), it means that any users can perform that operation.
 
 If someone who doesn't have **read** permission is trying to access the notebook or someone who doesn't have **write** permission is trying to edit the notebook,

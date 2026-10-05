@@ -287,3 +287,30 @@ class PyZeppelinContext(object):
             matplotlib.use('Agg')
             warnings.warn("Unable to load inline matplotlib backend, "
                           "falling back to Agg")
+
+
+class PySparkZeppelinContext(PyZeppelinContext):
+
+    def show(self, obj, **kwargs):
+        from pyspark.sql import DataFrame
+        if isinstance(obj, DataFrame):
+            print(self.z.showData(obj._jdf))
+        else:
+            super(PySparkZeppelinContext, self).show(obj, **kwargs)
+
+
+class PyFlinkZeppelinContext(PyZeppelinContext):
+
+    def show(self, obj, **kwargs):
+        from pyflink.table import Table
+        if isinstance(obj, Table):
+            if 'stream_type' in kwargs:
+                self.z.show(obj._j_table, kwargs['stream_type'], kwargs)
+            else:
+                print(self.z.showData(obj._j_table))
+        else:
+            super(PyFlinkZeppelinContext, self).show(obj, **kwargs)
+
+
+IPySparkZeppelinContext = PySparkZeppelinContext
+IPyFlinkZeppelinContext = PyFlinkZeppelinContext

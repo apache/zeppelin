@@ -111,6 +111,19 @@ public class RemoteInterpreter extends Interpreter {
     return (ManagedInterpreterGroup) super.getInterpreterGroup();
   }
 
+  /**
+   * Mirrors the {@code onInterpreterUse} hooks that {@code RemoteInterpreterServer} calls inside
+   * the interpreter process, so that server driven idle reclaim sees the same activity signal.
+   * Needed explicitly because {@link #getOrCreateInterpreterProcess()} returns the cached handle
+   * without going through the interpreter group once the process exists.
+   */
+  private void markInterpreterGroupUsed() {
+    ManagedInterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup != null) {
+      intpGroup.onInterpreterUse();
+    }
+  }
+
   @Override
   public void open() throws InterpreterException {
     synchronized (this) {
@@ -194,6 +207,7 @@ public class RemoteInterpreter extends Interpreter {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("st:\n{}", st);
     }
+    markInterpreterGroupUsed();
 
     final FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = null;
@@ -292,6 +306,7 @@ public class RemoteInterpreter extends Interpreter {
       LOGGER.warn("getProgress is called when RemoterInterpreter is not opened for {}", className);
       return 0;
     }
+    markInterpreterGroupUsed();
     RemoteInterpreterProcess interpreterProcess = null;
     try {
       interpreterProcess = getOrCreateInterpreterProcess();
@@ -325,6 +340,7 @@ public class RemoteInterpreter extends Interpreter {
       LOGGER.warn("getStatus is called when RemoteInterpreter is not opened for {}", className);
       return Job.Status.UNKNOWN.name();
     }
+    markInterpreterGroupUsed();
     RemoteInterpreterProcess interpreterProcess = null;
     try {
       interpreterProcess = getOrCreateInterpreterProcess();

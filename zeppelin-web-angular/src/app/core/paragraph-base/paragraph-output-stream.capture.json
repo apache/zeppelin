@@ -1,0 +1,148 @@
+{
+  "_license": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0.",
+  "schemaVersion": 1,
+  "capture": {
+    "issue": "ZEPPELIN-6659",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "capturedAt": "2026-09-05T07:15:34Z",
+    "browser": "Chromium",
+    "interpreter": "sh",
+    "paragraph": "echo first; sleep 3; echo second; sleep 5; echo third",
+    "normalization": "noteId, paragraphId, principal, ticket, message ids, and absolute timestamps are normalized or omitted"
+  },
+  "callbackOrder": {
+    "evidence": "InterpreterResultMessageOutput.java:108-119 emits the initial typed update before flushing the first append callback",
+    "events": [
+      {
+        "op": "PARAGRAPH_UPDATE_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "type": "TEXT",
+          "data": ""
+        }
+      },
+      {
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "first\n"
+        }
+      },
+      {
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "second\n"
+        }
+      },
+      {
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "third\n"
+        }
+      }
+    ]
+  },
+  "enabled": {
+    "configuration": {
+      "zeppelin.websocket.paragraph_status_progress.enable": true
+    },
+    "events": [
+      {
+        "elapsedMs": 0,
+        "op": "PARAGRAPH_UPDATE_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "type": "TEXT",
+          "data": ""
+        }
+      },
+      {
+        "elapsedMs": 107,
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "first\n"
+        }
+      },
+      {
+        "elapsedMs": 2984,
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "second\n"
+        }
+      },
+      {
+        "elapsedMs": 7990,
+        "op": "PARAGRAPH_APPEND_OUTPUT",
+        "data": {
+          "noteId": "<note-id>",
+          "paragraphId": "<paragraph-id>",
+          "index": 0,
+          "data": "third\n"
+        }
+      },
+      {
+        "elapsedMs": 8027,
+        "op": "PARAGRAPH",
+        "data": {
+          "paragraph": {
+            "id": "<paragraph-id>",
+            "status": "FINISHED",
+            "results": {
+              "code": "SUCCESS",
+              "msg": [
+                {
+                  "type": "TEXT",
+                  "data": "first\nsecond\nthird\n"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "disabled": {
+    "configuration": {
+      "zeppelin.websocket.paragraph_status_progress.enable": false
+    },
+    "events": [
+      {
+        "elapsedMs": 8006,
+        "op": "PARAGRAPH",
+        "data": {
+          "paragraph": {
+            "id": "<paragraph-id>",
+            "status": "FINISHED",
+            "results": {
+              "code": "SUCCESS",
+              "msg": [
+                {
+                  "type": "TEXT",
+                  "data": "first\nsecond\nthird\n"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

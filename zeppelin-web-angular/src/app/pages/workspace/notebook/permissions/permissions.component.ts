@@ -18,7 +18,8 @@ import {
   Input,
   OnChanges,
   OnInit,
-  Output
+  Output,
+  SimpleChanges
 } from '@angular/core';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -26,6 +27,13 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { Permissions } from '@zeppelin/interfaces';
 import { SecurityService, TicketService } from '@zeppelin/services';
+
+const clonePermissions = (permissions: Permissions): Permissions => ({
+  owners: [...permissions.owners],
+  writers: [...permissions.writers],
+  runners: [...permissions.runners],
+  readers: [...permissions.readers]
+});
 
 @Component({
   selector: 'zeppelin-notebook-permissions',
@@ -41,7 +49,8 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
   @Output() readonly activatedExtensionChange = new EventEmitter<
     'interpreter' | 'permissions' | 'revisions' | 'hide'
   >();
-  permissionsBack!: Permissions;
+  @Output() readonly permissionsSaved = new EventEmitter<Permissions>();
+  draftPermissions!: Permissions;
   listOfUserAndRole: Array<{ text: string; children: string[] }> = [];
 
   savePermissions() {
@@ -57,7 +66,7 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
           'Please fill the [Owners] field. If not, it will set as current user. ' +
           `Current user : [ ${this.ticketService.ticket.principal.trim()} ]`,
         nzOnOk: () => {
-          this.permissions.owners = [this.ticketService.ticket.principal];
+          this.draftPermissions.owners = [this.ticketService.ticket.principal];
           this.setPermissions();
         },
         nzOnCancel: () => {
@@ -87,18 +96,20 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
   }
 
   setPermissions() {
-    this.securityService.setPermissions(this.noteId, this.permissions).subscribe(() => {
+    const saved = clonePermissions(this.draftPermissions);
+    this.securityService.setPermissions(this.noteId, saved).subscribe(() => {
       this.nzMessageService.success('Permissions Saved Successfully');
+      this.permissionsSaved.emit(saved);
       this.closePermissions();
     });
   }
 
   resetPermissions() {
-    this.permissions = { ...this.permissionsBack };
+    this.draftPermissions = clonePermissions(this.permissions);
   }
 
   isOwnerEmpty() {
-    return !this.permissions.owners.some(o => o.trim().length > 0);
+    return !this.draftPermissions.owners.some(o => o.trim().length > 0);
   }
 
   searchUser(search: string) {
@@ -130,10 +141,12 @@ export class NotebookPermissionsComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit() {
-    this.permissionsBack = { ...this.permissions };
+    this.resetPermissions();
   }
 
-  ngOnChanges(): void {
-    this.permissionsBack = { ...this.permissions };
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.permissions) {
+      this.resetPermissions();
+    }
   }
 }

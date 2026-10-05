@@ -23,15 +23,21 @@ import {
   ParagraphConfigResults,
   ParagraphEditorSetting,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 
-import * as DiffMatchPatch from 'diff-match-patch';
+import { diff_match_patch as DiffMatchPatch } from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
 
-import { MessageListener, MessageListenersManager } from '../message-listener/message-listener';
+import {
+  MessageEnvelopeListener,
+  MessageListener,
+  MessageListenersManager
+} from '../message-listener/message-listener';
 import { AngularContextManager } from './angular-context-manager';
 import { NoteStatus } from './note-status';
+import { ParagraphOutputState } from './paragraph-output-state';
 
 export const ParagraphStatus = {
   READY: 'READY',
@@ -41,6 +47,9 @@ export const ParagraphStatus = {
   ABORT: 'ABORT',
   ERROR: 'ERROR'
 };
+
+const isTerminalParagraphStatus = (status?: string): boolean =>
+  status === ParagraphStatus.FINISHED || status === ParagraphStatus.ABORT || status === ParagraphStatus.ERROR;
 
 export abstract class ParagraphBase extends MessageListenersManager {
   paragraph?: ParagraphItem;
@@ -58,6 +67,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
     params: {},
     forms: {}
   };
+  private readonly outputState = new ParagraphOutputState();
+  private readonly pendingParagraphSaves = new Map<string, { sequence: number; originalText?: string }>();
+  private paragraphSaveSequence = 0;
 
   constructor(
     public messageService: Message,
@@ -67,6 +79,8 @@ export abstract class ParagraphBase extends MessageListenersManager {
   ) {
     super(messageService);
   }
+
+  protected abstract get currentNoteId(): string | null | undefined;
 
   abstract changeColWidth(needCommit: boolean, updateResult?: boolean): void;
 
@@ -114,32 +128,77 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  @MessageListener(OP.PARAGRAPH)
-  paragraphData(data: MessageReceiveDataTypeMap[OP.PARAGRAPH]) {
-    const oldPara = this.paragraph;
-    if (!oldPara) {
-      throw new Error('paragraph is not defined');
+  @MessageListener(OP.PARAGRAPH_APPEND_OUTPUT)
+  onParagraphAppendOutput(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_APPEND_OUTPUT]) {
+    if (this.revisionView || data.noteId !== this.currentNoteId || data.paragraphId !== this.paragraph?.id) {
+      return;
     }
-    const newPara = data.paragraph;
+    this.initializeOutputState();
+    const result = this.outputState.append(data.index, data.data);
+    if (result) {
+      this.applyStreamingResult(data.index);
+    }
+  }
+
+  @MessageListener(OP.PARAGRAPH_UPDATE_OUTPUT)
+  onParagraphUpdateOutput(data: MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT]) {
+    if (this.revisionView || data.noteId !== this.currentNoteId || data.paragraphId !== this.paragraph?.id) {
+      return;
+    }
+    this.initializeOutputState();
+    const result = this.outputState.update(data.index, data.type, data.data);
+    if (result) {
+      this.applyStreamingResult(data.index);
+    }
+  }
+
+  @MessageEnvelopeListener(OP.PARAGRAPH)
+  paragraphData(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH>) {
+    const oldPara = this.paragraph;
+    if (!oldPara || message.data === undefined) {
+      return;
+    }
+    const newPara = message.data.paragraph;
+    if (this.revisionView || newPara.id !== oldPara.id) {
+      return;
+    }
     if (!newPara.results) {
       newPara.results = {};
     }
+    const oldRunActive = oldPara.status === ParagraphStatus.PENDING || oldPara.status === ParagraphStatus.RUNNING;
+    const newRunActive = newPara.status === ParagraphStatus.PENDING || newPara.status === ParagraphStatus.RUNNING;
+    const runChanged =
+      newPara.dateStarted != null && oldPara.dateStarted != null && newPara.dateStarted !== oldPara.dateStarted;
+    if (newRunActive && (!oldRunActive || runChanged)) {
+      this.outputState.reset();
+    }
+    // Close the stream before publishing the terminal snapshot.
+    if (isTerminalParagraphStatus(newPara.status)) {
+      this.outputState.finish(newPara.results?.msg);
+    }
     if (this.isUpdateRequired(oldPara, newPara)) {
-      this.updateParagraph(oldPara, newPara, () => {
-        if (newPara.results && newPara.results.msg) {
-          newPara.results.msg.forEach((newResult, idx) => {
-            const oldResult =
-              oldPara.results && oldPara.results.msg ? oldPara.results.msg[idx] : new ParagraphIResultsMsgItem();
-            const newConfig = newPara.config.results ? newPara.config.results[idx] : { graph: new GraphConfig() };
-            const oldConfig = oldPara.config.results ? oldPara.config.results[idx] : { graph: new GraphConfig() };
-            if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
-              this.updateParagraphResult(idx, newConfig, newResult);
-            }
-          });
-        }
-        this.cdr.markForCheck();
-      });
+      this.updateParagraph(
+        oldPara,
+        newPara,
+        () => {
+          if (newPara.results && newPara.results.msg) {
+            newPara.results.msg.forEach((newResult, idx) => {
+              const oldResult =
+                oldPara.results && oldPara.results.msg ? oldPara.results.msg[idx] : new ParagraphIResultsMsgItem();
+              const newConfig = newPara.config.results ? newPara.config.results[idx] : { graph: new GraphConfig() };
+              const oldConfig = oldPara.config.results ? oldPara.config.results[idx] : { graph: new GraphConfig() };
+              if (!isEqual(newResult, oldResult) || !isEqual(newConfig, oldConfig)) {
+                this.updateParagraphResult(idx, newConfig, newResult);
+              }
+            });
+          }
+          this.cdr.markForCheck();
+        },
+        message.msgId
+      );
       this.cdr.markForCheck();
+    } else {
+      this.consumeParagraphSave(message.msgId, newPara.text);
     }
   }
 
@@ -186,7 +245,33 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void) {
+  private initializeOutputState(): void {
+    if (!this.outputState.isInitialized) {
+      this.outputState.reset(this.results, isTerminalParagraphStatus(this.paragraph?.status));
+    }
+  }
+
+  private applyStreamingResult(index: number): void {
+    if (!this.paragraph) {
+      return;
+    }
+    const previousLength = this.results.length;
+    const results = this.outputState.snapshot();
+    if (!this.paragraph.results) {
+      this.paragraph.results = {};
+    }
+    this.paragraph.results.msg = results;
+    this.results = results;
+    results.forEach((visibleResult, visibleIndex) => {
+      if (visibleIndex === index || visibleIndex >= previousLength) {
+        const config = this.paragraph!.config.results?.[visibleIndex] ?? { graph: new GraphConfig() };
+        this.updateParagraphResult(visibleIndex, config, visibleResult);
+      }
+    });
+    this.cdr.markForCheck();
+  }
+
+  updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void, msgId?: string) {
     // 1. can't update on revision view
     if (!this.revisionView) {
       // 2. get status, refreshed
@@ -198,7 +283,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
         (newPara.status === ParagraphStatus.FINISHED && statusChanged);
 
       // 3. update texts managed by paragraph
-      this.updateAllScopeTexts(oldPara, newPara);
+      this.updateAllScopeTexts(oldPara, newPara, msgId);
       // 4. execute callback to update result
       updateCallback();
 
@@ -221,12 +306,13 @@ export abstract class ParagraphBase extends MessageListenersManager {
       (newPara.dateCreated !== oldPara.dateCreated ||
         newPara.text !== oldPara.text ||
         newPara.dateFinished !== oldPara.dateFinished ||
-        newPara.dateStarted !== oldPara.dateStarted ||
+        (newPara.dateStarted != null && newPara.dateStarted !== oldPara.dateStarted) ||
         newPara.dateUpdated !== oldPara.dateUpdated ||
         newPara.status !== oldPara.status ||
         newPara.jobName !== oldPara.jobName ||
         newPara.title !== oldPara.title ||
         isEmpty(newPara.results) !== isEmpty(oldPara.results) ||
+        (isTerminalParagraphStatus(newPara.status) && !isEqual(newPara.results?.msg, oldPara.results?.msg)) ||
         newPara.errorMessage !== oldPara.errorMessage ||
         !isEqual(newPara.settings, oldPara.settings) ||
         !isEqual(newPara.config, oldPara.config) ||
@@ -234,24 +320,48 @@ export abstract class ParagraphBase extends MessageListenersManager {
     );
   }
 
-  updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem) {
+  protected trackParagraphSave(msgId: string): void {
+    this.pendingParagraphSaves.set(msgId, { sequence: ++this.paragraphSaveSequence, originalText: this.originalText });
+  }
+
+  private consumeParagraphSave(
+    msgId: string | undefined,
+    savedText: string
+  ): { acknowledged: boolean; hasNewerSave: boolean } {
+    const pendingSave = msgId === undefined ? undefined : this.pendingParagraphSaves.get(msgId);
+    if (pendingSave === undefined) {
+      return { acknowledged: false, hasNewerSave: false };
+    }
+    const hasNewerSave = Array.from(this.pendingParagraphSaves.values()).some(
+      ({ sequence }) => sequence > pendingSave.sequence
+    );
+    // The server answers COMMIT_PARAGRAPH in send order on one socket,
+    // so an older save is never acknowledged after a newer one.
+    for (const [pendingMsgId, { sequence }] of this.pendingParagraphSaves) {
+      if (sequence <= pendingSave.sequence) {
+        this.pendingParagraphSaves.delete(pendingMsgId);
+      }
+    }
+    // Skip when a newer save or a patch has already moved the saved baseline past this acknowledgement.
+    if (!hasNewerSave && this.originalText === pendingSave.originalText) {
+      this.originalText = savedText;
+    }
+    return { acknowledged: true, hasNewerSave };
+  }
+
+  updateAllScopeTexts(oldPara: ParagraphItem, newPara: ParagraphItem, msgId?: string) {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');
     }
+    const { acknowledged, hasNewerSave } = this.consumeParagraphSave(msgId, newPara.text);
+
     if (oldPara.text !== newPara.text) {
-      if (this.dirtyText) {
-        // check if editor has local update
-        if (this.dirtyText === newPara.text) {
-          // when local update is the same from remote, clear local update
-          this.paragraph.text = newPara.text;
-          this.dirtyText = undefined;
-          this.originalText = newPara.text;
-        } else {
-          // if there're local update, keep it.
-          this.paragraph.text = newPara.text;
-        }
-      } else {
+      const hasLocalEdit = this.dirtyText !== undefined && this.dirtyText !== newPara.text;
+      const staleSaveAcknowledgement = acknowledged && (hasLocalEdit || hasNewerSave);
+      const staleBroadcastOfSavedText = hasLocalEdit && this.originalText === newPara.text;
+      if (!staleSaveAcknowledgement && !staleBroadcastOfSavedText) {
         this.paragraph.text = newPara.text;
+        this.dirtyText = undefined;
         this.originalText = newPara.text;
       }
     }
@@ -270,7 +380,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
     this.paragraph.dateUpdated = newPara.dateUpdated;
     this.paragraph.dateCreated = newPara.dateCreated;
     this.paragraph.dateFinished = newPara.dateFinished;
-    this.paragraph.dateStarted = newPara.dateStarted;
+    // Status-only snapshots can omit the start time of the current run.
+    if (newPara.dateStarted != null) {
+      this.paragraph.dateStarted = newPara.dateStarted;
+    }
     this.paragraph.errorMessage = newPara.errorMessage;
     this.paragraph.jobName = newPara.jobName;
     this.paragraph.title = newPara.title;
@@ -360,5 +473,16 @@ export abstract class ParagraphBase extends MessageListenersManager {
       throw new Error('paragraph is not defined');
     }
     this.messageService.cancelParagraph(this.paragraph.id);
+  }
+  protected setParagraphSnapshot(paragraph: ParagraphItem | undefined): void {
+    this.paragraph = paragraph;
+    this.results = [];
+    this.configs = {};
+    if (paragraph) {
+      this.setResults(paragraph);
+    }
+    const terminal = isTerminalParagraphStatus(paragraph?.status);
+    this.outputState.reset(this.results, terminal);
+    this.cdr.markForCheck();
   }
 }

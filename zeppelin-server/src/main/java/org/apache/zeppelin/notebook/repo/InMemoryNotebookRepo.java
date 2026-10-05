@@ -25,9 +25,7 @@ import org.apache.zeppelin.notebook.NoteParser;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class InMemoryNotebookRepo extends AbstractNotebookRepo {
@@ -104,16 +102,6 @@ public class InMemoryNotebookRepo extends AbstractNotebookRepo {
 
   @Override
   public void close() {
-
-  }
-
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
   }
 

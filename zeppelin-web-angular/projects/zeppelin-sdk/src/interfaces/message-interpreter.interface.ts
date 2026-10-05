@@ -26,6 +26,7 @@ export interface InterpreterItem {
 }
 
 export interface InterpreterBindings {
+  noteId: string;
   interpreterBindings: InterpreterBindingItem[];
 }
 

@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,17 +129,6 @@ public class FileSystemNotebookRepo extends AbstractNotebookRepo {
   @Override
   public void close() {
     LOGGER.warn("close is not implemented for FileSystemNotebookRepo");
-  }
-
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("getSettings is not implemented for FileSystemNotebookRepo");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("updateSettings is not implemented for FileSystemNotebookRepo");
   }
 
 }

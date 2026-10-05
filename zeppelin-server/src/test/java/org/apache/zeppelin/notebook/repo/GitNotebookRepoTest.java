@@ -97,6 +97,22 @@ class GitNotebookRepoTest {
   }
 
   @Test
+  void notebookDirWithSpace() throws IOException {
+    File dirWithSpace = new File(zeppelinDir, "my notebooks");
+    FileUtils.moveDirectory(notebooksDir, dirWithSpace);
+    zConf.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), dirWithSpace.getAbsolutePath());
+
+    notebookRepo = new GitNotebookRepo();
+    notebookRepo.init(zConf, noteParser);
+
+    // The repository is opened in the notebook dir, not in a sibling named after its URI form.
+    assertTrue(new File(dirWithSpace, ".git").isDirectory());
+    assertEquals(TEST_NOTE_PATH, notebookRepo.list(null).get(TEST_NOTE_ID).getPath());
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "first commit", null);
+    assertEquals(1, notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).size());
+  }
+
+  @Test
   void initNonemptyNotebookDir() throws IOException, GitAPIException {
     //given - .git does not exit
     File dotGit = new File(notebooksDir, ".git");

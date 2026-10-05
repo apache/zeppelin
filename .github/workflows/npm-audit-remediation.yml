@@ -1,0 +1,291 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: npm audit remediation
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/npm-audit-remediation.yml'
+
+concurrency:
+  group: npm-audit-remediation
+  cancel-in-progress: false
+
+env:
+  FRONTEND_DIRECTORY: zeppelin-web-angular
+  PACKAGE_DIRECTORY: zeppelin-web-angular/projects/zeppelin-react
+  LOCKFILE: zeppelin-web-angular/projects/zeppelin-react/package-lock.json
+  REMEDIATION_BRANCH: automation/npm-audit-fix-zeppelin-react
+  PR_TITLE: '[HOTFIX] Refresh zeppelin-react lockfile for npm audit'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      audited_sha: ${{ steps.revision.outputs.sha }}
+      needs_remediation: ${{ steps.audit.outputs.needs_remediation }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.sha || 'master' }}
+
+      - id: revision
+        name: Record audited revision
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: 'zeppelin-web-angular/.nvmrc'
+
+      - id: audit
+        name: Check npm audit
+        working-directory: ${{ env.PACKAGE_DIRECTORY }}
+        shell: bash
+        run: |
+          set +e
+          npm audit --package-lock-only --audit-level=high --json \
+            > "${RUNNER_TEMP}/npm-audit-before.json"
+          audit_status=$?
+          set -e
+
+          if [[ ${audit_status} -eq 0 ]]; then
+            echo "needs_remediation=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          vulnerable_count=$(node - "${RUNNER_TEMP}/npm-audit-before.json" <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const counts = report.metadata && report.metadata.vulnerabilities;
+          if (!counts) {
+            process.exit(2);
+          }
+          console.log((counts.high || 0) + (counts.critical || 0));
+          NODE
+          ) || {
+            cat "${RUNNER_TEMP}/npm-audit-before.json"
+            echo "::error::npm audit failed without a valid vulnerability report"
+            exit "${audit_status}"
+          }
+
+          if [[ ${vulnerable_count} -eq 0 ]]; then
+            cat "${RUNNER_TEMP}/npm-audit-before.json"
+            echo "::error::npm audit failed without a high or critical vulnerability"
+            exit "${audit_status}"
+          fi
+
+          echo "needs_remediation=true" >> "${GITHUB_OUTPUT}"
+          echo "Found ${vulnerable_count} high or critical vulnerabilities"
+
+      - name: Generate a lockfile-only fix
+        if: steps.audit.outputs.needs_remediation == 'true'
+        working-directory: ${{ env.PACKAGE_DIRECTORY }}
+        run: npm audit fix --package-lock-only --ignore-scripts --audit-level=high
+
+      - name: Verify the generated diff
+        if: steps.audit.outputs.needs_remediation == 'true'
+        shell: bash
+        run: |
+          changed_files=$(git diff --name-only)
+          if [[ "${changed_files}" != "${LOCKFILE}" ]]; then
+            echo "::error::Expected only ${LOCKFILE} to change, got:"
+            printf '%s\n' "${changed_files}"
+            exit 1
+          fi
+          git diff --check
+
+      - name: Install frontend dependencies
+        if: steps.audit.outputs.needs_remediation == 'true'
+        working-directory: ${{ env.FRONTEND_DIRECTORY }}
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Validate the fix
+        if: steps.audit.outputs.needs_remediation == 'true'
+        working-directory: ${{ env.PACKAGE_DIRECTORY }}
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm audit --audit-level=high
+          npm run lint
+          npm test
+          npm run build
+
+      - name: Create remediation artifact
+        if: steps.audit.outputs.needs_remediation == 'true'
+        shell: bash
+        run: |
+          artifact_directory="${RUNNER_TEMP}/npm-audit-remediation"
+          mkdir -p "${artifact_directory}"
+          git diff --binary -- "${LOCKFILE}" > "${artifact_directory}/fix.patch"
+          cp "${RUNNER_TEMP}/npm-audit-before.json" "${artifact_directory}/audit-before.json"
+          test -s "${artifact_directory}/fix.patch"
+
+      - name: Upload remediation artifact
+        if: steps.audit.outputs.needs_remediation == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: npm-audit-remediation
+          path: ${{ runner.temp }}/npm-audit-remediation
+          retention-days: 1
+
+  publish:
+    needs: prepare
+    if: >-
+      needs.prepare.outputs.needs_remediation == 'true' &&
+      github.event_name != 'pull_request' &&
+      github.repository == 'apache/zeppelin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout audited revision
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.audited_sha }}
+
+      - name: Download remediation artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: npm-audit-remediation
+          path: ${{ runner.temp }}/npm-audit-remediation
+
+      - name: Create or update remediation pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git apply "${RUNNER_TEMP}/npm-audit-remediation/fix.patch"
+
+          changed_files=$(git diff --name-only)
+          if [[ "${changed_files}" != "${LOCKFILE}" ]]; then
+            echo "::error::Artifact changed unexpected files:"
+            printf '%s\n' "${changed_files}"
+            exit 1
+          fi
+
+          desired_blob=$(git hash-object "${LOCKFILE}")
+          # Include closed PRs so a maintainer's decision is not undone every day.
+          # The REST head filter includes the repository owner, avoiding a fork
+          # PR with the same predictable branch name.
+          latest_pr=$(gh api --method GET \
+            "repos/${GITHUB_REPOSITORY}/pulls" \
+            -f state=all \
+            -f base=master \
+            -f head="${GITHUB_REPOSITORY_OWNER}:${REMEDIATION_BRANCH}" \
+            -f per_page=1 \
+            --jq '.[0] // empty | {number: .number, state: (.state | ascii_upcase)}')
+
+          latest_pr_number=$(jq -r '.number // empty' <<< "${latest_pr}")
+          latest_pr_state=$(jq -r '.state // empty' <<< "${latest_pr}")
+
+          if [[ -n "${latest_pr_number}" ]]; then
+            unexpected_files=$(gh pr view "${latest_pr_number}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --json files \
+              --jq '.files[].path' | grep -vx "${LOCKFILE}" || true)
+
+            if [[ "${latest_pr_state}" == "OPEN" && -n "${unexpected_files}" ]]; then
+              echo "::error::Existing remediation PR contains unexpected files:"
+              printf '%s\n' "${unexpected_files}"
+              exit 1
+            fi
+
+            git fetch --no-tags origin \
+              "refs/pull/${latest_pr_number}/head:refs/remotes/origin/npm-audit-pr-head"
+            previous_blob=$(git rev-parse \
+              "refs/remotes/origin/npm-audit-pr-head:${LOCKFILE}" 2>/dev/null || true)
+
+            if [[ -z "${unexpected_files}" && "${desired_blob}" == "${previous_blob}" ]]; then
+              echo "PR #${latest_pr_number} (${latest_pr_state}) already contains this lockfile."
+              echo "Suppressing an identical replacement PR."
+              exit 0
+            fi
+
+            if [[ "${latest_pr_state}" == "OPEN" ]]; then
+              open_pr_number="${latest_pr_number}"
+            fi
+          fi
+
+          remote_sha=$(git ls-remote --heads origin \
+            "refs/heads/${REMEDIATION_BRANCH}" | cut -f1)
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "${REMEDIATION_BRANCH}"
+          git add "${LOCKFILE}"
+          git commit -m "${PR_TITLE}"
+
+          if [[ -n "${remote_sha}" ]]; then
+            git push \
+              --force-with-lease="refs/heads/${REMEDIATION_BRANCH}:${remote_sha}" \
+              origin "HEAD:refs/heads/${REMEDIATION_BRANCH}"
+          else
+            git push origin "HEAD:refs/heads/${REMEDIATION_BRANCH}"
+          fi
+
+          if [[ -n "${open_pr_number:-}" ]]; then
+            echo "Updated existing PR #${open_pr_number}."
+            exit 0
+          fi
+
+          pr_body="${RUNNER_TEMP}/npm-audit-pr-body.md"
+          {
+            echo '### What is this PR for?'
+            echo
+            echo 'Refresh the zeppelin-react lockfile with compatible updates suggested by `npm audit fix`.'
+            echo 'The daily audit remediation workflow generated this change after the required high-severity audit began failing.'
+            echo
+            echo '### What type of PR is it?'
+            echo
+            echo 'Hot Fix'
+            echo
+            echo '### What is the Jira issue?'
+            echo
+            echo 'N/A - automated dependency maintenance.'
+            echo
+            echo '### How should this be tested?'
+            echo
+            echo '- `npm ci --ignore-scripts --no-audit` in `zeppelin-web-angular`'
+            echo '- `npm ci --ignore-scripts --no-audit` in `zeppelin-web-angular/projects/zeppelin-react`'
+            echo '- `npm audit --audit-level=high`'
+            echo '- `npm run lint`'
+            echo '- `npm test`'
+            echo '- `npm run build`'
+            echo
+            echo 'All commands passed before this PR was created.'
+          } > "${pr_body}"
+
+          gh pr create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base master \
+            --head "${REMEDIATION_BRANCH}" \
+            --title "${PR_TITLE}" \
+            --body-file "${pr_body}" \
+            --draft

@@ -97,6 +97,17 @@ export class ParagraphIResultsMsgItem {
   data = '';
 }
 
+export interface ParagraphAppendOutput {
+  noteId: string;
+  paragraphId: string;
+  index: number;
+  data: string;
+}
+
+export interface ParagraphUpdateOutput extends ParagraphAppendOutput {
+  type: DatasetType;
+}
+
 export interface ParasInfo {
   id: string;
   infos: RuntimeInfos;
@@ -129,6 +140,7 @@ export interface ParagraphItem {
   // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   apps: any[];
   progressUpdateIntervalMs: number;
+  progress: number;
   jobName: string;
   id: string;
   dateCreated: string;
@@ -147,6 +159,10 @@ export interface ParagraphItem {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fontSize: any;
 }
+
+export type ImportParagraphItem = Omit<ParagraphItem, 'progress'> & {
+  progress?: number;
+};
 
 export interface SendParagraph {
   id: string;
@@ -178,6 +194,10 @@ export interface RunAllParagraphs {
   paragraphs: string;
 }
 
+export interface CancelAllParagraphs {
+  noteId: string;
+}
+
 export interface InsertParagraph {
   index: number;
 }
@@ -199,6 +219,14 @@ export interface AngularObjectRemove {
   noteId: string;
   paragraphId: string;
   name: string;
+  angularObject?: {
+    name: string;
+    object: unknown;
+    // Omitted for global (noteId) and note (paragraphId) scoped objects.
+    noteId?: string;
+    paragraphId?: string;
+  };
+  interpreterGroupId?: string;
 }
 
 export interface AngularObjectUpdate {
@@ -249,7 +277,7 @@ export interface Completion {
 }
 
 export interface CompletionItem {
-  meta: string;
+  meta?: string;
   value: string;
   name: string;
 }

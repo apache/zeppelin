@@ -11,8 +11,12 @@
 **Zeppelin**, a web-based notebook that enables interactive data analytics. You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
 
 Core features:
-   * Web based notebook style editor.
-   * Built-in Apache Spark support
+   * Web-based notebook style editor with real-time collaboration
+   * Multi-language support: Spark, Flink, Python, SQL, Shell, and 20+ interpreters
+   * Pluggable interpreter architecture with process isolation
+   * Built-in visualization and dynamic forms
+   * Notebook scheduling (cron)
+   * Flexible deployment: local, Docker, Kubernetes, YARN
 
 
 To know more about Zeppelin, visit our web site [https://zeppelin.apache.org](https://zeppelin.apache.org)

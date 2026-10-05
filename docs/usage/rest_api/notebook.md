@@ -37,13 +37,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method lists the available notes on your server.
+      <td markdown="span">This ```GET``` method lists the available notes on your server.
           Notebook JSON contains the ```name``` and ```id``` of all notes.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -55,7 +55,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -83,13 +83,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method creates a new note using the given name or default name if none given.
+      <td markdown="span">This ```POST``` method creates a new note using the given name or default name if none given.
           The body field of the returned JSON contains the new note id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -101,7 +101,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (without paragraphs) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"name": "name of new note"}
@@ -110,7 +110,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (with initial paragraphs) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -143,7 +143,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -162,13 +162,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the status of all paragraphs by the given note id.
+      <td markdown="span">This ```GET``` method gets the status of all paragraphs by the given note id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -180,7 +180,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -212,13 +212,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method retrieves an existing note's information using the given id.
+      <td markdown="span">This ```GET``` method retrieves an existing note's information using the given id.
           The body field of the returned JSON contain information about paragraphs in the note.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -230,7 +230,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -319,12 +319,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a note by the given note id.
+      <td markdown="span">This ```DELETE``` method deletes a note by the given note id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -336,7 +336,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK","message": ""}
@@ -351,7 +351,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method clones a note by the given id and create a new note using the given name
+      <td markdown="span">This ```POST``` method clones a note by the given id and create a new note using the given name
           or default name if none given. If what you want to copy is a certain version of note, you need 
           to specify the revisionId.
           The body field of the returned JSON contains the new note id.
@@ -359,7 +359,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -371,7 +371,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -383,7 +383,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -402,12 +402,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method renames a note by the given id using the given name.
+      <td markdown="span">This ```PUT``` method renames a note by the given id using the given name.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/rename```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/rename```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -423,7 +423,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"name": "new name of a note"}
@@ -432,7 +432,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -448,12 +448,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method exports a note by the given id and generates a JSON
+      <td markdown="span">This ```GET``` method exports a note by the given id and generates a JSON
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/export/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/export/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -463,8 +463,9 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
-    <td> sample JSON response </td>
-      <td>
+    <tr>
+      <td> sample JSON response </td>
+      <td markdown="block">
 
 ```json
 {
@@ -503,12 +504,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method imports a note from the note JSON input
+      <td markdown="span">This ```POST``` method imports a note from the note JSON input
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/import```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/import```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -520,7 +521,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 
 ```json
@@ -554,7 +555,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -572,7 +573,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>
+      <td markdown="span">
       This ```POST``` method runs all paragraphs in the given note id. <br />
       If you can not find Note id 404 returns.
       If there is a problem with the interpreter returns a 412 error.
@@ -580,7 +581,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -592,7 +593,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -601,7 +602,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
        <td> sample JSON error response </td>
-       <td>
+       <td markdown="block">
 
 ```json
 {
@@ -628,12 +629,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops all paragraphs in the given note id.
+      <td markdown="span">This ```DELETE``` method stops all paragraphs in the given note id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -645,7 +646,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -660,12 +661,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method clear all paragraph results from note of given id.
+      <td markdown="span">This ```PUT``` method clear all paragraph results from note of given id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/clear```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -685,13 +686,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
 ```
 </td>
-    </tr>
     </tr>
   </table>
 
@@ -703,13 +703,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method create a new paragraph using JSON payload.
+      <td markdown="span">This ```POST``` method create a new paragraph using JSON payload.
           The body field of the returned JSON contain the new paragraph id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -721,7 +721,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (add to the last) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -733,7 +733,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (add to specific index) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -746,7 +746,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (providing paragraph config) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -770,7 +770,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -789,13 +789,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method retrieves an existing paragraph's information using the given id.
+      <td markdown="span">This ```GET``` method retrieves an existing paragraph's information using the given id.
           The body field of the returned JSON contain information about paragraph.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -807,7 +807,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -865,13 +865,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the status of a single paragraph by the given note and paragraph id.
+      <td markdown="span">This ```GET``` method gets the status of a single paragraph by the given note and paragraph id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -883,7 +883,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -907,12 +907,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method update paragraph contents using given id, e.g. <code>{"text": "hello"}</code>
+      <td markdown="span">This ```PUT``` method update paragraph contents using given id, e.g. <code>{"text": "hello"}</code>
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -936,7 +936,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -948,7 +948,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -966,12 +966,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method update paragraph configuration using given id so that user can change paragraph setting such as graph type, show or hide editor/result and paragraph size, etc. You can update certain fields you want, for example you can update <code>colWidth</code> field only by sending request with payload <code>{"colWidth": 12.0}</code>.
+      <td markdown="span">This ```PUT``` method update paragraph configuration using given id so that user can change paragraph setting such as graph type, show or hide editor/result and paragraph size, etc. You can update certain fields you want, for example you can update <code>colWidth</code> field only by sending request with payload <code>{"colWidth": 12.0}</code>.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/config```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/config```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -995,7 +995,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1030,7 +1030,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1101,12 +1101,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a paragraph by the given note and paragraph id.
+      <td markdown="span">This ```DELETE``` method deletes a paragraph by the given note and paragraph id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1118,7 +1118,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK","message": ""}
@@ -1133,12 +1133,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs the paragraph asynchronously by given note and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
+      <td markdown="span">This ```POST``` method runs the paragraph asynchronously by given note and paragraph id. This API always return SUCCESS even if the execution of the paragraph fails later because the API is asynchronous
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1150,7 +1150,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1165,7 +1165,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -1180,12 +1180,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
+      <td markdown="span">This ```POST``` method runs the paragraph synchronously by given note and paragraph id. This API can return SUCCESS or ERROR depending on the outcome of the paragraph execution
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[noteId]/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/run/[noteId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1197,7 +1197,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1212,7 +1212,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -1221,7 +1221,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>    
     <tr>
       <td> sample JSON error </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1244,12 +1244,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops the paragraph by given note and paragraph id.
+      <td markdown="span">This ```DELETE``` method stops the paragraph by given note and paragraph id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/job/[noteId]/[paragraphId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1261,7 +1261,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -1276,12 +1276,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method moves a paragraph to the specific index (order) from the note.
+      <td markdown="span">This ```POST``` method moves a paragraph to the specific index (order) from the note.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/move/[newIndex]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/paragraph/[paragraphId]/move/[newIndex]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1293,7 +1293,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK","message": ""}
@@ -1308,12 +1308,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>```GET``` request will return list of matching paragraphs
+      <td markdown="span">```GET``` request will return list of matching paragraphs
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/search?q=[query]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/search?q=[query]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1325,7 +1325,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td>Sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1351,13 +1351,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given note id. 
+      <td markdown="span">This ```POST``` method adds cron job by the given note id.
           Default value of ```releaseResource``` is ```false```.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1369,7 +1369,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"cron": "cron expression of note", "releaseResource": "false"}
@@ -1378,7 +1378,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -1394,12 +1394,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method removes cron job by the given note id.
+      <td markdown="span">This ```DELETE``` method removes cron job by the given note id.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1411,7 +1411,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status": "OK"}
@@ -1427,13 +1427,13 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets cron job expression of given note id.
+      <td markdown="span">This ```GET``` method gets cron job expression of given note id.
           The body field of the returned JSON contains the cron expression and ```releaseResource``` flag.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/[noteId]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1445,7 +1445,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1470,12 +1470,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets a note authorization information.
+      <td markdown="span">This ```GET``` method gets a note authorization information.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1491,7 +1491,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {  
@@ -1523,12 +1523,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method set note authorization information.
+      <td markdown="span">This ```PUT``` method set note authorization information.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/permissions```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1544,7 +1544,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1566,7 +1566,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1588,12 +1588,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the revisions of a note.
+      <td markdown="span">This ```GET``` method gets the revisions of a note.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1605,7 +1605,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1634,12 +1634,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method saves a revision for a note.
+      <td markdown="span">This ```POST``` method saves a revision for a note.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1655,7 +1655,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1666,7 +1666,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1683,12 +1683,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets a revision of a note.
+      <td markdown="span">This ```GET``` method gets a revision of a note.
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1700,7 +1700,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1787,12 +1787,12 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method reverts a note to a specified version
+      <td markdown="span">This ```PUT``` method reverts a note to a specified version
       </td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/revision/{revisionId}```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -1804,7 +1804,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -1814,5 +1814,4 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
 </td>
     </tr>
   </table>
-
 

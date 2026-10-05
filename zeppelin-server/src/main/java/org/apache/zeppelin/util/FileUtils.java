@@ -57,8 +57,12 @@ public class FileUtils {
     }
     try {
       file.getParentFile().mkdirs();
+      // A plain replace is not atomic, so two writers moving their own temp file onto the
+      // same destination can make one of them fail with NoSuchFileException and leave its
+      // temp file behind. The temp file is created in the destination directory, so this
+      // move never crosses file systems and the atomic move is always supported.
       Files.move(tempFile.toPath(), destinationFilePath,
-              StandardCopyOption.REPLACE_EXISTING); //StandardCopyOption.ATOMIC_MOVE);
+              StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
         tempFile.deleteOnExit();

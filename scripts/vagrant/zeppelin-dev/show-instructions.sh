@@ -14,11 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo '############################################################'
+echo '# DEPRECATED: this Vagrant environment is no longer maintained'
+echo '# and is not expected to provision a usable build environment.'
+echo '# See scripts/vagrant/zeppelin-dev/README.md and'
+echo '# https://issues.apache.org/jira/browse/ZEPPELIN-6460'
+echo '#'
+echo '# To build Zeppelin, follow docs/setup/basics/how_to_build.md.'
+echo '# It needs only Git and JDK 11: ./mvnw supplies Maven, and the'
+echo '# frontend build downloads its own Node.js and npm.'
+echo '############################################################'
+echo
 echo '# Post vagrant up instructions.'
 echo '# From your host machine,'
 echo '# git clone the zeppelin branch into this directory'
 echo
-echo 'git clone git://git.apache.org/zeppelin.git'
+echo 'git clone https://github.com/apache/zeppelin.git'
 echo
 echo '# Cloning the project again may seem counter intuitive, since this script'
 echo '# originated from the project repository.  Consider copying just the vagrant/zeppelin-dev'
@@ -30,12 +41,10 @@ echo
 echo '# then when running inside the VM'
 echo
 echo 'cd /vagrant/zeppelin'
-echo 'mvn clean package -DskipTests'
-echo
-echo '# or for a specific Spark/Hadoop build with additional options such as python support'
-echo
-echo 'mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests'
+echo './mvnw clean package -DskipTests'
 echo './bin/zeppelin-daemon.sh start'
 echo
+echo '# See docs/setup/basics/how_to_build.md for the Spark, Flink and Hadoop'
+echo '# build profiles this project currently supports.'
+echo
 echo 'On your host machine browse to http://localhost:8080/'
-

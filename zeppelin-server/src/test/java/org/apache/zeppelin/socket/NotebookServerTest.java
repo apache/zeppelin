@@ -41,11 +41,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
@@ -77,6 +79,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,6 +237,52 @@ class NotebookServerTest extends AbstractTestRestApi {
       }, "onParagraphStatusChange should not throw exception when job manager is disabled");
     } finally {
       restoreJobManagerFlag(originalFlag);
+    }
+  }
+
+  @Test
+  void testCancelAllParagraphsNotDisabledForRunningNotes() {
+    assertFalse(Message.isDisabledForRunningNotes(OP.CANCEL_ALL_PARAGRAPHS));
+  }
+
+  @Test
+  void testCancelAllParagraphsWebSocket() throws IOException {
+    NotebookSocket sock1 = createWebSocket();
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    notebookServer.onMessage(sock1, new Message(OP.NEW_NOTE).put("name", noteName).toJson());
+    NoteInfo createdNoteInfo = null;
+    for (NoteInfo noteInfo : notebook.getNotesInfo()) {
+      if (notebook.processNote(noteInfo.getId(), Note::getName).equals(noteName)) {
+        createdNoteInfo = noteInfo;
+        break;
+      }
+    }
+    String noteId = createdNoteInfo.getId();
+
+    notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", noteId).toJson());
+
+    Paragraph paragraph = notebook.processNote(noteId,
+      note -> {
+        Paragraph p = note.getParagraphs().get(0);
+        p.setStatus(Status.RUNNING);
+        // simulate a sequential run in progress
+        note.setRunning(true);
+        return p;
+      });
+
+    try {
+      notebookServer.onMessage(sock1,
+          new Message(OP.CANCEL_ALL_PARAGRAPHS).put("noteId", noteId).toJson());
+
+      assertTrue(paragraph.isAborted());
+    } finally {
+      notebook.processNote(noteId,
+        note -> {
+          note.setRunning(false);
+          return null;
+        });
+      notebook.removeNote(noteId, anonymous);
     }
   }
 
@@ -860,6 +909,88 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
+  void testCloneNoteClonesTheRequestedSourceNote() throws IOException {
+    String sourceNoteId = null;
+    String associatedNoteId = null;
+    String clonedNoteId = null;
+
+    try {
+      sourceNoteId = notebook.createNote("/clone_source", anonymous);
+      notebook.processNote(sourceNoteId,
+        note -> {
+          Paragraph paragraph = note.addNewParagraph(anonymous);
+          paragraph.setText("%md source note");
+          paragraph.setAuthenticationInfo(anonymous);
+          notebook.saveNote(note, anonymous);
+          return null;
+        });
+      associatedNoteId = notebook.createNote("/clone_associated", anonymous);
+
+      NotebookSocket sock = createWebSocket();
+      // the socket is looking at another note, which used to decide what CLONE_NOTE copied
+      notebookServer.onMessage(sock, new Message(OP.GET_NOTE).put("id", associatedNoteId).toJson());
+
+      String clonedNotePath = "/clone_target_" + System.currentTimeMillis();
+      notebookServer.onMessage(sock, new Message(OP.CLONE_NOTE)
+          .put("id", sourceNoteId)
+          .put("name", clonedNotePath)
+          .toJson());
+
+      clonedNoteId = notebook.getNoteIdByPath(clonedNotePath);
+      assertNotNull(clonedNoteId, "the requested source note should have been cloned");
+      List<String> clonedTexts = notebook.processNote(clonedNoteId,
+        note -> note.getParagraphs().stream().map(Paragraph::getText).collect(Collectors.toList()));
+      assertEquals(Collections.singletonList("%md source note"), clonedTexts,
+          "CLONE_NOTE should copy the note in the request, not the one the socket is looking at");
+    } finally {
+      for (String noteId : new String[] {clonedNoteId, associatedNoteId, sourceNoteId}) {
+        if (noteId != null) {
+          notebook.removeNote(noteId, anonymous);
+        }
+      }
+    }
+  }
+
+  @Test
+  void testCloneNoteAppliesTheWriteRuleOfTheRestEndpoint() throws IOException {
+    String sourceNoteId = null;
+    String associatedNoteId = null;
+    String clonedNoteId = null;
+
+    try {
+      sourceNoteId = notebook.createNote("/clone_protected_source", anonymous);
+      authorizationService.setOwners(sourceNoteId, new HashSet<>(Arrays.asList("someone_else")));
+      authorizationService.setWriters(sourceNoteId, new HashSet<>(Arrays.asList("someone_else")));
+      associatedNoteId = notebook.createNote("/clone_protected_associated", anonymous);
+
+      NotebookSocket sock = createWebSocket();
+      notebookServer.onMessage(sock, new Message(OP.GET_NOTE).put("id", associatedNoteId).toJson());
+
+      String clonedNotePath = "/clone_protected_target_" + System.currentTimeMillis();
+      notebookServer.onMessage(sock, new Message(OP.CLONE_NOTE)
+          .put("id", sourceNoteId)
+          .put("name", clonedNotePath)
+          .toJson());
+
+      // this server has no conf/shiro.ini, so hasWritePermission grants write access to everybody
+      // and the REST clone endpoint accepts this note. The WebSocket path has to accept it too
+      clonedNoteId = notebook.getNoteIdByPath(clonedNotePath);
+      assertNotNull(clonedNoteId,
+          "an explicit ACL must not block the clone while Zeppelin runs in anonymous mode");
+    } finally {
+      if (sourceNoteId != null) {
+        authorizationService.setOwners(sourceNoteId, new HashSet<>());
+        authorizationService.setWriters(sourceNoteId, new HashSet<>());
+      }
+      for (String noteId : new String[] {clonedNoteId, associatedNoteId, sourceNoteId}) {
+        if (noteId != null) {
+          notebook.removeNote(noteId, anonymous);
+        }
+      }
+    }
+  }
+
+  @Test
   void testGetParagraphList() throws IOException {
     String noteId = null;
 
@@ -924,6 +1055,85 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
+  void getInterpreterBindingsRequiresReaderPermission() throws IOException {
+    AuthenticationInfo owner = new AuthenticationInfo("binding-owner");
+    String noteId = notebook.createNote("private-binding-read", owner);
+    try {
+      setNotePermissions(noteId, "binding-owner", "binding-owner");
+      NotebookSocket socket = createWebSocket();
+      Message message = new Message(OP.GET_INTERPRETER_BINDINGS).put("noteId", noteId);
+
+      notebookServer.getInterpreterBindings(socket, serviceContext("binding-attacker"), message);
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.AUTH_INFO, responseMessage.op);
+
+      reset(socket);
+      setNotePermissions(noteId, "binding-owner", "binding-reader");
+      notebookServer.getInterpreterBindings(socket, serviceContext("binding-reader"), message);
+
+      verify(socket).send(response.capture());
+      responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.INTERPRETER_BINDINGS, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, owner);
+    }
+  }
+
+  @Test
+  void saveInterpreterBindingsRequiresWriterPermission() throws IOException {
+    AuthenticationInfo owner = new AuthenticationInfo("binding-owner");
+    String noteId = notebook.createNote("private-binding-write", owner);
+    try {
+      setNotePermissions(noteId, "binding-owner", "binding-reader");
+      String initialGroup = notebook.processNote(noteId, Note::getDefaultInterpreterGroup);
+      String replacementGroup = initialGroup.equals("md") ? "spark" : "md";
+      Message message = new Message(OP.SAVE_INTERPRETER_BINDINGS)
+          .put("noteId", noteId)
+          .put("selectedSettingIds", Arrays.asList(replacementGroup));
+      NotebookSocket socket = createWebSocket();
+
+      notebookServer.saveInterpreterBindings(socket, serviceContext("binding-reader"), message);
+
+      assertEquals(initialGroup,
+          notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.AUTH_INFO, responseMessage.op);
+
+      reset(socket);
+      authorizationService.setWriters(noteId,
+          new HashSet<>(Arrays.asList("binding-owner", "binding-writer")));
+      notebookServer.saveInterpreterBindings(socket, serviceContext("binding-writer"), message);
+
+      assertEquals(replacementGroup,
+          notebook.processNote(noteId, Note::getDefaultInterpreterGroup));
+      verify(socket).send(response.capture());
+      responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.INTERPRETER_BINDINGS, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, owner);
+    }
+  }
+
+  private void setNotePermissions(String noteId, String owner, String reader) throws IOException {
+    authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(owner)));
+    authorizationService.setReaders(noteId, new HashSet<>(Arrays.asList(owner, reader)));
+    authorizationService.setRunners(noteId, new HashSet<>(Arrays.asList(owner)));
+    authorizationService.setWriters(noteId, new HashSet<>(Arrays.asList(owner)));
+  }
+
+  private ServiceContext serviceContext(String user) {
+    return new ServiceContext(new AuthenticationInfo(user),
+        new HashSet<>(Arrays.asList(user)));
+  }
+
+  @Test
   void testNoteRevision() throws IOException {
     String noteId = null;
 
@@ -961,6 +1171,82 @@ class NotebookServerTest extends AbstractTestRestApi {
       if (null != noteId) {
         notebook.removeNote(noteId, anonymous);
       }
+    }
+  }
+
+  @Test
+  void listRevisionHistoryIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("revision-list-note-id", anonymous);
+
+    try {
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.LIST_REVISION_HISTORY)
+          .put("noteId", noteId);
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.LIST_REVISION_HISTORY, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void checkpointNoteIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("checkpoint-note-id", anonymous);
+
+    try {
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.CHECKPOINT_NOTE)
+          .put("noteId", noteId)
+          .put("commitMessage", "checkpoint");
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.LIST_REVISION_HISTORY, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void setNoteRevisionIncludesNoteId() throws IOException {
+    String noteId = notebook.createNote("set-revision-note-id", anonymous);
+
+    try {
+      NotebookRepoWithVersionControl.Revision revision =
+          notebook.processNote(noteId,
+              note -> notebook.checkpointNote(
+                  note.getId(),
+                  note.getPath(),
+                  "revision",
+                  anonymous));
+
+      NotebookSocket socket = createWebSocket();
+      Message request = new Message(OP.SET_NOTE_REVISION)
+          .put("noteId", noteId)
+          .put("revisionId", revision.id);
+
+      notebookServer.onMessage(socket, request.toJson());
+
+      ArgumentCaptor<String> response = ArgumentCaptor.forClass(String.class);
+      verify(socket).send(response.capture());
+
+      Message responseMessage = notebookServer.deserializeMessage(response.getValue());
+      assertEquals(OP.SET_NOTE_REVISION, responseMessage.op);
+      assertEquals(noteId, responseMessage.data.get("noteId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
     }
   }
 

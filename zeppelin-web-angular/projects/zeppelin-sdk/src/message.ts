@@ -30,6 +30,8 @@ import {
 } from './interfaces/message-paragraph.interface';
 import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
+import { getMessagePayloadGuard } from './message-payload-guards';
+
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
 
 export type SendArgumentsType<K extends keyof MessageSendDataTypeMap> = MessageSendDataTypeMap[K] extends undefined
@@ -155,7 +157,7 @@ export class Message {
     return this.received$.asObservable();
   }
 
-  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): void {
+  send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): string {
     if (!this.ws) {
       throw new Error('WebSocket is not connected. Bootstrap first.');
     }
@@ -170,13 +172,19 @@ export class Message {
 
     this.ws.next(message);
     this.sent$.next(message);
+    return message.msgId;
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
-    return this.received$.pipe(
-      filter(message => message.op === op),
-      map(message => message.data)
-    ) as Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]>;
+    return this.receiveMessage(op).pipe(map(message => message.data)) as Observable<
+      Record<K, MessageReceiveDataTypeMap[K]>[K]
+    >;
+  }
+
+  receiveEnvelope<K extends keyof MessageReceiveDataTypeMap>(
+    op: K
+  ): Observable<WebSocketMessage<MessageReceiveDataTypeMap, K>> {
+    return this.receiveMessage(op) as Observable<WebSocketMessage<MessageReceiveDataTypeMap, K>>;
   }
 
   shortCircuit(message: WebSocketMessage<MessageReceiveDataTypeMap>) {
@@ -292,8 +300,8 @@ export class Message {
     this.send<OP.MOVE_PARAGRAPH>(OP.MOVE_PARAGRAPH, { id: paragraphId, index: newIndex });
   }
 
-  insertParagraph(newIndex: number): void {
-    this.send<OP.INSERT_PARAGRAPH>(OP.INSERT_PARAGRAPH, { index: newIndex });
+  insertParagraph(newIndex: number): string {
+    return this.send<OP.INSERT_PARAGRAPH>(OP.INSERT_PARAGRAPH, { index: newIndex });
   }
 
   copyParagraph(
@@ -302,8 +310,8 @@ export class Message {
     paragraphData: string,
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphParams
-  ): void {
-    this.send<OP.COPY_PARAGRAPH>(OP.COPY_PARAGRAPH, {
+  ): string {
+    return this.send<OP.COPY_PARAGRAPH>(OP.COPY_PARAGRAPH, {
       index: newIndex,
       title: paragraphTitle,
       paragraph: paragraphData,
@@ -415,6 +423,10 @@ export class Message {
     });
   }
 
+  cancelAllParagraphs(noteId: string): void {
+    this.send<OP.CANCEL_ALL_PARAGRAPHS>(OP.CANCEL_ALL_PARAGRAPHS, { noteId });
+  }
+
   paragraphRemove(paragraphId: string): void {
     this.send<OP.PARAGRAPH_REMOVE>(OP.PARAGRAPH_REMOVE, { id: paragraphId });
   }
@@ -442,7 +454,7 @@ export class Message {
     paragraphConfig: ParagraphConfig,
     paragraphParams: ParagraphConfig,
     noteId: string
-  ): void {
+  ): string {
     return this.send<OP.COMMIT_PARAGRAPH>(OP.COMMIT_PARAGRAPH, {
       id: paragraphId,
       noteId,
@@ -457,7 +469,7 @@ export class Message {
     // javascript add "," if change contains several patches
     // but java library requires patch list without ","
     const normalPatch = patch.replace(/,@@/g, '@@');
-    return this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
+    this.send<OP.PATCH_PARAGRAPH>(OP.PATCH_PARAGRAPH, {
       id: paragraphId,
       noteId,
       patch: normalPatch
@@ -531,10 +543,6 @@ export class Message {
     });
   }
 
-  listConfigurations(): void {
-    this.send<OP.LIST_CONFIGURATIONS>(OP.LIST_CONFIGURATIONS);
-  }
-
   getInterpreterSettings(): void {
     this.send<OP.GET_INTERPRETER_SETTINGS>(OP.GET_INTERPRETER_SETTINGS);
   }
@@ -551,5 +559,22 @@ export class Message {
       noteId: note.id,
       formName
     });
+  }
+
+  private receiveMessage<K extends keyof MessageReceiveDataTypeMap>(op: K) {
+    const guard = getMessagePayloadGuard(op);
+
+    return this.received$.pipe(
+      filter(message => message.op === op),
+      filter(message => {
+        if (!guard || guard(message.data)) {
+          return true;
+        }
+
+        // The payload can be large and carries note names, so log the OP alone.
+        console.warn(`Dropped WebSocket OP ${String(op)}: payload failed validation`);
+        return false;
+      })
+    );
   }
 }

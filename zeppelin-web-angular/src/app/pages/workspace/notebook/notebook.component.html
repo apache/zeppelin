@@ -61,6 +61,7 @@
                   [noteId]="note.id"
                   [(activatedExtension)]="activatedExtension"
                   [permissions]="permissions"
+                  (permissionsSaved)="getPermissions(note)"
                 ></zeppelin-notebook-permissions>
               }
               @case ('revisions') {

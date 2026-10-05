@@ -18,14 +18,18 @@ import { map, mergeMap, takeUntil } from 'rxjs/operators';
 import { ShortcutService } from '@zeppelin/services';
 import { castArray, chain, isNil } from 'lodash';
 import { KeyCodeConverter } from './key-code-converter';
+import { MonacoHandledParagraphActions } from './notebook-paragraph-keyboard-event-handler';
 import { ParagraphActions } from './paragraph-actions';
 import { ShortcutsMap } from './shortcuts-map';
 
 export class KeyBinder {
+  private static nextMonacoContextId = 0;
+
   private events$ = new Subject<{
     action: ParagraphActions;
     event: KeyboardEvent | null;
   }>();
+  private readonly monacoContext = `zeppelin.paragraphEditor.${KeyBinder.nextMonacoContextId++}`;
 
   constructor(
     private destroySubject: Observable<unknown>,
@@ -56,17 +60,23 @@ export class KeyBinder {
   }
 
   initKeyBindingsOnMonaco(editor: MonacoEditor.IStandaloneCodeEditor) {
+    editor.createContextKey(this.monacoContext, true);
     chain(ShortcutsMap)
       .toPairs()
+      .filter(([action]) => MonacoHandledParagraphActions.some(monacoAction => monacoAction === action))
       .flatMap(([action, keys]) => castArray(keys).map(key => ({ action, key })))
       .forEach(({ action, key }) => {
         const keyBinding = KeyCodeConverter.angularToMonacoKeyBinding(key);
         if (isNil(keyBinding)) {
           return;
         }
-        editor.addCommand(keyBinding, () => {
-          this.events$.next({ action: action as ParagraphActions, event: null });
-        });
+        editor.addCommand(
+          keyBinding,
+          () => {
+            this.events$.next({ action: action as ParagraphActions, event: null });
+          },
+          this.monacoContext
+        );
       })
       .value();
   }

@@ -13,46 +13,102 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
+type ParagraphSettingsMenuItem =
+  | 'Width'
+  | 'Font size'
+  | 'Insert new'
+  | 'Clone paragraph'
+  | 'Remove'
+  | 'Move paragraph up'
+  | 'Move paragraph down'
+  | 'Clear output'
+  | 'Show Title'
+  | 'Show line numbers'
+  | 'Hide line numbers'
+  | 'Disable run'
+  | 'Enable run';
+
 export class NotebookParagraphPage extends BasePage {
+  readonly paragraphContainers: Locator;
   readonly paragraphContainer: Locator;
-  readonly addParagraphAbove: Locator;
-  readonly addParagraphBelow: Locator;
+  readonly addParagraphAboveLink: Locator;
+  readonly addParagraphBelowLink: Locator;
   readonly controlPanel: Locator;
   readonly codeEditor: Locator;
+  readonly codeEditorHost: Locator;
+  readonly editorInput: Locator;
+  readonly editorViewLinesAll: Locator;
+  readonly editorViewLines: Locator;
+  readonly editorLines: Locator;
   readonly dynamicForms: Locator;
   readonly resultDisplay: Locator;
-  readonly footerInfo: Locator;
+  readonly executionTime: Locator;
+  readonly elapsedTime: Locator;
+  readonly progressIndicator: Locator;
+  readonly progressBar: Locator;
+  readonly paragraphTitleText: Locator;
+  readonly paragraphTitleInput: Locator;
+  readonly lineNumbers: Locator;
   readonly runButton: Locator;
-  readonly settingsDropdown: Locator;
+  readonly toggleEditorButton: Locator;
+  readonly toggleOutputButton: Locator;
+  readonly settingsDropdowns: Locator;
+  readonly settingsMenu: Locator;
+  readonly paragraphIdMenuItem: Locator;
+  readonly confirmButton: Locator;
+  readonly runAllButton: Locator;
   readonly status: Locator;
   readonly cancelButton: Locator;
   readonly exportDropdownTrigger: Locator;
   readonly exportMenu: Locator;
+  private readonly settingsDropdown: Locator;
+  private readonly addParagraphAbove: Locator;
+  private readonly addParagraphBelow: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.paragraphContainer = page.locator('.paragraph-container').first();
-    this.addParagraphAbove = page.locator('zeppelin-notebook-add-paragraph').first();
-    this.addParagraphBelow = page.locator('zeppelin-notebook-add-paragraph').last();
-    this.controlPanel = page.locator('zeppelin-notebook-paragraph-control').first();
-    this.codeEditor = page.locator('zeppelin-notebook-paragraph-code-editor').first();
-    this.dynamicForms = page.locator('zeppelin-notebook-paragraph-dynamic-forms').first();
-    this.resultDisplay = page.locator('zeppelin-notebook-paragraph-result').first();
-    this.footerInfo = page.locator('zeppelin-notebook-paragraph-footer').first();
-    this.runButton = page
-      .locator('.paragraph-container')
-      .first()
-      .locator(
-        'button[nzTooltipTitle*="Run"], button[title*="Run"], button:has-text("Run"), .run-button, [aria-label*="Run"], i[nzType="play-circle"]:visible, button:has(i[nzType="play-circle"])'
-      )
-      .first();
-    this.settingsDropdown = page
-      .locator('.paragraph-container')
-      .first()
-      .locator('zeppelin-notebook-paragraph-control a[nz-dropdown]')
-      .first();
+    this.paragraphContainers = page.locator('.paragraph-container');
+    // JUSTIFIED: fresh test notebooks contain one paragraph; its container is the primary target.
+    this.paragraphContainer = this.paragraphContainers.first();
+    const addParagraphControls = page.locator('zeppelin-notebook-add-paragraph');
+    // JUSTIFIED: the first add control inserts above the first paragraph.
+    this.addParagraphAbove = addParagraphControls.first();
+    // JUSTIFIED: the last add control trails the final paragraph and inserts below it.
+    this.addParagraphBelow = addParagraphControls.last();
+    this.addParagraphAboveLink = this.addParagraphAbove.getByText('Add Paragraph', { exact: true });
+    this.addParagraphBelowLink = this.addParagraphBelow.getByText('Add Paragraph', { exact: true });
+    const controlPanels = page.locator('zeppelin-notebook-paragraph-control');
+    this.controlPanel = this.paragraphContainer.locator('zeppelin-notebook-paragraph-control');
+    const codeEditors = page.locator('zeppelin-notebook-paragraph-code-editor');
+    this.codeEditor = this.paragraphContainer.locator('zeppelin-notebook-paragraph-code-editor');
+    this.codeEditorHost = this.codeEditor.locator('zeppelin-code-editor');
+    this.editorInput = this.codeEditor.getByRole('textbox', { name: 'Editor content', exact: true });
+    this.editorViewLines = this.codeEditor.locator('.view-lines');
+    this.editorViewLinesAll = codeEditors.locator('.view-lines');
+    this.editorLines = this.codeEditor.locator('.view-line');
+    this.dynamicForms = this.paragraphContainer.locator('zeppelin-notebook-paragraph-dynamic-forms');
+    this.resultDisplay = this.paragraphContainer.locator('zeppelin-notebook-paragraph-result');
+    const footerInfo = this.paragraphContainer.getByTestId('angular-paragraph-footer');
+    this.executionTime = footerInfo.locator('.execution-time');
+    this.elapsedTime = footerInfo.locator('.elapsed-time');
+    // JUSTIFIED: only the running paragraph renders a progress component.
+    this.progressIndicator = page.locator('zeppelin-notebook-paragraph-progress').first();
+    this.progressBar = this.progressIndicator.locator('.ant-progress');
+    const paragraphTitle = this.paragraphContainer.locator('zeppelin-elastic-input');
+    this.paragraphTitleText = paragraphTitle.locator('p');
+    this.paragraphTitleInput = paragraphTitle.getByRole('textbox');
+    // Monaco renders gutter line numbers inside its margin overlay.
+    this.lineNumbers = this.codeEditor.locator('.margin-view-overlays .line-numbers');
+    this.runButton = this.controlPanel.locator('.run-para');
+    this.toggleEditorButton = this.controlPanel.locator('a[nzTooltipTitle="Show/hide the code"]');
+    this.toggleOutputButton = this.controlPanel.locator('a[nzTooltipTitle="Show/hide the output"]');
+    this.settingsDropdowns = controlPanels.locator('a[nz-dropdown]');
+    this.settingsDropdown = this.controlPanel.locator('a[nz-dropdown]');
+    this.settingsMenu = page.locator('ul.setting-menu');
+    this.paragraphIdMenuItem = this.settingsMenu.locator('.paragraph-id');
+    this.confirmButton = page.getByRole('button', { name: 'OK', exact: true });
+    this.runAllButton = page.locator('button[nzTooltipTitle="Run all paragraphs"]');
     this.status = this.controlPanel.locator('.status');
-    // The control renders the cancel icon only while the paragraph is PENDING or RUNNING.
     this.cancelButton = this.controlPanel.locator('.cancel-para');
     // The export controls render only for a TABLE result.
     this.exportDropdownTrigger = this.resultDisplay.locator('.export-dropdown-icon-btn');
@@ -69,11 +125,27 @@ export class NotebookParagraphPage extends BasePage {
     await this.paragraphContainer.dblclick();
   }
 
+  async clickAddParagraphAbove(): Promise<void> {
+    await this.addParagraphAbove.hover();
+    await this.addParagraphAboveLink.click();
+  }
+
+  async clickAddParagraphBelow(): Promise<void> {
+    await this.addParagraphBelow.hover();
+    await this.addParagraphBelowLink.click();
+  }
+
   async runParagraph(): Promise<void> {
     await this.runButton.click();
   }
 
-  async openSettingsDropdown(): Promise<void> {
-    await this.settingsDropdown.click();
+  settingsMenuItem(label: ParagraphSettingsMenuItem): Locator {
+    return this.settingsMenu.locator('li.list-item').filter({ hasText: label });
+  }
+
+  async openSettingsDropdown(settingsDropdown: Locator = this.settingsDropdown): Promise<void> {
+    await expect(this.settingsMenu).toBeHidden();
+    await settingsDropdown.click();
+    await expect(this.settingsMenu).toBeVisible();
   }
 }

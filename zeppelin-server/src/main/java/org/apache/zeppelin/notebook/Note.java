@@ -815,6 +815,17 @@ public class Note implements JsonSerializable {
     return this.paragraphs;
   }
 
+  /**
+   * Abort all the paragraphs which are not terminated yet.
+   */
+  public void abortAll() {
+    for (Paragraph p : getParagraphs()) {
+      if (!p.isTerminated()) {
+        p.abort();
+      }
+    }
+  }
+
   // TODO(zjffdu) how does this used ?
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
@@ -938,7 +949,13 @@ public class Note implements JsonSerializable {
     Note newNote = new Note();
     newNote.name = getName();
     newNote.id = getId();
+    newNote.path = path;
+    newNote.defaultInterpreterGroup = defaultInterpreterGroup;
+    newNote.version = version;
     newNote.setConfig(getConfig());
+    newNote.info = getInfo();
+    newNote.noteParams = getNoteParams();
+    newNote.noteForms = getNoteForms();
     newNote.angularObjects = getAngularObjects();
     newNote.setZeppelinConfiguration(zConf);
     newNote.setNoteParser(noteParser);

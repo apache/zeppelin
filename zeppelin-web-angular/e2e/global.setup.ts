@@ -20,14 +20,15 @@ import { performLoginIfRequired, waitForZeppelinReady } from './utils';
 // Must match the `storageState` value declared for browser projects in playwright.config.js.
 export const STORAGE_STATE = path.join('playwright', '.auth', 'user.json');
 
-setup('authenticate', async ({ page }) => {
-  fs.mkdirSync(path.dirname(STORAGE_STATE), { recursive: true });
+setup('authenticate', async ({ page }, testInfo) => {
+  const storageState = testInfo.project.metadata.authStatePath ?? STORAGE_STATE;
+  fs.mkdirSync(path.dirname(storageState), { recursive: true });
 
   const isShiroEnabled = await LoginTestUtil.isShiroEnabled();
   if (!isShiroEnabled) {
     // Auth variant disabled — write an empty storage state so dependent projects load,
     // then exit. This keeps the setup-project pattern uniform across CI matrix variants.
-    await page.context().storageState({ path: STORAGE_STATE });
+    await page.context().storageState({ path: storageState });
     return;
   }
 
@@ -41,5 +42,5 @@ setup('authenticate', async ({ page }) => {
   await expect(page.locator('zeppelin-login')).toBeHidden({ timeout: 30000 });
   await expect(page.getByRole('heading', { name: 'Welcome to Zeppelin!' })).toBeVisible({ timeout: 30000 });
 
-  await page.context().storageState({ path: STORAGE_STATE });
+  await page.context().storageState({ path: storageState });
 });

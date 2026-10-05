@@ -10,7 +10,14 @@
 ~ limitations under the License.
 -->
 
-<nz-card class="repo-item" [class.edit]="editMode" [nzTitle]="repo.name" [nzExtra]="extraTemplate">
+<nz-card
+  class="repo-item"
+  data-testid="notebook-repo-item"
+  [attr.data-repo-name]="repo.name"
+  [class.edit]="editMode"
+  [nzTitle]="repo.name"
+  [nzExtra]="extraTemplate"
+>
   <ng-template #extraTemplate>
     @if (!editMode) {
       <div class="extra-wrap">

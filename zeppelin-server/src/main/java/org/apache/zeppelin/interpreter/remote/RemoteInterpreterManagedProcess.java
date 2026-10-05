@@ -32,14 +32,14 @@ public abstract class RemoteInterpreterManagedProcess extends RemoteInterpreterP
 
   private final String interpreterPortRange;
 
-  private String host = null;
-  private int port = -1;
+  private volatile String host = null;
+  private volatile int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
   private final String interpreterSettingName;
   private final String interpreterGroupId;
   private final boolean isUserImpersonated;
-  private String errorMessage;
+  private volatile String errorMessage;
 
   private Map<String, String> env;
 

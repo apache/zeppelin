@@ -878,6 +878,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                     meta: v.meta,
                     caption: computeCaption(v.name, v.meta),
                     score: 300,
+                    // Marks this candidate as coming from the interpreter, so that
+                    // completionSupportWithBackend can tell it apart from ace's own local/keyword
+                    // completions. `meta` cannot serve that purpose: interpreters are free to fill it
+                    // in (SqlCompleter sends schema/table/column), and using it as the discriminator
+                    // made those very suggestions disappear.
+                    fromBackend: true,
                   });
                 }
               }
@@ -1084,10 +1090,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     let prev = null;
 
     matches = matches.filter(function(item) {
-      if (!_.isEmpty(item.meta)) {
-        if (completionListLength !== 0) {
-          return false;
-        }
+      // ZEPPELIN-3001 intent: once the interpreter has answered, hide ace's own local/keyword
+      // suggestions so the list only shows what the backend knows. Candidates coming from the
+      // interpreter are always kept - they are the reason it was asked in the first place.
+      if (!item.fromBackend && completionListLength !== 0) {
+        return false;
       }
       let caption = item.snippet || item.caption || item.value;
       if (caption === prev) {

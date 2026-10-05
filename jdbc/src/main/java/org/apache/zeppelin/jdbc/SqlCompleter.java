@@ -333,7 +333,8 @@ public class SqlCompleter {
         }
 
         LOGGER.info("Completer initialized with " + schemas.size() + " schemas, " +
-            columns.size() + " tables and " + keywords.size() + " keywords");
+            tables.size() + " tables, " + columns.size() + " columns and " +
+            keywords.size() + " keywords");
       }
 
     } catch (SQLException | IOException e) {

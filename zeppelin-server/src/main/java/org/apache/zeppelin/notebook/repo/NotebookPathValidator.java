@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
- * Note-path validation helpers shared by {@link NotebookRepo} implementations
+ * Notebook path validation helpers shared by {@link NotebookRepo} implementations
  * and the service layer. A {@code final} class with {@code static} methods
  * (rather than {@link NotebookRepo} default methods) prevents an
  * implementation from accidentally — or intentionally — overriding the
@@ -83,5 +83,45 @@ public final class NotebookPathValidator {
       previous = decoded;
     }
     throw new IOException("Exceeded maximum decode attempts. Possible malicious input.");
+  }
+
+  /**
+   * Normalizes a path using the rules shared by note and folder paths.
+   *
+   * @param path the path to normalize
+   * @return the normalized path
+   * @throws IOException if the path cannot be normalized
+   */
+  public static String normalizePath(String path) throws IOException {
+    if (path == null) {
+      throw new IOException("Path must not be null");
+    }
+
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+
+    path = decodeRepeatedly(path);
+
+    if (path.contains("..")) {
+      throw new IOException("Path can not contain '..'");
+    }
+
+    return path;
+  }
+
+  /**
+   * Requires {@code folderPath} to use the canonical absolute folder-path form.
+   *
+   * @throws IOException if the path is null or does not start with {@code /}
+   */
+  public static void requireAbsoluteFolderPath(String folderPath) throws IOException {
+    if (folderPath == null) {
+      throw new IOException("Folder path must not be null");
+    }
+
+    if (!folderPath.startsWith("/")) {
+      throw new IOException("Folder path must start with '/'");
+    }
   }
 }

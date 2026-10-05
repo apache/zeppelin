@@ -1,8 +1,8 @@
 name: python_3_with_flink
 channels:
   - conda-forge
-  - defaults
 dependencies:
+  - python=3.9
   - pycodestyle
   - scipy
   - numpy=1.19.5

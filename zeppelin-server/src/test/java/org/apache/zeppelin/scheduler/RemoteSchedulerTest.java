@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,6 +46,8 @@ class RemoteSchedulerTest extends AbstractInterpreterTest {
   private SchedulerFactory schedulerSvc;
   private static final int TICK_WAIT = 100;
   private static final int MAX_WAIT_CYCLES = 100;
+  private static final int CONCURRENT_JOB_SLEEP_MS = 3000;
+  private static final int OVERLAP_WAIT_CYCLES = 30;
   private String note1Id;
 
   @Override
@@ -132,8 +136,15 @@ class RemoteSchedulerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  void testAbortOnPending() throws Exception {
+  void testAbortOnPending_noteModeSerial() throws Exception {
     final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock");
+    // Force "note" execution mode: RemoteScheduler keeps a single-threaded pool for it and its
+    // local dispatch gate (runJobInScheduler) blocks until job1 is fully executed - not just
+    // submitted - before even attempting job2. So job2 is deterministically still PENDING, and
+    // never dispatched, when it is aborted below, regardless of the paragraph-mode pool now
+    // being multi-threaded for every interpreter (ZEPPELIN-6129).
+    intpA.setProperty(".execution.mode", "note");
+    intpA.setProperty(".noteId", note1Id);
     intpA.open();
 
     Scheduler scheduler = intpA.getScheduler();
@@ -237,19 +248,44 @@ class RemoteSchedulerTest extends AbstractInterpreterTest {
     scheduler.submit(job1);
     scheduler.submit(job2);
 
+    CountDownLatch job1Running = new CountDownLatch(1);
+    Thread runningWatcher = new Thread(() -> {
+      int cycles = 0;
+      while (job1Running.getCount() > 0 && cycles < MAX_WAIT_CYCLES) {
+        if (job1.isRunning()) {
+          job1Running.countDown();
+          return;
+        }
+        try {
+          Thread.sleep(TICK_WAIT);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+        cycles++;
+      }
+    });
+    runningWatcher.start();
 
-    int cycles = 0;
-    while (!job1.isRunning() && cycles < MAX_WAIT_CYCLES) {
-      Thread.sleep(TICK_WAIT);
-      cycles++;
-    }
+    assertTrue(job1Running.await(MAX_WAIT_CYCLES * TICK_WAIT, TimeUnit.MILLISECONDS),
+        "job1 should reach RUNNING");
+    runningWatcher.join(TICK_WAIT);
+
     assertTrue(job1.isRunning());
     assertEquals(Status.PENDING, job2.getStatus());
 
     job2.abort();
 
-    cycles = 0;
+    int cycles = 0;
     while (!job1.isTerminated() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
+    }
+
+    // job1 terminating only unblocks the scheduler thread to dequeue and abort job2; give it
+    // its own bounded wait instead of assuming it is already processed the instant job1 is done.
+    cycles = 0;
+    while (!job2.isTerminated() && cycles < MAX_WAIT_CYCLES) {
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
@@ -263,6 +299,95 @@ class RemoteSchedulerTest extends AbstractInterpreterTest {
 
     intpA.close();
     schedulerSvc.removeScheduler("test");
+  }
+
+  @Test
+  void testParallelExecution_bothJobsRunConcurrently() throws Exception {
+    final RemoteInterpreter intpA =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", note1Id, "mock");
+    // enable parallel execution on the remote interpreter side so that the two jobs
+    // are not serialized by the interpreter's own scheduler. RemoteScheduler itself must
+    // stay interpreter-neutral: no JDBC-specific property is needed to unlock concurrency.
+    intpA.setProperty("parallel", "true");
+    intpA.open();
+
+    Scheduler scheduler = intpA.getScheduler();
+
+    Job<Object> job1 = createSleepingJob("jobId1", intpA, CONCURRENT_JOB_SLEEP_MS);
+    Job<Object> job2 = createSleepingJob("jobId2", intpA, CONCURRENT_JOB_SLEEP_MS);
+
+    scheduler.submit(job1);
+    scheduler.submit(job2);
+
+    CountDownLatch overlapDetected = new CountDownLatch(1);
+    Thread overlapWatcher = new Thread(() -> {
+      int cycles = 0;
+      while (overlapDetected.getCount() > 0 && cycles < OVERLAP_WAIT_CYCLES) {
+        if (job1.isRunning() && job2.isRunning()) {
+          overlapDetected.countDown();
+          return;
+        }
+        try {
+          Thread.sleep(TICK_WAIT);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+        cycles++;
+      }
+    });
+    overlapWatcher.start();
+
+    boolean bothRanConcurrently =
+        overlapDetected.await(OVERLAP_WAIT_CYCLES * TICK_WAIT, TimeUnit.MILLISECONDS);
+    overlapWatcher.join(TICK_WAIT);
+
+    assertTrue(bothRanConcurrently, "job1 and job2 should both be RUNNING at the same time");
+
+    intpA.close();
+    schedulerSvc.removeScheduler("test");
+  }
+
+  private Job<Object> createSleepingJob(String jobId, RemoteInterpreter intpA, int sleepMillis) {
+    return new Job<Object>(jobId, jobId, null) {
+      Object results;
+      InterpreterContext context = InterpreterContext.builder()
+          .setNoteId("noteId")
+          .setParagraphId(jobId)
+          .setResourcePool(new LocalResourcePool("pool-" + jobId))
+          .build();
+
+      @Override
+      public Object getReturn() {
+        return results;
+      }
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        intpA.interpret(String.valueOf(sleepMillis), context);
+        return String.valueOf(sleepMillis);
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+
+      @Override
+      public void setResult(Object results) {
+        this.results = results;
+      }
+    };
   }
 
 }

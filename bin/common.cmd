@@ -71,14 +71,38 @@ if not defined ZEPPELIN_JAVA_OPTS (
     set ZEPPELIN_JAVA_OPTS=%ZEPPELIN_JAVA_OPTS% -Dfile.encoding=%ZEPPELIN_ENCODING% %ZEPPELIN_MEM%
 )
 
+REM JPMS (Java Platform Module System) args mirrored from pom.xml extraJavaTestArgs.
+REM Targets JDK 17+: --add-modules, --enable-native-access, --sun-misc-unsafe-memory-access
+REM require JDK 17+. -XX:+IgnoreUnrecognizedVMOptions only silences unknown -XX flags.
+set JPMS_JAVA_OPTS=-XX:+IgnoreUnrecognizedVMOptions
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.lang=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.io=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.net=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.nio=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.util=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/sun.security.action=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% -Dio.netty.tryReflectionSetAccessible=true
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% -Dio.netty.allocator.type=pooled
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% -Dio.netty.handler.ssl.defaultEndpointVerificationAlgorithm=NONE
+set JPMS_JAVA_OPTS=%JPMS_JAVA_OPTS% --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED
+
 if not defined JAVA_OPTS (
     set JAVA_OPTS=%ZEPPELIN_JAVA_OPTS%
 ) else (
     set JAVA_OPTS=%JAVA_OPTS% %ZEPPELIN_JAVA_OPTS%
 )
+set JAVA_OPTS=%JAVA_OPTS% %JPMS_JAVA_OPTS%
 
 
-set JAVA_INTP_OPTS=%ZEPPELIN_INTP_JAVA_OPTS% -Dfile.encoding=%ZEPPELIN_ENCODING%
+set JAVA_INTP_OPTS=%ZEPPELIN_INTP_JAVA_OPTS% -Dfile.encoding=%ZEPPELIN_ENCODING% %JPMS_JAVA_OPTS%
 
 if not defined JAVA_HOME (
     set ZEPPELIN_RUNNER=java

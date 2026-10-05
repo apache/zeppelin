@@ -455,6 +455,7 @@ public class DownloadUtils {
     if (targetFlinkHomeFolder.exists()) {
       LOGGER.info("Skip to download Flink {}_{} as it is already downloaded.", flinkVersion,
           scalaVersion);
+      patchFlinkScala(targetFlinkHomeFolder, flinkVersion, scalaVersion);
       return targetFlinkHomeFolder.getAbsolutePath();
     }
     File flinkTGZ = new File(flinkDownloadFolder,
@@ -541,7 +542,50 @@ public class DownloadUtils {
     } catch (Exception e) {
       throw new RuntimeException("Fail to download jar", e);
     }
+    patchFlinkScala(targetFlinkHomeFolder, flinkVersion, scalaVersion);
     return targetFlinkHomeFolder.getAbsolutePath();
+  }
+
+  /**
+   * Flink 1.x tgz bundles flink-scala_2.12 which shades scala 2.12.7.
+   * Scala 2.12.7's JrtClassPath.asURLs() crashes on JDK 17+ (scala/bug#11608, fixed in 2.12.9).
+   * Strip the shaded classes and copy in Scala 2.12.20 jars.
+   */
+  private static void patchFlinkScala(File flinkHome, String flinkVersion, String scalaVersion) {
+    if (!"2.12".equals(scalaVersion)) {
+      return;
+    }
+    if (SemanticVersion.of(flinkVersion).equalsOrNewerThan(SemanticVersion.of("2.0.0"))) {
+      return;
+    }
+    File libDir = new File(flinkHome, "lib");
+    for (File jar : libDir.listFiles((d, n) -> n.startsWith("flink-scala_") && n.endsWith(".jar"))) {
+      LOGGER.info("Stripping Scala 2.12.7 classes from {}", jar.getName());
+      try {
+        Process p = new ProcessBuilder("zip", "-d", jar.getAbsolutePath(), "scala/*")
+            .redirectErrorStream(true).start();
+        IOUtils.toString(p.getInputStream(), StandardCharsets.UTF_8);
+        p.waitFor();
+      } catch (Exception e) {
+        LOGGER.warn("Failed to strip Scala classes from {}", jar.getName(), e);
+      }
+    }
+    String scalaPatchVersion = "2.12.20";
+    for (String artifact : new String[]{"scala-library", "scala-compiler", "scala-reflect"}) {
+      String jarName = artifact + "-" + scalaPatchVersion + ".jar";
+      File dest = new File(libDir, jarName);
+      if (dest.exists()) {
+        continue;
+      }
+      String url = "https://repo1.maven.org/maven2/org/scala-lang/" + artifact + "/"
+          + scalaPatchVersion + "/" + jarName;
+      try {
+        LOGGER.info("Downloading {} to {}", jarName, dest);
+        download(url, 3, dest);
+      } catch (Exception e) {
+        throw new RuntimeException("Fail to download " + jarName, e);
+      }
+    }
   }
 
   private static void mvFile(String srcPath, String dstPath) throws IOException {

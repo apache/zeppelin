@@ -47,6 +47,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.lifecycle.IdleInterpreterReclaimer;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -130,6 +131,9 @@ public class InterpreterSettingManager implements NoteEventListener {
     new ConcurrentHashMap<>());
   private final Map<String, List<Meter>> interpreterSettingsMeters = new ConcurrentHashMap<>();
 
+  /** Guards {@link #saveToFile()}, the only writer of the interpreter setting file. */
+  private final Object saveLock = new Object();
+
   private final List<Repository> interpreterRepositories;
   private InterpreterOption defaultOption;
   private String defaultInterpreterGroup;
@@ -146,6 +150,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   private Map<String, String> jupyterKernelLanguageMap = new HashMap<>();
   private List<String> includesInterpreters;
   private List<String> excludesInterpreters;
+  private final IdleInterpreterReclaimer idleInterpreterReclaimer;
 
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zConf,
@@ -206,6 +211,14 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     this.configStorage = configStorage;
     init();
+
+    this.idleInterpreterReclaimer = new IdleInterpreterReclaimer(zConf, this);
+    this.idleInterpreterReclaimer.start();
+  }
+
+  @VisibleForTesting
+  public IdleInterpreterReclaimer getIdleInterpreterReclaimer() {
+    return idleInterpreterReclaimer;
   }
 
   public RemoteInterpreterEventServer getInterpreterEventServer() {
@@ -359,11 +372,19 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
   }
 
+  /**
+   * Snapshotting the settings and writing them out has to be one step. Dependency downloads
+   * save from a thread per interpreter setting, so without this an older snapshot can be
+   * written after a newer one and drop a setting that was added in between from the file,
+   * while it survives in memory until the next restart.
+   */
   public void saveToFile() throws IOException {
-    InterpreterInfoSaving info = new InterpreterInfoSaving();
-    info.interpreterSettings = new HashMap<>(interpreterSettings);
-    info.interpreterRepositories = interpreterRepositories;
-    configStorage.save(info);
+    synchronized (saveLock) {
+      InterpreterInfoSaving info = new InterpreterInfoSaving();
+      info.interpreterSettings = new HashMap<>(interpreterSettings);
+      info.interpreterRepositories = interpreterRepositories;
+      configStorage.save(info);
+    }
   }
 
   private void initMetrics() {
@@ -699,6 +720,17 @@ public class InterpreterSettingManager implements NoteEventListener {
       interpreterGroups.addAll(interpreterSetting.getAllInterpreterGroups());
     }
     return interpreterGroups;
+  }
+
+  /**
+   * Snapshot the status of every running interpreter group. Uses in-memory state only
+   */
+  public List<InterpreterProcessStatus> getInterpreterProcessStatuses() {
+    List<InterpreterProcessStatus> statuses = new ArrayList<>();
+    for (ManagedInterpreterGroup group : getAllInterpreterGroup()) {
+      statuses.add(new InterpreterProcessStatus(group));
+    }
+    return statuses;
   }
 
   // TODO(zjffdu) Current approach is not optimized. we have to iterate all interpreter settings.
@@ -1121,6 +1153,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public void close() {
+    idleInterpreterReclaimer.stop();
     List<Thread> closeThreads = interpreterSettings.values().stream()
             .map(intpSetting-> new Thread(intpSetting::close, intpSetting.getId() + "-close"))
             .peek(t -> t.setUncaughtExceptionHandler((th, e) ->

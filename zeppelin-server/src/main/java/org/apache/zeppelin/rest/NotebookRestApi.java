@@ -566,7 +566,6 @@ public class NotebookRestApi extends AbstractRestApi {
       throws IOException, IllegalArgumentException {
 
     LOGGER.info("Clone note by JSON {}", message);
-    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = GSON.fromJson(message, NewNoteRequest.class);
     String newNoteName = null;
     String revisionId = null;
@@ -706,6 +705,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
         AuthenticationInfo subject = new AuthenticationInfo(user);
         notebook.saveNote(note, subject);
+        note.fireParagraphUpdateEvent(p);
         notebookServer.broadcastParagraph(note, p, MSG_ID_NOT_DEFINED);
         return new JsonResponse<>(Status.OK, "").build();
       });
@@ -887,11 +887,7 @@ public class NotebookRestApi extends AbstractRestApi {
       note -> {
         checkIfNoteIsNotNull(note, noteId);
         checkIfUserCanRun(noteId, "Insufficient privileges you cannot stop this job for this note");
-        for (Paragraph p : note.getParagraphs()) {
-          if (!p.isTerminated()) {
-            p.abort();
-          }
-        }
+        note.abortAll();
         return new JsonResponse<>(Status.OK).build();
       });
   }
@@ -1215,18 +1211,8 @@ public class NotebookRestApi extends AbstractRestApi {
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
-    List<Map<String, String>> notesFound = noteSearchService.query(queryTerm);
-    for (int i = 0; i < notesFound.size(); i++) {
-      String[] ids = notesFound.get(i).get("id").split("/", 2);
-      String noteId = ids[0];
-      if (!authorizationService.isOwner(noteId, userAndRoles) &&
-              !authorizationService.isReader(noteId, userAndRoles) &&
-              !authorizationService.isWriter(noteId, userAndRoles) &&
-              !authorizationService.isRunner(noteId, userAndRoles)) {
-        notesFound.remove(i);
-        i--;
-      }
-    }
+    List<Map<String, String>> notesFound = noteSearchService.query(queryTerm,
+        noteId -> authorizationService.isReader(noteId, userAndRoles));
     LOGGER.info("{} notes found", notesFound.size());
     return new JsonResponse<>(Status.OK, notesFound).build();
   }

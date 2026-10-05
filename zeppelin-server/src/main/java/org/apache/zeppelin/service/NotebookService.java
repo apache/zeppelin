@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -233,13 +234,11 @@ public class NotebookService {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
     }
-    if (!notePath.startsWith("/")) {
-      notePath = "/" + notePath;
-    }
 
     notePath = notePath.replace("\r", " ").replace("\n", " ");
 
-    notePath = NotebookPathValidator.decodeRepeatedly(notePath);
+    notePath = NotebookPathValidator.normalizePath(notePath);
+
     if (notePath.endsWith("/")) {
       throw new IOException("Note name shouldn't end with '/'");
     }
@@ -249,10 +248,19 @@ public class NotebookService {
       throw new IOException("Note name must be less than 255");
     }
 
-    if (notePath.contains("..")) {
-      throw new IOException("Note name can not contain '..'");
-    }
     return notePath;
+  }
+
+  /**
+   * Normalizes a folder path to the canonical absolute form used by folder operations.
+   * Accepts paths with or without a leading slash.
+   *
+   * @param folderPath
+   * @return
+   * @throws IOException
+   */
+  String normalizeFolderPath(String folderPath) throws IOException {
+    return NotebookPathValidator.normalizePath(folderPath);
   }
 
   public void removeNote(String noteId,
@@ -338,6 +346,16 @@ public class NotebookService {
                           String newNotePath,
                           ServiceContext context,
                           ServiceCallback<Note> callback) throws IOException {
+    // NotebookRestApi used to check write access here with hasWritePermission, which also grants
+    // access when Zeppelin runs without conf/shiro.ini. checkPermission does not, so it would
+    // reject a WebSocket clone that the REST endpoint still allows on an anonymous deployment.
+    if (!authorizationService.hasWritePermission(context.getUserAndRoles(), noteId)) {
+      callback.onFailure(new ForbiddenException("Insufficient privileges to clone note " + noteId
+          + ".\nAllowed users or roles: " + authorizationService.getWriters(noteId)
+          + "\nBut the user " + context.getAutheInfo().getUser() + " belongs to: "
+          + context.getUserAndRoles()), context);
+      return null;
+    }
     //TODO(zjffdu) move these to Notebook
     if (StringUtils.isBlank(newNotePath)) {
       newNotePath = "/Cloned Note_" + noteId;
@@ -452,14 +470,19 @@ public class NotebookService {
       callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
-    p.setText(text);
-    p.setTitle(title);
-    p.setAuthenticationInfo(context.getAutheInfo());
-    if (params != null && !params.isEmpty()) {
-      p.settings.setParams(params);
-    }
-    if (config != null && !config.isEmpty()) {
-      p.mergeConfig(config);
+    // In personalized mode only the note owner may update the master paragraph, so that
+    // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+    if (!note.isPersonalizedMode()
+        || authorizationService.isOwner(note.getId(), context.getUserAndRoles())) {
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(context.getAutheInfo());
+      if (params != null && !params.isEmpty()) {
+        p.settings.setParams(params);
+      }
+      if (config != null && !config.isEmpty()) {
+        p.mergeConfig(config);
+      }
     }
 
     if (note.isPersonalizedMode()) {
@@ -596,6 +619,26 @@ public class NotebookService {
 
   }
 
+  public void cancelAllParagraphs(String noteId,
+                                  ServiceContext context,
+                                  ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.CANCEL_ALL_PARAGRAPHS, context,
+        callback)) {
+      return;
+    }
+
+    notebook.processNote(noteId,
+      note -> {
+        if (note == null) {
+          throw new NoteNotFoundException(noteId);
+        }
+        note.abortAll();
+        callback.onSuccess(null, context);
+        return null;
+      });
+
+  }
+
   public void moveParagraph(String noteId,
                             String paragraphId,
                             int newIndex,
@@ -709,6 +752,8 @@ public class NotebookService {
                             ServiceContext context,
                             ServiceCallback<Void> callback) throws IOException {
 
+    folderPath = normalizeFolderPath(folderPath);
+
     if (!folderPath.startsWith("/" + NoteManager.TRASH_FOLDER)) {
       callback.onFailure(new IOException("Can not restore this folder: " + folderPath +
           " as it is not in trash folder"), context);
@@ -761,10 +806,15 @@ public class NotebookService {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
           return null;
         }
-        p.settings.setParams(params);
-        p.mergeConfig(config);
-        p.setTitle(title);
-        p.setText(text);
+        // In personalized mode only the note owner may update the master paragraph, so that
+        // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+        if (!note.isPersonalizedMode()
+            || authorizationService.isOwner(noteId, context.getUserAndRoles())) {
+          p.settings.setParams(params);
+          p.mergeConfig(config);
+          p.setTitle(title);
+          p.setText(text);
+        }
         if (note.isPersonalizedMode()) {
           p = p.getUserParagraph(context.getAutheInfo().getUser());
           p.settings.setParams(params);
@@ -773,6 +823,7 @@ public class NotebookService {
           p.setText(text);
         }
         notebook.saveNote(note, context.getAutheInfo());
+        note.fireParagraphUpdateEvent(p);
         callback.onSuccess(p, context);
         return null;
       });
@@ -960,15 +1011,13 @@ public class NotebookService {
 
 
   private boolean isCronUpdated(Map<String, Object> configA, Map<String, Object> configB) {
-    boolean cronUpdated = false;
-    if (configA.get("cron") != null && configB.get("cron") != null && configA.get("cron")
-        .equals(configB.get("cron"))) {
-      cronUpdated = true;
-    } else if (configA.get("cron") != null || configB.get("cron") != null) {
-      cronUpdated = true;
+    Object cronA = configA.get("cron");
+    Object cronB = configB.get("cron");
+    if (cronA == null) {
+      return cronB != null;
     }
 
-    return cronUpdated;
+    return !cronA.equals(cronB);
   }
 
   public void saveNoteForms(String noteId,
@@ -1262,16 +1311,17 @@ public class NotebookService {
                               ServiceCallback<Void> callback) throws IOException {
 
     //TODO(zjffdu) folder permission check
-    //TODO(zjffdu) folderPath is relative path, need to fix it in frontend
     LOGGER.info("Move folder {} to trash", folderPath);
 
-    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
+    folderPath = normalizeFolderPath(folderPath);
+
+    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + folderPath;
     if (notebook.containsNote(destFolderPath)) {
       destFolderPath = destFolderPath + " " +
           TRASH_CONFLICT_TIMESTAMP_FORMATTER.format(Instant.now());
     }
 
-    notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
+    notebook.moveFolder(folderPath, destFolderPath, context.getAutheInfo());
     callback.onSuccess(null, context);
   }
 
@@ -1291,7 +1341,7 @@ public class NotebookService {
                            ServiceContext context,
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
     try {
-      notebook.removeFolder(folderPath, context.getAutheInfo());
+      notebook.removeFolder(normalizeFolderPath(folderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
@@ -1309,8 +1359,8 @@ public class NotebookService {
     //TODO(zjffdu) folder permission check
 
     try {
-      notebook.moveFolder(normalizeNotePath(folderPath),
-              normalizeNotePath(newFolderPath), context.getAutheInfo());
+      notebook.moveFolder(normalizeFolderPath(folderPath),
+              normalizeFolderPath(newFolderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
@@ -1393,16 +1443,21 @@ public class NotebookService {
                                              String text, String title, Map<String, Object> params,
                                              Map<String, Object> config) {
     Paragraph p = note.getParagraph(paragraphId);
-    p.setText(text);
-    p.setTitle(title);
     AuthenticationInfo subject =
         new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
-    p.setAuthenticationInfo(subject);
-    p.settings.setParams(params);
-    p.setConfig(config);
+    // In personalized mode only the note owner may update the master paragraph, so that
+    // new users inherit the owner's changes while a non-owner's changes stay in their copy.
+    if (!note.isPersonalizedMode()
+        || authorizationService.isOwner(note.getId(), new HashSet<>(subject.getUsersAndRoles()))) {
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(subject);
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(subject.getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(subject);

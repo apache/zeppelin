@@ -12,5 +12,6 @@
 
 export const environment = {
   production: true,
-  reactRemoteEntryUrl: '/assets/react/remoteEntry.js'
+  reactRemoteEntryUrl: '/assets/react/remoteEntry.js',
+  reactRemoteLoadTimeoutMs: 10000
 };

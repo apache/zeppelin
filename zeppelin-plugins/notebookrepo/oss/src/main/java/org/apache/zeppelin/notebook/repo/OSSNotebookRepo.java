@@ -184,18 +184,6 @@ public class OSSNotebookRepo extends AbstractNotebookRepo
     ossOperator.shutdown();
   }
 
-  @Override
-  public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOGGER.warn("Method not implemented");
-  }
-
-
   private static String buildRevisionsDirName(String noteId, String notePath) throws IOException {
     if (!notePath.startsWith("/")) {
       throw new IOException("Invalid notePath: " + notePath);

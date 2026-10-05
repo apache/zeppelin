@@ -38,11 +38,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all key/value pairs of the credential information on the server.</td>
+      <td markdown="span">This ```GET``` method returns all key/value pairs of the credential information on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -55,7 +55,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td> sample JSON response
       </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -85,11 +85,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method creates the credential information with new properties.</td>
+      <td markdown="span">This ```PUT``` method creates the credential information with new properties.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential/```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/credential/```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -101,7 +101,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -114,7 +114,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -133,11 +133,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes the credential information.</td>
+      <td markdown="span">This ```DELETE``` method deletes the credential information.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/credential```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -149,7 +149,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {"status":"OK"}
@@ -166,11 +166,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method deletes a given credential entity.</td>
+      <td markdown="span">This ```DELETE``` method deletes a given credential entity.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/credential/[entity]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/credential/[entity]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -182,7 +182,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
         
 ```json
 {"status":"OK"}

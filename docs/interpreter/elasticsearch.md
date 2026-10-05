@@ -58,12 +58,12 @@ It is generally used as the underlying engine/technology that powers application
   <tr>
     <td>elasticsearch.basicauth.username</td>
     <td></td>
-    <td>Username for a basic authentication (http)</b></td>
+    <td>Username for a basic authentication (http)</td>
   </tr>
   <tr>
     <td>elasticsearch.basicauth.password</td>
     <td></td>
-    <td>Password for a basic authentication (http)</b></td>
+    <td>Password for a basic authentication (http)</td>
   </tr>
   <tr>
     <td>elasticsearch.result.size</td>
@@ -72,7 +72,7 @@ It is generally used as the underlying engine/technology that powers application
   </tr>
 </table>
 
-<center>
+<center markdown="block">
   ![Interpreter configuration]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
 </center>
 
@@ -199,7 +199,7 @@ Suppose we have a JSON document:
 
 The data will be flattened like this:
 
-content_length | date | request.headers[0] | request.headers[1] | request.method | request.url | status
+content_length | date | `request.headers[0]` | `request.headers[1]` | request.method | request.url | status
 ---------------|------|--------------------|--------------------|----------------|-------------|-------
 1234 | 2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
 

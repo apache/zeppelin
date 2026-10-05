@@ -77,7 +77,11 @@ public abstract class AbstractScheduler implements Scheduler {
   @Override
   public Job<?> cancel(String jobId) {
     Job<?> job = jobs.remove(jobId);
-    job.abort();
+    // Synchronize on the same monitor as runJob()'s abort gate so that a cancellation
+    // happening right before the job is run is never missed (ZEPPELIN-6129).
+    synchronized (job) {
+      job.abort();
+    }
     return job;
   }
 
@@ -121,17 +125,21 @@ public abstract class AbstractScheduler implements Scheduler {
    * @param runningJob
    */
   protected void runJob(Job<?> runningJob) {
-    if (runningJob.isAborted()) {
-      LOGGER.info("Job {} is aborted", runningJob.getId());
-      runningJob.setStatus(Job.Status.ABORT);
-      runningJob.aborted = false;
-      return;
-    }
+    // Synchronize the abort gate on the same monitor cancel() uses, so a cancellation
+    // submitted right before the job runs is never missed (ZEPPELIN-6129).
+    synchronized (runningJob) {
+      if (runningJob.isAborted()) {
+        LOGGER.info("Job {} is aborted", runningJob.getId());
+        runningJob.setStatus(Job.Status.ABORT);
+        runningJob.aborted = false;
+        return;
+      }
 
-    LOGGER.info("Job {} started by scheduler {}", runningJob.getId(), name);
-    // Don't set RUNNING status when it is RemoteScheduler, update it via JobStatusPoller
-    if (!getClass().getSimpleName().equals("RemoteScheduler")) {
-      runningJob.setStatus(Job.Status.RUNNING);
+      LOGGER.info("Job {} started by scheduler {}", runningJob.getId(), name);
+      // Don't set RUNNING status when it is RemoteScheduler, update it via JobStatusPoller
+      if (!getClass().getSimpleName().equals("RemoteScheduler")) {
+        runningJob.setStatus(Job.Status.RUNNING);
+      }
     }
     runningJob.run();
     Object jobResult = runningJob.getReturn();

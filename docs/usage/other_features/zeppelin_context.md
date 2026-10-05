@@ -56,7 +56,7 @@ other interpreters that can access the `z` object (Flink already support to show
 `ZeppelinContext` extends map and it's shared between the Apache Spark and Python environments.
 So you can put some objects using Scala (in an Apache Spark cell) and read it from Python, and vice versa.
 
-<div class="codetabs">
+<div class="codetabs" markdown="block">
   <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -143,7 +143,7 @@ bank = z.getAsDataFrame('bank')
 
 `ZeppelinContext` provides functions for creating forms.
 In Scala and Python environments, you can create forms programmatically.
-<div class="codetabs">
+<div class="codetabs" markdown="block">
   <div data-lang="scala" markdown="1">
 
 {% highlight scala %}
@@ -229,7 +229,7 @@ Some interpreters can interpolate object values from `z` into the paragraph text
 interpolated into a paragraph text by using such a pattern containing the object's name.
 The following example shows one use of this facility:
 
-####In Scala cell:
+#### In Scala cell:
 
 ```scala
 %spark
@@ -237,7 +237,7 @@ The following example shows one use of this facility:
 z.put("minAge", 35)
 ```
 
-####In later SQL cell:
+#### In later SQL cell:
 
 ```sql
 %spark.sql 

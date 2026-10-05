@@ -41,7 +41,7 @@ There are few notebook storage systems available for a use out of the box:
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
 
-</br>
+<br/>
 
 ## Notebook Storage in local Git repository <a name="Git"></a>
 
@@ -55,7 +55,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 </property>
 ```
 
-</br>
+<br/>
 
 ## Notebook Storage in hadoop compatible file system repository <a name="Hdfs"></a>
 
@@ -71,7 +71,7 @@ If your hadoop cluster is kerberized, then you need to specify `zeppelin.server.
 ```
 
 
-</br>
+<br/>
 
 ## Notebook Storage in S3 <a name="S3"></a>
 
@@ -83,7 +83,7 @@ Notebooks may be stored in S3, and optionally encrypted.  The [``DefaultAWSCrede
 - Credential profiles file at the default location (````~/.aws/credentials````) used by the AWS CLI
 - Instance profile credentials delivered through the Amazon EC2 metadata service
 
-</br>
+<br/>
 The following folder structure will be created in S3:
 
 ```
@@ -205,7 +205,7 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
-</br>
+<br/>
 
 ### S3 Object Permissions
 
@@ -226,7 +226,7 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
-</br>
+<br/>
 
 #### S3 Enable Path Style Access
 
@@ -246,7 +246,7 @@ Or using the following setting in **zeppelin-site.xml**:
 </property>
 ```
 
-</br>
+<br/>
 
 ## Notebook Storage in Azure <a name="Azure"></a>
 
@@ -308,7 +308,7 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 </property>
 ```
 
-</br>
+<br/>
 
 ## Notebook Storage in Google Cloud Storage <a name="GCS"></a>
 
@@ -414,13 +414,13 @@ file for authentication with GCS, update the following property :
 ```
 
 
-</br>
+<br/>
 
 ## Notebook Storage in OSS <a name="OSS"></a>
 
 Notebooks may be stored in Aliyun OSS.
 
-</br>
+<br/>
 The following folder structure will be created in OSS:
 
 ```

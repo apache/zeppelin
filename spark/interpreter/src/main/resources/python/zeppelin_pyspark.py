@@ -56,20 +56,7 @@ if intp.isAfterSpark33():
 else:
   sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 
-from zeppelin_context import PyZeppelinContext
-
-#TODO(zjffdu) merge it with IPySparkZeppelinContext
-class PySparkZeppelinContext(PyZeppelinContext):
-
-  def __init__(self, z, gateway):
-    super(PySparkZeppelinContext, self).__init__(z, gateway)
-
-  def show(self, obj, **kwargs):
-    from pyspark.sql import DataFrame
-    if isinstance(obj, DataFrame):
-      print(self.z.showData(obj._jdf))
-    else:
-      super(PySparkZeppelinContext, self).show(obj, **kwargs)
+from zeppelin_context import PySparkZeppelinContext
 
 z = __zeppelin__ = PySparkZeppelinContext(intp.getZeppelinContext(), gateway)
 __zeppelin__._setup_matplotlib()

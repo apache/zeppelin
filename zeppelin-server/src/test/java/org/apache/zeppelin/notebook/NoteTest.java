@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -220,5 +222,45 @@ class NoteTest {
     // test Note Json
     Note note2 = noteParser.fromJson(null, note.toJson());
     assertEquals(note2, note);
+  }
+
+  @Test
+  void userNoteKeepsThePath() {
+    Note note = personalizedNote();
+
+    assertEquals("/folder/my note", note.getUserNote("user1").getPath());
+  }
+
+  @Test
+  void userNoteKeepsEveryPersistedField() throws IllegalAccessException {
+    Note note = personalizedNote();
+
+    Note userNote = note.getUserNote("user1");
+
+    for (Field field : Note.class.getDeclaredFields()) {
+      int modifiers = field.getModifiers();
+      if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+        continue;
+      }
+      // The one field a user note is meant to differ in.
+      if ("paragraphs".equals(field.getName())) {
+        continue;
+      }
+      field.setAccessible(true);
+      assertEquals(field.get(note), field.get(userNote),
+          "getUserNote dropped Note." + field.getName());
+    }
+  }
+
+  private Note personalizedNote() {
+    Note note = new Note("/folder/my note", "spark", interpreterFactory, interpreterSettingManager,
+        paragraphJobListener, credentials, noteEventListener, zConf, noteParser);
+    note.setPersonalizedMode(true);
+    note.getConfig().put("config_1", "value_1");
+    note.getInfo().put("info_1", "value_1");
+    note.getNoteParams().put("param_1", "value_1");
+    note.getNoteForms().put("form_1", new TextBox("name", "default_name"));
+    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    return note;
   }
 }

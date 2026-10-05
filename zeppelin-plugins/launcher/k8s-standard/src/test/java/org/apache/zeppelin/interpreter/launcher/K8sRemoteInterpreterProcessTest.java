@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -125,7 +126,7 @@ class K8sRemoteInterpreterProcessTest {
     assertEquals("12321:12321" , p.get("zeppelin.k8s.interpreter.rpc.portRange"));
     assertEquals("zeppelin.server.service" , p.get("zeppelin.k8s.server.rpc.service"));
     assertEquals(12320 , p.get("zeppelin.k8s.server.rpc.portRange"));
-    assertEquals("null", p.get("zeppelin.k8s.interpreter.user"));
+    assertNull(p.get("zeppelin.k8s.interpreter.user"));
     assertEquals("v1", p.get("my.key1"));
     assertEquals("V1", envs.get("MY_ENV1"));
 
@@ -230,7 +231,7 @@ class K8sRemoteInterpreterProcessTest {
     // then
     assertEquals("spark-container:1.0", p.get("zeppelin.k8s.spark.container.image"));
     assertEquals(String.format("//4040-%s.%s", intp.getPodName(), "mydomain"), p.get("zeppelin.spark.uiWebUrl"));
-    assertEquals("mytestUser", p.get("zeppelin.k8s.interpreter.user"));
+    assertEquals("mytestuser", p.get("zeppelin.k8s.interpreter.user"));
 
     envs = (HashMap<String, String>) p.get("zeppelin.k8s.envs");
     assertTrue( envs.containsKey("SPARK_HOME"));
@@ -599,4 +600,57 @@ class K8sRemoteInterpreterProcessTest {
     }
   }
 
+  private K8sRemoteInterpreterProcess createProcessForLabelTest() {
+    return new K8sRemoteInterpreterProcess(
+        client,
+        "default",
+        new File(".skip"),
+        "interpreter-container:1.0",
+        "shared_process",
+        "sh",
+        "shell",
+        new Properties(),
+        new HashMap<>(),
+        "zeppelin.server.service",
+        12320,
+        false,
+        "spark-container:1.0",
+        10,
+        10,
+        false,
+        false);
+  }
+
+  private String renderSpec(String principal) throws IOException {
+    K8sRemoteInterpreterProcess intp = createProcessForLabelTest();
+    K8sSpecTemplate template = new K8sSpecTemplate();
+    template.loadProperties(intp.getTemplateBindings(principal));
+    URL url = Thread.currentThread().getContextClassLoader()
+        .getResource("k8s-specs/interpreter-spec.yaml");
+    return template.render(new File(url.getPath()));
+  }
+
+  @Test
+  void testUserLabelIsSanitizedInRenderedSpec() throws IOException {
+    String spec = renderSpec("Firstname Lastname@Corp");
+
+    String userLine = Arrays.stream(spec.split("\n"))
+        .map(String::trim)
+        .filter(l -> l.startsWith("user:"))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("user label not rendered:\n" + spec));
+    String value = userLine.substring("user:".length()).trim();
+    assertEquals("firstnamelastnamecorp", value);
+    assertTrue(value.length() <= 63);
+    assertTrue(value.matches("(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?"));
+  }
+
+  @Test
+  void testUserLabelOmittedForBlankPrincipal() throws IOException {
+    for (String principal : new String[] {null, "", "   ", "!@#"}) {
+      String spec = renderSpec(principal);
+      assertFalse(spec.contains("user:"), "principal=" + principal + "\n" + spec);
+      assertTrue(spec.contains("interpreterSettingName:"));
+    }
+  }
 }

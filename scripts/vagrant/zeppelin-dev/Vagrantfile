@@ -16,6 +16,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# DEPRECATED: this Vagrant environment is no longer maintained and is not
+# expected to provision a usable Zeppelin build environment. See README.md
+# in this directory and https://issues.apache.org/jira/browse/ZEPPELIN-6460
+# To build Zeppelin, follow docs/setup/basics/how_to_build.md instead.
+
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 

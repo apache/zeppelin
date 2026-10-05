@@ -12,7 +12,7 @@
 
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import * as DiffMatchPatch from 'diff-match-patch';
+import { diff_match_patch as DiffMatchPatch } from 'diff-match-patch';
 import { Subscription } from 'rxjs';
 
 import { NoteRevisionForCompareReceived, OP, ParagraphItem, RevisionListItem } from '@zeppelin/sdk';
@@ -127,38 +127,37 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
     if (!this.firstNoteRevisionForCompare || !this.secondNoteRevisionForCompare) {
       return;
     }
-    const baseParagraphs = this.secondNoteRevisionForCompare.note?.paragraphs || [];
-    const compareParagraphs = this.firstNoteRevisionForCompare.note?.paragraphs || [];
+    // The UI reads `first --> second`, so every diff runs from first (from) to second (to).
+    const fromParagraphs = this.firstNoteRevisionForCompare.note?.paragraphs || [];
+    const toParagraphs = this.secondNoteRevisionForCompare.note?.paragraphs || [];
     const paragraphDiffs: MergedParagraphDiff[] = [];
 
-    for (const p1 of baseParagraphs) {
-      const p2 = compareParagraphs.find((p: ParagraphItem) => p.id === p1.id) || null;
-      if (p2 === null) {
+    for (const toParagraph of toParagraphs) {
+      const fromParagraph = fromParagraphs.find((p: ParagraphItem) => p.id === toParagraph.id) || null;
+      if (fromParagraph === null) {
         paragraphDiffs.push({
-          paragraph: p1,
-          firstString: (p1.text || '').split('\n')[0],
+          paragraph: toParagraph,
+          firstString: (toParagraph.text || '').split('\n')[0],
           type: 'added'
         });
       } else {
-        const text1 = p1.text || '';
-        const text2 = p2.text || '';
-        const diffResult = this.buildLineDiff(text1, text2);
+        const diffResult = this.buildLineDiff(fromParagraph.text || '', toParagraph.text || '');
         paragraphDiffs.push({
-          paragraph: p1,
+          paragraph: toParagraph,
           segments: diffResult.segments,
           identical: diffResult.identical,
-          firstString: (p1.text || '').split('\n')[0],
+          firstString: (toParagraph.text || '').split('\n')[0],
           type: 'compared'
         });
       }
     }
 
-    for (const p2 of compareParagraphs) {
-      const p1 = baseParagraphs.find((p: ParagraphItem) => p.id === p2.id) || null;
-      if (p1 === null) {
+    for (const fromParagraph of fromParagraphs) {
+      const toParagraph = toParagraphs.find((p: ParagraphItem) => p.id === fromParagraph.id) || null;
+      if (toParagraph === null) {
         paragraphDiffs.push({
-          paragraph: p2,
-          firstString: (p2.text || '').split('\n')[0],
+          paragraph: fromParagraph,
+          firstString: (fromParagraph.text || '').split('\n')[0],
           type: 'deleted'
         });
       }
@@ -183,8 +182,8 @@ export class NotebookRevisionsComparatorComponent implements OnInit, OnDestroy {
     return this.datePipe.transform(time * 1000, 'MMMM d yyyy, h:mm:ss a') || '';
   }
 
-  private buildLineDiff(text1: string, text2: string): { segments: DiffSegment[]; identical: boolean } {
-    const { chars1, chars2, lineArray } = this.dmp.diff_linesToChars_(text1, text2);
+  private buildLineDiff(fromText: string, toText: string): { segments: DiffSegment[]; identical: boolean } {
+    const { chars1, chars2, lineArray } = this.dmp.diff_linesToChars_(fromText, toText);
     const diffs = this.dmp.diff_main(chars1, chars2, false);
     this.dmp.diff_charsToLines_(diffs, lineArray);
 

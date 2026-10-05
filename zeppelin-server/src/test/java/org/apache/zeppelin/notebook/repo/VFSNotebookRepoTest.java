@@ -30,15 +30,19 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VFSNotebookRepoTest {
 
@@ -115,6 +119,28 @@ class VFSNotebookRepoTest {
   }
 
   @Test
+  void testNotebookDirWithCharactersThatAUriDoesNotAllow(@TempDir Path tempDir) throws IOException {
+    // A space anywhere, or the backslashes of a Windows path such as the default "./\\notebook".
+    // Commons VFS treats a backslash as a separator, so only check that the repo works.
+    for (String dirName : new String[] {"my notebooks", "back\\slash"}) {
+      zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+          tempDir.resolve(dirName).toString());
+      VFSNotebookRepo repo = new VFSNotebookRepo();
+      repo.init(zConf, noteParser);
+
+      assertTrue(new File(repo.rootNotebookFolder).isDirectory(), dirName);
+      Note note = new Note();
+      note.setPath("/note1");
+      note.setNoteParser(noteParser);
+      repo.save(note, AuthenticationInfo.ANONYMOUS);
+      Map<String, NoteInfo> noteInfos = repo.list(AuthenticationInfo.ANONYMOUS);
+      assertEquals(1, noteInfos.size(), dirName);
+      assertEquals("/note1", noteInfos.get(note.getId()).getPath(), dirName);
+    }
+    assertTrue(tempDir.resolve("my notebooks").toFile().isDirectory());
+  }
+
+  @Test
   void testNoteNameWithColon() throws IOException {
     assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
 
@@ -176,5 +202,19 @@ class VFSNotebookRepoTest {
   private void createNewDirectory(String dirName) {
     File dir = new File(notebookRepo.rootNotebookFolder + "/" + dirName);
     dir.mkdir();
+  }
+
+  @Test
+  void testMoveFolderRequiresAbsolutePath() {
+    assertThrows(IOException.class,
+        () -> notebookRepo.move("my_project", "/new_project", AuthenticationInfo.ANONYMOUS));
+    assertThrows(IOException.class,
+        () -> notebookRepo.move("/my_project", "new_project", AuthenticationInfo.ANONYMOUS));
+  }
+
+  @Test
+  void testRemoveFolderRequiresAbsolutePath(){
+    assertThrows(IOException.class,
+        () -> notebookRepo.remove("my_project", AuthenticationInfo.ANONYMOUS));
   }
 }

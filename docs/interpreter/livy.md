@@ -173,7 +173,7 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
   <tr>
     <td>zeppelin.livy.http.headers</td>
     <td>key_1: value_1; key_2: value_2</td>
-    <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
+    <td markdown="span">custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
   </tr>
   <tr>
     <td>zeppelin.livy.tableWithUTFCharacters</td>
@@ -244,7 +244,7 @@ That means you can query the table via `%livy.sql` when this table is registered
 
 Livy debugging: If you see any of these in error console
 
-> Connect to livyhost:8998 [livyhost/127.0.0.1, livyhost/0:0:0:0:0:0:0:1] failed: Connection refused
+> Connect to livyhost:8998 `[livyhost/127.0.0.1, livyhost/0:0:0:0:0:0:0:1]` failed: Connection refused
 
 Looks like the livy server is not up yet or the config is wrong
 

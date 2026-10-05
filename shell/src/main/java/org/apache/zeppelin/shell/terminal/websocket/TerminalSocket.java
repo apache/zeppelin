@@ -20,42 +20,69 @@ package org.apache.zeppelin.shell.terminal.websocket;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.shell.terminal.TerminalManager;
-import org.apache.zeppelin.shell.terminal.service.TerminalService;
+import org.apache.zeppelin.shell.terminal.TerminalSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.websocket.ClientEndpoint;
 import jakarta.websocket.CloseReason;
+import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 
-@ClientEndpoint
 @ServerEndpoint(value = "/")
 public class TerminalSocket {
   private static final Logger LOGGER = LoggerFactory.getLogger(TerminalSocket.class);
-  private TerminalService terminalService;
+
+  // Key under which TerminalThread publishes the per-server auth token
+  public static final String AUTH_TOKEN_PROPERTY = "zeppelin.terminal.auth.token";
+
+  private static final Gson gson = new Gson();
+
+  private TerminalSession terminalSession;
   private TerminalManager terminalManager = TerminalManager.getInstance();
+  private Session webSocketSession;
 
   private String noteId;
   private String paragraphId;
-
-  public TerminalSocket() {
-    terminalService = terminalManager.addTerminalService(this);
-  }
+  private volatile boolean authorized = false;
 
   @OnOpen
-  public void onWebSocketConnect(Session sess) {
-    LOGGER.info("Socket Connected: {}", sess);
-    terminalService.onWebSocketConnect(sess);
+  public void onWebSocketConnect(Session sess, EndpointConfig config) {
+    // This endpoint hands out an OS shell: require the per-server secret that
+    // only reaches clients through the paragraph result (note ACLs). The
+    // Origin check is not authentication - any non-browser client forges it.
+    String expectedToken = (String) config.getUserProperties().get(AUTH_TOKEN_PROPERTY);
+    if (!isTokenValid(expectedToken, sess.getRequestParameterMap().get("token"))) {
+      LOGGER.warn("Rejecting terminal websocket connection without a valid auth token: {}",
+          sess.getId());
+      try {
+        sess.close(new CloseReason(CloseReason.CloseCodes.VIOLATED_POLICY,
+            "Missing or invalid terminal auth token"));
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+      return;
+    }
+    authorized = true;
+    LOGGER.info("Socket Connected: {}", sess.getId());
+    this.webSocketSession = sess;
   }
 
   @OnMessage
   public void onWebSocketText(String message) {
+    if (!authorized) {
+      LOGGER.warn("Ignoring message from unauthorized terminal websocket connection");
+      return;
+    }
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Received TEXT message: {}", message);
     }
@@ -66,16 +93,28 @@ public class TerminalSocket {
       String type = messageMap.get("type");
       switch (type) {
         case "TERMINAL_READY":
-          terminalService.onTerminalReady();
           this.noteId = messageMap.get("noteId");
           this.paragraphId = messageMap.get("paragraphId");
+          if (terminalSession == null) {
+            try {
+              terminalSession = new TerminalSession(webSocketSession);
+              terminalManager.addTerminalSession(this, terminalSession);
+            } catch (IOException e) {
+              LOGGER.error(e.getMessage(), e);
+              break;
+            }
+          }
           terminalManager.onWebSocketConnect(noteId, paragraphId);
           break;
         case "TERMINAL_COMMAND":
-          terminalService.onCommand(messageMap.get("command"));
+          if (terminalSession != null) {
+            terminalSession.onCommand(messageMap.get("command"));
+          }
           break;
         case "TERMINAL_RESIZE":
-          terminalService.onTerminalResize(messageMap.get("columns"), messageMap.get("rows"));
+          if (terminalSession != null) {
+            terminalSession.onTerminalResize(messageMap.get("columns"), messageMap.get("rows"));
+          }
           break;
         default:
           LOGGER.error("Unrecognized action: {}", message);
@@ -86,21 +125,30 @@ public class TerminalSocket {
   @OnClose
   public void onWebSocketClose(CloseReason reason) {
     LOGGER.info("Socket Closed: {}", reason);
-
-    terminalManager.onWebSocketClose(this, noteId, paragraphId);
+    if (authorized && terminalSession != null) {
+      terminalManager.onWebSocketClose(this, noteId, paragraphId);
+    }
   }
 
   @OnError
   public void onWebSocketError(Throwable cause) {
     LOGGER.warn(cause.getMessage(), cause);
+    if (authorized && noteId != null && paragraphId != null) {
+      terminalManager.onWebSocketError(this, noteId, paragraphId);
+    }
+  }
 
-    terminalManager.onWebSocketError(this, noteId, paragraphId);
+  private static boolean isTokenValid(String expectedToken, List<String> suppliedTokens) {
+    if (expectedToken == null || expectedToken.isEmpty()
+        || suppliedTokens == null || suppliedTokens.isEmpty()) {
+      return false;
+    }
+    return MessageDigest.isEqual(
+        expectedToken.getBytes(StandardCharsets.UTF_8),
+        suppliedTokens.get(0).getBytes(StandardCharsets.UTF_8));
   }
 
   private Map<String, String> getMessageMap(String message) {
-    Gson gson = new Gson();
-    Map<String, String> map = gson.fromJson(message,
-        new TypeToken<Map<String, String>>(){}.getType());
-    return map;
+    return gson.fromJson(message, new TypeToken<Map<String, String>>(){}.getType());
   }
 }

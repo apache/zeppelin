@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -95,6 +96,15 @@ public class EmbeddingSearch extends SearchService {
    */
   private static final float MIN_SIMILARITY = 0.25f;
   private static final int MAX_TEXT_LENGTH = 1500;
+  /**
+   * Truncation limit applied to the text field when an entry is written to the index file.
+   * Distinct from {@link #MAX_TEXT_LENGTH}, which bounds in-memory processing before embedding.
+   */
+  private static final int MAX_PERSISTED_TEXT_LENGTH = 2000;
+  /**
+   * Truncation limit applied to the output field when an entry is written to the index file.
+   */
+  private static final int MAX_PERSISTED_OUTPUT_LENGTH = 1000;
 
   static final String ID_FIELD = "id";
   private static final String PARAGRAPH = "paragraph";
@@ -509,15 +519,11 @@ public class EmbeddingSearch extends SearchService {
   // ---- SearchService implementation ----
 
   @Override
-  // TODO(ZEPPELIN-6414): Accept user/roles (or a readability Predicate) and apply the auth
-  // filter before Phase-1 table collection and before the top-K cutoff. Currently the REST
-  // layer filters after truncation, which can hide results the caller is authorized for and
-  // lets inaccessible notes contaminate the table-boost ranking. Requires a SearchService
-  // interface change that also affects LuceneSearch.
-  public List<Map<String, String>> query(String queryStr) {
+  public List<Map<String, String>> query(String queryStr, Predicate<String> readable) {
     if (StringUtils.isBlank(queryStr) || index.isEmpty()) {
       return Collections.emptyList();
     }
+    Map<String, Boolean> readableNotes = new HashMap<>();
 
     float[] queryEmbedding = embed(queryStr);
     String queryLower = queryStr.toLowerCase(Locale.ROOT);
@@ -527,6 +533,12 @@ public class EmbeddingSearch extends SearchService {
     indexLock.readLock().lock();
     try {
       for (Map.Entry<String, IndexEntry> entry : index.entrySet()) {
+        // Dropping the entries here keeps them out of the table weights below and out of
+        // the cutoff, so the caller is served its own top results and not what is left of
+        // everyone's top results.
+        if (!readableNotes.computeIfAbsent(noteIdOf(entry.getKey()), readable::test)) {
+          continue;
+        }
         float sim = cosineSimilarity(queryEmbedding, entry.getValue().embedding);
         IndexEntry ie = entry.getValue();
         if (ie.text != null && ie.text.toLowerCase(Locale.ROOT).contains(queryLower)) {
@@ -865,15 +877,15 @@ public class EmbeddingSearch extends SearchService {
           out.writeUTF(e.getKey());
           out.writeUTF(e.getValue().noteName != null ? e.getValue().noteName : "");
           String text = e.getValue().text != null ? e.getValue().text : "";
-          if (text.length() > 2000) {
-            text = text.substring(0, 2000);
+          if (text.length() > MAX_PERSISTED_TEXT_LENGTH) {
+            text = text.substring(0, MAX_PERSISTED_TEXT_LENGTH);
           }
           out.writeUTF(text);
           out.writeUTF(e.getValue().title != null ? e.getValue().title : "");
           out.writeUTF(e.getValue().tables != null ? e.getValue().tables : "");
           String output = e.getValue().output != null ? e.getValue().output : "";
-          if (output.length() > 1000) {
-            output = output.substring(0, 1000);
+          if (output.length() > MAX_PERSISTED_OUTPUT_LENGTH) {
+            output = output.substring(0, MAX_PERSISTED_OUTPUT_LENGTH);
           }
           out.writeUTF(output);
           for (float v : e.getValue().embedding) {

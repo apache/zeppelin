@@ -10,8 +10,10 @@
  * limitations under the License.
  */
 
+import { globSync } from 'fs';
+import { join, sep } from 'path';
 import { test, expect, Page, TestInfo } from '@playwright/test';
-import { LoginTestUtil } from './models/login-page.util';
+import { LoginTestUtil, TestCredentials } from './models/login-page.util';
 import { E2E_TEST_FOLDER } from './models/base-page';
 import { LoginPage } from './models/login-page';
 
@@ -20,9 +22,7 @@ export const NOTEBOOK_PATTERNS = {
   LINK_SELECTOR: 'a[href*="/notebook/"]'
 } as const;
 
-// Coverage denominator. Structural/shared components
-// (lifecycle hooks, spin, resize-handle, page-header) are intentionally omitted;
-// they have no page-level behavior and are exercised transitively.
+// Annotation registry for page-level coverage.
 export const PAGES = {
   // Main App
   APP: 'src/app/app.component',
@@ -99,6 +99,14 @@ export const PAGES = {
   }
 } as const;
 
+// These structural/shared components have no page-level behavior and are exercised transitively rather than counted as separate E2E targets.
+export const COVERAGE_EXCLUDED_COMPONENTS = [
+  'src/app/core/destroy-hook/destroy-hook.component',
+  'src/app/share/page-header/page-header.component',
+  'src/app/share/resize-handle/resize-handle.component',
+  'src/app/share/spin/spin.component'
+] as const;
+
 export const addPageAnnotation = (pageName: string, testInfo: TestInfo) => {
   testInfo.annotations.push({
     type: 'page',
@@ -133,7 +141,17 @@ export const flattenPageComponents = (pages: PageStructureType): string[] => {
   return result.sort();
 };
 
-export const getCoverageTransformPaths = (): string[] => flattenPageComponents(PAGES);
+export const getCoverageTransformPaths = (
+  rootPath = join(__dirname, '..'),
+  excludedComponents: readonly string[] = COVERAGE_EXCLUDED_COMPONENTS
+): string[] => {
+  const excluded = new Set(excludedComponents);
+
+  return globSync('src/app/**/*.component.ts', { cwd: rootPath })
+    .map(componentPath => componentPath.split(sep).join('/').replace(/\.ts$/, ''))
+    .filter(componentPath => !excluded.has(componentPath))
+    .sort();
+};
 
 export const waitForUrlNotContaining = async (page: Page, fragment: string) => {
   await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
@@ -278,6 +296,41 @@ export const performLoginIfRequired = async (page: Page): Promise<boolean> => {
   }
 
   return false;
+};
+
+/**
+ * Signs in as one specific account. performLoginIfRequired always takes the first configured
+ * user, which cannot express a test that needs two distinct principals at once.
+ */
+export const loginAs = async (page: Page, credentials: TestCredentials): Promise<void> => {
+  const loginPage = new LoginPage(page);
+  await loginPage.navigate();
+  // Wait for the form rather than probing visibility, which resolves before Angular renders it.
+  await loginPage.userNameInput.waitFor({ state: 'visible', timeout: 30000 });
+  await loginPage.login(credentials.username, credentials.password);
+  await page.waitForSelector('zeppelin-login', { state: 'hidden', timeout: 30000 });
+  await page.evaluate(() => {
+    if (window.location.hash.includes('login')) {
+      window.location.hash = '#/';
+    }
+  });
+  // The note list only renders once the authenticated socket has delivered it, so it is the
+  // signal that this principal can open a notebook -- not just that the form was accepted.
+  await page.waitForSelector('zeppelin-node-list', { timeout: 30000 });
+  await waitForZeppelinReady(page);
+};
+
+/**
+ * Two distinct shiro accounts, or null when the deployment cannot provide them.
+ */
+export const getTwoTestAccounts = async (): Promise<[TestCredentials, TestCredentials] | null> => {
+  if (!(await LoginTestUtil.isShiroEnabled())) {
+    return null;
+  }
+  const accounts = Object.values(await LoginTestUtil.getTestCredentials()).filter(
+    account => account.username && account.password
+  );
+  return accounts.length >= 2 ? [accounts[0], accounts[1]] : null;
 };
 
 export const skipWhenAuthenticationIsStillRequired = async (page: Page): Promise<void> => {
@@ -437,7 +490,7 @@ const getDefaultInterpreterGroup = async (page: Page): Promise<string | undefine
   return json.body?.find(setting => !!setting.name)?.name;
 };
 
-const createNotebookViaRest = async (
+export const createNotebookViaRest = async (
   page: Page,
   notebookName: string
 ): Promise<{ noteId: string; paragraphId: string }> => {

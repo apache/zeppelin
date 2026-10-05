@@ -3,94 +3,68 @@
 This README will walk you through building the documentation of Apache Zeppelin. The documentation is included here with Apache Zeppelin source code. The online documentation at [https://zeppelin.apache.org/docs/<ZEPPELIN_VERSION>](https://zeppelin.apache.org/docs/latest/) is also generated from the files found in here.
 
 ## Build documentation
-Zeppelin is using [Jekyll](https://jekyllrb.com/) which is a static site generator and [Github Pages](https://pages.github.com/) as a site publisher. For the more details, see [help.github.com/articles/about-github-pages-and-jekyll/](https://help.github.com/articles/about-github-pages-and-jekyll/).
+Zeppelin uses [Jekyll](https://jekyllrb.com/) to generate the static versioned documentation published on the Apache Zeppelin website.
 
 **Requirements**
 
-```
-# ruby --version >= 2.0.0
-# Install Bundler using gem
-gem install bundler
+- [Docker](https://docs.docker.com/get-docker/)
 
-cd $ZEPPELIN_HOME/docs
-# Install all dependencies declared in the Gemfile
-bundle install
-```
+Ruby, Bundler, and Jekyll run only inside the Docker container. No host Ruby
+installation is required.
 
-For the further information about requirements, please see [here](https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/#requirements).
+## Preview documentation
 
-On OS X 10.9, you may need to do
+From `$ZEPPELIN_HOME/docs`, run:
 
-```
-xcode-select --install
-```
-
-**Docker** 
-
-Local docker environments are also supported and have been tested using: 
-* [Docker version 20.10.2](https://docs.docker.com/get-docker/)   
-
-## Run website locally
-If you don't want to encounter ugly rendered pages, run the documentation site in your local environment first.
-
-In `$ZEPPELIN_HOME/docs`, run one of the desired commands:
-
-**Run locally**
-```
-bundle exec jekyll serve --watch
-```
-
-**Run locally using docker**
-```
+```bash
 docker run --rm -it \
-       -v $PWD:/docs \
-       -w /docs \
-       -p '4000:4000' \
-       ruby:3.3.5 \
-       bash -c "bundle install && bundle exec jekyll serve --watch --host 0.0.0.0"
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/usr/local/bundle \
+  -e BUNDLE_FROZEN=true \
+  -v "$PWD:/docs" \
+  -w /docs \
+  -p '4000:4000' \
+  ruby:4.0.6 \
+  bash -lc "bundle install && bundle exec jekyll serve --watch --host 0.0.0.0"
 ```
 
-Using the above command, Jekyll will start a web server at `http://localhost:4000` and watch the `/docs` directory for updates.
-
-
+Jekyll starts at `http://localhost:4000` and watches the `docs/` sources for
+updates. The container runs with the current user's UID and GID so generated
+files are not owned by `root` on the host.
 
 ## Contribute to Zeppelin documentation
 If you wish to help us and contribute to Zeppelin Documentation, please look at [Zeppelin Documentation's contribution guideline](https://zeppelin.apache.org/contribution/contributions.html).
 
-
 ## For committers only
 ### Bumping up version in a new release
 
-   * `ZEPPELIN_VERSION` and `BASE_PATH` property in _config.yml
+- Update `ZEPPELIN_VERSION` and `JB.BASE_PATH` in `_config.yml`.
 
-### Deploy to ASF svnpubsub infra
- 1. generate static website in `./_site`
+### Build versioned documentation
 
-    ```
-    # go to /docs under Zeppelin source
-    bundle exec jekyll build --safe
-    ```
+From `$ZEPPELIN_HOME/docs`, run:
 
- 2. verify no analytics scripts in the generated output
+```bash
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/usr/local/bundle \
+  -e BUNDLE_FROZEN=true \
+  -v "$PWD:/docs" \
+  -w /docs \
+  ruby:4.0.6 \
+  bash -lc "bundle install && bundle exec jekyll build --safe"
+```
 
-    ```
-    (
-      grep -rnE --include='*.html' \
-        "google-analytics\.com|googletagmanager\.com|analytics\.js|ga\.js|UA-[0-9]" \
-        _site/
-      case $? in
-        0) echo "FAIL: analytics found"; exit 1 ;;
-        1) ;;
-        *) echo "ERROR: scan failed"; exit 2 ;;
-      esac
-    )
-    ```
+Check the generated site for external resources and trackers:
 
- 3. checkout ASF repo
+```bash
+docker run --rm \
+  -v "$PWD:/docs:ro" \
+  -w /docs \
+  ruby:4.0.6 \
+  ruby check_external_resources.rb _site
+```
 
-    ```
-    svn co https://svn.apache.org/repos/asf/zeppelin asf-zeppelin
-    ```
-
- 4. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
- 5. `svn commit`
+The generated site is written to `_site/`. Copy it to
+`zeppelin-site/docs/<version>/` as part of the separate website publication
+workflow.

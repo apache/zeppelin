@@ -56,6 +56,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Tune Runner VM
         uses: ./.github/actions/tune-runner-vm
       - name: Set up JDK 11
@@ -92,6 +94,14 @@ jobs:
           channel-priority: strict
       - name: Install application
         run: ./mvnw clean install -DskipTests -am -pl python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic ${MAVEN_ARGS}
+      - name: Check websocket operation contract
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run check:websocket-contract
+      - name: Check notebook parity scenarios
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run check:notebook-parity-scenarios
       # Keeps the Karma coverage previously run by the removed zeppelin-web e2e job
       - name: Run zeppelin-web unit tests
         if: matrix.mode == 'anonymous'
@@ -109,8 +119,28 @@ jobs:
           mkdir -p $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           echo "Created test notebook directory: $ZEPPELIN_E2E_TEST_NOTEBOOK_DIR"
       - name: Run headless E2E test with Maven
-        # Classic UI e2e runs only on the anonymous leg, like the legacy Protractor suite
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
+        # Classic UI e2e and the notebook core port proof run only on the anonymous leg
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} -Dweb.e2e.core.port.proof.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
+      - name: Run revision isolation E2E test with Git storage
+        env:
+          CI: 'true'
+          ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.GitNotebookRepo
+          ZEPPELIN_E2E_REQUIRE_REVISION: 'true'
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-revision
+        run: |
+          revision_notebook_dir="$(mktemp -d "${RUNNER_TEMP}/zeppelin-revision-notebooks.XXXXXX")"
+          zeppelin_daemon="${GITHUB_WORKSPACE}/bin/zeppelin-daemon.sh"
+          cleanup() {
+            "$zeppelin_daemon" stop || true
+            rm -rf -- "$revision_notebook_dir"
+          }
+          trap cleanup EXIT
+          export ZEPPELIN_NOTEBOOK_DIR="$revision_notebook_dir"
+          # This step owns notebook cleanup instead of Playwright's global directory reset.
+          unset ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+          "$zeppelin_daemon" start
+          cd zeppelin-web-angular
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- tests/notebook/revision/revision-isolation.spec.ts --output=test-results-revision --reporter=github,html
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v6
         if: always()
@@ -119,6 +149,7 @@ jobs:
           path: |
             zeppelin-web-angular/playwright-report/
             zeppelin-web-angular/playwright-report-classic/
+            zeppelin-web-angular/playwright-report-revision/
           retention-days: 3
       - name: Print Zeppelin logs
         if: always()
@@ -149,27 +180,39 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache local Maven repository
+      - name: Cache Maven dependencies
         uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-v1-${{ hashFiles('zeppelin-web/package-lock.json', 'zeppelin-web-angular/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-npm-v1-
+      - name: Cache locked Conda packages
+        uses: actions/cache@v5
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
       - name: Setup conda environment with python 3.9
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: testing/env_python_3.yml
-          python-version: 3.9
-          channels: conda-forge,defaults
-          channel-priority: strict
+          environment-file: testing/locks/python-3.9-linux-64.conda.lock
+          channels: conda-forge
+          conda-remove-defaults: true
+          auto-update-conda: false
           auto-activate: false
-          use-mamba: true
       - name: Install Environment
         run: |
           ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}

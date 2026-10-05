@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.scheduler;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.util.ExecutorUtil;
@@ -36,15 +38,55 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RemoteScheduler extends AbstractScheduler {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteScheduler.class);
 
+  private static final String PARAGRAPH_POOL_SIZE_KEY =
+      ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getVarName();
+  private static final int DEFAULT_PARAGRAPH_POOL_SIZE =
+      ConfVars.ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE.getIntValue();
+
   private final RemoteInterpreter remoteInterpreter;
   private final ExecutorService executor;
 
   public RemoteScheduler(String name,
                          RemoteInterpreter remoteInterpreter) {
     super(name);
-    this.executor =
-        Executors.newSingleThreadExecutor(new NamedThreadFactory("FIFO-" + name));
+    this.executor = createExecutor(name, remoteInterpreter);
     this.remoteInterpreter = remoteInterpreter;
+  }
+
+  /**
+   * Creates the server-side job submission pool. This pool only decides how many jobs can be
+   * submitted to the remote interpreter process concurrently; actual concurrency is still
+   * governed by the remote interpreter's own {@code Scheduler} (Parallel vs FIFO), so this pool
+   * must stay interpreter-neutral.
+   *
+   * <p>"note" execution mode keeps a single-threaded pool because {@link #runJobInScheduler}
+   * blocks until each job fully finishes before submitting the next one, preserving in-note
+   * paragraph ordering. "paragraph" mode uses a bounded fixed pool sized from
+   * {@link ConfVars#ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE} so any interpreter whose remote
+   * scheduler is a ParallelScheduler can actually run jobs concurrently.
+   */
+  private static ExecutorService createExecutor(String name, RemoteInterpreter remoteInterpreter) {
+    String executionMode = remoteInterpreter.getProperty(".execution.mode", "paragraph");
+    if (!"paragraph".equals(executionMode)) {
+      return Executors.newSingleThreadExecutor(new NamedThreadFactory("FIFO-" + name));
+    }
+    int poolSize = resolveParagraphPoolSize(remoteInterpreter);
+    return Executors.newFixedThreadPool(poolSize, new NamedThreadFactory("FIFO-" + name));
+  }
+
+  private static int resolveParagraphPoolSize(RemoteInterpreter remoteInterpreter) {
+    String value = remoteInterpreter.getProperty(PARAGRAPH_POOL_SIZE_KEY);
+    if (StringUtils.isBlank(value)) {
+      return DEFAULT_PARAGRAPH_POOL_SIZE;
+    }
+    try {
+      int parsed = Integer.parseInt(value.trim());
+      return parsed > 0 ? parsed : DEFAULT_PARAGRAPH_POOL_SIZE;
+    } catch (NumberFormatException e) {
+      LOGGER.warn("Invalid {} value: {}, falling back to default {}",
+          PARAGRAPH_POOL_SIZE_KEY, value, DEFAULT_PARAGRAPH_POOL_SIZE);
+      return DEFAULT_PARAGRAPH_POOL_SIZE;
+    }
   }
 
   @Override

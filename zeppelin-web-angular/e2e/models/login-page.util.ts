@@ -24,10 +24,16 @@ export interface TestCredentials {
 }
 
 export class LoginTestUtil {
-  private static readonly SHIRO_CONFIG_PATH = path.join(process.cwd(), '..', 'conf', 'shiro.ini');
+  private static readonly REPOSITORY_SHIRO_CONFIG_PATH = path.join(process.cwd(), '..', 'conf', 'shiro.ini');
 
   private static _testCredentials: Record<string, TestCredentials> | null = null;
   private static _isShiroEnabled: boolean | null = null;
+
+  // Use the capture server's shiro.ini when ZEPPELIN_E2E_SHIRO_INI is set.
+  // capture-server.sh start --mode auth prints this path.
+  private static get shiroConfigPath(): string {
+    return process.env.ZEPPELIN_E2E_SHIRO_INI || this.REPOSITORY_SHIRO_CONFIG_PATH;
+  }
 
   static resetCache(): void {
     this._testCredentials = null;
@@ -40,7 +46,7 @@ export class LoginTestUtil {
     }
 
     try {
-      await access(this.SHIRO_CONFIG_PATH);
+      await access(this.shiroConfigPath);
       this._isShiroEnabled = true;
     } catch {
       this._isShiroEnabled = false;
@@ -59,7 +65,7 @@ export class LoginTestUtil {
     }
 
     try {
-      const content = await readFile(this.SHIRO_CONFIG_PATH, 'utf-8');
+      const content = await readFile(this.shiroConfigPath, 'utf-8');
       const users: Record<string, TestCredentials> = {};
 
       this._parseUsersSection(content, users);

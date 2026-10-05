@@ -63,6 +63,7 @@ import {
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
+import { makeParagraphPatch } from './paragraph-patch';
 
 type Mode = 'edit' | 'command';
 
@@ -100,6 +101,10 @@ export class NotebookParagraphComponent
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
   @Input() useReactFooter = false;
   reactFooterFailed = false;
+
+  protected get currentNoteId(): string | undefined {
+    return this.note?.id;
+  }
 
   get shouldUseReactFooter(): boolean {
     return this.useReactFooter && !this.reactFooterFailed;
@@ -197,12 +202,8 @@ export class NotebookParagraphComponent
   }
 
   sendPatch() {
-    if (!this.dirtyText) {
-      throw new Error('dirtyText is required');
-    }
-    this.originalText = this.originalText ? this.originalText : '';
-    const patch = this.diffMatchPatch.patch_make(this.originalText, this.dirtyText).toString();
-    this.originalText = this.dirtyText;
+    const { patch, originalText } = makeParagraphPatch(this.diffMatchPatch, this.originalText, this.dirtyText);
+    this.originalText = originalText;
     this.messageService.patchParagraph(this.paragraph.id, this.note.id, patch);
   }
 
@@ -521,7 +522,8 @@ export class NotebookParagraphComponent
       config,
       settings: { params }
     } = this.paragraph;
-    this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    const msgId = this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    this.trackParagraphSave(msgId);
     this.cdr.markForCheck();
   }
 
@@ -630,7 +632,7 @@ export class NotebookParagraphComponent
         this.handleKeyEvent(event.action, event.event);
         this.notebookParagraphCodeEditorComponent?.handleKeyEvent(event.action);
       });
-    this.setResults(this.paragraph);
+    this.setParagraphSnapshot(this.paragraph);
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
     this.isParagraphRunning = this.noteStatusService.isParagraphRunning(this.paragraph);
@@ -759,6 +761,9 @@ export class NotebookParagraphComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes.paragraph || changes.note) {
+      this.setParagraphSnapshot(this.paragraph);
+    }
     const { index, select, scrolled } = changes;
     if (
       (index && index.currentValue !== index.previousValue && this.select) ||

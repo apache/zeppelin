@@ -24,6 +24,7 @@ const prettier = require('eslint-config-prettier');
 const localRules = require('./eslint-rules');
 const perfectionist = require('eslint-plugin-perfectionist');
 const playwright = require('eslint-plugin-playwright');
+const vitest = require('@vitest/eslint-plugin');
 
 module.exports = tseslint.config(
   {
@@ -38,7 +39,31 @@ module.exports = tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' }
   },
   {
-    files: ['**/*.ts'],
+    // Plain ESM helpers use base rules without a TypeScript project.
+    files: ['e2e/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        Buffer: 'readonly',
+        URL: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly'
+      }
+    },
+    rules: {
+      'no-undef': 'error',
+      'no-unused-vars': ['error', { args: 'after-used', caughtErrors: 'none' }],
+      'no-redeclare': 'error'
+    }
+  },
+  {
+    files: ['**/*.{ts,mts}'],
     // == legacy `plugin:@angular-eslint/recommended` (sets the TS parser and
     // the @angular-eslint plugin). The @typescript-eslint plugin is registered
     // separately below because tsRecommended does not bring it in.
@@ -155,6 +180,56 @@ module.exports = tseslint.config(
     rules: {
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'lib', style: 'kebab-case' }],
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'lib', style: 'camelCase' }]
+    }
+  },
+  {
+    // Shell unit specs live outside the Angular build tsconfig, which excludes
+    // *.spec.ts. Point type-aware linting at the spec program explicitly.
+    files: [
+      'src/**/*.spec.ts',
+      'projects/zeppelin-{notebook-core,sdk,visualization}/**/*.spec.ts',
+      'test/**/*.spec.ts',
+      'test/test-setup.ts',
+      'test/notebook-core/**/*.ts',
+      'vitest.notebook-core.config.mts',
+      'vitest.shell.config.mts'
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./src/tsconfig.spec.json'],
+        tsconfigRootDir: __dirname
+      }
+    }
+  },
+  {
+    // Catch specs that cannot fail, as eslint-plugin-playwright does for e2e.
+    files: [
+      'src/**/*.spec.ts',
+      'projects/zeppelin-{notebook-core,sdk,visualization}/**/*.spec.ts',
+      'test/**/*.spec.ts'
+    ],
+    plugins: { vitest },
+    rules: {
+      'vitest/expect-expect': 'error',
+      'vitest/no-conditional-expect': 'error',
+      'vitest/no-identical-title': 'error',
+      'vitest/no-standalone-expect': 'error',
+      'vitest/valid-expect': 'error',
+      'vitest/valid-describe-callback': 'error',
+      'vitest/no-disabled-tests': 'warn',
+      'vitest/no-focused-tests': 'error'
+    }
+  },
+  {
+    // Only specs a Maven tsc pass compiles; anywhere else a type-only test cannot fail.
+    files: ['projects/zeppelin-{notebook-core,sdk}/**/*.spec.ts', 'test/notebook-core/**/*.spec.ts'],
+    settings: { vitest: { typecheck: true } }
+  },
+  {
+    // The shell test setup intentionally loads Zone.js for its side effects.
+    files: ['test/test-setup.ts'],
+    rules: {
+      'import/no-unassigned-import': 'off'
     }
   },
   {

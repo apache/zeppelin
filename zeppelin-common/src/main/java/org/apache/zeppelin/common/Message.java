@@ -28,8 +28,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Copied from zeppelin-server (TODO, zjffdu). Should resume the same piece of code instead of copying.
- * Zeppelin websocket message template class.
+ * Shared websocket message contract used by Zeppelin server and Java clients.
+ *
+ * <p>Operation names are part of the public wire protocol and must remain backward compatible. CI
+ * verifies that the Angular websocket operation enum remains synchronized with this enum.
+ * When adding a wire operation, add the same name and value to the Angular enum. Frontend-only
+ * events belong only in the Angular enum and must be marked {@code @frontendOnly}.
  */
 public class Message implements JsonSerializable {
   /**
@@ -148,10 +152,6 @@ public class Message implements JsonSerializable {
 
     ANGULAR_OBJECT_CLIENT_UNBIND, // [c-s] angular object unbind from AngularJS z object
 
-    LIST_CONFIGURATIONS,          // [c-s] ask all key/value pairs of configurations
-    CONFIGURATIONS_INFO,          // [s-c] all key/value pairs of configurations
-                                  // @param settings serialized Map<String, String> object
-
     CHECKPOINT_NOTE,              // [c-s] checkpoint note to storage repository
                                   // @param noteId
                                   // @param checkpointName
@@ -174,7 +174,7 @@ public class Message implements JsonSerializable {
     APP_STATUS_CHANGE,            // [s-c] on app status change
 
     LIST_NOTE_JOBS,               // [c-s] get note job management information
-    LIST_UPDATE_NOTE_JOBS,        // [c-s] get job management information for until unixtime
+    LIST_UPDATE_NOTE_JOBS,        // [s-c] update job management information
     UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
     JOB_MANAGER_DISABLED,         // [s-c] send when job manager is disabled
     // @param unixTime
@@ -186,12 +186,13 @@ public class Message implements JsonSerializable {
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
     SESSION_LOGOUT,               // [s-c] error information to be sent
-    WATCHER,                      // [s-c] Change websocket to watcher mode.
+    WATCHER,                      // [c-s] Change websocket to watcher mode.
     PARAGRAPH_ADDED,              // [s-c] paragraph is added
     PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
     PARAGRAPH_MOVED,              // [s-c] paragraph moved
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
+    CANCEL_ALL_PARAGRAPHS,        // [c-s] cancel(abort) all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos

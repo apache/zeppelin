@@ -12,8 +12,8 @@
 
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { throwError, Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { EMPTY, throwError, Observable } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 
 import { isNil } from 'lodash';
 
@@ -22,6 +22,8 @@ import { TicketService } from '@zeppelin/services';
 
 @Injectable()
 export class AppHttpInterceptor implements HttpInterceptor {
+  private logoutInProgress = false;
+
   constructor(private ticketService: TicketService) {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,8 +50,18 @@ export class AppHttpInterceptor implements HttpInterceptor {
         if (event.status === 401 && !isNil(redirect)) {
           // Handle page redirect
           window.location.href = redirect;
-        } else if (event.status === 405 && !event.url.contains('logout')) {
-          this.ticketService.logout().subscribe();
+        } else if (event.status === 405 && !httpRequest.url.includes('logout') && !this.logoutInProgress) {
+          this.logoutInProgress = true;
+          this.ticketService
+            .logout()
+            .pipe(
+              // TicketService clears the ticket and navigates even when the logout request fails.
+              catchError(() => EMPTY),
+              finalize(() => {
+                this.logoutInProgress = false;
+              })
+            )
+            .subscribe();
         }
         return throwError(event);
       })

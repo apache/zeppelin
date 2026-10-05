@@ -10,28 +10,61 @@
  * limitations under the License.
  */
 
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
+
+// Shared by every spec that runs the same assertions against both branches of the ZEPPELIN-6631 flag, using the
+// `{label, query}` loop documented in e2e/AGENTS.md, so the flag's query string has one place to change. `mount` lets
+// a caller assert which branch actually rendered (see `reactMountedList` below) - without it, a spec whose assertions
+// pass on both branches' markup would still report a "React list" pass if the remote failed to load and the host fell
+// back to Angular.
+export const NOTEBOOK_REPOS_BRANCHES = [
+  { label: 'Angular list', query: '', mount: false },
+  { label: 'React list', query: '?reactNotebookRepos=true', mount: true }
+] as const;
 
 export class NotebookReposPage extends BasePage {
   readonly pageDescription: Locator;
   readonly repositoryItems: Locator;
+  // The outer [data-testid="react-notebook-repo-list"] div is rendered as soon as the flag is on
+  // (notebook-repos.component.html's @if), before ReactMountDirective has even started loading the remote, so it
+  // alone can't tell "mounted" from "flag on, still loading, or loading failed and fell back". The nested
+  // [data-testid="notebook-repo-list"] only exists once NotebookRepoList.tsx itself has actually rendered inside that
+  // host, so this locator is scoped to it, matching react-notebook-repo-list.spec.ts's MOUNTED_LIST.
+  readonly reactMountedList: Locator;
 
   constructor(page: Page) {
     super(page);
     this.pageDescription = page.locator("text=Manage your Notebook Repositories' settings.");
-    this.repositoryItems = page.locator('zeppelin-notebook-repo-item');
+    // Shared id, not the Angular element: /notebook-repos is a migration seam
+    // and these models have to survive the flip.
+    this.repositoryItems = page.locator('[data-testid="notebook-repo-item"]');
+    this.reactMountedList = page.locator('[data-testid="react-notebook-repo-list"] [data-testid="notebook-repo-list"]');
   }
 
-  async navigate(): Promise<void> {
-    await this.navigateToRoute('/notebook-repos', { timeout: 60000 });
-    await this.page.waitForURL('**/#/notebook-repos', { timeout: 60000 });
+  // `query` carries the ZEPPELIN-6631 React flag (e.g. '?reactNotebookRepos=true'),
+  // so callers can drive the same workflow through either branch.
+  async navigate(query = ''): Promise<void> {
+    await this.navigateToRoute(`/notebook-repos${query}`, { timeout: 60000 });
+    await this.page.waitForURL('**/#/notebook-repos*', { timeout: 60000 });
     await waitForZeppelinReady(this.page);
+    // [data-testid="notebook-repo-item"], not the Angular-only zeppelin-notebook-repo-item element,
+    // since that tag never exists on the React branch, so the race would silently lose all its
+    // coverage there the moment the header arm ever got slow.
     await Promise.race([
       this.zeppelinPageHeader.filter({ hasText: 'Notebook Repository' }).waitFor({ state: 'visible' }),
-      this.page.waitForSelector('zeppelin-notebook-repo-item', { state: 'visible' })
+      this.repositoryItems.first().waitFor({ state: 'visible' })
     ]);
+  }
+
+  // For specs looping NOTEBOOK_REPOS_BRANCHES: folds the mount assertion into the navigation itself, rather than
+  // leaving it to each call site. A spec that destructures only `{ label, query }` and calls `navigate(query)`
+  // directly would compile and run fine on a remote that failed to load - that's the exact gap a prior review round
+  // found and fixed; this method exists so a future branch-parametrized spec can't reopen it by omission.
+  async navigateBranch(branch: (typeof NOTEBOOK_REPOS_BRANCHES)[number]): Promise<void> {
+    await this.navigate(branch.query);
+    await expect(this.reactMountedList).toHaveCount(branch.mount ? 1 : 0);
   }
 }
 
@@ -46,13 +79,14 @@ export class NotebookRepoItemPage extends BasePage {
 
   constructor(page: Page, repoName: string) {
     super(page);
-    this.repositoryCard = page.locator('nz-card').filter({ hasText: repoName });
+    this.repositoryCard = page.locator(`[data-testid="notebook-repo-item"][data-repo-name="${repoName}"]`);
     this.repositoryName = this.repositoryCard.locator('.ant-card-head-title');
     this.editButton = this.repositoryCard.locator('button:has-text("Edit")');
     this.saveButton = this.repositoryCard.locator('button:has-text("Save")');
     this.cancelButton = this.repositoryCard.locator('button:has-text("Cancel")');
-    this.settingTable = this.repositoryCard.locator('nz-table');
-    this.settingRows = this.repositoryCard.locator('tbody tr');
+    // .ant-table is what both ng-zorro and antd render.
+    this.settingTable = this.repositoryCard.locator('.ant-table');
+    this.settingRows = this.repositoryCard.locator('tbody tr:not(.ant-table-placeholder)');
   }
 
   async clickEdit(): Promise<void> {
@@ -75,13 +109,15 @@ export class NotebookRepoItemPage extends BasePage {
 
   async fillSettingInput(settingName: string, value: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input[nz-input]');
+    // .ant-input, not [nz-input], since ng-zorro's nz-input directive renders that class too,
+    // and it excludes a DROPDOWN row's Select search input.
+    const input = row.locator('input.ant-input');
     await this.fillAndVerifyInput(input, value);
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input[nz-input]');
+    const input = row.locator('input.ant-input');
     return await input.inputValue();
   }
 

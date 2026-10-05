@@ -35,6 +35,8 @@
     <web.e2e.enabled>false</web.e2e.enabled>
     <!-- Classic UI e2e runs opt-in: CI enables it on the anonymous leg only. -->
     <web.e2e.classic.disabled>true</web.e2e.classic.disabled>
+    <!-- The port identity proof does not depend on the auth mode, so CI runs it on the anonymous leg only. -->
+    <web.e2e.core.port.proof.disabled>${web.e2e.disabled}</web.e2e.core.port.proof.disabled>
     <zeppelin.daemon.package.base>../bin</zeppelin.daemon.package.base>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -115,6 +117,101 @@
             <phase>test</phase>
             <configuration>
               <arguments>run lint</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm test shell</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>run test:shell</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm check core contract fixtures</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <!-- Leave skipTests undefined so -DskipTests controls this check.
+                   Even false counts as set for Ant unless and disables server lifecycle targets. -->
+              <skip>${skipTests}</skip>
+              <arguments>run check:core-contract-fixtures</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm check core contract server</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.disabled}</skip>
+              <arguments>run check:core-contract-server</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm typecheck sdk contracts</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>run typecheck:sdk-contracts</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm typecheck notebook core</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>run typecheck:notebook-core</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm test notebook core</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>test</phase>
+            <configuration>
+              <arguments>run test:notebook-core</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm build notebook core port identity proof</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <!-- Built only where the Chromium proof below runs. -->
+              <skip>${web.e2e.core.port.proof.disabled}</skip>
+              <arguments>run build:notebook-core-port-proof</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>npm test notebook core port identity</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <skip>${web.e2e.core.port.proof.disabled}</skip>
+              <arguments>run test:notebook-core-port-identity</arguments>
             </configuration>
           </execution>
 

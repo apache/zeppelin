@@ -40,6 +40,12 @@ docker run -p 8080:8080 -e ZEPPELIN_IN_DOCKER=true --rm --name zeppelin apache/z
 Notice, please specify environment variable `ZEPPELIN_IN_DOCKER` when starting zeppelin in docker, 
 otherwise you can not see the interpreter log.
 
+Note: `ZEPPELIN_IN_DOCKER` applies to the all-in-one image built from
+`scripts/docker/zeppelin/bin` (the `Dockerfile` referenced under "Building dockerfile
+locally" below). The split `zeppelin-server`/`zeppelin-interpreter` images described in
+"Build docker image for Zeppelin server & interpreters" already log to stdout by
+default and don't need or support this flag.
+
 * Zeppelin will run at `http://localhost:8080`.
 
 If you want to specify `logs` and `notebook` dir, 

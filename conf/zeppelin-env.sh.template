@@ -100,6 +100,8 @@
 # export ZEPPELIN_SPARK_IMPORTIMPLICIT  # Import implicits, UDF collection, and sql if set true. true by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of Spark SQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
+# export ZEPPELIN_WEBSOCKET_IDLE_TIMEOUT                # Time in milliseconds before an idle websocket session is closed. Defaults to 300000
+# export ZEPPELIN_WEBSOCKET_HEARTBEAT_INTERVAL          # Interval in milliseconds at which the server sends a websocket ping frame to keep each session alive. Defaults to 60000. Set to 0 or a negative value to disable.
 
 #### HBase interpreter configuration ####
 

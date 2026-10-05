@@ -34,7 +34,6 @@
   <properties>
     <!--library versions-->
     <flink.version>${flink1.19.version}</flink.version>
-    <flink.scala.version>2.12.7</flink.scala.version>
     <flink.scala.binary.version>2.12</flink.scala.binary.version>
     <flink.scala.compile.version>${flink.scala.version}</flink.scala.compile.version>
     <hive.version>2.3.7</hive.version>
@@ -1060,7 +1059,7 @@
           <!-- set sun.zip.disableMemoryMapping=true because of
           https://blogs.oracle.com/poonam/crashes-in-zipgetentry
           https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8191484 -->
-          <argLine>-Xmx5120m -XX:MaxMetaspaceSize=1024m -Dsun.zip.disableMemoryMapping=true</argLine>
+          <argLine>-Xmx5120m -XX:MaxMetaspaceSize=1024m -Dsun.zip.disableMemoryMapping=true ${extraJavaTestArgs}</argLine>
 <!--          <argLine>-Xmx4096m -XX:MaxMetaspaceSize=512m -Dsun.zip.disableMemoryMapping=true -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=6006</argLine>-->
 
           <environmentVariables>
@@ -1222,6 +1221,38 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <!-- Flink 1.x tgz bundles flink-scala_2.12 which shades scala 2.12.7.
+               2.12.7's JrtClassPath.asURLs() crashes on JDK 17+ (scala/bug#11608, fixed in 2.12.9).
+               Strip the shaded classes and drop in 2.12.20 jars. Not needed for Flink 2.0+. -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>patch-flink-scala</id>
+                <phase>initialize</phase>
+                <goals><goal>run</goal></goals>
+                <configuration>
+                  <target>
+                    <exec executable="zip" dir="${project.build.directory}/flink-${flink.version}/lib" failonerror="true">
+                      <arg line="-d flink-scala_${flink.scala.binary.version}-${flink.version}.jar scala/*"/>
+                    </exec>
+                    <copy todir="${project.build.directory}/flink-${flink.version}/lib" flatten="true">
+                      <resources>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-library/${scala.2.12.version}/scala-library-${scala.2.12.version}.jar"/>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-compiler/${scala.2.12.version}/scala-compiler-${scala.2.12.version}.jar"/>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-reflect/${scala.2.12.version}/scala-reflect-${scala.2.12.version}.jar"/>
+                      </resources>
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -1256,6 +1287,35 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>patch-flink-scala</id>
+                <phase>initialize</phase>
+                <goals><goal>run</goal></goals>
+                <configuration>
+                  <target>
+                    <exec executable="zip" dir="${project.build.directory}/flink-${flink.version}/lib" failonerror="true">
+                      <arg line="-d flink-scala_${flink.scala.binary.version}-${flink.version}.jar scala/*"/>
+                    </exec>
+                    <copy todir="${project.build.directory}/flink-${flink.version}/lib" flatten="true">
+                      <resources>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-library/${scala.2.12.version}/scala-library-${scala.2.12.version}.jar"/>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-compiler/${scala.2.12.version}/scala-compiler-${scala.2.12.version}.jar"/>
+                        <file file="${settings.localRepository}/org/scala-lang/scala-reflect/${scala.2.12.version}/scala-reflect-${scala.2.12.version}.jar"/>
+                      </resources>
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

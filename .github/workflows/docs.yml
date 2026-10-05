@@ -1,0 +1,62 @@
+name: docs
+
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches:
+      - master
+      - 'branch-*'
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  internal-link-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: docs
+      - name: Build the Jekyll site
+        working-directory: docs
+        run: bundle exec jekyll build --safe -d _site
+      - name: Check internal links
+        working-directory: docs
+        # Report-only: broken links are printed in the log but do not fail the
+        # build yet. Remove this once the job has been green for a while, so
+        # that broken links start blocking merges (ZEPPELIN-6628).
+        continue-on-error: true
+        run: |
+          gem install html-proofer -v 5.2.2 --no-document
+          # Template links are prefixed with JB.BASE_PATH (e.g.
+          # /docs/0.13.0-SNAPSHOT), a prefix that only exists once the site is
+          # published. Strip it so links resolve against the built tree. Read it
+          # from _config.yml so a version bump does not break this job.
+          BASE_PATH=$(ruby -ryaml -e 'puts(YAML.load_file("_config.yml")["JB"]["BASE_PATH"] || "")')
+          echo "Stripping BASE_PATH prefix: ${BASE_PATH}"
+          # Only internal links are in scope. External URLs are skipped because
+          # they break for reasons outside this repository and would make the
+          # job flaky; anchor fragments are skipped for the same reason. The
+          # --allow-missing-href flag keeps `<a name="...">` anchors, which the
+          # docs use as link targets, from being reported as errors.
+          htmlproofer _site \
+            --root-dir _site \
+            --checks Links \
+            --disable-external \
+            --no-enforce-https \
+            --no-check-internal-hash \
+            --allow-missing-href \
+            --swap-urls "^${BASE_PATH}:"

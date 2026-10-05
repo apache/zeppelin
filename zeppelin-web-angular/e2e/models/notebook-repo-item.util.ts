@@ -23,13 +23,16 @@ export class NotebookRepoItemUtil extends BasePage {
   }
 
   async verifyDisplayMode(): Promise<void> {
+    // Button visibility, not the `.edit` class, since that's an Angular-only
+    // `[class.edit]="editMode"` binding the React card never applies.
     await expect(this.repoItemPage.editButton).toBeVisible();
-    await expect(this.repoItemPage.repositoryCard).not.toHaveClass(/\bedit\b/);
+    await expect(this.repoItemPage.saveButton).not.toBeVisible();
+    await expect(this.repoItemPage.cancelButton).not.toBeVisible();
   }
 
   async verifyEditMode(): Promise<void> {
     await expect(this.repoItemPage.saveButton).toBeVisible();
     await expect(this.repoItemPage.cancelButton).toBeVisible();
-    await expect(this.repoItemPage.repositoryCard).toHaveClass(/\bedit\b/);
+    await expect(this.repoItemPage.editButton).not.toBeVisible();
   }
 }

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" role="img" aria-labelledby="title description">
+  <title id="title">Labeled property graph data model</title>
+  <desc id="description">People, notebooks, and a dataset represented as labeled nodes connected by typed relationships with properties.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#263238"/>
+    </marker>
+    <style>
+      .edge { fill: none; stroke: #263238; stroke-width: 2.5; marker-end: url(#arrow); }
+      .edge-label { fill: #263238; font: 700 13px Arial, sans-serif; text-anchor: middle; }
+      .edge-property { fill: #546e7a; font: 12px Arial, sans-serif; text-anchor: middle; }
+      .node { fill: #ffffff; stroke-width: 2.5; }
+      .node-label { fill: #ffffff; font: 700 14px Arial, sans-serif; text-anchor: middle; }
+      .node-property { fill: #263238; font: 14px Arial, sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="800" height="460" fill="#ffffff"/>
+
+  <path class="edge" d="M 210 105 L 315 105"/>
+  <rect x="218" y="66" width="88" height="25" rx="5" fill="#ffffff" stroke="#b0bec5"/>
+  <text class="edge-label" x="262" y="83">AUTHORED</text>
+  <text class="edge-property" x="262" y="127">since: 2024</text>
+
+  <path class="edge" d="M 210 355 L 315 355"/>
+  <rect x="229" y="316" width="66" height="25" rx="5" fill="#ffffff" stroke="#b0bec5"/>
+  <text class="edge-label" x="262" y="333">VIEWED</text>
+  <text class="edge-property" x="262" y="377">date: Jul 18</text>
+
+  <path class="edge" d="M 485 105 L 590 218"/>
+  <rect x="495" y="132" width="62" height="25" rx="5" fill="#ffffff" stroke="#b0bec5"/>
+  <text class="edge-label" x="526" y="149">READS</text>
+  <text class="edge-property" x="548" y="177">format: parquet</text>
+
+  <path class="edge" d="M 485 355 L 590 242"/>
+  <rect x="495" y="303" width="62" height="25" rx="5" fill="#ffffff" stroke="#b0bec5"/>
+  <text class="edge-label" x="526" y="320">READS</text>
+  <text class="edge-property" x="548" y="346">format: csv</text>
+
+  <rect class="node" x="40" y="60" width="170" height="90" rx="7" stroke="#00796b"/>
+  <path d="M 47 60 H 203 A 7 7 0 0 1 210 67 V 90 H 40 V 67 A 7 7 0 0 1 47 60 Z" fill="#00796b"/>
+  <text class="node-label" x="125" y="80">:Person:Author</text>
+  <text class="node-property" x="125" y="116">name: Mina</text>
+  <text class="node-property" x="125" y="138">team: Analytics</text>
+
+  <rect class="node" x="40" y="310" width="170" height="90" rx="7" stroke="#388e3c"/>
+  <path d="M 47 310 H 203 A 7 7 0 0 1 210 317 V 340 H 40 V 317 A 7 7 0 0 1 47 310 Z" fill="#388e3c"/>
+  <text class="node-label" x="125" y="330">:Person</text>
+  <text class="node-property" x="125" y="366">name: Yun</text>
+  <text class="node-property" x="125" y="388">team: Operations</text>
+
+  <rect class="node" x="315" y="60" width="170" height="90" rx="7" stroke="#ef6c00"/>
+  <path d="M 322 60 H 478 A 7 7 0 0 1 485 67 V 90 H 315 V 67 A 7 7 0 0 1 322 60 Z" fill="#ef6c00"/>
+  <text class="node-label" x="400" y="80">:Notebook</text>
+  <text class="node-property" x="400" y="116">title: Flight Analysis</text>
+  <text class="node-property" x="400" y="138">version: 3</text>
+
+  <rect class="node" x="315" y="310" width="170" height="90" rx="7" stroke="#8e24aa"/>
+  <path d="M 322 310 H 478 A 7 7 0 0 1 485 317 V 340 H 315 V 317 A 7 7 0 0 1 322 310 Z" fill="#8e24aa"/>
+  <text class="node-label" x="400" y="330">:Notebook</text>
+  <text class="node-property" x="400" y="366">title: Revenue Forecast</text>
+  <text class="node-property" x="400" y="388">version: 7</text>
+
+  <rect class="node" x="590" y="185" width="170" height="90" rx="7" stroke="#1565c0"/>
+  <path d="M 597 185 H 753 A 7 7 0 0 1 760 192 V 215 H 590 V 192 A 7 7 0 0 1 597 185 Z" fill="#1565c0"/>
+  <text class="node-label" x="675" y="205">:Dataset</text>
+  <text class="node-property" x="675" y="241">name: Flight Records</text>
+  <text class="node-property" x="675" y="263">owner: Data Platform</text>
+</svg>

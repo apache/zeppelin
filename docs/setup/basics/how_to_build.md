@@ -164,9 +164,9 @@ spark.src.download.url # default http://d3kbcqa49mib13.cloudfront.net/${spark.ar
 Py4J package
 
 ```bash
-python.py4j.version # default 0.10.9.7
-pypi.repo.url # default https://pypi.python.org/packages
-python.py4j.repo.folder # default /64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3
+python.py4j.version # default 0.10.7
+pypi.repo.url # default https://files.pythonhosted.org
+python.py4j.repo.folder # default /packages/dd/03/d83f659f045d819fc7550dd472b3831fe8c8fa7204c6428270a46a4a5ab9/
 ```
 
 final URL location for Py4J package will be produced as following:

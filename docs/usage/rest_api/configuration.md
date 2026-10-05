@@ -38,12 +38,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all key/value pair of configurations on the server.<br/>
+      <td markdown="span">This ```GET``` method return all key/value pair of configurations on the server.<br/>
        Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/configurations/all```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/configurations/all```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -56,7 +56,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td> sample JSON response
       </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -98,12 +98,12 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/>
+      <td markdown="span">This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/>
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/configurations/prefix/[prefix]```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/configurations/prefix/[prefix]```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -116,7 +116,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <tr>
       <td> sample JSON response
       </td>
-      <td>
+      <td markdown="block">
 
 ```json
 {

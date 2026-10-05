@@ -67,7 +67,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== CORE EXECUTION SHORTCUTS =====
 
   test.describe('ParagraphActions.Run: Shift+Enter', () => {
-    test('should execute markdown paragraph with Shift+Enter', async () => {
+    test('should execute markdown paragraph with Shift+Enter', { tag: '@NB-PARITY-005' }, async () => {
       // Given: A paragraph with markdown content
       await keyboardPage.tryFocusCodeEditor();
       await keyboardPage.setCodeEditorContent('%md\n# Test Heading\n\nThis is **bold** text.');
@@ -80,6 +80,7 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
       // waitForParagraphExecution gates on the status text, so it is the assertion and throws if the run never settles.
       await keyboardPage.waitForParagraphExecution(0);
+      await expect(keyboardPage.paragraphResult.getByRole('heading', { name: 'Test Heading' })).toBeVisible();
     });
   });
 
@@ -200,24 +201,21 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
 
   test.describe('ParagraphActions.MoveCursorDown: Control+N', () => {
     test('should move cursor down with Control+N', async () => {
-      // Given: A paragraph with multiple lines
-      await keyboardPage.tryFocusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
+      await test.step('Given the cursor is at the beginning of line1', async () => {
+        await keyboardPage.setCodeEditorContent('%python\nline1\nline2\nline3');
+        await keyboardPage.pressSelectAll();
+        await keyboardPage.pressKey('ArrowLeft');
+        await keyboardPage.pressKey('ArrowDown');
+      });
 
-      // Position cursor at beginning of first content line (after %python) using more reliable method
-      await keyboardPage.pressSelectAll(); // Select all content
-      await keyboardPage.pressKey('ArrowLeft'); // Move to beginning
-      await keyboardPage.pressKey('ArrowDown'); // Move to line1
+      await test.step('When the user presses Control+N', async () => {
+        await keyboardPage.pressMoveCursorDown();
+      });
 
-      // When: User presses Control+N (should move cursor down one line)
-      await keyboardPage.pressMoveCursorDown();
-
-      // Then: Verify cursor movement by checking if we can type at the current position
-      // Type a marker and check where it appears in the content
-      await keyboardPage.page.keyboard.type('MARKER');
-
-      await expect.poll(() => keyboardPage.getCodeEditorContent()).toContain('MARKERline2');
-      expect(await keyboardPage.getCodeEditorContent()).not.toContain('MARKERline1');
+      await test.step('Then typing inserts at the beginning of line2', async () => {
+        await keyboardPage.page.keyboard.type('MARKER');
+        await expect.poll(() => keyboardPage.getCodeEditorContent()).toBe('%python\nline1\nMARKERline2\nline3');
+      });
     });
   });
 
@@ -461,18 +459,22 @@ test.describe.serial('Comprehensive Keyboard Shortcuts (ShortcutsMap)', () => {
   // ===== UI TOGGLE SHORTCUTS =====
 
   test.describe('ParagraphActions.SwitchEditor: Control+Alt+E', () => {
-    test('should toggle editor visibility with Control+Alt+E', async () => {
-      // Given: A paragraph with visible editor
-      await keyboardPage.tryFocusCodeEditor();
-      await keyboardPage.setCodeEditorContent('%python\nprint("Test editor toggle")');
+    test('should toggle the focused editor with Control+Alt+E', async () => {
+      await keyboardPage.tryFocusCodeEditor(0);
+      await keyboardPage.setCodeEditorContent('%python\nprint("First paragraph")', 0);
+      await keyboardPage.pressInsertBelow();
+      await keyboardPage.waitForParagraphCountChange(2);
+      await keyboardPage.tryFocusCodeEditor(1);
+      await keyboardPage.setCodeEditorContent('%python\nprint("Second paragraph")', 1);
+      await keyboardPage.tryFocusCodeEditor(0);
 
       const initialEditorVisibility = await keyboardPage.isEditorVisible(0);
+      const secondEditorVisibility = await keyboardPage.isEditorVisible(1);
 
-      // When: User presses Control+Alt+E
       await keyboardPage.pressSwitchEditor();
 
-      // Then: editor visibility toggles
       await expect.poll(() => keyboardPage.isEditorVisible(0), { timeout: 10000 }).toBe(!initialEditorVisibility);
+      expect(await keyboardPage.isEditorVisible(1)).toBe(secondEditorVisibility);
     });
   });
 

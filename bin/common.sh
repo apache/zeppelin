@@ -147,7 +147,29 @@ if [[ ( -z "${ZEPPELIN_INTP_MEM}" ) && ( "${ZEPPELIN_INTERPRETER_LAUNCHER}" != "
   export ZEPPELIN_INTP_MEM="-Xmx1024m"
 fi
 
-JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
+# JPMS (Java Platform Module System) args mirrored from pom.xml extraJavaTestArgs.
+# Targets JDK 17+: --add-modules, --enable-native-access, --sun-misc-unsafe-memory-access
+# require JDK 17+. -XX:+IgnoreUnrecognizedVMOptions only silences unknown -XX flags.
+JPMS_JAVA_OPTS="-XX:+IgnoreUnrecognizedVMOptions"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.lang=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.io=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.net=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.nio=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.util=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.util.concurrent=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/sun.nio.cs=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/sun.security.action=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" --add-opens=java.base/sun.util.calendar=ALL-UNNAMED"
+JPMS_JAVA_OPTS+=" -Dio.netty.tryReflectionSetAccessible=true"
+JPMS_JAVA_OPTS+=" -Dio.netty.allocator.type=pooled"
+JPMS_JAVA_OPTS+=" -Dio.netty.handler.ssl.defaultEndpointVerificationAlgorithm=NONE"
+JPMS_JAVA_OPTS+=" --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED"
+JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM} ${JPMS_JAVA_OPTS}"
 if [[ -n "${ZEPPELIN_IN_DOCKER}" ]]; then
     JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j_docker.properties"
 else
@@ -155,7 +177,7 @@ else
 fi
 export JAVA_OPTS
 
-JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
+JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${JPMS_JAVA_OPTS}"
 if [[ -n "${ZEPPELIN_IN_DOCKER}" ]]; then
     JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j_docker.properties -Dlog4j.configurationFile=file://${ZEPPELIN_CONF_DIR}/log4j2_docker.properties"
 elif [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then

@@ -359,6 +359,8 @@ public class ZeppelinServer implements AutoCloseable {
           jettyWebServer.stop();
         }
         if (sharedServiceLocator != null) {
+          // Stop after Jetty so no new connection can restart the heartbeat scheduler.
+          sharedServiceLocator.getService(NotebookServer.class).stopHeartbeatScheduler();
           if (!zConf.isRecoveryEnabled()) {
             sharedServiceLocator.getService(InterpreterSettingManager.class).close();
           }
@@ -475,6 +477,7 @@ public class ZeppelinServer implements AutoCloseable {
     JakartaWebSocketServletContainerInitializer
             .configure(webapp, (servletContext, wsContainer) -> {
               wsContainer.setDefaultMaxTextMessageBufferSize(Integer.parseInt(maxTextMessageSize));
+              wsContainer.setDefaultMaxSessionIdleTimeout(zConf.getWebsocketIdleTimeout());
               wsContainer.addEndpoint(ServerEndpointConfig.Builder.create(NotebookServer.class, "/ws")
               .configurator(new SessionConfigurator(sharedServiceLocator)).build());
             });

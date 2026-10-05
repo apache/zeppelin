@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { AuthInfo, ConfigurationsInfo, ErrorInfo } from './message-common.interface';
+import { AuthInfo, ErrorInfo } from './message-common.interface';
 import {
   CheckpointNote,
   CloneNote,
@@ -59,6 +59,7 @@ import {
   AngularObjectRemove,
   AngularObjectUpdate,
   AngularObjectUpdated,
+  CancelAllParagraphs,
   CancelParagraph,
   CommitParagraph,
   Completion,
@@ -66,12 +67,14 @@ import {
   CopyParagraph,
   InsertParagraph,
   MoveParagraph,
+  ParagraphAppendOutput,
   ParagraphClearAllOutput,
   ParagraphClearOutput,
   ParagraphExecutedBySpell,
   ParagraphRemove,
   ParagraphRemoved,
   ParagraphStatus,
+  ParagraphUpdateOutput,
   ParasInfo,
   PatchParagraphReceived,
   PatchParagraphSend,
@@ -90,7 +93,6 @@ export type MessageDataTypeMap = MessageSendDataTypeMap | MessageReceiveDataType
 export interface MessageReceiveDataTypeMap {
   [OP.COMPLETION_LIST]: CompletionReceived;
   [OP.NOTES_INFO]: NotesInfo;
-  [OP.CONFIGURATIONS_INFO]: ConfigurationsInfo;
   [OP.NOTE]: Note;
   [OP.NOTE_REVISION]: NoteRevision;
   [OP.ERROR_INFO]: ErrorInfo;
@@ -108,6 +110,8 @@ export interface MessageReceiveDataTypeMap {
   [OP.IMPORT_NOTE]: ImportNoteReceived;
   [OP.SAVE_NOTE_FORMS]: SaveNoteFormsSend;
   [OP.PARAGRAPH]: UpdateParagraph;
+  [OP.PARAGRAPH_APPEND_OUTPUT]: ParagraphAppendOutput;
+  [OP.PARAGRAPH_UPDATE_OUTPUT]: ParagraphUpdateOutput;
   [OP.PATCH_PARAGRAPH]: PatchParagraphSend;
   [OP.PARAGRAPH_REMOVED]: ParagraphRemoved;
   [OP.EDITOR_SETTING]: EditorSettingReceived;
@@ -124,7 +128,6 @@ export interface MessageReceiveDataTypeMap {
 
 export interface MessageSendDataTypeMap {
   [OP.PING]: undefined;
-  [OP.LIST_CONFIGURATIONS]: undefined;
   [OP.LIST_NOTES]: undefined;
   [OP.GET_HOME_NOTE]: undefined;
   [OP.RESTORE_ALL]: undefined;
@@ -154,6 +157,7 @@ export interface MessageSendDataTypeMap {
   [OP.PARAGRAPH_EXECUTED_BY_SPELL]: ParagraphExecutedBySpell;
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
+  [OP.CANCEL_ALL_PARAGRAPHS]: CancelAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;
   [OP.PARAGRAPH_CLEAR_OUTPUT]: ParagraphClearOutput;
   [OP.PARAGRAPH_CLEAR_ALL_OUTPUT]: ParagraphClearAllOutput;
@@ -169,7 +173,6 @@ export interface MessageSendDataTypeMap {
   [OP.EDITOR_SETTING]: EditorSettingSend;
   [OP.LIST_NOTE_JOBS]: undefined;
   [OP.UNSUBSCRIBE_UPDATE_NOTE_JOBS]: undefined;
-  [OP.LIST_UPDATE_NOTE_JOBS]: undefined;
   [OP.GET_INTERPRETER_BINDINGS]: GetInterpreterBindings;
   [OP.SAVE_INTERPRETER_BINDINGS]: SaveInterpreterBindings;
   [OP.GET_INTERPRETER_SETTINGS]: undefined;

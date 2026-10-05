@@ -51,13 +51,13 @@ First of all, you need Zeppelin source code. The official location of Zeppelin i
 Get the source code on your development machine using git.
 
 ```bash
-git clone git://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
+git clone https://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
 ```
 
-You may also want to develop against a specific branch. For example, for branch-0.11.0
+You may also want to develop against a specific branch. For example, for branch-0.11
 
 ```bash
-git clone -b branch-0.11.0 git://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
+git clone -b branch-0.11 https://gitbox.apache.org/repos/asf/zeppelin.git zeppelin
 ```
 
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.
@@ -159,6 +159,6 @@ You can find issues for <a href="https://issues.apache.org/jira/browse/ZEPPELIN-
 ## Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
+* [dev@zeppelin.apache.org](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/zeppelin-dev/)
 
 If you have any issues, create a ticket in [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN).

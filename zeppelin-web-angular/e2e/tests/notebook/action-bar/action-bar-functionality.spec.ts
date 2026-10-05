@@ -39,7 +39,7 @@ test.describe('Notebook Action Bar Functionality', () => {
     await navigateToNotebookWithFallback(page, testNotebook.noteId);
   });
 
-  test('should display and allow title editing with tooltip', async ({ page }) => {
+  test('should display and allow title editing with tooltip', { tag: '@NB-PARITY-002' }, async ({ page }) => {
     const notebookName = `TestNotebook_${Date.now()}`;
 
     await expect(actionBarPage.titleEditor).toBeVisible();
@@ -66,6 +66,14 @@ test.describe('Notebook Action Bar Functionality', () => {
     await expect(confirmButton).toBeVisible({ timeout: 5000 });
     await confirmButton.click();
     await expect(confirmButton).not.toBeVisible();
+  });
+
+  test('should display cancel all button as disabled when note is idle', async () => {
+    await expect(actionBarPage.cancelAllButton).toBeVisible();
+
+    // Given: an idle note (no paragraph running), Cancel all is disabled and Run all is enabled — the two buttons are mutually exclusive
+    await expect(actionBarPage.cancelAllButton).toBeDisabled();
+    await expect(actionBarPage.runAllButton).toBeEnabled();
   });
 
   test('should toggle code visibility', async () => {

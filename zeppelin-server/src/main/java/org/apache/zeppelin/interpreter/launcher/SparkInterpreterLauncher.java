@@ -318,10 +318,10 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     
     if (sparkReplJars.isEmpty()) {
-      throw new Exception("No spark-repl jar found in SPARK_HOME: " + sparkHome);
+      throw new IOException("No spark-repl jar found in SPARK_HOME: " + sparkHome);
     }
     if (sparkReplJars.size() > 1) {
-      throw new Exception("Multiple spark-repl jar found in SPARK_HOME: " + sparkHome);
+      throw new IOException("Multiple spark-repl jar found in SPARK_HOME: " + sparkHome);
     }
     
     String fileName = sparkReplJars.get(0).getFileName().toString();
@@ -330,7 +330,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     } else if (fileName.contains("spark-repl_2.13")) {
       return "2.13";
     } else {
-      throw new Exception("Can not detect the scala version by spark-repl");
+      throw new IllegalArgumentException("Can not detect the scala version by spark-repl");
     }
   }
 

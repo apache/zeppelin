@@ -31,7 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
@@ -61,7 +60,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -191,16 +189,6 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
     }
 
     @Override
-    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-
-    }
-
-    @Override
     public NoteParser getNoteParser() {
       return null;
     }
@@ -273,16 +261,6 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
 
     @Override
     public void close() {
-
-    }
-
-    @Override
-    public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
 
     }
 
@@ -611,6 +589,36 @@ class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListen
         assertEquals("repl1: p1", p1.getReturn().message().get(0).getData());
         assertNull(p2.getReturn());
         assertEquals("repl1: p3", p3.getReturn().message().get(0).getData());
+        return null;
+      });
+    notebook.removeNote(noteId, anonymous);
+  }
+
+  @Test
+  void testAbortAll() throws IOException {
+    String noteId = notebook.createNote("note1", anonymous);
+    notebook.processNote(noteId,
+      note -> {
+        Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p1.setText("p1");
+        p1.setStatus(Status.RUNNING);
+
+        Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p2.setText("p2");
+        p2.setStatus(Status.PENDING);
+
+        Paragraph p3 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+        p3.setText("p3");
+        p3.setStatus(Status.FINISHED);
+
+        // when
+        note.abortAll();
+
+        // then
+        assertTrue(p1.isAborted());
+        assertTrue(p2.isAborted());
+        assertFalse(p3.isAborted());
+        assertEquals(Status.FINISHED, p3.getStatus());
         return null;
       });
     notebook.removeNote(noteId, anonymous);

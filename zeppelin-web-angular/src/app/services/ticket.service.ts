@@ -19,7 +19,6 @@ import { map, tap } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { ITicket, ITicketWrapped, IZeppelinVersion } from '@zeppelin/interfaces';
-import { ConfigurationsInfo } from '@zeppelin/sdk';
 
 import { BaseUrlService } from './base-url.service';
 
@@ -27,16 +26,11 @@ import { BaseUrlService } from './base-url.service';
   providedIn: 'root'
 })
 export class TicketService {
-  configuration?: ConfigurationsInfo['configurations'];
   ticket = new ITicketWrapped();
   originTicket = new ITicket();
   ticket$ = new Subject<ITicketWrapped>();
   logout$ = new BehaviorSubject<boolean>(false);
   version?: string;
-
-  setConfiguration(conf: ConfigurationsInfo) {
-    this.configuration = conf.configurations;
-  }
 
   getTicket() {
     return forkJoin([

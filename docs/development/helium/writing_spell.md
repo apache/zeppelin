@@ -63,7 +63,7 @@ Making a new spell is similar to [Helium Visualization#write-new-visualization](
 
 - Add framework dependency called zeppelin-spell into `package.json`
 - Write code using framework
-- Publish your spell to [npm]("https://www.npmjs.com/")
+- Publish your spell to [npm](https://www.npmjs.com/)
 
 ### 1. Create a npm package
 

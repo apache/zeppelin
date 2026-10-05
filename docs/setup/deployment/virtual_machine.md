@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Apache Zeppelin on Vagrant Virtual Machine"
-description: "Apache Zeppelin provides a script for running a virtual machine for development through Vagrant. The script will create a virtual machine with core dependencies pre-installed, required for developing Apache Zeppelin."
+description: "The Vagrant developer environment under scripts/vagrant/zeppelin-dev is deprecated and unmaintained. Build Apache Zeppelin from source instead."
 group: setup/deployment 
 ---
 <!--
@@ -19,164 +19,156 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Apache Zeppelin on Vagrant Virtual Machine
+# Apache Zeppelin on Vagrant Virtual Machine (deprecated)
 
 <div id="toc"></div>
 
-## Overview
+## Deprecation notice
 
-Apache Zeppelin distribution includes a script directory `scripts/vagrant/zeppelin-dev`
+**Deprecated as of 0.13.0.** The Vagrant environment in
+`scripts/vagrant/zeppelin-dev` is no longer maintained and is not expected to
+provision a usable Zeppelin build environment. See
+[ZEPPELIN-6460](https://issues.apache.org/jira/browse/ZEPPELIN-6460).
 
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
-For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
+Apache Zeppelin ships a script directory `scripts/vagrant/zeppelin-dev`, holding
+a Vagrant machine definition and the Ansible roles that provision it with the
+dependencies once required for developing Zeppelin.
 
-### Prerequisites
+To build Zeppelin, follow
+[How to Build Zeppelin from source](../basics/how_to_build.html) instead. A local
+checkout needs only Git and a JDK; `./mvnw` supplies Maven, and each web module
+downloads its own Node.js and npm.
 
-This script requires three applications, [Ansible](https://www.ansible.com/ "Ansible"), [Vagrant](http://www.vagrantup.com "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
+## What the VM provisions
+
+On top of the Ubuntu 16.04 box, the Ansible roles install:
+
+ - openjdk-8-jdk
+ - Maven 3.3.9
+ - Node.js and npm from the distribution packages
+ - ruby + rake, make and bundler (only required if building the jekyll documentation)
+ - git, curl and unzip
+ - libfontconfig, to avoid PhantomJS missing dependency issues
+ - Python addons: pip, matplotlib, scipy, numpy, pandas
+
+## Why it is deprecated
+
+The toolchain provisioned here has not been updated since 2018, and the
+provisioning now fails for several independent reasons:
+
+* The `ubuntu/xenial64` box is Ubuntu 16.04, which is past end of life.
+* `ansible-roles.yml` installs `python-minimal` and `python-simplejson`, and the
+  `python-addons` role installs `python-pip`, `python-matplotlib`,
+  `python-scipy`, `python-numpy` and `python-pandas`. These are Python 2
+  packages that no longer exist on supported Ubuntu releases, and current
+  `ansible-core` requires Python 3 on the managed node.
+* The `maven` role resolves Maven 3.3.9 through `closer.cgi`. That request still
+  succeeds, but the mirror it returns answers 404: Maven 3.3.9 has been moved off
+  the distribution mirrors and is only on `archive.apache.org`.
+* The `common` role installs `libfontconfig` for PhantomJS, which the project no
+  longer uses.
+* The toolchain it provisions is far below the project baseline: OpenJDK 8
+  instead of 11, Maven 3.3.9 instead of 3.6.3, and the distribution `nodejs`
+  package on Xenial, which is Node.js 4.2.6.
+
+## Current project baseline
+
+These are the versions the build actually expects. They are defined in the build
+itself, not in the Vagrant scripts.
+
+<table class="table-configuration">
+  <tr>
+    <th>Component</th>
+    <th>Version</th>
+    <th>Source of truth</th>
+  </tr>
+  <tr>
+    <td>OpenJDK or Oracle JDK</td>
+    <td>11</td>
+    <td><code>java.version</code> in the root <code>pom.xml</code></td>
+  </tr>
+  <tr>
+    <td>Maven</td>
+    <td>3.6.3 or higher</td>
+    <td><code>maven.version</code> in the root <code>pom.xml</code></td>
+  </tr>
+  <tr>
+    <td>Node.js / npm</td>
+    <td>22.21.1 / 10.9.4</td>
+    <td><code>node.version</code> / <code>npm.version</code> in <code>zeppelin-web-angular/pom.xml</code></td>
+  </tr>
+</table>
+
+Only the JDK has to be installed by hand. `./mvnw` downloads Maven, and
+`frontend-maven-plugin` downloads the pinned Node.js and npm into each web
+module, so neither has to be on `PATH`. Building the classic UI with
+`-Pweb-classic` pulls in `zeppelin-web`, which pins its own pair in
+`zeppelin-web/pom.xml`.
 
 ## Create a Zeppelin Ready VM
 
-If you are running Windows and don't yet have python installed, [install Python 2.7.x](https://www.python.org/downloads/release/python-2710/) first.
+This setup requires [Vagrant](https://developer.hashicorp.com/vagrant/install),
+[VirtualBox](https://www.virtualbox.org/) and
+[Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
+With all three installed, run `vagrant up` from within the
+`scripts/vagrant/zeppelin-dev` directory, then `vagrant ssh` to get a shell on
+the guest machine.
 
-1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads.html)
-2. Install Ansible:  [Ansible Python pip install](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#pip-install)
-
-    ```bash
-    sudo easy_install pip
-    sudo pip install ansible
-    ansible --version
-    ```
-    After then, please check whether it reports **ansible version 1.9.2 or higher**.
-
-3. Install Virtual Box: [Virtual Box Downloads](https://www.virtualbox.org/ "Virtual Box")
-4. Type `vagrant up`  from within the `/scripts/vagrant/zeppelin-dev` directory
-
-Thats it ! You can now run `vagrant ssh` and this will place you into the guest machines terminal prompt.
-
-If you don't wish to build Zeppelin from scratch, run the z-manager installer script while running in the guest VM:
+If you don't wish to build Zeppelin from scratch, run the z-manager installer
+script while running in the guest VM:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-installer.sh | bash
 ```
 
+## Building Zeppelin in the VM
 
-## Building Zeppelin
-
-You can now 
+Clone the project over HTTPS, on your host machine or directly in the VM:
 
 ```bash
-git clone git://git.apache.org/zeppelin.git
+git clone https://github.com/apache/zeppelin.git
 ```
 
-into a directory on your host machine, or directly in your virtual machine.
+Cloning the project again may seem counter intuitive, since this script
+originated from the project repository. Consider copying just the
+`vagrant/zeppelin-dev` script from the Zeppelin project as a stand alone
+directory, then once again clone the specific branch you wish to build.
 
-Cloning Zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
-
-Cloning the project again may seem counter intuitive, since this script likely originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
-
-Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
-
-By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you
-`cd /vagrant/zeppelin`
-
-
-## What's in this VM?
-
-Running the following commands in the guest machine should display these expected versions:
-
-* `node --version` should report *v0.12.7*
-
-The virtual machine consists of:
-
- - Ubuntu Server 14.04 LTS
- - Node.js 0.12.7
- - npm 2.11.3
- - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.9
- - Git
- - Unzip
- - libfontconfig to avoid phatomJs missing dependency issues
- - openjdk-7-jdk
- - Python addons: pip, matplotlib, scipy, numpy, pandas
-
-## How to build & run Zeppelin
-
-This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python support via PySpark:
+Cloning Zeppelin into the `scripts/vagrant/zeppelin-dev` directory from the host
+will allow the directory to be shared between your host and the guest machine.
+By default, Vagrant shares the directory holding the `Vagrantfile` to `/vagrant`
+in the guest, so the checkout is reachable at `/vagrant/zeppelin`.
+_[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
 ```bash
-cd /zeppelin
-./mvnw clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
+cd /vagrant/zeppelin
+./mvnw clean package -DskipTests
 ./bin/zeppelin-daemon.sh start
 ```
 
-On your host machine browse to `http://localhost:8080/`
+On your host machine browse to `http://localhost:8080/`.
 
-If you [turned off port forwarding](#tweaking-the-virtual-machine) in the `Vagrantfile` browse to `http://192.168.51.52:8080`
+If you [turned off port forwarding](#tweaking-the-virtual-machine) in the
+`Vagrantfile`, browse to `http://192.168.51.52:8080` instead.
 
+See [Build profiles](../basics/how_to_build.html#build-profiles) for the Spark,
+Flink and Hadoop profiles this project currently supports.
 
 ## Tweaking the Virtual Machine
 
-If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port forwarding from your local host.
+If you plan to run this virtual machine alongside other Vagrant images, you may
+wish to bind the virtual machine to a specific IP address instead of forwarding
+ports from your local host.
 
-Comment out the `forward_port` line, and uncomment the `private_network` line in Vagrantfile.  The subnet that works best for your local network will vary so adjust `192.168.*.*` accordingly.
+Comment out the `forwarded_port` lines, and uncomment the `private_network` line
+in the `Vagrantfile`. The subnet that works best for your local network will
+vary, so adjust `192.168.*.*` accordingly.
 
 ```
 #config.vm.network "forwarded_port", guest: 8080, host: 8080
 config.vm.network "private_network", ip: "192.168.51.52"
 ```
 
-`vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of `192.168.51.52`.
-This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
-
-## Extras
-### Python Extras
-
-With Zeppelin running, **Numpy**, **SciPy**, **Pandas** and **Matplotlib** will be available.  Create a pyspark notebook, and try the below code.
-
-```python
-%pyspark
-
-import numpy
-import scipy
-import pandas
-import matplotlib
-
-print "numpy " + numpy.__version__
-print "scipy " + scipy.__version__
-print "pandas " + pandas.__version__
-print "matplotlib " + matplotlib.__version__
-```
-
-To Test plotting using Matplotlib into a rendered `%html` SVG image, try
-
-```python
-%pyspark
-
-import matplotlib
-matplotlib.use('Agg')   # turn off interactive charting so this works for server side SVG rendering
-import matplotlib.pyplot as plt
-import numpy as np
-import StringIO
-
-# clear out any previous plots on this note
-plt.clf()
-
-def show(p):
-    img = StringIO.StringIO()
-    p.savefig(img, format='svg')
-    img.seek(0)
-    print "%html <div style='width:600px'>" + img.buf + "</div>"
-
-# Example data
-people = ('Tom', 'Dick', 'Harry', 'Slim', 'Jim')
-y_pos = np.arange(len(people))
-performance = 3 + 10 * np.random.rand(len(people))
-error = np.random.rand(len(people))
-
-plt.barh(y_pos, performance, xerr=error, align='center', alpha=0.4)
-plt.yticks(y_pos, people)
-plt.xlabel('Performance')
-plt.title('How fast do you want to go today?')
-
-show(plt)
-```
+`vagrant halt` followed by `vagrant up` will restart the guest machine bound to
+`192.168.51.52`. This is typically required when running other virtual machines
+that discover each other directly by IP address.

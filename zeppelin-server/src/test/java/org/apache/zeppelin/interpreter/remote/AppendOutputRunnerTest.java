@@ -17,28 +17,40 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -68,8 +80,9 @@ class AppendOutputRunnerTest {
     String[][] buffer = {{"note", "para", "data\n"}};
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend("note", "para", 0, "data\n");
+    verify(listener, times(1)).onParagraphOutputAppend(
+        any(String.class), any(String.class), anyInt(), isNull(), any(String.class));
+    verify(listener, times(1)).onParagraphOutputAppend("note", "para", 0, null, "data\n");
   }
 
   @Test
@@ -84,8 +97,78 @@ class AppendOutputRunnerTest {
     };
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\ndata2\ndata3\n");
+    verify(listener, times(1)).onParagraphOutputAppend(
+        any(String.class), any(String.class), anyInt(), isNull(), any(String.class));
+    verify(listener, times(1)).onParagraphOutputAppend(
+        note1, para1, 0, null, "data1\ndata2\ndata3\n");
+  }
+
+  // A paragraph in shared mode is one Job, so one execution -- one user -- produces the output
+  // for a given index at a time, and keying by user must leave that batching alone.
+  @Test
+  void appendsFromOneExecutionAreStillBatchedIntoOneChunk() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    runner.appendBuffer("note", "para", 0, "user1", "line-1\n");
+    runner.appendBuffer("note", "para", 0, "user1", "line-2\n");
+
+    runner.run();
+
+    verify(listener, times(1)).onParagraphOutputAppend(
+        "note", "para", 0, "user1", "line-1\nline-2\n");
+  }
+
+  // Two executions only overlap in personalized mode, where each user runs their own copy.
+  // A merged chunk would have no single owner and could not be routed to either user.
+  @Test
+  void appendsFromDifferentExecutionsAreNotBatchedTogether() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    runner.appendBuffer("note", "para", 0, "user1", "mine\n");
+    runner.appendBuffer("note", "para", 0, "user2", "theirs\n");
+
+    runner.run();
+
+    verify(listener, times(1)).onParagraphOutputAppend("note", "para", 0, "user1", "mine\n");
+    verify(listener, times(1)).onParagraphOutputAppend("note", "para", 0, "user2", "theirs\n");
+  }
+
+  // Keying by user splits the buffer, so the per-owner ordering the shared queue guarantees
+  // must still hold once another user's output is interleaved.
+  @Test
+  void updatesDoNotOvertakeQueuedAppendsOfTheSameOwner() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    runner.appendBuffer("note", "para", 0, "owner", "before\n");
+    runner.appendBuffer("note", "para", 0, "other", "theirs\n");
+    runner.updateBuffer("note", "para", 0, "owner", InterpreterResult.Type.TEXT, "replacement\n");
+    runner.appendBuffer("note", "para", 0, "owner", "after\n");
+
+    runner.run();
+
+    InOrder order = inOrder(listener);
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, "owner", "before\n");
+    order.verify(listener).onParagraphOutputUpdated(
+        "note", "para", 0, "owner", InterpreterResult.Type.TEXT, "replacement\n");
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, "owner", "after\n");
+  }
+
+  @Test
+  void testUpdateDoesNotOvertakeQueuedAppend() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    runner.appendBuffer("note", "para", 0, null, "before-1\n");
+    runner.appendBuffer("note", "para", 0, null, "before-2\n");
+    runner.updateBuffer("note", "para", 0, null, InterpreterResult.Type.TEXT, "replacement\n");
+    runner.appendBuffer("note", "para", 0, null, "after\n");
+
+    runner.run();
+
+    InOrder order = inOrder(listener);
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "before-1\nbefore-2\n");
+    order.verify(listener).onParagraphOutputUpdated(
+        "note", "para", 0, null, InterpreterResult.Type.TEXT, "replacement\n");
+    order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "after\n");
   }
 
   @Test
@@ -103,11 +186,12 @@ class AppendOutputRunnerTest {
     };
     loopForCompletingEvents(listener, 4, buffer);
 
-    verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
-    verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\n");
-    verify(listener, times(1)).onOutputAppend(note1, para2, 0, "data2\n");
-    verify(listener, times(1)).onOutputAppend(note2, para1, 0, "data3\n");
-    verify(listener, times(1)).onOutputAppend(note2, para2, 0, "data4\n");
+    verify(listener, times(4)).onParagraphOutputAppend(
+        any(String.class), any(String.class), anyInt(), isNull(), any(String.class));
+    verify(listener, times(1)).onParagraphOutputAppend(note1, para1, 0, null, "data1\n");
+    verify(listener, times(1)).onParagraphOutputAppend(note1, para2, 0, null, "data2\n");
+    verify(listener, times(1)).onParagraphOutputAppend(note2, para1, 0, null, "data3\n");
+    verify(listener, times(1)).onParagraphOutputAppend(note2, para2, 0, null, "data4\n");
   }
 
   @Test
@@ -126,7 +210,8 @@ class AppendOutputRunnerTest {
      * calls, 30-40 Web-socket calls are made. Keeping
      * the unit-test to a pessimistic 100 web-socket calls.
      */
-    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onParagraphOutputAppend(
+        any(String.class), any(String.class), anyInt(), isNull(), any(String.class));
   }
 
   @Test
@@ -137,7 +222,7 @@ class AppendOutputRunnerTest {
     int numEvents = 100000;
 
     for (int i=0; i<numEvents; i++) {
-      runner.appendBuffer("noteId", "paraId", 0, data);
+      runner.appendBuffer("noteId", "paraId", 0, null, data);
     }
 
     TestAppender appender = new TestAppender();
@@ -145,24 +230,85 @@ class AppendOutputRunnerTest {
     logger.addAppender(appender);
 
     runner.run();
-    List<LoggingEvent> log;
+    try {
+      String expected = "Processing size for buffered append-output is high: "
+          + (data.length() * numEvents) + " characters.";
+      assertTrue(appender.getLog().stream().anyMatch(event ->
+          Level.WARN.equals(event.getLevel()) && expected.equals(event.getMessage())));
+    } finally {
+      logger.removeAppender(appender);
+    }
+  }
 
-    int warnLogCounter;
-    LoggingEvent sizeWarnLogEntry = null;
-    do {
-      warnLogCounter = 0;
-      log = appender.getLog();
-      for (LoggingEvent logEntry: log) {
-        if (Level.WARN.equals(logEntry.getLevel())) {
-          sizeWarnLogEntry = logEntry;
-          warnLogCounter += 1;
-        }
-      }
-    } while(warnLogCounter != 2);
+  @Test
+  void emptyDrainDoesNotBlock() {
+    AppendOutputRunner runner =
+        new AppendOutputRunner(mock(RemoteInterpreterProcessListener.class));
+    assertTimeoutPreemptively(Duration.ofSeconds(1), runner::run);
+  }
 
-    String loggerString = "Processing size for buffered append-output is high: " +
-        (data.length() * numEvents) + " characters.";
-    assertEquals(loggerString, sizeWarnLogEntry.getMessage());
+  @Test
+  void updateFailureDoesNotDiscardOtherEventsOrLaterDrains() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    doThrow(new IllegalStateException("removed")).when(listener)
+        .onParagraphOutputUpdated("note", "gone", 0, null, InterpreterResult.Type.TEXT, "bad");
+    runner.appendBuffer("note", "gone", 0, null, "bad");
+    runner.updateBuffer("note", "gone", 0, null, InterpreterResult.Type.TEXT, "bad");
+    runner.appendBuffer("note", "present", 0, null, "good");
+    runner.run();
+    runner.appendBuffer("note", "present", 0, null, "later");
+    runner.run();
+    verify(listener).onParagraphOutputAppend("note", "present", 0, null, "good");
+    verify(listener).onParagraphOutputAppend("note", "present", 0, null, "later");
+  }
+
+  @Test
+  void appendFailureDoesNotDiscardLaterUpdateOrDrain() {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    doThrow(new IllegalStateException("removed")).when(listener)
+        .onParagraphOutputAppend("note", "gone", 0, null, "bad");
+    runner.appendBuffer("note", "gone", 0, null, "bad");
+    runner.updateBuffer("note", "present", 0, null, InterpreterResult.Type.TEXT, "current");
+    runner.run();
+    runner.appendBuffer("note", "present", 0, null, "later");
+    runner.run();
+    verify(listener).onParagraphOutputUpdated(
+        "note", "present", 0, null, InterpreterResult.Type.TEXT, "current");
+    verify(listener).onParagraphOutputAppend("note", "present", 0, null, "later");
+  }
+
+  @Test
+  void concurrentDrainCannotOvertakeInFlightCallback() throws Exception {
+    RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
+    AppendOutputRunner runner = new AppendOutputRunner(listener);
+    CountDownLatch entered = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    doAnswer(invocation -> {
+      entered.countDown();
+      assertTrue(release.await(5, TimeUnit.SECONDS));
+      return null;
+    }).when(listener).onParagraphOutputAppend("note", "para", 0, null, "old");
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    try {
+      runner.appendBuffer("note", "para", 0, null, "old");
+      Future<?> first = executor.submit(runner);
+      assertTrue(entered.await(5, TimeUnit.SECONDS));
+      runner.updateBuffer("note", "para", 0, null, InterpreterResult.Type.TEXT, "new");
+      Future<?> second = executor.submit(runner);
+      assertThrows(TimeoutException.class, () -> second.get(100, TimeUnit.MILLISECONDS));
+      release.countDown();
+      first.get(5, TimeUnit.SECONDS);
+      second.get(5, TimeUnit.SECONDS);
+      InOrder order = inOrder(listener);
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "old");
+      order.verify(listener).onParagraphOutputUpdated(
+        "note", "para", 0, null, InterpreterResult.Type.TEXT, "new");
+    } finally {
+      release.countDown();
+      executor.shutdownNow();
+    }
   }
 
   private class BombardEvents implements Runnable {
@@ -178,7 +324,7 @@ class AppendOutputRunnerTest {
       String noteId = "noteId";
       String paraId = "paraId";
       for (int i=0; i<NUM_EVENTS; i++) {
-        runner.appendBuffer(noteId, paraId, 0, "data\n");
+        runner.appendBuffer(noteId, paraId, 0, null, "data\n");
       }
     }
   }
@@ -212,7 +358,8 @@ class AppendOutputRunnerTest {
         numInvocations += 1;
         return null;
       }
-    }).when(listener).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    }).when(listener).onParagraphOutputAppend(
+        any(String.class), any(String.class), anyInt(), isNull(), any(String.class));
   }
 
   private void loopForCompletingEvents(RemoteInterpreterProcessListener listener,
@@ -221,7 +368,7 @@ class AppendOutputRunnerTest {
     prepareInvocationCounts(listener);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
     for (String[] bufferElement: buffer) {
-      runner.appendBuffer(bufferElement[0], bufferElement[1], 0, bufferElement[2]);
+      runner.appendBuffer(bufferElement[0], bufferElement[1], 0, null, bufferElement[2]);
     }
     future = service.scheduleWithFixedDelay(runner, 0,
         AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);

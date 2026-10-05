@@ -1,0 +1,24 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import ts from 'typescript';
+
+export const createFixtureHost = (options: ts.CompilerOptions, files: ReadonlyMap<string, string>): ts.CompilerHost => {
+  const host = ts.createCompilerHost(options);
+  const { readFile, fileExists, directoryExists } = host;
+  host.readFile = file => files.get(file) ?? readFile(file);
+  host.fileExists = file => files.has(file) || fileExists(file);
+  // Module resolution does not probe files in directories it considers missing.
+  host.directoryExists = directory =>
+    [...files.keys()].some(file => file.startsWith(`${directory}/`)) || (directoryExists?.(directory) ?? true);
+  return host;
+};

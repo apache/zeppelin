@@ -382,7 +382,7 @@ Python interpreter create a variable `z` which represent `ZeppelinContext` for y
   </tr>
   <tr>
     <td>z.checkbox(name, options, defaultChecked=[])</td>
-    <td>Create dynamic form Checkbox `name` with options and defaultChecked. options should be a list of Tuple(first element is key, 
+    <td markdown="span">Create dynamic form Checkbox `name` with options and defaultChecked. options should be a list of Tuple(first element is key,
     the second element is the displayed value) e.g. <code>z.checkbox("f3", [("o1","1"), ("o2","2")],["o1"])</code></td>
   </tr>
   <tr>

@@ -22,6 +22,7 @@ export class NotebookKeyboardPage extends BasePage {
   readonly codeEditor: Locator;
   readonly paragraphContainer: Locator;
   readonly firstParagraph: Locator;
+  readonly firstEditorInput: Locator;
   readonly runButton: Locator;
   readonly paragraphResult: Locator;
   readonly newParagraphButton: Locator;
@@ -45,6 +46,7 @@ export class NotebookKeyboardPage extends BasePage {
     this.codeEditor = page.locator('.monaco-editor .monaco-mouse-cursor-text');
     this.paragraphContainer = page.locator('zeppelin-notebook-paragraph');
     this.firstParagraph = this.paragraphContainer.first();
+    this.firstEditorInput = this.firstParagraph.locator('.monaco-editor textarea.inputarea');
     this.runButton = page.locator('button[title="Run this paragraph"], button:has-text("Run")');
     this.paragraphResult = page.locator(PARAGRAPH_RESULT_SELECTOR);
     this.newParagraphButton = page.locator('button:has-text("Add Paragraph"), .new-paragraph-button');
@@ -167,12 +169,10 @@ export class NotebookKeyboardPage extends BasePage {
   }
 
   async pressSelectAll(): Promise<void> {
-    const isWebkit = this.page.context().browser()?.browserType().name() === 'webkit';
-    if (isWebkit) {
-      await this.page.keyboard.press('Meta+A');
-    } else {
-      await this.page.keyboard.press('ControlOrMeta+A');
-    }
+    // Monaco chooses its keymap from the browser UA, which device emulation can
+    // make different from the host OS used by Playwright's ControlOrMeta.
+    const isMacintosh = await this.page.evaluate(() => navigator.userAgent.includes('Macintosh'));
+    await this.page.keyboard.press(isMacintosh ? 'Meta+A' : 'Control+A');
   }
 
   // Run paragraph - shift.enter

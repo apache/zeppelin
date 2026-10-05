@@ -38,11 +38,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method returns all the available notebook repositories.</td>
+      <td markdown="span">This ```GET``` method returns all the available notebook repositories.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -54,7 +54,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -88,11 +88,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method triggers reloading and broadcasting of the note list.</td>
+      <td markdown="span">This ```GET``` method triggers reloading and broadcasting of the note list.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories/reload```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories/reload```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -104,7 +104,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -124,11 +124,11 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method updates a specific notebook repository.</td>
+      <td markdown="span">This ```PUT``` method updates a specific notebook repository.</td>
     </tr>
     <tr>
       <td>URL</td>
-      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories```</td>
+      <td markdown="span">```http://[zeppelin-server]:[zeppelin-port]/api/notebook-repositories```</td>
     </tr>
     <tr>
       <td>Success code</td>
@@ -144,7 +144,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON input</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {
@@ -158,7 +158,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     <tr>
       <td>Sample JSON response</td>
-      <td>
+      <td markdown="block">
 
 ```json
 {

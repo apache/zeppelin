@@ -10,31 +10,28 @@
  * limitations under the License.
  */
 
-import { createRoot } from 'react-dom/client';
-import { ConfigProvider } from 'antd';
-import { Empty } from '@/components';
+import { createRoot, Root } from 'react-dom/client';
+import { Empty, ReactErrorBoundary } from '@/components';
 import { SingleResultRenderer } from '@/templates';
+import { ZeppelinThemeProvider } from '@/theme';
 import type { ParagraphConfigResults, ParagraphIResultsMsgItem } from '@zeppelin/sdk';
+
+const RESULT_FONT_FAMILY = "'Lucida Console', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace";
 
 export interface PublishedParagraphProps {
   paragraphId: string;
   results?: ParagraphIResultsMsgItem[];
   config?: ParagraphConfigResults;
+  onError?: (error: unknown) => void;
 }
 
-export const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => {
-  if (!results || results.length === 0) {
-    return <Empty />;
-  }
-
-  return (
-    <ConfigProvider
-      theme={{
-        token: {
-          fontFamily: "'Lucida Console', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace"
-        }
-      }}
-    >
+export const PublishedParagraph = ({ results, config }: PublishedParagraphProps) => (
+  // The empty state is inside the provider too: antd's Empty illustration is
+  // themed, so leaving it outside would leak a light widget into a dark page.
+  <ZeppelinThemeProvider token={{ fontFamily: RESULT_FONT_FAMILY }}>
+    {!results || results.length === 0 ? (
+      <Empty />
+    ) : (
       <div data-testid="react-published-paragraph">
         {results.map((result, index) => (
           <div key={index}>
@@ -42,26 +39,42 @@ export const PublishedParagraph = ({ results, config }: PublishedParagraphProps)
           </div>
         ))}
       </div>
-    </ConfigProvider>
-  );
-};
+    )}
+  </ZeppelinThemeProvider>
+);
 
-export const mount = (element: HTMLElement, props?: PublishedParagraphProps) => {
+export interface PublishedParagraphMountHandle {
+  update: (props: PublishedParagraphProps) => void;
+  unmount: () => void;
+}
+
+export const mount = (element: HTMLElement, initialProps?: PublishedParagraphProps): PublishedParagraphMountHandle => {
   if (!element) {
     throw new Error('Mount element is required');
   }
 
-  const root = createRoot(element);
+  const root: Root = createRoot(element);
 
-  root.render(
-    <PublishedParagraph
-      paragraphId={props?.paragraphId || 'demo-paragraph'}
-      results={props?.results}
-      config={props?.config}
-    />
-  );
+  const renderWith = (props?: PublishedParagraphProps) => {
+    root.render(
+      <ReactErrorBoundary onError={props?.onError}>
+        <PublishedParagraph
+          paragraphId={props?.paragraphId || 'demo-paragraph'}
+          results={props?.results}
+          config={props?.config}
+        />
+      </ReactErrorBoundary>
+    );
+  };
 
-  return () => {
-    root.unmount();
+  renderWith(initialProps);
+
+  return {
+    update: (newProps: PublishedParagraphProps) => {
+      renderWith(newProps);
+    },
+    unmount: () => {
+      root.unmount();
+    }
   };
 };

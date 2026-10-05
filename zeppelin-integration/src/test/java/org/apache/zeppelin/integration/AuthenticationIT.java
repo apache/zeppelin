@@ -100,7 +100,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
 
       logoutUser("admin");
     } catch (Exception e) {
-      handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
+      handleException("Exception in AuthenticationIT while testSimpleAuthentication ", e);
     }
   }
 
