@@ -169,7 +169,6 @@ public class LdapRealm extends DefaultLdapRealm {
   private boolean groupSearchEnableMatchingRuleInChain;
   private boolean groupSearchEnableMemberOf;
   private String memberOfAttribute = "memberOf";
-  private volatile boolean warnedBothGroupSearchModes;
 
   private String groupSearchBase;
 
@@ -222,6 +221,15 @@ public class LdapRealm extends DefaultLdapRealm {
   @Override
   protected void onInit() {
     super.onInit();
+    if (groupSearchEnableMatchingRuleInChain && groupSearchEnableMemberOf) {
+      LOGGER.warn("Both groupSearchEnableMatchingRuleInChain and groupSearchEnableMemberOf are "
+          + "enabled; groupSearchEnableMatchingRuleInChain takes precedence and "
+          + "groupSearchEnableMemberOf is ignored.");
+    }
+    if (groupSearchEnableMemberOf
+        && org.apache.commons.lang3.StringUtils.isEmpty(groupSearchBase)) {
+      LOGGER.warn("memberOf mode requires groupSearchBase; no groups will be resolved.");
+    }
     if (!org.apache.commons.lang3.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
       ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
@@ -348,14 +356,6 @@ public class LdapRealm extends DefaultLdapRealm {
 
     String userDn = getUserDnForSearch(userName);
 
-    if (groupSearchEnableMatchingRuleInChain && groupSearchEnableMemberOf
-        && !warnedBothGroupSearchModes) {
-      LOGGER.warn("Both groupSearchEnableMatchingRuleInChain and groupSearchEnableMemberOf are "
-          + "enabled; groupSearchEnableMatchingRuleInChain takes precedence and "
-          + "groupSearchEnableMemberOf is ignored.");
-      warnedBothGroupSearchModes = true;
-    }
-
     // Activate paged results
     int pageSize = getPagingSize();
     LOGGER.debug("Ldap PagingSize: {}", pageSize);
@@ -438,7 +438,6 @@ public class LdapRealm extends DefaultLdapRealm {
     return numResults;
   }
 
-  // Default path: search groups and check the member attribute for the user DN.
   private int rolesForGroupMembership(String userName, String userDn, LdapContext ldapCtx,
       SearchControls searchControls, LdapContextFactory ldapContextFactory,
       Set<String> roleNames, Set<String> groupNames) throws NamingException {
@@ -484,6 +483,11 @@ public class LdapRealm extends DefaultLdapRealm {
     memberOfControls.setSearchScope(SearchControls.OBJECT_SCOPE);
     memberOfControls.setReturningAttributes(new String[]{memberOfAttribute});
 
+    // Only an explicitly configured groupSearchBase bounds the group DNs; the
+    // searchBase fallback would accept every DN, including non-group entries.
+    final LdapName groupBase = org.apache.commons.lang3.StringUtils.isEmpty(groupSearchBase)
+        ? null : new LdapName(groupSearchBase);
+
     int numResults = 0;
     NamingEnumeration<SearchResult> searchResultEnum = null;
     try {
@@ -497,6 +501,10 @@ public class LdapRealm extends DefaultLdapRealm {
           try {
             while (memberOfValues.hasMore()) {
               String groupDn = memberOfValues.next().toString();
+              if (!isUnderGroupSearchBase(groupDn, groupBase)) {
+                LOGGER.debug("Skipping memberOf value '{}' outside groupSearchBase", groupDn);
+                continue;
+              }
               String groupName = groupNameFromMemberOfDn(groupDn);
               if (groupName != null) {
                 recordGroupRole(groupName, roleNames, groupNames);
@@ -519,7 +527,8 @@ public class LdapRealm extends DefaultLdapRealm {
    * Extracts the group name from a memberOf DN value using its leaf RDN.
    * Ancestor RDNs are not scanned: a container RDN on the path (e.g. FreeIPA's
    * {@code cn=groups,cn=accounts}) shares the group's RDN type and would be
-   * mistaken for the group. Returns null for an unparseable DN so the caller skips it.
+   * mistaken for the group. Returns null for an unparseable DN or a leaf RDN whose
+   * type differs from groupIdAttribute so the caller skips it.
    */
   String groupNameFromMemberOfDn(String groupDn) {
     try {
@@ -530,14 +539,26 @@ public class LdapRealm extends DefaultLdapRealm {
       }
       Rdn leafRdn = rdns.get(rdns.size() - 1);
       if (!getGroupIdAttribute().equalsIgnoreCase(leafRdn.getType())) {
-        LOGGER.warn("memberOf value '{}' leaf RDN type '{}' does not match groupIdAttribute "
-            + "'{}'; using the leaf RDN value anyway.",
-            groupDn, leafRdn.getType(), getGroupIdAttribute());
+        LOGGER.debug("Skipping memberOf value '{}': leaf RDN type '{}' does not match "
+            + "groupIdAttribute '{}'", groupDn, leafRdn.getType(), getGroupIdAttribute());
+        return null;
       }
       return leafRdn.getValue().toString();
     } catch (InvalidNameException e) {
       LOGGER.warn("Skipping malformed memberOf value '{}': {}", groupDn, e.getMessage());
       return null;
+    }
+  }
+
+  private static boolean isUnderGroupSearchBase(String groupDn, LdapName groupBase) {
+    if (groupBase == null) {
+      return false;
+    }
+    try {
+      return new LdapName(groupDn).startsWith(groupBase);
+    } catch (InvalidNameException e) {
+      LOGGER.warn("Skipping malformed memberOf value '{}': {}", groupDn, e.getMessage());
+      return false;
     }
   }
 

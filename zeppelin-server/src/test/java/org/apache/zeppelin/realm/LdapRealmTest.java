@@ -146,6 +146,7 @@ class LdapRealmTest {
   void testRolesForMemberOfNestedGroups() throws NamingException {
     LdapRealm realm = new LdapRealm();
     realm.setGroupSearchEnableMemberOf(true);
+    realm.setGroupSearchBase("cn=groups,cn=accounts,dc=example,dc=com");
     HashMap<String, String> rolesByGroups = new HashMap<>();
     rolesByGroups.put("nested-group", "nested-role");
     realm.setRolesByGroup(rolesByGroups);
@@ -251,43 +252,70 @@ class LdapRealmTest {
   }
 
   @Test
-  void testWarnBothGroupSearchModesLogsOnlyOnce() throws NamingException {
+  void testRolesForMemberOfExcludesDnsOutsideGroupSearchBase() throws NamingException {
     LdapRealm realm = new LdapRealm();
-    realm.setGroupSearchEnableMatchingRuleInChain(true);
     realm.setGroupSearchEnableMemberOf(true);
-    realm.setGroupSearchBase("cn=groups,dc=apache");
+    realm.setGroupSearchBase("cn=groups,cn=accounts,dc=example,dc=com");
 
     LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
     LdapContext ldapCtx = mock(LdapContext.class);
     Session session = mock(Session.class);
 
-    BasicAttributes group1 = new BasicAttributes();
-    group1.put(realm.getGroupIdAttribute(), "group-one");
+    String userDn = realm.getUserDnForSearch("principal");
 
-    // Fresh enumeration per call since NamingEnumeration is single-use.
-    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
-        .thenAnswer(invocation -> enumerationOf(group1));
+    // FreeIPA mixes HBAC/sudo rule and role DNs into memberOf; only DNs under
+    // groupSearchBase are groups.
+    BasicAttribute memberOf = new BasicAttribute("memberOf");
+    memberOf.add("cn=admins,cn=groups,cn=accounts,dc=example,dc=com");
+    memberOf.add("ipaUniqueID=aaaa-1111,cn=hbac,dc=example,dc=com");
+    memberOf.add("cn=helpdesk,cn=roles,cn=accounts,dc=example,dc=com");
+    BasicAttributes userEntry = new BasicAttributes();
+    userEntry.put(memberOf);
 
-    // Repeated calls with both flags enabled must keep working the same way
-    // after the WARN-once guard trips on the first call.
-    Set<String> firstCall = realm.rolesFor(
+    when(ldapCtx.search(eq(userDn), eq("(objectclass=*)"), any(SearchControls.class)))
+        .thenReturn(enumerationOf(userEntry));
+
+    Set<String> roles = realm.rolesFor(
         new SimplePrincipalCollection("principal", "ldapRealm"),
         "principal", ldapCtx, ldapContextFactory, session);
-    Set<String> secondCall = realm.rolesFor(
+
+    assertEquals(new HashSet<>(Arrays.asList("admins")), roles);
+  }
+
+  @Test
+  void testRolesForMemberOfWithoutGroupSearchBaseResolvesNoGroups() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    realm.setGroupSearchEnableMemberOf(true);
+    realm.setSearchBase("dc=example,dc=com");
+
+    LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
+    LdapContext ldapCtx = mock(LdapContext.class);
+    Session session = mock(Session.class);
+
+    String userDn = realm.getUserDnForSearch("principal");
+
+    BasicAttribute memberOf = new BasicAttribute("memberOf");
+    memberOf.add("cn=admins,cn=groups,cn=accounts,dc=example,dc=com");
+    BasicAttributes userEntry = new BasicAttributes();
+    userEntry.put(memberOf);
+
+    when(ldapCtx.search(eq(userDn), eq("(objectclass=*)"), any(SearchControls.class)))
+        .thenReturn(enumerationOf(userEntry));
+
+    Set<String> roles = realm.rolesFor(
         new SimplePrincipalCollection("principal", "ldapRealm"),
         "principal", ldapCtx, ldapContextFactory, session);
 
-    assertEquals(firstCall, secondCall);
+    assertEquals(new HashSet<>(), roles);
   }
 
   @Test
   void testGroupNameFromMemberOfDnFallback() {
     LdapRealm realm = new LdapRealm();
 
-    // groupIdAttribute (default "cn") does not match any RDN type in the DN
-    // below -> fall back to the leaf (left-most) RDN value.
+    // The leaf RDN type ("cn") does not match groupIdAttribute -> skipped.
     realm.setGroupIdAttribute("gidNumber");
-    assertEquals("admins",
+    assertNull(
         realm.groupNameFromMemberOfDn("cn=admins,cn=groups,cn=accounts,dc=example,dc=com"));
 
     // A malformed DN must be skipped, not thrown, so one bad memberOf value

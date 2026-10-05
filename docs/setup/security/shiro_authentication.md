@@ -184,6 +184,9 @@ ldapRealm.groupSearchEnableMatchingRuleInChain = true
 # Note: the LDAP bind used by ldapRealm.contextFactory must be authenticated (not anonymous) or
 # the directory may not return memberOf; if group members span multiple backends/replicas, the
 # directory's own server-side scope configuration must be set up for memberOf to be complete.
+# Only memberOf values under an explicitly configured groupSearchBase are treated as groups (other
+# entries such as HBAC/sudo rules or roles are ignored); without groupSearchBase no groups are resolved.
+# The leaf RDN type of each group DN must match groupIdAttribute, otherwise the value is skipped.
 ldapRealm.groupSearchEnableMemberOf = false
 # customize the attribute name read by groupSearchEnableMemberOf (defaults to memberOf)
 ldapRealm.memberOfAttribute = memberOf
