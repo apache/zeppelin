@@ -3,11 +3,7 @@
   "metadata": {
     "owner": "zeppelin-web-angular",
     "scenario": "Independent collaboration viewers",
-    "coveredOperations": [
-      "PATCH_PARAGRAPH",
-      "NOTE_UPDATED",
-      "COLLABORATIVE_MODE_STATUS"
-    ],
+    "coveredOperations": ["PATCH_PARAGRAPH", "NOTE_UPDATED", "COLLABORATIVE_MODE_STATUS"],
     "knownExclusions": [
       "Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.",
       "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
@@ -23,9 +19,7 @@
       "serverPort": 18081,
       "paragraphStatusProgress": "true",
       "interpreterExecution": "none",
-      "configuredInterpreterGroups": [
-        "md"
-      ],
+      "configuredInterpreterGroups": ["md"],
       "configurationSource": "configuration-api-and-capture-helper",
       "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
       "directories": {

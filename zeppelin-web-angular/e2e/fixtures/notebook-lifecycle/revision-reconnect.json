@@ -29,9 +29,7 @@
       "serverPort": 18081,
       "paragraphStatusProgress": "true",
       "interpreterExecution": "none",
-      "configuredInterpreterGroups": [
-        "md"
-      ],
+      "configuredInterpreterGroups": ["md"],
       "configurationSource": "configuration-api-and-capture-helper",
       "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
       "directories": {

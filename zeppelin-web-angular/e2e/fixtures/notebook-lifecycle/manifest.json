@@ -2,52 +2,27 @@
   "fixtures": [
     {
       "file": "association.json",
-      "operations": [
-        "GET_NOTE",
-        "RELOAD_NOTE",
-        "GET_HOME_NOTE",
-        "NEW_NOTE",
-        "CLONE_NOTE",
-        "LIST_NOTE_JOBS"
-      ],
+      "operations": ["GET_NOTE", "RELOAD_NOTE", "GET_HOME_NOTE", "NEW_NOTE", "CLONE_NOTE", "LIST_NOTE_JOBS"],
       "status": "supported"
     },
     {
       "file": "collaboration-anonymous.json",
-      "operations": [
-        "PATCH_PARAGRAPH",
-        "NOTE_UPDATED",
-        "COLLABORATIVE_MODE_STATUS"
-      ],
+      "operations": ["PATCH_PARAGRAPH", "NOTE_UPDATED", "COLLABORATIVE_MODE_STATUS"],
       "status": "supported"
     },
     {
       "file": "collaboration-auth.json",
-      "operations": [
-        "PATCH_PARAGRAPH",
-        "NOTE_UPDATED",
-        "COLLABORATIVE_MODE_STATUS"
-      ],
+      "operations": ["PATCH_PARAGRAPH", "NOTE_UPDATED", "COLLABORATIVE_MODE_STATUS"],
       "status": "supported"
     },
     {
       "file": "commit-reply-loss.json",
-      "operations": [
-        "COMMIT_PARAGRAPH",
-        "GET_NOTE",
-        "NOTE",
-        "GET /api/notebook/{noteId}"
-      ],
+      "operations": ["COMMIT_PARAGRAPH", "GET_NOTE", "NOTE", "GET /api/notebook/{noteId}"],
       "status": "supported"
     },
     {
       "file": "commit-request-loss.json",
-      "operations": [
-        "COMMIT_PARAGRAPH",
-        "GET_NOTE",
-        "NOTE",
-        "GET /api/notebook/{noteId}"
-      ],
+      "operations": ["COMMIT_PARAGRAPH", "GET_NOTE", "NOTE", "GET /api/notebook/{noteId}"],
       "status": "supported"
     },
     {

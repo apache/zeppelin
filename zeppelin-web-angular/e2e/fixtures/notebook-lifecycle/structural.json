@@ -28,9 +28,7 @@
       "serverPort": 18081,
       "paragraphStatusProgress": "true",
       "interpreterExecution": "none",
-      "configuredInterpreterGroups": [
-        "md"
-      ],
+      "configuredInterpreterGroups": ["md"],
       "configurationSource": "configuration-api-and-capture-helper",
       "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
       "directories": {
@@ -52,37 +50,18 @@
     "authoritativeInputs": [
       {
         "ingress": "rest",
-        "commands": [
-          "insert",
-          "move",
-          "remove"
-        ],
-        "frames": [
-          "NOTE"
-        ]
+        "commands": ["insert", "move", "remove"],
+        "frames": ["NOTE"]
       },
       {
         "ingress": "websocket",
-        "commands": [
-          "INSERT_PARAGRAPH",
-          "COPY_PARAGRAPH",
-          "MOVE_PARAGRAPH",
-          "PARAGRAPH_REMOVE"
-        ],
-        "frames": [
-          "PARAGRAPH_ADDED",
-          "PARAGRAPH_MOVED",
-          "PARAGRAPH_REMOVED"
-        ]
+        "commands": ["INSERT_PARAGRAPH", "COPY_PARAGRAPH", "MOVE_PARAGRAPH", "PARAGRAPH_REMOVE"],
+        "frames": ["PARAGRAPH_ADDED", "PARAGRAPH_MOVED", "PARAGRAPH_REMOVED"]
       },
       {
         "ingress": "websocket",
-        "commands": [
-          "COMMIT_PARAGRAPH"
-        ],
-        "frames": [
-          "PARAGRAPH with the matching msgId"
-        ]
+        "commands": ["COMMIT_PARAGRAPH"],
+        "frames": ["PARAGRAPH with the matching msgId"]
       }
     ]
   },

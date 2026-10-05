@@ -3,12 +3,7 @@
   "metadata": {
     "owner": "zeppelin-web-angular",
     "scenario": "Commit request loss",
-    "coveredOperations": [
-      "COMMIT_PARAGRAPH",
-      "GET_NOTE",
-      "NOTE",
-      "GET /api/notebook/{noteId}"
-    ],
+    "coveredOperations": ["COMMIT_PARAGRAPH", "GET_NOTE", "NOTE", "GET /api/notebook/{noteId}"],
     "knownExclusions": [
       "Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.",
       "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
@@ -24,9 +19,7 @@
       "serverPort": 18081,
       "paragraphStatusProgress": "true",
       "interpreterExecution": "none",
-      "configuredInterpreterGroups": [
-        "md"
-      ],
+      "configuredInterpreterGroups": ["md"],
       "configurationSource": "configuration-api-and-capture-helper",
       "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
       "directories": {

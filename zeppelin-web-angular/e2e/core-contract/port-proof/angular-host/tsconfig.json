@@ -5,9 +5,7 @@
     "outDir": "../../../../out-tsc/notebook-core-port-proof",
     "types": ["mathjax"]
   },
-  "files": [
-    "main.ts"
-  ],
+  "files": ["main.ts"],
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
     "strictTemplates": true
