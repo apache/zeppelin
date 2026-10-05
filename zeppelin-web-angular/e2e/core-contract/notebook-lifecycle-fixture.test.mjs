@@ -708,3 +708,12 @@ for (const succeeds of [true, false]) {
     assert.equal(page.listenerCount('request'), 0);
   });
 }
+
+test('fault selection rejects coercible sequence IDs and diagnoses invalid schedule fields', () => {
+  const source = fixture([open('a', 'a1'), frame('a', 'a1', 'receive', { op: 'NOTE' })]);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: '2', copies: 0 }]), /Fault sequence/);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, copies: 1.5 }]), /Fault copies/);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, afterSequence: 1 }]), /Fault afterSequence/);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: 2, delayMs: Infinity }]), /Fault delayMs/);
+  assert.throws(() => createLifecycleReplay(source, [{ sequence: 2 }, { sequence: 2 }]), /must be unique/);
+});

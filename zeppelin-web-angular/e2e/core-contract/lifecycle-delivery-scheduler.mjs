@@ -15,25 +15,28 @@
  * limitations under the License.
  */
 
+function requireIntegerRange(value, minimum, maximum, field) {
+  const valid = Number.isInteger(value) && value >= minimum && value <= maximum;
+  if (!valid) throw new Error(`Fault ${field} must be an integer between ${minimum} and ${maximum}`);
+}
+
+function validateFault(fault, records) {
+  requireIntegerRange(fault.sequence, 1, records.length, 'sequence');
+  const record = records[fault.sequence - 1];
+  if (record.kind !== 'websocket') throw new Error('Fault must select a receive frame');
+  if (record.websocket.direction !== 'receive') throw new Error('Fault must select a receive frame');
+
+  requireIntegerRange(fault.copies ?? 1, 0, 10, 'copies');
+  requireIntegerRange(fault.afterSequence ?? fault.sequence, fault.sequence, records.length, 'afterSequence');
+  const delay = fault.delayMs ?? 0;
+  if (!Number.isFinite(delay) || delay < 0) throw new Error('Fault delayMs must be finite and non-negative');
+}
+
 export function createLifecycleDeliveryScheduler(fixture, faults, deliver, onError) {
   const faultMap = new Map();
   for (const fault of faults) {
-    const record = fixture.records[fault.sequence - 1];
-    if (
-      record?.kind !== 'websocket' ||
-      record.websocket.direction !== 'receive' ||
-      faultMap.has(fault.sequence) ||
-      !Number.isInteger(fault.copies ?? 1) ||
-      (fault.copies ?? 1) < 0 ||
-      (fault.copies ?? 1) > 10 ||
-      !Number.isFinite(fault.delayMs ?? 0) ||
-      (fault.delayMs ?? 0) < 0 ||
-      !Number.isInteger(fault.afterSequence ?? fault.sequence) ||
-      (fault.afterSequence ?? fault.sequence) < fault.sequence ||
-      (fault.afterSequence ?? fault.sequence) > fixture.records.length
-    ) {
-      throw new Error('Fault must select a receive frame with valid copies, delayMs and afterSequence');
-    }
+    validateFault(fault, fixture.records);
+    if (faultMap.has(fault.sequence)) throw new Error('Fault sequence must be unique');
     faultMap.set(fault.sequence, fault);
   }
 
