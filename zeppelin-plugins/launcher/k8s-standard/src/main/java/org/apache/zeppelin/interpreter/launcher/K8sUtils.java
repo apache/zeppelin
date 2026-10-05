@@ -174,4 +174,28 @@ public class K8sUtils {
     }
     return randomSuffix ? result + "-" + RandomStringUtils.randomAlphabetic(6).toLowerCase() : result;
   }
+
+  private static final int MAX_LABEL_VALUE_LENGTH = 63;
+
+  /**
+   * Generates a value for a Kubernetes label from an arbitrary string such as a principal name.
+   *
+   * See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+   *
+   * The value is lower-cased, characters other than [a-z0-9.-] are removed, it is cut to 63
+   * characters and leading and trailing non alphanumeric characters are dropped.
+   *
+   * @param value the raw value
+   * @return a valid label value, or an empty string if nothing usable is left
+   */
+  public static String generateK8sLabelValue(String value) {
+    if (StringUtils.isBlank(value)) {
+      return "";
+    }
+    String result = value.toLowerCase().replaceAll("[^a-z0-9.-]", "");
+    if (result.length() > MAX_LABEL_VALUE_LENGTH) {
+      result = result.substring(0, MAX_LABEL_VALUE_LENGTH);
+    }
+    return result.replaceAll("^[^a-z0-9]+|[^a-z0-9]+$", "");
+  }
 }
