@@ -75,7 +75,9 @@ test.describe('Notebook Paragraph Functionality', () => {
         await expect(paragraphPage.codeEditorHost).toHaveClass(/\bfocused\b/);
         await expect(paragraphPage.codeEditorHost).toHaveClass(/\bdirty\b/);
 
-        await page.keyboard.press('Escape');
+        await keyboard.pressEscape();
+        await expect(keyboard.autocompletePopup).toBeHidden();
+        await keyboard.pressEscape();
         await expect(paragraphPage.codeEditorHost).not.toHaveClass(/\bfocused\b/);
       });
     }
