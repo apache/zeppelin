@@ -43,7 +43,7 @@ The repository root `AGENTS.md` asks every change to include unit tests. This fi
 | `npm run typecheck:notebook-core` | Check core source and specs, rebuild the package, and check the React type-only contract against built declarations and the same core source |
 | `npm run typecheck:sdk-contracts` | Check the `zeppelin-sdk` specs, including their [type assertions](#type-assertions) |
 
-`test:shell`, `test:react`, `typecheck:react`, `test:notebook-core`, `typecheck:notebook-core`, and `typecheck:sdk-contracts` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. `frontend.yml` also runs the shell tests, React tests, and React typecheck as named steps on the anonymous leg. The authenticated leg exercises the Maven-owned checks through `mvnw verify -Pweb-e2e`.
+`test:shell`, `test:react`, `typecheck:react`, `test:notebook-core`, `typecheck:notebook-core`, and `typecheck:sdk-contracts` are bound to the Maven `test` phase (`pom.xml`), so a spec added here starts running in CI the day it merges. `frontend.yml` builds this module with `-DskipTests`, which frontend-maven-plugin honours by skipping `test`-phase executions, so all of them run inside `mvnw verify -Pweb-e2e` in the `run-playwright-e2e-tests` job, on both legs. `test:shell`, `test:react`, and `typecheck:react` also run as named steps on the anonymous leg, so their failures are reported under their own step names. A failure in the other three still surfaces under an e2e job name.
 
 ## Where a test belongs
 
