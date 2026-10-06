@@ -50,6 +50,9 @@ jobs:
       # Use VFS storage instead of Git to avoid Git-related issues in CI
       ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
     strategy:
+      # Keep both legs running so a Maven-owned failure on the auth leg cannot cancel the anonymous leg
+      # before its named unit test and typecheck steps report.
+      fail-fast: false
       matrix:
         mode: [anonymous, auth]
         python: [ 3.9 ]
