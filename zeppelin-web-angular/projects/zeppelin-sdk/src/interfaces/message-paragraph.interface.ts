@@ -338,13 +338,7 @@ export interface ParagraphExecutedBySpell {
 }
 
 export type VisualizationMode =
-  | 'table'
-  | 'lineChart'
-  | 'stackedAreaChart'
-  | 'multiBarChart'
-  | 'scatterChart'
-  | 'pieChart'
-  | string;
+  'table' | 'lineChart' | 'stackedAreaChart' | 'multiBarChart' | 'scatterChart' | 'pieChart' | string;
 
 export class GraphConfig {
   mode: VisualizationMode = 'table';
