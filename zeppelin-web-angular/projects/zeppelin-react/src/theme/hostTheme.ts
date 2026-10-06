@@ -11,8 +11,25 @@
  */
 
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
+import './themeSwitch.css';
 
 export type HostThemeMode = 'light' | 'dark';
+
+export const THEME_SWITCHING_CLASS = 'zeppelin-theme-switching';
+
+// Disable transitions until the new colours paint; only the latest switch removes the class.
+let latestSwitch = 0;
+const suppressTransitionsDuringSwitch = () => {
+  const root = document.documentElement;
+  const token = ++latestSwitch;
+  root.classList.add(THEME_SWITCHING_CLASS);
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      if (token === latestSwitch) root.classList.remove(THEME_SWITCHING_CLASS);
+    })
+  );
+};
 
 /**
  * The Angular shell's ThemeService resolves 'system' for us and writes the
@@ -55,7 +72,15 @@ export const useHostTheme = (): HostThemeMode => {
     // The shell can apply its theme after the remote mounts, so re-read once
     // the subscription is in place rather than trusting the initial render.
     setMode(readHostTheme());
-    const sync = () => setMode(readHostTheme());
+    let current = readHostTheme();
+    const sync = () => {
+      const next = readHostTheme();
+      if (next === current) return;
+      current = next;
+      suppressTransitionsDuringSwitch();
+      // Re-render before the browser paints, in the same frame as the shell.
+      flushSync(() => setMode(next));
+    };
 
     const observer = new MutationObserver(sync);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
