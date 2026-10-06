@@ -56,7 +56,7 @@ describe('dynamic form wire values', () => {
   );
 
   it.each([
-    [DynamicFormsType.Input, DynamicFormsType.TextBox],
+    [DynamicFormsType.LegacyInput, DynamicFormsType.TextBox],
     [DynamicFormsType.LegacySelect, DynamicFormsType.Select],
     [DynamicFormsType.LegacyCheckBox, DynamicFormsType.CheckBox]
   ])('renders legacy %s with the %s control', (legacy, current) => {

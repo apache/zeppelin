@@ -17,7 +17,7 @@ export enum DynamicFormsType {
   Password = 'Password',
   Select = 'Select',
   CheckBox = 'CheckBox',
-  Input = 'input',
+  LegacyInput = 'input',
   LegacySelect = 'select',
   LegacyCheckBox = 'checkbox'
 }

@@ -66,7 +66,7 @@ it('preserves the typed Input map and legacy form labels', () => {
       hidden: false,
       defaultValue: [true, { id: 'a' }]
     },
-    input: { type: DynamicFormsType.Input, name: 'input', hidden: false, defaultValue: '' }
+    input: { type: DynamicFormsType.LegacyInput, name: 'input', hidden: false, defaultValue: '' }
   });
 });
 
