@@ -93,7 +93,13 @@ export async function startNotebookCoreProofHarness() {
   });
   const address = server.address();
   assert.ok(address && typeof address === 'object');
-  const browser = await chromium.launch();
+  let browser;
+  try {
+    browser = await chromium.launch();
+  } catch (error) {
+    await new Promise(resolveClose => server.close(resolveClose));
+    throw error;
+  }
 
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
