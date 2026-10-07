@@ -55,10 +55,11 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
       return;
     }
 
-    if (this.handle) {
+    const handle = this.handle;
+    if (handle) {
       this.ngZone.runOutsideAngular(() => {
         try {
-          this.handle!.update(this.latestProps);
+          handle.update(this.latestProps);
         } catch (err) {
           this.reportError(err);
         }
@@ -135,14 +136,15 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
    * would leave the host's state change and any async work untracked by NgZone.
    */
   private withHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
-    const entries = Object.entries(props).filter(([, value]) => typeof value === 'function');
+    const entries = Object.entries(props).filter(
+      (entry): entry is [string, HostCallback] => typeof entry[1] === 'function'
+    );
     if (entries.length === 0) {
       return props;
     }
 
     const wrapped: ReactProps = { ...props };
-    for (const [name, value] of entries) {
-      const callback = value as HostCallback;
+    for (const [name, callback] of entries) {
       let wrapper = this.wrappedCallbacks.get(callback);
       if (!wrapper) {
         // Return the result, e.g. the unsubscribe a subscribe-style callback hands back.
