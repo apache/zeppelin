@@ -49,7 +49,7 @@
     "html-webpack-plugin": "5.5.0",
     "jsdom": "29.1.1",
     "style-loader": "3.3.0",
-    "ts-loader": "9.5.7",
+    "ts-loader": "9.6.2",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.33.1",
     "vite": "8.2.1",

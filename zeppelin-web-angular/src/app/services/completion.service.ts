@@ -76,19 +76,17 @@ export class CompletionService extends MessageListenersManager {
               filter(d => d.id === id),
               take(1),
               map(d => ({
-                suggestions: d.completions.map(
-                  (i): languages.CompletionItem => ({
-                    kind: languages.CompletionItemKind.Keyword,
-                    label: i.name,
-                    insertText: i.name,
-                    range: {
-                      startLineNumber: position.lineNumber,
-                      endLineNumber: position.lineNumber,
-                      startColumn: word.startColumn,
-                      endColumn: word.endColumn
-                    }
-                  })
-                )
+                suggestions: d.completions.map((i): languages.CompletionItem => ({
+                  kind: languages.CompletionItemKind.Keyword,
+                  label: i.name,
+                  insertText: i.name,
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    endLineNumber: position.lineNumber,
+                    startColumn: word.startColumn,
+                    endColumn: word.endColumn
+                  }
+                }))
               }))
             )
           );

@@ -377,7 +377,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   renderHTML(): void {
     const div = document.createElement('div');
     div.innerHTML = this.result.data;
-    const codeEle = div.querySelector('pre code');
+    const codeEle = div.querySelector<HTMLElement>('pre code');
     if (codeEle) {
       hljs.highlightBlock(codeEle);
     }
