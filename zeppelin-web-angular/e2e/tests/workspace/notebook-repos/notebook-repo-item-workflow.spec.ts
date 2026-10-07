@@ -17,8 +17,8 @@ import { addPageAnnotationBeforeEach, waitForZeppelinReady, PAGES } from '../../
 
 // Run on both branches of the ZEPPELIN-6631 flag. verifyDisplayMode/verifyEditMode and
 // fillSettingInput/getSettingInputValue are the only e2e paths that exercise the React card's
-// markup (button visibility instead of the Angular-only `.edit` class, `.ant-input` instead of
-// `[nz-input]`) - without this, those selectors are only ever proven against the Angular branch.
+// markup (button visibility instead of the Angular-only `.edit` class). Without this,
+// those selectors are only ever proven against the Angular branch.
 for (const branch of NOTEBOOK_REPOS_BRANCHES) {
   const { label } = branch;
 
@@ -40,7 +40,7 @@ for (const branch of NOTEBOOK_REPOS_BRANCHES) {
 
       // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
       const firstCard = notebookReposPage.repositoryItems.first();
-      firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+      firstRepoName = (await firstCard.getAttribute('data-repo-name')) || '';
       repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
       repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);
     });
@@ -62,9 +62,8 @@ for (const branch of NOTEBOOK_REPOS_BRANCHES) {
         const settingName = (await row.locator('td').first().textContent()) || '';
 
         // JUSTIFIED: inline, not lifted to the Page Object - this locator only needs to
-        // distinguish an INPUT row from a DROPDOWN row within this row-scan loop. .ant-input, not
-        // [nz-input]: excludes a DROPDOWN row's Select search input.
-        const isInputVisible = await row.locator('input.ant-input').isVisible();
+        // distinguish an INPUT row from a DROPDOWN row within this row-scan loop.
+        const isInputVisible = await row.getByRole('textbox').isVisible();
         if (isInputVisible) {
           // Writes the value straight back rather than a distinct one: this repo config is shared
           // across the whole suite, which runs this spec across both branches and every browser

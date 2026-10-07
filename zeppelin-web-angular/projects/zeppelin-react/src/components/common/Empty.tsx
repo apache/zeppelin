@@ -13,5 +13,13 @@
 import { Alert } from 'antd';
 
 export const Empty = () => {
-  return <Alert title="No Data" description="No paragraph data found" type="warning" showIcon />;
+  return (
+    <Alert
+      data-testid="react-empty-paragraph"
+      title="No Data"
+      description="No paragraph data found"
+      type="warning"
+      showIcon
+    />
+  );
 };
