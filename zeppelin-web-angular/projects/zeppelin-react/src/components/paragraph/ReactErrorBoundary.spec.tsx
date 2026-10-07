@@ -99,4 +99,28 @@ describe('ReactErrorBoundary', () => {
     expect(container.innerHTML).toBe('');
     expect(onError).toHaveBeenCalledTimes(1);
   });
+
+  it('shows the fallback after an error and renders again when the reset key changes', () => {
+    const Maybe = ({ fail }: { fail: boolean }) => (fail ? <Bomb /> : <span>recovered</span>);
+    const { container, rerender } = render(
+      <ReactErrorBoundary resetKey="a" fallback={<span>plain text</span>}>
+        <Maybe fail />
+      </ReactErrorBoundary>
+    );
+    expect(container.textContent).toBe('plain text');
+
+    rerender(
+      <ReactErrorBoundary resetKey="a" fallback={<span>plain text</span>}>
+        <Maybe fail={false} />
+      </ReactErrorBoundary>
+    );
+    expect(container.textContent).toBe('plain text');
+
+    rerender(
+      <ReactErrorBoundary resetKey="b" fallback={<span>plain text</span>}>
+        <Maybe fail={false} />
+      </ReactErrorBoundary>
+    );
+    expect(container.textContent).toBe('recovered');
+  });
 });
