@@ -39,7 +39,8 @@ describe('NotebookRepoList mount contract', () => {
     });
   };
 
-  const card = (repoName: string): HTMLElement => within(host!).getByText(repoName).closest('.ant-card') as HTMLElement;
+  const card = (repoName: string): HTMLElement =>
+    within(host!).getByText(repoName).closest('.zeppelin-react-card') as HTMLElement;
 
   const clickButton = (repoName: string, name: RegExp): void => {
     act(() => {
@@ -70,6 +71,13 @@ describe('NotebookRepoList mount contract', () => {
     expect(within(host!).getByText('S3NotebookRepo')).toBeTruthy();
   });
 
+  it('isolates React table classes from the Angular shell styles', () => {
+    mountList({ repositories: [gitRepo()] });
+
+    expect(host!.querySelector('.zeppelin-react-table')).not.toBeNull();
+    expect(host!.querySelector('[class~="ant-spin"]')).toBeNull();
+  });
+
   it('shows each setting as name and value until the card is edited', () => {
     mountList({ repositories: [gitRepo()] });
 
@@ -82,7 +90,7 @@ describe('NotebookRepoList mount contract', () => {
     mountList({});
 
     expect(host!.querySelector('[data-testid="notebook-repo-list"]')).not.toBeNull();
-    expect(host!.querySelectorAll('.ant-card')).toHaveLength(0);
+    expect(host!.querySelectorAll('.zeppelin-react-card')).toHaveLength(0);
   });
 
   it('offers an input for INPUT settings and a dropdown for DROPDOWN settings', () => {
