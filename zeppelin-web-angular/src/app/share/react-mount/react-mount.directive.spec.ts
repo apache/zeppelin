@@ -187,4 +187,65 @@ describe('ReactMountDirective', () => {
     expect(mountedProps!.repositories).toBe(repositories);
     expect(mountedProps!.readOnly).toBe(false);
   });
+  it('returns what a host callback returns', async () => {
+    const ngZone = new NgZone({});
+    let mountedProps!: ReactProps;
+    const remote: ReactExposedModule = {
+      mount: (_element, props) => {
+        mountedProps = props;
+        return { update: vi.fn(), unmount: vi.fn() };
+      }
+    };
+    const loader = { loadModule: vi.fn(async () => remote) };
+    const directive = new ReactMountDirective(
+      new ElementRef(document.createElement('div')),
+      ngZone,
+      loader as unknown as ReactRemoteLoaderService
+    );
+    const unsubscribe = vi.fn();
+    directive.module = './AssistantWorkspace';
+    directive.reactProps = { subscribePanelClose: () => unsubscribe };
+    directive.ngOnChanges({ module: new SimpleChange(undefined, directive.module, true) });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+    expect(ngZone.runOutsideAngular(mountedProps.subscribePanelClose as () => unknown)).toBe(unsubscribe);
+    directive.ngOnDestroy();
+  });
+
+  it('logs synchronous host callback failures by default and keeps wrapper identity stable', async () => {
+    const ngZone = new NgZone({});
+    const update = vi.fn();
+    let mountedProps!: ReactProps;
+    const remote: ReactExposedModule = {
+      mount: (_element, props) => {
+        mountedProps = props;
+        return { update, unmount: vi.fn() };
+      }
+    };
+    const loader = { loadModule: vi.fn(async () => remote) };
+    const directive = new ReactMountDirective(
+      new ElementRef(document.createElement('div')),
+      ngZone,
+      loader as unknown as ReactRemoteLoaderService
+    );
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const stable = vi.fn(() => 'value');
+    const failing = () => {
+      throw new Error('host failed');
+    };
+    directive.module = './ParagraphFooter';
+    directive.reactProps = { stable, failing };
+    directive.ngOnChanges({ module: new SimpleChange(undefined, directive.module, true) });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+
+    expect((mountedProps.stable as () => unknown)()).toBe('value');
+    expect(() => (mountedProps.failing as () => unknown)()).not.toThrow();
+    expect(consoleError).toHaveBeenCalledWith('[ReactMountDirective] host callback "failing" threw', expect.any(Error));
+
+    const firstStable = mountedProps.stable;
+    directive.reactProps = { stable, failing, label: 'next' };
+    directive.ngOnChanges({ reactProps: new SimpleChange(undefined, directive.reactProps, false) });
+    expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ stable: firstStable, label: 'next' }));
+    consoleError.mockRestore();
+    directive.ngOnDestroy();
+  });
 });
