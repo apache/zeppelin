@@ -10,6 +10,8 @@
  * limitations under the License.
  */
 
+import '@ant-design/v5-patch-for-react-19';
+
 import { createContext, ReactNode, useContext } from 'react';
 import { ConfigProvider, theme as antdTheme, ThemeConfig } from 'antd';
 import { HostThemeMode, useHostTheme } from './hostTheme';
