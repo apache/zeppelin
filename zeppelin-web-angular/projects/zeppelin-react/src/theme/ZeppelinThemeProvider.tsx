@@ -10,8 +10,6 @@
  * limitations under the License.
  */
 
-import '@ant-design/v5-patch-for-react-19';
-
 import { createContext, ReactNode, useContext } from 'react';
 import { ConfigProvider, theme as antdTheme, ThemeConfig } from 'antd';
 import { HostThemeMode, useHostTheme } from './hostTheme';
@@ -28,16 +26,15 @@ export interface ZeppelinThemeProviderProps {
 }
 
 /**
- * Every exposed module should render inside this provider. Without it antd
- * builds its styles from the default (light) algorithm, and the remote looks
- * dark only for as long as the shell's global `.ant-*` rules happen to cover
- * the components in use.
+ * Every exposed module needs the host theme and an isolated class prefix so
+ * Angular shell styles cannot override React component internals.
  */
 export const ZeppelinThemeProvider = ({ children, token }: ZeppelinThemeProviderProps) => {
   const mode = useHostTheme();
 
   return (
     <ConfigProvider
+      prefixCls="zeppelin-react"
       theme={{
         algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token
