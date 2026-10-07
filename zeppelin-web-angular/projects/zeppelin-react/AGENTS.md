@@ -28,8 +28,9 @@ Unit test conventions for the React remote, covering only what differs from the 
 | `npm test` | Run once |
 | `npm run test:watch` | Re-run on change |
 | `npm test -- --coverage` | With a coverage report |
+| `npm run typecheck` | Typecheck without emitting files |
 
-**`npm test` never runs in pull-request CI.** The build does, through `build:react` at the Maven `generate-resources` phase. The lint does too, through `lint:react`, but only inside the `run-playwright-e2e-tests` job, because `npm lint` is bound to the `test` phase and `frontend.yml` builds this module with `-DskipTests`. `npm audit` has its own job. The test suite is invoked from the npm-audit remediation workflow, not from the normal PR path, and connecting it is [ZEPPELIN-6566](https://issues.apache.org/jira/browse/ZEPPELIN-6566). Until that lands, run it locally before opening a PR. Nothing else will. The lint rules do run, so a spec that cannot fail is still caught.
+`npm test` and `npm run typecheck` run in pull-request CI as named steps on the anonymous frontend leg, through the frontend root scripts `test:react` and `typecheck:react`. Both are also bound to the Maven `test` phase, so `mvnw verify -Pweb-e2e` runs them again inside the `run-playwright-e2e-tests` job. The build runs through `build:react` at the Maven `generate-resources` phase. The lint runs through `lint:react`, but only inside the `run-playwright-e2e-tests` job, because `npm lint` is bound to the `test` phase and `frontend.yml` builds this module with `-DskipTests`. `npm audit` has its own job, and the npm-audit remediation workflow also runs the test suite when it validates a fix. The lint rules catch specs that cannot fail.
 
 Specs are `Foo.spec.tsx` beside `Foo.tsx`, picked up by this package's own `vitest.config.mts`. `@testing-library/react` is available.
 

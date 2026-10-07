@@ -95,6 +95,7 @@ module.exports = tseslint.config(
     // Catch specs that cannot fail, as eslint-plugin-playwright does for e2e.
     files: ['src/**/*.spec.{ts,tsx}'],
     plugins: { vitest },
+    settings: { vitest: { typecheck: true } },
     rules: {
       'vitest/expect-expect': 'error',
       'vitest/no-conditional-expect': 'error',

@@ -50,6 +50,9 @@ jobs:
       # Use VFS storage instead of Git to avoid Git-related issues in CI
       ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
     strategy:
+      # Keep both legs running so a Maven-owned failure on the auth leg cannot cancel the anonymous leg
+      # before its named unit test and typecheck steps report.
+      fail-fast: false
       matrix:
         mode: [anonymous, auth]
         python: [ 3.9 ]
@@ -94,6 +97,18 @@ jobs:
           channel-priority: strict
       - name: Install application
         run: ./mvnw clean install -DskipTests -am -pl python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic ${MAVEN_ARGS}
+      - name: Run Angular shell unit tests
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run test:shell
+      - name: Run React unit tests
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run test:react
+      - name: Typecheck React
+        if: matrix.mode == 'anonymous'
+        working-directory: zeppelin-web-angular
+        run: ./node/npm run typecheck:react
       - name: Check websocket operation contract
         if: matrix.mode == 'anonymous'
         working-directory: zeppelin-web-angular

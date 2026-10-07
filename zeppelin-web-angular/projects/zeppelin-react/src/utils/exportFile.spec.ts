@@ -37,7 +37,7 @@ describe('exportFile', () => {
     await exportFile({ columnNames: ['name', 'city'], rows: [['alice', '서울']] }, 'csv');
 
     const bytes = await savedBytes();
-    expect([...bytes.subarray(0, 3)]).toEqual(UTF8_BOM);
+    expect(Array.from(bytes.subarray(0, 3))).toEqual(UTF8_BOM);
     expect(new TextDecoder().decode(bytes.subarray(3))).toBe('name,city\nalice,서울');
     expect(saveAs.mock.calls[0][1]).toBe('export.csv');
   });
