@@ -35,7 +35,9 @@ test.describe('Notebook Repository Page - Structure', () => {
   test('should display all repository items with names', async () => {
     await expect(notebookReposPage.repositoryItems).not.toHaveCount(0);
     // JUSTIFIED: .first() samples the first repo card; all cards share the same title structure
-    const firstTitle = notebookReposPage.repositoryItems.first().locator('.ant-card-head-title');
-    await expect(firstTitle).not.toBeEmpty();
+    const firstCard = notebookReposPage.repositoryItems.first();
+    await expect(firstCard).toHaveAttribute('data-repo-name', /.+/);
+    const repoName = (await firstCard.getAttribute('data-repo-name'))!;
+    await expect(firstCard.getByText(repoName, { exact: true })).toBeVisible();
   });
 });
