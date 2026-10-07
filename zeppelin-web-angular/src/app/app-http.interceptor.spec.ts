@@ -52,7 +52,15 @@ describe('AppHttpInterceptor', () => {
         return of({});
       })
     );
-    interceptor = new AppHttpInterceptor({ logout } as unknown as TicketService);
+    const service = new TicketService(
+      {} as HttpClient,
+      { getRestApiBase: () => REST_BASE } as BaseUrlService,
+      {} as Router,
+      {} as NzMessageService
+    );
+    // The real auth-failure policy, with only the logout request stubbed.
+    vi.spyOn(service, 'logout').mockImplementation(logout);
+    interceptor = new AppHttpInterceptor(service);
   });
 
   it('logs out once when a non-logout request is answered with 405', async () => {

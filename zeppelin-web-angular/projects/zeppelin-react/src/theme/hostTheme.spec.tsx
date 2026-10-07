@@ -12,8 +12,8 @@
 
 import { act } from 'react';
 import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
-import { HostThemeMode, readHostTheme, useHostTheme } from './hostTheme';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { HostThemeMode, readHostTheme, THEME_SWITCHING_CLASS, useHostTheme } from './hostTheme';
 
 const Probe = () => <span data-testid="mode">{useHostTheme()}</span>;
 
@@ -94,6 +94,38 @@ describe('useHostTheme', () => {
     });
 
     expect(screen.getByTestId('mode').textContent).toBe('dark');
+  });
+
+  it('suppresses transitions for two frames only when the theme actually changes', async () => {
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
+      frames.push(callback);
+      return frames.length;
+    });
+    const root = document.documentElement;
+    // An earlier toggle may still have its removal frame pending.
+    root.classList.remove(THEME_SWITCHING_CLASS);
+    setHostTheme('light');
+    render(<Probe />);
+
+    await act(async () => {
+      root.classList.add('unrelated');
+    });
+    expect(root.classList.contains(THEME_SWITCHING_CLASS)).toBe(false);
+
+    await act(async () => {
+      setHostTheme('dark');
+    });
+    expect(screen.getByTestId('mode').textContent).toBe('dark');
+    expect(root.classList.contains(THEME_SWITCHING_CLASS)).toBe(true);
+    // Run one whole frame at a time; other components may queue callbacks too.
+    const runFrame = () => frames.splice(0).forEach(callback => callback(0));
+    runFrame();
+    expect(root.classList.contains(THEME_SWITCHING_CLASS)).toBe(true);
+    runFrame();
+    expect(root.classList.contains(THEME_SWITCHING_CLASS)).toBe(false);
+    root.classList.remove('unrelated');
+    raf.mockRestore();
   });
 
   it('follows the OS only while the shell has declared nothing', () => {
