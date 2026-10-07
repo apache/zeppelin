@@ -18,7 +18,7 @@
           <label class="item-label" nz-col nzSpan="6">{{ form.displayName }}:</label>
         }
         <div class="control-wrap" nz-col [nzSpan]="form.displayName ? 16 : 24">
-          @switch (form.type) {
+          @switch (canonicalFormType(form.type)) {
             @case (formType.TextBox) {
               <input
                 nz-input
@@ -37,9 +37,14 @@
               />
             }
             @case (formType.Select) {
-              <nz-select [nzDisabled]="disable" [(ngModel)]="paramDefs[form.name]" (ngModelChange)="onFormChange()">
+              <nz-select
+                [nzDisabled]="disable"
+                [compareWith]="compareOptionValues"
+                [(ngModel)]="paramDefs[form.name]"
+                (ngModelChange)="onFormChange()"
+              >
                 @for (opt of form.options; track opt) {
-                  <nz-option [nzLabel]="opt.displayName || opt.value" [nzValue]="opt.value"></nz-option>
+                  <nz-option [nzLabel]="opt.displayName || optionLabel(opt.value)" [nzValue]="opt.value"></nz-option>
                 }
               </nz-select>
             }
