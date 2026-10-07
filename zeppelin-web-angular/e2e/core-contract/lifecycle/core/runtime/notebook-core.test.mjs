@@ -49,3 +49,67 @@ for (const update of updates) {
     assert.equal(core.port.getSnapshot().paragraphs[0].isDirty, false);
   });
 }
+
+for (const eventType of ['note-loaded', 'note-forms-updated']) {
+  test(eventType + ' preserves JSON form values and isolates immutable snapshots from their inputs', () => {
+    const core = createNotebookCore({ noteId: 'note-a' });
+    core.apply({ type: 'note-loaded', noteId: 'note-a', revisionId: null, title: 'Note', paragraphs: [] });
+    const structured = { selection: [0, false, null, { tags: ['first'] }] };
+    const values = { empty: '', zero: 0, disabled: false, absent: null, structured };
+    const forms = {
+      field: {
+        name: 'field',
+        hidden: false,
+        type: 'Select',
+        defaultValue: structured,
+        options: [{ value: structured }]
+      }
+    };
+    const expected = globalThis.structuredClone(structured);
+    let notifications = 0;
+    core.port.subscribe(() => notifications++);
+    core.apply({
+      type: eventType,
+      noteId: 'note-a',
+      revisionId: null,
+      title: 'Note',
+      paragraphs: [],
+      noteForms: forms,
+      noteParams: values
+    });
+    const snapshot = core.port.getSnapshot();
+    assert.deepEqual(snapshot.noteParams, values);
+    const capturedValues = [
+      snapshot.noteParams.structured,
+      snapshot.noteForms.field.defaultValue,
+      snapshot.noteForms.field.options[0].value
+    ];
+
+    structured.selection[3].tags.push('external edit');
+    values.zero = 42;
+    forms.field.options.push({ value: 'external option' });
+    assert.equal(snapshot.noteParams.zero, 0);
+    assert.equal(snapshot.noteForms.field.options.length, 1);
+    for (const value of capturedValues) {
+      assert.deepEqual(value, expected);
+      assert.notEqual(value, structured);
+      assert.equal(Object.isFrozen(value), true);
+      assert.equal(Object.isFrozen(value.selection), true);
+      assert.equal(Object.isFrozen(value.selection[3]), true);
+      assert.equal(Object.isFrozen(value.selection[3].tags), true);
+      assert.throws(() => value.selection[3].tags.push('snapshot edit'), TypeError);
+      assert.throws(() => {
+        value.selection[3].tags = [];
+      }, TypeError);
+    }
+    assert.equal(core.port.getSnapshot(), snapshot);
+    assert.equal(notifications, 1);
+    assert.equal(Object.isFrozen(structured), false);
+
+    core.apply({ type: 'note-forms-updated', noteForms: forms, noteParams: values });
+    assert.notEqual(core.port.getSnapshot(), snapshot);
+    assert.deepEqual(core.port.getSnapshot().noteParams, values);
+    assert.deepEqual(snapshot.noteParams.structured, expected);
+    assert.equal(notifications, 2);
+  });
+}

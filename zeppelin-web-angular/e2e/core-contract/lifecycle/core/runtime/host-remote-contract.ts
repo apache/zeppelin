@@ -10,6 +10,8 @@
  * limitations under the License.
  */
 
+import type { FormValue } from '../../../../../projects/zeppelin-sdk/src/interfaces/message-paragraph.interface';
+
 export type NotebookParagraphStatus = 'UNKNOWN' | 'READY' | 'PENDING' | 'RUNNING' | 'FINISHED' | 'ERROR' | 'ABORT';
 
 export type NotebookParagraphResultType = 'TEXT' | 'HTML' | 'TABLE' | 'IMG' | 'ANGULAR' | string;
@@ -34,7 +36,13 @@ export type NotebookParagraphResultConfig = Readonly<{
 
 export type NotebookParagraphResultConfigs = Readonly<Record<string, NotebookParagraphResultConfig>>;
 
-export type NotebookFormValue = string | readonly string[];
+type ReadonlyFormValue<T> = T extends (infer Item)[]
+  ? readonly ReadonlyFormValue<Item>[]
+  : T extends object
+    ? { readonly [Key in keyof T]: ReadonlyFormValue<T[Key]> }
+    : T;
+
+export type NotebookFormValue = ReadonlyFormValue<FormValue>;
 
 export type NotebookDynamicForm = Readonly<{
   defaultValue: NotebookFormValue;
@@ -43,7 +51,7 @@ export type NotebookDynamicForm = Readonly<{
   displayName?: string;
   type: string;
   argument?: string;
-  options?: readonly Readonly<{ value: string; displayName?: string }>[];
+  options?: readonly Readonly<{ value: NotebookFormValue; displayName?: string }>[];
 }>;
 
 export type NotebookDynamicForms = Readonly<Record<string, NotebookDynamicForm>>;

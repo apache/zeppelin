@@ -15,7 +15,7 @@ import { after, before, test } from 'node:test';
 
 import { expect } from '@playwright/test';
 
-import { startNotebookCoreProofHarness } from './proof-browser-harness.mjs';
+import { startNotebookCoreProofHarness } from '../proof-browser-harness.mjs';
 
 let harness;
 before(async () => {

@@ -16,6 +16,7 @@
     "../../models/notebook-transport-page.ts",
     "../../models/notebook-save-timing.util.ts",
     "../../tests/notebook/core-contract/lifecycle-fixtures.spec.ts",
-    "../../tests/notebook/core-contract/commit-fixtures.spec.ts"
+    "../../tests/notebook/core-contract/commit-fixtures.spec.ts",
+    "core/runtime/form-values.typecheck.ts"
   ]
 }

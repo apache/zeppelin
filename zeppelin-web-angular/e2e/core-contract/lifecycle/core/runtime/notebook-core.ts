@@ -11,12 +11,18 @@
  */
 
 import type {
+  DynamicForms,
+  DynamicFormParams,
+  FormValue
+} from '../../../../../projects/zeppelin-sdk/src/interfaces/message-paragraph.interface';
+import type {
   NotebookCoreCommandHandler,
   NotebookCorePort,
   NotebookCoreSnapshot,
   NotebookCoreSnapshotListener,
   NotebookDynamicForms,
   NotebookFormParams,
+  NotebookFormValue,
   NotebookLookAndFeel,
   NotebookParagraphInput,
   NotebookParagraphResult,
@@ -36,8 +42,8 @@ export type NotebookCoreEvent =
       noteId: string;
       revisionId: string | null;
       title: string;
-      noteForms?: NotebookDynamicForms;
-      noteParams?: NotebookFormParams;
+      noteForms?: DynamicForms;
+      noteParams?: DynamicFormParams;
       scheduler?: NotebookSchedule;
       lookAndFeel?: NotebookLookAndFeel;
       personalizedMode?: boolean;
@@ -81,7 +87,7 @@ export type NotebookCoreEvent =
   | Readonly<{ type: 'paragraph-run-requested'; paragraphId: string }>
   | Readonly<{ type: 'paragraph-run-rejected'; paragraphId: string }>
   | Readonly<{ type: 'note-updated'; title: string }>
-  | Readonly<{ type: 'note-forms-updated'; noteForms: NotebookDynamicForms; noteParams: NotebookFormParams }>
+  | Readonly<{ type: 'note-forms-updated'; noteForms: DynamicForms; noteParams: DynamicFormParams }>
   | Readonly<{ type: 'permissions-updated'; permissions: NotebookPermissions }>
   | Readonly<{ type: 'collaboration-updated'; users: readonly string[] | null }>
   | Readonly<{ type: 'schedule-updated'; scheduler: NotebookSchedule | null }>
@@ -142,24 +148,41 @@ type NotebookParagraphState = Readonly<{
 
 const freezeParagraph = (paragraph: NotebookParagraphState): NotebookParagraphState => Object.freeze({ ...paragraph });
 
-const freezeFormValue = (value: NotebookFormParams[string]): NotebookFormParams[string] =>
-  Array.isArray(value) ? Object.freeze([...value]) : value;
+const freezeFormValue = (value: FormValue): NotebookFormValue => {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map(freezeFormValue));
+  }
 
-const freezeNoteForms = (forms: NotebookDynamicForms = {}): NotebookDynamicForms =>
+  if (value !== null && typeof value === 'object') {
+    return Object.freeze(
+      Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, freezeFormValue(entry)]))
+    );
+  }
+
+  return value;
+};
+
+const freezeNoteForms = (forms: DynamicForms = {}): NotebookDynamicForms =>
   Object.freeze(
-    Object.entries(forms).reduce<Record<string, (typeof forms)[string]>>((result, [name, form]) => {
+    Object.entries(forms).reduce<Record<string, NotebookDynamicForms[string]>>((result, [name, form]) => {
       result[name] = Object.freeze({
         ...form,
         defaultValue: freezeFormValue(form.defaultValue),
-        ...(form.options ? { options: Object.freeze(form.options.map(option => Object.freeze({ ...option }))) } : {})
+        ...(form.options
+          ? {
+              options: Object.freeze(
+                form.options.map(option => Object.freeze({ ...option, value: freezeFormValue(option.value) }))
+              )
+            }
+          : {})
       });
       return result;
     }, {})
   );
 
-const freezeNoteParams = (params: NotebookFormParams = {}): NotebookFormParams =>
+const freezeNoteParams = (params: DynamicFormParams = {}): NotebookFormParams =>
   Object.freeze(
-    Object.entries(params).reduce<Record<string, NotebookFormParams[string]>>((result, [name, value]) => {
+    Object.entries(params).reduce<Record<string, NotebookFormValue>>((result, [name, value]) => {
       result[name] = freezeFormValue(value);
       return result;
     }, {})
