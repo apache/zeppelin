@@ -24,6 +24,7 @@ import {
   ParagraphEditorSetting,
   ParagraphSettings,
   ParagraphStates,
+  getAngularObjectRemovalName,
   isTerminalParagraphState,
   ParagraphItem,
   ParagraphIResultsMsgItem,
@@ -228,7 +229,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
       throw new Error('paragraph is not defined');
     }
     if (data.paragraphId === this.paragraph.id) {
-      this.angularContextManager.unsetContextValue(data.name, data.paragraphId, false);
+      const name = getAngularObjectRemovalName(data);
+      if (name !== undefined) {
+        this.angularContextManager.unsetContextValue(name, data.paragraphId, false);
+      }
     }
   }
 

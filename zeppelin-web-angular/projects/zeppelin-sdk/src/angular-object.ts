@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-export * from './angular-object';
-export * from './interfaces/public-api';
-export * from './message';
-export * from './paragraph-state';
+import { AngularObjectRemove } from './interfaces/message-paragraph.interface';
+
+// NotebookServer emits a name for interpreter removal and an object for client unbind.
+export const getAngularObjectRemovalName = (data: AngularObjectRemove): string | undefined =>
+  data.name ?? data.angularObject?.name;
