@@ -11,8 +11,9 @@
  */
 
 export * from './angular-object';
+export * from './assistant';
 export * from './assistant-ui';
 export * from './interfaces/public-api';
-export * from './message';
 
+export * from './message';
 export * from './paragraph-state';
