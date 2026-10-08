@@ -29,7 +29,7 @@ export class ConfigurationPage extends BasePage {
     this.headerCells = this.table.locator('thead th');
     // Both antd and ng-zorro render the "no data" state as a row, so exclude it
     // to keep the counts about actual configuration entries.
-    this.rows = this.table.locator('tbody tr:not(.ant-table-placeholder)');
+    this.rows = this.table.locator('tbody tr:has(td:nth-child(2))');
   }
 
   async navigate(): Promise<void> {
