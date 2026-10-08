@@ -31,7 +31,11 @@ export interface ZeppelinThemeProviderProps {
  * Every exposed module needs the host theme and an isolated class prefix so
  * Angular shell styles cannot override React component internals.
  */
-export const ZeppelinThemeProvider = ({ children, token, prefixCls = 'zeppelin-react' }: ZeppelinThemeProviderProps) => {
+export const ZeppelinThemeProvider = ({
+  children,
+  token,
+  prefixCls = 'zeppelin-react'
+}: ZeppelinThemeProviderProps) => {
   const mode = useHostTheme();
 
   return (
