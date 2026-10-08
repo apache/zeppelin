@@ -240,10 +240,9 @@ export interface AngularObjectUpdated {
   interpreterGroupId: string;
 }
 
-export interface AngularObjectRemove {
+interface AngularObjectRemoveContext {
   noteId: string;
   paragraphId: string;
-  name: string;
   angularObject?: {
     name: string;
     object: unknown;
@@ -253,6 +252,9 @@ export interface AngularObjectRemove {
   };
   interpreterGroupId?: string;
 }
+
+export type AngularObjectRemove = AngularObjectRemoveContext &
+  ({ name: string } | { name?: string; angularObject: NonNullable<AngularObjectRemoveContext['angularObject']> });
 
 export interface AngularObjectUpdate {
   noteId: string;
