@@ -18,3 +18,7 @@ test-results/*
 e2e/fixtures/performance/*.json
 
 .angular/*
+
+projects/zeppelin-react/storybook-static/
+projects/zeppelin-react/storybook-report/
+projects/zeppelin-react/storybook-test-results/
