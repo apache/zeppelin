@@ -41,7 +41,7 @@ module.exports = tseslint.config(
     linterOptions: { reportUnusedDisableDirectives: 'error' }
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
     // == legacy `extends`: eslint:recommended + @typescript-eslint/recommended
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {

@@ -13,6 +13,7 @@
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const { VanillaExtractPlugin } = require('@vanilla-extract/webpack-plugin');
 
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -61,11 +62,17 @@ module.exports = (_env, argv) => {
         },
         {
           test: /\.css$/,
+          exclude: /\.vanilla\.css$/,
           use: ['style-loader', 'css-loader']
+        },
+        {
+          test: /\.vanilla\.css$/,
+          use: ['style-loader', { loader: 'css-loader', options: { url: false } }]
         }
       ]
     },
     plugins: [
+      new VanillaExtractPlugin(),
       // No `shared` scope: the shell bundles no React and never calls container.init.
       // This remote is the only participant, so there is nothing to dedupe against. Re-add it once a second exists.
       new ModuleFederationPlugin({
