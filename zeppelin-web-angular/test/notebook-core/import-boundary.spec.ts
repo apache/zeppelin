@@ -479,6 +479,24 @@ describe('notebook core import boundary', () => {
     );
   }, 30_000);
 
+  it.each([
+    ["import '@zeppelin/sdk';", 'import @zeppelin/sdk'],
+    ["import { webSocket } from 'rxjs/webSocket';", 'import rxjs/webSocket'],
+    ["import * as core from '@zeppelin/notebook-core';", 'runtime notebook core import'],
+    ["export const load = () => fetch('/api/notebook');", 'global fetch']
+  ])(
+    'rejects %s in the production notebook adapter',
+    (addition, violation) => {
+      const root = resolve(zeppelinWebAngularRoot, 'projects/zeppelin-react/src');
+      const adapter = resolve(root, 'notebook/NotebookCoreProvider.tsx');
+      const source = `${readFileSync(adapter, 'utf8')}\n${addition}\n`;
+      const options = readCompilerOptions(resolve(root, '../tsconfig.json'));
+      const host = createFixtureHost(options, new Map([[adapter, source]]));
+      expect(findReactNotebookConsumerViolations([adapter], options, host)).toContain(`${adapter}: ${violation}`);
+    },
+    30_000
+  );
+
   it('keeps the React contract dependent only on the public core entry point', () => {
     const path = reactNotebookCoreBoundaryFiles[1];
     expect(findNotebookContractViolations(path, readFileSync(path, 'utf8'))).toEqual([]);
