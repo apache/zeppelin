@@ -75,7 +75,7 @@ describe('NotebookRepoList mount contract', () => {
     mountList({ repositories: [gitRepo()] });
 
     expect(host!.querySelector('.zeppelin-react-table')).not.toBeNull();
-    expect(host!.querySelector('[class~="ant-spin"]')).toBeNull();
+    expect(host!.querySelector('[class^="ant-"], [class*=" ant-"]')).toBeNull();
   });
 
   it('shows each setting as name and value until the card is edited', () => {
