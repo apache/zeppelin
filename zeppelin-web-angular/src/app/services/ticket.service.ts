@@ -30,8 +30,8 @@ export class TicketService {
   originTicket = new ITicket();
   ticket$ = new Subject<ITicketWrapped>();
   logout$ = new BehaviorSubject<boolean>(false);
-  private logoutInProgress = false;
   version?: string;
+  private logoutInProgress = false;
 
   getTicket() {
     return forkJoin([
