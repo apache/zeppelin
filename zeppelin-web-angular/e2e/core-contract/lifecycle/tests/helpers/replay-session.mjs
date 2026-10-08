@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type { FixtureMetadata, FixtureRecord, FixtureRequestLike, FixtureRest } from './notebook-transport-fixture.mjs';
-
-export declare const fixtureMetadata: () => FixtureMetadata;
-
-export declare const request: (
-  method: string,
-  url: string,
-  body?: string,
-  headers?: Record<string, string>
-) => FixtureRequestLike;
-
-export declare const response: (
-  sourceRequest: FixtureRequestLike,
-  status: number,
-  body: string | (() => Promise<string>),
-  headers?: Record<string, string>
-) => {
-  headers: () => Record<string, string>;
-  request: () => FixtureRequestLike;
-  status: () => number;
-  text: () => Promise<string>;
+export const installReplaySession = async (replay, sessionId) => {
+  const session = { received: [], closed: [] };
+  await replay.install(
+    {
+      route: async (_pattern, handler) => {
+        session.rest = handler;
+      },
+      routeWebSocket: async (_pattern, handler) => {
+        session.connect = () => {
+          const socket = {
+            send: payload => session.received.push(JSON.parse(payload)),
+            close: options => session.closed.push(options),
+            onMessage: callback => {
+              session.send = callback;
+            }
+          };
+          handler(socket);
+        };
+      }
+    },
+    sessionId
+  );
+  return session;
 };
-
-export declare const wsRecord: (sequence: number, direction: string, payloadText: string) => FixtureRecord;

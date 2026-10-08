@@ -12,7 +12,7 @@
 
 const path = require('path');
 
-const webRoot = path.resolve(__dirname, '../../..');
+const webRoot = path.resolve(__dirname, '../../../..');
 const reactRemoteRoot = path.resolve(webRoot, 'projects/zeppelin-react');
 const ModuleFederationPlugin = require(
   path.join(reactRemoteRoot, 'node_modules/webpack/lib/container/ModuleFederationPlugin')

@@ -22,6 +22,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { replayLifecycleTrace } from './lifecycle/replay-in-browser.ts';
+import { fixtureMetadata } from './transport/doubles.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const scripts = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url))).scripts;
@@ -138,4 +140,80 @@ test('regular suite ignores an inherited capture run directory', () => {
   for (const project of config.projects.filter(project => project.name !== 'setup')) {
     assert.equal(project.use.storageState, 'playwright/.auth/user.json');
   }
+});
+
+test('trace replay closes an allocated context when page creation fails', async () => {
+  const failure = new Error('page creation failed');
+  let closed = false;
+  const browser = {
+    newContext: async () => ({
+      newPage: async () => {
+        throw failure;
+      },
+      close: async () => {
+        closed = true;
+      }
+    })
+  };
+  const fixture = {
+    version: 2,
+    metadata: fixtureMetadata(),
+    sessions: [{ id: 'a' }],
+    records: [{ sequence: 1, kind: 'connection', event: 'open', sessionId: 'a', connectionId: 'a1' }]
+  };
+  await assert.rejects(replayLifecycleTrace(browser, fixture), error => error === failure);
+  assert.equal(closed, true);
+});
+
+test('trace cleanup closes all contexts and preserves the original failure when socket close fails', async () => {
+  const failure = new Error('second page initialization failed');
+  const closeFailure = new Error('first socket close failed');
+  const closedSockets = [];
+  const closedContexts = [];
+  let contextNumber = 0;
+  const browser = {
+    newContext: async () => {
+      const id = ++contextNumber;
+      let connect;
+      return {
+        close: async () => {
+          closedContexts.push(id);
+        },
+        newPage: async () => ({
+          route: async () => {},
+          routeWebSocket: async (_pattern, handler) => {
+            connect = handler;
+          },
+          goto: async () =>
+            connect({
+              onMessage: () => {},
+              close: () => {
+                closedSockets.push(id);
+                if (id === 1) throw closeFailure;
+              }
+            }),
+          evaluate: async () => {
+            if (id === 2) throw failure;
+          }
+        })
+      };
+    }
+  };
+  const fixture = {
+    version: 2,
+    metadata: fixtureMetadata(),
+    sessions: [{ id: 'a' }, { id: 'b' }],
+    records: [
+      { sequence: 1, kind: 'connection', event: 'open', sessionId: 'a', connectionId: 'a1' },
+      { sequence: 2, kind: 'connection', event: 'open', sessionId: 'b', connectionId: 'b1' }
+    ]
+  };
+  await assert.rejects(replayLifecycleTrace(browser, fixture), error => {
+    assert.ok(error instanceof AggregateError);
+    assert.equal(error.errors[0], failure);
+    assert.equal(error.errors[1].errors[0], closeFailure);
+    return true;
+  });
+  assert.deepEqual(closedSockets, [1, 2]);
+  assert.deepEqual(closedContexts, [1, 2]);
 });

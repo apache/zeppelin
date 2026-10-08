@@ -1,0 +1,526 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Commit reply loss",
+    "coveredOperations": ["COMMIT_PARAGRAPH", "GET_NOTE", "NOTE", "GET /api/notebook/{noteId}"],
+    "knownExclusions": [
+      "Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.",
+      "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
+      "Untagged broadcasts do not identify a note; route context is evidence, not a wire acknowledgement."
+    ],
+    "environment": {
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18082",
+      "serverPort": 18081,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configuredInterpreterGroups": ["md"],
+      "configurationSource": "configuration-api-and-capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
+      "directories": {
+        "notebook": "/home/mjang/.cache/zeppelin-6672-linux-capture/notebook",
+        "search": "/home/mjang/.cache/zeppelin-6672-linux-capture/index",
+        "recovery": "/home/mjang/.cache/zeppelin-6672-linux-capture/recovery",
+        "logs": "/home/mjang/.cache/zeppelin-6672-linux-capture/logs",
+        "pid": "/home/mjang/.cache/zeppelin-6672-linux-capture/run"
+      },
+      "serverPidFile": "/home/mjang/.cache/zeppelin-6672-linux-capture/zeppelin.pid"
+    },
+    "capturedAt": "2026-10-04T23:10:38.773Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "74b51b28d6f3c1c170f44822beadba299df9a959",
+      "serverCommit": "74b51b2"
+    },
+    "commitLoss": {
+      "loss": "reply",
+      "faults": [
+        {
+          "sequence": 21,
+          "copies": 0
+        }
+      ],
+      "observationDeadlineMs": 250,
+      "localDraft": "%md local draft",
+      "canonicalText": "%md local draft",
+      "reconciliation": "GET /api/notebook/{noteId}, then GET_NOTE / NOTE",
+      "protocolGap": "Missing correlated PARAGRAPH alone cannot distinguish request loss from reply loss.",
+      "lifecycleGate": "Angular has no automatic save acknowledgement timeout; reconciliation here is an explicit test action."
+    }
+  },
+  "records": [
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N3A78ZUF",
+        "revisionId": null
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N3A78ZUF\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N3A78ZUF\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N3A78ZUF\",\"path\":\"/LifecycleCapture/commit-reply-1791155438773\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md server baseline\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155438430_1066435430\",\"id\":\"paragraph_1791155438430_1066435430\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"commit-reply-1791155438773\",\"id\":\"2N3A78ZUF\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/commit-reply-1791155438773\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N3A78ZUF\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:4>\",\"data\":{\"noteId\":\"2N3A78ZUF\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "sequence": 13,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "sequence": 14,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:5>\",\"data\":{\"paragraphId\":\"paragraph_1791155438430_1066435430\",\"paragraphText\":\"%md server baseline\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 15
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N3A78ZUF\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 16
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155438430_1066435430\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 17
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"PING\",\"msgId\":\"<msgId:6>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 18
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"COMMIT_PARAGRAPH\",\"msgId\":\"<msgId:7>\",\"data\":{\"id\":\"paragraph_1791155438430_1066435430\",\"noteId\":\"2N3A78ZUF\",\"paragraph\":\"%md local draft\",\"config\":{\"colWidth\":12,\"fontSize\":9,\"enabled\":true,\"results\":{},\"editorSetting\":{\"params\":{},\"forms\":{},\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}},\"params\":{}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 19
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 20
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"text\":\"%md local draft\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{\"colWidth\":12,\"fontSize\":9,\"results\":{},\"enabled\":true,\"editorSetting\":{\"params\":{},\"forms\":{},\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155438430_1066435430\",\"id\":\"paragraph_1791155438430_1066435430\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:7>\"}"
+      },
+      "sequence": 21
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 22
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "sequence": 23,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "paragraphs": [
+              {
+                "text": "%md local draft",
+                "user": "<user>",
+                "dateUpdated": "<dateUpdated>",
+                "progress": 0,
+                "config": {
+                  "colWidth": 12,
+                  "fontSize": 9,
+                  "results": {},
+                  "enabled": true,
+                  "editorSetting": {
+                    "params": {},
+                    "forms": {},
+                    "language": "markdown",
+                    "editOnDblClick": true,
+                    "completionSupport": false
+                  }
+                },
+                "settings": {
+                  "params": {},
+                  "forms": {}
+                },
+                "apps": [],
+                "runtimeInfos": {},
+                "progressUpdateIntervalMs": 500,
+                "jobName": "paragraph_1791155438430_1066435430",
+                "id": "paragraph_1791155438430_1066435430",
+                "dateCreated": "<dateCreated>",
+                "status": "READY"
+              }
+            ],
+            "name": "commit-reply-1791155438773",
+            "id": "2N3A78ZUF",
+            "defaultInterpreterGroup": "spark",
+            "version": "0.13.0-SNAPSHOT",
+            "noteParams": {},
+            "noteForms": {},
+            "angularObjects": {},
+            "config": {
+              "isZeppelinNotebookCronEnable": false
+            },
+            "info": {},
+            "path": "/LifecycleCapture/commit-reply-1791155438773"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:8>\",\"data\":{\"id\":\"2N3A78ZUF\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 24
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 25
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md local draft\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{\"colWidth\":12,\"fontSize\":9,\"results\":{},\"enabled\":true,\"editorSetting\":{\"params\":{},\"forms\":{},\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155438430_1066435430\",\"id\":\"paragraph_1791155438430_1066435430\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"commit-reply-1791155438773\",\"id\":\"2N3A78ZUF\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/commit-reply-1791155438773\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 26
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 27
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:9>\",\"data\":{\"noteId\":\"2N3A78ZUF\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 28
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "sequence": 29,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N3A78ZUF/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:10>\",\"data\":{\"paragraphId\":\"paragraph_1791155438430_1066435430\",\"paragraphText\":\"%md local draft\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 30
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N3A78ZUF\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 31
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155438430_1066435430\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 32
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer-a"
+    }
+  ]
+}

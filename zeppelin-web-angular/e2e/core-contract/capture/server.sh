@@ -18,13 +18,16 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--port <port>]" >&2
+  echo "usage: $0 start|stop --root <dir> [--mode anonymous|auth] [--storage vfs|git] [--job-manager] [--home-note <id>] [--port <port>]" >&2
 }
 
 command="${1:-}"
 shift || true
 capture_root=""
 capture_mode="anonymous"
+capture_storage="vfs"
+capture_job_manager=false
+capture_home_note=""
 zeppelin_port="8080"
 port_given="no"
 
@@ -32,6 +35,26 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --root)
       capture_root="${2:-}"
+      shift 2
+      ;;
+    --job-manager)
+      capture_job_manager=true
+      shift
+      ;;
+    --home-note)
+      capture_home_note="${2:-}"
+      if [[ ! "${capture_home_note}" =~ ^[A-Za-z0-9]+$ ]]; then
+        echo "home note must be an alphanumeric note ID in the isolated notebook directory" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --storage)
+      capture_storage="${2:-}"
+      if [[ "${capture_storage}" != "vfs" && "${capture_storage}" != "git" ]]; then
+        echo "storage must be vfs or git" >&2
+        exit 2
+      fi
       shift 2
       ;;
     --mode)
@@ -77,7 +100,7 @@ done
 # The suffix preserves trailing newlines in directory names during substitution.
 physical_parent="$(cd -P "${existing_parent}" && printf '%s/.' "$PWD")"
 reject_whitespace_path "${physical_parent}" "canonical capture root"
-repo_root="$(cd -P "$(dirname "$0")/../../.." && printf '%s/.' "$PWD")"
+repo_root="$(cd -P "$(dirname "$0")/../../../.." && printf '%s/.' "$PWD")"
 reject_whitespace_path "${repo_root}" "repository"
 repo_root="${repo_root%/.}"
 # Use the physical path so symlink and direct access produce the same marker.
@@ -232,16 +255,30 @@ start_zeppelin() {
   export ZEPPELIN_CONF_DIR="${capture_root}/conf"
   export ZEPPELIN_ADDR="127.0.0.1"
   export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+  if [[ "${capture_storage}" == "git" ]]; then
+    export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo"
+  fi
+  export ZEPPELIN_JOBMANAGER_ENABLE="${capture_job_manager}"
+  if [[ -n "${capture_home_note}" ]]; then
+    export ZEPPELIN_NOTEBOOK_HOMESCREEN="${capture_home_note}"
+  fi
   export ZEPPELIN_NOTEBOOK_DIR="${capture_root}/notebook"
   export ZEPPELIN_LOG_DIR="${capture_root}/logs"
   export ZEPPELIN_PID_DIR="${capture_root}/run"
   export ZEPPELIN_WAR_TEMPDIR="${capture_root}/webapps"
   # Zeppelin ignores this marker; verify_pid_identity matches it as a whole JVM argument.
-  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
+  export ZEPPELIN_JAVA_OPTS="-Dzeppelin.websocket.paragraph_status_progress.enable=true -Dzeppelin.server.port=${zeppelin_port} -Dzeppelin.notebook.dir=${capture_root}/notebook -Dzeppelin.search.index.path=${capture_root}/index -Dzeppelin.recovery.dir=${capture_root}/recovery ${capture_marker}"
   export ZEPPELIN_CAPTURE_ROOT="${capture_root}"
   export ZEPPELIN_PORT="${zeppelin_port}"
   # Do not inherit Hadoop settings for this fixture server.
   export USE_HADOOP=false
+
+  # Persist launch-only values that are not exposed by the configuration API.
+  local json_root="${capture_root//\\/\\\\}"
+  json_root="${json_root//\"/\\\"}"
+  printf '{"root":"%s","authentication":"%s","storage":"%s","port":%s,"paragraphStatusProgress":true}\n' \
+    "${json_root}" "${capture_mode}" "${capture_storage}" "${zeppelin_port}" \
+    > "${capture_root}/capture-environment.json"
 
   # Give the server its own process group so stop can signal its children too.
   set -m
@@ -326,6 +363,7 @@ start_server() {
 
   write_marker
   start_zeppelin
+  echo "export ZEPPELIN_CAPTURE_ENVIRONMENT=${capture_root}/capture-environment.json"
   if [[ "${capture_mode}" == "auth" ]]; then
     # Direct the login helper to this capture's credentials instead of the repository config.
     echo "shiro config: ${capture_root}/conf/shiro.ini"

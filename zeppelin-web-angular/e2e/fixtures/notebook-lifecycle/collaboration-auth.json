@@ -1,0 +1,1047 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Independent collaboration viewers",
+    "coveredOperations": ["PATCH_PARAGRAPH", "NOTE_UPDATED", "COLLABORATIVE_MODE_STATUS"],
+    "knownExclusions": [
+      "Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.",
+      "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
+      "Untagged broadcasts do not identify a note; route context is evidence, not a wire acknowledgement."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18084",
+      "serverPort": 18083,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
+      "directories": {
+        "notebook": "/home/mjang/.cache/zeppelin-6672-linux-auth/notebook",
+        "search": "/home/mjang/.cache/zeppelin-6672-linux-auth/index",
+        "recovery": "/home/mjang/.cache/zeppelin-6672-linux-auth/recovery",
+        "logs": "/home/mjang/.cache/zeppelin-6672-linux-auth/logs",
+        "pid": "/home/mjang/.cache/zeppelin-6672-linux-auth/run"
+      },
+      "serverPidFile": "/home/mjang/.cache/zeppelin-6672-linux-auth/zeppelin.pid"
+    },
+    "capturedAt": "2026-10-04T23:12:01.889Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "74b51b28d6f3c1c170f44822beadba299df9a959",
+      "serverCommit": "74b51b2"
+    },
+    "collaboration": {
+      "independentBrowserContexts": true,
+      "distinctAuthenticatedUsers": true
+    }
+  },
+  "records": [
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N6778ZAN",
+        "revisionId": null
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N5VFQ5Z7\",\"path\":\"/LifecycleCapture/collaboration-1791150452348\"},{\"id\":\"2N47EJ2WP\",\"path\":\"/LifecycleCapture/collaboration-1791152848176\"},{\"id\":\"2N74CDE3E\",\"path\":\"/LifecycleCapture/collaboration-1791153695265\"},{\"id\":\"2N6778ZAN\",\"path\":\"/LifecycleCapture/collaboration-1791155524375\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155525260_553295417\",\"id\":\"paragraph_1791155525260_553295417\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155524375\",\"id\":\"2N6778ZAN\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155524375\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:4>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:5>\",\"data\":{\"paragraphId\":\"paragraph_1791155525260_553295417\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "sequence": 13,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "sequence": 14,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 15
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-b",
+      "context": {
+        "state": "active",
+        "noteId": "2N6778ZAN",
+        "revisionId": null
+      },
+      "sequence": 16
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "sequence": 17
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:6>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 18
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:7>\",\"data\":{\"id\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 19
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:8>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 20
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N5VFQ5Z7\",\"path\":\"/LifecycleCapture/collaboration-1791150452348\"},{\"id\":\"2N47EJ2WP\",\"path\":\"/LifecycleCapture/collaboration-1791152848176\"},{\"id\":\"2N74CDE3E\",\"path\":\"/LifecycleCapture/collaboration-1791153695265\"},{\"id\":\"2N6778ZAN\",\"path\":\"/LifecycleCapture/collaboration-1791155524375\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 21
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 22
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 23
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 24
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md original\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155525260_553295417\",\"id\":\"paragraph_1791155525260_553295417\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155524375\",\"id\":\"2N6778ZAN\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155524375\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 25
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:9>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 26
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 27
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 28
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:10>\",\"data\":{\"paragraphId\":\"paragraph_1791155525260_553295417\",\"paragraphText\":\"%md original\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 29
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "sequence": 30,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:2",
+      "sequence": 31,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N6778ZAN\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 32
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[],\"noteId\":\"2N6778ZAN\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 33
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N6778ZAN\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 34
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[],\"noteId\":\"2N6778ZAN\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 35
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 36
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "sequence": 37,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "paragraphs": [
+              {
+                "text": "%md original",
+                "user": "<user>",
+                "dateUpdated": "<dateUpdated>",
+                "progress": 0,
+                "config": {},
+                "settings": {
+                  "params": {},
+                  "forms": {}
+                },
+                "apps": [],
+                "runtimeInfos": {},
+                "progressUpdateIntervalMs": 500,
+                "jobName": "paragraph_1791155525260_553295417",
+                "id": "paragraph_1791155525260_553295417",
+                "dateCreated": "<dateCreated>",
+                "status": "READY"
+              }
+            ],
+            "name": "collaboration-1791155524375",
+            "id": "2N6778ZAN",
+            "defaultInterpreterGroup": "spark",
+            "version": "0.13.0-SNAPSHOT",
+            "noteParams": {},
+            "noteForms": {},
+            "angularObjects": {},
+            "config": {
+              "isZeppelinNotebookCronEnable": false
+            },
+            "info": {},
+            "path": "/LifecycleCapture/collaboration-1791155524375"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"paragraph_1791155525260_553295417\",\"noteId\":\"2N6778ZAN\",\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 38
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PATCH_PARAGRAPH\",\"data\":{\"patch\":\"@@ -1,12 +1,12 @@\\n %25md \\n-original\\n+modified\\n\",\"paragraphId\":\"paragraph_1791155525260_553295417\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 39
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_UPDATE\",\"msgId\":\"<msgId:12>\",\"data\":{\"id\":\"2N6778ZAN\",\"name\":\"collaboration-1791155526884\",\"config\":{\"looknfeel\":\"simple\"}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 40
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791155526884\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 41
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"collaboration-1791155526884\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 42
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N5VFQ5Z7\",\"path\":\"/LifecycleCapture/collaboration-1791150452348\"},{\"id\":\"2N47EJ2WP\",\"path\":\"/LifecycleCapture/collaboration-1791152848176\"},{\"id\":\"2N74CDE3E\",\"path\":\"/LifecycleCapture/collaboration-1791153695265\"},{\"id\":\"2N6778ZAN\",\"path\":\"/LifecycleCapture/collaboration-1791155526884\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 43
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N5VFQ5Z7\",\"path\":\"/LifecycleCapture/collaboration-1791150452348\"},{\"id\":\"2N47EJ2WP\",\"path\":\"/LifecycleCapture/collaboration-1791152848176\"},{\"id\":\"2N74CDE3E\",\"path\":\"/LifecycleCapture/collaboration-1791153695265\"},{\"id\":\"2N6778ZAN\",\"path\":\"/LifecycleCapture/collaboration-1791155526884\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 44
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:13>\",\"data\":{\"id\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 45
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 46
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 47
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155525260_553295417\",\"id\":\"paragraph_1791155525260_553295417\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155526884\",\"id\":\"2N6778ZAN\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155526884\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 48
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 49
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:14>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 50
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 51
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:15>\",\"data\":{\"paragraphId\":\"paragraph_1791155525260_553295417\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 52
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[],\"noteId\":\"2N6778ZAN\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 53
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "sequence": 54,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:11>\",\"data\":{\"id\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 55
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 56
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 57
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md modified\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155525260_553295417\",\"id\":\"paragraph_1791155525260_553295417\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"collaboration-1791155526884\",\"id\":\"2N6778ZAN\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/collaboration-1791155526884\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 58
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\",\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 59
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:16>\",\"data\":{\"noteId\":\"2N6778ZAN\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 60
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 61
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:17>\",\"data\":{\"paragraphId\":\"paragraph_1791155525260_553295417\",\"paragraphText\":\"%md modified\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 62
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[],\"noteId\":\"2N6778ZAN\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 63
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:3",
+      "sequence": 64,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:5",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 65
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:5",
+      "sequence": 66,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "paragraphs": [
+              {
+                "text": "%md modified",
+                "user": "<user>",
+                "dateUpdated": "<dateUpdated>",
+                "progress": 0,
+                "config": {},
+                "settings": {
+                  "params": {},
+                  "forms": {}
+                },
+                "apps": [],
+                "runtimeInfos": {},
+                "progressUpdateIntervalMs": 500,
+                "jobName": "paragraph_1791155525260_553295417",
+                "id": "paragraph_1791155525260_553295417",
+                "dateCreated": "<dateCreated>",
+                "status": "READY"
+              }
+            ],
+            "name": "collaboration-1791155526884",
+            "id": "2N6778ZAN",
+            "defaultInterpreterGroup": "spark",
+            "version": "0.13.0-SNAPSHOT",
+            "noteParams": {},
+            "noteForms": {},
+            "angularObjects": {},
+            "config": {
+              "looknfeel": "simple"
+            },
+            "info": {},
+            "path": "/LifecycleCapture/collaboration-1791155526884"
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:4",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 67
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:4",
+      "sequence": 68,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N6778ZAN",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "paragraphs": [
+              {
+                "text": "%md modified",
+                "user": "<user>",
+                "dateUpdated": "<dateUpdated>",
+                "progress": 0,
+                "config": {},
+                "settings": {
+                  "params": {},
+                  "forms": {}
+                },
+                "apps": [],
+                "runtimeInfos": {},
+                "progressUpdateIntervalMs": 500,
+                "jobName": "paragraph_1791155525260_553295417",
+                "id": "paragraph_1791155525260_553295417",
+                "dateCreated": "<dateCreated>",
+                "status": "READY"
+              }
+            ],
+            "name": "collaboration-1791155526884",
+            "id": "2N6778ZAN",
+            "defaultInterpreterGroup": "spark",
+            "version": "0.13.0-SNAPSHOT",
+            "noteParams": {},
+            "noteForms": {},
+            "angularObjects": {},
+            "config": {
+              "looknfeel": "simple"
+            },
+            "info": {},
+            "path": "/LifecycleCapture/collaboration-1791155526884"
+          }
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer-a"
+    },
+    {
+      "id": "viewer-b"
+    }
+  ]
+}

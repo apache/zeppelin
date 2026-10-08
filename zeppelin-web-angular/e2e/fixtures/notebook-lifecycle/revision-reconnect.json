@@ -1,0 +1,1506 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Revision routes and physical reconnect",
+    "coveredOperations": [
+      "CHECKPOINT_NOTE",
+      "LIST_REVISION_HISTORY",
+      "NOTE_REVISION",
+      "SET_NOTE_REVISION",
+      "NOTE_REVISION_FOR_COMPARE",
+      "GET_NOTE",
+      "NOTE",
+      "NOTE_REVISION",
+      "LIST_REVISION_HISTORY"
+    ],
+    "knownExclusions": [
+      "Shared Notebook Core runtime convergence is gated by ZEPPELIN-6687; this capture proves Angular and wire behavior.",
+      "Physical reconnect backoff and terminal teardown are owned by ZEPPELIN-6696.",
+      "Untagged broadcasts do not identify a note; route context is evidence, not a wire acknowledgement."
+    ],
+    "environment": {
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18082",
+      "serverPort": 18081,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configuredInterpreterGroups": ["md"],
+      "configurationSource": "configuration-api-and-capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.GitNotebookRepo",
+      "directories": {
+        "notebook": "/home/mjang/.cache/zeppelin-6672-linux-capture/notebook",
+        "search": "/home/mjang/.cache/zeppelin-6672-linux-capture/index",
+        "recovery": "/home/mjang/.cache/zeppelin-6672-linux-capture/recovery",
+        "logs": "/home/mjang/.cache/zeppelin-6672-linux-capture/logs",
+        "pid": "/home/mjang/.cache/zeppelin-6672-linux-capture/run"
+      },
+      "serverPidFile": "/home/mjang/.cache/zeppelin-6672-linux-capture/zeppelin.pid"
+    },
+    "capturedAt": "2026-10-04T23:10:58.351Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "74b51b28d6f3c1c170f44822beadba299df9a959",
+      "serverCommit": "74b51b2"
+    }
+  },
+  "records": [
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "sequence": 1
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N4MJX8N3",
+        "revisionId": null
+      },
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N4MJX8N3\",\"path\":\"/LifecycleCapture/revision-1791155458351\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md snapshot\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"revision-1791155458351\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/revision-1791155458351\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:4>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:5>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 13
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "sequence": 14,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "sequence": 15,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 16
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 17
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 18
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "sequence": 19,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "paragraphs": [
+              {
+                "text": "%md snapshot",
+                "user": "<user>",
+                "dateUpdated": "<dateUpdated>",
+                "progress": 0,
+                "config": {},
+                "settings": {
+                  "params": {},
+                  "forms": {}
+                },
+                "apps": [],
+                "runtimeInfos": {},
+                "progressUpdateIntervalMs": 500,
+                "jobName": "paragraph_1791155458463_329403476",
+                "id": "paragraph_1791155458463_329403476",
+                "dateCreated": "<dateCreated>",
+                "status": "READY"
+              }
+            ],
+            "name": "revision-1791155458351",
+            "id": "2N4MJX8N3",
+            "defaultInterpreterGroup": "spark",
+            "version": "0.13.0-SNAPSHOT",
+            "noteParams": {},
+            "noteForms": {},
+            "angularObjects": {},
+            "config": {
+              "isZeppelinNotebookCronEnable": false
+            },
+            "info": {},
+            "path": "/LifecycleCapture/revision-1791155458351"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"COMMIT_PARAGRAPH\",\"msgId\":\"<msgId:6>\",\"data\":{\"id\":\"paragraph_1791155458463_329403476\",\"noteId\":\"2N4MJX8N3\",\"title\":\"snapshot\",\"paragraph\":\"%md snapshot committed\",\"params\":{},\"config\":{}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 20
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SAVE_NOTE_FORMS\",\"data\":{\"formsData\":{\"params\":{},\"forms\":{}}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 21
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH\",\"data\":{\"paragraph\":{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:6>\"}"
+      },
+      "sequence": 22
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"CHECKPOINT_NOTE\",\"msgId\":\"<msgId:7>\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"commitMessage\":\"capture snapshot\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 23
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[{\"id\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"message\":\"capture snapshot\",\"time\":\"<time>\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 24
+    },
+    {
+      "kind": "connection",
+      "event": "close",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "sequence": 25
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "sequence": 26
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:8>\",\"data\":{\"id\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 27
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:9>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 28
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 29
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"revision-1791155458351\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/revision-1791155458351\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 30
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:10>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 31
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 32
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:11>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 33
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[{\"id\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"message\":\"capture snapshot\",\"time\":\"<time>\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 34
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:4",
+      "sequence": 35,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 36
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 37
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "inactive",
+        "noteId": "2N4MJX8N3",
+        "revisionId": null
+      },
+      "sequence": 38
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N4MJX8N3",
+        "revisionId": "90e3c7c215df061f431053be788f6d1323004c38"
+      },
+      "sequence": 39
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"msgId\":\"<msgId:12>\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 40
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:13>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 41
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"data\":{\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"revision-1791155458351\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/revision-1791155458351\"},\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 42
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:5",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 43
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:14>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 44
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[{\"id\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"message\":\"capture snapshot\",\"time\":\"<time>\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 45
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:5",
+      "sequence": 46,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 47
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "sequence": 48
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:15>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 49
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N4MJX8N3\",\"path\":\"/LifecycleCapture/revision-1791155458351\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 50
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-b",
+      "context": {
+        "state": "active",
+        "noteId": "2N4MJX8N3",
+        "revisionId": null
+      },
+      "sequence": 51
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:16>\",\"data\":{\"id\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 52
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:17>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 53
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 54
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 55
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 56
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"revision-1791155458351\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/revision-1791155458351\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 57
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:18>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 58
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 59
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 60
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:19>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 61
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[{\"id\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"message\":\"capture snapshot\",\"time\":\"<time>\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 62
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "sequence": 63,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:2",
+      "sequence": 64,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 65
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 66
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"INSERT_PARAGRAPH\",\"msgId\":\"<msgId:6>\",\"data\":{\"index\":0,\"config\":{}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 67
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_ADDED\",\"data\":{\"paragraph\":{\"text\":\"%md\\n\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155461101_810225973\",\"id\":\"paragraph_1791155461101_810225973\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},\"index\":0},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:6>\"}"
+      },
+      "sequence": 68
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_ADDED\",\"data\":{\"paragraph\":{\"text\":\"%md\\n\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155461101_810225973\",\"id\":\"paragraph_1791155461101_810225973\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},\"index\":0},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:6>\"}"
+      },
+      "sequence": 69
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:20>\",\"data\":{\"paragraphId\":\"paragraph_1791155461101_810225973\",\"paragraphText\":\"%md\\n\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 70
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155461101_810225973\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 71
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"MOVE_PARAGRAPH\",\"msgId\":\"<msgId:7>\",\"data\":{\"id\":\"paragraph_1791155461101_810225973\",\"index\":1},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 72
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_MOVED\",\"data\":{\"index\":1,\"id\":\"paragraph_1791155461101_810225973\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 73
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_MOVED\",\"data\":{\"index\":1,\"id\":\"paragraph_1791155461101_810225973\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 74
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"PARAGRAPH_REMOVE\",\"msgId\":\"<msgId:21>\",\"data\":{\"id\":\"paragraph_1791155461101_810225973\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 75
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_REMOVED\",\"data\":{\"id\":\"paragraph_1791155461101_810225973\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 76
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"PARAGRAPH_REMOVED\",\"data\":{\"id\":\"paragraph_1791155461101_810225973\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 77
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_UPDATE\",\"msgId\":\"<msgId:22>\",\"data\":{\"id\":\"2N4MJX8N3\",\"name\":\"live-change\",\"config\":{\"looknfeel\":\"simple\"}},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 78
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"live-change\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 79
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_UPDATED\",\"data\":{\"name\":\"live-change\",\"config\":{\"looknfeel\":\"simple\"},\"info\":{}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 80
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N4MJX8N3\",\"path\":\"/LifecycleCapture/live-change\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 81
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"HOMECP\",\"path\":\"/Home\"},{\"id\":\"2N4X8HEAN\",\"path\":\"/LifecycleCapture/association-b-1791150233535\"},{\"id\":\"2N5W9B4EU\",\"path\":\"/LifecycleCapture/association-b-1791150585941\"},{\"id\":\"2N4ZJEHUX\",\"path\":\"/LifecycleCapture/association-b-1791150671941\"},{\"id\":\"2N5UZUPAX\",\"path\":\"/LifecycleCapture/association-b-1791152372233\"},{\"id\":\"2N58KASHM\",\"path\":\"/LifecycleCapture/association-b-1791152477146\"},{\"id\":\"2N3VNKGT9\",\"path\":\"/LifecycleCapture/association-b-1791154927740\"},{\"id\":\"2N6UYCWHB\",\"path\":\"/LifecycleCapture/collaboration-1791150578943\"},{\"id\":\"2N3XPB3T5\",\"path\":\"/LifecycleCapture/collaboration-1791152364377\"},{\"id\":\"2N4KFZ9GX\",\"path\":\"/LifecycleCapture/collaboration-1791153495288\"},{\"id\":\"2N4TQJP9C\",\"path\":\"/LifecycleCapture/collaboration-1791154921840\"},{\"id\":\"2N5ZARSZG\",\"path\":\"/LifecycleCapture/collaboration-1791155147667\"},{\"id\":\"2N4MJX8N3\",\"path\":\"/LifecycleCapture/live-change\"},{\"id\":\"2N39UAH76\",\"path\":\"/LifecycleCapture/revision-1791152350567\"},{\"id\":\"2N6TKCBV5\",\"path\":\"/LifecycleCapture/revision-1791154909266\"},{\"id\":\"2N6A13WVP\",\"path\":\"/LifecycleCapture/revision-1791155138915\"},{\"id\":\"2N5E4XVUZ\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N6HK3DUX\",\"path\":\"/LifecycleCapture/route-b-before-note\"},{\"id\":\"2N3PCX5FE\",\"path\":\"/LifecycleCapture/route-b-before-note\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 82
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 83
+    },
+    {
+      "kind": "connection",
+      "event": "close",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:2",
+      "sequence": 84
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "sequence": 85
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"msgId\":\"<msgId:23>\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 86
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:24>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 87
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"data\":{\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"live-change\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/live-change\"},\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 88
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:25>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 89
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 90
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 91
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_REVISION_FOR_COMPARE\",\"msgId\":\"<msgId:21>\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"position\":\"left\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 92
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_REVISION_FOR_COMPARE\",\"data\":{\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\",\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"live-change\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\"},\"info\":{},\"path\":\"/LifecycleCapture/live-change\"},\"noteId\":\"2N4MJX8N3\",\"position\":\"left\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 93
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"SET_NOTE_REVISION\",\"msgId\":\"<msgId:22>\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionId\":\"90e3c7c215df061f431053be788f6d1323004c38\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 94
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SET_NOTE_REVISION\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 95
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"live-change\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\",\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/live-change\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 96
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:26>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 97
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 98
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:27>\",\"data\":{\"id\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 99
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:28>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 100
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 101
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"title\":\"snapshot\",\"text\":\"%md snapshot committed\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791155458463_329403476\",\"id\":\"paragraph_1791155458463_329403476\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"live-change\",\"id\":\"2N4MJX8N3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"looknfeel\":\"simple\",\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/LifecycleCapture/live-change\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 102
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:29>\",\"data\":{\"noteId\":\"2N4MJX8N3\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 103
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:6",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 104
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:7",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 105
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:30>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 106
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 107
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:3",
+      "sequence": 108,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 109
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 110
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"users\":[\"<users>\"],\"status\":true},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 111
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:31>\",\"data\":{\"paragraphId\":\"paragraph_1791155458463_329403476\",\"paragraphText\":\"%md snapshot committed\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 112
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4MJX8N3\",\"revisionList\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 113
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:6",
+      "sequence": 114,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4MJX8N3/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:7",
+      "sequence": 115,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": true
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4MJX8N3\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 116
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:3",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1791155458463_329403476\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 117
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer-a"
+    },
+    {
+      "id": "viewer-b"
+    }
+  ]
+}

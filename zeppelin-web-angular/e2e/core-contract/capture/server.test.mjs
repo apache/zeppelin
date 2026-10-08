@@ -32,8 +32,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-const script = path.resolve('e2e/core-contract/capture-server.sh');
-const stub = path.resolve('e2e/core-contract/capture-stub-zeppelin.mjs');
+const script = path.resolve('e2e/core-contract/capture/server.sh');
+const stub = path.resolve('e2e/core-contract/capture/stub-zeppelin.mjs');
 
 const temporaryRoots = [];
 process.on('exit', () => {
@@ -84,7 +84,14 @@ for (const existing of [false, true]) {
 
 test('capture server rejects a repository path with whitespace before creating the root', () => {
   const parent = createRoot();
-  const directory = path.join(parent.root, 'repo with spaces', 'zeppelin-web-angular', 'e2e', 'core-contract');
+  const directory = path.join(
+    parent.root,
+    'repo with spaces',
+    'zeppelin-web-angular',
+    'e2e',
+    'core-contract',
+    'capture'
+  );
   mkdirSync(directory, { recursive: true });
   const copy = path.join(directory, 'capture-server.sh');
   writeFileSync(copy, readFileSync(script));
@@ -244,6 +251,62 @@ test('capture-server starts and stops a server in its own root', () => {
   assert.equal(existsSync(path.join(root.root, '.zeppelin-capture-root')), true);
   assert.equal(existsSync(path.join(root.root, 'zeppelin.pid')), false);
 });
+
+test('capture server selects local Git storage and association prerequisites explicitly', () => {
+  const root = createRoot();
+  const observed = path.join(root.root, 'capture-options.json');
+  const probe = path.join(root.root, 'capture-options.mjs');
+  writeFileSync(
+    probe,
+    `import { writeFileSync } from 'node:fs';
+writeFileSync(${JSON.stringify(observed)}, JSON.stringify({
+  storage: process.env.ZEPPELIN_NOTEBOOK_STORAGE,
+  jobManager: process.env.ZEPPELIN_JOBMANAGER_ENABLE,
+  homeNote: process.env.ZEPPELIN_NOTEBOOK_HOMESCREEN
+}));
+await import(${JSON.stringify(stub)});
+`
+  );
+  const result = run(
+    [
+      'start',
+      '--root',
+      root.root,
+      '--port',
+      String(root.zeppelinPort),
+      '--storage',
+      'git',
+      '--job-manager',
+      '--home-note',
+      'HOMECP'
+    ],
+    { CAPTURE_ZEPPELIN_COMMAND: `node ${probe}` }
+  );
+  try {
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(readFileSync(observed, 'utf8')), {
+      storage: 'org.apache.zeppelin.notebook.repo.GitNotebookRepo',
+      jobManager: 'true',
+      homeNote: 'HOMECP'
+    });
+  } finally {
+    if (existsSync(path.join(root.root, 'zeppelin.pid'))) stop(root);
+  }
+});
+
+for (const [option, value, message] of [
+  ['--storage', 'remote', /storage must be vfs or git/],
+  ['--home-note', '../../outside', /alphanumeric note ID/]
+]) {
+  test(`capture server rejects invalid ${option} before creating the root`, () => {
+    const parent = createRoot();
+    const root = path.join(parent.root, 'invalid-options');
+    const result = run(['start', '--root', root, option, value]);
+    assert.equal(result.status, 2, result.stderr);
+    assert.match(result.stderr, message);
+    assert.equal(existsSync(root), false);
+  });
+}
 
 test('capture-server writes anonymous and auth config in an isolated temp root', () => {
   const anonymous = createRoot();
@@ -523,5 +586,25 @@ test('capture server retains the PID claim when termination cannot stop its proc
   } finally {
     child.kill('SIGKILL');
     await exited;
+  }
+});
+
+test('capture environment records launch provenance without secrets and quotes literal root paths', () => {
+  const parent = createRoot();
+  const root = { root: path.join(parent.root, 'quoted"root'), zeppelinPort: parent.zeppelinPort };
+  mkdirSync(root.root);
+  start(root, { mode: 'auth' });
+  try {
+    const environment = JSON.parse(readFileSync(path.join(root.root, 'capture-environment.json'), 'utf8'));
+    assert.deepEqual(environment, {
+      root: root.root,
+      authentication: 'auth',
+      storage: 'vfs',
+      port: root.zeppelinPort,
+      paragraphStatusProgress: true
+    });
+    assert.equal(Object.hasOwn(environment, 'credentials'), false);
+  } finally {
+    stop(root);
   }
 });
