@@ -1,0 +1,111 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Storybook
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'zeppelin-web-angular/projects/zeppelin-react/**'
+      - 'zeppelin-web-angular/projects/zeppelin-sdk/**'
+      - 'zeppelin-web-angular/projects/zeppelin-notebook-core/**'
+      - 'zeppelin-web-angular/.nvmrc'
+      - 'zeppelin-web-angular/tsconfig.base.json'
+      - '.github/workflows/storybook.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'zeppelin-web-angular/projects/zeppelin-react/**'
+      - 'zeppelin-web-angular/projects/zeppelin-sdk/**'
+      - 'zeppelin-web-angular/projects/zeppelin-notebook-core/**'
+      - 'zeppelin-web-angular/.nvmrc'
+      - 'zeppelin-web-angular/tsconfig.base.json'
+      - '.github/workflows/storybook.yml'
+permissions:
+  contents: read
+
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: zeppelin-web-angular/projects/zeppelin-react
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version-file: zeppelin-web-angular/.nvmrc
+          cache: npm
+          cache-dependency-path: zeppelin-web-angular/projects/zeppelin-react/package-lock.json
+      - run: npm ci
+      - run: npm run build:storybook
+      - run: npx playwright install --with-deps --only-shell chromium
+      - run: npm run test:storybook
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: storybook-static
+          path: zeppelin-web-angular/projects/zeppelin-react/storybook-static
+          retention-days: 7
+          if-no-files-found: error
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: storybook-test-results
+          path: |
+            zeppelin-web-angular/projects/zeppelin-react/storybook-report
+            zeppelin-web-angular/projects/zeppelin-react/storybook-test-results
+          retention-days: 7
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' && vars.STORYBOOK_PAGES_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: storybook-pages
+      cancel-in-progress: false
+      queue: max
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: storybook-static
+          path: ${{ runner.temp }}/storybook-static
+      - uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
+        with:
+          token: ${{ github.token }}
+          branch: gh-pages
+          folder: ${{ runner.temp }}/storybook-static
+          target-folder: storybook/branches/${{ github.ref_name }}
+          clean: true
+          force: false
+      - name: Show the branch preview URL
+        run: |
+          printf 'Storybook: https://%s.github.io/%s/storybook/branches/%s/\n' \
+            "$GITHUB_REPOSITORY_OWNER" "${GITHUB_REPOSITORY#*/}" "$GITHUB_REF_NAME" \
+            >> "$GITHUB_STEP_SUMMARY"

@@ -2,20 +2,26 @@
   "name": "@zeppelin/react",
   "version": "0.0.1",
   "sideEffects": [
-    "*.css"
+    "*.css",
+    "*.css.ts"
   ],
   "scripts": {
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack serve --config webpack.config.js --mode development",
-    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint": "eslint 'src/**/*.{ts,tsx}' '.storybook/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev --port 6006 --host 0.0.0.0 --disable-telemetry",
+    "build:storybook": "storybook build --disable-telemetry",
+    "test:storybook": "playwright test --config playwright.storybook.config.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "6.3.4",
+    "@vanilla-extract/css": "1.21.2",
+    "@vanilla-extract/dynamic": "2.1.5",
     "@zeppelin/notebook-core": "file:../zeppelin-notebook-core",
     "@zeppelin/sdk": "file:../zeppelin-sdk",
     "anser": "2.3.5",
@@ -31,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "@storybook/react-vite": "10.6.1",
     "@testing-library/dom": "10.4.1",
     "@testing-library/react": "16.3.2",
     "@types/file-saver": "2.0.7",
@@ -39,6 +46,8 @@
     "@types/react-dom": "19.3.0",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
+    "@vanilla-extract/vite-plugin": "5.2.6",
+    "@vanilla-extract/webpack-plugin": "2.3.27",
     "@vitest/coverage-v8": "4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
     "css-loader": "6.8.0",
@@ -48,6 +57,7 @@
     "globals": "^15.14.0",
     "html-webpack-plugin": "5.5.0",
     "jsdom": "29.1.1",
+    "storybook": "10.6.1",
     "style-loader": "3.3.0",
     "ts-loader": "9.6.2",
     "typescript": "5.9.3",
@@ -56,7 +66,8 @@
     "vitest": "4.1.11",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "6.0.0"
+    "webpack-dev-server": "6.0.0",
+    "@playwright/test": "1.55.1"
   },
   "overrides": {
     "minimatch": "^10.2.4",

@@ -167,3 +167,23 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
 
 Every exposed module must return the handle contract from `mount`. The directive assigns the return value straight to its handle, so returning a bare unmount function makes the next prop change throw.
 
+## Assistant Storybook
+
+Assistant stories run without the Zeppelin server. From this directory:
+
+```bash
+npm ci
+npm run storybook
+```
+
+To check the static build in a browser:
+
+```bash
+npm run build:storybook
+npx playwright install chromium
+npm run test:storybook
+```
+
+The push workflow uploads the build as an artifact.
+When Pages serves `gh-pages` and `STORYBOOK_PAGES_ENABLED` is `true`, it also publishes each branch under `/storybook/branches/<branch-name>/`.
+The workflow summary contains the link.
