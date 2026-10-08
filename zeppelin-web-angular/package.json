@@ -91,11 +91,11 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^21.0.3",
-    "@angular-devkit/build-angular": "^21.2.25",
+    "@angular-builders/custom-webpack": "^22.0.1",
+    "@angular-devkit/build-angular": "^22.2.2",
     "@angular-eslint/builder": "21.4.0",
     "@angular-eslint/schematics": "21.4.0",
-    "@angular/cli": "^21.2.25",
+    "@angular/cli": "^21.2.26",
     "@angular/compiler-cli": "^21.2.25",
     "@angular/language-service": "^21.2.25",
     "@playwright/test": "1.55.1",
