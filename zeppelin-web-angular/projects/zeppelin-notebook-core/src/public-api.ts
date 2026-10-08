@@ -11,3 +11,4 @@
  */
 
 export * from './host-remote-contract';
+export * from './read-model';
