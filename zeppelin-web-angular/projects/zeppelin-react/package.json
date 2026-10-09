@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "6.3.4",
-    "@vanilla-extract/css": "1.21.2",
+    "@vanilla-extract/css": "1.21.3",
     "@vanilla-extract/dynamic": "2.1.5",
     "@zeppelin/notebook-core": "file:../zeppelin-notebook-core",
     "@zeppelin/sdk": "file:../zeppelin-sdk",
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "@playwright/test": "1.64.0",
     "@storybook/react-vite": "10.6.1",
     "@testing-library/dom": "10.4.1",
     "@testing-library/react": "16.3.2",
@@ -66,8 +67,7 @@
     "vitest": "4.1.11",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "6.0.0",
-    "@playwright/test": "1.55.1"
+    "webpack-dev-server": "6.0.0"
   },
   "overrides": {
     "minimatch": "^10.2.4",
