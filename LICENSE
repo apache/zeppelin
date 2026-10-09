@@ -205,9 +205,10 @@ MIT licenses
 
 The following components are provided under the MIT License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
-    (The MIT License) Storybook 10.6.1 (storybook, @storybook/react-vite) - https://github.com/storybookjs/storybook/blob/v10.6.1/LICENSE (see licenses/LICENSE-storybook-10.6.1)
-    (The MIT License) vanilla-extract (@vanilla-extract/css 1.21.2, @vanilla-extract/dynamic 2.1.5, @vanilla-extract/webpack-plugin 2.3.27, @vanilla-extract/vite-plugin 5.2.6)
-      https://github.com/vanilla-extract-css/vanilla-extract/blob/master/LICENSE (see licenses/LICENSE-vanilla-extract-1.21.2)
+    (The MIT License) vanilla-extract
+      (@vanilla-extract/css 1.21.3, @vanilla-extract/dynamic 2.1.5)
+      https://github.com/vanilla-extract-css/vanilla-extract/blob/master/LICENSE
+      (see licenses/LICENSE-vanilla-extract-1.21.3)
 
     (The MIT License) Font Awesome (stylesheet) 4.2.0 (http://fortawesome.github.io/Font-Awesome/) - https://fortawesome.github.io/Font-Awesome/license/
     (The MIT License) Simple line icons v1.0.0 (http://thesabbir.github.io/simple-line-icons/) - https://github.com/thesabbir/simple-line-icons/tree/1.0.0
