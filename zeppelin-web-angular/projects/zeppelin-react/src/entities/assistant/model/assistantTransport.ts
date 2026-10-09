@@ -503,8 +503,8 @@ export const createAssistantTransport = (
 };
 
 /**
- * Guards a per-note transport. After `setActive(false)` (note change or unmount) every pending or later call rejects
- * with an AbortError and open runs are aborted, so a late response from the previous note cannot reach the new one.
+ * Guards a per-note transport. Deactivation aborts open runs and rejects calls while inactive.
+ * The transport can be reactivated unless its session signal has aborted.
  */
 export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortSignal) => {
   let active = true;
