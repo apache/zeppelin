@@ -75,6 +75,17 @@ describe('notebook read selectors', () => {
     expect(selectChartConfig(snapshot, 'p2', 0)).toBeUndefined();
   });
 
+  it('selects a paragraph whose ID is __proto__', () => {
+    const store = createNotebookReadStore();
+    store
+      .activate({ kind: 'note', noteId: 'note-a' })
+      .acceptNote({ id: 'note-a', name: 'note-a name', paragraphs: [{ id: '__proto__', status: 'READY' }] });
+    const snapshot = store.getSnapshot();
+
+    expect(selectParagraph(snapshot, '__proto__')?.id).toBe('__proto__');
+    expect(selectOrderedParagraphs(snapshot).map(paragraph => paragraph.id)).toEqual(['__proto__']);
+  });
+
   it.each(['unknown', 'loading', 'access-denied', 'failed'])('grants nothing while permissions are %s', status => {
     const { store, request } = loadedStore();
     if (status !== 'unknown') {

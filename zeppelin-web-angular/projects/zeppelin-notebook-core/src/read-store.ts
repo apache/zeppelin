@@ -47,7 +47,10 @@ export interface NotebookReadRequest {
   isCurrent(): boolean;
   /** A full NOTE for a live-note target. Accepted while loading or ready. */
   acceptNote(note: NotebookNoteInput): boolean;
-  /** A full NOTE_REVISION for a revision target. A response without a note is `not-found`. */
+  /**
+   * A full NOTE_REVISION for a revision target. A response without a note is `failed`: the server
+   * returns none both for a missing revision and when its repository does not support revisions.
+   */
   acceptRevision(revision: NotebookRevisionInput): boolean;
   /** Ends a load that has not completed. A failure ends this request; activate again to retry. */
   fail(reason: NotebookReadFailure): boolean;
@@ -66,6 +69,12 @@ export interface NotebookReadStore {
   dispose(): void;
 }
 
+// Wire keys become own properties even when they are special names such as `__proto__`: an imported
+// note keeps its paragraph IDs, and plain assignment of that key would set the prototype instead.
+const setOwn = (object: { [key: string]: unknown }, key: string, value: unknown): void => {
+  Object.defineProperty(object, key, { value, enumerable: true, writable: true, configurable: true });
+};
+
 // Read state is built from wire data: null, booleans, numbers, strings, arrays and plain objects.
 const freezeCopy = (value: unknown): unknown => {
   if (Array.isArray(value)) {
@@ -74,7 +83,7 @@ const freezeCopy = (value: unknown): unknown => {
   if (value !== null && typeof value === 'object') {
     const copy: { [key: string]: unknown } = {};
     for (const key of Object.keys(value)) {
-      copy[key] = freezeCopy((value as { [key: string]: unknown })[key]);
+      setOwn(copy, key, freezeCopy((value as { [key: string]: unknown })[key]));
     }
     return Object.freeze(copy);
   }
@@ -122,7 +131,7 @@ const buildParagraph = (input: NotebookParagraphInput): NotebookReadParagraph =>
   for (const resultIndex of Object.keys(configResults)) {
     const graph = configResults[resultIndex]?.graph;
     if (graph !== undefined) {
-      chartConfigs[resultIndex] = graph;
+      setOwn(chartConfigs, resultIndex, graph);
     }
   }
   return freezeCopy({
@@ -143,7 +152,7 @@ const buildNote = (input: NotebookNoteInput, previous: NotebookReadNote | null):
       previous && Object.prototype.hasOwnProperty.call(previous.paragraphsById, paragraphInput.id)
         ? previous.paragraphsById[paragraphInput.id]
         : undefined;
-    paragraphsById[paragraphInput.id] = reuse(previousParagraph, buildParagraph(paragraphInput));
+    setOwn(paragraphsById, paragraphInput.id, reuse(previousParagraph, buildParagraph(paragraphInput)));
   }
   const next: NotebookReadNote = Object.freeze({
     id: input.id,
@@ -291,7 +300,7 @@ export const createNotebookReadStore = (): NotebookReadStore => {
           if (snapshot.status !== 'loading') {
             return false;
           }
-          update({ status: 'not-found', note: null });
+          update({ status: 'failed', note: null });
           return true;
         }
         if (input.note.id !== target.noteId) {

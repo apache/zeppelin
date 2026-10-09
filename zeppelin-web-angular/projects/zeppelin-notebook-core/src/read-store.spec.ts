@@ -207,6 +207,40 @@ describe('notebook read store', () => {
       expect(() => ownersOf().push('mallory')).toThrow(TypeError);
     });
 
+    // An imported note keeps its paragraph IDs, so wire keys can be special property names.
+    it('keeps a paragraph whose ID is __proto__ and updates it from a later full note', () => {
+      const store = createNotebookReadStore();
+      const request = store.activate({ kind: 'note', noteId: 'note-a' });
+      request.acceptNote(note('note-a', [paragraph('__proto__'), paragraph('p1')]));
+      const before = store.getSnapshot().note!;
+
+      expect(before.paragraphIds).toEqual(['__proto__', 'p1']);
+      expect(Object.prototype.hasOwnProperty.call(before.paragraphsById, '__proto__')).toBe(true);
+      expect(Object.getPrototypeOf(before.paragraphsById)).toBe(Object.prototype);
+      expect(before.paragraphsById['__proto__'].text).toBe('%md __proto__');
+
+      request.acceptNote(note('note-a', [paragraph('__proto__', { text: '%md changed' }), paragraph('p1')]));
+      const after = store.getSnapshot().note!;
+
+      expect(after.paragraphsById['__proto__'].text).toBe('%md changed');
+      expect(after.paragraphsById.p1).toBe(before.paragraphsById.p1);
+    });
+
+    it('keeps __proto__ keys inside persisted chart settings', () => {
+      const store = createNotebookReadStore();
+      // JSON.parse creates `__proto__` as an own key, as a wire payload would.
+      const results = JSON.parse('{"__proto__": {"graph": {"mode": "table", "__proto__": {"height": 1}}}}');
+      store
+        .activate({ kind: 'note', noteId: 'note-a' })
+        .acceptNote(note('note-a', [paragraph('p1', { config: { results } })]));
+
+      const chartConfigs = store.getSnapshot().note!.paragraphsById.p1.chartConfigs;
+      expect(Object.keys(chartConfigs)).toEqual(['__proto__']);
+      const graph = chartConfigs['__proto__'] as { [key: string]: unknown };
+      expect(Object.keys(graph)).toEqual(['mode', '__proto__']);
+      expect(graph['__proto__']).toEqual({ height: 1 });
+    });
+
     it('keeps no reference to the host input', () => {
       const store = createNotebookReadStore();
       const input = note('note-a');
@@ -337,13 +371,15 @@ describe('notebook read store', () => {
       expect(store.getSnapshot()).toMatchObject({ noteId: 'note-a', revisionId: 'r1', status: 'ready' });
     });
 
-    it('treats a NOTE_REVISION without a note as not found', () => {
+    // Notebook#getNoteByRevision returns no note both for a missing revision and when the default
+    // repository does not support revisions, so the cause is unknown.
+    it('reports a NOTE_REVISION without a note as failed rather than not found', () => {
       const store = createNotebookReadStore();
       const request = store.activate({ kind: 'revision', noteId: 'note-a', revisionId: 'r1' });
 
       expect(request.acceptRevision({ noteId: 'note-a', revisionId: 'r1' })).toBe(true);
 
-      expect(store.getSnapshot()).toMatchObject({ status: 'not-found', note: null });
+      expect(store.getSnapshot()).toMatchObject({ status: 'failed', note: null });
     });
 
     it('switches between the live note and its revision, rejecting the replaced request', () => {
