@@ -10,10 +10,6 @@
  * limitations under the License.
  */
 
-/**
- * Data and operations the panel needs to display conversations and run replies.
- * Implementations can use a server connection or local fixtures.
- */
 export interface AssistantConversation {
   id: string;
   title?: string;
