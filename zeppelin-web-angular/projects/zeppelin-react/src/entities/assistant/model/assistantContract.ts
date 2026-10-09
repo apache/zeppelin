@@ -59,7 +59,7 @@ export interface AssistantTransport {
   deleteConversation(conversationId: string): Promise<void>;
   /** The latest page of history, or the page before `before` (an `earlierCursor`). */
   getMessages(conversationId: string, before?: string): Promise<AssistantMessagePage>;
-  /** Observe a retained request, including lost connections while its server status is being recovered. */
+  /** Observe local run state, including a lost connection until history is reloaded. */
   subscribeRunState?(conversationId: string, listener: (state: AssistantRunState) => void): () => void;
   openRun(conversationId: string, body: AssistantRunBody, signal: AbortSignal): AsyncIterable<AssistantRunEvent>;
 }
