@@ -78,7 +78,7 @@ jobs:
 
   publish:
     needs: build
-    if: github.event_name == 'push' && vars.STORYBOOK_PAGES_ENABLED == 'true'
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
