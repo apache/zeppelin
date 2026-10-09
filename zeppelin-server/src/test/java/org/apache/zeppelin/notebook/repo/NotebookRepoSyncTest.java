@@ -39,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -76,6 +78,7 @@ class NotebookRepoSyncTest {
   private InterpreterFactory factory;
   private InterpreterSettingManager interpreterSettingManager;
   private Credentials credentials;
+  private EventBus eventBus;
   private AuthenticationInfo anonymous;
   private NoteManager noteManager;
   private AuthorizationService authorizationService;
@@ -116,7 +119,8 @@ class NotebookRepoSyncTest {
     noteManager = new NoteManager(notebookRepoSync, zConf);
     authorizationService = new AuthorizationService(noteManager, zConf, storage);
     credentials = new Credentials(zConf, storage);
-    notebook = new Notebook(zConf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, credentials, null);
+    eventBus = new ZeppelinEventBus();
+    notebook = new Notebook(zConf, authorizationService, notebookRepoSync, noteManager, factory, interpreterSettingManager, credentials, eventBus);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
