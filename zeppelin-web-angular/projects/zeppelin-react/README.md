@@ -183,7 +183,3 @@ npm run build:storybook
 npx playwright install chromium
 npm run test:storybook
 ```
-
-The push workflow uploads the build as an artifact.
-When Pages serves `gh-pages` and `STORYBOOK_PAGES_ENABLED` is `true`, it also publishes each branch under `/storybook/branches/<branch-name>/`.
-The workflow summary contains the link.
