@@ -101,7 +101,10 @@ test.describe('Simple look-and-feel input capability handling', () => {
     await openTestNotebook(page);
     await setLookAndFeel(page, 'simple');
 
-    await expect.poll(() => page.evaluate(() => window.matchMedia('(any-hover: hover)').matches)).toBe(true);
+    // Some headless browsers (e.g. Firefox on Linux CI) report no hover-capable pointer, so the
+    // hover-to-reveal behavior cannot be exercised there.
+    const supportsHover = await page.evaluate(() => window.matchMedia('(any-hover: hover)').matches);
+    test.skip(!supportsHover, 'Requires a browser that reports a hover-capable pointer');
 
     const actionBar = page.locator('zeppelin-notebook-action-bar .bar');
     const actionControls = page.locator('zeppelin-notebook-action-bar .control');
