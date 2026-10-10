@@ -140,9 +140,7 @@ test.describe('Login Page', () => {
       });
 
       await test.step('Then the document should not overflow horizontally', async () => {
-        const overflow = await page.evaluate(
-          () => document.documentElement.scrollWidth - document.documentElement.clientWidth
-        );
+        const overflow = await page.evaluate(() => document.body.scrollWidth - document.documentElement.clientWidth);
         expect(overflow).toBe(0);
       });
 
