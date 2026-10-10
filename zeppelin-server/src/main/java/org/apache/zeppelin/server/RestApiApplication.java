@@ -23,6 +23,8 @@ import java.util.Set;
 
 import jakarta.ws.rs.core.Application;
 
+import org.apache.zeppelin.rest.AssistantConversationRestApi;
+import org.apache.zeppelin.rest.AssistantMessageRestApi;
 import org.apache.zeppelin.rest.AdminRestApi;
 import org.apache.zeppelin.rest.ConfigurationsRestApi;
 import org.apache.zeppelin.rest.CredentialRestApi;
@@ -43,6 +45,8 @@ public class RestApiApplication extends Application {
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> s = new HashSet<>();
+    s.add(AssistantConversationRestApi.class);
+    s.add(AssistantMessageRestApi.class);
     s.add(AdminRestApi.class);
     s.add(ConfigurationsRestApi.class);
     s.add(CredentialRestApi.class);
