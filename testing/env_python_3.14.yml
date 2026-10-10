@@ -1,8 +1,8 @@
 name: python_3
 channels:
   - conda-forge
-  - defaults
 dependencies:
+  - python=3.14
   - pandas>=2.2,<3.0
   - numpy>=1.21
   - pyarrow>=18
