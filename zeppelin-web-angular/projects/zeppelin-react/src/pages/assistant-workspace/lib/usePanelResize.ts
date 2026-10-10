@@ -30,7 +30,6 @@ export const usePanelResize = (
   onChange?: (width: number) => void
 ) => {
   const [width, setWidth] = useState(() => clamp(hostWidth ?? NOTEBOOK_SIDEBAR_WIDTH.initial));
-  const [resizing, setResizing] = useState(false);
   const drag = useRef<{ startX: number; startWidth: number; latest: number } | null>(null);
 
   useEffect(() => {
@@ -51,7 +50,6 @@ export const usePanelResize = (
     if (!drag.current) return;
     const { latest } = drag.current;
     drag.current = null;
-    setResizing(false);
     commit(latest);
   };
 
@@ -69,7 +67,6 @@ export const usePanelResize = (
       // Captured, so the move and up events keep coming here even when the pointer leaves the strip.
       event.currentTarget.setPointerCapture?.(event.pointerId);
       drag.current = { startX: event.clientX, startWidth: width, latest: width };
-      setResizing(true);
     },
     onPointerMove: (event: PointerEvent<HTMLElement>) => {
       if (!drag.current) return;
@@ -98,5 +95,5 @@ export const usePanelResize = (
     }
   } as const;
 
-  return { width, resizing, handleProps };
+  return { handleProps };
 };

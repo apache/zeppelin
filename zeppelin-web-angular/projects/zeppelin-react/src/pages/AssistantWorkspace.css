@@ -16,14 +16,14 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: inherit;
+  color: var(--assistant-nav-color);
   cursor: pointer;
   font-weight: 600;
 }
 
 .assistant-shell-nav:hover,
 .assistant-shell-nav[aria-pressed='true'] {
-  color: #3071a9;
+  color: var(--assistant-nav-active-color);
 }
 
 .assistant-shell-panel {

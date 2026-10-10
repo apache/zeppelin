@@ -11,6 +11,7 @@
  */
 
 import { act } from 'react';
+import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { AssistantShellProps } from '@zeppelin/sdk';
 import { mount } from './AssistantWorkspace';
@@ -58,6 +59,22 @@ describe('AssistantWorkspace remote', () => {
         ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     });
     expect(onPanelWidthChange).toHaveBeenCalledWith(386);
+
+    onPanelWidthChange.mockClear();
+    const resizeHandle = panel.querySelector<HTMLElement>('[role="separator"]')!;
+    await act(async () => fireEvent.pointerDown(resizeHandle, { button: 0, buttons: 1, clientX: 100 }));
+    await act(async () => fireEvent.pointerMove(resizeHandle, { buttons: 1, clientX: 140 }));
+    expect(panel.style.getPropertyValue('--assistant-panel-width')).toBe('426px');
+    expect(resizeHandle.getAttribute('aria-valuenow')).toBe('426');
+    expect(onPanelWidthChange).not.toHaveBeenCalled();
+    await act(async () => fireEvent.pointerUp(resizeHandle, { button: 0, clientX: 140 }));
+    expect(onPanelWidthChange).toHaveBeenCalledExactlyOnceWith(426);
+
+    onPanelWidthChange.mockClear();
+    await act(async () => fireEvent.pointerDown(resizeHandle, { button: 0, buttons: 1, clientX: 100 }));
+    await act(async () => fireEvent.pointerMove(resizeHandle, { buttons: 1, clientX: 120 }));
+    await act(async () => fireEvent.pointerMove(resizeHandle, { buttons: 0, clientX: 120 }));
+    expect(onPanelWidthChange).toHaveBeenCalledExactlyOnceWith(446);
 
     await act(async () => requestClose());
     expect(panel.textContent).toBe('');
