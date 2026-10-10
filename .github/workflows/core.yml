@@ -431,16 +431,16 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-${{ matrix.python }}-v1-${{ hashFiles(format('testing/locks/python-{0}-linux-64.conda.lock', matrix.python)) }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+            ${{ runner.os }}-${{ runner.arch }}-conda-python-${{ matrix.python }}-v1-
       - name: install environment
         run: ./mvnw install -DskipTests -pl spark-submit,spark/scala-${{ matrix.scala }} -am ${MAVEN_ARGS}
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
           activate-environment: python_3
-          environment-file: ${{ matrix.python == '3.14' && 'testing/env_python_3.14.yml' || 'testing/locks/python-3.9-linux-64.conda.lock' }}
+          environment-file: testing/locks/python-${{ matrix.python }}-linux-64.conda.lock
           channels: conda-forge
           conda-remove-defaults: true
           auto-update-conda: false
