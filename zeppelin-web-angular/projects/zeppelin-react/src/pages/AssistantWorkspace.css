@@ -1,0 +1,86 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.assistant-shell-nav {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.assistant-shell-nav:hover,
+.assistant-shell-nav[aria-pressed='true'] {
+  color: #3071a9;
+}
+
+.assistant-shell-panel {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  width: var(--assistant-panel-width);
+  height: calc(100dvh - var(--assistant-panel-top, 0px));
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid;
+  box-shadow: 4px 0 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.assistant-shell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid;
+}
+
+.assistant-shell-header h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.assistant-shell-header button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.assistant-shell-empty {
+  padding: 16px;
+}
+
+.assistant-shell-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+@media (max-width: 640px) {
+  .assistant-shell-panel {
+    width: min(var(--assistant-panel-width), 100vw);
+    margin-right: calc(-1 * min(var(--assistant-panel-width), 100vw));
+    margin-left: -40px;
+  }
+
+  .assistant-shell-resize {
+    display: none;
+  }
+}
