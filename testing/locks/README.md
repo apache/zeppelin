@@ -17,11 +17,12 @@ limitations under the License.
 
 # Python dependencies in Linux CI
 
-For the Linux CI environments listed below, the YAML files in `testing/` describe the dependencies we want, while CI installs the resolved Python 3.9 packages from the files here. Changing one of those YAML files alone will not change its CI environment; update the corresponding lock as well.
+For the Linux CI environments listed below, the YAML files in `testing/` describe the dependencies we want, while CI installs the resolved Conda packages from the files here. Changing one of those YAML files alone will not change its CI environment; update the corresponding lock as well.
 
 | Lock file | Environment it supplies |
 |---|---|
 | `python-3.9-linux-64.conda.lock` | Shared Conda environment for core, Python/Jupyter, integration, Spark, Livy, Flink, and frontend integration jobs. It covers `env_python_3.9.yml`, `env_python_3.yml`, and the Conda dependencies in both `env_python_3_with_flink_*.yml` files. |
+| `python-3.14-linux-64.conda.lock` | Conda environment for the Spark 4.1+ jobs, covering `env_python_3.14.yml`. |
 | `python-3.9-tensorflow-linux-64.conda.lock` | Conda environment for non-core interpreter jobs, described by `env_python_3_with_tensorflow.yml`. |
 | `pyflink-1.19-python-3.9.requirements.lock` | PyPI packages for the Flink 1.19 job, starting from the pip requirement in `env_python_3_with_flink_119.yml`. |
 | `pyflink-1.20-python-3.9.requirements.lock` | PyPI packages for the Flink 1.20 job, starting from the pip requirement in `env_python_3_with_flink_120.yml`. |

@@ -2,20 +2,21 @@ name: python_3
 channels:
   - conda-forge
 dependencies:
-  - python=3.8
+  - python=3.14
+  - pandas>=2.2,<3.0
+  - numpy>=1.21
+  - pyarrow>=18
   - pycodestyle
   - scipy
-  - numpy=1.19.5
-  - grpcio
-  - protobuf<4
+  - grpcio>=1.76,<2
+  - protobuf
   - pandasql
-  - sqlalchemy=1.4.46
+  - sqlalchemy
   - ipython
-  - ipython_genutils
   - ipykernel
-  - jupyter_client=5
+  - jupyter_client
   - hvplot
-  - holoviews=1.16
+  - holoviews
   - plotnine
   - seaborn
   - intake
@@ -24,5 +25,5 @@ dependencies:
   - altair
   - vega_datasets
   - plotly
-  - jinja2=3.0.3
+  - jinja2
   - pip
