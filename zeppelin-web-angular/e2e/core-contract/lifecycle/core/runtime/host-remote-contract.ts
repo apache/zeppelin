@@ -17,13 +17,7 @@ export type NotebookParagraphStatus = 'UNKNOWN' | 'READY' | 'PENDING' | 'RUNNING
 export type NotebookParagraphResultType = 'TEXT' | 'HTML' | 'TABLE' | 'IMG' | 'ANGULAR' | string;
 
 export type NotebookVisualizationMode =
-  | 'table'
-  | 'multiBarChart'
-  | 'pieChart'
-  | 'lineChart'
-  | 'stackedAreaChart'
-  | 'scatterChart'
-  | string;
+  'table' | 'multiBarChart' | 'pieChart' | 'lineChart' | 'stackedAreaChart' | 'scatterChart' | string;
 
 export type NotebookParagraphResult = Readonly<{
   type: NotebookParagraphResultType;
