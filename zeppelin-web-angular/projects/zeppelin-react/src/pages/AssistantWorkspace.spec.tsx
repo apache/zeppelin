@@ -17,7 +17,7 @@ import type { AssistantShellProps } from '@zeppelin/sdk';
 import { mount } from './AssistantWorkspace';
 
 describe('AssistantWorkspace remote', () => {
-  it('portals the navigation and panel, coordinates close, and shares the panel width', async () => {
+  it('portals the navigation and panel, coordinates close, and shares the sidebar width', async () => {
     const root = document.createElement('div');
     const navigation = document.createElement('div');
     const panel = document.createElement('div');
@@ -49,9 +49,9 @@ describe('AssistantWorkspace remote', () => {
     expect(panel.textContent).toBe('');
 
     await act(async () => navigation.querySelector('button')?.click());
-    expect(panel.textContent).toContain('No conversation yet.');
+    expect(panel.querySelector('aside')).not.toBeNull();
     expect(onPanelVisibilityChange).toHaveBeenLastCalledWith(true);
-    expect(panel.style.getPropertyValue('--assistant-panel-width')).toBe('370px');
+    expect(panel.style.getPropertyValue('--assistant-sidebar-width')).toBe('370px');
 
     await act(async () => {
       panel
@@ -64,7 +64,7 @@ describe('AssistantWorkspace remote', () => {
     const resizeHandle = panel.querySelector<HTMLElement>('[role="separator"]')!;
     await act(async () => fireEvent.pointerDown(resizeHandle, { button: 0, buttons: 1, clientX: 100 }));
     await act(async () => fireEvent.pointerMove(resizeHandle, { buttons: 1, clientX: 140 }));
-    expect(panel.style.getPropertyValue('--assistant-panel-width')).toBe('426px');
+    expect(panel.style.getPropertyValue('--assistant-sidebar-width')).toBe('426px');
     expect(resizeHandle.getAttribute('aria-valuenow')).toBe('426');
     expect(onPanelWidthChange).not.toHaveBeenCalled();
     await act(async () => fireEvent.pointerUp(resizeHandle, { button: 0, clientX: 140 }));

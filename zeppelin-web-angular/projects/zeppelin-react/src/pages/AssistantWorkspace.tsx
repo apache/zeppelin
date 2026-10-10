@@ -13,6 +13,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, Root } from 'react-dom/client';
+import { CloseOutlined } from '@ant-design/icons';
 import { theme } from 'antd';
 import type { AssistantShellProps } from '@zeppelin/sdk';
 import { ReactErrorBoundary } from '@/components';
@@ -70,7 +71,6 @@ export const AssistantWorkspace = ({
             className="assistant-shell-nav"
             style={
               {
-                '--assistant-nav-color': token.colorText,
                 '--assistant-nav-active-color': token.colorPrimary
               } as CSSProperties
             }
@@ -78,7 +78,9 @@ export const AssistantWorkspace = ({
             aria-pressed={visible}
             onClick={() => setVisible(open => !open)}
           >
-            AI
+            <span className="assistant-shell-nav-icon" aria-hidden="true">
+              AI
+            </span>
           </button>,
           navigation.element
         )}
@@ -88,22 +90,24 @@ export const AssistantWorkspace = ({
           <aside
             className="assistant-shell-panel"
             aria-label="AI Assistant workspace"
-            style={{
-              color: token.colorText,
-              background: token.colorBgContainer,
-              borderColor: token.colorBorderSecondary
-            }}
+            style={
+              {
+                color: token.colorText,
+                background: token.colorBgContainer,
+                borderColor: token.colorBorderSecondary,
+                '--assistant-close-color': token.colorTextSecondary
+              } as CSSProperties
+            }
             onKeyDown={event => {
               if (event.key === 'Escape') close();
             }}
           >
             <header className="assistant-shell-header" style={{ borderColor: token.colorBorderSecondary }}>
               <h2>AI Assistant</h2>
-              <button aria-label="Close AI Assistant" onClick={close}>
-                ×
+              <button type="button" className="assistant-shell-close" aria-label="Close AI Assistant" onClick={close}>
+                <CloseOutlined aria-hidden="true" />
               </button>
             </header>
-            <p className="assistant-shell-empty">No conversation yet.</p>
             <div className="assistant-shell-resize" {...handleProps} />
           </aside>,
           panel.element
