@@ -202,8 +202,9 @@ public class NotebookService {
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
 
+    String noteId = null;
     try {
-      String noteId = notebook.createNote(normalizeNotePath(notePath), defaultInterpreterGroup,
+      noteId = notebook.createNote(normalizeNotePath(notePath), defaultInterpreterGroup,
           context.getAutheInfo(), false);
       // it's an empty note. so add one paragraph
       notebook.processNote(noteId,
@@ -217,9 +218,30 @@ public class NotebookService {
         });
 
       return noteId;
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
+      rollbackFailedNoteCreation(noteId, context.getAutheInfo(), e);
       callback.onFailure(e, context);
       return null;
+    }
+  }
+
+  private void rollbackFailedNoteCreation(String noteId, AuthenticationInfo subject,
+                                          Exception failure) {
+    if (noteId == null) {
+      return;
+    }
+
+    try {
+      notebook.removeNote(noteId, subject);
+    } catch (Exception cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
+    }
+
+    authorizationService.removeNoteAuth(noteId);
+    try {
+      authorizationService.saveNoteAuth();
+    } catch (Exception cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
     }
   }
 
