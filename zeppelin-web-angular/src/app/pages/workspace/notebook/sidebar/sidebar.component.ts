@@ -10,9 +10,12 @@
  * limitations under the License.
  */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { Note } from '@zeppelin/sdk';
+import { AssistantSlots } from '../assistant/assistant-slots';
 
 enum SidebarState {
   CLOSED = 'CLOSED',
@@ -26,12 +29,33 @@ enum SidebarState {
   styleUrls: ['./sidebar.component.less'],
   standalone: false
 })
-export class NotebookSidebarComponent {
+export class NotebookSidebarComponent implements OnInit, OnDestroy {
   @Input() note!: Exclude<Note['note'], undefined>;
   @Output() readonly isSidebarOpenChange = new EventEmitter<boolean>();
   @Output() readonly scrollToParagraph = new EventEmitter<string>();
   sidebarState = SidebarState.CLOSED;
   SidebarState = SidebarState;
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly assistantSlots: AssistantSlots
+  ) {}
+
+  ngOnInit(): void {
+    this.assistantSlots.panelOpen.pipe(filter(Boolean), takeUntil(this.destroy$)).subscribe(() => {
+      if (this.sidebarState !== SidebarState.CLOSED) {
+        this.sidebarState = SidebarState.CLOSED;
+        this.isSidebarOpenChange.emit(false);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   setOrToggleSidebarState(sidebarState: SidebarState) {
     if (this.sidebarState === sidebarState) {
@@ -42,6 +66,7 @@ export class NotebookSidebarComponent {
     if (this.sidebarState === SidebarState.CLOSED) {
       this.isSidebarOpenChange.emit(false);
     } else {
+      this.assistantSlots.requestPanelClose();
       this.isSidebarOpenChange.emit(true);
     }
   }
