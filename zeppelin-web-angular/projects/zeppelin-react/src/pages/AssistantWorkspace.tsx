@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, Root } from 'react-dom/client';
 import { theme } from 'antd';
@@ -68,7 +68,12 @@ export const AssistantWorkspace = ({
           <button
             ref={button}
             className="assistant-shell-nav"
-            style={{ color: token.colorText }}
+            style={
+              {
+                '--assistant-nav-color': token.colorText,
+                '--assistant-nav-active-color': token.colorPrimary
+              } as CSSProperties
+            }
             aria-label="Toggle AI Assistant"
             aria-pressed={visible}
             onClick={() => setVisible(open => !open)}
