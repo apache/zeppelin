@@ -260,7 +260,6 @@ const abandon = (tracking: RunTracking, runId: string) => {
 // ACKs belong to the connection, even if the note or conversation that sent the request has unmounted.
 const trackPendingRun = (socket: AssistantSocket, conversationId: string, tracking: RunTracking): PendingRun => {
   const pending: PendingRun = { abandoned: false };
-  tracking.disconnected.delete(conversationId);
   tracking.pending.set(conversationId, pending);
   notifyRunState(tracking, conversationId);
   if (!tracking.stopTracking) {
@@ -271,6 +270,7 @@ const trackPendingRun = (socket: AssistantSocket, conversationId: string, tracki
       if (event.type === 'run.started' && runId && request) {
         request.runId = runId;
         tracking.active.set(event.conversationId, runId);
+        tracking.disconnected.delete(event.conversationId);
         if (request.abandoned) abandon(tracking, runId);
         tracking.pending.delete(event.conversationId);
       } else if (event.type === 'run.failed' || event.type === 'run.completed') {
