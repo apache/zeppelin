@@ -5,6 +5,9 @@
     "*.css"
   ],
   "scripts": {
+    "postinstall": "npm run apply:patches",
+    "apply:patches": "patch-package && node scripts/check-braces-patch.cjs",
+    "audit": "node scripts/check-braces-patch.cjs && audit-ci --config audit-ci.jsonc",
     "start": "webpack serve --config webpack.config.js --mode development",
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack serve --config webpack.config.js --mode development",
@@ -41,6 +44,7 @@
     "@typescript-eslint/parser": "^8.56.1",
     "@vitest/coverage-v8": "4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
+    "audit-ci": "7.1.0",
     "css-loader": "6.8.0",
     "eslint": "^9.28.0",
     "eslint-plugin-react": "^7.37.5",
@@ -48,6 +52,7 @@
     "globals": "^15.14.0",
     "html-webpack-plugin": "5.5.0",
     "jsdom": "29.1.1",
+    "patch-package": "8.0.1",
     "style-loader": "3.3.0",
     "ts-loader": "9.6.2",
     "typescript": "5.9.3",
