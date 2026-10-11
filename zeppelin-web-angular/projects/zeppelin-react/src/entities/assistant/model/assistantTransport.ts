@@ -219,7 +219,7 @@ export interface RunTracking {
   abandoned: Set<string>;
   pending: Map<string, PendingRun>;
   active: Map<string, string>;
-  disconnected: Set<string>;
+  disconnected: Map<string, object>;
   listeners: Map<string, Set<(state: AssistantRunState) => void>>;
   stopTracking?: () => void;
 }
@@ -227,7 +227,7 @@ export const createRunTracking = (): RunTracking => ({
   abandoned: new Set(),
   pending: new Map(),
   active: new Map(),
-  disconnected: new Set(),
+  disconnected: new Map(),
   listeners: new Map()
 });
 const runState = (tracking: RunTracking, conversationId: string): AssistantRunState =>
@@ -289,7 +289,7 @@ const trackPendingRun = (socket: AssistantSocket, conversationId: string, tracki
       tracking.pending.clear();
       tracking.active.clear();
       tracking.abandoned.clear();
-      conversations.forEach(id => tracking.disconnected.add(id));
+      conversations.forEach(id => tracking.disconnected.set(id, {}));
       conversations.forEach(id => notifyRunState(tracking, id));
       tracking.stopTracking?.();
     });
@@ -479,12 +479,16 @@ export const createAssistantTransport = (
     },
     getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
+      const disconnectedAtRequest = runs.disconnected.get(conversationId);
       const page = await requestJson<MessagePage>(
         `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
         {},
         onAuthError
       );
-      if (!before && runs.disconnected.delete(conversationId)) notifyRunState(runs, conversationId);
+      if (!before && disconnectedAtRequest && runs.disconnected.get(conversationId) === disconnectedAtRequest) {
+        runs.disconnected.delete(conversationId);
+        notifyRunState(runs, conversationId);
+      }
       // The server pages from the latest message backwards; the panel renders oldest to newest.
       return { messages: toVisibleMessages([...page.messages].reverse()), earlierCursor: page.cursor ?? null };
     },

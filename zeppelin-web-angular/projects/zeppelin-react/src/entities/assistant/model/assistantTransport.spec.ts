@@ -793,6 +793,37 @@ describe('retained run state', () => {
     stop();
   });
 
+  it('does not recover a disconnect with history requested before it', async () => {
+    let resolveHistory: (response: Response) => void = () => undefined;
+    const delayedHistory = new Promise<Response>(resolve => {
+      resolveHistory = resolve;
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockReturnValueOnce(delayedHistory)
+        .mockResolvedValueOnce(new Response(JSON.stringify({ body: { messages: [], cursor: null } })))
+    );
+    const socket = fakeSocket();
+    const transport = createAssistantTransport('/api', 'note', socket);
+    const run = collect(transport.openRun('conversation', { prompt: 'question' }, new AbortController().signal));
+    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
+    const staleHistory = transport.getMessages('conversation');
+    socket.close();
+    await expect(run).rejects.toBeInstanceOf(AssistantConnectionError);
+    const states: AssistantRunState[] = [];
+    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
+
+    resolveHistory(new Response(JSON.stringify({ body: { messages: [], cursor: null } })));
+    await staleHistory;
+    expect(states).toEqual(['disconnected']);
+
+    await transport.getMessages('conversation');
+    expect(states).toEqual(['disconnected', 'idle']);
+    stop();
+  });
+
   it('clears a retained run on disconnect and releases listeners', async () => {
     const socket = fakeSocket();
     const transport = createAssistantTransport('/api', 'note', socket);
