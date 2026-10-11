@@ -17,6 +17,14 @@ import { ReactRemoteLoaderService } from './react-remote-loader.service';
 import { ReactExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 import { ReactMountDirective } from './react-mount.directive';
 
+const callbackFrom = (props: ReactProps | undefined, name: string) => {
+  const callback = props?.[name];
+  if (typeof callback !== 'function') {
+    throw new Error(`Remote did not receive the ${name} callback`);
+  }
+  return callback;
+};
+
 describe('ReactMountDirective', () => {
   it('mounts React remotes outside the Angular zone without TestBed', async () => {
     const host = new ElementRef<HTMLElement>(document.createElement('div'));
@@ -34,8 +42,8 @@ describe('ReactMountDirective', () => {
         return mountHandle;
       }
     };
-    const loadModule = vi.fn(async <T>(): Promise<T> => remote as T);
-    const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
     // zone.js cannot patch the native async/await vitest emits.
     // isInAngularZone() is therefore always false past the await.
     const runOutsideAngular = ngZone.runOutsideAngular.bind(ngZone);
@@ -47,7 +55,7 @@ describe('ReactMountDirective', () => {
         insideRunOutsideAngular = false;
       }
     });
-    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+    const directive = new ReactMountDirective(host, ngZone, loader);
 
     directive.module = 'paragraph-footer';
     directive.ngOnChanges({
@@ -55,7 +63,7 @@ describe('ReactMountDirective', () => {
     });
     await vi.waitFor(() => expect(mountedOutsideZone).toHaveLength(1));
 
-    expect(loadModule).toHaveBeenCalledWith('paragraph-footer');
+    expect(loader.loadModule).toHaveBeenCalledWith('paragraph-footer');
     expect(mountedOutsideZone).toEqual([true]);
 
     directive.ngOnDestroy();
@@ -81,8 +89,8 @@ describe('ReactMountDirective', () => {
         return mountHandle;
       }
     };
-    const loadModule = vi.fn(async <T>(): Promise<T> => remote as T);
-    const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
     const zoneStates: boolean[] = [];
     const onMountError = vi.fn(() => {
       zoneStates.push(NgZone.isInAngularZone());
@@ -90,7 +98,7 @@ describe('ReactMountDirective', () => {
     const onUpdateError = vi.fn(() => {
       zoneStates.push(NgZone.isInAngularZone());
     });
-    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+    const directive = new ReactMountDirective(host, ngZone, loader);
 
     directive.module = 'paragraph-footer';
     directive.reactProps = { onError: onMountError };
@@ -101,7 +109,7 @@ describe('ReactMountDirective', () => {
     await vi.waitFor(() => expect(mountedProps).toBeDefined());
 
     ngZone.runOutsideAngular(() => {
-      mountedProps!.onError!(new Error('mount remote failed'));
+      callbackFrom(mountedProps, 'onError')(new Error('mount remote failed'));
     });
 
     directive.reactProps = { onError: onUpdateError };
@@ -110,7 +118,7 @@ describe('ReactMountDirective', () => {
     });
 
     ngZone.runOutsideAngular(() => {
-      updatedProps!.onError!(new Error('update remote failed'));
+      callbackFrom(updatedProps, 'onError')(new Error('update remote failed'));
     });
 
     expect(onMountError).toHaveBeenCalledOnce();
@@ -129,8 +137,8 @@ describe('ReactMountDirective', () => {
         return { update: vi.fn(), unmount: vi.fn() };
       }
     };
-    const loadModule = vi.fn(async <T>(): Promise<T> => remote as T);
-    const loader = { loadModule } as Pick<ReactRemoteLoaderService, 'loadModule'>;
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
     const zoneStates: boolean[] = [];
     const received: unknown[] = [];
     // A surface that hands the remote a real callback, the way the notebook
@@ -140,7 +148,7 @@ describe('ReactMountDirective', () => {
       zoneStates.push(NgZone.isInAngularZone());
       received.push(repo);
     });
-    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+    const directive = new ReactMountDirective(host, ngZone, loader);
 
     directive.module = 'notebook-repos';
     directive.reactProps = { onRepoChange };
@@ -151,7 +159,7 @@ describe('ReactMountDirective', () => {
     await vi.waitFor(() => expect(mountedProps).toBeDefined());
 
     ngZone.runOutsideAngular(() => {
-      (mountedProps!.onRepoChange as (repo: unknown) => void)({ name: 'GitNotebookRepo' });
+      callbackFrom(mountedProps, 'onRepoChange')({ name: 'GitNotebookRepo' });
     });
 
     expect(zoneStates).toEqual([true]);
@@ -168,12 +176,10 @@ describe('ReactMountDirective', () => {
         return { update: vi.fn(), unmount: vi.fn() };
       }
     };
-    const loader = { loadModule: vi.fn(async <T>(): Promise<T> => remote as T) } as Pick<
-      ReactRemoteLoaderService,
-      'loadModule'
-    >;
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
     const repositories = [{ name: 'GitNotebookRepo' }];
-    const directive = new ReactMountDirective(host, ngZone, loader as ReactRemoteLoaderService);
+    const directive = new ReactMountDirective(host, ngZone, loader);
 
     directive.module = 'notebook-repos';
     directive.reactProps = { repositories, readOnly: false };
@@ -184,7 +190,62 @@ describe('ReactMountDirective', () => {
     await vi.waitFor(() => expect(mountedProps).toBeDefined());
 
     // Same references, so the remote can still memoize on them.
-    expect(mountedProps!.repositories).toBe(repositories);
-    expect(mountedProps!.readOnly).toBe(false);
+    expect(mountedProps?.repositories).toBe(repositories);
+    expect(mountedProps?.readOnly).toBe(false);
+  });
+  it('returns what a host callback returns', async () => {
+    const ngZone = new NgZone({});
+    let mountedProps: ReactProps | undefined;
+    const remote: ReactExposedModule = {
+      mount: (_element, props) => {
+        mountedProps = props;
+        return { update: vi.fn(), unmount: vi.fn() };
+      }
+    };
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
+    const directive = new ReactMountDirective(new ElementRef(document.createElement('div')), ngZone, loader);
+    const unsubscribe = vi.fn();
+    directive.module = './AssistantWorkspace';
+    directive.reactProps = { subscribePanelClose: () => unsubscribe };
+    directive.ngOnChanges({ module: new SimpleChange(undefined, directive.module, true) });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+    expect(ngZone.runOutsideAngular(() => callbackFrom(mountedProps, 'subscribePanelClose')())).toBe(unsubscribe);
+    directive.ngOnDestroy();
+  });
+
+  it('logs synchronous host callback failures by default and keeps wrapper identity stable', async () => {
+    const ngZone = new NgZone({});
+    const update = vi.fn();
+    let mountedProps: ReactProps | undefined;
+    const remote: ReactExposedModule = {
+      mount: (_element, props) => {
+        mountedProps = props;
+        return { update, unmount: vi.fn() };
+      }
+    };
+    const loader = new ReactRemoteLoaderService();
+    vi.spyOn(loader, 'loadModule').mockResolvedValue(remote);
+    const directive = new ReactMountDirective(new ElementRef(document.createElement('div')), ngZone, loader);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const stable = vi.fn(() => 'value');
+    const failing = () => {
+      throw new Error('host failed');
+    };
+    directive.module = './ParagraphFooter';
+    directive.reactProps = { stable, failing };
+    directive.ngOnChanges({ module: new SimpleChange(undefined, directive.module, true) });
+    await vi.waitFor(() => expect(mountedProps).toBeDefined());
+
+    expect(callbackFrom(mountedProps, 'stable')()).toBe('value');
+    expect(() => callbackFrom(mountedProps, 'failing')()).not.toThrow();
+    expect(consoleError).toHaveBeenCalledWith('[ReactMountDirective] host callback "failing" threw', expect.any(Error));
+
+    const firstStable = callbackFrom(mountedProps, 'stable');
+    directive.reactProps = { stable, failing, label: 'next' };
+    directive.ngOnChanges({ reactProps: new SimpleChange(undefined, directive.reactProps, false) });
+    expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ stable: firstStable, label: 'next' }));
+    consoleError.mockRestore();
+    directive.ngOnDestroy();
   });
 });

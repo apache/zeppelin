@@ -10,16 +10,9 @@
  * limitations under the License.
  */
 
-import { Alert } from 'antd';
-
-export const Empty = () => {
-  return (
-    <Alert
-      data-testid="react-empty-paragraph"
-      title="No Data"
-      description="No paragraph data found"
-      type="warning"
-      showIcon
-    />
-  );
-};
+/* Applied for two frames while the host theme changes, so colours switch with the shell without antd easing. */
+html.zeppelin-theme-switching *,
+html.zeppelin-theme-switching *::before,
+html.zeppelin-theme-switching *::after {
+  transition: none !important;
+}

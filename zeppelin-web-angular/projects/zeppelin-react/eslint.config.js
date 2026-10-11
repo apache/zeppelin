@@ -71,7 +71,8 @@ module.exports = tseslint.config(
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       // == legacy `plugin:react-hooks/recommended`
-      ...reactHooks.configs.recommended.rules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
 
       // == legacy custom `rules` (1:1 port from .eslintrc.json)
       '@typescript-eslint/no-explicit-any': 'error',

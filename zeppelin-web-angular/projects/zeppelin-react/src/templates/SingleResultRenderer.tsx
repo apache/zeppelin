@@ -38,7 +38,7 @@ export const SingleResultRenderer = ({ result, index, config }: SingleResultRend
     case DatasetType.ANGULAR:
       return (
         <Alert
-          message="Angular Component"
+          title="Angular Component"
           description="Angular components are not supported in React environment"
           type="warning"
           showIcon

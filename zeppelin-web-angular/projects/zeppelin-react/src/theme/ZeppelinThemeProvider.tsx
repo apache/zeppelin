@@ -23,19 +23,24 @@ export interface ZeppelinThemeProviderProps {
   children: ReactNode;
   /** Extra tokens for a single surface, e.g. a monospace result font. */
   token?: ThemeConfig['token'];
+  /** Override the isolated prefix for a surface with its own styles. */
+  prefixCls?: string;
 }
 
 /**
- * Every exposed module should render inside this provider. Without it antd
- * builds its styles from the default (light) algorithm, and the remote looks
- * dark only for as long as the shell's global `.ant-*` rules happen to cover
- * the components in use.
+ * Every exposed module needs the host theme and an isolated class prefix so
+ * Angular shell styles cannot override React component internals.
  */
-export const ZeppelinThemeProvider = ({ children, token }: ZeppelinThemeProviderProps) => {
+export const ZeppelinThemeProvider = ({
+  children,
+  token,
+  prefixCls = 'zeppelin-react'
+}: ZeppelinThemeProviderProps) => {
   const mode = useHostTheme();
 
   return (
     <ConfigProvider
+      prefixCls={prefixCls}
       theme={{
         algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
         token

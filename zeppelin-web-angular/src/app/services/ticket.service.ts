@@ -13,8 +13,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin, BehaviorSubject, Subject } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { forkJoin, BehaviorSubject, EMPTY, Subject } from 'rxjs';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
 
@@ -31,6 +31,7 @@ export class TicketService {
   ticket$ = new Subject<ITicketWrapped>();
   logout$ = new BehaviorSubject<boolean>(false);
   version?: string;
+  private logoutInProgress = false;
 
   getTicket() {
     return forkJoin([
@@ -66,6 +67,24 @@ export class TicketService {
   clearTicket() {
     this.ticket = new ITicketWrapped();
     this.originTicket = new ITicket();
+  }
+
+  /** Follows a 401 redirect, or logs out once on 405, for a request the server rejected. */
+  handleAuthFailure(status: number, location: string | null): void {
+    if (status === 401 && location !== null) {
+      window.location.href = location;
+    } else if (status === 405 && !this.logoutInProgress) {
+      this.logoutInProgress = true;
+      this.logout()
+        .pipe(
+          // logout() clears the ticket and navigates even when the logout request fails.
+          catchError(() => EMPTY),
+          finalize(() => {
+            this.logoutInProgress = false;
+          })
+        )
+        .subscribe();
+    }
   }
 
   logout() {

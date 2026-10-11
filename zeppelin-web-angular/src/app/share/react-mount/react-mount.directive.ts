@@ -14,6 +14,8 @@ import { Directive, ElementRef, Input, NgZone, OnChanges, OnDestroy, SimpleChang
 import { ReactRemoteLoaderService } from './react-remote-loader.service';
 import { ReactExposedModule, ReactHostCallbacks, ReactMountHandle, ReactProps } from './react-mount-handle';
 
+type HostCallback = (...args: unknown[]) => unknown;
+
 @Directive({
   selector: '[zeppelin-react-mount]',
   standalone: false
@@ -25,6 +27,8 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
   private latestRawProps: ReactProps & ReactHostCallbacks = {};
   private latestProps: ReactProps & ReactHostCallbacks = {};
   private destroyed = false;
+  // Stable wrappers keep a host callback's identity across prop updates, so React effects on it do not re-run.
+  private readonly wrappedCallbacks = new WeakMap<HostCallback, HostCallback>();
   private loading = false;
   private handle: ReactMountHandle | null = null;
   private mountedModule: string | null = null;
@@ -51,10 +55,11 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
       return;
     }
 
-    if (this.handle) {
+    const handle = this.handle;
+    if (handle) {
       this.ngZone.runOutsideAngular(() => {
         try {
-          this.handle!.update(this.latestProps);
+          handle.update(this.latestProps);
         } catch (err) {
           this.reportError(err);
         }
@@ -131,24 +136,32 @@ export class ReactMountDirective implements OnChanges, OnDestroy {
    * would leave the host's state change and any async work untracked by NgZone.
    */
   private withHostCallbacks(props: ReactProps & ReactHostCallbacks): ReactProps & ReactHostCallbacks {
-    const entries = Object.entries(props).filter(([, value]) => typeof value === 'function');
+    const entries = Object.entries(props).filter(
+      (entry): entry is [string, HostCallback] => typeof entry[1] === 'function'
+    );
     if (entries.length === 0) {
       return props;
     }
 
     const wrapped: ReactProps = { ...props };
     for (const [name, callback] of entries) {
-      wrapped[name] = (...args: unknown[]): void => {
-        this.ngZone.run(() => {
-          try {
-            (callback as (...callbackArgs: unknown[]) => void)(...args);
-          } catch (error) {
-            // Swallowed rather than rethrown: the caller is React, which would
-            // turn it into a render error in a tree the host does not own.
-            console.error(`[ReactMountDirective] host callback "${name}" threw`, error);
-          }
-        });
-      };
+      let wrapper = this.wrappedCallbacks.get(callback);
+      if (!wrapper) {
+        // Return the result, e.g. the unsubscribe a subscribe-style callback hands back.
+        wrapper = (...args: unknown[]): unknown =>
+          this.ngZone.run(() => {
+            try {
+              return callback(...args);
+            } catch (error) {
+              // Swallowed rather than rethrown: the caller is React, which would
+              // turn it into a render error in a tree the host does not own.
+              console.error(`[ReactMountDirective] host callback "${name}" threw`, error);
+              return undefined;
+            }
+          });
+        this.wrappedCallbacks.set(callback, wrapper);
+      }
+      wrapped[name] = wrapper;
     }
     return wrapped;
   }

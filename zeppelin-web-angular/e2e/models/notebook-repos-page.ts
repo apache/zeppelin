@@ -68,6 +68,8 @@ export class NotebookReposPage extends BasePage {
   }
 }
 
+export const getNotebookRepoSettingRows = (root: Locator): Locator => root.locator('tbody tr:has(td:nth-child(2))');
+
 export class NotebookRepoItemPage extends BasePage {
   readonly repositoryCard: Locator;
   readonly repositoryName: Locator;
@@ -80,13 +82,12 @@ export class NotebookRepoItemPage extends BasePage {
   constructor(page: Page, repoName: string) {
     super(page);
     this.repositoryCard = page.locator(`[data-testid="notebook-repo-item"][data-repo-name="${repoName}"]`);
-    this.repositoryName = this.repositoryCard.locator('.ant-card-head-title');
+    this.repositoryName = this.repositoryCard.getByText(repoName, { exact: true });
     this.editButton = this.repositoryCard.locator('button:has-text("Edit")');
     this.saveButton = this.repositoryCard.locator('button:has-text("Save")');
     this.cancelButton = this.repositoryCard.locator('button:has-text("Cancel")');
-    // .ant-table is what both ng-zorro and antd render.
-    this.settingTable = this.repositoryCard.locator('.ant-table');
-    this.settingRows = this.repositoryCard.locator('tbody tr:not(.ant-table-placeholder)');
+    this.settingTable = this.repositoryCard.getByRole('table');
+    this.settingRows = getNotebookRepoSettingRows(this.repositoryCard);
   }
 
   async clickEdit(): Promise<void> {
@@ -109,15 +110,13 @@ export class NotebookRepoItemPage extends BasePage {
 
   async fillSettingInput(settingName: string, value: string): Promise<void> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    // .ant-input, not [nz-input], since ng-zorro's nz-input directive renders that class too,
-    // and it excludes a DROPDOWN row's Select search input.
-    const input = row.locator('input.ant-input');
+    const input = row.getByRole('textbox');
     await this.fillAndVerifyInput(input, value);
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
-    const input = row.locator('input.ant-input');
+    const input = row.getByRole('textbox');
     return await input.inputValue();
   }
 
