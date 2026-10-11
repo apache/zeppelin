@@ -21,3 +21,9 @@ export interface AssistantParagraphRef {
   id: string;
   title?: string;
 }
+
+/** Notebook DOM targets for the React navigation button and panel. */
+export interface AssistantSlot {
+  element: HTMLElement;
+  kind: 'navigation' | 'panel';
+}
