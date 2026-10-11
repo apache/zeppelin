@@ -56,6 +56,8 @@ public class ZeppelinEventBus implements EventBus {
       } catch (Exception e) {
         LOGGER.error("Failed to handle event: {}", eventType.getName(), e);
       }
-    });
+    }, error -> LOGGER.error(
+        "Event subscription terminated: {}", eventType.getName(), error)
+    );
   }
 }

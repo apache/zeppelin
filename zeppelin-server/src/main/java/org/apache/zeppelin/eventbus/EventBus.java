@@ -24,6 +24,9 @@ public interface EventBus {
 
   void post(ZeppelinEvent event);
 
+  /**
+   * Handlers may not run on the same thread that calls post().
+   */
   <T extends ZeppelinEvent> Disposable subscribe(
       Class<T> eventType,
       Consumer<? super T> handler
