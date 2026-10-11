@@ -38,6 +38,8 @@ public class ConfigurationService {
     Map<String, String> properties = zConf.dumpConfigurations(key ->
         !key.contains("password") &&
             !key.equals(ZeppelinConfiguration.ConfVars
+                .ZEPPELIN_ASSISTANT_OPENAI_API_KEY.getVarName()) &&
+            !key.equals(ZeppelinConfiguration.ConfVars
                 .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING.getVarName()));
     callback.onSuccess(properties, context);
     return properties;
@@ -53,6 +55,8 @@ public class ConfigurationService {
       throws IOException {
     Map<String, String> properties = zConf.dumpConfigurations(key ->
         !key.contains("password") &&
+            !key.equals(ZeppelinConfiguration.ConfVars
+                .ZEPPELIN_ASSISTANT_OPENAI_API_KEY.getVarName()) &&
             !key.equals(ZeppelinConfiguration.ConfVars
                     .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
                     .getVarName()) &&

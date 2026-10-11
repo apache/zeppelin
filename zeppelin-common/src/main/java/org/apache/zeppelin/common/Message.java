@@ -203,7 +203,9 @@ public class Message implements JsonSerializable {
     COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
     PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
     NOTE_RUNNING_STATUS,        // [s-c] sequential run status will be change
-    NOTICE                        // [s-c] Notice
+    NOTICE,                       // [s-c] Notice
+    ASSISTANT_SEND_MESSAGE,       // [c-s] send a message to the notebook assistant
+    ASSISTANT_EVENT               // [s-c] assistant run stream event (see "type" field)
   }
 
   // these messages will be ignored during the sequential run of the note

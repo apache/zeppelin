@@ -846,4 +846,30 @@
   <description>fields to be excluded from being saved in note files, with Paragraph prefix mean the fields in Paragraph, e.g. Paragraph.results</description>
 </property>
 
+<property>
+  <name>zeppelin.assistant.enable</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>zeppelin.assistant.openai.api.key</name>
+  <value></value>
+</property>
+
+<property>
+  <name>zeppelin.assistant.openai.endpoint</name>
+  <value>https://api.openai.com/v1</value>
+</property>
+
+<property>
+  <name>zeppelin.assistant.openai.model</name>
+  <value>gpt-6-luna</value>
+</property>
+
+<property>
+  <name>zeppelin.assistant.dir</name>
+  <value>assistant</value>
+  <description>Directory for assistant conversations.</description>
+</property>
+
 </configuration>

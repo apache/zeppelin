@@ -92,6 +92,8 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.NoSearchService;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
+import org.apache.zeppelin.service.assistant.Assistant;
+import org.apache.zeppelin.service.assistant.AssistantModule;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.auth.AuthenticationServiceFactory;
 import org.apache.zeppelin.socket.ConnectionManager;
@@ -139,6 +141,7 @@ public class ZeppelinServer implements AutoCloseable {
   private final Server jettyWebServer;
   private final ServiceLocator sharedServiceLocator;
   private final ConfigStorage storage;
+  private AssistantModule assistantModule;
 
   public ZeppelinServer(ZeppelinConfiguration zConf) throws IOException {
     this(zConf, DEFAULT_SERVICE_LOCATOR_NAME);
@@ -255,6 +258,24 @@ public class ZeppelinServer implements AutoCloseable {
     // Lazy loading will cause paragraph recovery and cron job initialization is delayed.
     Notebook notebook = ServiceLocatorUtilities.getService(
             sharedServiceLocator, Notebook.class.getName());
+
+    assistantModule = new AssistantModule(
+        zConf.isAssistantEnabled(),
+        zConf.getAssistantEndpoint(),
+        zConf.getAssistantApiKey(),
+        zConf.getAssistantModel(),
+        zConf.getAssistantDir(),
+        notebook,
+        sharedServiceLocator.getService(NotebookService.class),
+        sharedServiceLocator.getService(AuthorizationService.class)
+    );
+    ServiceLocatorUtilities.bind(sharedServiceLocator, new AbstractBinder() {
+      @Override
+      protected void configure() {
+        bind(assistantModule.assistant).to(Assistant.class);
+      }
+    });
+
     ServiceLocatorUtilities.getService(
       sharedServiceLocator, SearchService.class.getName());
     ServiceLocatorUtilities.getService(
@@ -361,6 +382,9 @@ public class ZeppelinServer implements AutoCloseable {
         if (sharedServiceLocator != null) {
           // Stop after Jetty so no new connection can restart the heartbeat scheduler.
           sharedServiceLocator.getService(NotebookServer.class).stopHeartbeatScheduler();
+          if (assistantModule != null) {
+            assistantModule.close();
+          }
           if (!zConf.isRecoveryEnabled()) {
             sharedServiceLocator.getService(InterpreterSettingManager.class).close();
           }

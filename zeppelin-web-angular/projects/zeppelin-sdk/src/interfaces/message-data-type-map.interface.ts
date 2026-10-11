@@ -11,6 +11,7 @@
  */
 
 import { AuthInfo, ErrorInfo } from './message-common.interface';
+import { AssistantEvent, AssistantSendMessage } from './message-assistant.interface';
 import {
   CheckpointNote,
   CloneNote,
@@ -91,6 +92,7 @@ import { OP } from './message-operator.interface';
 export type MessageDataTypeMap = MessageSendDataTypeMap | MessageReceiveDataTypeMap;
 
 export interface MessageReceiveDataTypeMap {
+  [OP.ASSISTANT_EVENT]: AssistantEvent;
   [OP.COMPLETION_LIST]: CompletionReceived;
   [OP.NOTES_INFO]: NotesInfo;
   [OP.NOTE]: Note;
@@ -127,6 +129,7 @@ export interface MessageReceiveDataTypeMap {
 }
 
 export interface MessageSendDataTypeMap {
+  [OP.ASSISTANT_SEND_MESSAGE]: AssistantSendMessage;
   [OP.PING]: undefined;
   [OP.LIST_NOTES]: undefined;
   [OP.GET_HOME_NOTE]: undefined;

@@ -91,6 +91,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
+import org.apache.zeppelin.service.assistant.AssistantEventListener;
+import org.apache.zeppelin.service.assistant.Assistant;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.service.exception.JobManagerForbiddenException;
@@ -162,6 +164,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private Provider<NotebookService> notebookServiceProvider;
   private AuthorizationService authorizationService;
   private Provider<JobManagerService> jobManagerServiceProvider;
+  private Provider<Assistant> assistantProvider;
 
   public NotebookServer() {
     NotebookServer.self.set(this);
@@ -218,6 +221,16 @@ public class NotebookServer implements AngularObjectRegistryListener,
   public void setJobManagerService(
       Provider<JobManagerService> jobManagerServiceProvider) {
     this.jobManagerServiceProvider = jobManagerServiceProvider;
+  }
+
+  @Inject
+  public void setAssistant(
+      Provider<Assistant> assistantProvider) {
+    this.assistantProvider = assistantProvider;
+  }
+
+  public Assistant getAssistant() {
+    return assistantProvider.get();
   }
 
   public Notebook getNotebook() {
@@ -567,6 +580,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
         case PATCH_PARAGRAPH:
           patchParagraph(conn, context, receivedMessage);
+          break;
+        case ASSISTANT_SEND_MESSAGE:
+          sendAssistantMessage(conn, context, receivedMessage);
           break;
         default:
           break;
@@ -1243,6 +1259,34 @@ public class NotebookServer implements AngularObjectRegistryListener,
             connectionManager.broadcastExcept(noteId2, message, conn);
           }
         });
+  }
+
+  private void sendAssistantMessage(
+      NotebookSocket conn,
+      ServiceContext context,
+      Message fromMessage
+  ) {
+    String noteId = (String) fromMessage.get("noteId");
+    String conversationId = (String) fromMessage.get("conversationId");
+    String content = (String) fromMessage.get("content");
+    AssistantEventListener sink = (type, payload) -> {
+      try {
+        conn.send(serializeMessage(new Message(OP.ASSISTANT_EVENT)
+            .put("conversationId", conversationId)
+            .put("type", type.wireName)
+            .put("payload", payload)));
+      } catch (IOException e) {
+        LOGGER.warn("Failed to send assistant event to connection", e);
+      }
+    };
+    getAssistant().sendMessage(
+        noteId,
+        conversationId,
+        content,
+        context.getAutheInfo(),
+        context.getUserAndRoles(),
+        sink
+    );
   }
 
   private void cloneNote(NotebookSocket conn,

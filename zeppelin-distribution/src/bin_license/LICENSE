@@ -1,5 +1,25 @@
 The following components are provided under Apache License.
 
+    (Apache 2.0) ClassMate (com.fasterxml:classmate:1.7.0 - https://github.com/FasterXML/java-classmate)
+    (Apache 2.0) Jackson JDK8 Datatypes (com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3 - https://github.com/FasterXML/jackson-modules-java8)
+    (Apache 2.0) Jackson Java Time Datatypes (com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3 - https://github.com/FasterXML/jackson-modules-java8)
+    (Apache 2.0) Jackson Kotlin Module (com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3 - https://github.com/FasterXML/jackson-module-kotlin)
+    (Apache 2.0) JSON Schema Generator (com.github.victools:jsonschema-generator:4.38.0 - https://github.com/victools/jsonschema-generator)
+    (Apache 2.0) JSON Schema Generator (com.github.victools:jsonschema-module-jackson:4.38.0 - https://github.com/victools/jsonschema-generator)
+    (Apache 2.0) JSON Schema Generator (com.github.victools:jsonschema-module-swagger-2:4.38.0 - https://github.com/victools/jsonschema-generator)
+    (Apache 2.0) OpenAI Java SDK (com.openai:openai-java:4.69.3 - https://github.com/openai/openai-java)
+    (Apache 2.0) OpenAI Java SDK (com.openai:openai-java-client-okhttp:4.69.3 - https://github.com/openai/openai-java)
+    (Apache 2.0) OpenAI Java SDK (com.openai:openai-java-core:4.69.3 - https://github.com/openai/openai-java)
+    (Apache 2.0) OkHttp (com.squareup.okhttp3:okhttp:4.12.0 - https://github.com/square/okhttp)
+    (Apache 2.0) Okio (com.squareup.okio:okio:3.6.0 - https://github.com/square/okio)
+    (Apache 2.0) Okio (com.squareup.okio:okio-jvm:3.6.0 - https://github.com/square/okio)
+    (Apache 2.0) Swagger Annotations (io.swagger.core.v3:swagger-annotations:2.2.31 - https://github.com/swagger-api/swagger-core)
+    (Apache 2.0) Kotlin (org.jetbrains.kotlin:kotlin-reflect:1.9.10 - https://github.com/JetBrains/kotlin)
+    (Apache 2.0) Kotlin (org.jetbrains.kotlin:kotlin-stdlib:1.9.10 - https://github.com/JetBrains/kotlin)
+    (Apache 2.0) Kotlin (org.jetbrains.kotlin:kotlin-stdlib-common:1.9.10 - https://github.com/JetBrains/kotlin)
+    (Apache 2.0) Kotlin (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10 - https://github.com/JetBrains/kotlin)
+    (Apache 2.0) Kotlin (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10 - https://github.com/JetBrains/kotlin)
+
     (Apache 2.0) nvd3.js v1.7.1 (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.7.1/LICENSE.md
     (Apache 2.0) gson v2.8.9 (com.google.code.gson:gson:jar:2.8.9 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.11.736 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.11.736/LICENSE.txt

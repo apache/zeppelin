@@ -512,6 +512,18 @@ export enum OP {
   NOTE_RUNNING_STATUS = 'NOTE_RUNNING_STATUS',
 
   /**
+   * [c-s]
+   * send a message to the notebook assistant
+   */
+  ASSISTANT_SEND_MESSAGE = 'ASSISTANT_SEND_MESSAGE',
+
+  /**
+   * [s-c]
+   * assistant run stream event
+   */
+  ASSISTANT_EVENT = 'ASSISTANT_EVENT',
+
+  /**
    * [s-c]
    * Notice
    */

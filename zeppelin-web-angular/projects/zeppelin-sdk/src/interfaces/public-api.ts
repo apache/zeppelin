@@ -10,6 +10,7 @@
  * limitations under the License.
  */
 
+export * from './message-assistant.interface';
 export * from './message-common.interface';
 export * from './message-data-type-map.interface';
 export * from './message-interpreter.interface';
