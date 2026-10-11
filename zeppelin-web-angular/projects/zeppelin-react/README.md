@@ -16,6 +16,15 @@ React micro-frontend that runs alongside the Angular host via [Webpack Module Fe
 
 - Design Document: [Micro Frontend Migration (Angular to React) Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Micro+Frontend+Migration%28Angular+to+React%29+Proposal)
 
+## Temporary braces security patch
+
+`braces@3.0.3` has no published fix for [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+`patches/braces+3.0.3.patch` backports the depth guards from [micromatch/braces#72](https://github.com/micromatch/braces/pull/72) at `28d440b5dd449dbf1fe6f3506cf94ecca4d02660`. The patch changes only the five affected `lib/` files in the published 3.0.3 package; it does not import unrelated unreleased changes on the upstream branch.
+
+Normal `npm ci` runs the `postinstall` patch and its regression check. When installing with `--ignore-scripts`, run `npm run apply:patches` explicitly before using the package. `npm run audit` retains the high-severity gate but temporarily permits only the two affected development-tool paths in `audit-ci.jsonc`, until 2026-12-04 00:00 UTC. The npm audit report still identifies 3.0.3 as vulnerable because it cannot inspect local patches.
+
+After upstream publishes a fixed version, update the lockfile, remove the patch and audit exceptions, and restore the unmodified audit command.
+
 ## React mount infrastructure (Angular side)
 
 The Angular host's `src/app/share/react-mount/` exports two pieces:
@@ -166,4 +175,3 @@ export function mount(element: HTMLElement, props: Props): ReactMountHandle;
    an inline object literal) so identity is stable when nothing changed.
 
 Every exposed module must return the handle contract from `mount`. The directive assigns the return value straight to its handle, so returning a bare unmount function makes the next prop change throw.
-

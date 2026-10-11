@@ -22,6 +22,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/npm-audit-remediation.yml'
+      - 'zeppelin-web-angular/projects/zeppelin-react/audit-ci.jsonc'
+      - 'zeppelin-web-angular/projects/zeppelin-react/patches/**'
+      - 'zeppelin-web-angular/projects/zeppelin-react/scripts/check-braces-patch.cjs'
+      - 'zeppelin-web-angular/projects/zeppelin-react/package.json'
+      - 'zeppelin-web-angular/projects/zeppelin-react/package-lock.json'
 
 concurrency:
   group: npm-audit-remediation
@@ -61,6 +66,12 @@ jobs:
         with:
           node-version-file: 'zeppelin-web-angular/.nvmrc'
 
+      - name: Install and verify patched dependencies
+        working-directory: ${{ env.PACKAGE_DIRECTORY }}
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm run apply:patches
+
       - id: audit
         name: Check npm audit
         working-directory: ${{ env.PACKAGE_DIRECTORY }}
@@ -72,9 +83,14 @@ jobs:
           audit_status=$?
           set -e
 
-          if [[ ${audit_status} -eq 0 ]]; then
+          if npm run audit; then
             echo "needs_remediation=false" >> "${GITHUB_OUTPUT}"
             exit 0
+          fi
+
+          if [[ ${audit_status} -eq 0 ]]; then
+            echo "::error::Audit policy failed without a reported vulnerability"
+            exit 1
           fi
 
           vulnerable_count=$(node - "${RUNNER_TEMP}/npm-audit-before.json" <<'NODE'
@@ -104,7 +120,19 @@ jobs:
       - name: Generate a lockfile-only fix
         if: steps.audit.outputs.needs_remediation == 'true'
         working-directory: ${{ env.PACKAGE_DIRECTORY }}
-        run: npm audit fix --package-lock-only --ignore-scripts --audit-level=high
+        shell: bash
+        run: |
+          # npm audit fix still exits nonzero while the locally patched braces
+          # release is reported as vulnerable. The policy gate below checks
+          # that every other high/critical finding was actually fixed.
+          set +e
+          npm audit fix --package-lock-only --ignore-scripts --audit-level=high
+          fix_status=$?
+          set -e
+          if [[ ${fix_status} -ne 0 ]] && git diff --quiet -- package-lock.json; then
+            echo "::error::npm audit fix failed without updating the lockfile"
+            exit "${fix_status}"
+          fi
 
       - name: Verify the generated diff
         if: steps.audit.outputs.needs_remediation == 'true'
@@ -128,7 +156,8 @@ jobs:
         working-directory: ${{ env.PACKAGE_DIRECTORY }}
         run: |
           npm ci --ignore-scripts --no-audit
-          npm audit --audit-level=high
+          npm run apply:patches
+          npm run audit
           npm run lint
           npm test
           npm run build
@@ -274,7 +303,7 @@ jobs:
             echo
             echo '- `npm ci --ignore-scripts --no-audit` in `zeppelin-web-angular`'
             echo '- `npm ci --ignore-scripts --no-audit` in `zeppelin-web-angular/projects/zeppelin-react`'
-            echo '- `npm audit --audit-level=high`'
+            echo '- `npm run apply:patches` and `npm run audit`'
             echo '- `npm run lint`'
             echo '- `npm test`'
             echo '- `npm run build`'

@@ -42,7 +42,10 @@ jobs:
       # TODO: Add zeppelin-web-angular root audit after Angular version upgrade and stabilization
       - name: Run npm audit on zeppelin-react
         working-directory: zeppelin-web-angular/projects/zeppelin-react
-        run: npm ci --ignore-scripts && npm audit --audit-level=high
+        run: |
+          npm ci --ignore-scripts --no-audit
+          npm run apply:patches
+          npm run audit
 
   run-playwright-e2e-tests:
     runs-on: ubuntu-24.04
