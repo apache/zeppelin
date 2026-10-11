@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import type { AssistantParagraphRef, AssistantRevealResult } from './assistant-ui';
+import type { AssistantParagraphRef, AssistantRevealResult, AssistantSlot } from './assistant-ui';
 
 import type {
   AssistantEvent as AssistantSocketEvent,
@@ -30,12 +30,6 @@ export interface AssistantSocket {
   subscribe(listener: (event: AssistantSocketEvent) => void): () => void;
   /** The connection closed. The server sends a run's events only to the connection that started it. */
   subscribeClose(listener: () => void): () => void;
-}
-
-/** A host element the remote portals into: the sidebar button or the panel area. */
-export interface AssistantSlot {
-  element: HTMLElement;
-  kind: 'navigation' | 'panel';
 }
 
 /** Props the Angular notebook passes to the `./AssistantWorkspace` remote. A type alias, so it fits `ReactProps`. */
