@@ -755,6 +755,44 @@ describe('retained run state', () => {
     stop();
   });
 
+  it('keeps a disconnected run visible when a retry is rejected', async () => {
+    const socket = fakeSocket();
+    const transport = createAssistantTransport('/api', 'note', socket);
+    const first = collect(transport.openRun('conversation', { prompt: 'first' }, new AbortController().signal));
+    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'first' } });
+    socket.close();
+    await expect(first).rejects.toBeInstanceOf(AssistantConnectionError);
+
+    const states: AssistantRunState[] = [];
+    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
+    const retry = collect(transport.openRun('conversation', { prompt: 'retry' }, new AbortController().signal));
+    socket.emit({
+      conversationId: 'conversation',
+      type: 'run.failed',
+      payload: { runId: 'retry', error: { status: 409 } }
+    });
+    await expect(retry).resolves.toEqual([
+      {
+        type: 'run.failed',
+        runId: 'retry',
+        message: 'This conversation is still answering. Try again when it finishes.'
+      }
+    ]);
+    expect(states).toContain('disconnected');
+    expect(states).not.toContain('idle');
+
+    const accepted = collect(transport.openRun('conversation', { prompt: 'later' }, new AbortController().signal));
+    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'later' } });
+    socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'later' } });
+    await expect(accepted).resolves.toEqual([
+      { type: 'run.started', runId: 'later' },
+      { type: 'run.completed', runId: 'later' }
+    ]);
+    expect(states).toContain('running');
+    expect(states.at(-1)).toBe('idle');
+    stop();
+  });
+
   it('clears a retained run on disconnect and releases listeners', async () => {
     const socket = fakeSocket();
     const transport = createAssistantTransport('/api', 'note', socket);
