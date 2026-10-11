@@ -10,12 +10,23 @@
  * limitations under the License.
  */
 
-export * from './message-assistant.interface';
-export * from './message-common.interface';
-export * from './message-data-type-map.interface';
-export * from './message-interpreter.interface';
-export * from './message-job.interface';
-export * from './message-notebook.interface';
-export * from './message-operator.interface';
-export * from './message-paragraph.interface';
-export * from './websocket-message.interface';
+export interface AssistantSendMessage {
+  noteId: string;
+  conversationId: string;
+  content: string;
+}
+
+export type AssistantEventType =
+  | 'run.started'
+  | 'run.completed'
+  | 'run.failed'
+  | 'message.delta'
+  | 'message.done'
+  | 'tool_call.started'
+  | 'tool_call.done';
+
+export interface AssistantEvent {
+  conversationId: string;
+  type: AssistantEventType;
+  payload: unknown;
+}
