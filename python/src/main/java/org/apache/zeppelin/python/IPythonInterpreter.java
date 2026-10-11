@@ -132,9 +132,14 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
   }
 
   private void initPythonInterpreter(String gatewayHost, int gatewayPort) throws IOException {
-    InputStream input =
-            getClass().getClassLoader().getResourceAsStream("python/zeppelin_ipython.py");
-    List<String> lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+    List<String> lines;
+    try (InputStream input =
+            getClass().getClassLoader().getResourceAsStream("python/zeppelin_ipython.py")) {
+      if (input == null) {
+        throw new IOException("Cannot find resource: python/zeppelin_ipython.py");
+      }
+      lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+    }
     ExecuteResponse response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(StringUtils.join(lines, System.lineSeparator())
                     .replace("${JVM_GATEWAY_PORT}", gatewayPort + "")
@@ -143,9 +148,13 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
       throw new IOException("Fail to setup JVMGateway\n" + response.getOutput());
     }
 
-    input =
-            getClass().getClassLoader().getResourceAsStream("python/zeppelin_context.py");
-    lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+    try (InputStream input =
+            getClass().getClassLoader().getResourceAsStream("python/zeppelin_context.py")) {
+      if (input == null) {
+        throw new IOException("Cannot find resource: python/zeppelin_context.py");
+      }
+      lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+    }
     response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(StringUtils.join(lines, System.lineSeparator())).build());
     if (response.getStatus() != ExecuteStatus.SUCCESS) {
@@ -160,8 +169,13 @@ public class IPythonInterpreter extends JupyterKernelInterpreter {
     }
 
     if (additionalPythonInitFile != null) {
-      input = getClass().getClassLoader().getResourceAsStream(additionalPythonInitFile);
-      lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+      try (InputStream input =
+              getClass().getClassLoader().getResourceAsStream(additionalPythonInitFile)) {
+        if (input == null) {
+          throw new IOException("Cannot find resource: " + additionalPythonInitFile);
+        }
+        lines = IOUtils.readLines(input, StandardCharsets.UTF_8);
+      }
       response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
               .setCode(StringUtils.join(lines, System.lineSeparator())
                       .replace("${JVM_GATEWAY_PORT}", gatewayPort + "")
