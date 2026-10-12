@@ -52,6 +52,7 @@ import { NotebookPermissionsComponent } from './permissions/permissions.componen
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
+import { NotebookCoreReadComponent } from './core-read/notebook-core-read.component';
 import { NoteFormBlockComponent } from './note-form-block/note-form-block.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
 import { NotebookComponent } from './notebook.component';
@@ -61,6 +62,7 @@ import { NotebookSidebarComponent } from './sidebar/sidebar.component';
 @NgModule({
   declarations: [
     NotebookComponent,
+    NotebookCoreReadComponent,
     NotebookActionBarComponent,
     NotebookInterpreterBindingComponent,
     NotebookPermissionsComponent,

@@ -10,11 +10,25 @@
  * limitations under the License.
  */
 
-import { Type } from '@angular/core';
-import { Routes } from '@angular/router';
+import { inject, Type } from '@angular/core';
+import { CanMatchFn, Router, Routes } from '@angular/router';
+
+import { parseBooleanFlag } from '@zeppelin/services/query-flag.util';
 
 export const NOTEBOOK_ROUTE_PATH = 'notebook';
 export const NOTEBOOK_CHILD_ROUTE_PATHS = [':noteId', ':noteId/revision/:revisionId'] as const;
 
-export const createNotebookChildRoutes = (component: Type<unknown>): Routes =>
-  NOTEBOOK_CHILD_ROUTE_PATHS.map(path => ({ path, component }));
+export const createNotebookChildRoutes = (component: Type<unknown>, canMatch?: CanMatchFn[]): Routes =>
+  NOTEBOOK_CHILD_ROUTE_PATHS.map(path => (canMatch ? { path, component, canMatch } : { path, component }));
+
+/**
+ * Development and test opt-in for the private Core-backed read view (ZEPPELIN-6737), e.g.
+ * `#/notebook/<id>?notebookCoreRead`. Without it the editable notebook is unchanged. Navigating to
+ * a notebook URL without it leaves the read view and loads the editable notebook afresh.
+ */
+const NOTEBOOK_CORE_READ_QUERY_PARAM = 'notebookCoreRead';
+
+export const canMatchNotebookCoreRead: CanMatchFn = () =>
+  parseBooleanFlag(
+    inject(Router).currentNavigation()?.extractedUrl.queryParamMap.get(NOTEBOOK_CORE_READ_QUERY_PARAM)
+  ) === true;
