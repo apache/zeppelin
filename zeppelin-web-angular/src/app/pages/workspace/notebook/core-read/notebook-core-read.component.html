@@ -31,9 +31,12 @@
       <!-- Permissions describe a loaded note; the server also answers for a note that does not exist. -->
       @if (view.snapshot.status === 'ready') {
         @if (view.snapshot.acl.status === 'ready') {
-          <span class="core-read-permissions" data-testid="notebook-core-read-permissions">
-            Your access: {{ view.access }}
-          </span>
+          <!-- The lists miss the server's admin override, so "none" can be wrong for a loaded note: show nothing. -->
+          @if (view.access !== 'none') {
+            <span class="core-read-permissions" data-testid="notebook-core-read-permissions">
+              Your access: {{ view.access }}
+            </span>
+          }
         } @else if (view.snapshot.acl.status !== 'loading') {
           <span class="core-read-permissions" data-testid="notebook-core-read-permissions">Permissions unknown</span>
         }
@@ -42,13 +45,13 @@
 
     @switch (view.snapshot.status) {
       @case ('loading') {
-        <p>Loading…</p>
+        <p role="status">Loading…</p>
       }
       @case ('access-denied') {
-        <p data-testid="notebook-core-read-error">You do not have permission to read this note.</p>
+        <p role="alert" data-testid="notebook-core-read-error">You do not have permission to read this note.</p>
       }
       @case ('failed') {
-        <p data-testid="notebook-core-read-error">
+        <p role="alert" data-testid="notebook-core-read-error">
           @if (view.connected) {
             The note could not be loaded.
             <button nz-button nzSize="small" (click)="retry()">Retry</button>

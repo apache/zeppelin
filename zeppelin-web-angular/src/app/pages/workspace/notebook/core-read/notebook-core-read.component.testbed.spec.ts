@@ -115,7 +115,20 @@ describe('NotebookCoreReadComponent', () => {
     expect(root().querySelector('[data-testid="notebook-core-read-permissions"]')!.textContent).toContain('reader');
   });
 
-  it('reads a revision and then the live note as the route changes, sending reads only', () => {
+  it('shows no access label for a loaded note whose lists do not name the user', async () => {
+    const { fixture, reply, lastMsgId, permissions, root } = setup();
+
+    reply(noteMessage('A', lastMsgId()));
+    permissions.next({ owners: ['bob'], readers: ['bob'], runners: ['bob'], writers: ['bob'] });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(root().dataset.status).toBe('ready');
+    expect(root().dataset.aclStatus).toBe('ready');
+    expect(root().querySelector('[data-testid="notebook-core-read-permissions"]')).toBeNull();
+  });
+
+  it('reads a revision and then the live note when the route parameters change, sending reads only', () => {
     const { sent, params } = setup();
 
     params.next({ noteId: 'A', revisionId: 'r1' });
