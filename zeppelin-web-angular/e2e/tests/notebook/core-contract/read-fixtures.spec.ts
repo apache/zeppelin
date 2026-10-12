@@ -49,8 +49,15 @@ const readCaptureMetadata = async (
   if (!commit || !/^[a-f0-9]{40}$/.test(commit)) {
     throw new Error('Read capture requires ZEPPELIN_READ_CAPTURE_COMMIT, the commit the server was built from');
   }
+  const ticket = (await (await page.request.get('/api/security/ticket')).json()).body as { principal: string };
+  expect(ticket.principal === 'anonymous' ? 'anonymous' : 'auth').toBe(authentication);
   const capabilities = (await (await page.request.get('/api/notebook/capabilities')).json()).body;
-  const version = (await (await page.request.get('/api/version')).json()).body;
+  const version = (await (await page.request.get('/api/version')).json()).body as {
+    'git-commit-id': string;
+    version: string;
+  };
+  expect(version['git-commit-id']).toMatch(/^[a-f0-9]{7,40}$/);
+  expect(commit.startsWith(version['git-commit-id'])).toBe(true);
   return {
     owner: 'zeppelin-web-angular',
     scenario,
@@ -69,7 +76,8 @@ const readCaptureMetadata = async (
     },
     capturedAt: new Date().toISOString(),
     zeppelinVersion: version.version,
-    source: { repository: 'kimyenac/zeppelin', branch: 'ZEPPELIN-6737', commit }
+    // Captures are taken from Apache master, so `commit` lives in apache/zeppelin.
+    source: { repository: 'apache/zeppelin', commit, serverCommit: version['git-commit-id'] }
   } as LifecycleFixture['metadata'];
 };
 

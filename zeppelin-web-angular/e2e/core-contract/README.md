@@ -375,6 +375,12 @@ npm run e2e:core-contract:live -- read-fixtures
 npx prettier --write e2e/fixtures/notebook-read
 ```
 
+The capture fails unless `/api/version` reports that commit (as its abbreviated id), so build the server in a regular
+clone with `./mvnw package -pl zeppelin-server --am -DskipTests`; a git worktree stamped the main checkout's
+commit when tried. It records that id as `metadata.source.serverCommit`. It also fails when the recorded authentication
+does not match the captured page's session: `read-anonymous.json` needs an anonymous session, `read-denied.json` a
+signed-in one. `metadata.source.repository` is `apache/zeppelin`, so capture from an Apache master commit.
+
 The capture replaces the account names that `AUTH_INFO` prints in its text with `<user>`.
 `src/app/pages/workspace/notebook/core-read/notebook-read-fixture.spec.ts` replays both captures
 through the production read transport and Core.

@@ -62,6 +62,8 @@ const replay = (records: FixtureRecord[]): NotebookReadSnapshot[] => {
       noteId: recorded.data.id ?? recorded.data.noteId,
       revisionId: recorded.data.revisionId
     });
+    expect(recorded.msgId, `the recorded ${op} carries a msgId`).toEqual(expect.any(String));
+    expect(recorded.msgId).not.toBe('');
     return recorded.msgId as string;
   };
   const pendingAcl = new Map<string, Subject<Permissions>>();
