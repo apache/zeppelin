@@ -276,8 +276,8 @@ export class Message {
     this.send<OP.RELOAD_NOTE>(OP.RELOAD_NOTE, { id: noteId });
   }
 
-  getNote(noteId: string): void {
-    this.send<OP.GET_NOTE>(OP.GET_NOTE, { id: noteId });
+  getNote(noteId: string): string {
+    return this.send<OP.GET_NOTE>(OP.GET_NOTE, { id: noteId });
   }
 
   updateNote(noteId: string, noteName: string, noteConfig: NoteConfig): void {
@@ -501,8 +501,8 @@ export class Message {
     });
   }
 
-  noteRevision(noteId: string, revisionId: string): void {
-    this.send<OP.NOTE_REVISION>(OP.NOTE_REVISION, {
+  noteRevision(noteId: string, revisionId: string): string {
+    return this.send<OP.NOTE_REVISION>(OP.NOTE_REVISION, {
       noteId,
       revisionId
     });
