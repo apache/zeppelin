@@ -1,0 +1,328 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Private Core read view: note, revision and missing note",
+    "coveredOperations": ["GET_NOTE", "NOTE", "NOTE_REVISION", "ERROR_INFO", "GET /api/notebook/{noteId}/permissions"],
+    "knownExclusions": [
+      "Recaptured from Apache master once the read msgId change is merged; until then the source is the named branch commit.",
+      "Only reads made by the private Core read view are covered; incremental notebook operations are excluded.",
+      "Physical reconnect and logout are Shell-owned and not part of this capture."
+    ],
+    "environment": {
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://localhost:4200",
+      "revisionSupported": true,
+      "interpreterExecution": "none"
+    },
+    "capturedAt": "2026-10-12T12:37:59.149Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "kimyenac/zeppelin",
+      "branch": "ZEPPELIN-6737",
+      "commit": "126591360775f149a028f8b395941a2ca00b2e60"
+    }
+  },
+  "records": [
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "sequence": 1
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N73K1JPX\",\"path\":\"/E2E_TEST_FOLDER/ReadCapture_1791808679063\"},{\"id\":\"2N52EYC2Z\",\"path\":\"/core-read/demo\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N73K1JPX",
+        "revisionId": null
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N73K1JPX\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N73K1JPX/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"title\":\"Markdown\",\"text\":\"%md Markdown\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"HTML\",\"data\":\"<p><strong>Saved heading</strong></p>\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_859632818\",\"id\":\"paragraph_1791808679079_1870494102\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Table\",\"text\":\"%md Table\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{\"results\":{\"0\":{\"graph\":{\"mode\":\"lineChart\",\"height\":250,\"optionOpen\":false}}}},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"TABLE\",\"data\":\"x\\ty\\n1\\t3\\n2\\t5\\n\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_777338628\",\"id\":\"paragraph_1791808679079_185574162\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Text\",\"text\":\"%md Text\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"TEXT\",\"data\":\"saved text output\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_1339701501\",\"id\":\"paragraph_1791808679079_1274220036\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Angular\",\"text\":\"%md Angular\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"ANGULAR\",\"data\":\"<div>angular output</div>\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_192706907\",\"id\":\"paragraph_1791808679079_246935193\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"ReadCapture_1791808679063\",\"id\":\"2N73K1JPX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/E2E_TEST_FOLDER/ReadCapture_1791808679063\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:2>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:1",
+      "sequence": 9,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N73K1JPX/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "inactive",
+        "noteId": "2N73K1JPX",
+        "revisionId": null
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "2N73K1JPX",
+        "revisionId": "60a9261e66ff62cfaa16f06cb6dbf723d6be0f20"
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N73K1JPX\",\"revisionId\":\"60a9261e66ff62cfaa16f06cb6dbf723d6be0f20\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N73K1JPX/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 13
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:2",
+      "sequence": 14,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N73K1JPX/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE_REVISION\",\"data\":{\"revisionId\":\"60a9261e66ff62cfaa16f06cb6dbf723d6be0f20\",\"note\":{\"paragraphs\":[{\"title\":\"Markdown\",\"text\":\"%md Markdown\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"HTML\",\"data\":\"<p><strong>Saved heading</strong></p>\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_859632818\",\"id\":\"paragraph_1791808679079_1870494102\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Table\",\"text\":\"%md Table\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{\"results\":{\"0\":{\"graph\":{\"mode\":\"lineChart\",\"height\":250,\"optionOpen\":false}}}},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"TABLE\",\"data\":\"x\\ty\\n1\\t3\\n2\\t5\\n\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_777338628\",\"id\":\"paragraph_1791808679079_185574162\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Text\",\"text\":\"%md Text\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"TEXT\",\"data\":\"saved text output\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_1339701501\",\"id\":\"paragraph_1791808679079_1274220036\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"},{\"title\":\"Angular\",\"text\":\"%md Angular\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"results\":{\"code\":\"SUCCESS\",\"msg\":[{\"type\":\"ANGULAR\",\"data\":\"<div>angular output</div>\"}]},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1791808679081_192706907\",\"id\":\"paragraph_1791808679079_246935193\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"ReadCapture_1791808679063\",\"id\":\"2N73K1JPX\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/E2E_TEST_FOLDER/ReadCapture_1791808679063\"},\"noteId\":\"2N73K1JPX\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:3>\"}"
+      },
+      "sequence": 15
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "inactive",
+        "noteId": "2N73K1JPX",
+        "revisionId": "60a9261e66ff62cfaa16f06cb6dbf723d6be0f20"
+      },
+      "sequence": 16
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-a",
+      "context": {
+        "state": "active",
+        "noteId": "READ_CAPTURE_MISSING",
+        "revisionId": null
+      },
+      "sequence": 17
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:4>\",\"data\":{\"id\":\"READ_CAPTURE_MISSING\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 18
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/READ_CAPTURE_MISSING/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 19
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-a",
+      "connectionId": "viewer-a:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"ERROR_INFO\",\"data\":{\"info\":\"HTTP 404 Not Found\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:4>\"}"
+      },
+      "sequence": 20
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-a",
+      "requestId": "viewer-a:request:3",
+      "sequence": 21,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/READ_CAPTURE_MISSING/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": [],
+            "owners": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer-a"
+    }
+  ]
+}
