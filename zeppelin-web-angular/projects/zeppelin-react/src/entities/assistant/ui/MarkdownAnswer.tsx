@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-import { createContext, memo, useContext, type ComponentPropsWithoutRef } from 'react';
+import { createContext, memo, useContext, useId, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Link, Parent, Root, Text } from 'mdast';
 import type { Plugin, PluggableList } from 'unified';
 
+import { visuallyHidden } from '../../../shared/ui/assistant-theme/AssistantScope.css';
 import * as styles from './MarkdownAnswer.css';
 
 export interface MarkdownAnswerProps {
@@ -86,7 +87,7 @@ function transformReferences(parent: Parent): void {
 const remarkParagraphReferences: Plugin<[], Root> = () => transformReferences;
 const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
 
-function AnswerLink({ href, children, title }: ComponentPropsWithoutRef<'a'> & ExtraProps) {
+function AnswerLink({ node: _node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) {
   const { describeParagraph, onOpenParagraph } = useContext(ParagraphReferenceContext);
 
   if (!href) return <>{children}</>;
@@ -100,7 +101,7 @@ function AnswerLink({ href, children, title }: ComponentPropsWithoutRef<'a'> & E
         <button
           type="button"
           className={styles.paragraphReference}
-          aria-label={`Show ${description.name} in the notebook`}
+          aria-label={`${description.text}: show ${description.name} in the notebook`}
           onClick={() => onOpenParagraph(paragraphId, description.name)}
         >
           {description.text}
@@ -110,10 +111,18 @@ function AnswerLink({ href, children, title }: ComponentPropsWithoutRef<'a'> & E
     return <>{children}</>;
   }
 
+  // The URL hash belongs to the router, so scroll to the target in the page instead of navigating to it.
+  const showTarget = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    document.getElementById(href.slice(1))?.scrollIntoView?.({ block: 'nearest' });
+  };
+
   // react-markdown has already applied its default URL safety transform.
   return (
     <a
+      {...props}
       href={href}
+      onClick={fragment ? showTarget : undefined}
       title={title}
       target={fragment ? undefined : '_blank'}
       rel={fragment ? undefined : 'noopener noreferrer'}
@@ -134,7 +143,7 @@ function AnswerCodeBlock({ node, children, ...props }: ComponentPropsWithoutRef<
   return (
     <div className={styles.codeBlock}>
       <div className={styles.codeLanguage}>{language}</div>
-      <pre {...props} className={styles.codeSource} tabIndex={0} aria-label={`${language} block`}>
+      <pre {...props} className={styles.codeSource} tabIndex={0} role="region" aria-label={`${language} block`}>
         {children}
       </pre>
     </div>
@@ -160,10 +169,20 @@ export const MarkdownAnswer = memo(function MarkdownAnswer({
   describeParagraph,
   onOpenParagraph
 }: MarkdownAnswerProps) {
+  // Footnote ids must differ between the answers on one page.
+  const footnotePrefix = `${useId().replace(/:/g, '')}-`;
+
   return (
     <ParagraphReferenceContext.Provider value={{ describeParagraph, onOpenParagraph }}>
       <div className={styles.answer}>
-        <Markdown remarkPlugins={remarkPlugins} components={components}>
+        <Markdown
+          remarkPlugins={remarkPlugins}
+          components={components}
+          remarkRehypeOptions={{
+            clobberPrefix: footnotePrefix,
+            footnoteLabelProperties: { className: [visuallyHidden] }
+          }}
+        >
           {content}
         </Markdown>
       </div>

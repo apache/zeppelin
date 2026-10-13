@@ -104,7 +104,7 @@ describe('MarkdownAnswer', () => {
       <MarkdownAnswer content={content} describeParagraph={describeParagraph} onOpenParagraph={onOpenParagraph} />
     );
 
-    const button = screen.getByRole('button', { name: 'Show Sales query in the notebook' });
+    const button = screen.getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' });
     expect(button.textContent).toBe('Paragraph 1');
     expect(button.getAttribute('type')).toBe('button');
     expect(screen.queryByRole('link')).toBeNull();
@@ -121,14 +121,14 @@ describe('MarkdownAnswer', () => {
       <MarkdownAnswer content={content} describeParagraph={describeParagraph} onOpenParagraph={originalCallback} />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show Sales query in the notebook' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' }));
     expect(originalCallback).toHaveBeenCalledExactlyOnceWith(paragraphId, 'Sales query');
 
     rerender(
       <MarkdownAnswer content={content} describeParagraph={describeParagraph} onOpenParagraph={updatedCallback} />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show Sales query in the notebook' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' }));
     expect(updatedCallback).toHaveBeenCalledExactlyOnceWith(paragraphId, 'Sales query');
     expect(originalCallback).toHaveBeenCalledTimes(1);
   });
@@ -139,7 +139,9 @@ describe('MarkdownAnswer', () => {
     const { container, rerender } = render(
       <MarkdownAnswer content={content} describeParagraph={describeParagraph} onOpenParagraph={onOpenParagraph} />
     );
-    expect(screen.getByRole('button', { name: 'Show Sales query in the notebook' }).textContent).toBe('Paragraph 1');
+    expect(screen.getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' }).textContent).toBe(
+      'Paragraph 1'
+    );
 
     rerender(
       <MarkdownAnswer
@@ -149,8 +151,8 @@ describe('MarkdownAnswer', () => {
       />
     );
 
-    expect(screen.queryByRole('button', { name: 'Show Sales query in the notebook' })).toBeNull();
-    const button = screen.getByRole('button', { name: 'Show Updated query in the notebook' });
+    expect(screen.queryByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' })).toBeNull();
+    const button = screen.getByRole('button', { name: 'Updated paragraph: show Updated query in the notebook' });
     expect(button.textContent).toBe('Updated paragraph');
     fireEvent.click(button);
     expect(onOpenParagraph).toHaveBeenCalledExactlyOnceWith(paragraphId, 'Updated query');
@@ -229,7 +231,7 @@ describe('MarkdownAnswer', () => {
     );
 
     expect(container.textContent).toBe('See 🧪(Paragraph 1),Paragraph 1; done.');
-    const buttons = screen.getAllByRole('button', { name: 'Show Sales query in the notebook' });
+    const buttons = screen.getAllByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' });
     fireEvent.click(buttons[0]);
     fireEvent.click(buttons[1]);
     expect(onOpenParagraph).toHaveBeenNthCalledWith(1, paragraphId, 'Sales query');
@@ -256,9 +258,11 @@ describe('MarkdownAnswer', () => {
       <MarkdownAnswer content={content} describeParagraph={describeParagraph} onOpenParagraph={onOpenParagraph} />
     );
 
-    fireEvent.click(within(screen.getByRole('list')).getByRole('button', { name: 'Show Sales query in the notebook' }));
     fireEvent.click(
-      within(screen.getByRole('table')).getByRole('button', { name: 'Show Sales query in the notebook' })
+      within(screen.getByRole('list')).getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' })
+    );
+    fireEvent.click(
+      within(screen.getByRole('table')).getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' })
     );
     expect(onOpenParagraph).toHaveBeenNthCalledWith(1, paragraphId, 'Sales query');
     expect(onOpenParagraph).toHaveBeenNthCalledWith(2, positiveParagraphId, 'Sales query');
@@ -280,10 +284,10 @@ describe('MarkdownAnswer', () => {
       </>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show Sales query in the notebook' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Paragraph 1: show Sales query in the notebook' }));
     expect(salesCallback).toHaveBeenCalledExactlyOnceWith(paragraphId, 'Sales query');
     expect(inventoryCallback).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Show Inventory query in the notebook' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Paragraph 2: show Inventory query in the notebook' }));
     expect(inventoryCallback).toHaveBeenCalledExactlyOnceWith(paragraphId, 'Inventory query');
     expect(salesCallback).toHaveBeenCalledTimes(1);
   });
@@ -349,6 +353,31 @@ describe('MarkdownAnswer', () => {
     expect(container.textContent).toContain('onclick="alert(1)"');
     expect(container.querySelector('script, img, svg, iframe, button')).toBeNull();
     expect(container.querySelector('[onclick], [onerror], [onload]')).toBeNull();
+  });
+
+  it('keeps footnotes of different answers apart and shows a footnote without changing the URL hash', () => {
+    const content = 'Revenue grew[^1].\n\n[^1]: Source: finance.';
+    const { container } = render(
+      <>
+        <MarkdownAnswer content={content} />
+        <MarkdownAnswer content={content} />
+      </>
+    );
+    const ids = Array.from(container.querySelectorAll('[id^="user-content-fn"], [id*="-fn-"], [id*="-fnref-"]')).map(
+      element => element.id
+    );
+    expect(new Set(ids).size).toBe(ids.length);
+
+    const [reference] = Array.from(container.querySelectorAll('a[data-footnote-ref]'));
+    const target = container.querySelector(`[id="${reference.getAttribute('href')!.slice(1)}"]`)!;
+    expect(container.querySelectorAll('li[id]').length).toBe(2);
+    const scrollIntoView = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+    const hash = window.location.hash;
+    expect(fireEvent.click(reference)).toBe(false);
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(window.location.hash).toBe(hash);
+    expect(screen.getAllByText('Footnotes')[0].className).not.toBe('sr-only');
   });
 
   it.each(dangerousUrls)('renders the rejected URL %s as non-navigable text', url => {
