@@ -49,7 +49,8 @@ export const AssistantComposer = ({
   };
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter that confirms an IME composition (such as Korean or Japanese input) is not a request to send.
-    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
+    // Safari fires compositionend before that Enter, so it arrives with isComposing false and keyCode 229.
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
     event.preventDefault();
     submit();
   };
