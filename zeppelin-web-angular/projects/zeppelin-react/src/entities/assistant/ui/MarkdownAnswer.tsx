@@ -36,10 +36,7 @@ const paragraphIdPattern = /^paragraph_\d+_-?\d+$/;
 
 function textReferences(node: Text): Array<Text | Link> | undefined {
   // Match a complete ID without splitting Unicode letters, numbers or combining marks.
-  const pattern = new RegExp(
-    '(^|[^\\p{L}\\p{N}\\p{M}_+-])(paragraph_\\d+_-?\\d+)(?![\\p{L}\\p{N}\\p{M}_+-])',
-    'gu'
-  );
+  const pattern = new RegExp('(^|[^\\p{L}\\p{N}\\p{M}_+-])(paragraph_\\d+_-?\\d+)(?![\\p{L}\\p{N}\\p{M}_+-])', 'gu');
   let references: Array<Text | Link> | undefined;
   let offset = 0;
   let match: RegExpExecArray | null;
