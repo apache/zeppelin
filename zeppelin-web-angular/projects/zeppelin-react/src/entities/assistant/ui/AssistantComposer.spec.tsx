@@ -30,6 +30,17 @@ describe('AssistantComposer', () => {
     const { onChange } = renderComposer();
     fireEvent.change(input(), { target: { value: 'Explain this notebook' } });
     expect(onChange).toHaveBeenCalledWith('Explain this notebook');
+    // The parent owns the value, so the field keeps showing what the parent passed.
+    expect(input().value).toBe('');
+  });
+
+  it('shows and sends the value the parent sets later', () => {
+    const onSubmit = vi.fn();
+    const { rerender } = render(<AssistantComposer value="" onChange={vi.fn()} onSubmit={onSubmit} />);
+    rerender(<AssistantComposer value="Explain this notebook" onChange={vi.fn()} onSubmit={onSubmit} />);
+    expect(input().value).toBe('Explain this notebook');
+    fireEvent.click(send());
+    expect(onSubmit).toHaveBeenCalledWith('Explain this notebook');
   });
 
   it('sends the trimmed question from the button and from Enter', () => {
@@ -59,6 +70,7 @@ describe('AssistantComposer', () => {
     expect(input().disabled).toBe(true);
     expect(send().disabled).toBe(true);
     expect(screen.getByRole('note').textContent).toBe('This conversation belongs to another user.');
+    pressEnter();
     fireEvent.submit(input().form!);
     expect(onSubmit).not.toHaveBeenCalled();
   });
