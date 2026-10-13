@@ -17,7 +17,6 @@
 
 import {
   createContext,
-  memo,
   useContext,
   useDeferredValue,
   useId,
@@ -34,8 +33,11 @@ import { visuallyHidden } from '../../../shared/ui/assistant-theme/AssistantScop
 import * as styles from './MarkdownAnswer.css';
 
 export interface MarkdownAnswerProps {
+  /** Markdown text of the answer. While it is still arriving, it may end inside a code fence. */
   content: string;
+  /** Describes a paragraph the answer refers to by ID, for its button. A reference it cannot describe stays plain text. */
   describeParagraph?: (paragraphId: string) => { text: string; name: string } | undefined;
+  /** Called when a paragraph button is clicked. Without it, references stay plain text. */
   onOpenParagraph?: (paragraphId: string, label: string) => void;
 }
 
@@ -96,7 +98,7 @@ function transformReferences(parent: Parent): void {
 const remarkParagraphReferences: Plugin<[], Root> = () => transformReferences;
 const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
 
-function AnswerLink({ node: _node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) {
+const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) => {
   const { describeParagraph, onOpenParagraph } = useContext(ParagraphReferenceContext);
 
   if (!href) return <>{children}</>;
@@ -139,9 +141,9 @@ function AnswerLink({ node: _node, href, children, title, ...props }: ComponentP
       {children}
     </a>
   );
-}
+};
 
-function AnswerCodeBlock({ node, children, ...props }: ComponentPropsWithoutRef<'pre'> & ExtraProps) {
+const AnswerCodeBlock = ({ node, children, ...props }: ComponentPropsWithoutRef<'pre'> & ExtraProps) => {
   const code = node?.children.find(child => child.type === 'element' && child.tagName === 'code');
   const classNames = code?.type === 'element' ? code.properties.className : undefined;
   const languageClass = Array.isArray(classNames)
@@ -157,15 +159,15 @@ function AnswerCodeBlock({ node, children, ...props }: ComponentPropsWithoutRef<
       </pre>
     </div>
   );
-}
+};
 
-function AnswerTable({ node: _node, children, ...props }: ComponentPropsWithoutRef<'table'> & ExtraProps) {
+const AnswerTable = ({ node: _node, children, ...props }: ComponentPropsWithoutRef<'table'> & ExtraProps) => {
   return (
     <div className={styles.tableScroll} role="region" aria-label="Scrollable table" tabIndex={0}>
       <table {...props}>{children}</table>
     </div>
   );
-}
+};
 
 const components: Components = {
   a: AnswerLink,
@@ -173,11 +175,8 @@ const components: Components = {
   table: AnswerTable
 };
 
-export const MarkdownAnswer = memo(function MarkdownAnswer({
-  content,
-  describeParagraph,
-  onOpenParagraph
-}: MarkdownAnswerProps) {
+/** Renders the Markdown of an assistant answer. HTML is shown as text and unsafe link URLs are removed. */
+export const MarkdownAnswer = ({ content, describeParagraph, onOpenParagraph }: MarkdownAnswerProps) => {
   // Footnote ids must differ between the answers on one page.
   const footnotePrefix = `${useId().replace(/:/g, '')}-`;
   // The whole answer is parsed again each time this renders. Keying the parsed element on the text means typing in a
@@ -204,4 +203,4 @@ export const MarkdownAnswer = memo(function MarkdownAnswer({
       <div className={styles.answer}>{markdown}</div>
     </ParagraphReferenceContext.Provider>
   );
-});
+};
