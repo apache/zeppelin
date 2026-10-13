@@ -78,6 +78,7 @@ describe('AssistantComposer', () => {
     const { onSubmit } = renderComposer({ value: '질문' });
     expect(pressEnter({ shiftKey: true })).toBe(true);
     expect(pressEnter({ isComposing: true })).toBe(true);
+    expect(pressEnter({ keyCode: 229 })).toBe(true);
     expect(onSubmit).not.toHaveBeenCalled();
     expect(pressEnter()).toBe(false);
     expect(onSubmit).toHaveBeenCalledWith('질문');
