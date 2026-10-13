@@ -15,7 +15,16 @@
  * limitations under the License.
  */
 
-import { createContext, memo, useContext, useId, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
+import {
+  createContext,
+  memo,
+  useContext,
+  useDeferredValue,
+  useId,
+  useMemo,
+  type ComponentPropsWithoutRef,
+  type MouseEvent
+} from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Link, Parent, Root, Text } from 'mdast';
@@ -171,21 +180,28 @@ export const MarkdownAnswer = memo(function MarkdownAnswer({
 }: MarkdownAnswerProps) {
   // Footnote ids must differ between the answers on one page.
   const footnotePrefix = `${useId().replace(/:/g, '')}-`;
+  // The whole answer is parsed again each time this renders. Keying the parsed element on the text means typing in a
+  // sibling input does not parse it, and a fast stream of chunks does not hold up that input.
+  const deferredContent = useDeferredValue(content);
+  const markdown = useMemo(
+    () => (
+      <Markdown
+        remarkPlugins={remarkPlugins}
+        components={components}
+        remarkRehypeOptions={{
+          clobberPrefix: footnotePrefix,
+          footnoteLabelProperties: { className: [visuallyHidden] }
+        }}
+      >
+        {deferredContent}
+      </Markdown>
+    ),
+    [deferredContent, footnotePrefix]
+  );
 
   return (
     <ParagraphReferenceContext.Provider value={{ describeParagraph, onOpenParagraph }}>
-      <div className={styles.answer}>
-        <Markdown
-          remarkPlugins={remarkPlugins}
-          components={components}
-          remarkRehypeOptions={{
-            clobberPrefix: footnotePrefix,
-            footnoteLabelProperties: { className: [visuallyHidden] }
-          }}
-        >
-          {content}
-        </Markdown>
-      </div>
+      <div className={styles.answer}>{markdown}</div>
     </ParagraphReferenceContext.Provider>
   );
 });
