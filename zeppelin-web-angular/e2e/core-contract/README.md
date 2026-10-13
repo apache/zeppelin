@@ -363,10 +363,10 @@ view (ZEPPELIN-6737). They are separate from the seven lifecycle captures and th
 | `read-denied.json`    | An authenticated read the note permissions deny: `AUTH_INFO` and a `403` permissions response.     |
 
 Each read reply and each failure carries the msgId of its request. That depends on a server change
-that is not on Apache master yet, so `metadata.source` names the commit that was built and served
-instead of a master commit. Recapture from Apache master once that change is merged.
+that is not on Apache master yet, so the committed captures name the branch commit that was built and
+served in `metadata.source`. Recapture from Apache master once that change is merged.
 
-Capture with the branch server running and its UI served on `PLAYWRIGHT_BASE_URL`; the denied read
+Capture with the server running and its UI served on `PLAYWRIGHT_BASE_URL`; the denied read
 needs an authenticated server with two Shiro accounts:
 
 ```bash

@@ -36,8 +36,8 @@ import {
 const fixtureDirectory = () => process.env.ZEPPELIN_READ_FIXTURE_DIR ?? path.resolve('e2e/fixtures/notebook-read');
 
 /**
- * The read replies these captures record depend on server changes that are not on Apache master yet,
- * so they are attributed to the commit that was built and served, which the capture must name.
+ * Captures are attributed to the Apache master commit the server was built from, which the capture
+ * must name and the served version must report.
  */
 const readCaptureMetadata = async (
   page: Page,
@@ -63,7 +63,6 @@ const readCaptureMetadata = async (
     scenario,
     coveredOperations,
     knownExclusions: [
-      'Recaptured from Apache master once the read msgId change is merged; until then the source is the named branch commit.',
       'Only reads made by the private Core read view are covered; incremental notebook operations are excluded.',
       'Physical reconnect and logout are Shell-owned and not part of this capture.'
     ],
