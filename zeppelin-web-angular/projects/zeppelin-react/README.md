@@ -192,3 +192,13 @@ npm run build:storybook
 npx playwright install chromium
 npm run test:storybook
 ```
+
+### Markdown answers
+
+`MarkdownAnswer` accepts answer text through `content` and renders GFM tables and language-labelled code blocks, including unclosed fences during streaming.
+
+Pass `describeParagraph` and `onOpenParagraph` to enable paragraph reference buttons; clicks are reported to the parent without navigating the notebook.
+
+HTML is displayed as text and dangerous link URLs are blocked.
+
+See **Assistant / MarkdownAnswer** in Storybook for complete answers, streaming, and paragraph reference examples in both themes.
