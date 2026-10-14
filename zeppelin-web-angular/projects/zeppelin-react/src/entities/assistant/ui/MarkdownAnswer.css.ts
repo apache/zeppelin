@@ -16,7 +16,7 @@
  */
 
 import { globalStyle, style } from '@vanilla-extract/css';
-import { vars } from '../../../shared/ui/assistant-theme/AssistantScope.css';
+import { vars } from '@/shared/ui/assistant-theme/AssistantScope.css';
 
 export const answer = style({
   boxSizing: 'border-box',

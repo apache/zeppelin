@@ -29,7 +29,7 @@ import remarkGfm from 'remark-gfm';
 import type { Link, Parent, Root, Text } from 'mdast';
 import type { Plugin, PluggableList } from 'unified';
 
-import { visuallyHidden } from '../../../shared/ui/assistant-theme/AssistantScope.css';
+import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import * as styles from './MarkdownAnswer.css';
 
 export interface MarkdownAnswerProps {
@@ -46,7 +46,7 @@ type ParagraphReferences = Pick<MarkdownAnswerProps, 'describeParagraph' | 'onOp
 const ParagraphReferenceContext = createContext<ParagraphReferences>({});
 const paragraphIdPattern = /^paragraph_\d+_-?\d+$/;
 
-function textReferences(node: Text): Array<Text | Link> | undefined {
+const textReferences = (node: Text): Array<Text | Link> | undefined => {
   // Match a complete ID without splitting Unicode letters, numbers or combining marks.
   const pattern = new RegExp('(^|[^\\p{L}\\p{N}\\p{M}_+-])(paragraph_\\d+_-?\\d+)(?![\\p{L}\\p{N}\\p{M}_+-])', 'gu');
   let references: Array<Text | Link> | undefined;
@@ -68,9 +68,9 @@ function textReferences(node: Text): Array<Text | Link> | undefined {
     references.push({ type: 'text', value: node.value.slice(offset) });
   }
   return references;
-}
+};
 
-function transformReferences(parent: Parent): void {
+const transformReferences = (parent: Parent): void => {
   let children: Parent['children'] | undefined;
 
   for (let index = 0; index < parent.children.length; index++) {
@@ -93,7 +93,7 @@ function transformReferences(parent: Parent): void {
   }
 
   if (children) parent.children = children;
-}
+};
 
 const remarkParagraphReferences: Plugin<[], Root> = () => transformReferences;
 const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
