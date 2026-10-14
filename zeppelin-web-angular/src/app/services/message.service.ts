@@ -152,8 +152,8 @@ export class MessageService extends Message implements OnDestroy {
     super.reloadNote(noteId);
   }
 
-  getNote(noteId: string): void {
-    super.getNote(noteId);
+  getNote(noteId: string): string {
+    return super.getNote(noteId);
   }
 
   updateNote(noteId: string, noteName: string, noteConfig: NoteConfig): void {
@@ -307,8 +307,8 @@ export class MessageService extends Message implements OnDestroy {
     super.listRevisionHistory(noteId);
   }
 
-  noteRevision(noteId: string, revisionId: string): void {
-    super.noteRevision(noteId, revisionId);
+  noteRevision(noteId: string, revisionId: string): string {
+    return super.noteRevision(noteId, revisionId);
   }
 
   noteRevisionForCompare(noteId: string, revisionId: string, position: string): void {

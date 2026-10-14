@@ -181,4 +181,14 @@ describe('Message.send', () => {
     expect(next.mock.calls.map(([sent]) => sent.msgId)).toEqual([commitMsgId, insertMsgId, copyMsgId]);
     expect(new Set([commitMsgId, insertMsgId, copyMsgId]).size).toBe(3);
   });
+
+  it('returns the msgId of a note read and a revision read', () => {
+    const { message, next } = connectedMessage();
+
+    const noteMsgId = message.getNote('n1');
+    const revisionMsgId = message.noteRevision('n1', 'r1');
+
+    expect(next.mock.calls.map(([sent]) => sent.msgId)).toEqual([noteMsgId, revisionMsgId]);
+    expect(noteMsgId).not.toBe(revisionMsgId);
+  });
 });

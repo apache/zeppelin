@@ -13,10 +13,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { NotebookCoreReadComponent } from './core-read/notebook-core-read.component';
 import { NotebookComponent } from './notebook.component';
-import { createNotebookChildRoutes } from './notebook-route-boundary';
+import { canMatchNotebookCoreRead, createNotebookChildRoutes } from './notebook-route-boundary';
 
-const routes: Routes = createNotebookChildRoutes(NotebookComponent);
+const routes: Routes = [
+  ...createNotebookChildRoutes(NotebookCoreReadComponent, [canMatchNotebookCoreRead]),
+  ...createNotebookChildRoutes(NotebookComponent)
+];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

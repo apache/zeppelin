@@ -1,0 +1,136 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Private Core read view: a read the note permissions deny",
+    "coveredOperations": ["GET_NOTE", "AUTH_INFO", "GET /api/notebook/{noteId}/permissions"],
+    "knownExclusions": [
+      "Recaptured from Apache master once the read msgId change is merged; until then the source is the named branch commit.",
+      "Only reads made by the private Core read view are covered; incremental notebook operations are excluded.",
+      "Physical reconnect and logout are Shell-owned and not part of this capture."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://localhost:8080",
+      "revisionSupported": true,
+      "interpreterExecution": "none"
+    },
+    "capturedAt": "2026-10-12T12:52:36.914Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "kimyenac/zeppelin",
+      "branch": "ZEPPELIN-6737",
+      "commit": "126591360775f149a028f8b395941a2ca00b2e60"
+    }
+  },
+  "records": [
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "sequence": 1
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N52EYC2Z\",\"path\":\"/core-read/demo\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "context",
+      "sessionId": "viewer-b",
+      "context": {
+        "state": "active",
+        "noteId": "2N56QUH91",
+        "revisionId": null
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:2>\",\"data\":{\"id\":\"2N56QUH91\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N56QUH91/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer-b",
+      "connectionId": "viewer-b:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"AUTH_INFO\",\"data\":{\"info\":\"Insufficient privileges to READER note.\\nAllowed users or roles: [<user>]\\nBut the user <user> belongs to: [<user>, role3]\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:2>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer-b",
+      "requestId": "viewer-b:request:1",
+      "sequence": 8,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N56QUH91/permissions",
+          "bodyRaw": ""
+        },
+        "status": 403,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "FORBIDDEN",
+          "message": "Insufficient privileges you cannot get the list of permissions for this note"
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer-b"
+    }
+  ]
+}

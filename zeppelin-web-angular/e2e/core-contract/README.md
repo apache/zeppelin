@@ -351,3 +351,36 @@ already rejects stale revision and interpreter-binding replies inside the Angula
 reconnect recovery remains outside it until the lifecycle rules have an enforceable
 stale-reply mechanism. The harness does not implement those lifecycle rules, switch
 the production renderer, or move production notebook state out of Angular.
+
+## Private Core read view captures
+
+[notebook-read](../fixtures/notebook-read/) holds the server replies read by the private Core read
+view (ZEPPELIN-6737). They are separate from the seven lifecycle captures and their inventory.
+
+| Fixture               | Behavior covered                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| `read-anonymous.json` | `GET_NOTE` and `NOTE_REVISION` replies, a missing note's `ERROR_INFO`, and note permission reads.  |
+| `read-denied.json`    | An authenticated read the note permissions deny: `AUTH_INFO` and a `403` permissions response.     |
+
+Each read reply and each failure carries the msgId of its request. That depends on a server change
+that is not on Apache master yet, so the committed captures name the branch commit that was built and
+served in `metadata.source`. Recapture from Apache master once that change is merged.
+
+Capture with the server running and its UI served on `PLAYWRIGHT_BASE_URL`; the denied read
+needs an authenticated server with two Shiro accounts:
+
+```bash
+export ZEPPELIN_READ_CAPTURE_COMMIT="$(git rev-parse HEAD)"
+npm run e2e:core-contract:live -- read-fixtures
+npx prettier --write e2e/fixtures/notebook-read
+```
+
+The capture fails unless `/api/version` reports that commit (as its abbreviated id), so build the server in a regular
+clone with `./mvnw package -pl zeppelin-server --am -DskipTests`; a git worktree stamped the main checkout's
+commit when tried. It records that id as `metadata.source.serverCommit`. It also fails when the recorded authentication
+does not match the captured page's session: `read-anonymous.json` needs an anonymous session, `read-denied.json` a
+signed-in one. `metadata.source.repository` is `apache/zeppelin`, so capture from an Apache master commit.
+
+The capture replaces the account names that `AUTH_INFO` prints in its text with `<user>`.
+`src/app/pages/workspace/notebook/core-read/notebook-read-fixture.spec.ts` replays both captures
+through the production read transport and Core.

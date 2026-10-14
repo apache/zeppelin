@@ -49,6 +49,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonParser;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -1248,6 +1250,170 @@ class NotebookServerTest extends AbstractTestRestApi {
     } finally {
       notebook.removeNote(noteId, anonymous);
     }
+  }
+
+  @Test
+  void getNoteReplyCarriesTheRequestMsgId() throws IOException {
+    String noteId = notebook.createNote("read-reply-msg-id", anonymous);
+    try {
+      NotebookSocket socket = createWebSocket();
+
+      notebookServer.onMessage(socket,
+          new Message(OP.GET_NOTE).withMsgId("read-1").put("id", noteId).toJson());
+
+      Message reply = onlySent(socket, OP.NOTE);
+      assertEquals("read-1", reply.msgId);
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void getNoteWithoutMsgIdKeepsTheReplyUncorrelated() throws IOException {
+    String noteId = notebook.createNote("read-reply-without-msg-id", anonymous);
+    try {
+      NotebookSocket socket = createWebSocket();
+
+      notebookServer.onMessage(socket, new Message(OP.GET_NOTE).put("id", noteId).toJson());
+
+      String reply = onlySentPayload(socket, OP.NOTE);
+      assertNull(notebookServer.deserializeMessage(reply).msgId);
+      assertFalse(JsonParser.parseString(reply).getAsJsonObject().has("msgId"));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void getNoteFailuresCarryTheRequestMsgId() throws IOException {
+    NotebookSocket socket = createWebSocket();
+
+    notebookServer.onMessage(socket,
+        new Message(OP.GET_NOTE).withMsgId("read-missing").put("id", "missing-note").toJson());
+
+    assertEquals("read-missing", onlySent(socket, OP.ERROR_INFO).msgId);
+
+    String noteId = notebook.createNote("read-forbidden-msg-id", anonymous);
+    try {
+      setNotePermissions(noteId, "read-owner", "read-owner");
+      reset(socket);
+
+      notebookServer.onMessage(socket,
+          new Message(OP.GET_NOTE).withMsgId("read-forbidden").put("id", noteId).toJson());
+
+      assertEquals("read-forbidden", onlySent(socket, OP.AUTH_INFO).msgId);
+      assertTrue(sentOps(socket).stream().noneMatch(op -> op == OP.NOTE));
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void noteRevisionReplyAndFailuresCarryTheRequestMsgId() throws IOException {
+    String noteId = notebook.createNote("revision-reply-msg-id", anonymous);
+    try {
+      NotebookRepoWithVersionControl.Revision revision =
+          notebook.processNote(noteId,
+              note -> notebook.checkpointNote(note.getId(), note.getPath(), "revision", anonymous));
+      NotebookSocket socket = createWebSocket();
+
+      notebookServer.onMessage(socket, new Message(OP.NOTE_REVISION).withMsgId("revision-1")
+          .put("noteId", noteId).put("revisionId", revision.id).toJson());
+
+      Message reply = onlySent(socket, OP.NOTE_REVISION);
+      assertEquals("revision-1", reply.msgId);
+      assertEquals(revision.id, reply.data.get("revisionId"));
+
+      reset(socket);
+      notebookServer.onMessage(socket, new Message(OP.NOTE_REVISION).withMsgId("revision-missing")
+          .put("noteId", "missing-note").put("revisionId", revision.id).toJson());
+
+      assertEquals("revision-missing", onlySent(socket, OP.ERROR_INFO).msgId);
+
+      setNotePermissions(noteId, "revision-owner", "revision-owner");
+      reset(socket);
+      notebookServer.onMessage(socket, new Message(OP.NOTE_REVISION).withMsgId("revision-forbidden")
+          .put("noteId", noteId).put("revisionId", revision.id).toJson());
+
+      assertEquals("revision-forbidden", onlySent(socket, OP.AUTH_INFO).msgId);
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  @Test
+  void readRequestExceptionsReachTheSenderWithTheRequestMsgId() throws IOException {
+    NotebookSocket socket = createWebSocket();
+    // A non-string id fails the cast in the handler before any service callback exists, so the
+    // error comes from the top-level exception handler of onMessage.
+    notebookServer.onMessage(socket,
+        new Message(OP.GET_NOTE).withMsgId("read-throws").put("id", 42).toJson());
+
+    assertEquals("read-throws", onlySent(socket, OP.ERROR_INFO).msgId);
+
+    reset(socket);
+    notebookServer.onMessage(socket, new Message(OP.NOTE_REVISION).withMsgId("revision-throws")
+        .put("noteId", 42).put("revisionId", "some-revision").toJson());
+
+    assertEquals("revision-throws", onlySent(socket, OP.ERROR_INFO).msgId);
+  }
+
+  @Test
+  void unrelatedFailuresAndNoteBroadcastsStayUncorrelated() throws IOException {
+    NotebookSocket socket = createWebSocket();
+    notebookServer.onMessage(socket,
+        new Message(OP.RELOAD_NOTE).withMsgId("reload-missing").put("id", "missing-note").toJson());
+
+    assertNull(onlySent(socket, OP.ERROR_INFO).msgId);
+
+    reset(socket);
+    notebookServer.onMessage(socket,
+        new Message(OP.RELOAD_NOTE).withMsgId("reload-throws").put("id", 42).toJson());
+
+    assertNull(onlySent(socket, OP.ERROR_INFO).msgId);
+
+    String noteId = notebook.createNote("read-broadcast-msg-id", anonymous);
+    try {
+      NotebookSocket reader = createWebSocket();
+      NotebookSocket writer = createWebSocket();
+      notebookServer.onMessage(reader,
+          new Message(OP.GET_NOTE).withMsgId("reader-read").put("id", noteId).toJson());
+      notebookServer.onMessage(writer,
+          new Message(OP.GET_NOTE).withMsgId("writer-read").put("id", noteId).toJson());
+      reset(reader, writer);
+
+      notebookServer.onMessage(writer, new Message(OP.PARAGRAPH_CLEAR_ALL_OUTPUT)
+          .withMsgId("writer-clear").put("id", noteId).toJson());
+
+      assertNull(onlySent(reader, OP.NOTE).msgId);
+      assertNull(onlySent(writer, OP.NOTE).msgId);
+    } finally {
+      notebook.removeNote(noteId, anonymous);
+    }
+  }
+
+  private List<String> sentPayloads(NotebookSocket socket) throws IOException {
+    ArgumentCaptor<String> sent = ArgumentCaptor.forClass(String.class);
+    verify(socket, Mockito.atLeast(0)).send(sent.capture());
+    return sent.getAllValues();
+  }
+
+  private List<OP> sentOps(NotebookSocket socket) throws IOException {
+    return sentPayloads(socket).stream()
+        .map(payload -> notebookServer.deserializeMessage(payload).op)
+        .collect(Collectors.toList());
+  }
+
+  private String onlySentPayload(NotebookSocket socket, OP op) throws IOException {
+    List<String> matches = sentPayloads(socket).stream()
+        .filter(payload -> notebookServer.deserializeMessage(payload).op == op)
+        .collect(Collectors.toList());
+    assertEquals(1, matches.size(), "expected exactly one " + op + " but sent " + sentOps(socket));
+    return matches.get(0);
+  }
+
+  private Message onlySent(NotebookSocket socket, OP op) throws IOException {
+    return notebookServer.deserializeMessage(onlySentPayload(socket, op));
   }
 
   private NotebookSocket createWebSocket() {
