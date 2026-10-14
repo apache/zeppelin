@@ -50,6 +50,8 @@ export const input = style({
 });
 
 globalStyle(`${scope} ${input}:focus-visible`, { outline: 'none' });
+// antd's placeholder colour falls below 4.5:1 on the panel; textTertiary is lifted to meet it.
+globalStyle(`${scope} ${input}::placeholder`, { color: vars.textTertiary });
 
 export const footer = style({
   display: 'flex',
