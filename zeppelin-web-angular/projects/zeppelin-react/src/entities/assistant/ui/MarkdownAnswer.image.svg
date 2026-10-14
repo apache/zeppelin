@@ -1,0 +1,36 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements. See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240" role="img" aria-labelledby="title description">
+  <title id="title">Quarterly revenue</title>
+  <desc id="description">Revenue grows from 120 in January to 180 in February and 240 in March.</desc>
+  <rect width="480" height="240" rx="8" fill="#f4f7fb" />
+  <g font-family="sans-serif" fill="#233449">
+    <text x="32" y="32" font-size="20">Quarterly revenue</text>
+    <path d="M48 52V194H448" fill="none" stroke="#71839a" stroke-width="2" />
+    <rect x="88" y="124" width="64" height="70" fill="#3071a9" />
+    <rect x="208" y="89" width="64" height="105" fill="#3071a9" />
+    <rect x="328" y="54" width="64" height="140" fill="#3071a9" />
+    <g font-size="16" text-anchor="middle">
+      <text x="120" y="116">120</text>
+      <text x="240" y="81">180</text>
+      <text x="360" y="46">240</text>
+      <text x="120" y="220">January</text>
+      <text x="240" y="220">February</text>
+      <text x="360" y="220">March</text>
+    </g>
+  </g>
+</svg>

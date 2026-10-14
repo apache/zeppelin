@@ -119,6 +119,58 @@ export const paragraphReference = style({
   }
 });
 
+export const imagePlaceholder = style({
+  display: 'inline-flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: vars.space2,
+  maxWidth: '100%',
+  margin: `${vars.space1} 0`,
+  padding: vars.space3,
+  border: `1px solid ${vars.border}`,
+  borderRadius: vars.radius,
+  background: vars.fill,
+  verticalAlign: 'middle'
+});
+
+export const imageDescription = style({
+  fontWeight: 600
+});
+
+export const imageDetails = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: vars.space1,
+  maxWidth: '100%',
+  color: vars.textSecondary,
+  fontSize: vars.fontSizeSm,
+  overflowWrap: 'anywhere'
+});
+
+export const loadImage = style({
+  padding: `${vars.space1} ${vars.space2}`,
+  border: `1px solid ${vars.accentBorder}`,
+  borderRadius: vars.radiusSm,
+  background: vars.accentBg,
+  color: vars.accentText,
+  font: 'inherit',
+  cursor: 'pointer',
+  selectors: {
+    '&:hover': { color: vars.accentTextHover }
+  }
+});
+
+export const loadedImage = style({
+  display: 'block',
+  maxWidth: '100%',
+  height: 'auto'
+});
+
+export const imageLink = style({
+  display: 'inline',
+  maxWidth: '100%'
+});
+
 export const codeBlock = style({
   minWidth: 0,
   maxWidth: '100%',

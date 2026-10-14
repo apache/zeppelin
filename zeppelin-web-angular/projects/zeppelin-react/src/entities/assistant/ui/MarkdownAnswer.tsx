@@ -15,7 +15,15 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useId, useMemo, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
+import {
+  createContext,
+  useContext,
+  useId,
+  useMemo,
+  useState,
+  type ComponentPropsWithoutRef,
+  type MouseEvent
+} from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Link, Parent, Root, Text } from 'mdast';
@@ -96,17 +104,75 @@ const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
 // remark-rehype gives the footnotes heading this fixed id and points every footnote reference at it.
 const footnoteLabelId = 'footnote-label';
 
-const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) => {
+const resolveImageUrl = (src: ComponentPropsWithoutRef<'img'>['src'], base: string | undefined): URL | undefined => {
+  if (typeof src !== 'string' || !src.trim()) return undefined;
+  try {
+    const url = base === undefined ? new URL(src) : new URL(src, base);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const LoadableImage = ({ url, alt, title }: { url: URL; alt: string; title: string | undefined }) => {
+  const [approved, setApproved] = useState(false);
+  const detailsId = useId();
+
+  return (
+    <span className={styles.imagePlaceholder}>
+      <span className={styles.imageDescription}>Image description: {alt || 'No description provided.'}</span>
+      <span id={detailsId} className={styles.imageDetails}>
+        <span>Host: {url.hostname}</span>
+        <span>Image URL: {url.href}</span>
+        <span>Loading this image sends a request to its host, which may contain information from the answer.</span>
+      </span>
+      {approved ? (
+        <img src={url.href} alt={alt} title={title} className={styles.loadedImage} />
+      ) : (
+        <button
+          type="button"
+          className={styles.loadImage}
+          aria-label={alt ? `Load image: ${alt}` : 'Load image'}
+          aria-describedby={detailsId}
+          onClick={() => setApproved(true)}
+        >
+          Load image
+        </button>
+      )}
+    </span>
+  );
+};
+
+const AnswerImage = ({ src, alt, title }: ComponentPropsWithoutRef<'img'> & ExtraProps) => {
+  const base = typeof document === 'undefined' ? undefined : document.baseURI;
+  const url = useMemo(() => resolveImageUrl(src, base), [src, base]);
+  if (!url) {
+    return (
+      <span className={styles.imagePlaceholder}>
+        <span className={styles.imageDescription}>Image description: {alt || 'No description provided.'}</span>
+        <span>Image unavailable: only HTTP(S) image URLs can be loaded.</span>
+      </span>
+    );
+  }
+  // A changed full URL remounts local consent, including when a stream returns to an earlier URL.
+  return <LoadableImage key={url.href} url={url} alt={alt ?? ''} title={title} />;
+};
+
+const containsImage = (node: NonNullable<ExtraProps['node']>): boolean =>
+  node.tagName === 'img' || node.children.some(child => child.type === 'element' && containsImage(child));
+
+const AnswerLink = ({ node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) => {
   const { describeParagraph, onOpenParagraph, footnotePrefix } = useContext(AnswerContext);
 
   if (!href) return <>{children}</>;
+  const imageLink = node ? containsImage(node) : false;
 
   const fragment = href.startsWith('#');
   const paragraphId = fragment ? href.slice(1) : undefined;
   if (paragraphId && paragraphIdPattern.test(paragraphId)) {
     const description = describeParagraph?.(paragraphId);
     if (description && onOpenParagraph) {
-      return (
+      const reference = (
         <button
           type="button"
           className={styles.paragraphReference}
@@ -115,6 +181,13 @@ const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentP
         >
           {description.text}
         </button>
+      );
+      return imageLink ? (
+        <span className={styles.imageLink}>
+          {children} {reference}
+        </span>
+      ) : (
+        reference
       );
     }
     return <>{children}</>;
@@ -132,7 +205,7 @@ const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentP
   };
 
   // react-markdown has already applied its default URL safety transform.
-  return (
+  const link = (
     <a
       {...props}
       aria-describedby={
@@ -146,8 +219,16 @@ const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentP
       target={fragment ? undefined : '_blank'}
       rel={fragment ? undefined : 'noopener noreferrer'}
     >
-      {children}
+      {imageLink ? 'Open image link' : children}
     </a>
+  );
+  // Keep every original child outside the anchor so an image's native load button is never nested in a link.
+  return imageLink ? (
+    <span className={styles.imageLink}>
+      {children} {link}
+    </span>
+  ) : (
+    link
   );
 };
 
@@ -185,6 +266,7 @@ const AnswerHeading = ({ node: _node, id, ...props }: ComponentPropsWithoutRef<'
 const components: Components = {
   h2: AnswerHeading,
   a: AnswerLink,
+  img: AnswerImage,
   pre: AnswerCodeBlock,
   table: AnswerTable
 };

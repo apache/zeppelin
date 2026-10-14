@@ -30,6 +30,36 @@ const streamingChunks = [
   'GROUP BY product;\n```\n\nRevenue is grouped by product.'
 ];
 
+const imageFixtureUrl = new URL('./MarkdownAnswer.image.svg?no-inline', import.meta.url).href;
+const imageQuerySeparator = imageFixtureUrl.includes('?') ? '&' : '?';
+const streamingImageChunks = [
+  '### Quarterly revenue\n\n![Quarterly revenue chart][revenue-chart]\n\nRevenue increased across the quarter.',
+  '\n\nThe strongest growth came from recurring notebook subscriptions.',
+  '\n\nThe updated chart includes the final month of the quarter.'
+];
+
+const StreamingImagesExample = (args: MarkdownAnswerProps) => {
+  const [step, setStep] = useState(0);
+  const completed = step === streamingImageChunks.length - 1;
+  const version = completed ? 'B' : 'A';
+  const content = `${streamingImageChunks.slice(0, step + 1).join('')}\n\n[revenue-chart]: ${imageFixtureUrl}${imageQuerySeparator}version=${version}`;
+
+  return (
+    <div>
+      <button type="button" disabled={completed} onClick={() => setStep(current => current + 1)}>
+        Append next chunk
+      </button>
+      <button type="button" disabled={step === 0} onClick={() => setStep(0)} style={{ marginLeft: 8 }}>
+        Restart stream
+      </button>
+      <p role="status">
+        Chunk {step + 1} of {streamingImageChunks.length}
+      </p>
+      <MarkdownAnswer {...args} content={content} />
+    </div>
+  );
+};
+
 const ParagraphReferenceExample = ({ onOpenParagraph, ...args }: MarkdownAnswerProps) => {
   const [selectedParagraph, setSelectedParagraph] = useState('No paragraph selected.');
 
@@ -236,4 +266,28 @@ export const Streaming: Story = {
       }
     }
   }
+};
+
+export const ImageLoading: Story = {
+  args: {
+    content: [
+      '### Quarterly revenue',
+      '',
+      'Revenue increased across the quarter, led by recurring notebook subscriptions.',
+      '',
+      `![Quarterly revenue chart](${imageFixtureUrl} "Quarterly revenue")`,
+      '',
+      'The regional breakdown is shown in the chart accompanying the documentation:',
+      '',
+      `[Regional comparison: **revenue** ![Regional revenue chart](${imageFixtureUrl}${imageQuerySeparator}region=north "Regional revenue")](https://zeppelin.apache.org/docs/latest/)`,
+      '',
+      'Northern Europe contributed the largest share.'
+    ].join('\n')
+  }
+};
+
+export const StreamingImages: Story = {
+  render: args => <StreamingImagesExample {...args} />,
+  args: { content: streamingImageChunks[0] },
+  argTypes: { content: { control: false } }
 };

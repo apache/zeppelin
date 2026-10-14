@@ -201,4 +201,6 @@ Pass `describeParagraph` and `onOpenParagraph` to enable paragraph reference but
 
 HTML is displayed as text and dangerous link URLs are blocked.
 
-See **Assistant / MarkdownAnswer** in Storybook for complete answers, streaming, and paragraph reference examples in both themes.
+Images remain unloaded until you select **Load image**. The control shows the destination and warns that the request may transmit information from the answer. Only HTTP(S) image URLs are supported; changing the URL requires approval again.
+
+See **Assistant / MarkdownAnswer** in Storybook for complete answers, streaming, paragraph references, **ImageLoading** and **StreamingImages** examples in both themes.

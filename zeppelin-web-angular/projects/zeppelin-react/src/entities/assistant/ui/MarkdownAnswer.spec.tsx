@@ -416,6 +416,150 @@ describe('MarkdownAnswer', () => {
     });
   });
 
+  describe('image loading', () => {
+    const sourceA = 'https://images.example.test/plot.svg?q=SYNTHETIC_NOTEBOOK_VALUE';
+    const sourceB = 'https://images.example.test/plot.svg?q=UPDATED_NOTEBOOK_VALUE';
+    const imageMarkdown = (source: string) => `![Quarterly revenue](${source} "Revenue plot")`;
+
+    it('shows the resolved destination and warning without an image until explicitly activated', () => {
+      const { container } = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(container.querySelector('img, [src], [srcset], link[rel="preload"]')).toBeNull();
+      expect(screen.getByText(`Image URL: ${sourceA}`)).toBeTruthy();
+      expect(screen.getByText('Host: images.example.test')).toBeTruthy();
+      expect(screen.getByText(/loading.*sends a request.*information from.*answer/i)).toBeTruthy();
+      expect(container.textContent).toContain('Quarterly revenue');
+      const button = screen.getByRole('button', { name: /load image/i });
+
+      fireEvent.click(button);
+
+      const image = screen.getByRole('img', { name: 'Quarterly revenue' });
+      expect(image.getAttribute('src')).toBe(sourceA);
+      expect(image.getAttribute('alt')).toBe('Quarterly revenue');
+      expect(image.getAttribute('title')).toBe('Revenue plot');
+      expect(image.hasAttribute('srcset')).toBe(false);
+    });
+
+    it('resolves relative destinations against the actual document base URI', () => {
+      const relativeSource = '/assistant-plot.svg?q=relative';
+      const resolvedSource = new URL(relativeSource, document.baseURI);
+      render(<MarkdownAnswer content={imageMarkdown(relativeSource)} />);
+
+      expect(screen.getByText(`Image URL: ${resolvedSource.href}`)).toBeTruthy();
+      expect(screen.getByText(`Host: ${resolvedSource.hostname}`)).toBeTruthy();
+      expect(screen.queryByRole('img')).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(resolvedSource.href);
+    });
+
+    it('requires fresh consent for query changes, including returning to a previously loaded URL', () => {
+      const { rerender } = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceA);
+
+      rerender(<MarkdownAnswer content={imageMarkdown(sourceB)} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceB);
+
+      rerender(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: /load image/i })).toBeTruthy();
+    });
+
+    it('requires fresh consent when the destination path changes', () => {
+      const { rerender } = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+
+      rerender(<MarkdownAnswer content={imageMarkdown(sourceA.replace('/plot.svg', '/another.svg'))} />);
+
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: /load image/i })).toBeTruthy();
+    });
+
+    it('keeps approval for an unchanged URL while more answer text is appended', () => {
+      const content = `Revenue increased.\n\n${imageMarkdown(sourceA)}`;
+      const { rerender } = render(<MarkdownAnswer content={content} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+
+      rerender(<MarkdownAnswer content={`${content}\n\nThe next quarter also improved.`} />);
+
+      expect(screen.getByRole('img', { name: 'Quarterly revenue' }).getAttribute('src')).toBe(sourceA);
+      expect(screen.queryByRole('button', { name: /load image/i })).toBeNull();
+      expect(screen.getByText('The next quarter also improved.')).toBeTruthy();
+    });
+
+    it('does not share approval with another image in the same answer', () => {
+      render(<MarkdownAnswer content={`${imageMarkdown(sourceA)}\n\n![Comparison](${sourceA})`} />);
+      const buttons = screen.getAllByRole('button', { name: /load image/i });
+
+      fireEvent.click(buttons[0]);
+
+      expect(screen.getAllByRole('img')).toHaveLength(1);
+      expect(screen.getByRole('img', { name: 'Quarterly revenue' })).toBeTruthy();
+      expect(screen.queryByRole('img', { name: 'Comparison' })).toBeNull();
+      expect(screen.getAllByRole('button', { name: /load image/i })).toHaveLength(1);
+    });
+
+    it('does not share approval between independently rendered answers', () => {
+      const first = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      fireEvent.click(within(first.container).getByRole('button', { name: /load image/i }));
+      const second = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+
+      expect(within(first.container).getByRole('img')).toBeTruthy();
+      expect(within(second.container).queryByRole('img')).toBeNull();
+      expect(within(second.container).getByRole('button', { name: /load image/i })).toBeTruthy();
+    });
+
+    it.each(['javascript:alert%281%29', 'ftp://images.example.test/plot.svg', ''])(
+      'does not offer loading for the unsupported or empty image destination %s',
+      source => {
+        const { container } = render(<MarkdownAnswer content={imageMarkdown(source)} />);
+
+        expect(screen.queryByRole('img')).toBeNull();
+        expect(screen.queryByRole('button', { name: /load image/i })).toBeNull();
+        expect(container.querySelector('[src], [srcset]')).toBeNull();
+        expect(container.textContent).toContain('Quarterly revenue');
+      }
+    );
+
+    it('keeps the original link separate from the image loading button and preserves mixed content', () => {
+      const href = 'https://zeppelin.apache.org/docs/latest/';
+      const { container } = render(
+        <MarkdownAnswer content={`[Before **bold** ${imageMarkdown(sourceA)} after](${href})`} />
+      );
+      const button = screen.getByRole('button', { name: /load image/i });
+      const links = screen.getAllByRole('link');
+
+      expect(button.closest('a')).toBeNull();
+      expect(button.closest('p')).not.toBeNull();
+      expect(container.querySelector('p p, p div')).toBeNull();
+      expect(container.textContent).toContain('Before');
+      expect(screen.getByText('bold').tagName).toBe('STRONG');
+      expect(container.textContent).toContain('after');
+      for (const link of links) {
+        expect(link.getAttribute('href')).toBe(href);
+        expect(link.getAttribute('target')).toBe('_blank');
+        expect(link.getAttribute('rel')?.split(/\s+/)).toEqual(expect.arrayContaining(['noopener', 'noreferrer']));
+      }
+
+      fireEvent.click(button);
+
+      expect(screen.getByRole('img', { name: 'Quarterly revenue' }).getAttribute('src')).toBe(sourceA);
+      expect(screen.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(links.map(() => href));
+    });
+
+    it('retains a navigation link for an image-only Markdown link without nesting its load button', () => {
+      const href = 'https://zeppelin.apache.org/docs/latest/';
+      render(<MarkdownAnswer content={`[${imageMarkdown(sourceA)}](${href})`} />);
+
+      const button = screen.getByRole('button', { name: /load image/i });
+      expect(button.closest('a')).toBeNull();
+      expect(screen.getByRole('link').getAttribute('href')).toBe(href);
+    });
+  });
+
   it.each(dangerousUrls)('renders the rejected URL %s as non-navigable text', url => {
     const { container } = render(<MarkdownAnswer content={`[Unsafe link](${url})`} />);
 
