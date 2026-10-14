@@ -126,8 +126,8 @@ const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentP
     const target = document.getElementById(href.slice(1));
     if (!target) return;
     target.scrollIntoView?.({ block: 'nearest' });
-    // Keyboard focus follows the target, as it does after a native jump to a fragment.
-    target.tabIndex = -1;
+    // Preserve existing tab stops when moving keyboard focus to the target.
+    if (target.tabIndex < 0 && !target.hasAttribute('tabindex')) target.tabIndex = -1;
     target.focus({ preventScroll: true });
   };
 

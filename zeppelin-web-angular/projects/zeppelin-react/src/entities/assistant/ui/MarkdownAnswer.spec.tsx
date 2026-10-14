@@ -398,6 +398,22 @@ describe('MarkdownAnswer', () => {
       expect(document.activeElement).toBe(target);
       expect(window.location.hash).toBe(hash);
     });
+
+    it('keeps footnote references keyboard reachable after following a back-reference', () => {
+      const { container } = renderTwo();
+      const reference = container.querySelectorAll<HTMLAnchorElement>('a[data-footnote-ref]')[1];
+      const footnote = container.querySelector<HTMLElement>(`[id="${reference.getAttribute('href')!.slice(1)}"]`)!;
+      const backReference = footnote.querySelector<HTMLAnchorElement>('a[data-footnote-backref]')!;
+      const hash = window.location.hash;
+
+      fireEvent.click(reference);
+      expect(document.activeElement).toBe(footnote);
+      fireEvent.click(backReference);
+
+      expect(document.activeElement).toBe(reference);
+      expect(reference.tabIndex).toBe(0);
+      expect(window.location.hash).toBe(hash);
+    });
   });
 
   it.each(dangerousUrls)('renders the rejected URL %s as non-navigable text', url => {
