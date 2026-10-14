@@ -877,6 +877,71 @@ class NotebookServiceTest {
   }
 
   @Test
+  void testUpdateParagraphChecksumUsesTheUserCopyInPersonalizedMode() throws IOException {
+    String noteId = notebookService.createNote("/note_personalized_checksum", "test", true,
+        context, callback);
+    // make "admin" the owner so that "user1" below edits only its own copy
+    authorizationService.setOwners(noteId, Collections.singleton("admin"));
+    ServiceContext user1Context = new ServiceContext(new AuthenticationInfo("user1"),
+        new HashSet<>(Collections.singleton("user1")));
+
+    String paragraphId = notebook.processNote(noteId,
+      note -> {
+        note.setPersonalizedMode(true);
+        Paragraph p = note.getParagraph(0);
+        p.setText("master text");
+        // user1 has already diverged from the master copy, which is what GET_NOTE handed it
+        p.getUserParagraph("user1").setText("user1 text");
+        return p.getId();
+      });
+
+    // a commit based on the user's own text is stored, even though the master text differs
+    notebookService.updateParagraph(noteId, paragraphId, "user1 title", "user1 edit",
+        new HashMap<>(), new HashMap<>(), "user1 text".hashCode(), user1Context, callback);
+    notebook.processNote(noteId,
+      note -> {
+        Paragraph p = note.getParagraph(paragraphId);
+        assertEquals("user1 edit", p.getUserParagraph("user1").getText());
+        assertEquals("master text", p.getText());
+        return null;
+      });
+
+    // the master text is not a valid base for a non-owner, so a commit using it is rejected
+    notebookService.updateParagraph(noteId, paragraphId, "stale title", "stale edit",
+        new HashMap<>(), new HashMap<>(), "master text".hashCode(), user1Context, callback);
+    notebook.processNote(noteId,
+      note -> {
+        assertEquals("user1 edit",
+            note.getParagraph(paragraphId).getUserParagraph("user1").getText());
+        return null;
+      });
+  }
+
+  @Test
+  void testGetParagraphReturnsTheUserCopyInPersonalizedMode() throws IOException {
+    String noteId = notebookService.createNote("/note_personalized_get", "test", true,
+        context, callback);
+    authorizationService.setOwners(noteId, Collections.singleton("admin"));
+    ServiceContext user1Context = new ServiceContext(new AuthenticationInfo("user1"),
+        new HashSet<>(Collections.singleton("user1")));
+
+    String paragraphId = notebook.processNote(noteId,
+      note -> {
+        note.setPersonalizedMode(true);
+        Paragraph p = note.getParagraph(0);
+        p.setText("master text");
+        p.getUserParagraph("user1").setText("user1 text");
+        return p.getId();
+      });
+
+    reset(callback);
+    notebookService.getParagraph(noteId, paragraphId, user1Context, callback);
+    ArgumentCaptor<Paragraph> captor = ArgumentCaptor.forClass(Paragraph.class);
+    verify(callback).onSuccess(captor.capture(), any(ServiceContext.class));
+    assertEquals("user1 text", captor.getValue().getText());
+  }
+
+  @Test
   void testUpdateParagraphChecksIsBasedOnCurrentServerText() throws IOException {
     String noteId = notebookService.createNote("/note_checksum", "test", true, context, callback);
     String paragraphId = notebook.processNote(noteId, note -> {

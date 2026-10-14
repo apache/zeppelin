@@ -306,8 +306,8 @@ export class MessageService extends Message implements OnDestroy {
     super.patchParagraph(paragraphId, noteId, patch, baseChecksum, afterChecksum);
   }
 
-  getParagraph(paragraphId: string, noteId: string): void {
-    super.getParagraph(paragraphId, noteId);
+  getParagraph(paragraphId: string, noteId: string): string {
+    return super.getParagraph(paragraphId, noteId);
   }
 
   importNote(note: ImportNote['note']): void {

@@ -823,9 +823,13 @@ public class NotebookService {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
           return null;
         }
-        if (baseChecksum != null && baseChecksum != checksum(p.getText())) {
+        // The client edits the paragraph GET_NOTE handed it, which in personalized mode is the
+        // user's copy, so that is the text its checksum describes and the one to send back.
+        Paragraph edited = note.isPersonalizedMode()
+            ? p.getUserParagraph(context.getAutheInfo().getUser()) : p;
+        if (baseChecksum != null && baseChecksum != checksum(edited.getText())) {
           LOGGER.info("Rejecting stale commit of paragraph {} in note {}", paragraphId, noteId);
-          callback.onSuccess(p, context);
+          callback.onSuccess(edited, context);
           return null;
         }
         // In personalized mode only the note owner may update the master paragraph, so that
@@ -1610,7 +1614,9 @@ public class NotebookService {
           callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
           return null;
         }
-        callback.onSuccess(p, context);
+        // Answer with the copy the client is editing, matching what GET_NOTE handed it.
+        callback.onSuccess(note.isPersonalizedMode()
+            ? p.getUserParagraph(context.getAutheInfo().getUser()) : p, context);
         return null;
       });
   }

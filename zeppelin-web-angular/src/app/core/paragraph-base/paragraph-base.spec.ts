@@ -11,7 +11,15 @@
  */
 
 import { ChangeDetectorRef } from '@angular/core';
-import { AngularObjectRemove, DatasetType, Message, OP, ParagraphItem, ParagraphState } from '@zeppelin/sdk';
+import {
+  AngularObjectRemove,
+  DatasetType,
+  Message,
+  OP,
+  ParagraphItem,
+  ParagraphState,
+  textChecksum
+} from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -320,6 +328,93 @@ const createSaveTestParagraph = (text: string, dirtyText?: string): SaveTestPara
   saveTestParagraphs.push(paragraph);
   return paragraph;
 };
+
+describe('ParagraphBase recovery responses', () => {
+  const createRecoveryParagraph = (serverText: string) => {
+    const getParagraph = vi.fn(() => 'fetch-1');
+    const paragraph = new SaveTestParagraph(
+      { receive: () => EMPTY, receiveEnvelope: () => EMPTY, getParagraph } as unknown as Message,
+      { isParagraphRunning: () => false, isEntireNoteRunning: () => false },
+      {
+        setContextValue: vi.fn(),
+        unsetContextValue: vi.fn(),
+        contextChanged: () => EMPTY,
+        runParagraphAction: () => EMPTY
+      } as unknown as AngularContextManager,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
+    );
+    paragraph.paragraph = { id: 'A', text: serverText } as ParagraphItem;
+    paragraph.originalText = serverText;
+    saveTestParagraphs.push(paragraph);
+    return { paragraph, getParagraph };
+  };
+
+  // A patch that cannot be reproduced locally makes the client ask for the paragraph again. The
+  // answer carries text the client has not seen, so an edit typed meanwhile is not in it.
+  const divergeAndRequestRecovery = (paragraph: SaveTestParagraph) => {
+    const patch = paragraph.diffMatchPatch.patch_make('server text', 'sender text').toString();
+    paragraph.patchParagraph({
+      paragraphId: 'A',
+      noteId: 'note',
+      patch,
+      baseChecksum: textChecksum('server text'),
+      // a checksum the local apply cannot produce, which is what marks the text as diverged
+      afterChecksum: textChecksum('text nobody holds')
+    });
+  };
+
+  it('asks for the paragraph again when a patch does not reproduce the sender text', () => {
+    const { paragraph, getParagraph } = createRecoveryParagraph('server text');
+
+    divergeAndRequestRecovery(paragraph);
+
+    expect(getParagraph).toHaveBeenCalledWith('A', 'note');
+  });
+
+  it('keeps an edit made while the recovery request was in flight', () => {
+    const { paragraph } = createRecoveryParagraph('server text');
+    divergeAndRequestRecovery(paragraph);
+    const diverged = paragraph.paragraph!.text;
+    paragraph.dirtyText = 'edit typed while waiting';
+
+    paragraph.updateAllScopeTexts(
+      { text: diverged } as ParagraphItem,
+      { text: 'recovered text' } as ParagraphItem,
+      'fetch-1'
+    );
+
+    // the editor re-bases on the server text, and the later edit is still pending
+    expect(paragraph.paragraph?.text).toBe('recovered text');
+    expect(paragraph.originalText).toBe('recovered text');
+    expect(paragraph.dirtyText).toBe('edit typed while waiting');
+  });
+
+  it('clears the local edit when the recovery answer already contains it', () => {
+    const { paragraph } = createRecoveryParagraph('server text');
+    divergeAndRequestRecovery(paragraph);
+    const diverged = paragraph.paragraph!.text;
+
+    paragraph.updateAllScopeTexts(
+      { text: diverged } as ParagraphItem,
+      { text: 'recovered text' } as ParagraphItem,
+      'fetch-1'
+    );
+
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+
+  it('does not treat an unrelated broadcast as a recovery answer', () => {
+    const { paragraph } = createRecoveryParagraph('server text');
+    divergeAndRequestRecovery(paragraph);
+    const diverged = paragraph.paragraph!.text;
+    paragraph.dirtyText = 'local edit';
+
+    paragraph.updateAllScopeTexts({ text: diverged } as ParagraphItem, { text: 'someone else text' } as ParagraphItem);
+
+    // without a matching msgId this is an ordinary remote edit, which keeps the existing behaviour
+    expect(paragraph.dirtyText).toBeUndefined();
+  });
+});
 
 describe('ParagraphBase save responses', () => {
   it.each(['latest edit', ''])('preserves an unsaved edit %j when a broadcast carries the saved text', dirtyText => {

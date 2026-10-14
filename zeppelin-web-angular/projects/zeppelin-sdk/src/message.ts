@@ -485,8 +485,8 @@ export class Message {
     });
   }
 
-  getParagraph(paragraphId: string, noteId: string): void {
-    this.send<OP.GET_PARAGRAPH>(OP.GET_PARAGRAPH, {
+  getParagraph(paragraphId: string, noteId: string): string {
+    return this.send<OP.GET_PARAGRAPH>(OP.GET_PARAGRAPH, {
       id: paragraphId,
       noteId
     });

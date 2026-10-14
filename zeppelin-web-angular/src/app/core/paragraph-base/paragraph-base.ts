@@ -62,6 +62,9 @@ export abstract class ParagraphBase extends MessageListenersManager {
   private readonly outputState = new ParagraphOutputState();
   private readonly pendingParagraphSaves = new Map<string, { sequence: number; originalText?: string }>();
   private paragraphSaveSequence = 0;
+  // Recovery requests are tracked apart from saves: a save acknowledges text this client sent,
+  // while a recovery answer carries text it has not seen and must not discard edits made since.
+  private readonly pendingParagraphFetches = new Map<string, { dirtyText?: string }>();
 
   constructor(
     public messageService: Message,
@@ -215,7 +218,8 @@ export abstract class ParagraphBase extends MessageListenersManager {
       this.originalText = this.paragraph.text;
       if (startedFromSameText && data.afterChecksum !== textChecksum(this.paragraph.text)) {
         // we no longer hold the text the sender produced, so ask for this paragraph again
-        this.messageService.getParagraph(this.paragraph.id, data.noteId);
+        const msgId = this.messageService.getParagraph(this.paragraph.id, data.noteId);
+        this.pendingParagraphFetches.set(msgId, { dirtyText: this.dirtyText });
       }
       this.cdr.markForCheck();
     }
@@ -354,6 +358,7 @@ export abstract class ParagraphBase extends MessageListenersManager {
       throw new Error('paragraph is not defined');
     }
     const { acknowledged, hasNewerSave } = this.consumeParagraphSave(msgId, newPara.text);
+    const recovery = this.consumeParagraphFetch(msgId);
 
     if (oldPara.text !== newPara.text) {
       const hasLocalEdit = this.dirtyText !== undefined && this.dirtyText !== newPara.text;
@@ -361,11 +366,25 @@ export abstract class ParagraphBase extends MessageListenersManager {
       const staleBroadcastOfSavedText = hasLocalEdit && this.originalText === newPara.text;
       if (!staleSaveAcknowledgement && !staleBroadcastOfSavedText) {
         this.paragraph.text = newPara.text;
-        this.dirtyText = undefined;
+        // A recovery answer re-bases the editor on the server text, but an edit typed while the
+        // request was in flight is not in it, so that edit stays pending instead of being lost.
+        this.dirtyText = recovery !== undefined && this.dirtyText !== recovery.dirtyText ? this.dirtyText : undefined;
         this.originalText = newPara.text;
       }
     }
     this.cdr.markForCheck();
+  }
+
+  /** Reports whether this message answers a recovery request, and what was pending when it was sent. */
+  private consumeParagraphFetch(msgId: string | undefined): { dirtyText?: string } | undefined {
+    if (msgId === undefined) {
+      return undefined;
+    }
+    const pendingFetch = this.pendingParagraphFetches.get(msgId);
+    if (pendingFetch !== undefined) {
+      this.pendingParagraphFetches.delete(msgId);
+    }
+    return pendingFetch;
   }
 
   updateParagraphObjectWhenUpdated(newPara: ParagraphItem) {

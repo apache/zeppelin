@@ -504,6 +504,13 @@ export enum OP {
    * patch editor text
    */
   PATCH_PARAGRAPH = 'PATCH_PARAGRAPH',
+
+  /**
+   * [c-s]
+   * resend a single paragraph after a failed patch
+   * @param id paragraph id
+   * @param noteId note id
+   */
   GET_PARAGRAPH = 'GET_PARAGRAPH',
 
   /**

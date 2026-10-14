@@ -1322,7 +1322,9 @@ public class NotebookServer implements AngularObjectRegistryListener,
           @Override
           public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
             super.onSuccess(p, context);
-            conn.send(serializeMessage(new Message(OP.PARAGRAPH).put("paragraph", p)));
+            conn.send(serializeMessage(new Message(OP.PARAGRAPH)
+                .withMsgId(fromMessage.msgId)
+                .put("paragraph", p)));
           }
         });
   }
