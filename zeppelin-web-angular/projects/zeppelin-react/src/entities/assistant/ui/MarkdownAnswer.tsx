@@ -15,15 +15,7 @@
  * limitations under the License.
  */
 
-import {
-  createContext,
-  useContext,
-  useDeferredValue,
-  useId,
-  useMemo,
-  type ComponentPropsWithoutRef,
-  type MouseEvent
-} from 'react';
+import { createContext, useContext, useId, useMemo, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Link, Parent, Root, Text } from 'mdast';
@@ -35,15 +27,18 @@ import * as styles from './MarkdownAnswer.css';
 export interface MarkdownAnswerProps {
   /** Markdown text of the answer. While it is still arriving, it may end inside a code fence. */
   content: string;
-  /** Describes a paragraph the answer refers to by ID, for its button. A reference it cannot describe stays plain text. */
+  /** Describes a paragraph the answer refers to by ID, for its button. A reference it cannot describe is left as written, without a button. */
   describeParagraph?: (paragraphId: string) => { text: string; name: string } | undefined;
   /** Called when a paragraph button is clicked. Without it, references stay plain text. */
   onOpenParagraph?: (paragraphId: string, label: string) => void;
 }
 
-type ParagraphReferences = Pick<MarkdownAnswerProps, 'describeParagraph' | 'onOpenParagraph'>;
+type AnswerContextValue = Pick<MarkdownAnswerProps, 'describeParagraph' | 'onOpenParagraph'> & {
+  /** Prefix of the footnote ids of this answer, so that two answers on one page do not share them. */
+  footnotePrefix: string;
+};
 
-const ParagraphReferenceContext = createContext<ParagraphReferences>({});
+const AnswerContext = createContext<AnswerContextValue>({ footnotePrefix: '' });
 const paragraphIdPattern = /^paragraph_\d+_-?\d+$/;
 
 const textReferences = (node: Text): Array<Text | Link> | undefined => {
@@ -98,8 +93,11 @@ const transformReferences = (parent: Parent): void => {
 const remarkParagraphReferences: Plugin<[], Root> = () => transformReferences;
 const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
 
+// remark-rehype gives the footnotes heading this fixed id and points every footnote reference at it.
+const footnoteLabelId = 'footnote-label';
+
 const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentPropsWithoutRef<'a'> & ExtraProps) => {
-  const { describeParagraph, onOpenParagraph } = useContext(ParagraphReferenceContext);
+  const { describeParagraph, onOpenParagraph, footnotePrefix } = useContext(AnswerContext);
 
   if (!href) return <>{children}</>;
 
@@ -122,16 +120,26 @@ const AnswerLink = ({ node: _node, href, children, title, ...props }: ComponentP
     return <>{children}</>;
   }
 
-  // The URL hash belongs to the router, so scroll to the target in the page instead of navigating to it.
+  // The URL hash belongs to the router, so show the target in the page instead of navigating to it.
   const showTarget = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    document.getElementById(href.slice(1))?.scrollIntoView?.({ block: 'nearest' });
+    const target = document.getElementById(href.slice(1));
+    if (!target) return;
+    target.scrollIntoView?.({ block: 'nearest' });
+    // Keyboard focus follows the target, as it does after a native jump to a fragment.
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
   };
 
   // react-markdown has already applied its default URL safety transform.
   return (
     <a
       {...props}
+      aria-describedby={
+        props['aria-describedby'] === footnoteLabelId
+          ? `${footnotePrefix}${footnoteLabelId}`
+          : props['aria-describedby']
+      }
       href={href}
       onClick={fragment ? showTarget : undefined}
       title={title}
@@ -169,7 +177,13 @@ const AnswerTable = ({ node: _node, children, ...props }: ComponentPropsWithoutR
   );
 };
 
+const AnswerHeading = ({ node: _node, id, ...props }: ComponentPropsWithoutRef<'h2'> & ExtraProps) => {
+  const { footnotePrefix } = useContext(AnswerContext);
+  return <h2 {...props} id={id === footnoteLabelId ? `${footnotePrefix}${id}` : id} />;
+};
+
 const components: Components = {
+  h2: AnswerHeading,
   a: AnswerLink,
   pre: AnswerCodeBlock,
   table: AnswerTable
@@ -178,10 +192,9 @@ const components: Components = {
 /** Renders the Markdown of an assistant answer. HTML is shown as text and unsafe link URLs are removed. */
 export const MarkdownAnswer = ({ content, describeParagraph, onOpenParagraph }: MarkdownAnswerProps) => {
   // Footnote ids must differ between the answers on one page.
-  const footnotePrefix = `${useId().replace(/:/g, '')}-`;
+  const footnotePrefix = `${useId()}-`;
   // The whole answer is parsed again each time this renders. Keying the parsed element on the text means typing in a
-  // sibling input does not parse it, and a fast stream of chunks does not hold up that input.
-  const deferredContent = useDeferredValue(content);
+  // sibling input does not parse it.
   const markdown = useMemo(
     () => (
       <Markdown
@@ -192,15 +205,15 @@ export const MarkdownAnswer = ({ content, describeParagraph, onOpenParagraph }: 
           footnoteLabelProperties: { className: [visuallyHidden] }
         }}
       >
-        {deferredContent}
+        {content}
       </Markdown>
     ),
-    [deferredContent, footnotePrefix]
+    [content, footnotePrefix]
   );
 
   return (
-    <ParagraphReferenceContext.Provider value={{ describeParagraph, onOpenParagraph }}>
+    <AnswerContext.Provider value={{ describeParagraph, onOpenParagraph, footnotePrefix }}>
       <div className={styles.answer}>{markdown}</div>
-    </ParagraphReferenceContext.Provider>
+    </AnswerContext.Provider>
   );
 };

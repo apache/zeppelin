@@ -17,6 +17,7 @@
 
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { MarkdownAnswer } from './MarkdownAnswer';
 
 const paragraphId = 'paragraph_1423500782552_-1439281894';
@@ -355,29 +356,48 @@ describe('MarkdownAnswer', () => {
     expect(container.querySelector('[onclick], [onerror], [onload]')).toBeNull();
   });
 
-  it('keeps footnotes of different answers apart and shows a footnote without changing the URL hash', () => {
+  describe('footnotes', () => {
     const content = 'Revenue grew[^1].\n\n[^1]: Source: finance.';
-    const { container } = render(
-      <>
-        <MarkdownAnswer content={content} />
-        <MarkdownAnswer content={content} />
-      </>
-    );
-    const ids = Array.from(container.querySelectorAll('[id^="user-content-fn"], [id*="-fn-"], [id*="-fnref-"]')).map(
-      element => element.id
-    );
-    expect(new Set(ids).size).toBe(ids.length);
+    const renderTwo = () =>
+      render(
+        <>
+          <MarkdownAnswer content={content} />
+          <MarkdownAnswer content={content} />
+        </>
+      );
 
-    const [reference] = Array.from(container.querySelectorAll('a[data-footnote-ref]'));
-    const target = container.querySelector(`[id="${reference.getAttribute('href')!.slice(1)}"]`)!;
-    expect(container.querySelectorAll('li[id]').length).toBe(2);
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
-    const hash = window.location.hash;
-    expect(fireEvent.click(reference)).toBe(false);
-    expect(scrollIntoView).toHaveBeenCalledOnce();
-    expect(window.location.hash).toBe(hash);
-    expect(screen.getAllByText('Footnotes')[0].className).not.toBe('sr-only');
+    it('gives every element of two answers its own id, and points each reference at its own heading', () => {
+      const { container } = renderTwo();
+
+      const ids = Array.from(container.querySelectorAll('[id]')).map(element => element.id);
+      expect(ids.length).toBeGreaterThan(0);
+      expect(new Set(ids).size).toBe(ids.length);
+      const references = Array.from(container.querySelectorAll('a[data-footnote-ref]'));
+      expect(references).toHaveLength(2);
+      for (const reference of references) {
+        const heading = container.querySelector(`[id="${reference.getAttribute('aria-describedby')}"]`);
+        expect(heading?.textContent).toBe('Footnotes');
+        expect(heading?.closest('section')?.contains(reference)).toBe(false);
+      }
+      expect(references[0].getAttribute('aria-describedby')).not.toBe(references[1].getAttribute('aria-describedby'));
+    });
+
+    it('hides the heading visually, and shows a footnote and moves focus to it without changing the URL hash', () => {
+      const { container } = renderTwo();
+
+      expect(screen.getAllByText('Footnotes')[0].className).toBe(visuallyHidden);
+      const [reference] = Array.from(container.querySelectorAll('a[data-footnote-ref]'));
+      const target = container.querySelector(`[id="${reference.getAttribute('href')!.slice(1)}"]`) as HTMLElement;
+      const scrollIntoView = vi.fn();
+      target.scrollIntoView = scrollIntoView;
+      const hash = window.location.hash;
+
+      expect(fireEvent.click(reference)).toBe(false);
+
+      expect(scrollIntoView).toHaveBeenCalledOnce();
+      expect(document.activeElement).toBe(target);
+      expect(window.location.hash).toBe(hash);
+    });
   });
 
   it.each(dangerousUrls)('renders the rejected URL %s as non-navigable text', url => {

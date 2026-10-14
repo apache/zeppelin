@@ -212,6 +212,19 @@ export const DangerousContent: Story = {
   }
 };
 
+export const Footnotes: Story = {
+  args: {
+    content: [
+      '### Revenue',
+      '',
+      'Northern Europe generated the highest revenue[^1], ahead of Asia Pacific[^2].',
+      '',
+      '[^1]: Source: the finance warehouse, closed quarters only.',
+      '[^2]: Converted at the quarter-end exchange rate.'
+    ].join('\n')
+  }
+};
+
 export const Streaming: Story = {
   render: args => <StreamingExample {...args} />,
   args: { content: streamingChunks[0] },
