@@ -304,16 +304,20 @@ describe('assistant transport', () => {
     expect(socket.listenerCount()).toBe(1);
     expect(socket.closeListenerCount()).toBe(1);
     const second = collect(socketRun(socket, message('second'), new AbortController().signal, tracking));
+    await expect(second).resolves.toEqual([
+      { type: 'run.failed', message: 'This conversation is still answering. Try again when it finishes.' }
+    ]);
+    expect(socket.sent).toHaveLength(1);
     socket.emit({
       conversationId: 'c1',
       type: 'message.delta',
       payload: { messageId: 'old-answer', delta: 'old answer' }
     });
     socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'old' } });
+    const third = collect(socketRun(socket, message('third'), new AbortController().signal, tracking));
     socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'new', error: { status: 409 } } });
-    await expect(second).resolves.toEqual([
-      { type: 'run.failed', runId: 'new', message: 'This conversation is still answering. Try again when it finishes.' }
-    ]);
+    await expect(third).resolves.toHaveLength(1);
+    expect(socket.sent).toHaveLength(2);
   });
 
   it('tracks a queued start even when the consumer aborts before reading it', async () => {
@@ -365,34 +369,26 @@ describe('assistant transport', () => {
     await expect(reconnect).resolves.toHaveLength(1);
   });
 
-  it('ignores the rest of an abandoned run when the next message is sent', async () => {
+  it('blocks another send during an active run, then allows a new run after it ends', async () => {
     const socket = fakeSocket();
-    const leave = new AbortController();
-    const abandoned = iterate(socketRun(socket, message('first'), leave.signal, tracking));
-    const firstEvent = abandoned.next();
+    const first = iterate(socketRun(socket, message('first'), new AbortController().signal, tracking));
+    const firstEvent = first.next();
     socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'run_old' } });
     expect((await firstEvent).value).toEqual({ type: 'run.started', runId: 'run_old' });
-    leave.abort();
-    await expect(abandoned.next()).rejects.toThrow();
+    await expect(
+      collect(socketRun(socket, message('second'), new AbortController().signal, tracking))
+    ).resolves.toEqual([
+      { type: 'run.failed', message: 'This conversation is still answering. Try again when it finishes.' }
+    ]);
+    expect(socket.sent).toHaveLength(1);
 
-    // Sent while the abandoned run still streams: the server rejects it, and the old run's tail is not this run's.
-    const rejected = collect(socketRun(socket, message('second'), new AbortController().signal, tracking));
     socket.emit({ conversationId: 'c1', type: 'message.delta', payload: { messageId: 'old', delta: 'tail' } });
     socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'run_old' } });
-    socket.emit({
-      conversationId: 'c1',
-      type: 'run.failed',
-      payload: { runId: 'run_new', error: { status: 409 } }
-    });
-    await expect(rejected).resolves.toEqual([
-      {
-        type: 'run.failed',
-        runId: 'run_new',
-        message: 'This conversation is still answering. Try again when it finishes.'
-      }
-    ]);
+    expect((await first.next()).value).toEqual({ type: 'message.delta', messageId: 'old', delta: 'tail' });
+    expect((await first.next()).value).toEqual({ type: 'run.completed', runId: 'run_old' });
+    expect((await first.next()).done).toBe(true);
 
-    // Once the old run ended, the next message runs normally.
+    // Once the old run ends, the next message can be sent normally.
     const next = collect(socketRun(socket, message('third'), new AbortController().signal, tracking));
     socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'run_3' } });
     socket.emit({ conversationId: 'c1', type: 'message.delta', payload: { messageId: 'm3', delta: 'ok' } });
@@ -776,7 +772,7 @@ describe('retired run subscriptions', () => {
 
 describe('retained run state', () => {
   it.each([true, false])(
-    'keeps old completion separate from a new rejection (completion first: %s)',
+    'ignores another run rejection without clearing the active run (completion first: %s)',
     async completionFirst => {
       const socket = fakeSocket();
       const transport = createAssistantTransport('/api', 'note', socket);
@@ -789,28 +785,39 @@ describe('retained run state', () => {
       await expect(first.next()).rejects.toThrow();
       const states: AssistantRunState[] = [];
       const stop = transport.subscribeRunState!('conversation', running => states.push(running));
-      const next = collect(transport.openRun('conversation', { content: 'new' }, new AbortController().signal));
       const completion = () =>
         socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'old' } });
-      const rejection = () =>
+      const unrelatedRejection = () =>
         socket.emit({
           conversationId: 'conversation',
           type: 'run.failed',
           payload: { runId: 'new', error: { status: 429 } }
         });
+      let stateBeforeCompletion: AssistantRunState | undefined;
       if (completionFirst) {
         completion();
-        rejection();
+        unrelatedRejection();
       } else {
-        rejection();
+        unrelatedRejection();
+        stateBeforeCompletion = states[states.length - 1];
         completion();
       }
+      expect(stateBeforeCompletion).toBe(completionFirst ? undefined : 'running');
+      expect(states[states.length - 1]).toBe('idle');
+      expect(socket.listenerCount()).toBe(0);
+
+      const next = collect(transport.openRun('conversation', { content: 'new' }, new AbortController().signal));
+      socket.emit({
+        conversationId: 'conversation',
+        type: 'run.failed',
+        payload: { runId: 'new', error: { status: 429 } }
+      });
       expect(await next).toEqual([
         { type: 'run.failed', runId: 'new', message: 'The assistant is busy. Try again shortly.' }
       ]);
-      expect(states[0]).toBe('running');
       expect(states[states.length - 1]).toBe('idle');
       expect(socket.listenerCount()).toBe(0);
+      expect(socket.sent).toHaveLength(2);
       stop();
     }
   );
