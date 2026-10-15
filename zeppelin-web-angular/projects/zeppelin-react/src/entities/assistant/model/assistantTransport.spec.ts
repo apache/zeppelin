@@ -27,6 +27,7 @@ import {
   AssistantConnectionError,
   AssistantStreamError,
   type AssistantAnswerMessage,
+  type AssistantConversation,
   type AssistantRunEvent,
   type AssistantRunState
 } from './assistantContract';
@@ -83,12 +84,11 @@ describe('assistant transport', () => {
     vi.useRealTimers();
   });
 
-  it('lists the most recently active conversation first and undated ones last', async () => {
+  it('lists the most recently active conversation first', async () => {
     const body = [
-      { id: 'old', createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-01T00:00:00Z' },
-      { id: 'undated' },
-      { id: 'new', createdAt: '2026-09-30T00:00:00Z', updatedAt: '2026-10-03T00:00:00Z' },
-      { id: 'created-only', createdAt: '2026-10-02T00:00:00Z' }
+      { id: 'old', ownerId: 'alice', canSendMessage: true, updatedAt: '2026-10-01T00:00:00Z' },
+      { id: 'new', ownerId: 'bob', canSendMessage: false, updatedAt: '2026-10-03T00:00:00Z' },
+      { id: 'middle', ownerId: 'carol', canSendMessage: true, updatedAt: '2026-10-02T00:00:00Z' }
     ];
     vi.stubGlobal(
       'fetch',
@@ -100,14 +100,13 @@ describe('assistant transport', () => {
       )
     );
     const conversations = await forNote('note-1').listConversations();
-    expect(conversations.map(conversation => conversation.id)).toEqual(['new', 'created-only', 'old', 'undated']);
-    // The list shows the latest activity, or the creation time before any.
+    expect(conversations.map(conversation => conversation.id)).toEqual(['new', 'middle', 'old']);
     expect(conversations.map(conversation => conversation.updatedAt)).toEqual([
       '2026-10-03T00:00:00Z',
       '2026-10-02T00:00:00Z',
-      '2026-10-01T00:00:00Z',
-      undefined
+      '2026-10-01T00:00:00Z'
     ]);
+    expect(conversations[0]).toMatchObject({ ownerId: 'bob', canSendMessage: false });
   });
 
   it('uses the per-note conversation endpoints and unwraps Zeppelin JSON responses', async () => {
@@ -118,11 +117,32 @@ describe('assistant transport', () => {
       .mockResolvedValueOnce(
         json({
           status: 'OK',
-          body: [{ id: 'conv-1', title: 'First', noteId: 'note/one', ownerId: 'alice', canSendMessage: false }]
+          body: [
+            {
+              id: 'conv-1',
+              title: 'First',
+              noteId: 'note/one',
+              ownerId: 'alice',
+              canSendMessage: false,
+              updatedAt: '2026-10-01T00:00:00Z'
+            }
+          ]
         })
       )
       .mockResolvedValueOnce(
-        json({ status: 'CREATED', body: { id: 'conv-2', title: 'Load the data', ownerId: 'bob' } }, 201)
+        json(
+          {
+            status: 'CREATED',
+            body: {
+              id: 'conv-2',
+              title: 'Load the data',
+              ownerId: 'bob',
+              canSendMessage: true,
+              updatedAt: '2026-10-02T00:00:00Z'
+            }
+          },
+          201
+        )
       )
       .mockResolvedValueOnce(
         json({
@@ -140,12 +160,14 @@ describe('assistant transport', () => {
     const transport = forNote('note/one');
 
     await expect(transport.listConversations()).resolves.toEqual([
-      { id: 'conv-1', title: 'First', ownerId: 'alice', canSendMessage: false }
+      { id: 'conv-1', title: 'First', ownerId: 'alice', canSendMessage: false, updatedAt: '2026-10-01T00:00:00Z' }
     ]);
     await expect(transport.createConversation({ title: '  Load   the data  ' })).resolves.toEqual({
       id: 'conv-2',
       title: 'Load the data',
-      ownerId: 'bob'
+      ownerId: 'bob',
+      canSendMessage: true,
+      updatedAt: '2026-10-02T00:00:00Z'
     });
     // The server pages latest first; the panel wants oldest first.
     await expect(transport.getMessages('conv/1')).resolves.toEqual({
@@ -157,7 +179,7 @@ describe('assistant transport', () => {
           segments: [{ id: 'message-2', content: 'hi there' }]
         }
       ],
-      earlierCursor: null
+      cursor: null
     });
     await expect(transport.deleteConversation('conv/1')).resolves.toBeUndefined();
 
@@ -213,7 +235,7 @@ describe('assistant transport', () => {
   it('sends over the socket and yields only this conversation until a terminal event', async () => {
     const socket = fakeSocket();
     const transport = createAssistantTransport('https://example.test/api', 'n', socket);
-    const run = iterate(transport.openRun('c1', { prompt: 'improve' }, new AbortController().signal));
+    const run = iterate(transport.openRun('c1', { content: 'improve' }, new AbortController().signal));
     const first = run.next();
     await vi.waitFor(() => expect(socket.sent).toHaveLength(1));
     expect(socket.sent[0]).toEqual({ noteId: 'n', conversationId: 'c1', content: 'improve' });
@@ -313,17 +335,17 @@ describe('assistant transport', () => {
     const socket = { ...fakeSocket(), connectionKey };
     const old = createAssistantTransport('/api', 'note', socket);
     const leave = new AbortController();
-    const response = iterate(old.openRun('c1', { prompt: 'first' }, leave.signal)).next();
+    const response = iterate(old.openRun('c1', { content: 'first' }, leave.signal)).next();
     leave.abort();
     await expect(response).rejects.toMatchObject({ name: 'AbortError' });
     const next = createAssistantTransport('/api', 'note', { ...socket });
-    await expect(collect(next.openRun('c1', { prompt: 'second' }, new AbortController().signal))).resolves.toEqual([
+    await expect(collect(next.openRun('c1', { content: 'second' }, new AbortController().signal))).resolves.toEqual([
       { type: 'run.failed', message: 'The previous request is still being confirmed. Try again shortly.' }
     ]);
     expect(socket.sent).toHaveLength(1);
     socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'old', error: { status: 403 } } });
     expect(socket.listenerCount()).toBe(0);
-    const sent = collect(next.openRun('c1', { prompt: 'second' }, new AbortController().signal));
+    const sent = collect(next.openRun('c1', { content: 'second' }, new AbortController().signal));
     socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'new', error: { status: 409 } } });
     await expect(sent).resolves.toHaveLength(1);
     expect(socket.sent).toHaveLength(2);
@@ -422,7 +444,7 @@ describe('assistant transport', () => {
     );
     expect(page).toEqual({
       messages: [{ id: 'm3', role: 'assistant', segments: [{ id: 'm3', content: 'part one.' }] }],
-      earlierCursor: 'm3'
+      cursor: 'm3'
     });
     expect(
       joinPages(page.messages, [
@@ -532,7 +554,7 @@ describe('assistant transport', () => {
     };
     const scoped = scopeTransport(inner);
     const list = scoped.transport.listConversations();
-    const run = iterate(scoped.transport.openRun('t', { prompt: 'hi' }, new AbortController().signal));
+    const run = iterate(scoped.transport.openRun('t', { content: 'hi' }, new AbortController().signal));
     await run.next();
     expect(inner.listConversations).toHaveBeenCalledWith();
 
@@ -546,13 +568,13 @@ describe('assistant transport', () => {
 
   it('retires pending creations and active runs when the host session aborts', async () => {
     const session = new AbortController();
-    let resolveCreate: (value: { id: string }) => void = () => undefined;
+    let resolveCreate: (value: AssistantConversation) => void = () => undefined;
     let runSignal: AbortSignal | undefined;
     const inner = {
       listConversations: vi.fn().mockResolvedValue([]),
       createConversation: vi.fn(
         () =>
-          new Promise<{ id: string }>(resolve => {
+          new Promise<AssistantConversation>(resolve => {
             resolveCreate = resolve;
           })
       ),
@@ -569,11 +591,16 @@ describe('assistant transport', () => {
     scoped.setActive(false);
     scoped.setActive(true);
     const creation = scoped.transport.createConversation({});
-    const run = iterate(scoped.transport.openRun('c1', { prompt: 'hi' }, new AbortController().signal));
+    const run = iterate(scoped.transport.openRun('c1', { content: 'hi' }, new AbortController().signal));
     await run.next();
     const terminal = run.next();
     session.abort();
-    resolveCreate({ id: 'old-account-conversation' });
+    resolveCreate({
+      id: 'old-account-conversation',
+      ownerId: 'alice',
+      canSendMessage: true,
+      updatedAt: '2026-10-01T00:00:00Z'
+    });
     await expect(creation).rejects.toMatchObject({ name: 'AbortError' });
     await expect(terminal).rejects.toMatchObject({ name: 'AbortError' });
     expect(runSignal?.aborted).toBe(true);
@@ -754,7 +781,7 @@ describe('retained run state', () => {
       const socket = fakeSocket();
       const transport = createAssistantTransport('/api', 'note', socket);
       const controller = new AbortController();
-      const first = iterate(transport.openRun('conversation', { prompt: 'old' }, controller.signal));
+      const first = iterate(transport.openRun('conversation', { content: 'old' }, controller.signal));
       const started = first.next();
       socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'old' } });
       await started;
@@ -762,7 +789,7 @@ describe('retained run state', () => {
       await expect(first.next()).rejects.toThrow();
       const states: AssistantRunState[] = [];
       const stop = transport.subscribeRunState!('conversation', running => states.push(running));
-      const next = collect(transport.openRun('conversation', { prompt: 'new' }, new AbortController().signal));
+      const next = collect(transport.openRun('conversation', { content: 'new' }, new AbortController().signal));
       const completion = () =>
         socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'old' } });
       const rejection = () =>
@@ -789,12 +816,17 @@ describe('retained run state', () => {
   );
 
   it('uses the server conversation response without a running field', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ body: [{ id: 'conversation', title: 'Question' }] })));
+    const conversation = {
+      id: 'conversation',
+      title: 'Question',
+      ownerId: 'alice',
+      canSendMessage: true,
+      updatedAt: '2026-10-01T00:00:00Z'
+    };
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ body: [conversation] })));
     vi.stubGlobal('fetch', fetch);
     const transport = createAssistantTransport('/api', 'note', fakeSocket());
-    expect(await transport.listConversations()).toEqual([{ id: 'conversation', title: 'Question' }]);
+    expect(await transport.listConversations()).toEqual([conversation]);
     const states: AssistantRunState[] = [];
     const stop = transport.subscribeRunState!('conversation', state => states.push(state));
     expect(states).toEqual(['idle']);
@@ -819,7 +851,7 @@ describe('retained run state', () => {
     const transport = createAssistantTransport('/api', 'note', socket);
     const states: AssistantRunState[] = [];
     const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-    const iterator = iterate(transport.openRun('conversation', { prompt: 'question' }, new AbortController().signal));
+    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, new AbortController().signal));
     const first = iterator.next();
     socket.close();
     await expect(first).rejects.toBeInstanceOf(AssistantConnectionError);
@@ -836,7 +868,7 @@ describe('retained run state', () => {
           segments: [{ id: 'answer', content: 'Recovered answer' }]
         }
       ],
-      earlierCursor: null
+      cursor: null
     });
     expect(states[states.length - 1]).toBe('idle');
     expect(fetch).toHaveBeenCalledTimes(3);
@@ -846,14 +878,14 @@ describe('retained run state', () => {
   it('keeps a disconnected run visible when a retry is rejected', async () => {
     const socket = fakeSocket();
     const transport = createAssistantTransport('/api', 'note', socket);
-    const first = collect(transport.openRun('conversation', { prompt: 'first' }, new AbortController().signal));
+    const first = collect(transport.openRun('conversation', { content: 'first' }, new AbortController().signal));
     socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'first' } });
     socket.close();
     await expect(first).rejects.toBeInstanceOf(AssistantConnectionError);
 
     const states: AssistantRunState[] = [];
     const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-    const retry = collect(transport.openRun('conversation', { prompt: 'retry' }, new AbortController().signal));
+    const retry = collect(transport.openRun('conversation', { content: 'retry' }, new AbortController().signal));
     socket.emit({
       conversationId: 'conversation',
       type: 'run.failed',
@@ -869,7 +901,7 @@ describe('retained run state', () => {
     expect(states).toContain('disconnected');
     expect(states).not.toContain('idle');
 
-    const accepted = collect(transport.openRun('conversation', { prompt: 'later' }, new AbortController().signal));
+    const accepted = collect(transport.openRun('conversation', { content: 'later' }, new AbortController().signal));
     socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'later' } });
     socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'later' } });
     await expect(accepted).resolves.toEqual([
@@ -895,7 +927,7 @@ describe('retained run state', () => {
     );
     const socket = fakeSocket();
     const transport = createAssistantTransport('/api', 'note', socket);
-    const run = collect(transport.openRun('conversation', { prompt: 'question' }, new AbortController().signal));
+    const run = collect(transport.openRun('conversation', { content: 'question' }, new AbortController().signal));
     socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
     const staleHistory = transport.getMessages('conversation');
     socket.close();
@@ -916,7 +948,7 @@ describe('retained run state', () => {
     const socket = fakeSocket();
     const transport = createAssistantTransport('/api', 'note', socket);
     const controller = new AbortController();
-    const iterator = iterate(transport.openRun('conversation', { prompt: 'question' }, controller.signal));
+    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, controller.signal));
     const first = iterator.next();
     socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
     await first;
@@ -937,7 +969,7 @@ describe('retained run state', () => {
     const states: AssistantRunState[] = [];
     const stop = transport.subscribeRunState!('conversation', running => states.push(running));
     const controller = new AbortController();
-    const iterator = iterate(transport.openRun('conversation', { prompt: 'question' }, controller.signal));
+    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, controller.signal));
     const first = iterator.next();
     socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
     expect((await first).value).toEqual({ type: 'run.started', runId: 'run' });
