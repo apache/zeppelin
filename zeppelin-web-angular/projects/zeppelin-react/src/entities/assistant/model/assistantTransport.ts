@@ -105,7 +105,7 @@ export const mapSocketEvent = ({ type, payload }: AssistantSocketEvent): Assista
     case 'tool_call.started':
       return { type, toolCallId: requiredString(data, 'toolCallId'), name: requiredString(data, 'name') };
     case 'tool_call.done':
-      return { type, toolCallId: requiredString(data, 'toolCallId'), name: optionalString(data, 'name') };
+      return { type, toolCallId: requiredString(data, 'toolCallId') };
     default:
       return undefined;
   }
@@ -143,7 +143,8 @@ export const toVisibleMessages = (messages: ConversationMessage[]): AssistantMes
         id: message.id,
         role: 'assistant',
         content: message.content ?? '',
-        ...(toolCalls.length ? { toolCalls } : {})
+        ...(toolCalls.length ? { toolCalls } : {}),
+        segments: [{ id: message.id, content: message.content ?? '', ...(toolCalls.length ? { toolCalls } : {}) }]
       };
       if (last?.role === 'assistant') visible[visible.length - 1] = mergeAnswers(last, answer);
       else visible.push(answer);
