@@ -150,7 +150,6 @@ public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
   }
 
   @Test
-  @Disabled("(zjffdu) flaky test")
   void testCancelStreamSql()
       throws InterpreterException, IOException, TimeoutException, InterruptedException {
     testCancelStreamSql(interpreter, flinkScalaInterpreter);
