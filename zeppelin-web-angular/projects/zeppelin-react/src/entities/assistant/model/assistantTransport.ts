@@ -401,10 +401,9 @@ export async function* socketRun(
 type ConversationSummary = {
   id: string;
   title?: string;
-  ownerId?: string;
-  canSendMessage?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  ownerId: string;
+  canSendMessage: boolean;
+  updatedAt: string;
 };
 type MessagePage = { messages: ConversationMessage[]; cursor?: string | null };
 
@@ -427,11 +426,9 @@ export const createAssistantTransport = (
     return {
       id: conversation.id,
       title: conversation.title,
-      ...(conversation.ownerId !== undefined ? { ownerId: conversation.ownerId } : {}),
-      ...(typeof conversation.canSendMessage === 'boolean' ? { canSendMessage: conversation.canSendMessage } : {}),
-      ...((conversation.updatedAt ?? conversation.createdAt)
-        ? { updatedAt: conversation.updatedAt ?? conversation.createdAt }
-        : {})
+      ownerId: conversation.ownerId,
+      canSendMessage: conversation.canSendMessage,
+      updatedAt: conversation.updatedAt
     };
   };
   // The server names an untitled conversation by its creation time.
@@ -460,12 +457,12 @@ export const createAssistantTransport = (
       if (socket.signal?.aborted) stop();
       return stop;
     },
-    // Latest activity first, so the panel opens on it; undated ones stay last in server order (stable sort).
+    // Latest activity first, so the panel opens on it.
     listConversations: async () =>
       (await collectionRequest<ConversationSummary[]>(base, {}, onAuthError))
         .map(conversation => ({
           conversation,
-          time: Date.parse(conversation.updatedAt ?? conversation.createdAt ?? '') || 0
+          time: Date.parse(conversation.updatedAt) || 0
         }))
         .sort((a, b) => b.time - a.time)
         .map(({ conversation }) => toConversation(conversation)),
@@ -489,7 +486,7 @@ export const createAssistantTransport = (
         notifyRunState(runs, conversationId);
       }
       // The server pages from the latest message backwards; the panel renders oldest to newest.
-      return { messages: toVisibleMessages([...page.messages].reverse()), earlierCursor: page.cursor ?? null };
+      return { messages: toVisibleMessages([...page.messages].reverse()), cursor: page.cursor ?? null };
     },
     openRun: (conversationId, body, signal) =>
       socketRun(
@@ -497,7 +494,7 @@ export const createAssistantTransport = (
         {
           noteId,
           conversationId,
-          content: body.prompt
+          content: body.content
         },
         signal,
         runs
