@@ -31,7 +31,8 @@ export const mergeAnswers = (
     new Map([...earlier.segments, ...later.segments].map(segment => [segment.id, segment])).values()
   );
   return {
-    ...later,
+    id: later.id,
+    role: 'assistant',
     segments
   };
 };
