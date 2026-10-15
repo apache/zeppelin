@@ -23,6 +23,7 @@ const Probe = () => {
     <>
       <span data-testid="container-bg">{token.colorBgContainer}</span>
       <span data-testid="font">{token.fontFamily}</span>
+      <span data-testid="motion">{String(token.motion)}</span>
       <span data-testid="mode">{useHostThemeMode()}</span>
     </>
   );
@@ -102,5 +103,6 @@ describe('ZeppelinThemeProvider', () => {
 
     expect(screen.getByTestId('font').textContent).toBe('Consolas');
     expect(screen.getByTestId('container-bg').textContent).toBe('#141414');
+    expect(screen.getByTestId('motion').textContent).toBe('false');
   });
 });

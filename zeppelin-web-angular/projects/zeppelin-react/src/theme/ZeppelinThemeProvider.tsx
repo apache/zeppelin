@@ -43,7 +43,7 @@ export const ZeppelinThemeProvider = ({
       prefixCls={prefixCls}
       theme={{
         algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-        token
+        token: { ...token, motion: false }
       }}
     >
       <HostThemeContext.Provider value={mode}>{children}</HostThemeContext.Provider>
