@@ -13,9 +13,6 @@
 /** The notebook sidebar's width: its default and its resize range. The assistant panel shares it. */
 export const NOTEBOOK_SIDEBAR_WIDTH = { initial: 370, min: 280, max: 800 } as const;
 
-/** Result of a host reveal: scrolled to it, already visible, or not rendered. */
-export type AssistantRevealResult = 'shown' | 'visible' | 'missing';
-
 /** A notebook paragraph as the remote sees it: enough to label and link it. */
 export interface AssistantParagraphRef {
   id: string;
