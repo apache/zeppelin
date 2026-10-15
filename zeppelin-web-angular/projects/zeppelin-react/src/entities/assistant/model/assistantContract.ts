@@ -30,9 +30,6 @@ export interface AssistantAnswerMessage {
   /** The last assistant round's id, used as the bubble key. */
   id: string;
   role: 'assistant';
-  /** Current UI projections; render segments to show text and actions in their original order. */
-  content: string;
-  toolCalls?: AssistantToolCallRef[];
   /** Ordered assistant rounds as stored by the server, including tool-only rounds. */
   segments: AssistantMessageSegment[];
 }

@@ -10,7 +10,18 @@
  * limitations under the License.
  */
 
-import type { AssistantAnswerMessage, AssistantMessage } from './assistantContract';
+import type { AssistantAnswerMessage, AssistantMessage, AssistantToolCallRef } from './assistantContract';
+
+export const answerText = (answer: AssistantAnswerMessage): string =>
+  answer.segments
+    .map(segment => segment.content)
+    .filter(Boolean)
+    .join('\n\n');
+
+export const answerToolCalls = (answer: AssistantAnswerMessage): AssistantToolCallRef[] =>
+  Array.from(
+    new Map(answer.segments.flatMap(segment => segment.toolCalls ?? []).map(call => [call.id, call])).values()
+  );
 
 export const mergeAnswers = (
   earlier: AssistantAnswerMessage,
@@ -19,16 +30,8 @@ export const mergeAnswers = (
   const segments = Array.from(
     new Map([...earlier.segments, ...later.segments].map(segment => [segment.id, segment])).values()
   );
-  const toolCalls = Array.from(
-    new Map(segments.flatMap(segment => segment.toolCalls ?? []).map(call => [call.id, call])).values()
-  );
   return {
     ...later,
-    content: segments
-      .map(segment => segment.content)
-      .filter(Boolean)
-      .join('\n\n'),
-    ...(toolCalls.length ? { toolCalls } : {}),
     segments
   };
 };
