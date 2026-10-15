@@ -17,12 +17,14 @@ import { joinPages } from './messageHistory';
 
 describe('joinPages', () => {
   it('joins a reply split across pages under the later id and retains both action logs', () => {
+    const first = { id: 'a1', content: 'Looking.', toolCalls: [{ id: 'c1', name: 'read' }] };
+    const second = { id: 'a2', content: 'Done.', toolCalls: [{ id: 'c2', name: 'summarize' }] };
     const earlier: AssistantMessage[] = [
       { id: 'u1', role: 'user', content: 'Read this notebook' },
-      { id: 'a1', role: 'assistant', content: 'Looking.', toolCalls: [{ id: 'c1', name: 'read' }] }
+      { id: 'a1', role: 'assistant', content: first.content, toolCalls: first.toolCalls, segments: [first] }
     ];
     const later: AssistantMessage[] = [
-      { id: 'a2', role: 'assistant', content: 'Done.', toolCalls: [{ id: 'c2', name: 'summarize' }] }
+      { id: 'a2', role: 'assistant', content: second.content, toolCalls: second.toolCalls, segments: [second] }
     ];
     expect(joinPages(earlier, later)).toEqual([
       earlier[0],
@@ -33,7 +35,8 @@ describe('joinPages', () => {
         toolCalls: [
           { id: 'c1', name: 'read' },
           { id: 'c2', name: 'summarize' }
-        ]
+        ],
+        segments: [first, second]
       }
     ]);
     expect(earlier[1].content).toBe('Looking.');
@@ -42,22 +45,61 @@ describe('joinPages', () => {
 
   it('retains a tool-only reply across an empty intermediate page and deduplicates repeated calls', () => {
     const call = { id: 'c1', name: 'read' };
-    const earlier: AssistantMessage[] = [{ id: 'a1', role: 'assistant', content: '', toolCalls: [call] }];
-    const later: AssistantMessage[] = [{ id: 'a2', role: 'assistant', content: 'Done.', toolCalls: [call] }];
+    const first = { id: 'a1', content: '', toolCalls: [call] };
+    const second = { id: 'a2', content: 'Done.', toolCalls: [call] };
+    const earlier: AssistantMessage[] = [
+      { id: 'a1', role: 'assistant', content: '', toolCalls: [call], segments: [first] }
+    ];
+    const later: AssistantMessage[] = [
+      { id: 'a2', role: 'assistant', content: 'Done.', toolCalls: [call], segments: [second] }
+    ];
     expect(joinPages(joinPages(earlier, []), later)).toEqual([
-      { id: 'a2', role: 'assistant', content: 'Done.', toolCalls: [call] }
+      { id: 'a2', role: 'assistant', content: 'Done.', toolCalls: [call], segments: [first, second] }
+    ]);
+  });
+
+  it('keeps interleaved text and tool rounds in server order across an overlapping page boundary', () => {
+    const rounds = [
+      { id: 'a1', content: 'First thought.', toolCalls: [{ id: 'c1', name: 'read' }] },
+      { id: 'a2', content: 'Second thought.', toolCalls: [{ id: 'c2', name: 'summarize' }] },
+      { id: 'a3', content: 'Final answer.' }
+    ];
+    const earlier: AssistantMessage[] = [
+      { id: 'a2', role: 'assistant', content: 'First thought.\n\nSecond thought.', segments: rounds.slice(0, 2) }
+    ];
+    const later: AssistantMessage[] = [
+      { id: 'a3', role: 'assistant', content: 'Second thought.\n\nFinal answer.', segments: rounds.slice(1) }
+    ];
+    expect(joinPages(earlier, later)).toEqual([
+      {
+        id: 'a3',
+        role: 'assistant',
+        content: 'First thought.\n\nSecond thought.\n\nFinal answer.',
+        toolCalls: [rounds[0].toolCalls![0], rounds[1].toolCalls![0]],
+        segments: rounds
+      }
     ]);
   });
 
   it('keeps separate turns apart and handles empty history', () => {
-    const earlier: AssistantMessage[] = [{ id: 'a1', role: 'assistant', content: 'First answer' }];
+    const earlier: AssistantMessage[] = [
+      { id: 'a1', role: 'assistant', content: 'First answer', segments: [{ id: 'a1', content: 'First answer' }] }
+    ];
     const later: AssistantMessage[] = [
       { id: 'u2', role: 'user', content: 'Another question' },
-      { id: 'a2', role: 'assistant', content: 'Another answer' }
+      { id: 'a2', role: 'assistant', content: 'Another answer', segments: [{ id: 'a2', content: 'Another answer' }] }
     ];
     expect(joinPages(earlier, later)).toEqual([...earlier, ...later]);
     expect(joinPages([], later)).toEqual(later);
     expect(joinPages(earlier, [])).toEqual(earlier);
     expect(joinPages([], [])).toEqual([]);
+  });
+
+  it('does not merge an answer with the next question across pages', () => {
+    const earlier: AssistantMessage[] = [{ id: 'u1', role: 'user', content: 'Question' }];
+    const later: AssistantMessage[] = [
+      { id: 'a1', role: 'assistant', content: 'Answer', segments: [{ id: 'a1', content: 'Answer' }] }
+    ];
+    expect(joinPages(earlier, later)).toEqual([...earlier, ...later]);
   });
 });

@@ -10,16 +10,26 @@
  * limitations under the License.
  */
 
-import type { AssistantMessage } from './assistantContract';
+import type { AssistantAnswerMessage, AssistantMessage } from './assistantContract';
 
-export const mergeAnswers = (earlier: AssistantMessage, later: AssistantMessage): AssistantMessage => {
+export const mergeAnswers = (
+  earlier: AssistantAnswerMessage,
+  later: AssistantAnswerMessage
+): AssistantAnswerMessage => {
+  const segments = Array.from(
+    new Map([...earlier.segments, ...later.segments].map(segment => [segment.id, segment])).values()
+  );
   const toolCalls = Array.from(
-    new Map([...(earlier.toolCalls ?? []), ...(later.toolCalls ?? [])].map(call => [call.id, call])).values()
+    new Map(segments.flatMap(segment => segment.toolCalls ?? []).map(call => [call.id, call])).values()
   );
   return {
     ...later,
-    content: [earlier.content, later.content].filter(Boolean).join('\n\n'),
-    ...(toolCalls.length ? { toolCalls } : {})
+    content: segments
+      .map(segment => segment.content)
+      .filter(Boolean)
+      .join('\n\n'),
+    ...(toolCalls.length ? { toolCalls } : {}),
+    segments
   };
 };
 

@@ -20,16 +20,30 @@ export interface AssistantConversation {
   /** Last activity (ISO time), shown in the conversation list. */
   updatedAt?: string;
 }
-export interface AssistantMessage {
+export type AssistantMessage = AssistantUserMessage | AssistantAnswerMessage;
+export interface AssistantUserMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user';
   content: string;
-  /** From history: the tools the server called before this answer. Live runs report them as events instead. */
+}
+export interface AssistantAnswerMessage {
+  /** The last assistant round's id, used as the bubble key. */
+  id: string;
+  role: 'assistant';
+  /** Current UI projections; render segments to show text and actions in their original order. */
+  content: string;
   toolCalls?: AssistantToolCallRef[];
+  /** Ordered assistant rounds as stored by the server, including tool-only rounds. */
+  segments: AssistantMessageSegment[];
 }
 export interface AssistantToolCallRef {
   id: string;
   name: string;
+}
+export interface AssistantMessageSegment {
+  id: string;
+  content: string;
+  toolCalls?: AssistantToolCallRef[];
 }
 /** One page of a conversation's history, oldest first. */
 export interface AssistantMessagePage {
@@ -47,8 +61,7 @@ export type AssistantRunEvent =
   | { type: 'message.delta'; messageId: string; delta: string }
   | { type: 'message.done'; messageId: string; content: string }
   | { type: 'tool_call.started'; toolCallId: string; name: string }
-  // The server does not repeat the tool name on completion.
-  | { type: 'tool_call.done'; toolCallId: string; name?: string };
+  | { type: 'tool_call.done'; toolCallId: string };
 
 export type AssistantRunState = 'idle' | 'running' | 'disconnected';
 
