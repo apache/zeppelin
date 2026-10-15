@@ -42,7 +42,7 @@ export interface AssistantMessageSegment {
   content: string;
   toolCalls?: AssistantToolCallRef[];
 }
-/** One page of a conversation's history, oldest first. */
+/** The transport reverses the server's newest-first page so messages are oldest first. */
 export interface AssistantMessagePage {
   messages: AssistantMessage[];
   /** Pass as `before` to load older messages; null at the start of the conversation. */
