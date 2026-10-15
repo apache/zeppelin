@@ -110,8 +110,8 @@ describe('assistant transport', () => {
   });
 
   it('uses the per-note conversation endpoints and unwraps Zeppelin JSON responses', async () => {
-    const json = (body: unknown) =>
-      new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    const json = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -120,7 +120,9 @@ describe('assistant transport', () => {
           body: [{ id: 'conv-1', title: 'First', noteId: 'note/one', ownerId: 'alice', canSendMessage: false }]
         })
       )
-      .mockResolvedValueOnce(json({ status: 'OK', body: { id: 'conv-2', title: 'Load the data', ownerId: 'bob' } }))
+      .mockResolvedValueOnce(
+        json({ status: 'CREATED', body: { id: 'conv-2', title: 'Load the data', ownerId: 'bob' } }, 201)
+      )
       .mockResolvedValueOnce(
         json({
           status: 'OK',
@@ -128,8 +130,7 @@ describe('assistant transport', () => {
             messages: [
               { id: 'message-2', role: 'assistant', content: 'hi there' },
               { id: 'message-1', role: 'user', content: 'hello' }
-            ],
-            cursor: null
+            ]
           }
         })
       )
@@ -149,7 +150,12 @@ describe('assistant transport', () => {
     await expect(transport.getMessages('conv/1')).resolves.toEqual({
       messages: [
         { id: 'message-1', role: 'user', content: 'hello' },
-        { id: 'message-2', role: 'assistant', content: 'hi there' }
+        {
+          id: 'message-2',
+          role: 'assistant',
+          content: 'hi there',
+          segments: [{ id: 'message-2', content: 'hi there' }]
+        }
       ],
       earlierCursor: null
     });
@@ -235,7 +241,7 @@ describe('assistant transport', () => {
     expect(events).toEqual([
       { type: 'run.started', runId: 'run_1' },
       { type: 'tool_call.started', toolCallId: 't1', name: 'list_paragraphs' },
-      { type: 'tool_call.done', toolCallId: 't1', name: undefined },
+      { type: 'tool_call.done', toolCallId: 't1' },
       { type: 'message.delta', messageId: 'm1', delta: '한글' },
       { type: 'run.completed', runId: 'run_1' }
     ]);
@@ -414,14 +420,25 @@ describe('assistant transport', () => {
     expect(fetchMock.mock.calls[0][0]).toBe(
       'https://example.test/zeppelin/api/notes/n/conversations/c/messages?limit=50&cursor=m9'
     );
-    expect(page).toEqual({ messages: [{ id: 'm3', role: 'assistant', content: 'part one.' }], earlierCursor: 'm3' });
+    expect(page).toEqual({
+      messages: [{ id: 'm3', role: 'assistant', content: 'part one.', segments: [{ id: 'm3', content: 'part one.' }] }],
+      earlierCursor: 'm3'
+    });
     expect(
       joinPages(page.messages, [
-        { id: 'm5', role: 'assistant', content: 'part two.' },
+        { id: 'm5', role: 'assistant', content: 'part two.', segments: [{ id: 'm5', content: 'part two.' }] },
         { id: 'm6', role: 'user', content: 'next' }
       ])
     ).toEqual([
-      { id: 'm5', role: 'assistant', content: 'part one.\n\npart two.' },
+      {
+        id: 'm5',
+        role: 'assistant',
+        content: 'part one.\n\npart two.',
+        segments: [
+          { id: 'm3', content: 'part one.' },
+          { id: 'm5', content: 'part two.' }
+        ]
+      },
       { id: 'm6', role: 'user', content: 'next' }
     ]);
   });
@@ -582,7 +599,15 @@ describe('assistant transport', () => {
     ).toEqual([
       { id: 'u1', role: 'user', content: 'improve' },
       // The merged bubble keeps the id of its last message.
-      { id: 'a3', role: 'assistant', content: 'Reading.\n\nDone.' }
+      {
+        id: 'a3',
+        role: 'assistant',
+        content: 'Reading.\n\nDone.',
+        segments: [
+          { id: 'a2', content: 'Reading.' },
+          { id: 'a3', content: 'Done.' }
+        ]
+      }
     ]);
   });
 
@@ -599,9 +624,32 @@ describe('assistant transport', () => {
       id: 'a2',
       role: 'assistant',
       content: 'Two paragraphs.',
-      toolCalls: [{ id: 'c1', name: 'list_paragraphs' }]
+      toolCalls: [{ id: 'c1', name: 'list_paragraphs' }],
+      segments: [
+        { id: 'a1', content: '', toolCalls: [{ id: 'c1', name: 'list_paragraphs' }] },
+        { id: 'a2', content: 'Two paragraphs.' }
+      ]
     });
     expect(visible[3]).not.toHaveProperty('toolCalls');
+  });
+
+  it('preserves the order of interleaved answer and tool rounds from server history', () => {
+    const visible = toVisibleMessages([
+      { id: 'u1', role: 'user', content: 'Investigate' },
+      { id: 'a1', role: 'assistant', content: 'First.', toolCalls: [{ id: 'c1', name: 'list_paragraphs' }] },
+      { id: 't1', role: 'tool', content: '[]' },
+      { id: 'a2', role: 'assistant', content: 'Next.', toolCalls: [{ id: 'c2', name: 'read_paragraph' }] },
+      { id: 't2', role: 'tool', content: '{}' },
+      { id: 'a3', role: 'assistant', content: 'Final.' }
+    ]);
+    expect(visible[1]).toMatchObject({
+      id: 'a3',
+      segments: [
+        { id: 'a1', content: 'First.', toolCalls: [{ id: 'c1', name: 'list_paragraphs' }] },
+        { id: 'a2', content: 'Next.', toolCalls: [{ id: 'c2', name: 'read_paragraph' }] },
+        { id: 'a3', content: 'Final.' }
+      ]
+    });
   });
 
   it('keeps tool-only messages until an answer arrives, including across raw history pages', () => {
@@ -615,21 +663,42 @@ describe('assistant transport', () => {
     const result = { id: 't1', role: 'tool' as const, content: '[]' };
     const answer = { id: 'a2', role: 'assistant' as const, content: 'Two paragraphs.' };
     const earlier = toVisibleMessages([question, call]);
-    expect(earlier[1]).toEqual({ id: 'a1', role: 'assistant', content: '', toolCalls: call.toolCalls });
+    expect(earlier[1]).toEqual({
+      id: 'a1',
+      role: 'assistant',
+      content: '',
+      toolCalls: call.toolCalls,
+      segments: [{ id: 'a1', content: '', toolCalls: call.toolCalls }]
+    });
     expect(joinPages(earlier, toVisibleMessages([result, answer]))).toEqual(
       toVisibleMessages([question, call, result, answer])
     );
     // An intervening page containing only tool results must not lose the pending calls either.
     expect(joinPages(joinPages(earlier, toVisibleMessages([result])), toVisibleMessages([answer]))).toEqual([
       question,
-      { ...answer, toolCalls: call.toolCalls }
+      {
+        ...answer,
+        toolCalls: call.toolCalls,
+        segments: [
+          { id: 'a1', content: '', toolCalls: call.toolCalls },
+          { id: 'a2', content: 'Two paragraphs.' }
+        ]
+      }
     ]);
     const nextTurn = [
       { id: 'u2', role: 'user' as const, content: 'Another question' },
       { id: 'a3', role: 'assistant' as const, content: 'Another answer' }
     ];
-    expect(joinPages(earlier, toVisibleMessages(nextTurn))).toEqual([...earlier, ...nextTurn]);
-    expect(toVisibleMessages([question, call, ...nextTurn])).toEqual([...earlier, ...nextTurn]);
+    expect(joinPages(earlier, toVisibleMessages(nextTurn))).toEqual([
+      ...earlier,
+      nextTurn[0],
+      { ...nextTurn[1], segments: [{ id: 'a3', content: 'Another answer' }] }
+    ]);
+    expect(toVisibleMessages([question, call, ...nextTurn])).toEqual([
+      ...earlier,
+      nextTurn[0],
+      { ...nextTurn[1], segments: [{ id: 'a3', content: 'Another answer' }] }
+    ]);
   });
 
   it('keeps a trailing tool round after answer text and deduplicates call ids at page boundaries', () => {
@@ -638,13 +707,34 @@ describe('assistant transport', () => {
       { id: 'a1', role: 'assistant', content: 'Looking.' },
       { id: 'a2', role: 'assistant', content: '', toolCalls: [call] }
     ]);
-    expect(earlier).toEqual([{ id: 'a2', role: 'assistant', content: 'Looking.', toolCalls: [call] }]);
+    expect(earlier).toEqual([
+      {
+        id: 'a2',
+        role: 'assistant',
+        content: 'Looking.',
+        toolCalls: [call],
+        segments: [
+          { id: 'a1', content: 'Looking.' },
+          { id: 'a2', content: '', toolCalls: [call] }
+        ]
+      }
+    ]);
     const later = toVisibleMessages([
       { id: 'a2', role: 'assistant', content: '', toolCalls: [call] },
       { id: 'a3', role: 'assistant', content: 'Done.' }
     ]);
     expect(joinPages(earlier, later)).toEqual([
-      { id: 'a3', role: 'assistant', content: 'Looking.\n\nDone.', toolCalls: [call] }
+      {
+        id: 'a3',
+        role: 'assistant',
+        content: 'Looking.\n\nDone.',
+        toolCalls: [call],
+        segments: [
+          { id: 'a1', content: 'Looking.' },
+          { id: 'a2', content: '', toolCalls: [call] },
+          { id: 'a3', content: 'Done.' }
+        ]
+      }
     ]);
   });
 });
@@ -747,7 +837,14 @@ describe('retained run state', () => {
     await transport.getMessages('conversation', 'older-page');
     expect(states[states.length - 1]).toBe('disconnected');
     await expect(transport.getMessages('conversation')).resolves.toEqual({
-      messages: [{ id: 'answer', role: 'assistant', content: 'Recovered answer' }],
+      messages: [
+        {
+          id: 'answer',
+          role: 'assistant',
+          content: 'Recovered answer',
+          segments: [{ id: 'answer', content: 'Recovered answer' }]
+        }
+      ],
       earlierCursor: null
     });
     expect(states[states.length - 1]).toBe('idle');
