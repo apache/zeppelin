@@ -11,6 +11,7 @@
  */
 
 import { expect, test, Page } from '@playwright/test';
+import { getNotebookRepoSettingRows } from '../../../models/notebook-repos-page';
 import { addPageAnnotationBeforeEach, PAGES, waitForZeppelinReady } from '../../../utils';
 
 // Both branches render REPO_ITEM; only the React branch has a mount host around
@@ -24,7 +25,7 @@ const openRepos = async (page: Page, query = ''): Promise<void> => {
   await waitForZeppelinReady(page);
 };
 
-const settingRows = (page: Page, root: string) => page.locator(`${root} tbody tr:not(.ant-table-placeholder)`);
+const settingRows = (page: Page, root: string) => getNotebookRepoSettingRows(page.locator(root));
 
 test.describe('Notebook Repository - React list behind a flag', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_REPOS);
@@ -85,15 +86,13 @@ test.describe('Notebook Repository - React list behind a flag', () => {
     // JUSTIFIED: inline rather than NotebookRepoItemPage - this spec locates the card via
     // MOUNT/REPO_ITEM constants rather than that Page Object, so reusing its selector alone
     // without its `repositoryCard` root would be inconsistent with the rest of the file.
-    // .ant-input, not a bare 'input': a DROPDOWN row's Select also renders an
-    // <input role="combobox"> that this would otherwise match instead.
-    const input = card.locator('input.ant-input').first();
+    const input = card.getByRole('textbox').first();
     await expect(input).toBeVisible();
     await expect(input).toHaveValue(value);
 
     await card.getByRole('button', { name: 'Cancel' }).click();
     await expect(card.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(card.locator('input.ant-input')).toHaveCount(0);
+    await expect(card.getByRole('textbox')).toHaveCount(0);
   });
 
   test('when the remote fails to load, the Angular list renders', async ({ page }) => {

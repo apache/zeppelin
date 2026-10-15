@@ -24,6 +24,12 @@ import { AppHttpInterceptor } from './app-http.interceptor';
 
 const REST_BASE = 'http://localhost:8080/api';
 
+const createBaseUrl = (): BaseUrlService => {
+  const baseUrl = new BaseUrlService();
+  vi.spyOn(baseUrl, 'getRestApiBase').mockReturnValue(REST_BASE);
+  return baseUrl;
+};
+
 /**
  * The server answers an expired session with 405 on the REST base rather than 401, so the 405
  * branch is the only path that reaches logout. The response carries no Location header, which
@@ -34,7 +40,7 @@ function sessionExpired(url: string | undefined): HttpErrorResponse {
 }
 
 describe('AppHttpInterceptor', () => {
-  let logout: ReturnType<typeof vi.fn>;
+  let logout: ReturnType<typeof vi.fn<TicketService['logout']>>;
   let logoutSubscribed: ReturnType<typeof vi.fn<() => void>>;
   let interceptor: AppHttpInterceptor;
 
@@ -52,7 +58,11 @@ describe('AppHttpInterceptor', () => {
         return of({});
       })
     );
-    interceptor = new AppHttpInterceptor({ logout } as unknown as TicketService);
+    const client = new HttpClient({ handle: () => throwError(() => new Error('Unexpected HTTP request')) });
+    const service = new TicketService(client, createBaseUrl(), {} as Router, {} as NzMessageService);
+    // The real auth-failure policy, with only the logout request stubbed.
+    vi.spyOn(service, 'logout').mockImplementation(logout);
+    interceptor = new AppHttpInterceptor(service);
   });
 
   it('logs out once when a non-logout request is answered with 405', async () => {
@@ -106,7 +116,7 @@ describe('AppHttpInterceptor', () => {
     const navigate = vi.fn(() => Promise.resolve(true));
     const service = new TicketService(
       client,
-      { getRestApiBase: () => REST_BASE } as BaseUrlService,
+      createBaseUrl(),
       { navigate } as unknown as Router,
       { success: vi.fn() } as unknown as NzMessageService
     );

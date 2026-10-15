@@ -31,7 +31,7 @@ test.describe('Notebook Repository Item - Edit Mode', () => {
 
     // JUSTIFIED: .first() picks the first configured repo; tests require at least one repo to be present
     const firstCard = notebookReposPage.repositoryItems.first();
-    firstRepoName = (await firstCard.locator('.ant-card-head-title').textContent()) || '';
+    firstRepoName = (await firstCard.getAttribute('data-repo-name')) || '';
     expect(firstRepoName, 'No repository found — ensure at least one repo is configured').not.toBe('');
     repoItemPage = new NotebookRepoItemPage(page, firstRepoName);
     repoItemUtil = new NotebookRepoItemUtil(page, firstRepoName);

@@ -14,6 +14,10 @@ import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   onError?: (error: unknown) => void;
+  /** Shown instead of the children after an error; nothing by default. */
+  fallback?: ReactNode;
+  /** A change clears the error, e.g. new content that may render again. */
+  resetKey?: unknown;
   children: ReactNode;
 }
 
@@ -38,9 +42,15 @@ export class ReactErrorBoundary extends Component<Props, State> {
     }
   }
 
+  componentDidUpdate(previous: Props): void {
+    if (this.state.hasError && previous.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false });
+    }
+  }
+
   render(): ReactNode {
     if (this.state.hasError) {
-      return null;
+      return this.props.fallback ?? null;
     }
     return this.props.children;
   }

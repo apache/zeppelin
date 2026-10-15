@@ -22,7 +22,7 @@ const MOUNTED_TABLE = `${MOUNT} ${TABLE}`;
 // The entries arrive from ConfigurationService after the page settles, so wait
 // for the first row before reading; evaluateAll does not retry on its own.
 const readRows = async (page: Page, root: string): Promise<string[][]> => {
-  const rows = page.locator(`${root} tbody tr:not(.ant-table-placeholder)`);
+  const rows = page.locator(`${root} tbody tr:has(td:nth-child(2))`);
   await expect(rows.first()).toBeVisible({ timeout: 15000 });
   return rows.evaluateAll(all =>
     all.map(row => Array.from(row.querySelectorAll('td')).map(cell => (cell.textContent ?? '').trim()))
@@ -99,7 +99,7 @@ test.describe('Configuration Page - React table behind a flag', () => {
       await expect(page.locator(TABLE)).toBeVisible({ timeout: 15000 });
       await expect(page.locator(MOUNT)).toHaveCount(0);
       // JUSTIFIED: this spec uses raw selectors throughout so it can scope to the mount host; it builds no POM.
-      await expect(page.locator(`${TABLE} tbody tr:not(.ant-table-placeholder)`)).not.toHaveCount(0);
+      await expect(page.locator(`${TABLE} tbody tr:has(td:nth-child(2))`)).not.toHaveCount(0);
     });
   });
 });

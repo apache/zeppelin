@@ -26,7 +26,7 @@ const entries: ConfigurationEntry[] = [
 
 // antd renders its "No data" placeholder as a row, so data rows are the rest.
 const rowTexts = (host: HTMLElement): string[][] =>
-  Array.from(host.querySelectorAll('tbody tr:not(.ant-table-placeholder)')).map(row =>
+  Array.from(host.querySelectorAll('tbody tr:not(.zeppelin-react-table-placeholder)')).map(row =>
     Array.from(row.querySelectorAll('td')).map(cell => cell.textContent ?? '')
   );
 
@@ -82,7 +82,7 @@ describe('ConfigurationTable mount contract', () => {
     mountTable({});
 
     expect(host!.querySelector('[data-testid="configuration-table"]')).not.toBeNull();
-    expect(host!.querySelector('.ant-table-placeholder')).not.toBeNull();
+    expect(host!.querySelector('.zeppelin-react-table-placeholder')).not.toBeNull();
     expect(rowTexts(host!)).toEqual([]);
   });
 

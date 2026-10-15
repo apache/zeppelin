@@ -33,7 +33,7 @@ export class PublishedParagraphPage extends BasePage {
     this.reactWidget = page.locator('[data-testid="react-published-paragraph"]');
     this.textOutput = page.locator('zeppelin-publish-paragraph pre');
     // Without paragraph data the remote mounts an <Empty>, so tests that only assert "React took over" accept either.
-    this.reactWidgetOrEmptyState = this.reactWidget.or(page.locator('.ant-alert'));
+    this.reactWidgetOrEmptyState = this.reactWidget.or(page.getByTestId('react-empty-paragraph'));
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {

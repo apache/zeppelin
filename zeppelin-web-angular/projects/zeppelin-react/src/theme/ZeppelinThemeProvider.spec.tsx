@@ -12,7 +12,7 @@
 
 import { act } from 'react';
 import { render, screen } from '@testing-library/react';
-import { theme as antdTheme } from 'antd';
+import { Button, theme as antdTheme } from 'antd';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useHostThemeMode, ZeppelinThemeProvider } from './ZeppelinThemeProvider';
 import { HostThemeMode } from './hostTheme';
@@ -33,6 +33,21 @@ const setHostTheme = (mode: HostThemeMode) => {
 };
 
 describe('ZeppelinThemeProvider', () => {
+  it('uses an isolated default prefix and allows a surface to override it', () => {
+    render(
+      <>
+        <ZeppelinThemeProvider prefixCls="custom-surface">
+          <Button>Custom control</Button>
+        </ZeppelinThemeProvider>
+        <ZeppelinThemeProvider>
+          <Button>Default control</Button>
+        </ZeppelinThemeProvider>
+      </>
+    );
+    expect(screen.getByRole('button', { name: 'Custom control' }).classList.contains('custom-surface-btn')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Default control' }).classList.contains('zeppelin-react-btn')).toBe(true);
+  });
+
   afterEach(() => {
     document.documentElement.removeAttribute('data-theme');
   });
@@ -45,8 +60,6 @@ describe('ZeppelinThemeProvider', () => {
       </ZeppelinThemeProvider>
     );
 
-    // Light tokens would put a white container on the shell's dark page; today
-    // that only goes unnoticed because the shell's global .ant-* rules cover it.
     expect(screen.getByTestId('container-bg').textContent).toBe('#141414');
     expect(screen.getByTestId('mode').textContent).toBe('dark');
   });
