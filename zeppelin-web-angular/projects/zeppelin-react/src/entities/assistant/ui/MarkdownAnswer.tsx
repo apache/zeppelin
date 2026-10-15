@@ -15,22 +15,15 @@
  * limitations under the License.
  */
 
-import {
-  createContext,
-  useContext,
-  useId,
-  useMemo,
-  useState,
-  type ComponentPropsWithoutRef,
-  type MouseEvent
-} from 'react';
+import { createContext, useContext, useId, useMemo, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Link, Parent, Root, Text } from 'mdast';
-import type { Plugin, PluggableList } from 'unified';
+import type { PluggableList } from 'unified';
 
 import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import * as styles from './MarkdownAnswer.css';
+import { MarkdownAnswerImage, MarkdownAnswerImageScope } from './MarkdownAnswerImage';
+import { isParagraphId, remarkParagraphReferences } from './remarkParagraphReferences';
 
 export interface MarkdownAnswerProps {
   /** Markdown text of the answer. While it is still arriving, it may end inside a code fence. */
@@ -47,116 +40,10 @@ type AnswerContextValue = Pick<MarkdownAnswerProps, 'describeParagraph' | 'onOpe
 };
 
 const AnswerContext = createContext<AnswerContextValue>({ footnotePrefix: '' });
-const paragraphIdPattern = /^paragraph_\d+_-?\d+$/;
-
-const textReferences = (node: Text): Array<Text | Link> | undefined => {
-  // Match a complete ID without splitting Unicode letters, numbers or combining marks.
-  const pattern = new RegExp('(^|[^\\p{L}\\p{N}\\p{M}_+-])(paragraph_\\d+_-?\\d+)(?![\\p{L}\\p{N}\\p{M}_+-])', 'gu');
-  let references: Array<Text | Link> | undefined;
-  let offset = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = pattern.exec(node.value)) !== null) {
-    const id = match[2];
-    const start = match.index + match[1].length;
-    references ??= [];
-    if (start > offset) {
-      references.push({ type: 'text', value: node.value.slice(offset, start) });
-    }
-    references.push({ type: 'link', url: `#${id}`, children: [{ type: 'text', value: id }] });
-    offset = start + id.length;
-  }
-
-  if (references && offset < node.value.length) {
-    references.push({ type: 'text', value: node.value.slice(offset) });
-  }
-  return references;
-};
-
-const transformReferences = (parent: Parent): void => {
-  let children: Parent['children'] | undefined;
-
-  for (let index = 0; index < parent.children.length; index++) {
-    const child = parent.children[index];
-    let references: Array<Text | Link> | undefined;
-    if (child.type === 'text') {
-      references = textReferences(child);
-    } else if (child.type === 'inlineCode' && paragraphIdPattern.test(child.value)) {
-      references = [{ type: 'link', url: `#${child.value}`, children: [child] }];
-    } else if (child.type !== 'link' && child.type !== 'linkReference' && 'children' in child) {
-      transformReferences(child);
-    }
-
-    if (references) {
-      children ??= parent.children.slice(0, index);
-      children.push(...references);
-    } else {
-      children?.push(child);
-    }
-  }
-
-  if (children) parent.children = children;
-};
-
-const remarkParagraphReferences: Plugin<[], Root> = () => transformReferences;
 const remarkPlugins: PluggableList = [remarkGfm, remarkParagraphReferences];
 
 // remark-rehype gives the footnotes heading this fixed id and points every footnote reference at it.
 const footnoteLabelId = 'footnote-label';
-
-const resolveImageUrl = (src: ComponentPropsWithoutRef<'img'>['src'], base: string | undefined): URL | undefined => {
-  if (typeof src !== 'string' || !src.trim()) return undefined;
-  try {
-    const url = base === undefined ? new URL(src) : new URL(src, base);
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
-const LoadableImage = ({ url, alt, title }: { url: URL; alt: string; title: string | undefined }) => {
-  const [approved, setApproved] = useState(false);
-  const detailsId = useId();
-
-  return (
-    <span className={styles.imagePlaceholder}>
-      <span className={styles.imageDescription}>Image description: {alt || 'No description provided.'}</span>
-      <span id={detailsId} className={styles.imageDetails}>
-        <span>Host: {url.hostname}</span>
-        <span>Image URL: {url.href}</span>
-        <span>Loading this image sends a request to its host, which may contain information from the answer.</span>
-      </span>
-      {approved ? (
-        <img src={url.href} alt={alt} title={title} className={styles.loadedImage} />
-      ) : (
-        <button
-          type="button"
-          className={styles.loadImage}
-          aria-label={alt ? `Load image: ${alt}` : 'Load image'}
-          aria-describedby={detailsId}
-          onClick={() => setApproved(true)}
-        >
-          Load image
-        </button>
-      )}
-    </span>
-  );
-};
-
-const AnswerImage = ({ src, alt, title }: ComponentPropsWithoutRef<'img'> & ExtraProps) => {
-  const base = typeof document === 'undefined' ? undefined : document.baseURI;
-  const url = useMemo(() => resolveImageUrl(src, base), [src, base]);
-  if (!url) {
-    return (
-      <span className={styles.imagePlaceholder}>
-        <span className={styles.imageDescription}>Image description: {alt || 'No description provided.'}</span>
-        <span>Image unavailable: only HTTP(S) image URLs can be loaded.</span>
-      </span>
-    );
-  }
-  // A changed full URL remounts local consent, including when a stream returns to an earlier URL.
-  return <LoadableImage key={url.href} url={url} alt={alt ?? ''} title={title} />;
-};
 
 const containsImage = (node: NonNullable<ExtraProps['node']>): boolean =>
   node.tagName === 'img' || node.children.some(child => child.type === 'element' && containsImage(child));
@@ -169,7 +56,7 @@ const AnswerLink = ({ node, href, children, title, ...props }: ComponentPropsWit
 
   const fragment = href.startsWith('#');
   const paragraphId = fragment ? href.slice(1) : undefined;
-  if (paragraphId && paragraphIdPattern.test(paragraphId)) {
+  if (paragraphId && isParagraphId(paragraphId)) {
     const description = describeParagraph?.(paragraphId);
     if (description && onOpenParagraph) {
       const reference = (
@@ -219,7 +106,7 @@ const AnswerLink = ({ node, href, children, title, ...props }: ComponentPropsWit
       target={fragment ? undefined : '_blank'}
       rel={fragment ? undefined : 'noopener noreferrer'}
     >
-      {imageLink ? 'Open image link' : children}
+      {imageLink ? 'Open linked page' : children}
     </a>
   );
   // Keep every original child outside the anchor so an image's native load button is never nested in a link.
@@ -266,7 +153,7 @@ const AnswerHeading = ({ node: _node, id, ...props }: ComponentPropsWithoutRef<'
 const components: Components = {
   h2: AnswerHeading,
   a: AnswerLink,
-  img: AnswerImage,
+  img: MarkdownAnswerImage,
   pre: AnswerCodeBlock,
   table: AnswerTable
 };
@@ -295,7 +182,9 @@ export const MarkdownAnswer = ({ content, describeParagraph, onOpenParagraph }: 
 
   return (
     <AnswerContext.Provider value={{ describeParagraph, onOpenParagraph, footnotePrefix }}>
-      <div className={styles.answer}>{markdown}</div>
+      <MarkdownAnswerImageScope>
+        <div className={styles.answer}>{markdown}</div>
+      </MarkdownAnswerImageScope>
     </AnswerContext.Provider>
   );
 };

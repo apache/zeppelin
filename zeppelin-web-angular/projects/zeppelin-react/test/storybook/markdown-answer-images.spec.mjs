@@ -18,25 +18,26 @@
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
-const fixture = readFileSync(new URL('../../src/entities/assistant/ui/MarkdownAnswer.image.svg', import.meta.url));
-const syntheticSource = 'https://images.example.test/plot.svg?q=SYNTHETIC_NOTEBOOK_VALUE';
+const fixture = readFileSync(new URL('../fixtures/markdown-answer-image.svg', import.meta.url));
+const source = 'https://images.example.test/plot.svg?q=SYNTHETIC_NOTEBOOK_VALUE';
+const storyId = 'assistant-markdownanswer--image-loading';
+const includesText = value => new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
-async function interceptImages(page) {
+async function interceptImages(page, baseURL) {
   const requests = [];
-  const isImageDestination = request => {
-    const url = new URL(request.url());
-    return (
-      url.hostname === 'images.example.test' ||
-      (url.pathname.includes('MarkdownAnswer.image') && url.pathname.endsWith('.svg'))
-    );
-  };
-  // Capture every request type, including fetch, HEAD, preload and navigation.
+  const origin = new URL(baseURL).origin;
+  const isFixture = url => url.pathname.includes('markdown-answer-image') && url.pathname.endsWith('.svg');
+  const isObserved = url => /^https?:$/.test(url.protocol) && (url.origin !== origin || isFixture(url));
   page.on('request', request => {
-    if (isImageDestination(request)) requests.push(request.url());
+    if (isObserved(new URL(request.url()))) requests.push(request.url());
   });
   await page.route('**/*', async route => {
-    if (isImageDestination(route.request())) {
+    const url = new URL(route.request().url());
+    if (url.hostname === 'images.example.test' || isFixture(url)) {
       await route.fulfill({ status: 200, contentType: 'image/svg+xml', body: fixture });
+    } else if (url.origin !== origin) {
+      // Unexpected external requests fail the assertions without contacting a real server.
+      await route.abort();
     } else {
       await route.continue();
     }
@@ -44,117 +45,95 @@ async function interceptImages(page) {
   return requests;
 }
 
-async function expectLoadedImage(image, source) {
-  await expect(image).toHaveAttribute('src', source);
-  await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
-}
-
-test('ImageLoading sends no request before keyboard approval and resets approval for a changed query', async ({
-  page
-}) => {
-  const requests = await interceptImages(page);
-  const storyId = 'assistant-markdownanswer--image-loading';
+async function openImages(page) {
   await page.goto(`/iframe.html?id=${storyId}&viewMode=story`);
   const root = page.locator('#storybook-root');
   await expect(root.getByRole('button', { name: /load image/i }).first()).toBeVisible();
-  await page.waitForFunction(() => Boolean(window.__STORYBOOK_PREVIEW__?.channel));
-  await page.evaluate(
-    ({ storyId, source }) => {
-      window.__STORYBOOK_PREVIEW__.channel.emit('updateStoryArgs', {
-        storyId,
-        updatedArgs: { content: `Revenue improved over the quarter.\n\n![Quarterly revenue chart](${source})` }
-      });
-    },
-    { storyId, source: syntheticSource }
-  );
+  return root;
+}
 
-  await expect(root.getByText(`Image URL: ${syntheticSource}`, { exact: true })).toBeVisible();
-  await expect(root.getByText('Host: images.example.test', { exact: true })).toBeVisible();
-  await expect(root.getByText(/loading.*sends a request.*information from.*answer/i)).toBeVisible();
+async function setContent(page, content) {
+  await page.evaluate(
+    ({ id, content }) => {
+      window.__STORYBOOK_PREVIEW__.channel.emit('updateStoryArgs', { storyId: id, updatedArgs: { content } });
+    },
+    { id: storyId, content }
+  );
+}
+
+async function expectLoadedImage(image, url) {
+  await expect(image).toHaveAttribute('src', url);
+  await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+}
+
+test('only keyboard-confirmed destinations are requested, including after a query change', async ({
+  page,
+  baseURL
+}) => {
+  const requests = await interceptImages(page, baseURL);
+  const root = await openImages(page);
+  await setContent(page, `Revenue improved.\n\n![Quarterly revenue chart](${source})`);
+  const load = root.getByRole('button', { name: /load image/i });
+  await expect(load).toHaveAccessibleDescription(includesText(source));
   await expect(root.locator('img, [srcset], link[rel="preload"]')).toHaveCount(0);
   await page.waitForLoadState('networkidle');
   expect(requests).toEqual([]);
 
-  const load = root.getByRole('button', { name: /load image/i });
   await load.focus();
   await load.press('Enter');
-  await expectLoadedImage(root.getByRole('img', { name: 'Quarterly revenue chart' }), syntheticSource);
-  expect(requests).toEqual([syntheticSource]);
+  await expectLoadedImage(root.getByRole('img', { name: 'Quarterly revenue chart' }), source);
+  expect(requests).toEqual([source]);
 
-  const changedSource = syntheticSource.replace('SYNTHETIC_NOTEBOOK_VALUE', 'UPDATED_NOTEBOOK_VALUE');
-  await page.evaluate(
-    ({ storyId, source }) => {
-      window.__STORYBOOK_PREVIEW__.channel.emit('updateStoryArgs', {
-        storyId,
-        updatedArgs: {
-          content: `The revised quarter includes the final sales.\n\n![Quarterly revenue chart](${source})`
-        }
-      });
-    },
-    { storyId, source: changedSource }
-  );
-  await expect(root.getByText(`Image URL: ${changedSource}`, { exact: true })).toBeVisible();
+  const revised = source.replace('SYNTHETIC_NOTEBOOK_VALUE', 'UPDATED_NOTEBOOK_VALUE');
+  await setContent(page, `The revised quarter includes final sales.\n\n![Quarterly revenue chart](${revised})`);
+  await expect(load).toHaveAccessibleDescription(includesText(revised));
   await expect(root.getByRole('img')).toHaveCount(0);
-  await expect(load).toBeVisible();
   await page.waitForLoadState('networkidle');
-  expect(requests).toEqual([syntheticSource]);
-
+  expect(requests).toEqual([source]);
   await load.focus();
   await load.press('Space');
-  await expectLoadedImage(root.getByRole('img', { name: 'Quarterly revenue chart' }), changedSource);
-  expect(requests).toEqual([syntheticSource, changedSource]);
+  await expectLoadedImage(root.getByRole('img', { name: 'Quarterly revenue chart' }), revised);
+  expect(requests).toEqual([source, revised]);
 });
 
-test('StreamingImages preserves unchanged approval and requires fresh approval for A to B to A', async ({ page }) => {
-  const requests = await interceptImages(page);
+test('streaming reference images preserve approval on append and require approval for a changed destination', async ({
+  page,
+  baseURL
+}) => {
+  const requests = await interceptImages(page, baseURL);
   await page.goto('/iframe.html?id=assistant-markdownanswer--streaming-images&viewMode=story');
   const root = page.locator('#storybook-root');
   const load = root.getByRole('button', { name: /load image/i });
   await expect(load).toBeVisible();
-  const sourceLabel = root.getByText(/^Image URL: https?:\/\/.*[?&]version=A$/);
-  await expect(sourceLabel).toBeVisible();
-  const sourceA = (await sourceLabel.textContent()).replace('Image URL: ', '');
-  expect(new URL(sourceA).protocol).toMatch(/^https?:$/);
+  const descriptionId = await load.getAttribute('aria-describedby');
+  const disclosed = await page.locator(`[id="${descriptionId}"]`).textContent();
   await expect(root.getByRole('img')).toHaveCount(0);
   await page.waitForLoadState('networkidle');
   expect(requests).toEqual([]);
-
-  await load.focus();
   await load.press('Enter');
   const image = root.getByRole('img', { name: 'Quarterly revenue chart' });
-  await expectLoadedImage(image, sourceA);
+  await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+  const sourceA = await image.getAttribute('src');
+  expect(disclosed).toContain(sourceA);
   expect(requests).toEqual([sourceA]);
 
+  const initialProgress = await root.getByRole('status').textContent();
   await root.getByRole('button', { name: 'Append next chunk', exact: true }).click();
-  await expect(root.getByRole('status')).toHaveText('Chunk 2 of 3');
+  await expect(root.getByRole('status')).not.toHaveText(initialProgress);
   await expectLoadedImage(image, sourceA);
   await expect(load).toHaveCount(0);
   await page.waitForLoadState('networkidle');
   expect(requests).toEqual([sourceA]);
 
+  const revised = new URL(sourceA);
+  revised.searchParams.set('version', 'B');
+  const sourceB = revised.href;
   await root.getByRole('button', { name: 'Append next chunk', exact: true }).click();
-  await expect(root.getByRole('status')).toHaveText('Chunk 3 of 3');
-  const sourceB = sourceA.replace('version=A', 'version=B');
-  await expect(root.getByText(`Image URL: ${sourceB}`, { exact: true })).toBeVisible();
+  await expect(load).toHaveAccessibleDescription(includesText(sourceB));
   await expect(image).toHaveCount(0);
-  await expect(load).toBeVisible();
   await page.waitForLoadState('networkidle');
   expect(requests).toEqual([sourceA]);
-
-  await load.focus();
   await load.press('Space');
   await expectLoadedImage(image, sourceB);
   expect(requests).toEqual([sourceA, sourceB]);
-
-  await root.getByRole('button', { name: 'Restart stream', exact: true }).click();
-  await expect(root.getByRole('status')).toHaveText('Chunk 1 of 3');
-  await expect(root.getByText(`Image URL: ${sourceA}`, { exact: true })).toBeVisible();
-  await expect(image).toHaveCount(0);
-  await expect(load).toBeVisible();
-  await page.waitForLoadState('networkidle');
-  expect(requests).toEqual([sourceA, sourceB]);
-
-  await load.focus();
-  await load.press('Enter');
-  await expectLoadedImage(image, sourceA);
 });

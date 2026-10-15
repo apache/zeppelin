@@ -16,6 +16,7 @@
  */
 
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { StrictMode, useLayoutEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { MarkdownAnswer } from './MarkdownAnswer';
@@ -441,17 +442,32 @@ describe('MarkdownAnswer', () => {
       expect(image.hasAttribute('srcset')).toBe(false);
     });
 
-    it('resolves relative destinations against the actual document base URI', () => {
-      const relativeSource = '/assistant-plot.svg?q=relative';
-      const resolvedSource = new URL(relativeSource, document.baseURI);
-      render(<MarkdownAnswer content={imageMarkdown(relativeSource)} />);
+    it('accepts activation before passive image registration has run', () => {
+      const ActivateOnMount = () => {
+        useLayoutEffect(() => {
+          fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+        }, []);
+        return <MarkdownAnswer content={imageMarkdown(sourceA)} />;
+      };
 
-      expect(screen.getByText(`Image URL: ${resolvedSource.href}`)).toBeTruthy();
-      expect(screen.getByText(`Host: ${resolvedSource.hostname}`)).toBeTruthy();
-      expect(screen.queryByRole('img')).toBeNull();
-      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
-      expect(screen.getByRole('img').getAttribute('src')).toBe(resolvedSource.href);
+      render(<ActivateOnMount />);
+
+      expect(screen.getByRole('img', { name: 'Quarterly revenue' }).getAttribute('src')).toBe(sourceA);
     });
+
+    it.each(['/assistant-plot.svg?q=relative', '//images.example.test/plot.svg?q=protocol-relative'])(
+      'resolves destination %s against the actual document base URI',
+      relativeSource => {
+        const resolvedSource = new URL(relativeSource, document.baseURI);
+        render(<MarkdownAnswer content={imageMarkdown(relativeSource)} />);
+
+        expect(screen.getByText(resolvedSource.href, { exact: false })).toBeTruthy();
+        expect(screen.getByText(text => text.endsWith(resolvedSource.hostname))).toBeTruthy();
+        expect(screen.queryByRole('img')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+        expect(screen.getByRole('img').getAttribute('src')).toBe(resolvedSource.href);
+      }
+    );
 
     it('requires fresh consent for query changes, including returning to a previously loaded URL', () => {
       const { rerender } = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
@@ -462,6 +478,21 @@ describe('MarkdownAnswer', () => {
       expect(screen.queryByRole('img')).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: /load image/i }));
       expect(screen.getByRole('img').getAttribute('src')).toBe(sourceB);
+
+      rerender(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: /load image/i })).toBeTruthy();
+    });
+
+    it('revokes approval when a different destination is shown without being activated', () => {
+      const { rerender } = render(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceA);
+
+      rerender(<MarkdownAnswer content={imageMarkdown(sourceB)} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByText(sourceB, { exact: false })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /load image/i })).toBeTruthy();
 
       rerender(<MarkdownAnswer content={imageMarkdown(sourceA)} />);
       expect(screen.queryByRole('img')).toBeNull();
@@ -490,6 +521,70 @@ describe('MarkdownAnswer', () => {
       expect(screen.getByText('The next quarter also improved.')).toBeTruthy();
     });
 
+    it('keeps approval and updates the title when a reference definition title is appended', () => {
+      const content = `![Existing][plot]\n\n[plot]: ${sourceA}`;
+      const { rerender } = render(<MarkdownAnswer content={content} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(sourceA);
+
+      rerender(<MarkdownAnswer content={`${content}\n  "Revenue plot"`} />);
+
+      const image = screen.getByRole('img', { name: 'Existing' });
+      expect(image.getAttribute('src')).toBe(sourceA);
+      expect(image.getAttribute('title')).toBe('Revenue plot');
+    });
+
+    it('keeps consent with its source occurrence when an earlier image reference resolves', () => {
+      const source = 'https://images.example.test/plot.svg';
+      const initial = `![New][later] ![Existing](${source})`;
+      const { rerender } = render(<MarkdownAnswer content={initial} />);
+      fireEvent.click(screen.getByRole('button', { name: /Existing/ }));
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(source);
+
+      rerender(<MarkdownAnswer content={`${initial}\n\n[later]: ${source}`} />);
+
+      expect(screen.getByRole('button', { name: /New/ })).toBeTruthy();
+      expect(screen.queryByRole('img', { name: 'New' })).toBeNull();
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(source);
+      expect(screen.queryByRole('button', { name: /Existing/ })).toBeNull();
+      expect(screen.getAllByRole('img')).toHaveLength(1);
+    });
+
+    it('keeps existing consent through StrictMode replay when an earlier image reference resolves', () => {
+      const initial = `![New][later] ![Existing](${sourceA})`;
+      const { rerender } = render(
+        <StrictMode>
+          <MarkdownAnswer content={initial} />
+        </StrictMode>
+      );
+      fireEvent.click(screen.getByRole('button', { name: /Existing/ }));
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(sourceA);
+
+      rerender(
+        <StrictMode>
+          <MarkdownAnswer content={`${initial}\n\n[later]: ${sourceB}`} />
+        </StrictMode>
+      );
+
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(sourceA);
+      expect(screen.queryByRole('img', { name: 'New' })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /New/ }));
+
+      expect(screen.getByRole('img', { name: 'Existing' }).getAttribute('src')).toBe(sourceA);
+      expect(screen.getByRole('img', { name: 'New' }).getAttribute('src')).toBe(sourceB);
+    });
+
+    it('does not transfer approval to a replacement image at the same source position', () => {
+      const { rerender } = render(<MarkdownAnswer content={`![A](${sourceA})`} />);
+      fireEvent.click(screen.getByRole('button', { name: /Load image: A/ }));
+      expect(screen.getByRole('img', { name: 'A' })).toBeTruthy();
+
+      rerender(<MarkdownAnswer content={`![B](${sourceA})`} />);
+
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: /Load image: B/ })).toBeTruthy();
+    });
+
     it('does not share approval with another image in the same answer', () => {
       render(<MarkdownAnswer content={`${imageMarkdown(sourceA)}\n\n![Comparison](${sourceA})`} />);
       const buttons = screen.getAllByRole('button', { name: /load image/i });
@@ -510,6 +605,36 @@ describe('MarkdownAnswer', () => {
       expect(within(first.container).getByRole('img')).toBeTruthy();
       expect(within(second.container).queryByRole('img')).toBeNull();
       expect(within(second.container).getByRole('button', { name: /load image/i })).toBeTruthy();
+    });
+
+    it('requires fresh consent when removed image content is restored in the same answer', () => {
+      const content = imageMarkdown(sourceA);
+      const { rerender } = render(<MarkdownAnswer content={content} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceA);
+
+      rerender(<MarkdownAnswer content="No answer selected." />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.queryByRole('button', { name: /load image/i })).toBeNull();
+      expect(screen.getByText('No answer selected.')).toBeTruthy();
+
+      rerender(<MarkdownAnswer content={content} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceA);
+    });
+
+    it('requires fresh consent when a previously displayed answer is restored after unmounting', () => {
+      const content = imageMarkdown(sourceA);
+      const first = render(<MarkdownAnswer content={content} />);
+      fireEvent.click(screen.getByRole('button', { name: /load image/i }));
+      expect(screen.getByRole('img').getAttribute('src')).toBe(sourceA);
+
+      first.unmount();
+      render(<MarkdownAnswer content={content} />);
+
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: /load image/i })).toBeTruthy();
     });
 
     it.each(['javascript:alert%281%29', 'ftp://images.example.test/plot.svg', ''])(

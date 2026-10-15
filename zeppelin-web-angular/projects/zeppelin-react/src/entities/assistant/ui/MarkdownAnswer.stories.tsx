@@ -30,11 +30,11 @@ const streamingChunks = [
   'GROUP BY product;\n```\n\nRevenue is grouped by product.'
 ];
 
-const imageFixtureUrl = new URL('./MarkdownAnswer.image.svg?no-inline', import.meta.url).href;
+const imageFixtureUrl = new URL('../../../../test/fixtures/markdown-answer-image.svg?no-inline', import.meta.url).href;
 const imageQuerySeparator = imageFixtureUrl.includes('?') ? '&' : '?';
 const streamingImageChunks = [
   '### Quarterly revenue\n\n![Quarterly revenue chart][revenue-chart]\n\nRevenue increased across the quarter.',
-  '\n\nThe strongest growth came from recurring notebook subscriptions.',
+  '\n\nThe strongest growth came from recurring sales.',
   '\n\nThe updated chart includes the final month of the quarter.'
 ];
 
@@ -273,7 +273,7 @@ export const ImageLoading: Story = {
     content: [
       '### Quarterly revenue',
       '',
-      'Revenue increased across the quarter, led by recurring notebook subscriptions.',
+      'Revenue increased across the quarter, led by recurring sales.',
       '',
       `![Quarterly revenue chart](${imageFixtureUrl} "Quarterly revenue")`,
       '',
