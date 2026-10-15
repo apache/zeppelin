@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": false,
@@ -24,6 +24,6 @@
       "@zeppelin/sdk/*": ["../../zeppelin-sdk/src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", ".storybook/**/*.ts", ".storybook/**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

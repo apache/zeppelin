@@ -13,8 +13,10 @@
 // vite is pinned in package.json: the React remote keeps its own lockfile and drifted to a different minor.
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 
 export default defineConfig({
+  plugins: [vanillaExtractPlugin()],
   // Source aliases mirror tsconfig.json; the SDK alias also matches webpack.config.js.
   resolve: {
     alias: [

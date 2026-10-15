@@ -1,3 +1,8 @@
 dist
 node_modules
 coverage
+
+# Storybook build output
+storybook-static/
+storybook-report/
+storybook-test-results/
