@@ -10,8 +10,6 @@
  * limitations under the License.
  */
 
-import type { AssistantParagraphRef, AssistantRevealResult, AssistantSlot } from './assistant-ui';
-
 import type {
   AssistantEvent as AssistantSocketEvent,
   AssistantSendMessage
@@ -31,27 +29,3 @@ export interface AssistantSocket {
   /** The connection closed. The server sends a run's events only to the connection that started it. */
   subscribeClose(listener: () => void): () => void;
 }
-
-/** Props the Angular notebook passes to the `./AssistantWorkspace` remote. A type alias, so it fits `ReactProps`. */
-export type AssistantHostProps = {
-  noteId: string;
-  /** The host's REST base (`.../api`); the remote calls the conversation REST API itself. */
-  apiBase: string;
-  /** The host's notebook WebSocket, used to send messages and receive run events. */
-  socket: AssistantSocket;
-  draftOwner?: string;
-  slots: AssistantSlot[];
-  onAuthError?: (status: number, location: string | null) => void;
-  onError?: (error: unknown) => void;
-  /** Keeps the host sidebar to one open view at a time. */
-  onPanelVisibilityChange?: (visible: boolean) => void;
-  subscribePanelClose?: (listener: () => void) => () => void;
-  /** Host-side scroll and highlight for a paragraph an answer links to; notebook DOM stays with Angular. */
-  revealParagraph?: (paragraphId: string) => Promise<AssistantRevealResult>;
-  /** The notebook's paragraphs in order, as data so labelling them never calls into the host. */
-  paragraphs?: AssistantParagraphRef[];
-  /** The notebook sidebar's width, which the panel shares so switching views keeps it. */
-  panelWidth?: number;
-  /** A resize of the panel, at the end of a drag or per arrow key. */
-  onPanelWidthChange?: (width: number) => void;
-};

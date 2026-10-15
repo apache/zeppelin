@@ -315,8 +315,12 @@ export async function* socketRun(
 ): AsyncIterable<AssistantRunEvent> {
   signal.throwIfAborted();
   const { abandoned } = tracking;
-  if (tracking.pending.has(message.conversationId)) {
-    yield { type: 'run.failed', message: 'The previous request is still being confirmed. Try again shortly.' };
+  const pendingRun = tracking.pending.has(message.conversationId);
+  if (pendingRun || tracking.active.has(message.conversationId)) {
+    yield {
+      type: 'run.failed',
+      message: pendingRun ? 'The previous request is still being confirmed. Try again shortly.' : HTTP_MESSAGES[409]
+    };
     return;
   }
   const pending = trackPendingRun(socket, message.conversationId, tracking);
