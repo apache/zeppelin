@@ -142,8 +142,6 @@ export const toVisibleMessages = (messages: ConversationMessage[]): AssistantMes
       const answer: AssistantMessage = {
         id: message.id,
         role: 'assistant',
-        content: message.content ?? '',
-        ...(toolCalls.length ? { toolCalls } : {}),
         segments: [{ id: message.id, content: message.content ?? '', ...(toolCalls.length ? { toolCalls } : {}) }]
       };
       if (last?.role === 'assistant') visible[visible.length - 1] = mergeAnswers(last, answer);

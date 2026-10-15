@@ -26,10 +26,11 @@ import {
 import {
   AssistantConnectionError,
   AssistantStreamError,
+  type AssistantAnswerMessage,
   type AssistantRunEvent,
   type AssistantRunState
 } from './assistantContract';
-import { joinPages } from './messageHistory';
+import { answerText, answerToolCalls, joinPages } from './messageHistory';
 
 /** A host socket double: records sends and lets a test emit server events. */
 const fakeSocket = () => {
@@ -153,7 +154,6 @@ describe('assistant transport', () => {
         {
           id: 'message-2',
           role: 'assistant',
-          content: 'hi there',
           segments: [{ id: 'message-2', content: 'hi there' }]
         }
       ],
@@ -421,19 +421,18 @@ describe('assistant transport', () => {
       'https://example.test/zeppelin/api/notes/n/conversations/c/messages?limit=50&cursor=m9'
     );
     expect(page).toEqual({
-      messages: [{ id: 'm3', role: 'assistant', content: 'part one.', segments: [{ id: 'm3', content: 'part one.' }] }],
+      messages: [{ id: 'm3', role: 'assistant', segments: [{ id: 'm3', content: 'part one.' }] }],
       earlierCursor: 'm3'
     });
     expect(
       joinPages(page.messages, [
-        { id: 'm5', role: 'assistant', content: 'part two.', segments: [{ id: 'm5', content: 'part two.' }] },
+        { id: 'm5', role: 'assistant', segments: [{ id: 'm5', content: 'part two.' }] },
         { id: 'm6', role: 'user', content: 'next' }
       ])
     ).toEqual([
       {
         id: 'm5',
         role: 'assistant',
-        content: 'part one.\n\npart two.',
         segments: [
           { id: 'm3', content: 'part one.' },
           { id: 'm5', content: 'part two.' }
@@ -602,7 +601,6 @@ describe('assistant transport', () => {
       {
         id: 'a3',
         role: 'assistant',
-        content: 'Reading.\n\nDone.',
         segments: [
           { id: 'a2', content: 'Reading.' },
           { id: 'a3', content: 'Done.' }
@@ -623,14 +621,14 @@ describe('assistant transport', () => {
     expect(visible[1]).toEqual({
       id: 'a2',
       role: 'assistant',
-      content: 'Two paragraphs.',
-      toolCalls: [{ id: 'c1', name: 'list_paragraphs' }],
       segments: [
         { id: 'a1', content: '', toolCalls: [{ id: 'c1', name: 'list_paragraphs' }] },
         { id: 'a2', content: 'Two paragraphs.' }
       ]
     });
-    expect(visible[3]).not.toHaveProperty('toolCalls');
+    expect(answerToolCalls(visible[1] as AssistantAnswerMessage)).toEqual([{ id: 'c1', name: 'list_paragraphs' }]);
+    expect(answerText(visible[1] as AssistantAnswerMessage)).toBe('Two paragraphs.');
+    expect(answerToolCalls(visible[3] as AssistantAnswerMessage)).toEqual([]);
   });
 
   it('preserves the order of interleaved answer and tool rounds from server history', () => {
@@ -666,8 +664,6 @@ describe('assistant transport', () => {
     expect(earlier[1]).toEqual({
       id: 'a1',
       role: 'assistant',
-      content: '',
-      toolCalls: call.toolCalls,
       segments: [{ id: 'a1', content: '', toolCalls: call.toolCalls }]
     });
     expect(joinPages(earlier, toVisibleMessages([result, answer]))).toEqual(
@@ -677,8 +673,8 @@ describe('assistant transport', () => {
     expect(joinPages(joinPages(earlier, toVisibleMessages([result])), toVisibleMessages([answer]))).toEqual([
       question,
       {
-        ...answer,
-        toolCalls: call.toolCalls,
+        id: answer.id,
+        role: answer.role,
         segments: [
           { id: 'a1', content: '', toolCalls: call.toolCalls },
           { id: 'a2', content: 'Two paragraphs.' }
@@ -692,12 +688,12 @@ describe('assistant transport', () => {
     expect(joinPages(earlier, toVisibleMessages(nextTurn))).toEqual([
       ...earlier,
       nextTurn[0],
-      { ...nextTurn[1], segments: [{ id: 'a3', content: 'Another answer' }] }
+      { id: 'a3', role: 'assistant', segments: [{ id: 'a3', content: 'Another answer' }] }
     ]);
     expect(toVisibleMessages([question, call, ...nextTurn])).toEqual([
       ...earlier,
       nextTurn[0],
-      { ...nextTurn[1], segments: [{ id: 'a3', content: 'Another answer' }] }
+      { id: 'a3', role: 'assistant', segments: [{ id: 'a3', content: 'Another answer' }] }
     ]);
   });
 
@@ -711,8 +707,6 @@ describe('assistant transport', () => {
       {
         id: 'a2',
         role: 'assistant',
-        content: 'Looking.',
-        toolCalls: [call],
         segments: [
           { id: 'a1', content: 'Looking.' },
           { id: 'a2', content: '', toolCalls: [call] }
@@ -727,8 +721,6 @@ describe('assistant transport', () => {
       {
         id: 'a3',
         role: 'assistant',
-        content: 'Looking.\n\nDone.',
-        toolCalls: [call],
         segments: [
           { id: 'a1', content: 'Looking.' },
           { id: 'a2', content: '', toolCalls: [call] },
@@ -841,7 +833,6 @@ describe('retained run state', () => {
         {
           id: 'answer',
           role: 'assistant',
-          content: 'Recovered answer',
           segments: [{ id: 'answer', content: 'Recovered answer' }]
         }
       ],
