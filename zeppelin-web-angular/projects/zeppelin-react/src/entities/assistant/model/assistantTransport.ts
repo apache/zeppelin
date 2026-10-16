@@ -45,7 +45,6 @@ const RUN_ERROR_FALLBACK = 'The assistant hit an error while answering. Try agai
 export class AssistantHttpError extends Error {
   constructor(
     public readonly status: number,
-    public readonly location: string | null,
     message = HTTP_MESSAGES[status] ?? `Assistant request failed with HTTP ${status}`
   ) {
     super(message);
@@ -152,7 +151,7 @@ export const toVisibleMessages = (messages: ConversationMessage[]): AssistantMes
 };
 
 const requestHeaders = {
-  // As the shell does in production, so the server answers 401/405 instead of a login page.
+  // Matches the headers the shell sends in production.
   'X-Requested-With': 'XMLHttpRequest'
 };
 
@@ -161,12 +160,12 @@ const unwrapBody = (value: unknown): unknown =>
   typeof value === 'object' && value !== null && 'body' in value ? value.body : value;
 
 /** Hands 401/405 to the host, which owns login redirects and logout. */
-export type AssistantAuthErrorHandler = (status: number, location: string | null) => void;
+export type AssistantAuthErrorHandler = (status: number) => void;
 
 const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler): AssistantHttpError => {
-  const error = new AssistantHttpError(response.status, response.headers.get('Location'));
+  const error = new AssistantHttpError(response.status);
   if (error.status === 401 || error.status === 405) {
-    onAuthError?.(error.status, error.location);
+    onAuthError?.(error.status);
   }
   return error;
 };
@@ -199,7 +198,7 @@ const collectionRequest = async <T>(...args: Parameters<typeof requestJson>): Pr
     return await requestJson<T>(...args);
   } catch (error) {
     if (error instanceof AssistantHttpError && error.status === 404) {
-      throw new AssistantHttpError(404, error.location, NOT_AVAILABLE_MESSAGE);
+      throw new AssistantHttpError(404, NOT_AVAILABLE_MESSAGE);
     }
     throw error;
   }
