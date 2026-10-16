@@ -27,10 +27,10 @@
   place-items: center;
   width: 20px;
   height: 16px;
-  border: 1px solid rgba(48, 71, 91, 0.24);
+  border: 1px solid var(--assistant-nav-icon-border);
   border-radius: 3px;
-  background: #fff;
-  color: #203447;
+  background: var(--assistant-nav-icon-bg);
+  color: var(--assistant-nav-icon-color);
   font:
     700 10px/1 Arial,
     sans-serif;

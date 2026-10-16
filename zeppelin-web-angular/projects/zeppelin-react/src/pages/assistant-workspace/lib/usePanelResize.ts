@@ -55,6 +55,7 @@ export const usePanelResize = (
 
   const handleProps = {
     role: 'separator',
+    'aria-label': 'Resize AI Assistant panel',
     'aria-orientation': 'vertical',
     'aria-valuenow': width,
     'aria-valuetext': `${width} pixels wide`,

@@ -68,10 +68,14 @@ export const AssistantWorkspace = ({
         createPortal(
           <button
             ref={button}
+            type="button"
             className="assistant-shell-nav"
             style={
               {
-                '--assistant-nav-active-color': token.colorPrimary
+                '--assistant-nav-active-color': token.colorPrimary,
+                '--assistant-nav-icon-bg': token.colorBgContainer,
+                '--assistant-nav-icon-color': token.colorText,
+                '--assistant-nav-icon-border': token.colorBorder
               } as CSSProperties
             }
             aria-label="Toggle AI Assistant"
