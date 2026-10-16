@@ -58,7 +58,7 @@ const fakeSocket = () => {
   };
 };
 
-const forNote = (noteId: string, onAuthError?: (status: number, location: string | null) => void) =>
+const forNote = (noteId: string, onAuthError?: (status: number) => void) =>
   createAssistantTransport('https://example.test/zeppelin/api', noteId, fakeSocket(), onAuthError);
 
 const iterate = <T>(iterable: AsyncIterable<T>): AsyncIterator<T> => iterable[Symbol.asyncIterator]();
@@ -216,20 +216,17 @@ describe('assistant transport', () => {
       'fetch',
       vi
         .fn()
-        .mockResolvedValueOnce(new Response(null, { status: 401, headers: { Location: '/login' } }))
+        .mockResolvedValueOnce(new Response(null, { status: 401 }))
         .mockResolvedValueOnce(new Response(null, { status: 405 }))
         .mockResolvedValueOnce(new Response(null, { status: 500 }))
     );
     const transport = forNote('n', onAuthError);
 
-    await expect(transport.listConversations()).rejects.toMatchObject({ status: 401, location: '/login' });
+    await expect(transport.listConversations()).rejects.toMatchObject({ status: 401 });
     await expect(transport.createConversation({})).rejects.toMatchObject({ status: 405 });
     await expect(transport.getMessages('c')).rejects.toBeInstanceOf(AssistantHttpError);
 
-    expect(onAuthError.mock.calls).toEqual([
-      [401, '/login'],
-      [405, null]
-    ]);
+    expect(onAuthError.mock.calls).toEqual([[401], [405]]);
   });
 
   it('sends over the socket and yields only this conversation until a terminal event', async () => {
@@ -461,10 +458,10 @@ describe('assistant transport', () => {
   });
 
   it('explains a missing assistant configuration instead of the bare status', () => {
-    expect(new AssistantHttpError(503, null).message).toBe(
+    expect(new AssistantHttpError(503).message).toBe(
       'The assistant is not configured on this server. Ask an administrator to enable it.'
     );
-    expect(new AssistantHttpError(500, null).message).toBe('Assistant request failed with HTTP 500');
+    expect(new AssistantHttpError(500).message).toBe('Assistant request failed with HTTP 500');
   });
 
   it('keeps only the ACK listener when aborted before the run starts', async () => {
