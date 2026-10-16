@@ -20,8 +20,10 @@ import {
   HostBinding,
   Input,
   NgZone,
+  OnChanges,
   OnDestroy,
   Output,
+  SimpleChanges,
   TemplateRef,
   ViewEncapsulation
 } from '@angular/core';
@@ -56,7 +58,7 @@ import ITextModel = editor.ITextModel;
   ],
   standalone: false
 })
-export class CodeEditorComponent implements OnDestroy, AfterViewInit {
+export class CodeEditorComponent implements OnChanges, OnDestroy, AfterViewInit {
   @HostBinding('class.ant-code-editor') antCodeEditor = true;
   @Input() nzEditorMode: NzEditorMode = 'normal';
   @Input() nzOriginalText = '';
@@ -79,6 +81,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
   private editorInstance?: IEditor | IDiffEditor;
   private value = '';
   private modelSet = false;
+  private readonly ownedModels: ITextModel[] = [];
 
   constructor(
     private nzCodeEditorService: CodeEditorService,
@@ -86,6 +89,12 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
     elementRef: ElementRef
   ) {
     this.el = elementRef.nativeElement;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.nzOriginalText && this.nzEditorMode === 'diff' && this.modelSet) {
+      (this.editorInstance as IDiffEditor).getModel()?.original.setValue(this.nzOriginalText);
+    }
   }
 
   /**
@@ -99,6 +108,7 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
     if (this.editorInstance) {
       this.editorInstance.dispose();
     }
+    this.ownedModels.forEach(model => model.dispose());
 
     this.destroy$.next();
     this.destroy$.complete();
@@ -203,9 +213,9 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
       if (this.modelSet) {
         (this.editorInstance.getModel() as ITextModel).setValue(this.value);
       } else {
-        (this.editorInstance as IEditor).setModel(
-          editor.createModel(this.value, (this.editorOptionCached as EditorOptions).language)
-        );
+        const model = editor.createModel(this.value, (this.editorOptionCached as EditorOptions).language);
+        this.ownedModels.push(model);
+        (this.editorInstance as IEditor).setModel(model);
         this.modelSet = true;
       }
     } else {
@@ -215,10 +225,11 @@ export class CodeEditorComponent implements OnDestroy, AfterViewInit {
         model.original.setValue(this.nzOriginalText);
       } else {
         const language = (this.editorOptionCached as EditorOptions).language;
-        (this.editorInstance as IDiffEditor).setModel({
-          original: editor.createModel(this.value, language),
-          modified: editor.createModel(this.nzOriginalText, language)
-        });
+        const original = editor.createModel(this.nzOriginalText, language);
+        const modified = editor.createModel(this.value, language);
+        this.ownedModels.push(original, modified);
+        (this.editorInstance as IDiffEditor).setModel({ original, modified });
+        this.modelSet = true;
       }
     }
   }
