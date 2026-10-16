@@ -506,6 +506,14 @@ export enum OP {
   PATCH_PARAGRAPH = 'PATCH_PARAGRAPH',
 
   /**
+   * [c-s]
+   * resend a single paragraph after a failed patch
+   * @param id paragraph id
+   * @param noteId note id
+   */
+  GET_PARAGRAPH = 'GET_PARAGRAPH',
+
+  /**
    * [s-c]
    * sequential run status will be change
    */
