@@ -54,7 +54,11 @@ export const Conversation: Story = {
       <AssistantAnswer
         view={{
           status: 'done',
-          message: { id: 'a1', role: 'assistant', content: reply, toolCalls: [{ id: 't1', name: 'list_paragraphs' }] }
+          message: {
+            id: 'a1',
+            role: 'assistant',
+            segments: [{ id: 's1', content: reply, toolCalls: [{ id: 't1', name: 'list_paragraphs' }] }]
+          }
         }}
       />
     </div>

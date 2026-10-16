@@ -11,13 +11,13 @@
  */
 
 import type { ReactNode } from 'react';
-import type { AssistantMessage } from '../model/assistantContract';
+import type { AssistantAnswerMessage } from '../model/assistantContract';
 
 /** A tool the assistant called during a live run. `tool_call.done` may omit the name, so it is optional. */
 export interface AssistantToolActivity {
   id: string;
   name?: string;
-  status: 'running' | 'done';
+  status: 'running' | 'done' | 'unknown';
 }
 
 /**
@@ -30,7 +30,7 @@ export type AssistantAnswerErrorKind = 'failed' | 'stream' | 'connection';
 export type AssistantAnswerView =
   | { status: 'loading' }
   | { status: 'streaming'; content: string; tools?: AssistantToolActivity[] }
-  | { status: 'done'; message: AssistantMessage }
+  | { status: 'done'; message: AssistantAnswerMessage }
   | {
       status: 'error';
       kind: AssistantAnswerErrorKind;
