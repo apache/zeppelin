@@ -91,9 +91,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     });
   }
 
-  public void unRegisterInterpreterProcess() {
+  /**
+   * @param registerInfo what this process registered with, so that the server can tell whether
+   *                     it is the process of the interpreter group; null if it does not register
+   */
+  public void unRegisterInterpreterProcess(RegisterInfo registerInfo) {
     callRemoteFunction(client -> {
-      client.unRegisterInterpreterProcess(intpGroupId);
+      client.unRegisterInterpreterProcess(intpGroupId, registerInfo);
       return null;
     });
   }
