@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AssistantSendMessage, AssistantSocketEvent } from '@zeppelin/sdk';
 
@@ -18,7 +18,6 @@ import {
   AssistantHttpError,
   createAssistantTransport,
   mapSocketEvent,
-  createRunTracking,
   scopeTransport,
   socketRun,
   toVisibleMessages
@@ -28,8 +27,7 @@ import {
   AssistantStreamError,
   type AssistantAnswerMessage,
   type AssistantConversation,
-  type AssistantRunEvent,
-  type AssistantRunState
+  type AssistantRunEvent
 } from './assistantContract';
 import { answerText, answerToolCalls, joinPages } from './messageHistory';
 
@@ -74,11 +72,6 @@ const collect = async (events: AsyncIterable<AssistantRunEvent>): Promise<Assist
 const message = (content = 'hi'): AssistantSendMessage => ({ noteId: 'n', conversationId: 'c1', content });
 
 describe('assistant transport', () => {
-  // One note's sends share their run tracking, as the transport does.
-  let tracking = createRunTracking();
-  beforeEach(() => {
-    tracking = createRunTracking();
-  });
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -269,7 +262,7 @@ describe('assistant transport', () => {
 
   it('ends on a run failure that arrives before run.started', async () => {
     const socket = fakeSocket();
-    const pending = collect(socketRun(socket, message(), new AbortController().signal, tracking));
+    const pending = collect(socketRun(socket, message(), new AbortController().signal));
     socket.emit({
       conversationId: 'c1',
       type: 'run.failed',
@@ -284,117 +277,72 @@ describe('assistant transport', () => {
     ]);
   });
 
-  it('blocks resending an aborted request until its delayed start is tracked', async () => {
+  it('sends again after an abandoned request and leaves a duplicate to the server', async () => {
     const socket = fakeSocket();
     const leave = new AbortController();
-    const first = iterate(socketRun(socket, message('first'), leave.signal, tracking));
+    const first = iterate(socketRun(socket, message('first'), leave.signal));
     const response = first.next();
     leave.abort();
     await expect(response).rejects.toMatchObject({ name: 'AbortError' });
-    await expect(
-      collect(socketRun(socket, message('second'), new AbortController().signal, tracking))
-    ).resolves.toEqual([
-      { type: 'run.failed', message: 'The previous request is still being confirmed. Try again shortly.' }
-    ]);
-    expect(socket.sent).toHaveLength(1);
-    socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'old' } });
-    expect(socket.listenerCount()).toBe(1);
-    expect(socket.closeListenerCount()).toBe(1);
-    const second = collect(socketRun(socket, message('second'), new AbortController().signal, tracking));
-    await expect(second).resolves.toEqual([
-      { type: 'run.failed', message: 'This conversation is still answering. Try again when it finishes.' }
-    ]);
-    expect(socket.sent).toHaveLength(1);
-    socket.emit({
-      conversationId: 'c1',
-      type: 'message.delta',
-      payload: { messageId: 'old-answer', delta: 'old answer' }
-    });
-    socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'old' } });
-    const third = collect(socketRun(socket, message('third'), new AbortController().signal, tracking));
-    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'new', error: { status: 409 } } });
-    await expect(third).resolves.toHaveLength(1);
-    expect(socket.sent).toHaveLength(2);
-  });
-
-  it('tracks a queued start even when the consumer aborts before reading it', async () => {
-    const socket = fakeSocket();
-    const controller = new AbortController();
-    const first = iterate(socketRun(socket, message(), controller.signal, tracking));
-    const response = first.next();
-    socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'queued' } });
-    controller.abort();
-    await expect(response).rejects.toMatchObject({ name: 'AbortError' });
-    expect(tracking.abandoned.has('queued')).toBe(true);
-    expect(socket.listenerCount()).toBe(1);
-    socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'queued' } });
-    expect(socket.listenerCount()).toBe(0);
-  });
-
-  it('shares pending requests across transports on the same host connection', async () => {
-    const connectionKey = {};
-    const socket = { ...fakeSocket(), connectionKey };
-    const old = createAssistantTransport('/api', 'note', socket);
-    const leave = new AbortController();
-    const response = iterate(old.openRun('c1', { content: 'first' }, leave.signal)).next();
-    leave.abort();
-    await expect(response).rejects.toMatchObject({ name: 'AbortError' });
-    const next = createAssistantTransport('/api', 'note', { ...socket });
-    await expect(collect(next.openRun('c1', { content: 'second' }, new AbortController().signal))).resolves.toEqual([
-      { type: 'run.failed', message: 'The previous request is still being confirmed. Try again shortly.' }
-    ]);
-    expect(socket.sent).toHaveLength(1);
-    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'old', error: { status: 403 } } });
-    expect(socket.listenerCount()).toBe(0);
-    const sent = collect(next.openRun('c1', { content: 'second' }, new AbortController().signal));
-    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'new', error: { status: 409 } } });
-    await expect(sent).resolves.toHaveLength(1);
-    expect(socket.sent).toHaveLength(2);
-  });
-
-  it('releases unconfirmed sends when the connection closes', async () => {
-    const socket = fakeSocket();
-    const controller = new AbortController();
-    const response = iterate(socketRun(socket, message(), controller.signal, tracking)).next();
-    controller.abort();
-    await expect(response).rejects.toMatchObject({ name: 'AbortError' });
-    socket.close();
     expect(socket.listenerCount()).toBe(0);
     expect(socket.closeListenerCount()).toBe(0);
-    const reconnect = collect(socketRun(socket, message(), new AbortController().signal, tracking));
-    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'new', error: { status: 403 } } });
-    await expect(reconnect).resolves.toHaveLength(1);
+
+    const second = collect(socketRun(socket, message('second'), new AbortController().signal));
+    expect(socket.sent).toHaveLength(2);
+    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'second', error: { status: 409 } } });
+    await expect(second).resolves.toEqual([
+      {
+        type: 'run.failed',
+        runId: 'second',
+        message: 'This conversation is still answering. Try again when it finishes.'
+      }
+    ]);
   });
 
-  it('blocks another send during an active run, then allows a new run after it ends', async () => {
+  it('ends the run and releases its listeners when the connection closes', async () => {
     const socket = fakeSocket();
-    const first = iterate(socketRun(socket, message('first'), new AbortController().signal, tracking));
+    const pending = collect(socketRun(socket, message(), new AbortController().signal));
+    socket.close();
+    await expect(pending).rejects.toBeInstanceOf(AssistantConnectionError);
+    expect(socket.listenerCount()).toBe(0);
+    expect(socket.closeListenerCount()).toBe(0);
+  });
+
+  it('rethrows a failed send and releases its listeners', async () => {
+    const socket = fakeSocket();
+    socket.send.mockImplementationOnce(() => {
+      throw new DOMException('Notebook changed', 'AbortError');
+    });
+    await expect(collect(socketRun(socket, message(), new AbortController().signal))).rejects.toMatchObject({
+      name: 'AbortError'
+    });
+    expect(socket.listenerCount()).toBe(0);
+    expect(socket.closeListenerCount()).toBe(0);
+  });
+
+  it('keeps an active run going when a duplicate send is rejected with 409', async () => {
+    const socket = fakeSocket();
+    const first = iterate(socketRun(socket, message('first'), new AbortController().signal));
     const firstEvent = first.next();
     socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'run_old' } });
     expect((await firstEvent).value).toEqual({ type: 'run.started', runId: 'run_old' });
-    await expect(
-      collect(socketRun(socket, message('second'), new AbortController().signal, tracking))
-    ).resolves.toEqual([
-      { type: 'run.failed', message: 'This conversation is still answering. Try again when it finishes.' }
+
+    const second = collect(socketRun(socket, message('second'), new AbortController().signal));
+    expect(socket.sent).toHaveLength(2);
+    socket.emit({ conversationId: 'c1', type: 'run.failed', payload: { runId: 'run_dup', error: { status: 409 } } });
+    await expect(second).resolves.toEqual([
+      {
+        type: 'run.failed',
+        runId: 'run_dup',
+        message: 'This conversation is still answering. Try again when it finishes.'
+      }
     ]);
-    expect(socket.sent).toHaveLength(1);
 
     socket.emit({ conversationId: 'c1', type: 'message.delta', payload: { messageId: 'old', delta: 'tail' } });
     socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'run_old' } });
     expect((await first.next()).value).toEqual({ type: 'message.delta', messageId: 'old', delta: 'tail' });
     expect((await first.next()).value).toEqual({ type: 'run.completed', runId: 'run_old' });
     expect((await first.next()).done).toBe(true);
-
-    // Once the old run ends, the next message can be sent normally.
-    const next = collect(socketRun(socket, message('third'), new AbortController().signal, tracking));
-    socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'run_3' } });
-    socket.emit({ conversationId: 'c1', type: 'message.delta', payload: { messageId: 'm3', delta: 'ok' } });
-    socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'run_3' } });
-    await expect(next).resolves.toEqual([
-      { type: 'run.started', runId: 'run_3' },
-      { type: 'message.delta', messageId: 'm3', delta: 'ok' },
-      { type: 'run.completed', runId: 'run_3' }
-    ]);
   });
 
   it('words run.failed by its HTTP status and falls back for the rest', () => {
@@ -464,50 +412,46 @@ describe('assistant transport', () => {
     expect(new AssistantHttpError(500).message).toBe('Assistant request failed with HTTP 500');
   });
 
-  it('keeps only the ACK listener when aborted before the run starts', async () => {
+  it('releases every listener when aborted before the run starts', async () => {
     const socket = fakeSocket();
     const controller = new AbortController();
-    const run = iterate(socketRun(socket, message(), controller.signal, tracking));
+    const run = iterate(socketRun(socket, message(), controller.signal));
     const pending = run.next();
-    await vi.waitFor(() => expect(socket.listenerCount()).toBe(2));
+    await vi.waitFor(() => expect(socket.listenerCount()).toBe(1));
 
     controller.abort();
 
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    expect(socket.listenerCount()).toBe(1);
-    socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'late' } });
-    expect(socket.listenerCount()).toBe(1);
-    socket.emit({ conversationId: 'c1', type: 'run.completed', payload: { runId: 'late' } });
     expect(socket.listenerCount()).toBe(0);
+    expect(socket.closeListenerCount()).toBe(0);
   });
 
   it('ends a run with a connection error when the notebook socket closes', async () => {
     const socket = fakeSocket();
-    const pending = collect(socketRun(socket, message(), new AbortController().signal, tracking));
+    const pending = collect(socketRun(socket, message(), new AbortController().signal));
     socket.emit({ conversationId: 'c1', type: 'run.started', payload: { runId: 'r1' } });
     socket.close();
     await expect(pending).rejects.toBeInstanceOf(AssistantConnectionError);
     expect(socket.closeListenerCount()).toBe(0);
   });
 
-  it('reports a retryable error when the run goes quiet past the idle timeout', async () => {
+  it('reports a retryable error and releases its listeners when the run goes quiet past the idle timeout', async () => {
     vi.useFakeTimers();
     const socket = fakeSocket();
-    const pending = collect(socketRun(socket, message(), new AbortController().signal, tracking, 1000));
+    const pending = collect(socketRun(socket, message(), new AbortController().signal, 1000));
     const outcome = pending.then(
       () => null,
       (error: unknown) => error
     );
     await vi.advanceTimersByTimeAsync(1000);
     expect(await outcome).toBeInstanceOf(AssistantStreamError);
-    expect(socket.listenerCount()).toBe(1);
-    socket.close();
     expect(socket.listenerCount()).toBe(0);
+    expect(socket.closeListenerCount()).toBe(0);
   });
 
   it('fails the run on an event with a malformed payload', async () => {
     const socket = fakeSocket();
-    const pending = collect(socketRun(socket, message(), new AbortController().signal, tracking));
+    const pending = collect(socketRun(socket, message(), new AbortController().signal));
     socket.emit({ conversationId: 'c1', type: 'message.delta', payload: { messageId: 'm1' } });
     // Told in words for the user; the field stays on the error for debugging.
     await expect(pending).rejects.toThrow('The assistant sent a reply this panel could not read. Try again.');
@@ -751,74 +695,7 @@ describe('assistant transport', () => {
   });
 });
 
-describe('retired run subscriptions', () => {
-  it('does not subscribe or throw for an inactive or aborted session', () => {
-    const inner = createAssistantTransport('/api', 'note', fakeSocket());
-    const subscribe = vi.spyOn(inner, 'subscribeRunState');
-    const signal = new AbortController();
-    const scoped = scopeTransport(inner, signal.signal);
-    signal.abort();
-    expect(() => scoped.transport.subscribeRunState!('conversation', vi.fn())()).not.toThrow();
-    expect(subscribe).not.toHaveBeenCalled();
-    const retired = scopeTransport(inner);
-    retired.setActive(false);
-    expect(() => retired.transport.subscribeRunState!('conversation', vi.fn())()).not.toThrow();
-    expect(subscribe).not.toHaveBeenCalled();
-  });
-});
-
-describe('retained run state', () => {
-  it.each([true, false])(
-    'ignores another run rejection without clearing the active run (completion first: %s)',
-    async completionFirst => {
-      const socket = fakeSocket();
-      const transport = createAssistantTransport('/api', 'note', socket);
-      const controller = new AbortController();
-      const first = iterate(transport.openRun('conversation', { content: 'old' }, controller.signal));
-      const started = first.next();
-      socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'old' } });
-      await started;
-      controller.abort();
-      await expect(first.next()).rejects.toThrow();
-      const states: AssistantRunState[] = [];
-      const stop = transport.subscribeRunState!('conversation', running => states.push(running));
-      const completion = () =>
-        socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'old' } });
-      const unrelatedRejection = () =>
-        socket.emit({
-          conversationId: 'conversation',
-          type: 'run.failed',
-          payload: { runId: 'new', error: { status: 429 } }
-        });
-      let stateBeforeCompletion: AssistantRunState | undefined;
-      if (completionFirst) {
-        completion();
-        unrelatedRejection();
-      } else {
-        unrelatedRejection();
-        stateBeforeCompletion = states[states.length - 1];
-        completion();
-      }
-      expect(stateBeforeCompletion).toBe(completionFirst ? undefined : 'running');
-      expect(states[states.length - 1]).toBe('idle');
-      expect(socket.listenerCount()).toBe(0);
-
-      const next = collect(transport.openRun('conversation', { content: 'new' }, new AbortController().signal));
-      socket.emit({
-        conversationId: 'conversation',
-        type: 'run.failed',
-        payload: { runId: 'new', error: { status: 429 } }
-      });
-      expect(await next).toEqual([
-        { type: 'run.failed', runId: 'new', message: 'The assistant is busy. Try again shortly.' }
-      ]);
-      expect(states[states.length - 1]).toBe('idle');
-      expect(socket.listenerCount()).toBe(0);
-      expect(socket.sent).toHaveLength(2);
-      stop();
-    }
-  );
-
+describe('conversation list', () => {
   it('uses the server conversation response without a running field', async () => {
     const conversation = {
       id: 'conversation',
@@ -831,163 +708,6 @@ describe('retained run state', () => {
     vi.stubGlobal('fetch', fetch);
     const transport = createAssistantTransport('/api', 'note', fakeSocket());
     expect(await transport.listConversations()).toEqual([conversation]);
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-    expect(states).toEqual(['idle']);
     expect(fetch).toHaveBeenCalledTimes(1);
-    stop();
-  });
-
-  it('keeps a disconnected run visible until history reload succeeds', async () => {
-    const fetch = vi
-      .fn()
-      .mockRejectedValueOnce(new TypeError('Offline'))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ body: { messages: [], cursor: null } })))
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            body: { messages: [{ id: 'answer', role: 'assistant', content: 'Recovered answer' }], cursor: null }
-          })
-        )
-      );
-    vi.stubGlobal('fetch', fetch);
-    const socket = fakeSocket();
-    const transport = createAssistantTransport('/api', 'note', socket);
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, new AbortController().signal));
-    const first = iterator.next();
-    socket.close();
-    await expect(first).rejects.toBeInstanceOf(AssistantConnectionError);
-    expect(states[states.length - 1]).toBe('disconnected');
-    await expect(transport.getMessages('conversation')).rejects.toThrow('Offline');
-    expect(states[states.length - 1]).toBe('disconnected');
-    await transport.getMessages('conversation', 'older-page');
-    expect(states[states.length - 1]).toBe('disconnected');
-    await expect(transport.getMessages('conversation')).resolves.toEqual({
-      messages: [
-        {
-          id: 'answer',
-          role: 'assistant',
-          segments: [{ id: 'answer', content: 'Recovered answer' }]
-        }
-      ],
-      cursor: null
-    });
-    expect(states[states.length - 1]).toBe('idle');
-    expect(fetch).toHaveBeenCalledTimes(3);
-    stop();
-  });
-
-  it('keeps a disconnected run visible when a retry is rejected', async () => {
-    const socket = fakeSocket();
-    const transport = createAssistantTransport('/api', 'note', socket);
-    const first = collect(transport.openRun('conversation', { content: 'first' }, new AbortController().signal));
-    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'first' } });
-    socket.close();
-    await expect(first).rejects.toBeInstanceOf(AssistantConnectionError);
-
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-    const retry = collect(transport.openRun('conversation', { content: 'retry' }, new AbortController().signal));
-    socket.emit({
-      conversationId: 'conversation',
-      type: 'run.failed',
-      payload: { runId: 'retry', error: { status: 409 } }
-    });
-    await expect(retry).resolves.toEqual([
-      {
-        type: 'run.failed',
-        runId: 'retry',
-        message: 'This conversation is still answering. Try again when it finishes.'
-      }
-    ]);
-    expect(states).toContain('disconnected');
-    expect(states).not.toContain('idle');
-
-    const accepted = collect(transport.openRun('conversation', { content: 'later' }, new AbortController().signal));
-    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'later' } });
-    socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'later' } });
-    await expect(accepted).resolves.toEqual([
-      { type: 'run.started', runId: 'later' },
-      { type: 'run.completed', runId: 'later' }
-    ]);
-    expect(states).toContain('running');
-    expect(states.at(-1)).toBe('idle');
-    stop();
-  });
-
-  it('does not recover a disconnect with history requested before it', async () => {
-    let resolveHistory: (response: Response) => void = () => undefined;
-    const delayedHistory = new Promise<Response>(resolve => {
-      resolveHistory = resolve;
-    });
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockReturnValueOnce(delayedHistory)
-        .mockResolvedValueOnce(new Response(JSON.stringify({ body: { messages: [], cursor: null } })))
-    );
-    const socket = fakeSocket();
-    const transport = createAssistantTransport('/api', 'note', socket);
-    const run = collect(transport.openRun('conversation', { content: 'question' }, new AbortController().signal));
-    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
-    const staleHistory = transport.getMessages('conversation');
-    socket.close();
-    await expect(run).rejects.toBeInstanceOf(AssistantConnectionError);
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', state => states.push(state));
-
-    resolveHistory(new Response(JSON.stringify({ body: { messages: [], cursor: null } })));
-    await staleHistory;
-    expect(states).toEqual(['disconnected']);
-
-    await transport.getMessages('conversation');
-    expect(states).toEqual(['disconnected', 'idle']);
-    stop();
-  });
-
-  it('clears a retained run on disconnect and releases listeners', async () => {
-    const socket = fakeSocket();
-    const transport = createAssistantTransport('/api', 'note', socket);
-    const controller = new AbortController();
-    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, controller.signal));
-    const first = iterator.next();
-    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
-    await first;
-    controller.abort();
-    await expect(iterator.next()).rejects.toThrow();
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', running => states.push(running));
-    socket.close();
-    expect(states).toEqual(['running', 'disconnected']);
-    expect(socket.listenerCount()).toBe(0);
-    expect(socket.closeListenerCount()).toBe(0);
-    stop();
-  });
-
-  it('follows an abandoned accepted run until completion and releases socket listeners', async () => {
-    const socket = fakeSocket();
-    const transport = createAssistantTransport('/api', 'note', socket);
-    const states: AssistantRunState[] = [];
-    const stop = transport.subscribeRunState!('conversation', running => states.push(running));
-    const controller = new AbortController();
-    const iterator = iterate(transport.openRun('conversation', { content: 'question' }, controller.signal));
-    const first = iterator.next();
-    socket.emit({ conversationId: 'conversation', type: 'run.started', payload: { runId: 'run' } });
-    expect((await first).value).toEqual({ type: 'run.started', runId: 'run' });
-    controller.abort();
-    await expect(iterator.next()).rejects.toThrow();
-    const reopened: AssistantRunState[] = [];
-    const stopReopened = transport.subscribeRunState!('conversation', running => reopened.push(running));
-    expect(reopened).toEqual(['running']);
-    socket.emit({ conversationId: 'conversation', type: 'run.completed', payload: { runId: 'run' } });
-    expect(reopened).toEqual(['running', 'idle']);
-    expect(states).toContain('running');
-    expect(socket.listenerCount()).toBe(0);
-    expect(socket.closeListenerCount()).toBe(0);
-    stop();
-    stopReopened();
   });
 });
