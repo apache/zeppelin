@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { CheckOutlined } from '@ant-design/icons';
+import { CheckOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Spin } from 'antd';
 import type { AssistantToolActivity } from './answerView';
 import * as styles from './AssistantAnswer.css';
@@ -25,10 +25,13 @@ export interface AssistantToolLogProps {
 export const AssistantToolLog = ({ tools }: AssistantToolLogProps) => {
   if (!tools.length) return null;
   const running = tools.some(tool => tool.status === 'running');
+  const unknown = tools.some(tool => tool.status === 'unknown');
   const count = `${tools.length} ${tools.length === 1 ? 'tool' : 'tools'}`;
   return (
     <details className={styles.toolLog} open={running}>
-      <summary className={styles.toolSummary}>{running ? `Using ${count}` : `Used ${count}`}</summary>
+      <summary className={styles.toolSummary}>
+        {running ? `Using ${count}` : unknown ? `Used ${count} (status unknown)` : `Used ${count}`}
+      </summary>
       <ul className={styles.toolList}>
         {tools.map(tool => (
           <li key={tool.id} className={styles.toolItem} data-status={tool.status}>
@@ -36,6 +39,8 @@ export const AssistantToolLog = ({ tools }: AssistantToolLogProps) => {
               <span className={styles.toolIcon} role="img" aria-label="Running">
                 <Spin size="small" />
               </span>
+            ) : tool.status === 'unknown' ? (
+              <QuestionCircleOutlined className={styles.toolIcon} aria-label="Status unknown" />
             ) : (
               <CheckOutlined className={`${styles.toolIcon} ${styles.toolDone}`} aria-label="Done" />
             )}

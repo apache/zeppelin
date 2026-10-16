@@ -11,6 +11,7 @@
  */
 
 import { Skeleton } from 'antd';
+import { answerText, answerToolCalls } from '../model/messageHistory';
 import type { AssistantContentRenderer, AssistantAnswerView, AssistantToolActivity } from './answerView';
 import { AssistantAnswerError } from './AssistantAnswerError';
 import { AssistantMessageItem } from './AssistantMessageItem';
@@ -61,19 +62,23 @@ export const AssistantAnswer = ({ view, onRetry, renderContent }: AssistantAnswe
       );
     }
     case 'done': {
-      const tools = (view.message.toolCalls ?? []).map(call => ({ ...call, status: 'done' as const }));
+      const tools = answerToolCalls(view.message).map(call => ({ ...call, status: 'done' as const }));
       return (
-        <AssistantMessageItem role="assistant" content={view.message.content} renderContent={renderContent}>
+        <AssistantMessageItem role="assistant" content={answerText(view.message)} renderContent={renderContent}>
           <AssistantToolLog tools={tools} />
         </AssistantMessageItem>
       );
     }
-    case 'error':
+    case 'error': {
+      const tools = (view.tools ?? []).map(tool =>
+        tool.status === 'running' ? { ...tool, status: 'unknown' as const } : tool
+      );
       return (
         <AssistantMessageItem role="assistant" content={view.content ?? ''} renderContent={renderContent}>
-          <AssistantToolLog tools={view.tools ?? []} />
+          <AssistantToolLog tools={tools} />
           <AssistantAnswerError kind={view.kind} message={view.message} onRetry={onRetry} />
         </AssistantMessageItem>
       );
+    }
   }
 };

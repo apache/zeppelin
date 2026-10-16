@@ -30,16 +30,22 @@ const fixtures = {
       { id: 't2', name: 'list_paragraphs', status: 'running' }
     ]
   },
-  completed: { status: 'done', message: { id: 'a1', role: 'assistant', content: reply } },
+  completed: { status: 'done', message: { id: 'a1', role: 'assistant', segments: [{ id: 's1', content: reply }] } },
   completedWithTools: {
     status: 'done',
     message: {
       id: 'a1',
       role: 'assistant',
-      content: reply,
-      toolCalls: [
-        { id: 't1', name: 'list_paragraphs' },
-        { id: 't2', name: 'list_paragraphs' }
+      segments: [
+        {
+          id: 's1',
+          content: '',
+          toolCalls: [
+            { id: 't1', name: 'list_paragraphs' },
+            { id: 't2', name: 'list_paragraphs' }
+          ]
+        },
+        { id: 's2', content: reply }
       ]
     }
   },
@@ -55,7 +61,8 @@ const fixtures = {
     status: 'error',
     kind: 'connection',
     message: new AssistantConnectionError().message,
-    content: partial
+    content: partial,
+    tools: [{ id: 't1', name: 'read_results', status: 'running' }]
   }
 } satisfies Record<string, AssistantAnswerView>;
 

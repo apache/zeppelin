@@ -42,8 +42,10 @@ describe('AssistantAnswer', () => {
           message: {
             id: 'm1',
             role: 'assistant',
-            content: 'Revenue is grouped by region.',
-            toolCalls: [{ id: 't1', name: 'list_paragraphs' }]
+            segments: [
+              { id: 's1', content: '', toolCalls: [{ id: 't1', name: 'list_paragraphs' }] },
+              { id: 's2', content: 'Revenue is grouped by region.' }
+            ]
           }
         }}
       />
@@ -97,8 +99,7 @@ describe('AssistantAnswer', () => {
           message: {
             id: 'm1',
             role: 'assistant',
-            content: 'Revenue',
-            toolCalls: [{ id: 't1', name: 'list_paragraphs' }]
+            segments: [{ id: 's1', content: 'Revenue', toolCalls: [{ id: 't1', name: 'list_paragraphs' }] }]
           }
         }}
       />
@@ -109,6 +110,28 @@ describe('AssistantAnswer', () => {
   it('labels a tool whose completion event carried no name', () => {
     render(<AssistantAnswer view={{ status: 'streaming', content: '', tools: [{ id: 't1', status: 'running' }] }} />);
     expect(screen.getByRole('status').textContent).toBe('Running Tool…');
+  });
+
+  it('keeps completed answer rounds in order and shows tools from every round', () => {
+    render(
+      <AssistantAnswer
+        view={{
+          status: 'done',
+          message: {
+            id: 'm2',
+            role: 'assistant',
+            segments: [
+              { id: 'm1', content: 'First finding', toolCalls: [{ id: 't1', name: 'list_paragraphs' }] },
+              { id: 'm2', content: 'Second finding', toolCalls: [{ id: 't2', name: 'read_results' }] }
+            ]
+          }
+        }}
+      />
+    );
+
+    expect(answer().textContent).toContain('First finding\n\nSecond finding');
+    expect(screen.getByText('Used 2 tools')).toBeTruthy();
+    expect(screen.getAllByRole('listitem').map(item => item.textContent)).toEqual(['list_paragraphs', 'read_results']);
   });
 
   it('keeps the partial answer and replaces the progress line with the error', () => {
@@ -125,10 +148,30 @@ describe('AssistantAnswer', () => {
     expect(screen.getByRole('alert').textContent).toContain('stopped responding');
   });
 
+  it('does not imply a tool is still observed after the connection is lost', () => {
+    render(
+      <AssistantAnswer
+        view={{
+          status: 'error',
+          kind: 'connection',
+          message: 'Connection lost',
+          tools: [{ id: 't1', name: 'read_results', status: 'running' }]
+        }}
+      />
+    );
+
+    expect(screen.getByText('Used 1 tool (status unknown)')).toBeTruthy();
+    expect(screen.queryByRole('img', { name: 'Running' })).toBeNull();
+    expect(screen.getByRole('img', { name: 'Status unknown' })).toBeTruthy();
+  });
+
   it('renders answer bodies through the given renderer', () => {
     render(
       <AssistantAnswer
-        view={{ status: 'done', message: { id: 'm1', role: 'assistant', content: '**bold**' } }}
+        view={{
+          status: 'done',
+          message: { id: 'm1', role: 'assistant', segments: [{ id: 's1', content: '**bold**' }] }
+        }}
         renderContent={content => <strong>{content.replaceAll('*', '')}</strong>}
       />
     );
