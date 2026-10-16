@@ -11,9 +11,9 @@
  */
 
 import { act } from 'react';
-import { fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import type { AssistantShellProps } from '@zeppelin/sdk';
+import { fireEvent, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { NOTEBOOK_SIDEBAR_WIDTH, type AssistantShellProps } from '@zeppelin/sdk';
 import { mount } from './AssistantWorkspace';
 
 describe('AssistantWorkspace remote', () => {
@@ -88,5 +88,96 @@ describe('AssistantWorkspace remote', () => {
       handle.unmount();
     });
     expect(navigation.innerHTML).toBe('');
+  });
+});
+
+describe('AssistantWorkspace', () => {
+  let cleanup: (() => Promise<void>) | undefined;
+
+  afterEach(async () => {
+    await cleanup?.();
+    cleanup = undefined;
+  });
+
+  const setup = async () => {
+    const navigation = document.createElement('div');
+    const panel = document.createElement('div');
+    document.body.append(navigation, panel);
+    const onPanelVisibilityChange = vi.fn();
+    const onPanelWidthChange = vi.fn();
+    let handle: ReturnType<typeof mount>;
+    await act(async () => {
+      handle = mount(document.createElement('div'), {
+        noteId: 'note-a',
+        slots: [
+          { element: navigation, kind: 'navigation' },
+          { element: panel, kind: 'panel' }
+        ],
+        panelWidth: 370,
+        onPanelVisibilityChange,
+        onPanelWidthChange,
+        subscribePanelClose: () => () => {}
+      });
+    });
+    const unmount = async () => {
+      await act(async () => handle.unmount());
+      navigation.remove();
+      panel.remove();
+    };
+    cleanup = unmount;
+    const toggle = () => screen.getByRole('button', { name: 'Toggle AI Assistant' });
+    const open = async () => act(async () => fireEvent.click(toggle()));
+    return { toggle, open, unmount, onPanelVisibilityChange, onPanelWidthChange };
+  };
+
+  it('marks the toggle as pressed while the panel is open', async () => {
+    const { toggle, open } = await setup();
+    expect(toggle().getAttribute('aria-pressed')).toBe('false');
+
+    await open();
+    expect(toggle().getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('complementary', { name: 'AI Assistant workspace' })).toBeTruthy();
+  });
+
+  it('closes on Escape and returns focus to the toggle', async () => {
+    const { toggle, open, onPanelVisibilityChange } = await setup();
+    await open();
+
+    await act(async () => fireEvent.keyDown(screen.getByRole('complementary'), { key: 'Escape' }));
+    expect(screen.queryByRole('complementary')).toBeNull();
+    expect(document.activeElement).toBe(toggle());
+    expect(onPanelVisibilityChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('returns focus to the toggle when the close button is used', async () => {
+    const { toggle, open } = await setup();
+    await open();
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    expect(screen.queryByRole('complementary')).toBeNull();
+    expect(document.activeElement).toBe(toggle());
+  });
+
+  it('keeps keyboard resizing within the sidebar limits', async () => {
+    const { open, onPanelWidthChange } = await setup();
+    await open();
+    const handle = screen.getByRole('separator', { name: 'Resize AI Assistant panel' });
+
+    await act(async () => fireEvent.keyDown(handle, { key: 'End' }));
+    expect(onPanelWidthChange).toHaveBeenLastCalledWith(NOTEBOOK_SIDEBAR_WIDTH.max);
+    await act(async () => fireEvent.keyDown(handle, { key: 'ArrowRight' }));
+    expect(handle.getAttribute('aria-valuenow')).toBe(String(NOTEBOOK_SIDEBAR_WIDTH.max));
+
+    await act(async () => fireEvent.keyDown(handle, { key: 'Home' }));
+    expect(onPanelWidthChange).toHaveBeenLastCalledWith(NOTEBOOK_SIDEBAR_WIDTH.min);
+  });
+
+  it('reports the panel as closed when the remote unmounts while open', async () => {
+    const { open, unmount, onPanelVisibilityChange } = await setup();
+    await open();
+    cleanup = undefined;
+
+    await unmount();
+    expect(onPanelVisibilityChange).toHaveBeenLastCalledWith(false);
   });
 });
