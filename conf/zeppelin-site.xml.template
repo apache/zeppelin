@@ -872,4 +872,10 @@
   <description>Directory for assistant conversations.</description>
 </property>
 
+<property>
+  <name>zeppelin.eventbus.enabled</name>
+  <value>false</value>
+  <description>Enables the new event-driven architecture using an in-process EventBus</description>
+</property>
+
 </configuration>

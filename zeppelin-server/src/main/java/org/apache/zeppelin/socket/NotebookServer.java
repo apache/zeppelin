@@ -43,6 +43,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.websocket.CloseReason;
@@ -66,6 +68,8 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.eventbus.EventBus;
+import org.apache.zeppelin.eventbus.NoteRemovedEvent;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -123,7 +127,8 @@ public class NotebookServer implements AngularObjectRegistryListener,
     RemoteInterpreterProcessListener,
     ApplicationEventListener,
     ParagraphJobListener,
-    NoteEventListener {
+    NoteEventListener,
+    AutoCloseable {
 
   /**
    * Job manager service type.
@@ -170,6 +175,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   private AuthorizationService authorizationService;
   private Provider<JobManagerService> jobManagerServiceProvider;
   private Provider<Assistant> assistantProvider;
+  private CompositeDisposable subscriptions;
 
   public NotebookServer() {
     NotebookServer.self.set(this);
@@ -179,6 +185,26 @@ public class NotebookServer implements AngularObjectRegistryListener,
   @Inject
   public void setZeppelinConfiguration(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
+  }
+
+  @Inject
+  public void registerEventBus(EventBus eventBus, ZeppelinConfiguration zConf) {
+    if (!zConf.isEventBusEnabled()) {
+      LOGGER.debug("ZeppelinEventBus is disabled");
+      return;
+    }
+    subscriptions = new CompositeDisposable();
+
+    subscriptions.add(eventBus.subscribe(
+        NoteRemovedEvent.class, event -> handleNoteRemove(event.getNote()))
+    );
+  }
+
+  @Override
+  public void close() {
+    if (subscriptions != null && !subscriptions.isDisposed()) {
+      subscriptions.dispose();
+    }
   }
 
   @Inject
@@ -2080,19 +2106,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
 
   @Override
   public void onNoteRemove(Note note, AuthenticationInfo subject) {
-    try {
-      broadcastUpdateNoteJobInfo(note, System.currentTimeMillis() - 5000);
-    } catch (IOException e) {
-      LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
+    if (zConf.isEventBusEnabled()) {
+      LOGGER.debug("ZeppelinEventBus is enabled");
+      return;
     }
 
-    try {
-      getJobManagerService().removeNoteJobInfo(note.getId(), null,
-          new JobManagerServiceCallback());
-    } catch (IOException e) {
-      LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
-    }
-
+    handleNoteRemove(note);
   }
 
   @Override
@@ -2547,6 +2566,22 @@ public class NotebookServer implements AngularObjectRegistryListener,
             .withMsgId(msgId)
             .put("info", message)));
       }
+    }
+  }
+
+  private void handleNoteRemove(Note note) {
+    try {
+      broadcastUpdateNoteJobInfo(note, System.currentTimeMillis() - 5000);
+    } catch (IOException e) {
+      LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
+    }
+
+    try {
+      getJobManagerService().removeNoteJobInfo(
+              note.getId(), null, new JobManagerServiceCallback()
+      );
+    } catch (IOException e) {
+      LOGGER.warn("can not broadcast for job manager: {}", e.getMessage(), e);
     }
   }
 }
