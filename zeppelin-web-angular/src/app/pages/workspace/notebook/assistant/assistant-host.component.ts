@@ -21,6 +21,7 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
+import { NzMessageService } from 'ng-zorro-antd/message';
 import { Subject, takeUntil } from 'rxjs';
 
 import type { AssistantShellProps } from '@zeppelin/sdk';
@@ -29,12 +30,8 @@ import { AssistantSlots } from './assistant-slots';
 @Component({
   selector: 'zeppelin-assistant-host',
   template: `
-    @if (enabled) {
-      @if (failed) {
-        <p role="alert">Unable to load the assistant.</p>
-      } @else if (assistantProps) {
-        <div zeppelin-react-mount="./AssistantWorkspace" [reactProps]="assistantProps"></div>
-      }
+    @if (enabled && !failed && assistantProps) {
+      <div zeppelin-react-mount="./AssistantWorkspace" [reactProps]="assistantProps"></div>
     }
   `,
   standalone: false
@@ -52,7 +49,8 @@ export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private readonly slots: AssistantSlots,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly nzMessageService: NzMessageService
   ) {}
 
   ngOnInit(): void {
@@ -98,7 +96,10 @@ export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
     this.panelWidthChange.emit(width);
   };
 
-  private readonly onError = (_error: unknown): void => {
+  private readonly onError = (error: unknown): void => {
+    console.error('React assistant error', error);
+    // The shell renders into the sidebar slots, so the host has no place of its own for a fallback.
+    this.nzMessageService.error('Unable to load the AI Assistant.');
     this.failed = true;
     this.cdr.markForCheck();
   };

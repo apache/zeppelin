@@ -11,18 +11,29 @@
  */
 
 import { SimpleChange, type ChangeDetectorRef } from '@angular/core';
+import type { NzMessageService } from 'ng-zorro-antd/message';
 import { expect, it, vi } from 'vitest';
 import { AssistantHostComponent } from './assistant-host.component';
 import { AssistantSlots } from './assistant-slots';
 
-it('updates remote slots and width, then retires the panel when disabled', async () => {
+const createHost = () => {
   const slots = new AssistantSlots();
-  const host = new AssistantHostComponent(slots, { markForCheck: vi.fn() } as unknown as ChangeDetectorRef);
+  const message = { error: vi.fn() };
+  const host = new AssistantHostComponent(
+    slots,
+    { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    message as unknown as NzMessageService
+  );
   host.enabled = true;
   host.noteId = 'note-a';
   host.panelWidth = 370;
   host.ngOnChanges({ enabled: new SimpleChange(undefined, true, true) });
   host.ngOnInit();
+  return { host, slots, message };
+};
+
+it('updates remote slots and width, then retires the panel when disabled', async () => {
+  const { host, slots } = createHost();
 
   const navigation = document.createElement('span');
   slots.set({ element: navigation, kind: 'navigation' });
@@ -44,5 +55,30 @@ it('updates remote slots and width, then retires the panel when disabled', async
   host.ngOnChanges({ enabled: new SimpleChange(true, false, false) });
   expect(slots.panelOpen.value).toBe(false);
   expect(host.assistantProps).toBeNull();
+  host.ngOnDestroy();
+});
+
+it('closes the panel when the notebook is destroyed', () => {
+  const { host, slots } = createHost();
+  host.assistantProps?.onPanelVisibilityChange(true);
+
+  host.ngOnDestroy();
+  expect(slots.panelOpen.value).toBe(false);
+});
+
+it('logs a remote failure, tells the user, and remounts on the next note', () => {
+  const { host, message } = createHost();
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const error = new Error('remote unavailable');
+
+  host.assistantProps?.onError?.(error);
+  expect(consoleError).toHaveBeenCalledWith('React assistant error', error);
+  expect(message.error).toHaveBeenCalledWith('Unable to load the AI Assistant.');
+  expect(host.failed).toBe(true);
+
+  host.noteId = 'note-b';
+  host.ngOnChanges({ noteId: new SimpleChange('note-a', 'note-b', false) });
+  expect(host.failed).toBe(false);
+  consoleError.mockRestore();
   host.ngOnDestroy();
 });
