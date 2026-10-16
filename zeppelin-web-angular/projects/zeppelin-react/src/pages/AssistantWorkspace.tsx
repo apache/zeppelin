@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, Root } from 'react-dom/client';
 import { CloseOutlined } from '@ant-design/icons';
@@ -18,8 +18,10 @@ import { theme } from 'antd';
 import type { AssistantShellProps } from '@zeppelin/sdk';
 import { ReactErrorBoundary } from '@/components';
 import { ZeppelinThemeProvider } from '@/theme';
+import { assistantThemeStyles } from '@/shared/ui/assistant-theme';
+import { scope } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { usePanelResize } from './assistant-workspace/lib/usePanelResize';
-import './AssistantWorkspace.css';
+import * as styles from './AssistantWorkspace.css';
 
 export type AssistantWorkspaceProps = AssistantShellProps;
 
@@ -32,6 +34,7 @@ export const AssistantWorkspace = ({
   subscribePanelClose
 }: AssistantWorkspaceProps) => {
   const { token } = theme.useToken();
+  const themeStyles = assistantThemeStyles(token);
   const [visible, setVisible] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const navigation = slots.find(slot => slot.kind === 'navigation');
@@ -69,20 +72,13 @@ export const AssistantWorkspace = ({
           <button
             ref={button}
             type="button"
-            className="assistant-shell-nav"
-            style={
-              {
-                '--assistant-nav-active-color': token.colorPrimary,
-                '--assistant-nav-icon-bg': token.colorBgContainer,
-                '--assistant-nav-icon-color': token.colorText,
-                '--assistant-nav-icon-border': token.colorBorder
-              } as CSSProperties
-            }
+            className={`${scope} ${styles.nav}`}
+            style={themeStyles}
             aria-label="Toggle AI Assistant"
             aria-pressed={visible}
             onClick={() => setVisible(open => !open)}
           >
-            <span className="assistant-shell-nav-icon" aria-hidden="true">
+            <span className={styles.navIcon} aria-hidden="true">
               AI
             </span>
           </button>,
@@ -92,27 +88,20 @@ export const AssistantWorkspace = ({
         panel &&
         createPortal(
           <aside
-            className="assistant-shell-panel"
+            className={`${scope} ${styles.panel}`}
             aria-label="AI Assistant workspace"
-            style={
-              {
-                color: token.colorText,
-                background: token.colorBgContainer,
-                borderColor: token.colorBorderSecondary,
-                '--assistant-close-color': token.colorTextSecondary
-              } as CSSProperties
-            }
+            style={themeStyles}
             onKeyDown={event => {
               if (event.key === 'Escape') close();
             }}
           >
-            <header className="assistant-shell-header" style={{ borderColor: token.colorBorderSecondary }}>
-              <h2>AI Assistant</h2>
-              <button type="button" className="assistant-shell-close" aria-label="Close AI Assistant" onClick={close}>
+            <header className={styles.header}>
+              <h2 className={styles.title}>AI Assistant</h2>
+              <button type="button" className={styles.close} aria-label="Close AI Assistant" onClick={close}>
                 <CloseOutlined aria-hidden="true" />
               </button>
             </header>
-            <div className="assistant-shell-resize" {...handleProps} />
+            <div className={styles.resize} {...handleProps} />
           </aside>,
           panel.element
         )}
