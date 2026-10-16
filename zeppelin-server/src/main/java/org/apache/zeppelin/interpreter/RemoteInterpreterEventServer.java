@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars
+    .ZEPPELIN_INTERPRETER_OUTPUT_EVENTS_PER_BATCH;
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars
+    .ZEPPELIN_INTERPRETER_OUTPUT_WORKER_COUNT;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
@@ -29,6 +33,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
 import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
+import org.apache.zeppelin.interpreter.remote.ParagraphOutputDispatcher;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -69,10 +74,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class RemoteInterpreterEventServer implements RemoteInterpreterEventService.Iface {
 
@@ -88,7 +96,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private final ScheduledExecutorService appendService =
       Executors.newSingleThreadScheduledExecutor();
   private ScheduledFuture<?> appendFuture;
-  private AppendOutputRunner runner;
+  private final ParagraphOutputDispatcher outputDispatcher;
   private final RemoteInterpreterProcessListener listener;
   private final ApplicationEventListener appListener;
 
@@ -99,6 +107,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
     this.appListener = interpreterSettingManager.getAppEventListener();
+    this.outputDispatcher = new ParagraphOutputDispatcher(listener,
+        zConf.getInt(ZEPPELIN_INTERPRETER_OUTPUT_WORKER_COUNT),
+        zConf.getInt(ZEPPELIN_INTERPRETER_OUTPUT_EVENTS_PER_BATCH));
   }
 
   public void start() throws IOException {
@@ -140,9 +151,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     }
     LOGGER.info("RemoteInterpreterEventServer is started");
 
-    runner = new AppendOutputRunner(listener);
     appendFuture = appendService.scheduleWithFixedDelay(
-        runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
+        outputDispatcher::flush, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
   }
 
   public void stop() {
@@ -153,6 +163,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       appendFuture.cancel(true);
     }
     appendService.shutdownNow();
+    outputDispatcher.close();
     LOGGER.info("RemoteInterpreterEventServer is stopped");
   }
 
@@ -218,8 +229,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void appendOutput(OutputAppendEvent event) throws InterpreterRPCException, TException {
     if (event.getAppId() == null) {
-      runner.appendBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getExecutionOwner(), event.getData());
+      try {
+        outputDispatcher.appendOutput(
+            event.getNoteId(), event.getParagraphId(), event.getIndex(),
+            event.getExecutionOwner(), event.getData());
+      } catch (IllegalStateException e) {
+        throw new InterpreterRPCException(e.toString());
+      }
     } else {
       appListener.onOutputAppend(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           event.getAppId(), event.getData());
@@ -229,11 +245,10 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void updateOutput(OutputUpdateEvent event) throws InterpreterRPCException, TException {
     if (event.getAppId() == null) {
-      runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
+      awaitOutput(event.getNoteId(), () -> outputDispatcher.updateOutput(
+          event.getNoteId(), event.getParagraphId(), event.getIndex(),
           event.getExecutionOwner(), InterpreterResult.Type.valueOf(event.getType()),
-          event.getData());
-      // Complete replacements before the interpreter can publish its terminal result.
-      runner.run();
+          event.getData()));
     } else {
       appListener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
           event.getAppId(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
@@ -242,18 +257,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void updateAllOutput(OutputUpdateAllEvent event) throws InterpreterRPCException, TException {
-    synchronized (runner) {
-      // Finish earlier output before the clear; keep replacements ahead of the next drain.
-      runner.run();
-      listener.onParagraphOutputClear(
-          event.getNoteId(), event.getParagraphId(), event.getExecutionOwner());
-      for (int i = 0; i < event.getMsg().size(); i++) {
-        RemoteInterpreterResultMessage msg = event.getMsg().get(i);
-        listener.onParagraphOutputUpdated(event.getNoteId(), event.getParagraphId(), i,
-            event.getExecutionOwner(), InterpreterResult.Type.valueOf(msg.getType()),
-            msg.getData());
-      }
+    List<InterpreterResultMessage> messages = new ArrayList<>();
+    for (RemoteInterpreterResultMessage message : event.getMsg()) {
+      messages.add(new InterpreterResultMessage(
+          InterpreterResult.Type.valueOf(message.getType()), message.getData()));
     }
+    awaitOutput(event.getNoteId(), () -> outputDispatcher.updateAllOutput(
+        event.getNoteId(), event.getParagraphId(), event.getExecutionOwner(), messages));
   }
 
   @Override
@@ -275,10 +285,23 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void checkpointOutput(String noteId, String paragraphId) throws InterpreterRPCException, TException {
-    // Drain replacements before checkpointing.
-    // Keep storage callbacks outside the runner lock to avoid blocking output delivery.
-    runner.run();
-    listener.checkpointOutput(noteId, paragraphId);
+    awaitOutput(noteId, () -> outputDispatcher.checkpointOutput(noteId, paragraphId));
+  }
+
+  private void awaitOutput(String noteId, Supplier<Future<Void>> submission)
+      throws InterpreterRPCException {
+    try {
+      submission.get().get();
+    } catch (InterruptedException e) {
+      // Interrupting this RPC wait does not cancel output already accepted by the dispatcher.
+      Thread.currentThread().interrupt();
+      throw new InterpreterRPCException("Interrupted while waiting for output: " + noteId);
+    } catch (ExecutionException e) {
+      throw new InterpreterRPCException("Failed to process output for note " + noteId
+          + ": " + e.getCause());
+    } catch (IllegalStateException e) {
+      throw new InterpreterRPCException(e.toString());
+    }
   }
 
   @Override
