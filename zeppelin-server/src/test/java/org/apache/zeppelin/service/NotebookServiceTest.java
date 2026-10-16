@@ -28,9 +28,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -81,8 +84,8 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.TestInfo;
+import org.mockito.ArgumentCaptor;
 
 
 import com.google.gson.Gson;
@@ -115,7 +118,11 @@ class NotebookServiceTest {
     // Zeppelin does not treat the caller as an anonymous deployment.
     if ("testNoteUpdate()".equals(testInfo.getDisplayName())
         || "testCronRefreshedOnlyWhenTheExpressionChanges()".equals(testInfo.getDisplayName())
-        || "testCloneNoteForbiddenWhenShiroIsConfigured()".equals(testInfo.getDisplayName())) {
+        || "testCloneNoteForbiddenWhenShiroIsConfigured()".equals(testInfo.getDisplayName())
+        || "testCreateNoteRollsBackAfterRepositorySaveFailure()"
+            .equals(testInfo.getDisplayName())
+        || "testCreateNoteRollsBackAfterUncheckedRepositoryFailure()"
+            .equals(testInfo.getDisplayName())) {
       confDir = Files.createTempDirectory("confDir").toAbsolutePath().toFile();
       zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
             confDir.getAbsolutePath());
@@ -128,6 +135,15 @@ class NotebookServiceTest {
     ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     NotebookRepo notebookRepo = new VFSNotebookRepo();
     notebookRepo.init(zConf, noteParser);
+    if ("testCreateNoteRollsBackAfterUncheckedRepositoryFailure()"
+        .equals(testInfo.getDisplayName())) {
+      notebookRepo = spy(notebookRepo);
+      doThrow(new IllegalArgumentException("Invalid file-system path"))
+          .when(notebookRepo).save(any(Note.class), any(AuthenticationInfo.class));
+      doThrow(new IllegalArgumentException("Invalid file-system path"))
+          .when(notebookRepo).remove(any(String.class), any(String.class),
+              any(AuthenticationInfo.class));
+    }
 
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
@@ -174,10 +190,10 @@ class NotebookServiceTest {
   }
 
   @AfterEach
-  void tearDown() {
-    notebookDir.delete();
-    if (confDir != null){
-      confDir.delete();
+  void tearDown() throws IOException {
+    FileUtils.deleteDirectory(notebookDir);
+    if (confDir != null) {
+      FileUtils.deleteDirectory(confDir);
     }
     searchService.close();
   }
@@ -419,6 +435,28 @@ class NotebookServiceTest {
 
     notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(0, notesInfo.size());
+  }
+
+  @Test
+  void testCreateNoteRollsBackAfterRepositorySaveFailure() throws IOException {
+    String longNoteName = StringUtils.repeat("a", 250);
+
+    String noteId = notebookService.createNote(
+        "/new_folder/" + longNoteName, "test", true, context, callback);
+
+    assertNull(noteId);
+    verify(callback).onFailure(any(IOException.class), eq(context));
+    assertTrue(notebook.getNotesInfo().isEmpty());
+    assertFalse(new File(notebookDir, "new_folder").exists());
+  }
+
+  @Test
+  void testCreateNoteRollsBackAfterUncheckedRepositoryFailure() throws IOException {
+    String noteId = notebookService.createNote("/:", "test", true, context, callback);
+
+    assertNull(noteId);
+    verify(callback).onFailure(any(IllegalArgumentException.class), eq(context));
+    assertTrue(notebook.getNotesInfo().isEmpty());
   }
 
   @Test
