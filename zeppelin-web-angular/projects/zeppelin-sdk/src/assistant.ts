@@ -20,10 +20,6 @@ export type { AssistantSocketEvent };
 
 /** The host's notebook WebSocket, narrowed to the assistant ops. */
 export interface AssistantSocket {
-  /** Stable host connection identity across notebook adapters. */
-  readonly connectionKey?: object;
-  /** Aborted when the host retires this notebook/account adapter, without closing the shared connection. */
-  readonly signal?: AbortSignal;
   send(message: AssistantSendMessage): void;
   subscribe(listener: (event: AssistantSocketEvent) => void): () => void;
   /** The connection closed. The server sends a run's events only to the connection that started it. */

@@ -18,7 +18,6 @@ import {
   type AssistantMessage,
   type AssistantMessagePage,
   type AssistantRunEvent,
-  type AssistantRunState,
   type AssistantToolCallRef,
   type AssistantTransport
 } from './assistantContract';
@@ -204,126 +203,28 @@ const collectionRequest = async <T>(...args: Parameters<typeof requestJson>): Pr
   }
 };
 
-const MAX_ABANDONED_RUNS = 200;
 /**
- * Runs on one host connection. Pending sends survive note switches until acknowledged; abandoned run ids keep
- * later sends from following their events. The server continues runs after the UI stops listening.
+ * The one request a run follows. The server allows one run per conversation and rejects a duplicate with 409,
+ * so the client keeps no state beyond the run it is reading; events of any other conversation are dropped.
  */
-interface PendingRun {
-  abandoned: boolean;
+interface RunSlot {
+  conversationId: string;
+  phase: 'pending' | 'running';
   runId?: string;
 }
-export interface RunTracking {
-  abandoned: Set<string>;
-  pending: Map<string, PendingRun>;
-  active: Map<string, string>;
-  disconnected: Map<string, object>;
-  listeners: Map<string, Set<(state: AssistantRunState) => void>>;
-  stopTracking?: () => void;
-}
-export const createRunTracking = (): RunTracking => ({
-  abandoned: new Set(),
-  pending: new Map(),
-  active: new Map(),
-  disconnected: new Map(),
-  listeners: new Map()
-});
-const runState = (tracking: RunTracking, conversationId: string): AssistantRunState =>
-  tracking.disconnected.has(conversationId)
-    ? 'disconnected'
-    : tracking.pending.has(conversationId) || tracking.active.has(conversationId)
-      ? 'running'
-      : 'idle';
-const notifyRunState = (tracking: RunTracking, conversationId: string) => {
-  tracking.listeners.get(conversationId)?.forEach(listener => listener(runState(tracking, conversationId)));
-};
-const releaseTracking = (tracking: RunTracking) => {
-  if (!tracking.pending.size && !tracking.active.size) tracking.stopTracking?.();
-};
-const connectionRuns = new WeakMap<object, RunTracking>();
-const runsFor = (socket: AssistantSocket): RunTracking => {
-  const key = socket.connectionKey ?? socket;
-  let runs = connectionRuns.get(key);
-  if (!runs) connectionRuns.set(key, (runs = createRunTracking()));
-  return runs;
-};
-const abandon = (tracking: RunTracking, runId: string) => {
-  tracking.abandoned.add(runId);
-  if (tracking.abandoned.size > MAX_ABANDONED_RUNS) {
-    const oldest = tracking.abandoned.values().next().value;
-    if (oldest !== undefined) tracking.abandoned.delete(oldest);
-  }
-};
-
-// ACKs belong to the connection, even if the note or conversation that sent the request has unmounted.
-const trackPendingRun = (socket: AssistantSocket, conversationId: string, tracking: RunTracking): PendingRun => {
-  const pending: PendingRun = { abandoned: false };
-  tracking.pending.set(conversationId, pending);
-  notifyRunState(tracking, conversationId);
-  if (!tracking.stopTracking) {
-    const unsubscribe = socket.subscribe(event => {
-      const request = tracking.pending.get(event.conversationId);
-      const payload = isRecord(event.payload) ? event.payload : {};
-      const runId = typeof payload.runId === 'string' ? payload.runId : undefined;
-      if (event.type === 'run.started' && runId && request) {
-        request.runId = runId;
-        tracking.active.set(event.conversationId, runId);
-        tracking.disconnected.delete(event.conversationId);
-        if (request.abandoned) abandon(tracking, runId);
-        tracking.pending.delete(event.conversationId);
-      } else if (event.type === 'run.failed' || event.type === 'run.completed') {
-        const activeRun = tracking.active.get(event.conversationId);
-        if (activeRun && (!runId || runId === activeRun)) {
-          tracking.active.delete(event.conversationId);
-        } else if (request && !(runId && tracking.abandoned.has(runId))) {
-          tracking.pending.delete(event.conversationId);
-        } else return;
-      } else return;
-      notifyRunState(tracking, event.conversationId);
-      releaseTracking(tracking);
-    });
-    const unsubscribeClose = socket.subscribeClose(() => {
-      const conversations = new Set([...Array.from(tracking.pending.keys()), ...Array.from(tracking.active.keys())]);
-      tracking.pending.clear();
-      tracking.active.clear();
-      tracking.abandoned.clear();
-      conversations.forEach(id => tracking.disconnected.set(id, {}));
-      conversations.forEach(id => notifyRunState(tracking, id));
-      tracking.stopTracking?.();
-    });
-    tracking.stopTracking = () => {
-      unsubscribe();
-      unsubscribeClose();
-      tracking.stopTracking = undefined;
-    };
-  }
-  return pending;
-};
 
 /**
  * Sends one message over the host's notebook WebSocket and yields that conversation's events until a terminal one.
- * Until this message's run.started arrives, only a rejection (run.failed) belongs to it; events of an abandoned run
- * on the same conversation are skipped.
+ * Until this message's run.started arrives, only a rejection (run.failed) belongs to it.
  */
 export async function* socketRun(
   socket: AssistantSocket,
   message: AssistantSendMessage,
   signal: AbortSignal,
-  tracking: RunTracking,
   idleTimeoutMs = RUN_IDLE_TIMEOUT_MS
 ): AsyncIterable<AssistantRunEvent> {
   signal.throwIfAborted();
-  const { abandoned } = tracking;
-  const pendingRun = tracking.pending.has(message.conversationId);
-  if (pendingRun || tracking.active.has(message.conversationId)) {
-    yield {
-      type: 'run.failed',
-      message: pendingRun ? 'The previous request is still being confirmed. Try again shortly.' : HTTP_MESSAGES[409]
-    };
-    return;
-  }
-  const pending = trackPendingRun(socket, message.conversationId, tracking);
-  let sent = false;
+  const slot: RunSlot = { conversationId: message.conversationId, phase: 'pending' };
   const queue: Array<AssistantRunEvent | Error> = [];
   let wake: (() => void) | undefined;
   const push = (item: AssistantRunEvent | Error) => {
@@ -340,18 +241,10 @@ export async function* socketRun(
     }
   });
   const unsubscribeClose = socket.subscribeClose(() => push(new AssistantConnectionError()));
-  const onAbort = () => {
-    pending.abandoned = true;
-    if (pending.runId) abandon(tracking, pending.runId);
-    wake?.();
-  };
+  const onAbort = () => wake?.();
   signal.addEventListener('abort', onAbort, { once: true });
-  let started = false;
-  let ownRunId: string | undefined;
-  let ended = false;
   try {
     socket.send(message);
-    sent = true;
     while (true) {
       signal.throwIfAborted();
       if (queue.length === 0) {
@@ -368,33 +261,18 @@ export async function* socketRun(
       if (item === undefined) continue;
       if (item instanceof Error) throw item;
       const runId = 'runId' in item ? item.runId : undefined;
-      if (runId && runId !== ownRunId && abandoned.has(runId)) {
-        if (isTerminal(item)) abandoned.delete(runId);
-        continue;
-      }
       // Once running, only its own terminal event ends it; deltas have no run id, but runs are one at a time.
-      if (started && isTerminal(item) && runId && ownRunId && runId !== ownRunId) continue;
-      if (!started) {
+      if (slot.phase === 'running' && isTerminal(item) && runId && slot.runId && runId !== slot.runId) continue;
+      if (slot.phase === 'pending') {
         if (item.type === 'run.started') {
-          started = true;
-          ownRunId = item.runId;
+          slot.phase = 'running';
+          slot.runId = item.runId;
         } else if (item.type !== 'run.failed') continue;
       }
-      if (isTerminal(item)) ended = true;
       yield item;
-      if (ended) return;
+      if (isTerminal(item)) return;
     }
   } finally {
-    if (!ended && sent) {
-      pending.abandoned = true;
-      const runId = pending.runId ?? ownRunId;
-      if (runId) abandon(tracking, runId);
-    }
-    if (!sent || ended) {
-      if (tracking.pending.get(message.conversationId) === pending) tracking.pending.delete(message.conversationId);
-      notifyRunState(tracking, message.conversationId);
-      releaseTracking(tracking);
-    }
     signal.removeEventListener('abort', onAbort);
     unsubscribe();
     unsubscribeClose();
@@ -424,7 +302,6 @@ export const createAssistantTransport = (
   onAuthError?: AssistantAuthErrorHandler
 ): AssistantTransport => {
   const base = `${apiBase.replace(/\/$/, '')}/notes/${encodeURIComponent(noteId)}/conversations`;
-  const runs = runsFor(socket);
   const toConversation = (conversation: ConversationSummary): AssistantConversation => {
     return {
       id: conversation.id,
@@ -440,26 +317,6 @@ export const createAssistantTransport = (
     return trimmed ? { title: trimmed.length > 80 ? `${trimmed.slice(0, 79)}…` : trimmed } : {};
   };
   return {
-    subscribeRunState: (conversationId, listener) => {
-      let listeners = runs.listeners.get(conversationId);
-      if (!listeners) runs.listeners.set(conversationId, (listeners = new Set()));
-      let stopped = false;
-      const observe = (state: AssistantRunState) => {
-        listener(state);
-      };
-      listeners.add(observe);
-      observe(runState(runs, conversationId));
-      const stop = () => {
-        if (stopped) return;
-        stopped = true;
-        listeners.delete(observe);
-        if (!listeners.size) runs.listeners.delete(conversationId);
-        socket.signal?.removeEventListener('abort', stop);
-      };
-      socket.signal?.addEventListener('abort', stop, { once: true });
-      if (socket.signal?.aborted) stop();
-      return stop;
-    },
     // Latest activity first, so the panel opens on it.
     listConversations: async () =>
       (await collectionRequest<ConversationSummary[]>(base, {}, onAuthError))
@@ -478,16 +335,11 @@ export const createAssistantTransport = (
     },
     getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
-      const disconnectedAtRequest = runs.disconnected.get(conversationId);
       const page = await requestJson<MessagePage>(
         `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
         {},
         onAuthError
       );
-      if (!before && disconnectedAtRequest && runs.disconnected.get(conversationId) === disconnectedAtRequest) {
-        runs.disconnected.delete(conversationId);
-        notifyRunState(runs, conversationId);
-      }
       // The server pages from the latest message backwards; the panel renders oldest to newest.
       return { messages: toVisibleMessages([...page.messages].reverse()), cursor: page.cursor ?? null };
     },
@@ -499,8 +351,7 @@ export const createAssistantTransport = (
           conversationId,
           content: body.content
         },
-        signal,
-        runs
+        signal
       )
   };
 };
@@ -512,7 +363,6 @@ export const createAssistantTransport = (
 export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortSignal) => {
   let active = true;
   const runs = new Set<AbortController>();
-  const subscriptions = new Set<() => void>();
   const assertActive = () => {
     if (!active || sessionSignal?.aborted) {
       throw new DOMException('Notebook changed', 'AbortError');
@@ -534,24 +384,6 @@ export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortS
     createConversation: body => guarded(() => inner.createConversation(body)),
     deleteConversation: id => guarded(() => inner.deleteConversation(id)),
     getMessages: (id, before) => guarded(() => inner.getMessages(id, before)),
-    ...(inner.subscribeRunState
-      ? {
-          subscribeRunState: (id: string, listener: (state: AssistantRunState) => void) => {
-            if (!active || sessionSignal?.aborted) return () => undefined;
-            const unsubscribe = inner.subscribeRunState!(id, state => {
-              if (active && !sessionSignal?.aborted) listener(state);
-            });
-            const stop = () => {
-              if (!subscriptions.delete(stop)) return;
-              unsubscribe();
-              sessionSignal?.removeEventListener('abort', stop);
-            };
-            subscriptions.add(stop);
-            sessionSignal?.addEventListener('abort', stop, { once: true });
-            return stop;
-          }
-        }
-      : {}),
     async *openRun(id, body, signal) {
       assertActive();
       const controller = new AbortController();
@@ -591,7 +423,6 @@ export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortS
       if (!next) {
         runs.forEach(controller => controller.abort());
         runs.clear();
-        subscriptions.forEach(stop => stop());
       }
     }
   };
