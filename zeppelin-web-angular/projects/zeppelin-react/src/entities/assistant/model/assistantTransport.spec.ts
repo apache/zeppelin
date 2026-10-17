@@ -186,9 +186,25 @@ describe('assistant transport', () => {
     expect(fetchMock.mock.calls[1][1]).toMatchObject({
       credentials: 'include',
       headers: expect.objectContaining({ 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }),
-      // The first question names the conversation, with whitespace collapsed.
-      body: JSON.stringify({ title: 'Load the data' })
+      body: JSON.stringify({ title: '  Load   the data  ' })
     });
+  });
+
+  it('preserves a long conversation title when creating it', async () => {
+    const title = `  ${'A'.repeat(85)}  `;
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          status: 'CREATED',
+          body: { id: 'conv-1', title, ownerId: 'alice', canSendMessage: true, updatedAt: '2026-10-02T00:00:00Z' }
+        }),
+        { status: 201 }
+      )
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(forNote('n').createConversation({ title })).resolves.toMatchObject({ title });
+    expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify({ title }));
   });
 
   it('words a 404 on the conversation list as a server without the assistant', async () => {

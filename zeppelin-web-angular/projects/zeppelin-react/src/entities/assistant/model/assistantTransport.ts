@@ -314,11 +314,6 @@ export const createAssistantTransport = (
       updatedAt: conversation.updatedAt
     };
   };
-  // The server names an untitled conversation by its creation time.
-  const titleFor = (title?: string) => {
-    const trimmed = title?.trim().replace(/\s+/g, ' ');
-    return trimmed ? { title: trimmed.length > 80 ? `${trimmed.slice(0, 79)}…` : trimmed } : {};
-  };
   return {
     // Latest activity first, so the panel opens on it.
     listConversations: async signal =>
@@ -331,10 +326,18 @@ export const createAssistantTransport = (
         .map(({ conversation }) => toConversation(conversation)),
     createConversation: async ({ title } = {}, signal) =>
       toConversation(
-        await collectionRequest<ConversationSummary>(base, { method: 'POST', body: titleFor(title), signal }, onAuthError)
+        await collectionRequest<ConversationSummary>(
+          base,
+          { method: 'POST', body: title === undefined ? {} : { title }, signal },
+          onAuthError
+        )
       ),
     deleteConversation: async (conversationId, signal) => {
-      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE', signal }, onAuthError);
+      await requestJson<void>(
+        `${base}/${encodeURIComponent(conversationId)}`,
+        { method: 'DELETE', signal },
+        onAuthError
+      );
     },
     getMessages: async (conversationId, before, signal): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
@@ -397,7 +400,8 @@ export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortS
   };
   const transport: AssistantTransport = {
     listConversations: signal => guarded(requestSignal => inner.listConversations(requestSignal), signal),
-    createConversation: (body, signal) => guarded(requestSignal => inner.createConversation(body, requestSignal), signal),
+    createConversation: (body, signal) =>
+      guarded(requestSignal => inner.createConversation(body, requestSignal), signal),
     deleteConversation: (id, signal) => guarded(requestSignal => inner.deleteConversation(id, requestSignal), signal),
     getMessages: (id, before, signal) => guarded(requestSignal => inner.getMessages(id, before, requestSignal), signal),
     async *openRun(id, body, signal) {
