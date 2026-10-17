@@ -10,6 +10,7 @@
  * limitations under the License.
  */
 
+export { AssistantWorkspace, mount as mountAssistantWorkspace } from './pages/AssistantWorkspace';
 export { ConfigurationTable, mount as mountConfigurationTable } from './pages/ConfigurationTable';
 export { NotebookRepoList, mount as mountNotebookRepoList } from './pages/NotebookRepoList';
 export { PublishedParagraph, mount } from './pages/PublishedParagraph';
