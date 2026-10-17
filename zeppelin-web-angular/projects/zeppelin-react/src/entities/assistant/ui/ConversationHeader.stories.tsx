@@ -15,8 +15,20 @@ import { fn } from 'storybook/test';
 import type { AssistantConversation } from '../model/assistantContract';
 import { ConversationHeader } from './ConversationHeader';
 
-const current: AssistantConversation = { id: 'a', title: 'Explain how the notebook calculates revenue' };
-const readOnly: AssistantConversation = { id: 'b', title: 'Compare regional totals', canSendMessage: false };
+const current: AssistantConversation = {
+  id: 'a',
+  ownerId: 'user1',
+  title: 'Explain how the notebook calculates revenue',
+  canSendMessage: true,
+  updatedAt: '2026-10-15T02:00:00.000Z'
+};
+const readOnly: AssistantConversation = {
+  id: 'b',
+  ownerId: 'user1',
+  title: 'Compare regional totals',
+  canSendMessage: false,
+  updatedAt: '2026-10-15T02:00:00.000Z'
+};
 
 const meta = {
   title: 'Assistant/ConversationHeader',

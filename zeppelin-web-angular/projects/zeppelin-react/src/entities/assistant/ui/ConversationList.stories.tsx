@@ -18,10 +18,23 @@ import { ConversationList } from './ConversationList';
 const NOW = new Date(2026, 9, 15, 12).getTime();
 
 const conversations: AssistantConversation[] = [
-  { id: 'a', title: 'Explain revenue by region', updatedAt: new Date(2026, 9, 15, 11).toISOString() },
-  { id: 'b', title: 'Draft a query for monthly orders', updatedAt: new Date(2026, 9, 10, 9).toISOString() },
+  {
+    id: 'a',
+    ownerId: 'user1',
+    title: 'Explain revenue by region',
+    updatedAt: new Date(2026, 9, 15, 11).toISOString(),
+    canSendMessage: true
+  },
+  {
+    id: 'b',
+    ownerId: 'user1',
+    title: 'Draft a query for monthly orders',
+    updatedAt: new Date(2026, 9, 10, 9).toISOString(),
+    canSendMessage: true
+  },
   {
     id: 'c',
+    ownerId: 'user2',
     title: 'Review shared analysis',
     canSendMessage: false,
     updatedAt: new Date(2026, 9, 9, 9).toISOString()

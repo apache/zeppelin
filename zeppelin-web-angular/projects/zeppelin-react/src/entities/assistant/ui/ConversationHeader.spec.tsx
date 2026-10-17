@@ -19,7 +19,13 @@ const noop = () => {};
 
 describe('ConversationHeader', () => {
   it('shows the selected conversation title', () => {
-    const conversation: AssistantConversation = { id: 'a', title: 'Explain revenue by region' };
+    const conversation: AssistantConversation = {
+      id: 'a',
+      ownerId: 'user1',
+      title: 'Explain revenue by region',
+      canSendMessage: true,
+      updatedAt: '2026-10-15T02:00:00.000Z'
+    };
     render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={noop} />);
     expect(screen.getByText('Explain revenue by region')).toBeTruthy();
   });
@@ -30,14 +36,26 @@ describe('ConversationHeader', () => {
   });
 
   it('offers no delete button for a read-only conversation', () => {
-    const conversation: AssistantConversation = { id: 'a', title: 'Shared', canSendMessage: false };
+    const conversation: AssistantConversation = {
+      id: 'a',
+      ownerId: 'user1',
+      title: 'Shared',
+      canSendMessage: false,
+      updatedAt: '2026-10-15T02:00:00.000Z'
+    };
     render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={noop} />);
     expect(screen.queryByRole('button', { name: 'Delete Shared' })).toBeNull();
   });
 
   it('reports the deleted conversation id without asking for confirmation', () => {
     const onDelete = vi.fn();
-    const conversation: AssistantConversation = { id: 'a', title: 'Explain revenue by region' };
+    const conversation: AssistantConversation = {
+      id: 'a',
+      ownerId: 'user1',
+      title: 'Explain revenue by region',
+      canSendMessage: true,
+      updatedAt: '2026-10-15T02:00:00.000Z'
+    };
     render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={onDelete} />);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Explain revenue by region' }));
     expect(onDelete).toHaveBeenCalledWith('a');

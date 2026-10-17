@@ -18,9 +18,27 @@ import { ConversationList } from './ConversationList';
 const NOW = new Date(2026, 9, 15, 12).getTime();
 
 const conversations: AssistantConversation[] = [
-  { id: 'a', title: 'Explain revenue by region', updatedAt: new Date(2026, 9, 15, 11).toISOString() },
-  { id: 'b', title: 'Draft a query', updatedAt: new Date(2026, 9, 10, 9).toISOString() },
-  { id: 'c', title: 'Shared analysis', canSendMessage: false, updatedAt: new Date(2026, 9, 9, 9).toISOString() }
+  {
+    id: 'a',
+    ownerId: 'user1',
+    title: 'Explain revenue by region',
+    updatedAt: new Date(2026, 9, 15, 11).toISOString(),
+    canSendMessage: true
+  },
+  {
+    id: 'b',
+    ownerId: 'user1',
+    title: 'Draft a query',
+    updatedAt: new Date(2026, 9, 10, 9).toISOString(),
+    canSendMessage: true
+  },
+  {
+    id: 'c',
+    ownerId: 'user1',
+    title: 'Shared analysis',
+    canSendMessage: false,
+    updatedAt: new Date(2026, 9, 9, 9).toISOString()
+  }
 ];
 
 const noop = () => {};
@@ -193,8 +211,20 @@ describe('ConversationList', () => {
     render(
       <ConversationList
         conversations={[
-          { id: 'x', title: 'After midnight', updatedAt: new Date(2026, 9, 15, 0, 1).toISOString() },
-          { id: 'y', title: 'Before midnight', updatedAt: new Date(2026, 9, 14, 23, 59).toISOString() }
+          {
+            id: 'x',
+            ownerId: 'user1',
+            title: 'After midnight',
+            updatedAt: new Date(2026, 9, 15, 0, 1).toISOString(),
+            canSendMessage: true
+          },
+          {
+            id: 'y',
+            ownerId: 'user1',
+            title: 'Before midnight',
+            updatedAt: new Date(2026, 9, 14, 23, 59).toISOString(),
+            canSendMessage: true
+          }
         ]}
         onSelect={noop}
         onCreate={noop}
