@@ -60,17 +60,13 @@ export type AssistantRunEvent =
   | { type: 'tool_call.started'; toolCallId: string; name: string }
   | { type: 'tool_call.done'; toolCallId: string };
 
-export type AssistantRunState = 'idle' | 'running' | 'disconnected';
-
 export interface AssistantTransport {
   /** Conversations of the note the transport was created for. */
-  listConversations(): Promise<AssistantConversation[]>;
-  createConversation(body: { title?: string }): Promise<AssistantConversation>;
-  deleteConversation(conversationId: string): Promise<void>;
+  listConversations(signal?: AbortSignal): Promise<AssistantConversation[]>;
+  createConversation(body: { title?: string }, signal?: AbortSignal): Promise<AssistantConversation>;
+  deleteConversation(conversationId: string, signal?: AbortSignal): Promise<void>;
   /** The latest page of history, or the page before `before` (a page cursor). */
-  getMessages(conversationId: string, before?: string): Promise<AssistantMessagePage>;
-  /** Observe local run state, including a lost connection until history is reloaded. */
-  subscribeRunState?(conversationId: string, listener: (state: AssistantRunState) => void): () => void;
+  getMessages(conversationId: string, before?: string, signal?: AbortSignal): Promise<AssistantMessagePage>;
   /** Aborting stops local event consumption; it does not cancel a run already accepted by the server. */
   openRun(conversationId: string, body: AssistantRunBody, signal: AbortSignal): AsyncIterable<AssistantRunEvent>;
 }
