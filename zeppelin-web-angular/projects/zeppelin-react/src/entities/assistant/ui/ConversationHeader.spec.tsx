@@ -30,6 +30,32 @@ describe('ConversationHeader', () => {
     expect(screen.getByText('Explain revenue by region')).toBeTruthy();
   });
 
+  it('names an untitled conversation in its title and delete label', () => {
+    const onDelete = vi.fn();
+    const conversation: AssistantConversation = {
+      id: 'u',
+      ownerId: 'user1',
+      canSendMessage: true,
+      updatedAt: '2026-10-15T02:00:00.000Z'
+    };
+    render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={onDelete} />);
+    expect(screen.getByText('Untitled conversation')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Untitled conversation' }));
+    expect(onDelete).toHaveBeenCalledWith('u');
+  });
+
+  it('marks a read-only conversation for assistive technology', () => {
+    const conversation: AssistantConversation = {
+      id: 'a',
+      ownerId: 'user1',
+      title: 'Shared',
+      canSendMessage: false,
+      updatedAt: '2026-10-15T02:00:00.000Z'
+    };
+    render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={noop} />);
+    expect(screen.getByText('Read-only')).toBeTruthy();
+  });
+
   it('shows a placeholder when no conversation is selected', () => {
     render(<ConversationHeader onCreate={noop} onDelete={noop} />);
     expect(screen.getByText('No conversation selected')).toBeTruthy();

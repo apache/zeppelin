@@ -75,6 +75,73 @@ describe('ConversationList', () => {
     expect(screen.getByRole('status').textContent).toBe('No conversations match your search.');
   });
 
+  it('keeps the search message when the parent passes an already filtered empty list', () => {
+    render(
+      <ConversationList
+        conversations={[]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search conversations' }), { target: { value: 'query' } });
+    expect(screen.getByRole('status').textContent).toBe('No conversations match your search.');
+  });
+
+  it('names an untitled conversation in its row and delete label', () => {
+    const onDelete = vi.fn();
+    render(
+      <ConversationList
+        conversations={[{ id: 'u', ownerId: 'user1', canSendMessage: true, updatedAt: conversations[1].updatedAt }]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={onDelete}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    expect(screen.getByRole('button', { name: /^Untitled conversation/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Untitled conversation' }));
+    expect(onDelete).toHaveBeenCalledWith('u');
+  });
+
+  it('marks a read-only conversation for assistive technology', () => {
+    render(
+      <ConversationList
+        conversations={conversations}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    const row = screen.getByRole('button', { name: /^Shared analysis/ });
+    expect(within(row).getByText('Read-only')).toBeTruthy();
+    expect(within(screen.getByRole('button', { name: /^Draft a query/ })).queryByText('Read-only')).toBeNull();
+  });
+
+  it('shows the relative update time only for today', () => {
+    render(
+      <ConversationList
+        conversations={conversations}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    const time = within(screen.getByRole('button', { name: /^Explain revenue by region/ })).getByText(
+      new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'short' }).format(-1, 'hour')
+    );
+    expect(time.tagName).toBe('TIME');
+    expect(time.getAttribute('datetime')).toBe(conversations[0].updatedAt);
+    expect(screen.getByRole('button', { name: /^Draft a query/ }).querySelector('time')).toBeNull();
+  });
+
   it('filters by title, case-insensitively and trimmed', () => {
     render(
       <ConversationList
@@ -138,8 +205,8 @@ describe('ConversationList', () => {
         now={NOW}
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: /^Explain revenue by region/ }));
-    expect(onSelect).toHaveBeenCalledWith('a');
+    fireEvent.click(screen.getByRole('button', { name: /^Draft a query/ }));
+    expect(onSelect).toHaveBeenCalledWith('b');
   });
 
   it('reports the deleted conversation id without asking for confirmation', () => {
@@ -154,8 +221,8 @@ describe('ConversationList', () => {
         now={NOW}
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Explain revenue by region' }));
-    expect(onDelete).toHaveBeenCalledWith('a');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Draft a query' }));
+    expect(onDelete).toHaveBeenCalledWith('b');
   });
 
   it('offers no delete button for a read-only conversation', () => {

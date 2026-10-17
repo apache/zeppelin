@@ -59,6 +59,8 @@ type Story = StoryObj<typeof meta>;
 
 export const TodayAndEarlier: Story = {};
 
+export const Selected: Story = { args: { selectedId: 'a' } };
+
 export const Empty: Story = { args: { conversations: [] } };
 
 export const Search: Story = {
@@ -74,9 +76,9 @@ export const Search: Story = {
 export const SelectAndDelete: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole('button', { name: /^Explain revenue by region/ }));
-    await expect(args.onSelect).toHaveBeenCalledWith('a');
-    await userEvent.click(canvas.getByRole('button', { name: 'Delete Explain revenue by region' }));
-    await expect(args.onDelete).toHaveBeenCalledWith('a');
+    await userEvent.click(canvas.getByRole('button', { name: /^Draft a query/ }));
+    await expect(args.onSelect).toHaveBeenCalledWith('b');
+    await userEvent.click(canvas.getByRole('button', { name: 'Delete Draft a query for monthly orders' }));
+    await expect(args.onDelete).toHaveBeenCalledWith('b');
   }
 };

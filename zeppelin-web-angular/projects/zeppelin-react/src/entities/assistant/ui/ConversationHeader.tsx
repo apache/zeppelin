@@ -10,12 +10,12 @@
  * limitations under the License.
  */
 
-import * as styles from './ConversationHeader.css';
-
 import { DeleteOutlined, LockOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import type { AssistantConversation } from '../model/assistantContract';
+import { conversationTitle } from './conversationTitle';
+import * as styles from './ConversationHeader.css';
 
 export interface ConversationHeaderProps {
   conversation?: AssistantConversation;
@@ -24,7 +24,7 @@ export interface ConversationHeaderProps {
 }
 
 export const ConversationHeader = ({ conversation, onCreate, onDelete }: ConversationHeaderProps) => {
-  const title = conversation ? conversation.title : 'No conversation selected';
+  const title = conversation ? conversationTitle(conversation) : 'No conversation selected';
   const readOnly = conversation?.canSendMessage === false;
   return (
     <header className={styles.header}>
@@ -41,7 +41,7 @@ export const ConversationHeader = ({ conversation, onCreate, onDelete }: Convers
           size="small"
           type="text"
           icon={<DeleteOutlined />}
-          aria-label={`Delete ${conversation.title}`}
+          aria-label={`Delete ${title}`}
           onClick={() => onDelete(conversation.id)}
         />
       )}
