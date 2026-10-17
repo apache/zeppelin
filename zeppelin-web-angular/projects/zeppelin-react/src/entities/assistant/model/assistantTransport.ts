@@ -174,6 +174,7 @@ const requestJson = async <T>(
   init: { method?: string; body?: unknown; signal?: AbortSignal } = {},
   onAuthError?: AssistantAuthErrorHandler
 ): Promise<T> => {
+  init.signal?.throwIfAborted();
   const response = await fetch(url, {
     method: init.method ?? 'GET',
     ...(init.signal ? { signal: init.signal } : {}),
@@ -184,10 +185,12 @@ const requestJson = async <T>(
         : { ...requestHeaders, Accept: 'application/json', 'Content-Type': 'application/json' },
     body: init.body === undefined ? undefined : JSON.stringify(init.body)
   });
+  init.signal?.throwIfAborted();
   if (!response.ok) {
     throw httpError(response, onAuthError);
   }
   const text = await response.text();
+  init.signal?.throwIfAborted();
   return (text ? unwrapBody(JSON.parse(text)) : undefined) as T;
 };
 
@@ -318,26 +321,26 @@ export const createAssistantTransport = (
   };
   return {
     // Latest activity first, so the panel opens on it.
-    listConversations: async () =>
-      (await collectionRequest<ConversationSummary[]>(base, {}, onAuthError))
+    listConversations: async signal =>
+      (await collectionRequest<ConversationSummary[]>(base, { signal }, onAuthError))
         .map(conversation => ({
           conversation,
           time: Date.parse(conversation.updatedAt) || 0
         }))
         .sort((a, b) => b.time - a.time)
         .map(({ conversation }) => toConversation(conversation)),
-    createConversation: async ({ title } = {}) =>
+    createConversation: async ({ title } = {}, signal) =>
       toConversation(
-        await collectionRequest<ConversationSummary>(base, { method: 'POST', body: titleFor(title) }, onAuthError)
+        await collectionRequest<ConversationSummary>(base, { method: 'POST', body: titleFor(title), signal }, onAuthError)
       ),
-    deleteConversation: async conversationId => {
-      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE' }, onAuthError);
+    deleteConversation: async (conversationId, signal) => {
+      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE', signal }, onAuthError);
     },
-    getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
+    getMessages: async (conversationId, before, signal): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
       const page = await requestJson<MessagePage>(
         `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
-        {},
+        { signal },
         onAuthError
       );
       // The server pages from the latest message backwards; the panel renders oldest to newest.
@@ -356,44 +359,56 @@ export const createAssistantTransport = (
   };
 };
 
-/**
- * Guards a per-note transport. Deactivation aborts open runs and rejects calls while inactive.
- * The transport can be reactivated unless its session signal has aborted.
- */
+/** A one-shot per-note scope. Reopening a note creates a new scope. */
 export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortSignal) => {
-  let active = true;
-  const runs = new Set<AbortController>();
+  const scope = new AbortController();
+  const stop = () => scope.abort();
+  if (sessionSignal?.aborted) stop();
+  else sessionSignal?.addEventListener('abort', stop, { once: true });
   const assertActive = () => {
-    if (!active || sessionSignal?.aborted) {
+    if (scope.signal.aborted) {
       throw new DOMException('Notebook changed', 'AbortError');
     }
   };
-  const guarded = async <T>(request: () => Promise<T>): Promise<T> => {
+  const guarded = async <T>(request: (signal: AbortSignal) => Promise<T>, callerSignal?: AbortSignal): Promise<T> => {
     assertActive();
+    const controller = callerSignal ? new AbortController() : undefined;
+    const abort = () => controller?.abort();
+    if (controller) {
+      scope.signal.addEventListener('abort', abort, { once: true });
+      callerSignal?.addEventListener('abort', abort, { once: true });
+      if (scope.signal.aborted || callerSignal?.aborted) abort();
+    }
+    const signal = controller?.signal ?? scope.signal;
     try {
-      const result = await request();
+      signal.throwIfAborted();
+      const result = await request(signal);
       assertActive();
+      signal.throwIfAborted();
       return result;
     } catch (error) {
       assertActive();
+      signal.throwIfAborted();
       throw error;
+    } finally {
+      scope.signal.removeEventListener('abort', abort);
+      callerSignal?.removeEventListener('abort', abort);
     }
   };
   const transport: AssistantTransport = {
-    listConversations: () => guarded(() => inner.listConversations()),
-    createConversation: body => guarded(() => inner.createConversation(body)),
-    deleteConversation: id => guarded(() => inner.deleteConversation(id)),
-    getMessages: (id, before) => guarded(() => inner.getMessages(id, before)),
+    listConversations: signal => guarded(requestSignal => inner.listConversations(requestSignal), signal),
+    createConversation: (body, signal) => guarded(requestSignal => inner.createConversation(body, requestSignal), signal),
+    deleteConversation: (id, signal) => guarded(requestSignal => inner.deleteConversation(id, requestSignal), signal),
+    getMessages: (id, before, signal) => guarded(requestSignal => inner.getMessages(id, before, requestSignal), signal),
     async *openRun(id, body, signal) {
       assertActive();
       const controller = new AbortController();
       const abort = () => controller.abort();
       signal.addEventListener('abort', abort, { once: true });
-      sessionSignal?.addEventListener('abort', abort, { once: true });
+      scope.signal.addEventListener('abort', abort, { once: true });
       if (signal.aborted) {
         abort();
       }
-      runs.add(controller);
       try {
         for await (const event of inner.openRun(id, body, controller.signal)) {
           assertActive();
@@ -408,22 +423,18 @@ export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortS
       } finally {
         controller.abort();
         signal.removeEventListener('abort', abort);
-        sessionSignal?.removeEventListener('abort', abort);
-        runs.delete(controller);
+        scope.signal.removeEventListener('abort', abort);
       }
     }
   };
   return {
     get active() {
-      return active && !sessionSignal?.aborted;
+      return !scope.signal.aborted;
     },
     transport,
-    setActive(next: boolean) {
-      active = next;
-      if (!next) {
-        runs.forEach(controller => controller.abort());
-        runs.clear();
-      }
+    deactivate() {
+      stop();
+      sessionSignal?.removeEventListener('abort', stop);
     }
   };
 };
