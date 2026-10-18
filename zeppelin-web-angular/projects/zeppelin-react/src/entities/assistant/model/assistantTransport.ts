@@ -1,0 +1,346 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { AssistantSendMessage, AssistantSocket, AssistantSocketEvent } from '@zeppelin/sdk';
+import {
+  AssistantConnectionError,
+  AssistantStreamError,
+  type AssistantConversation,
+  type AssistantConversationApi,
+  type AssistantMessage,
+  type AssistantMessagePage,
+  type AssistantRunEvent,
+  type AssistantToolCallRef
+} from './assistantContract';
+import { mergeAnswers } from './messageHistory';
+
+const HTTP_MESSAGES: Record<number, string> = {
+  403: 'You do not have permission for this conversation.',
+  404: 'This conversation or note no longer exists.',
+  409: 'This conversation is still answering. Try again when it finishes.',
+  503: 'The assistant is not configured on this server. Ask an administrator to enable it.'
+};
+
+// run.failed carries only the HTTP status of the rejected or failed run, so the UI words it.
+const RUN_ERROR_MESSAGES: Record<number, string> = {
+  ...HTTP_MESSAGES,
+  400: 'The assistant could not accept this message. Edit it and try again.',
+  429: 'The assistant is busy. Try again shortly.',
+  // Also returned when the user lost read access to the note, so it does not name the owner.
+  403: 'You do not have permission to send messages to this conversation.'
+};
+const NOT_AVAILABLE_MESSAGE = 'The assistant is not available on this server, or this note no longer exists.';
+const RUN_ERROR_FALLBACK = 'The assistant hit an error while answering. Try again.';
+
+export class AssistantHttpError extends Error {
+  constructor(
+    public readonly status: number,
+    message = HTTP_MESSAGES[status] ?? `Assistant request failed with HTTP ${status}`
+  ) {
+    super(message);
+    this.name = 'AssistantHttpError';
+  }
+}
+
+/** An event this panel cannot read; the field stays on the error for debugging, the message is for the user. */
+export class AssistantProtocolError extends Error {
+  constructor(readonly detail: string) {
+    super('The assistant sent a reply this panel could not read. Try again.');
+    this.name = 'AssistantProtocolError';
+  }
+}
+
+// The server sends no heartbeat, so a run that goes quiet this long is treated as lost.
+const RUN_IDLE_TIMEOUT_MS = 180_000;
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+const optionalString = (data: Record<string, unknown>, field: string): string | undefined => {
+  const value = data[field];
+  if (value !== undefined && typeof value !== 'string') {
+    throw new AssistantProtocolError(`Assistant event field "${field}" must be a string`);
+  }
+  return value;
+};
+
+const requiredString = (data: Record<string, unknown>, field: string): string => {
+  const value = optionalString(data, field);
+  if (value === undefined) {
+    throw new AssistantProtocolError(`Assistant event field "${field}" is required`);
+  }
+  return value;
+};
+
+const errorMessage = (data: Record<string, unknown>): string => {
+  const error = data.error;
+  const status = isRecord(error) ? error.status : undefined;
+  return (typeof status === 'number' && RUN_ERROR_MESSAGES[status]) || RUN_ERROR_FALLBACK;
+};
+
+/** Maps an ASSISTANT_EVENT to the UI contract; unknown types map to undefined, so new server events are ignored. */
+export const mapSocketEvent = ({ type, payload }: AssistantSocketEvent): AssistantRunEvent | undefined => {
+  const data = isRecord(payload) ? payload : {};
+  switch (type) {
+    case 'run.started':
+      return { type, runId: optionalString(data, 'runId') };
+    case 'run.completed':
+      return { type, runId: optionalString(data, 'runId') };
+    case 'run.failed':
+      return { type, runId: optionalString(data, 'runId'), message: errorMessage(data) };
+    case 'message.delta':
+      return { type, messageId: requiredString(data, 'messageId'), delta: requiredString(data, 'delta') };
+    case 'message.done':
+      return { type, messageId: requiredString(data, 'messageId'), content: requiredString(data, 'content') };
+    case 'tool_call.started':
+      return { type, toolCallId: requiredString(data, 'toolCallId'), name: requiredString(data, 'name') };
+    case 'tool_call.done':
+      return { type, toolCallId: requiredString(data, 'toolCallId') };
+    default:
+      return undefined;
+  }
+};
+
+const isTerminal = (event: AssistantRunEvent): boolean => event.type === 'run.completed' || event.type === 'run.failed';
+
+interface ConversationMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'tool' | 'system';
+  content?: string | null;
+  toolCalls?: Array<{ id?: unknown; name?: unknown }> | null;
+}
+
+const toolCallRefs = (message: ConversationMessage): AssistantToolCallRef[] =>
+  (message.toolCalls ?? []).flatMap(call =>
+    typeof call?.id === 'string' && typeof call.name === 'string' ? [{ id: call.id, name: call.name }] : []
+  );
+
+/**
+ * One bubble per turn: tool and system messages are hidden, tool rounds merge under the last message's id, and
+ * the tools called on the way are kept on the answer so a reopened conversation still shows its action log.
+ */
+export const toVisibleMessages = (messages: ConversationMessage[]): AssistantMessage[] => {
+  const visible: AssistantMessage[] = [];
+  for (const message of messages) {
+    if (message.role === 'user') {
+      visible.push({ id: message.id, role: 'user', content: message.content ?? '' });
+    } else if (message.role === 'assistant') {
+      const toolCalls = toolCallRefs(message);
+      // Keep a tool-only turn even when its answer is on a later page or has not arrived yet.
+      if (!message.content && !toolCalls.length) continue;
+      const last = visible[visible.length - 1];
+      const answer: AssistantMessage = {
+        id: message.id,
+        role: 'assistant',
+        segments: [{ id: message.id, content: message.content ?? '', ...(toolCalls.length ? { toolCalls } : {}) }]
+      };
+      if (last?.role === 'assistant') visible[visible.length - 1] = mergeAnswers(last, answer);
+      else visible.push(answer);
+    }
+  }
+  return visible;
+};
+
+const requestHeaders = {
+  // Matches the headers the shell sends in production.
+  'X-Requested-With': 'XMLHttpRequest'
+};
+
+// Zeppelin JSON endpoints wrap the payload as { status, message, body }.
+const unwrapBody = (value: unknown): unknown =>
+  typeof value === 'object' && value !== null && 'body' in value ? value.body : value;
+
+/** Hands 401/405 to the host, which owns login redirects and logout. */
+export type AssistantAuthErrorHandler = (status: number) => void;
+
+const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler): AssistantHttpError => {
+  const error = new AssistantHttpError(response.status);
+  if (error.status === 401 || error.status === 405) {
+    onAuthError?.(error.status);
+  }
+  return error;
+};
+
+const requestJson = async <T>(
+  url: string,
+  init: { method?: string; body?: unknown } = {},
+  onAuthError?: AssistantAuthErrorHandler
+): Promise<T> => {
+  const response = await fetch(url, {
+    method: init.method ?? 'GET',
+    credentials: 'include',
+    headers:
+      init.body === undefined
+        ? { ...requestHeaders, Accept: 'application/json' }
+        : { ...requestHeaders, Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body)
+  });
+  if (!response.ok) {
+    throw httpError(response, onAuthError);
+  }
+  const text = await response.text();
+  return (text ? unwrapBody(JSON.parse(text)) : undefined) as T;
+};
+
+// A server without the assistant API answers the note's conversation collection with 404.
+const collectionRequest = async <T>(...args: Parameters<typeof requestJson>): Promise<T> => {
+  try {
+    return await requestJson<T>(...args);
+  } catch (error) {
+    if (error instanceof AssistantHttpError && error.status === 404) {
+      throw new AssistantHttpError(404, NOT_AVAILABLE_MESSAGE);
+    }
+    throw error;
+  }
+};
+
+/**
+ * The one request a run follows. The server allows one run per conversation and rejects a duplicate with 409,
+ * so the client keeps no state beyond the run it is reading; events of any other conversation are dropped.
+ */
+interface RunSlot {
+  conversationId: string;
+  phase: 'pending' | 'running';
+  runId?: string;
+}
+
+/**
+ * Sends one message over the host's notebook WebSocket and yields that conversation's events until a terminal one.
+ * Until this message's run.started arrives, only a rejection (run.failed) belongs to it.
+ * Aborting stops local event consumption; it does not cancel a run already accepted by the server.
+ */
+export async function* socketRun(
+  socket: AssistantSocket,
+  message: AssistantSendMessage,
+  signal: AbortSignal,
+  idleTimeoutMs = RUN_IDLE_TIMEOUT_MS
+): AsyncIterable<AssistantRunEvent> {
+  signal.throwIfAborted();
+  const slot: RunSlot = { conversationId: message.conversationId, phase: 'pending' };
+  const queue: Array<AssistantRunEvent | Error> = [];
+  let wake: (() => void) | undefined;
+  const push = (item: AssistantRunEvent | Error) => {
+    queue.push(item);
+    wake?.();
+  };
+  const unsubscribe = socket.subscribe(event => {
+    if (event.conversationId !== message.conversationId) return;
+    try {
+      const mapped = mapSocketEvent(event);
+      if (mapped) push(mapped);
+    } catch (error) {
+      push(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+  const unsubscribeClose = socket.subscribeClose(() => push(new AssistantConnectionError()));
+  const onAbort = () => wake?.();
+  signal.addEventListener('abort', onAbort, { once: true });
+  try {
+    socket.send(message);
+    while (true) {
+      signal.throwIfAborted();
+      if (queue.length === 0) {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        await new Promise<void>(resolve => {
+          wake = resolve;
+          timer = setTimeout(() => push(new AssistantStreamError()), idleTimeoutMs);
+        });
+        clearTimeout(timer);
+        wake = undefined;
+      }
+      signal.throwIfAborted();
+      const item = queue.shift();
+      if (item === undefined) continue;
+      if (item instanceof Error) throw item;
+      const runId = 'runId' in item ? item.runId : undefined;
+      // Once running, only its own terminal event ends it; deltas have no run id, but runs are one at a time.
+      if (slot.phase === 'running' && isTerminal(item) && runId && slot.runId && runId !== slot.runId) continue;
+      if (slot.phase === 'pending') {
+        if (item.type === 'run.started') {
+          slot.phase = 'running';
+          slot.runId = item.runId;
+        } else if (item.type !== 'run.failed') continue;
+      }
+      yield item;
+      if (isTerminal(item)) return;
+    }
+  } finally {
+    signal.removeEventListener('abort', onAbort);
+    unsubscribe();
+    unsubscribeClose();
+  }
+}
+
+type ConversationMetadataResponse = {
+  id: string;
+  noteId: string;
+  title?: string;
+  ownerId: string;
+  canSendMessage: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+type MessagePage = { messages: ConversationMessage[]; cursor?: string | null };
+
+// One page of raw server messages; the panel loads earlier pages as the user scrolls up.
+const HISTORY_PAGE_SIZE = 50;
+
+/**
+ * REST client for a note's conversations and history. `apiBase` is the host's REST base, e.g. `.../api`.
+ */
+export const createAssistantConversationApi = (
+  apiBase: string,
+  noteId: string,
+  onAuthError?: AssistantAuthErrorHandler
+): AssistantConversationApi => {
+  const base = `${apiBase.replace(/\/$/, '')}/notes/${encodeURIComponent(noteId)}/conversations`;
+  const toAssistantConversation = (conversation: ConversationMetadataResponse): AssistantConversation => {
+    return {
+      id: conversation.id,
+      title: conversation.title,
+      ownerId: conversation.ownerId,
+      canSendMessage: conversation.canSendMessage,
+      updatedAt: conversation.updatedAt
+    };
+  };
+  return {
+    // Latest activity first, so the panel opens on it.
+    listConversations: async () =>
+      (await collectionRequest<ConversationMetadataResponse[]>(base, {}, onAuthError))
+        .map(conversation => ({
+          conversation,
+          time: Date.parse(conversation.updatedAt) || 0
+        }))
+        .sort((a, b) => b.time - a.time)
+        .map(({ conversation }) => toAssistantConversation(conversation)),
+    createConversation: async ({ title } = {}) =>
+      toAssistantConversation(
+        await collectionRequest<ConversationMetadataResponse>(
+          base,
+          { method: 'POST', body: title === undefined ? {} : { title } },
+          onAuthError
+        )
+      ),
+    deleteConversation: async conversationId => {
+      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE' }, onAuthError);
+    },
+    getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
+      const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
+      const page = await requestJson<MessagePage>(
+        `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
+        {},
+        onAuthError
+      );
+      // The server pages from the latest message backwards; the panel renders oldest to newest.
+      return { messages: toVisibleMessages([...page.messages].reverse()), cursor: page.cursor ?? null };
+    }
+  };
+};
