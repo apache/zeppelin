@@ -16,9 +16,8 @@ import type { AssistantSendMessage, AssistantSocketEvent } from '@zeppelin/sdk';
 
 import {
   AssistantHttpError,
-  createAssistantTransport,
+  createAssistantConversationApi,
   mapSocketEvent,
-  scopeTransport,
   socketRun,
   toVisibleMessages
 } from './assistantTransport';
@@ -26,7 +25,6 @@ import {
   AssistantConnectionError,
   AssistantStreamError,
   type AssistantAnswerMessage,
-  type AssistantConversation,
   type AssistantRunEvent
 } from './assistantContract';
 import { answerText, answerToolCalls, joinPages } from './messageHistory';
@@ -57,7 +55,7 @@ const fakeSocket = () => {
 };
 
 const forNote = (noteId: string, onAuthError?: (status: number) => void) =>
-  createAssistantTransport('https://example.test/zeppelin/api', noteId, fakeSocket(), onAuthError);
+  createAssistantConversationApi('https://example.test/zeppelin/api', noteId, onAuthError);
 
 const iterate = <T>(iterable: AsyncIterable<T>): AsyncIterator<T> => iterable[Symbol.asyncIterator]();
 
@@ -238,28 +236,11 @@ describe('assistant transport', () => {
     expect(onAuthError.mock.calls).toEqual([[401], [405]]);
   });
 
-  it('does not redirect for an auth response that arrives after the note scope ends', async () => {
-    let resolveFetch: (response: Response) => void = () => undefined;
-    const fetch = vi.fn(
-      (_url: string, _init: RequestInit) => new Promise<Response>(resolve => (resolveFetch = resolve))
-    );
-    vi.stubGlobal('fetch', fetch);
-    const onAuthError = vi.fn();
-    const scoped = scopeTransport(forNote('n', onAuthError));
-    const request = scoped.transport.listConversations();
-    const signal = fetch.mock.calls[0][1].signal as AbortSignal;
-
-    scoped.deactivate();
-    expect(signal.aborted).toBe(true);
-    resolveFetch(new Response(null, { status: 401 }));
-    await expect(request).rejects.toMatchObject({ name: 'AbortError' });
-    expect(onAuthError).not.toHaveBeenCalled();
-  });
-
   it('sends over the socket and yields only this conversation until a terminal event', async () => {
     const socket = fakeSocket();
-    const transport = createAssistantTransport('https://example.test/api', 'n', socket);
-    const run = iterate(transport.openRun('c1', { content: 'improve' }, new AbortController().signal));
+    const run = iterate(
+      socketRun(socket, { noteId: 'n', conversationId: 'c1', content: 'improve' }, new AbortController().signal)
+    );
     const first = run.next();
     await vi.waitFor(() => expect(socket.sent).toHaveLength(1));
     expect(socket.sent[0]).toEqual({ noteId: 'n', conversationId: 'c1', content: 'improve' });
@@ -509,127 +490,6 @@ describe('assistant transport', () => {
     ).toBeUndefined();
   });
 
-  it('drops late responses and aborts runs once a scoped transport is deactivated', async () => {
-    let resolveList: (conversations: []) => void = () => undefined;
-    let runSignal: AbortSignal | undefined;
-    const inner = {
-      listConversations: vi.fn(() => new Promise<[]>(resolve => (resolveList = resolve))),
-      createConversation: vi.fn(),
-      deleteConversation: vi.fn(),
-      getMessages: vi.fn(),
-      openRun: async function* (_id: string, _body: unknown, signal: AbortSignal): AsyncIterable<AssistantRunEvent> {
-        runSignal = signal;
-        yield { type: 'run.started' };
-        await new Promise(() => undefined);
-      }
-    };
-    const scoped = scopeTransport(inner);
-    const list = scoped.transport.listConversations();
-    const run = iterate(scoped.transport.openRun('t', { content: 'hi' }, new AbortController().signal));
-    await run.next();
-    expect(inner.listConversations).toHaveBeenCalledWith(expect.any(AbortSignal));
-
-    scoped.deactivate();
-    resolveList([]);
-
-    await expect(list).rejects.toMatchObject({ name: 'AbortError' });
-    expect(runSignal?.aborted).toBe(true);
-    await expect(scoped.transport.getMessages('t')).rejects.toMatchObject({ name: 'AbortError' });
-  });
-
-  it('retires an old REST request permanently while a fresh note scope can read', async () => {
-    let resolveOld: (conversations: []) => void = () => undefined;
-    const inner = {
-      listConversations: vi
-        .fn()
-        .mockImplementationOnce(() => new Promise<[]>(resolve => (resolveOld = resolve)))
-        .mockResolvedValueOnce([]),
-      createConversation: vi.fn(),
-      deleteConversation: vi.fn(),
-      getMessages: vi.fn(),
-      openRun: vi.fn()
-    };
-    const oldScope = scopeTransport(inner);
-    const oldRead = oldScope.transport.listConversations();
-    const oldSignal = inner.listConversations.mock.calls[0][0] as AbortSignal;
-
-    oldScope.deactivate();
-    expect(oldSignal.aborted).toBe(true);
-    const newScope = scopeTransport(inner);
-    await expect(newScope.transport.listConversations()).resolves.toEqual([]);
-    resolveOld([]);
-    await expect(oldRead).rejects.toMatchObject({ name: 'AbortError' });
-    expect(oldScope.active).toBe(false);
-  });
-
-  it('passes a caller abort to REST without retiring the note scope', async () => {
-    let resolveRead: (conversations: []) => void = () => undefined;
-    const inner = {
-      listConversations: vi
-        .fn()
-        .mockImplementationOnce(() => new Promise<[]>(resolve => (resolveRead = resolve)))
-        .mockResolvedValueOnce([]),
-      createConversation: vi.fn(),
-      deleteConversation: vi.fn(),
-      getMessages: vi.fn(),
-      openRun: vi.fn()
-    };
-    const scoped = scopeTransport(inner);
-    const caller = new AbortController();
-    const read = scoped.transport.listConversations(caller.signal);
-    const requestSignal = inner.listConversations.mock.calls[0][0] as AbortSignal;
-
-    caller.abort();
-    expect(requestSignal.aborted).toBe(true);
-    resolveRead([]);
-    await expect(read).rejects.toMatchObject({ name: 'AbortError' });
-    expect(scoped.active).toBe(true);
-    await expect(scoped.transport.listConversations()).resolves.toEqual([]);
-  });
-
-  it('retires pending creations and active runs when the host session aborts', async () => {
-    const session = new AbortController();
-    let resolveCreate: (value: AssistantConversation) => void = () => undefined;
-    let runSignal: AbortSignal | undefined;
-    const inner = {
-      listConversations: vi.fn().mockResolvedValue([]),
-      createConversation: vi.fn(
-        () =>
-          new Promise<AssistantConversation>(resolve => {
-            resolveCreate = resolve;
-          })
-      ),
-      deleteConversation: vi.fn(),
-      getMessages: vi.fn(),
-      openRun: async function* (_id: string, _body: unknown, signal: AbortSignal): AsyncIterable<AssistantRunEvent> {
-        runSignal = signal;
-        yield { type: 'run.started' };
-        await new Promise<void>(resolve => signal.addEventListener('abort', () => resolve(), { once: true }));
-        yield { type: 'run.completed' };
-      }
-    };
-    const scoped = scopeTransport(inner, session.signal);
-    const creation = scoped.transport.createConversation({});
-    const run = iterate(scoped.transport.openRun('c1', { content: 'hi' }, new AbortController().signal));
-    await run.next();
-    const terminal = run.next();
-    session.abort();
-    resolveCreate({
-      id: 'old-account-conversation',
-      ownerId: 'alice',
-      canSendMessage: true,
-      updatedAt: '2026-10-01T00:00:00Z'
-    });
-    await expect(creation).rejects.toMatchObject({ name: 'AbortError' });
-    await expect(terminal).rejects.toMatchObject({ name: 'AbortError' });
-    expect(runSignal?.aborted).toBe(true);
-    expect(scoped.active).toBe(false);
-    scoped.deactivate();
-    expect(scoped.active).toBe(false);
-    await expect(scoped.transport.listConversations()).rejects.toMatchObject({ name: 'AbortError' });
-    expect(inner.listConversations).not.toHaveBeenCalled();
-  });
-
   it('shows one bubble per turn and hides tool and system messages', () => {
     expect(
       toVisibleMessages([
@@ -788,7 +648,7 @@ describe('conversation list', () => {
     };
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ body: [conversation] })));
     vi.stubGlobal('fetch', fetch);
-    const transport = createAssistantTransport('/api', 'note', fakeSocket());
+    const transport = createAssistantConversationApi('/api', 'note');
     expect(await transport.listConversations()).toEqual([conversation]);
     expect(fetch).toHaveBeenCalledTimes(1);
   });

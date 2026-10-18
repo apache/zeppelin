@@ -48,9 +48,6 @@ export interface AssistantMessagePage {
   /** Pass as `before` to load older messages; null at the start of the conversation. */
   cursor: string | null;
 }
-export interface AssistantRunBody {
-  content: string;
-}
 export type AssistantRunEvent =
   | { type: 'run.started'; runId?: string }
   | { type: 'run.completed'; runId?: string }
@@ -60,15 +57,13 @@ export type AssistantRunEvent =
   | { type: 'tool_call.started'; toolCallId: string; name: string }
   | { type: 'tool_call.done'; toolCallId: string };
 
-export interface AssistantTransport {
-  /** Conversations of the note the transport was created for. */
-  listConversations(signal?: AbortSignal): Promise<AssistantConversation[]>;
-  createConversation(body: { title?: string }, signal?: AbortSignal): Promise<AssistantConversation>;
-  deleteConversation(conversationId: string, signal?: AbortSignal): Promise<void>;
+export interface AssistantConversationApi {
+  /** Conversations of the note the API was created for. */
+  listConversations(): Promise<AssistantConversation[]>;
+  createConversation(body: { title?: string }): Promise<AssistantConversation>;
+  deleteConversation(conversationId: string): Promise<void>;
   /** The latest page of history, or the page before `before` (a page cursor). */
-  getMessages(conversationId: string, before?: string, signal?: AbortSignal): Promise<AssistantMessagePage>;
-  /** Aborting stops local event consumption; it does not cancel a run already accepted by the server. */
-  openRun(conversationId: string, body: AssistantRunBody, signal: AbortSignal): AsyncIterable<AssistantRunEvent>;
+  getMessages(conversationId: string, before?: string): Promise<AssistantMessagePage>;
 }
 
 export class AssistantStreamError extends Error {

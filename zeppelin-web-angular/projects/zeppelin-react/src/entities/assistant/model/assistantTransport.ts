@@ -15,11 +15,11 @@ import {
   AssistantConnectionError,
   AssistantStreamError,
   type AssistantConversation,
+  type AssistantConversationApi,
   type AssistantMessage,
   type AssistantMessagePage,
   type AssistantRunEvent,
-  type AssistantToolCallRef,
-  type AssistantTransport
+  type AssistantToolCallRef
 } from './assistantContract';
 import { mergeAnswers } from './messageHistory';
 
@@ -171,13 +171,11 @@ const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler):
 
 const requestJson = async <T>(
   url: string,
-  init: { method?: string; body?: unknown; signal?: AbortSignal } = {},
+  init: { method?: string; body?: unknown } = {},
   onAuthError?: AssistantAuthErrorHandler
 ): Promise<T> => {
-  init.signal?.throwIfAborted();
   const response = await fetch(url, {
     method: init.method ?? 'GET',
-    ...(init.signal ? { signal: init.signal } : {}),
     credentials: 'include',
     headers:
       init.body === undefined
@@ -185,12 +183,10 @@ const requestJson = async <T>(
         : { ...requestHeaders, Accept: 'application/json', 'Content-Type': 'application/json' },
     body: init.body === undefined ? undefined : JSON.stringify(init.body)
   });
-  init.signal?.throwIfAborted();
   if (!response.ok) {
     throw httpError(response, onAuthError);
   }
   const text = await response.text();
-  init.signal?.throwIfAborted();
   return (text ? unwrapBody(JSON.parse(text)) : undefined) as T;
 };
 
@@ -219,6 +215,7 @@ interface RunSlot {
 /**
  * Sends one message over the host's notebook WebSocket and yields that conversation's events until a terminal one.
  * Until this message's run.started arrives, only a rejection (run.failed) belongs to it.
+ * Aborting stops local event consumption; it does not cancel a run already accepted by the server.
  */
 export async function* socketRun(
   socket: AssistantSocket,
@@ -295,15 +292,13 @@ type MessagePage = { messages: ConversationMessage[]; cursor?: string | null };
 const HISTORY_PAGE_SIZE = 50;
 
 /**
- * Transport for the per-note conversation API. REST for conversations and history (`apiBase` is the host's
- * REST base, e.g. `.../api`); sending goes over the host's notebook WebSocket.
+ * REST client for a note's conversations and history. `apiBase` is the host's REST base, e.g. `.../api`.
  */
-export const createAssistantTransport = (
+export const createAssistantConversationApi = (
   apiBase: string,
   noteId: string,
-  socket: AssistantSocket,
   onAuthError?: AssistantAuthErrorHandler
-): AssistantTransport => {
+): AssistantConversationApi => {
   const base = `${apiBase.replace(/\/$/, '')}/notes/${encodeURIComponent(noteId)}/conversations`;
   const toConversation = (conversation: ConversationSummary): AssistantConversation => {
     return {
@@ -316,129 +311,34 @@ export const createAssistantTransport = (
   };
   return {
     // Latest activity first, so the panel opens on it.
-    listConversations: async signal =>
-      (await collectionRequest<ConversationSummary[]>(base, { signal }, onAuthError))
+    listConversations: async () =>
+      (await collectionRequest<ConversationSummary[]>(base, {}, onAuthError))
         .map(conversation => ({
           conversation,
           time: Date.parse(conversation.updatedAt) || 0
         }))
         .sort((a, b) => b.time - a.time)
         .map(({ conversation }) => toConversation(conversation)),
-    createConversation: async ({ title } = {}, signal) =>
+    createConversation: async ({ title } = {}) =>
       toConversation(
         await collectionRequest<ConversationSummary>(
           base,
-          { method: 'POST', body: title === undefined ? {} : { title }, signal },
+          { method: 'POST', body: title === undefined ? {} : { title } },
           onAuthError
         )
       ),
-    deleteConversation: async (conversationId, signal) => {
-      await requestJson<void>(
-        `${base}/${encodeURIComponent(conversationId)}`,
-        { method: 'DELETE', signal },
-        onAuthError
-      );
+    deleteConversation: async conversationId => {
+      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE' }, onAuthError);
     },
-    getMessages: async (conversationId, before, signal): Promise<AssistantMessagePage> => {
+    getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
       const page = await requestJson<MessagePage>(
         `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
-        { signal },
+        {},
         onAuthError
       );
       // The server pages from the latest message backwards; the panel renders oldest to newest.
       return { messages: toVisibleMessages([...page.messages].reverse()), cursor: page.cursor ?? null };
-    },
-    openRun: (conversationId, body, signal) =>
-      socketRun(
-        socket,
-        {
-          noteId,
-          conversationId,
-          content: body.content
-        },
-        signal
-      )
-  };
-};
-
-/** A one-shot per-note scope. Reopening a note creates a new scope. */
-export const scopeTransport = (inner: AssistantTransport, sessionSignal?: AbortSignal) => {
-  const scope = new AbortController();
-  const stop = () => scope.abort();
-  if (sessionSignal?.aborted) stop();
-  else sessionSignal?.addEventListener('abort', stop, { once: true });
-  const assertActive = () => {
-    if (scope.signal.aborted) {
-      throw new DOMException('Notebook changed', 'AbortError');
-    }
-  };
-  const guarded = async <T>(request: (signal: AbortSignal) => Promise<T>, callerSignal?: AbortSignal): Promise<T> => {
-    assertActive();
-    const controller = callerSignal ? new AbortController() : undefined;
-    const abort = () => controller?.abort();
-    if (controller) {
-      scope.signal.addEventListener('abort', abort, { once: true });
-      callerSignal?.addEventListener('abort', abort, { once: true });
-      if (scope.signal.aborted || callerSignal?.aborted) abort();
-    }
-    const signal = controller?.signal ?? scope.signal;
-    try {
-      signal.throwIfAborted();
-      const result = await request(signal);
-      assertActive();
-      signal.throwIfAborted();
-      return result;
-    } catch (error) {
-      assertActive();
-      signal.throwIfAborted();
-      throw error;
-    } finally {
-      scope.signal.removeEventListener('abort', abort);
-      callerSignal?.removeEventListener('abort', abort);
-    }
-  };
-  const transport: AssistantTransport = {
-    listConversations: signal => guarded(requestSignal => inner.listConversations(requestSignal), signal),
-    createConversation: (body, signal) =>
-      guarded(requestSignal => inner.createConversation(body, requestSignal), signal),
-    deleteConversation: (id, signal) => guarded(requestSignal => inner.deleteConversation(id, requestSignal), signal),
-    getMessages: (id, before, signal) => guarded(requestSignal => inner.getMessages(id, before, requestSignal), signal),
-    async *openRun(id, body, signal) {
-      assertActive();
-      const controller = new AbortController();
-      const abort = () => controller.abort();
-      signal.addEventListener('abort', abort, { once: true });
-      scope.signal.addEventListener('abort', abort, { once: true });
-      if (signal.aborted) {
-        abort();
-      }
-      try {
-        for await (const event of inner.openRun(id, body, controller.signal)) {
-          assertActive();
-          if (controller.signal.aborted) {
-            throw new DOMException('Run stopped', 'AbortError');
-          }
-          yield event;
-        }
-      } catch (error) {
-        assertActive();
-        throw error;
-      } finally {
-        controller.abort();
-        signal.removeEventListener('abort', abort);
-        scope.signal.removeEventListener('abort', abort);
-      }
-    }
-  };
-  return {
-    get active() {
-      return !scope.signal.aborted;
-    },
-    transport,
-    deactivate() {
-      stop();
-      sessionSignal?.removeEventListener('abort', stop);
     }
   };
 };
