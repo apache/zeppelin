@@ -15,12 +15,21 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AssistantConversation } from '../model/assistantContract';
 import { ConversationHeader } from './ConversationHeader';
 
+const conversation = (title: string | undefined, canSendMessage = true): AssistantConversation => ({
+  id: 'a',
+  title,
+  ownerId: 'analyst',
+  canSendMessage,
+  updatedAt: '2026-10-15T11:00:00.000Z'
+});
+
 const noop = () => {};
 
 describe('ConversationHeader', () => {
   it('shows the selected conversation title', () => {
-    const conversation: AssistantConversation = { id: 'a', title: 'Explain revenue by region' };
-    render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={noop} />);
+    render(
+      <ConversationHeader conversation={conversation('Explain revenue by region')} onCreate={noop} onDelete={noop} />
+    );
     expect(screen.getByText('Explain revenue by region')).toBeTruthy();
   });
 
@@ -30,15 +39,31 @@ describe('ConversationHeader', () => {
   });
 
   it('offers no delete button for a read-only conversation', () => {
-    const conversation: AssistantConversation = { id: 'a', title: 'Shared', canSendMessage: false };
-    render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={noop} />);
+    render(<ConversationHeader conversation={conversation('Shared', false)} onCreate={noop} onDelete={noop} />);
     expect(screen.queryByRole('button', { name: 'Delete Shared' })).toBeNull();
+    expect(screen.getByText('Read-only')).toBeTruthy();
+  });
+
+  it('shows a fallback title for a missing or empty title', () => {
+    const { rerender } = render(
+      <ConversationHeader conversation={conversation(undefined)} onCreate={noop} onDelete={noop} />
+    );
+    expect(screen.getByText('Untitled conversation')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Delete Untitled conversation' })).toBeTruthy();
+    rerender(<ConversationHeader conversation={conversation('')} onCreate={noop} onDelete={noop} />);
+    expect(screen.getByText('Untitled conversation')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Delete Untitled conversation' })).toBeTruthy();
   });
 
   it('reports the deleted conversation id without asking for confirmation', () => {
     const onDelete = vi.fn();
-    const conversation: AssistantConversation = { id: 'a', title: 'Explain revenue by region' };
-    render(<ConversationHeader conversation={conversation} onCreate={noop} onDelete={onDelete} />);
+    render(
+      <ConversationHeader
+        conversation={conversation('Explain revenue by region')}
+        onCreate={noop}
+        onDelete={onDelete}
+      />
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Delete Explain revenue by region' }));
     expect(onDelete).toHaveBeenCalledWith('a');
   });

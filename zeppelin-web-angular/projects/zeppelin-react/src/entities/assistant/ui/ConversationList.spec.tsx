@@ -17,10 +17,21 @@ import { ConversationList } from './ConversationList';
 
 const NOW = new Date(2026, 9, 15, 12).getTime();
 
+const at = (day: number, hour: number, minute = 0, second = 0) =>
+  new Date(2026, 9, day, hour, minute, second).toISOString();
+
+const conversation = (id: string, title: string | undefined, updatedAt: string, canSendMessage = true) => ({
+  id,
+  title,
+  ownerId: 'analyst',
+  canSendMessage,
+  updatedAt
+});
+
 const conversations: AssistantConversation[] = [
-  { id: 'a', title: 'Explain revenue by region', updatedAt: new Date(2026, 9, 15, 11).toISOString() },
-  { id: 'b', title: 'Draft a query', updatedAt: new Date(2026, 9, 10, 9).toISOString() },
-  { id: 'c', title: 'Shared analysis', canSendMessage: false, updatedAt: new Date(2026, 9, 9, 9).toISOString() }
+  conversation('a', 'Explain revenue by region', at(15, 11)),
+  conversation('b', 'Draft a query', at(10, 9)),
+  conversation('c', 'Shared analysis', at(9, 9), false)
 ];
 
 const noop = () => {};
@@ -54,6 +65,21 @@ describe('ConversationList', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Search conversations' }), {
       target: { value: 'nothing matches this' }
     });
+    expect(screen.getByRole('status').textContent).toBe('No conversations match your search.');
+  });
+
+  it('shows the no-match message for an empty list passed while searching', () => {
+    render(
+      <ConversationList
+        conversations={[]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search conversations' }), { target: { value: 'query' } });
     expect(screen.getByRole('status').textContent).toBe('No conversations match your search.');
   });
 
@@ -120,8 +146,8 @@ describe('ConversationList', () => {
         now={NOW}
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: /^Explain revenue by region/ }));
-    expect(onSelect).toHaveBeenCalledWith('a');
+    fireEvent.click(screen.getByRole('button', { name: 'Draft a query' }));
+    expect(onSelect).toHaveBeenCalledWith('b');
   });
 
   it('reports the deleted conversation id without asking for confirmation', () => {
@@ -136,8 +162,56 @@ describe('ConversationList', () => {
         now={NOW}
       />
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Explain revenue by region' }));
-    expect(onDelete).toHaveBeenCalledWith('a');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Draft a query' }));
+    expect(onDelete).toHaveBeenCalledWith('b');
+  });
+
+  it('shows a fallback title for a missing or empty title', () => {
+    render(
+      <ConversationList
+        conversations={[conversation('x', undefined, at(10, 9)), conversation('y', '', at(10, 9))]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    expect(screen.getAllByRole('button', { name: 'Untitled conversation' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: 'Delete Untitled conversation' })).toHaveLength(2);
+  });
+
+  it('matches an untitled conversation by its fallback title', () => {
+    render(
+      <ConversationList
+        conversations={[...conversations, conversation('x', '', at(10, 9))]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search conversations' }), {
+      target: { value: 'untitled' }
+    });
+    expect(screen.getByRole('button', { name: 'Untitled conversation' })).toBeTruthy();
+    expect(screen.queryByText('Draft a query')).toBeNull();
+  });
+
+  it('marks a read-only conversation and no other', () => {
+    render(
+      <ConversationList
+        conversations={conversations}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    expect(within(screen.getByRole('button', { name: /^Shared analysis/ })).getByText('Read-only')).toBeTruthy();
+    expect(screen.getAllByText('Read-only')).toHaveLength(1);
   });
 
   it('offers no delete button for a read-only conversation', () => {
@@ -193,8 +267,8 @@ describe('ConversationList', () => {
     render(
       <ConversationList
         conversations={[
-          { id: 'x', title: 'After midnight', updatedAt: new Date(2026, 9, 15, 0, 1).toISOString() },
-          { id: 'y', title: 'Before midnight', updatedAt: new Date(2026, 9, 14, 23, 59).toISOString() }
+          conversation('x', 'After midnight', at(15, 0, 1)),
+          conversation('y', 'Before midnight', at(14, 23, 59))
         ]}
         onSelect={noop}
         onCreate={noop}
@@ -236,6 +310,26 @@ describe('ConversationList', () => {
     );
     expect(screen.getByText('1 hr. ago')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Draft a query' }).querySelector('time')).toBeNull();
+  });
+
+  it('formats a relative time as now, minutes, or hours', () => {
+    render(
+      <ConversationList
+        conversations={[
+          conversation('x', 'Seconds ago', at(15, 11, 59, 40)),
+          conversation('y', 'Minutes ago', at(15, 11, 55)),
+          conversation('z', 'Hours ago', at(15, 9))
+        ]}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    expect(screen.getByText('now')).toBeTruthy();
+    expect(screen.getByText('5 min. ago')).toBeTruthy();
+    expect(screen.getByText('3 hr. ago')).toBeTruthy();
   });
 
   it('drops section headings while searching', () => {

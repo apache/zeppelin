@@ -10,13 +10,13 @@
  * limitations under the License.
  */
 
-import * as styles from './ConversationList.css';
-
 import { useState } from 'react';
 import { DeleteOutlined, LockOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
 import { isSameDay } from 'date-fns';
 import type { AssistantConversation } from '../model/assistantContract';
+import { conversationTitle } from './conversationTitle';
+import * as styles from './ConversationList.css';
 
 const MINUTE = 60_000;
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'short' });
@@ -29,7 +29,7 @@ const formatRelative = (iso: string, now: number): string => {
 };
 
 const matchesSearch = (conversation: AssistantConversation, needle: string) =>
-  (conversation.title ?? '').toLowerCase().includes(needle);
+  conversationTitle(conversation).toLowerCase().includes(needle);
 
 export interface ConversationListProps {
   conversations: AssistantConversation[];
@@ -56,7 +56,7 @@ const ConversationRow = ({
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }) => {
-  const title = conversation.title;
+  const title = conversationTitle(conversation);
   const readOnly = conversation.canSendMessage === false;
   return (
     <li className={styles.row}>
@@ -148,7 +148,7 @@ export const ConversationList = ({
       </div>
       {shown.length === 0 ? (
         <p className={styles.empty} role="status">
-          {conversations.length === 0 ? 'No conversations yet.' : 'No conversations match your search.'}
+          {searching ? 'No conversations match your search.' : 'No conversations yet.'}
         </p>
       ) : (
         <>
