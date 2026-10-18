@@ -52,6 +52,7 @@ export const PAGES = {
     NOTEBOOK: 'src/app/pages/workspace/notebook/notebook.component',
     NOTEBOOK_ACTION_BAR: 'src/app/pages/workspace/notebook/action-bar/action-bar.component',
     NOTEBOOK_ADD_PARAGRAPH: 'src/app/pages/workspace/notebook/add-paragraph/add-paragraph.component',
+    NOTEBOOK_ASSISTANT: 'src/app/pages/workspace/notebook/assistant/assistant-host.component',
     NOTEBOOK_CORE_READ: 'src/app/pages/workspace/notebook/core-read/notebook-core-read.component',
     NOTEBOOK_INTERPRETER_BINDING: 'src/app/pages/workspace/notebook/interpreter-binding/interpreter-binding.component',
     NOTEBOOK_NOTE_FORM: 'src/app/pages/workspace/notebook/note-form-block/note-form-block.component',
