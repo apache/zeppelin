@@ -279,11 +279,13 @@ export async function* socketRun(
   }
 }
 
-type ConversationSummary = {
+type ConversationMetadataResponse = {
   id: string;
+  noteId: string;
   title?: string;
   ownerId: string;
   canSendMessage: boolean;
+  createdAt: string;
   updatedAt: string;
 };
 type MessagePage = { messages: ConversationMessage[]; cursor?: string | null };
@@ -300,7 +302,7 @@ export const createAssistantConversationApi = (
   onAuthError?: AssistantAuthErrorHandler
 ): AssistantConversationApi => {
   const base = `${apiBase.replace(/\/$/, '')}/notes/${encodeURIComponent(noteId)}/conversations`;
-  const toConversation = (conversation: ConversationSummary): AssistantConversation => {
+  const toAssistantConversation = (conversation: ConversationMetadataResponse): AssistantConversation => {
     return {
       id: conversation.id,
       title: conversation.title,
@@ -312,16 +314,16 @@ export const createAssistantConversationApi = (
   return {
     // Latest activity first, so the panel opens on it.
     listConversations: async () =>
-      (await collectionRequest<ConversationSummary[]>(base, {}, onAuthError))
+      (await collectionRequest<ConversationMetadataResponse[]>(base, {}, onAuthError))
         .map(conversation => ({
           conversation,
           time: Date.parse(conversation.updatedAt) || 0
         }))
         .sort((a, b) => b.time - a.time)
-        .map(({ conversation }) => toConversation(conversation)),
+        .map(({ conversation }) => toAssistantConversation(conversation)),
     createConversation: async ({ title } = {}) =>
-      toConversation(
-        await collectionRequest<ConversationSummary>(
+      toAssistantConversation(
+        await collectionRequest<ConversationMetadataResponse>(
           base,
           { method: 'POST', body: title === undefined ? {} : { title } },
           onAuthError

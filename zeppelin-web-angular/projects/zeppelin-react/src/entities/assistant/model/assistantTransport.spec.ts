@@ -113,6 +113,7 @@ describe('assistant transport', () => {
               id: 'conv-1',
               title: 'First',
               noteId: 'note/one',
+              createdAt: '2026-09-30T00:00:00Z',
               ownerId: 'alice',
               canSendMessage: false,
               updatedAt: '2026-10-01T00:00:00Z'
@@ -127,8 +128,10 @@ describe('assistant transport', () => {
             body: {
               id: 'conv-2',
               title: 'Load the data',
+              noteId: 'note/one',
               ownerId: 'bob',
               canSendMessage: true,
+              createdAt: '2026-10-02T00:00:00Z',
               updatedAt: '2026-10-02T00:00:00Z'
             }
           },
