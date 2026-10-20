@@ -125,3 +125,27 @@ test('lifecycle replay rejects a failed notebook request that validation accepts
   assert.deepEqual(validateLifecycleFixture(fixture), []);
   assert.throws(() => createLifecycleReplay(fixture), /does not support authentication captures/);
 });
+
+test('lifecycle validation requires a redirected request to name an earlier request of its session', () => {
+  const shape = { method: 'GET', url: '/api/login', headers: {}, bodyRaw: '' };
+  const fixture = redirectedFrom =>
+    createLifecycleFixture([
+      { kind: 'rest', sessionId: 'a', requestId: 'r1', rest: { direction: 'request', request: shape } },
+      {
+        kind: 'rest',
+        sessionId: 'a',
+        requestId: 'r1',
+        rest: { direction: 'failed', request: shape, failure: 'net::ERR_ABORTED' }
+      },
+      { kind: 'rest', sessionId: 'a', requestId: 'r2', redirectedFrom, rest: { direction: 'request', request: shape } },
+      {
+        kind: 'rest',
+        sessionId: 'a',
+        requestId: 'r2',
+        rest: { direction: 'failed', request: shape, failure: 'net::ERR_ABORTED' }
+      }
+    ]);
+
+  assert.deepEqual(validateLifecycleFixture(fixture('r1')), []);
+  assert.match(validateLifecycleFixture(fixture('r9')).join(), /redirectedFrom must name an earlier request/);
+});

@@ -298,7 +298,8 @@ Each WebSocket record requires exactly one of `payloadText` and `payloadBase64`.
 Wait for the scenario to finish before calling recorder `stop()` or `write()`.
 Both wait for already observed response-body reads. Failed or unfinished requests fail capture.
 A lifecycle recorder created with `{ authentication: true }` also records `/api/security/ticket`, `/api/login` and
-`/api/login/logout`, records each redirect hop as its own request with its `location` and no body, and records a
+`/api/login/logout`, records each redirect hop as its own request with its `location` and no body, names the request a
+hop was redirected from in `redirectedFrom`, and records a
 failed sign-in request as a `failed` record with the browser's error text. A failed notebook request still fails capture.
 Lifecycle replay rejects a capture that contains these sign-in requests, a `failed` record or a `location` header.
 A snapshot taken before successful stop can contain gaps and is not a complete replay fixture.

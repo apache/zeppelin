@@ -31,7 +31,7 @@ export type LifecycleRecord = SessionRecord &
   (
     | { kind: 'connection'; event: 'open' | 'close'; connectionId: string }
     | { kind: 'context'; context: RouteContext }
-    | { kind: 'rest'; requestId: string; rest: FixtureRest }
+    | { kind: 'rest'; requestId: string; redirectedFrom?: string; rest: FixtureRest }
     | {
         kind: 'websocket';
         connectionId: string;

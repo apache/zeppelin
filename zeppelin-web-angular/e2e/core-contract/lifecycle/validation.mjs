@@ -87,6 +87,13 @@ function validateLifecycleRest(errors, prefix, record, state) {
       errors.push(`${prefix}: duplicate REST request`);
     }
 
+    if (
+      record.redirectedFrom !== undefined &&
+      !state.seenRequests.has(`${record.sessionId}:${record.redirectedFrom}`)
+    ) {
+      errors.push(`${prefix}: redirectedFrom must name an earlier request`);
+    }
+
     state.seenRequests.add(requestId);
     state.requests.set(requestId, rest.request);
   } else if (rest?.direction === 'response' || rest?.direction === 'failed') {

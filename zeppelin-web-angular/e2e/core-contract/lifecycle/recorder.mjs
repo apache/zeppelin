@@ -67,6 +67,7 @@ async function settleRestResponse(request, outstandingRequests, authentication) 
 function observeRest(page, session, authentication) {
   const { id: sessionId, outstandingRequests } = session;
   const requests = new Map();
+  const requestIds = new WeakMap();
   let requestNumber = 0;
   const sent = fromEvent(page, 'request').pipe(
     filter(
@@ -75,13 +76,16 @@ function observeRest(page, session, authentication) {
     ),
     map(request => {
       const requestId = `${sessionId}:request:${++requestNumber}`;
+      const redirectedFrom = authentication && requestIds.get(request.redirectedFrom?.());
       requests.set(request, requestId);
+      requestIds.set(request, requestId);
       outstandingRequests.add(request);
       return {
         entry: {
           kind: 'rest',
           sessionId,
           requestId,
+          ...(redirectedFrom ? { redirectedFrom } : {}),
           rest: { direction: 'request', request: captureRestRequest(request) }
         }
       };

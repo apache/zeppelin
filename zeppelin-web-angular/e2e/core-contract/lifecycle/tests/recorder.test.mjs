@@ -440,3 +440,57 @@ test('lifecycle replay rejects a notebook redirect that keeps its Location', asy
   assert.deepEqual(validateLifecycleFixture(capture), []);
   assert.throws(() => createLifecycleReplay(capture), /does not support authentication captures/);
 });
+
+test('the authentication option links each redirect hop to its own source when chains overlap', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const redirect = source => async () => response(source, 302, '', { location: '/api/login' });
+  const ticket = request('GET', 'http://fixture.test/api/security/ticket');
+  ticket.response = redirect(ticket);
+  const logout = request('POST', 'http://fixture.test/api/login/logout');
+  logout.response = redirect(logout);
+  const fromLogout = Object.assign(request('GET', 'http://fixture.test/api/login'), { redirectedFrom: () => logout });
+  fromLogout.response = async () => response(fromLogout, 405, '');
+  const fromTicket = Object.assign(request('GET', 'http://fixture.test/api/login'), { redirectedFrom: () => ticket });
+  fromTicket.response = async () => response(fromTicket, 405, '');
+
+  page.emit('request', ticket);
+  page.emit('requestfinished', ticket);
+  page.emit('request', logout);
+  page.emit('request', fromLogout);
+  page.emit('request', fromTicket);
+  for (const source of [fromTicket, logout, fromLogout]) page.emit('requestfinished', source);
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  const requests = capture.records.filter(record => record.rest.direction === 'request');
+  const id = url => requests.filter(record => record.rest.request.url === url).map(record => record.requestId);
+  assert.deepEqual(
+    requests.filter(record => record.redirectedFrom).map(record => record.redirectedFrom),
+    [...id('/api/login/logout'), ...id('/api/security/ticket')]
+  );
+});
+
+test('without the authentication option, a redirected request is recorded without its source', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+
+  const first = request('GET', 'http://fixture.test/api/notebook');
+  first.response = async () => response(first, 200, '{}');
+  const second = Object.assign(request('GET', 'http://fixture.test/api/notebook/n'), { redirectedFrom: () => first });
+  second.response = async () => response(second, 200, '{}');
+  for (const source of [first, second]) {
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+  }
+  await recorder.stop();
+
+  assert.equal(
+    recorder.snapshot().records.some(record => 'redirectedFrom' in record),
+    false
+  );
+});
