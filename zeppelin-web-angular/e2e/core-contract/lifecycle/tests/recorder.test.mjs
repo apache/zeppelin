@@ -17,8 +17,8 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
-import { createLifecycleRecorder, validateLifecycleFixture } from '../fixture.mjs';
-import { fixtureMetadata, request } from '../../transport/doubles.mjs';
+import { createLifecycleRecorder, createLifecycleReplay, validateLifecycleFixture } from '../fixture.mjs';
+import { fixtureMetadata, request, response } from '../../transport/doubles.mjs';
 
 test('capture preserves reconnect generations and redacts identities without inventing noteId', async () => {
   const page = new EventEmitter();
@@ -247,4 +247,196 @@ test('recorder settles independent sessions while preserving their shared observ
     capture.records.filter(record => record.rest.direction === 'response').map(record => record.rest.bodyJson),
     [{ viewer: 'a' }, { viewer: 'b' }]
   );
+});
+
+test('without the authentication option, sign-in requests are not recorded and a failed request fails the capture', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+
+  const ticket = request('GET', 'http://fixture.test/api/security/ticket');
+  ticket.response = async () => response(ticket, 200, '{}');
+  page.emit('request', ticket);
+  page.emit('requestfinished', ticket);
+
+  const list = request('GET', 'http://fixture.test/api/notebook');
+  list.response = async () => response(list, 200, '{}', { 'content-type': 'application/json', location: '/api/login' });
+  page.emit('request', list);
+  page.emit('requestfinished', list);
+
+  const note = request('GET', 'http://fixture.test/api/notebook/n');
+  note.failure = () => ({ errorText: 'net::ERR_ABORTED' });
+  page.emit('request', note);
+  page.emit('requestfailed', note);
+
+  await assert.rejects(recorder.stop(), /failed during capture/);
+  const records = recorder.snapshot().records;
+  assert.equal(
+    records.some(record => record.rest?.request.url === '/api/security/ticket'),
+    false
+  );
+  assert.deepEqual(records.find(record => record.rest?.direction === 'response').rest.headers, {
+    'content-type': 'application/json'
+  });
+});
+
+test('the authentication option records a sign-in redirect with its Location path and no credentials', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const ticket = request('GET', 'http://fixture.test/api/security/ticket', '', {
+    accept: 'application/json',
+    authorization: 'Basic private-credential',
+    cookie: 'JSESSIONID=private-session'
+  });
+  ticket.response = async () =>
+    response(
+      ticket,
+      302,
+      () => {
+        throw new Error('redirect body read');
+      },
+      {
+        location: 'http://127.0.0.1:18080/api/login;jsessionid=private-session?ticket=private-ticket',
+        'set-cookie': 'JSESSIONID=private-session'
+      }
+    );
+  const login = request('GET', 'http://fixture.test/api/login');
+  login.response = async () => response(login, 405, '');
+
+  for (const source of [ticket, login]) {
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+  }
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  const responses = capture.records.filter(record => record.rest.direction === 'response');
+  assert.deepEqual(
+    responses.map(record => [record.rest.request.url, record.rest.status, record.rest.headers.location]),
+    [
+      ['/api/security/ticket', 302, '/api/login'],
+      ['/api/login', 405, undefined]
+    ]
+  );
+  assert.equal(responses[0].rest.bodyRaw, '');
+  assert.deepEqual(Object.keys(responses[0].rest.headers), ['location']);
+  assert.deepEqual(Object.keys(responses[0].rest.request.headers), ['accept']);
+  assert.equal(JSON.stringify(capture).includes('private-'), false);
+  assert.throws(() => createLifecycleReplay(capture), /does not support authentication captures/);
+});
+
+test('the authentication option records an aborted request as failed instead of failing the capture', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const login = request('GET', 'http://fixture.test/api/login');
+  login.failure = () => ({ errorText: 'net::ERR_ABORTED' });
+  page.emit('request', login);
+  page.emit('requestfailed', login);
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  assert.deepEqual(
+    capture.records.map(record => [record.rest.direction, record.rest.request.url, record.rest.failure]),
+    [
+      ['request', '/api/login', undefined],
+      ['failed', '/api/login', 'net::ERR_ABORTED']
+    ]
+  );
+  assert.throws(() => createLifecycleReplay(capture), /does not support authentication captures/);
+});
+
+test('without the authentication option, a redirect still fails the capture as before', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata());
+  recorder.install(page, 'a');
+
+  const note = request('GET', 'http://fixture.test/api/notebook/n');
+  note.response = async () =>
+    response(
+      note,
+      302,
+      () => {
+        throw new Error('Response body is unavailable for redirect responses');
+      },
+      { location: '/api/login' }
+    );
+  page.emit('request', note);
+  page.emit('requestfinished', note);
+
+  await assert.rejects(recorder.stop(), /unavailable for redirect/);
+});
+
+test('the authentication option drops an unparseable Location and strips path parameters from each segment', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  for (const [url, location] of [
+    ['http://fixture.test/api/notebook', 'http://[bad'],
+    ['http://fixture.test/api/notebook/n', '/api/a;jsessionid=private-session/b?ticket=private-ticket']
+  ]) {
+    const source = request('GET', url);
+    source.response = async () => response(source, 302, '', { location });
+    page.emit('request', source);
+    page.emit('requestfinished', source);
+  }
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(
+    capture.records.filter(record => record.rest.direction === 'response').map(record => record.rest.headers),
+    [{}, { location: '/api/a/b' }]
+  );
+  assert.equal(JSON.stringify(capture).includes('private-'), false);
+});
+
+test('lifecycle replay rejects an authentication capture even when sign-in succeeds without a redirect', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const ticket = request('GET', 'http://fixture.test/api/security/ticket');
+  ticket.response = async () => response(ticket, 200, '{}');
+  page.emit('request', ticket);
+  page.emit('requestfinished', ticket);
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  assert.throws(() => createLifecycleReplay(capture), /does not support authentication captures/);
+});
+
+test('the authentication option still fails the capture when a notebook request fails', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const note = request('PUT', 'http://fixture.test/api/notebook/n/permissions');
+  note.failure = () => ({ errorText: 'net::ERR_ABORTED' });
+  page.emit('request', note);
+  page.emit('requestfailed', note);
+
+  await assert.rejects(recorder.stop(), /failed during capture/);
+});
+
+test('lifecycle replay rejects a notebook redirect that keeps its Location', async () => {
+  const page = new EventEmitter();
+  const recorder = createLifecycleRecorder(fixtureMetadata(), { authentication: true });
+  recorder.install(page, 'a');
+
+  const note = request('GET', 'http://fixture.test/api/notebook');
+  note.response = async () => response(note, 302, '', { location: '/api/login' });
+  page.emit('request', note);
+  page.emit('requestfinished', note);
+  await recorder.stop();
+
+  const capture = recorder.snapshot();
+  assert.deepEqual(validateLifecycleFixture(capture), []);
+  assert.throws(() => createLifecycleReplay(capture), /does not support authentication captures/);
 });

@@ -284,7 +284,9 @@ Envelope `msgId` values receive distinct placeholders that preserve repeated ref
 Replay binds these placeholders to runtime IDs and preserves equality across viewers.
 Legacy fixtures with the erased `<msgId>` value require recapture.
 
-Only `accept` and `content-type` headers survive filtering. Redirect and authentication headers are outside this contract.
+Only `accept`, `content-type` and `location` headers survive filtering in both formats.
+`location` keeps only its path without host, query or path parameters, and an unparseable value is dropped.
+Cookie and authorization headers are never recorded.
 JSON strings, including notebook text, are not generally scanned for secrets.
 Text scanning applies to URLs, raw bodies, and non-JSON frames, and cannot detect every credential form.
 Use only the isolated server and synthetic notebook content. Review captures before committing them.
@@ -295,6 +297,10 @@ Each WebSocket record requires exactly one of `payloadText` and `payloadBase64`.
 
 Wait for the scenario to finish before calling recorder `stop()` or `write()`.
 Both wait for already observed response-body reads. Failed or unfinished requests fail capture.
+A lifecycle recorder created with `{ authentication: true }` also records `/api/security/ticket`, `/api/login` and
+`/api/login/logout`, records each redirect hop as its own request with its `location` and no body, and records a
+failed sign-in request as a `failed` record with the browser's error text. A failed notebook request still fails capture.
+Lifecycle replay rejects a capture that contains these sign-in requests, a `failed` record or a `location` header.
 A snapshot taken before successful stop can contain gaps and is not a complete replay fixture.
 
 These fixtures replay complete REST bodies, not HTTP chunks, header availability, or application callback timing.

@@ -96,3 +96,32 @@ test('validation rejects missing metadata, erased correlation and lost REST requ
     /preserve request shape/
   );
 });
+
+test('lifecycle validation requires the browser error text of a failed REST request', () => {
+  const shape = { method: 'GET', url: '/api/login', headers: {}, bodyRaw: '' };
+  const fixture = failure =>
+    createLifecycleFixture([
+      { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
+      { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'failed', request: shape, failure } }
+    ]);
+
+  assert.deepEqual(validateLifecycleFixture(fixture('net::ERR_ABORTED')), []);
+  assert.match(validateLifecycleFixture(fixture(undefined)).join(), /failure is required/);
+  assert.match(validateLifecycleFixture(fixture('')).join(), /failure is required/);
+});
+
+test('lifecycle replay rejects a failed notebook request that validation accepts', () => {
+  const shape = { method: 'GET', url: '/api/notebook', headers: {}, bodyRaw: '' };
+  const fixture = createLifecycleFixture([
+    { kind: 'rest', sessionId: 'a', requestId: 'r', rest: { direction: 'request', request: shape } },
+    {
+      kind: 'rest',
+      sessionId: 'a',
+      requestId: 'r',
+      rest: { direction: 'failed', request: shape, failure: 'net::ERR_ABORTED' }
+    }
+  ]);
+
+  assert.deepEqual(validateLifecycleFixture(fixture), []);
+  assert.throws(() => createLifecycleReplay(fixture), /does not support authentication captures/);
+});

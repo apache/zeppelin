@@ -118,5 +118,8 @@ export interface LifecycleReplay {
 
 export declare const lifecycleFixtureVersion: number;
 export declare function validateLifecycleFixture(fixture: unknown): string[];
-export declare function createLifecycleRecorder(metadata: LifecycleMetadata): LifecycleRecorder;
+export declare function createLifecycleRecorder(
+  metadata: LifecycleMetadata,
+  options?: { authentication?: boolean }
+): LifecycleRecorder;
 export declare function createLifecycleReplay(fixture: LifecycleFixture, faults?: LifecycleFault[]): LifecycleReplay;

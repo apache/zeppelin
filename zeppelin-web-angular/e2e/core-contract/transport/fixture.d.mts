@@ -29,6 +29,7 @@ export interface FixtureRest {
   bodyJson?: unknown;
   bodyRaw?: string;
   direction: string;
+  failure?: string;
   headers?: Record<string, string>;
   request: FixtureRestRequest;
   status?: number;
@@ -113,7 +114,12 @@ export declare function sanitizeFixture(fixture: TransportFixture): TransportFix
 export declare function validateFixture(fixture: unknown): string[];
 export declare function validateReplayFixture(fixture: unknown): string[];
 export declare function validateFixtureMetadata(errors: string[], metadata: unknown): void;
-export declare function validateRestRecord(errors: string[], prefix: string, record: unknown): void;
+export declare function validateRestRecord(
+  errors: string[],
+  prefix: string,
+  record: unknown,
+  options?: { allowFailed?: boolean }
+): void;
 export declare function validateWebSocketRecord(errors: string[], prefix: string, record: unknown): void;
 export declare function summarizeRequest(request: FixtureRequestLike): FixtureRestRequest;
 export declare function captureRestRequest(request: FixtureRequestLike): FixtureRestRequest;

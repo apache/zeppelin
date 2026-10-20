@@ -43,28 +43,36 @@ import {
 } from '../transport/fixture.mjs';
 import { validateLifecycleFixture, lifecycleFixtureVersion } from './validation.mjs';
 
-async function settleRestResponse(request, outstandingRequests) {
+const authRestPaths = new Set(['/api/security/ticket', '/api/login', '/api/login/logout']);
+
+async function settleRestResponse(request, outstandingRequests, authentication) {
   const response = await request.response();
   const headers = Object.fromEntries(
-    Object.entries(response.headers()).filter(([name]) => ['accept', 'content-type'].includes(name.toLowerCase()))
+    Object.entries(response.headers()).filter(([name]) =>
+      ['accept', 'content-type', ...(authentication ? ['location'] : [])].includes(name.toLowerCase())
+    )
   );
+  const status = response.status();
   const rest = {
     direction: 'response',
     request: captureRestRequest(request),
-    status: response.status(),
+    status,
     headers,
-    ...parseRestBody(await response.text(), headers)
+    ...parseRestBody(authentication && status >= 300 && status < 400 ? '' : await response.text(), headers)
   };
   outstandingRequests.delete(request);
   return rest;
 }
 
-function observeRest(page, session) {
+function observeRest(page, session, authentication) {
   const { id: sessionId, outstandingRequests } = session;
   const requests = new Map();
   let requestNumber = 0;
   const sent = fromEvent(page, 'request').pipe(
-    filter(request => isNotebookRestUrl(request.url())),
+    filter(
+      request =>
+        isNotebookRestUrl(request.url()) || (authentication && authRestPaths.has(new URL(request.url()).pathname))
+    ),
     map(request => {
       const requestId = `${sessionId}:request:${++requestNumber}`;
       requests.set(request, requestId);
@@ -87,15 +95,32 @@ function observeRest(page, session) {
       requests.delete(request);
       return {
         entry: { kind: 'rest', sessionId, requestId },
-        readBody: () => settleRestResponse(request, outstandingRequests)
+        readBody: () => settleRestResponse(request, outstandingRequests, authentication)
       };
     })
   );
 
   const failed = fromEvent(page, 'requestfailed').pipe(
     filter(request => requests.has(request)),
-    map(() => {
-      throw new Error('Notebook REST request failed during capture');
+    map(request => {
+      if (!authRestPaths.has(new URL(request.url()).pathname)) {
+        throw new Error('Notebook REST request failed during capture');
+      }
+      const requestId = requests.get(request);
+      requests.delete(request);
+      outstandingRequests.delete(request);
+      return {
+        entry: {
+          kind: 'rest',
+          sessionId,
+          requestId,
+          rest: {
+            direction: 'failed',
+            request: captureRestRequest(request),
+            failure: request.failure()?.errorText
+          }
+        }
+      };
     })
   );
 
@@ -138,13 +163,13 @@ function observeSocket(socket, session, connectionId) {
   );
 }
 
-function observePage(page, session) {
+function observePage(page, session, authentication) {
   let connectionNumber = 0;
   const sockets = fromEvent(page, 'websocket').pipe(
     filter(socket => new URL(socket.url()).pathname === '/ws'),
     mergeMap(socket => observeSocket(socket, session, `${session.id}:socket:${++connectionNumber}`))
   );
-  return merge(observeRest(page, session), sockets).pipe(catchError(error => of({ error })));
+  return merge(observeRest(page, session, authentication), sockets).pipe(catchError(error => of({ error })));
 }
 
 function settleObservation({ entry, readBody, error }, index) {
@@ -206,17 +231,17 @@ class LifecycleRecorder {
   #captureState = { records: [], failure: undefined };
   #settled;
 
-  constructor(metadata) {
+  constructor(metadata, { authentication = false } = {}) {
     const errors = [];
     validateFixtureMetadata(errors, metadata);
     if (errors.length) throw new Error(errors.join('\n'));
     this.#metadata = metadata;
-    this.#settled = this.#capture();
+    this.#settled = this.#capture(authentication);
   }
 
-  #capture() {
+  #capture(authentication) {
     const observations$ = merge(
-      this.#installations$.pipe(mergeMap(({ page, session }) => observePage(page, session))),
+      this.#installations$.pipe(mergeMap(({ page, session }) => observePage(page, session, authentication))),
       this.#explicit$
     );
 
@@ -341,6 +366,6 @@ class LifecycleRecorder {
   }
 }
 
-export function createLifecycleRecorder(metadata) {
-  return new LifecycleRecorder(metadata);
+export function createLifecycleRecorder(metadata, options) {
+  return new LifecycleRecorder(metadata, options);
 }
