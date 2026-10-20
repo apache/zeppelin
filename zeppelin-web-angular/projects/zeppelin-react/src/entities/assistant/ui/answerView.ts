@@ -40,5 +40,5 @@ export type AssistantAnswerView =
       tools?: AssistantToolActivity[];
     };
 
-/** Renders an answer body. Plain text until the Markdown answer component is wired in. */
+/** Renders an answer body. Defaults to `MarkdownAnswer`; a parent can pass one that resolves paragraph references. */
 export type AssistantContentRenderer = (content: string) => ReactNode;

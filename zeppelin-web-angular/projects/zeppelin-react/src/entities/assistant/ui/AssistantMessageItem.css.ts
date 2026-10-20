@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { keyframes, style } from '@vanilla-extract/css';
+import { globalStyle, keyframes, style } from '@vanilla-extract/css';
 import { enter, vars } from '@/shared/ui/assistant-theme/AssistantScope.css';
 
 export const message = style({
@@ -73,13 +73,21 @@ const blink = keyframes({
   '50%': { opacity: 0 }
 });
 
-/** Trails the partial answer while it streams. */
-export const caret = style({
-  display: 'inline-block',
-  width: 2,
-  height: '1em',
-  marginLeft: 2,
-  verticalAlign: 'text-bottom',
-  background: vars.accent,
-  animation: `${blink} 1s steps(1) infinite`
-});
+/**
+ * Trails the partial answer while it streams. The renderer wraps the answer in blocks, so the caret goes inside the
+ * last block (or the last item of a closing list) to stay on the line where the text ends.
+ */
+globalStyle(
+  `${body}[data-streaming] > :last-child > :last-child::after, ${body}[data-streaming] > :last-child > :is(ul, ol):last-child > li:last-child::after`,
+  {
+    content: '""',
+    display: 'inline-block',
+    width: 2,
+    height: '1em',
+    marginLeft: 2,
+    verticalAlign: 'text-bottom',
+    background: vars.accent,
+    animation: `${blink} 1s steps(1) infinite`
+  }
+);
+globalStyle(`${body}[data-streaming] > :last-child > :is(ul, ol):last-child::after`, { content: 'none' });

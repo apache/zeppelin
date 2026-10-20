@@ -14,8 +14,9 @@ import type { ReactNode } from 'react';
 import type { AssistantMessage } from '../model/assistantContract';
 import type { AssistantContentRenderer } from './answerView';
 import * as styles from './AssistantMessageItem.css';
+import { MarkdownAnswer } from './MarkdownAnswer';
 
-const renderPlainText: AssistantContentRenderer = content => <div className={styles.plainText}>{content}</div>;
+const renderMarkdown: AssistantContentRenderer = content => <MarkdownAnswer content={content} />;
 
 export interface AssistantMessageItemProps {
   role: AssistantMessage['role'];
@@ -31,7 +32,7 @@ export const AssistantMessageItem = ({
   role,
   content,
   streaming = false,
-  renderContent = renderPlainText,
+  renderContent = renderMarkdown,
   children
 }: AssistantMessageItemProps) => {
   if (role === 'user') {
@@ -56,9 +57,8 @@ export const AssistantMessageItem = ({
         <span>Assistant</span>
       </header>
       {content && (
-        <div className={styles.body}>
+        <div className={styles.body} data-streaming={streaming || undefined}>
           {renderContent(content)}
-          {streaming && <span className={styles.caret} aria-hidden="true" />}
         </div>
       )}
       {children}

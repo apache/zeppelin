@@ -129,7 +129,7 @@ describe('AssistantAnswer', () => {
       />
     );
 
-    expect(answer().textContent).toContain('First finding\n\nSecond finding');
+    expect(Array.from(answer().querySelectorAll('p'), p => p.textContent)).toEqual(['First finding', 'Second finding']);
     expect(screen.getByText('Used 2 tools')).toBeTruthy();
     expect(screen.getAllByRole('listitem').map(item => item.textContent)).toEqual(['list_paragraphs', 'read_results']);
   });

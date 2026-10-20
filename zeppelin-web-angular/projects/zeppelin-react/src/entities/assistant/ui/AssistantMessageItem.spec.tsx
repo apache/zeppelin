@@ -32,4 +32,11 @@ describe('AssistantMessageItem', () => {
     expect(question.textContent).toContain('<b>not bold</b>');
     expect(question.querySelector('b')).toBeNull();
   });
+
+  it('renders an answer as Markdown by default', () => {
+    render(<AssistantMessageItem role="assistant" content={'Revenue is **grouped** by `region`.'} />);
+    const answer = screen.getByRole('article', { name: 'Assistant answer' });
+    expect(answer.querySelector('strong')?.textContent).toBe('grouped');
+    expect(answer.querySelector('code')?.textContent).toBe('region');
+  });
 });
