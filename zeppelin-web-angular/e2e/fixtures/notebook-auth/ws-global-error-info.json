@@ -1,0 +1,133 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "A reload of a missing note answered by an unattributed ERROR_INFO",
+    "coveredOperations": ["RELOAD_NOTE", "ERROR_INFO"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:06:26.149Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    }
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "owner",
+      "requestId": "owner:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "owner",
+      "requestId": "owner:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "owner",
+      "connectionId": "owner:socket:1",
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "owner",
+      "connectionId": "owner:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "owner",
+      "connectionId": "owner:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"RELOAD_NOTE\",\"msgId\":\"<msgId:2>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\",\"data\":{\"id\":\"AUTH_CAPTURE_MISSING\"}}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "owner",
+      "connectionId": "owner:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "owner",
+      "connectionId": "owner:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"ERROR_INFO\",\"data\":{\"info\":\"HTTP 404 Not Found\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    }
+  ],
+  "sessions": [
+    {
+      "id": "owner"
+    }
+  ]
+}

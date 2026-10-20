@@ -1,0 +1,203 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "A read that succeeds after an unrelated global error, a missing read and a denied read",
+    "coveredOperations": ["RELOAD_NOTE", "GET_NOTE", "NOTE", "ERROR_INFO", "AUTH_INFO"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:06:32.649Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    }
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "reader",
+      "requestId": "reader:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "reader",
+      "requestId": "reader:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_NOTES\",\"msgId\":\"<msgId:1>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTES_INFO\",\"data\":{\"notes\":[{\"id\":\"2N875RZJ3\",\"path\":\"/AuthCapture/ws-read-correlation-1792490792570\"}]},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"RELOAD_NOTE\",\"msgId\":\"<msgId:2>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\",\"data\":{\"id\":\"AUTH_CAPTURE_MISSING\"}}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:3>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\",\"data\":{\"id\":\"2N875RZJ3\"}}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"ERROR_INFO\",\"data\":{\"info\":\"HTTP 404 Not Found\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md synthetic\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1792490792575_622811048\",\"id\":\"paragraph_1792490792575_622811048\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"ws-read-correlation-1792490792570\",\"id\":\"2N875RZJ3\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/AuthCapture/ws-read-correlation-1792490792570\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:3>\"}"
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:4>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\",\"data\":{\"id\":\"AUTH_CAPTURE_MISSING\"}}"
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"ERROR_INFO\",\"data\":{\"info\":\"HTTP 404 Not Found\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:4>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:5>\",\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\",\"data\":{\"id\":\"2N65CVCZS\"}}"
+      },
+      "sequence": 13
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "reader",
+      "connectionId": "reader:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"AUTH_INFO\",\"data\":{\"info\":\"Insufficient privileges to READER note.\\nAllowed users or roles: [<user>]\\nBut the user <user> belongs to: [<user>, role3]\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:5>\"}"
+      },
+      "sequence": 14
+    }
+  ],
+  "sessions": [
+    {
+      "id": "reader"
+    }
+  ]
+}

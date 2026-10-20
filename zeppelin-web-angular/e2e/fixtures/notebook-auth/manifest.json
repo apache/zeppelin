@@ -1,0 +1,65 @@
+{
+  "fixtures": [
+    {
+      "file": "acl-write-anonymous.json",
+      "operations": ["PUT /api/notebook/{noteId}/permissions"],
+      "status": "supported"
+    },
+    {
+      "file": "acl-write-role-owner.json",
+      "operations": ["PUT /api/notebook/{noteId}/permissions"],
+      "status": "supported"
+    },
+    {
+      "file": "acl-write-unauthenticated.json",
+      "operations": ["PUT /api/notebook/{noteId}/permissions", "PUT /api/login"],
+      "status": "supported"
+    },
+    {
+      "file": "acl-write.json",
+      "operations": ["PUT /api/notebook/{noteId}/permissions"],
+      "status": "supported"
+    },
+    {
+      "file": "http-session-expired.json",
+      "operations": ["GET /api/security/ticket", "GET /api/login", "POST /api/login/logout", "GET_NOTE", "NOTE"],
+      "status": "supported"
+    },
+    {
+      "file": "rest-401-logout.json",
+      "operations": ["POST /api/login/logout"],
+      "status": "supported"
+    },
+    {
+      "file": "rest-401-with-location.json",
+      "operations": ["REST 401 Location"],
+      "status": "skipped",
+      "reason": "This server never answers REST with 401 and a Location header; that needs an SSO realm such as Knox"
+    },
+    {
+      "file": "session-expiry-server-restart.json",
+      "operations": ["POST /api/login", "GET_NOTE", "SESSION_LOGOUT"],
+      "status": "supported"
+    },
+    {
+      "file": "ws-global-auth-info.json",
+      "operations": ["COMMIT_PARAGRAPH", "AUTH_INFO", "GET_NOTE", "NOTE"],
+      "status": "supported"
+    },
+    {
+      "file": "ws-global-error-info.json",
+      "operations": ["RELOAD_NOTE", "ERROR_INFO"],
+      "status": "supported"
+    },
+    {
+      "file": "ws-read-correlation.json",
+      "operations": ["RELOAD_NOTE", "GET_NOTE", "NOTE", "ERROR_INFO", "AUTH_INFO"],
+      "status": "supported"
+    },
+    {
+      "file": "ws-session-logout.json",
+      "operations": ["POST /api/login", "POST /api/login/logout", "GET_NOTE", "SESSION_LOGOUT"],
+      "status": "supported"
+    }
+  ]
+}

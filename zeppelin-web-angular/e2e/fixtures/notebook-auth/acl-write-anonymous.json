@@ -1,0 +1,91 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "A permission write in anonymous mode",
+    "coveredOperations": ["PUT /api/notebook/{noteId}/permissions"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "anonymous",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configuredInterpreterGroups": ["md"],
+      "configurationSource": "configuration-api-and-capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:19:55.931Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    }
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "anonymous",
+      "requestId": "anonymous:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N69TM9W5/permissions",
+          "bodyJson": {
+            "owners": [],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "anonymous",
+      "requestId": "anonymous:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N69TM9W5/permissions",
+          "bodyJson": {
+            "owners": [],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK"
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "anonymous"
+    }
+  ]
+}

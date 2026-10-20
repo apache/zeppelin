@@ -1,0 +1,145 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Permission writes by the owner account and a non-owner account",
+    "coveredOperations": ["PUT /api/notebook/{noteId}/permissions"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:06:22.926Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    }
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "owner",
+      "requestId": "owner:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N5SU2KJ8/permissions",
+          "bodyJson": {
+            "owners": ["<owners>"],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "owner",
+      "requestId": "owner:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N5SU2KJ8/permissions",
+          "bodyJson": {
+            "owners": ["<owners>"],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK"
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "non-owner",
+      "requestId": "non-owner:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N5SU2KJ8/permissions",
+          "bodyJson": {
+            "owners": ["<owners>"],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        }
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "rest",
+      "sessionId": "non-owner",
+      "requestId": "non-owner:request:1",
+      "sequence": 4,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/json"
+          },
+          "method": "PUT",
+          "url": "/api/notebook/2N5SU2KJ8/permissions",
+          "bodyJson": {
+            "owners": ["<owners>"],
+            "readers": [],
+            "writers": [],
+            "runners": []
+          }
+        },
+        "status": 403,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "FORBIDDEN",
+          "message": "Insufficient privileges to change permissions.\n\nAllowed owners: [<user>]\n\nUser belongs to: [<user>, role3]"
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "owner"
+    },
+    {
+      "id": "non-owner"
+    }
+  ]
+}
