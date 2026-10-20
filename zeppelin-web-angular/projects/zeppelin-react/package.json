@@ -72,7 +72,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.33.1",
     "unified": "11.0.5",
-    "vite": "8.2.1",
+    "vite": "8.3.4",
     "vitest": "4.1.11",
     "webpack": "5.105.4",
     "webpack-cli": "5.1.4",
