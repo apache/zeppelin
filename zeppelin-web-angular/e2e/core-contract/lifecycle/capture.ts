@@ -18,10 +18,13 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { expect, type Page, type BrowserContext, type TestInfo } from '@playwright/test';
 import { LoginTestUtil } from '../../models/login-page.util';
-import type { LifecycleRecorder } from './fixture.mjs';
+import { validateLifecycleFixture, type LifecycleFixture, type LifecycleRecorder } from './fixture.mjs';
 
 export const lifecycleFixtureDirectory = () =>
   process.env.ZEPPELIN_LIFECYCLE_FIXTURE_DIR ?? path.resolve('e2e/fixtures/notebook-lifecycle');
+
+export const notebookAuthFixtureDirectory = () =>
+  process.env.ZEPPELIN_AUTH_FIXTURE_DIR ?? path.resolve('e2e/fixtures/notebook-auth');
 
 const metadata = (scenario: string, operations: string[]) => ({
   owner: 'zeppelin-web-angular',
@@ -118,8 +121,11 @@ export const captureMetadata = async (page: Page, scenario: string, operations: 
   };
 };
 
-export const recordCaptureResult = (info: TestInfo, entry: { file: string; operations: string[] }) => {
-  const directory = lifecycleFixtureDirectory();
+export const recordCaptureResult = (
+  info: TestInfo,
+  entry: { file: string; operations: string[] },
+  directory = lifecycleFixtureDirectory()
+) => {
   const file = path.join(directory, 'manifest.json');
   mkdirSync(directory, { recursive: true });
 
@@ -164,4 +170,19 @@ export const cleanUpLifecycleCapture = async (
       `Lifecycle capture cleanup failed: ${failures.map(result => String(result.reason)).join('; ')}`
     );
   }
+};
+
+/**
+ * The recorder redacts principals by field name, but AUTH_INFO names the allowed and denied users in
+ * its free text, so the account names are replaced there too.
+ */
+export const writeWithoutAccountNames = (fixture: LifecycleFixture, names: string[], file: string) => {
+  let text = JSON.stringify(fixture, null, 2);
+  for (const name of names) {
+    text = text.replace(new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), '<user>');
+  }
+  const redacted = JSON.parse(text) as LifecycleFixture;
+  expect(validateLifecycleFixture(redacted)).toEqual([]);
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, `${text}\n`);
 };
