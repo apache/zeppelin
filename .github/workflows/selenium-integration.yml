@@ -16,7 +16,13 @@
 name: Selenium integration
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      python-lock-artifact:
+        description: Same-run artifact containing the candidate pixi.lock
+        type: string
+        required: false
+        default: ''
 
 env:
   # Disable keepAlive and pool
@@ -75,6 +81,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: Install Environment
         run: |
           pixi run --locked -e py39 ./mvnw clean install -DskipTests -am -pl zeppelin-integration -Pweb-classic -Pintegration -Pspark-scala-2.12 -Pspark-3.5 -Pweb-dist ${MAVEN_ARGS}

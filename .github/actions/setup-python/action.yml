@@ -23,9 +23,23 @@ inputs:
   environment:
     description: Named Pixi environment to install
     required: true
+  lock-artifact:
+    description: Optional same-run artifact containing the candidate pixi.lock
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
+    - name: Download candidate Python lock
+      if: ${{ inputs.lock-artifact != '' }}
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ inputs.lock-artifact }}
+        path: ${{ runner.temp }}/python-lock-candidate
+    - name: Use candidate Python lock
+      if: ${{ inputs.lock-artifact != '' }}
+      shell: bash
+      run: cp -- "$RUNNER_TEMP/python-lock-candidate/pixi.lock" "$GITHUB_WORKSPACE/pixi.lock"
     - name: Install locked Python environment
       uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
       with:
@@ -34,6 +48,6 @@ runs:
         environments: ${{ inputs.environment }}
         locked: true
         activate-environment: false
-        cache: true
+        cache: ${{ inputs.lock-artifact == '' }}
         cache-key: python-${{ inputs.environment }}-
-        cache-write: ${{ github.repository == 'apache/zeppelin' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        cache-write: ${{ inputs.lock-artifact == '' && github.repository == 'apache/zeppelin' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}

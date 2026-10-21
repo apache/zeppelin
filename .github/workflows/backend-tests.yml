@@ -16,7 +16,13 @@
 name: Backend tests
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      python-lock-artifact:
+        description: Same-run artifact containing the candidate pixi.lock
+        type: string
+        required: false
+        default: ''
 
 env:
   # Disable keepAlive and pool
@@ -82,6 +88,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install application with some interpreter
         run: pixi run --locked -e py39 ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
       - name: install and test plugins
@@ -124,6 +131,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39-tensorflow
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: pixi run --locked -e py39-tensorflow ./mvnw install -DskipTests -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
       - name: verify interpreter
@@ -163,6 +171,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: |
           pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -pl python,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
@@ -206,6 +215,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: |
           pixi run --locked -e py39 ./mvnw install -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-1.20 ${MAVEN_ARGS}
@@ -256,6 +266,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment for flink
         run: |
           pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink-profile }} -Pintegration ${MAVEN_ARGS}
@@ -299,6 +310,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: |
           pixi run --locked -e py39 ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Pweb-classic -Pintegration ${MAVEN_ARGS}
@@ -340,6 +352,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am ${MAVEN_ARGS}
       - name: run spark-3.3 tests with scala-2.12 and ${{ matrix.environment }}
@@ -405,6 +418,7 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
       - name: install environment
         run: |
           pixi run --locked -e py39 ./mvnw install -DskipTests -pl livy -am ${MAVEN_ARGS}
