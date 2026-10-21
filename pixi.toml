@@ -1,0 +1,91 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[workspace]
+name = "zeppelin-ci"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[feature.py39.dependencies]
+python = "3.9.*"
+
+# Dependencies shared by the existing notebook/interpreter CI environments.
+# Version-specific constraints belong in separate features, not global defaults.
+[feature.notebook.dependencies]
+pycodestyle = "*"
+scipy = "*"
+grpcio = "*"
+pandasql = "*"
+ipython = "*"
+ipython_genutils = "*"
+ipykernel = "*"
+hvplot = "*"
+plotnine = "*"
+seaborn = "*"
+intake = "*"
+intake-parquet = "*"
+intake-xarray = "*"
+altair = "*"
+vega_datasets = "*"
+plotly = "*"
+pip = "*"
+
+# Compatibility bounds for the existing notebook stack, not future Python
+# versions. New backend environments can reuse notebook without inheriting them.
+[feature.notebook-legacy.dependencies]
+protobuf = "<4"
+sqlalchemy = "==1.4.46"
+# Pandas 2.2 requires SQLAlchemy 2; the legacy pandasql stack uses 1.4.
+pandas = "<2.2"
+jupyter_client = "5.*"
+holoviews = "1.16.*"
+bokeh = "2.4.*"
+jinja2 = "==3.0.3"
+
+[feature.legacy-numpy.dependencies]
+numpy = "==1.19.5"
+# This NumPy baseline selects plotnine 0.10.x, which imports multitype_sort.
+# mizani 0.10 removed that API without an upper bound in plotnine's metadata.
+mizani = "<0.10"
+
+[feature.tensorflow.dependencies]
+tensorflow = "*"
+
+# PyFlink requires NumPy >=1.22.4; Beam 2.48 requires NumPy <1.25,
+# PyArrow <12 and cloudpickle 2.2.x. Express their bounds on the Conda side
+# as well: Pixi resolves Conda before PyPI instead of letting pip replace it.
+[feature.flink.dependencies]
+numpy = ">=1.22.4,<1.25"
+pyarrow = ">=5,<12"
+pandas = ">=1.3"
+protobuf = ">=3.20.3,<4"
+cloudpickle = ">=2.2.1,<2.3"
+
+[feature.flink119.pypi-dependencies]
+apache-flink = "==1.19.3"
+
+# Keep PyFlink 1.20's additional bounds visible to Conda's first-stage solver.
+[feature.flink120.dependencies]
+pandas = ">=1.3,<2.3"
+setuptools = ">=75.3,<82"
+
+[feature.flink120.pypi-dependencies]
+apache-flink = "==1.20.4"
+
+[environments]
+py39 = { features = ["py39", "notebook", "notebook-legacy", "legacy-numpy"], no-default-feature = true }
+py39-tensorflow = { features = ["py39", "notebook", "notebook-legacy", "legacy-numpy", "tensorflow"], no-default-feature = true }
+py39-flink119 = { features = ["py39", "notebook", "notebook-legacy", "flink", "flink119"], no-default-feature = true }
+py39-flink120 = { features = ["py39", "notebook", "notebook-legacy", "flink", "flink120"], no-default-feature = true }
