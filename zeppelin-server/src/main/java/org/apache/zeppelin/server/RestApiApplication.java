@@ -28,7 +28,6 @@ import org.apache.zeppelin.rest.AssistantMessageRestApi;
 import org.apache.zeppelin.rest.AdminRestApi;
 import org.apache.zeppelin.rest.ConfigurationsRestApi;
 import org.apache.zeppelin.rest.CredentialRestApi;
-import org.apache.zeppelin.rest.HeliumRestApi;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.LoginRestApi;
 import org.apache.zeppelin.rest.NotebookRepoRestApi;
@@ -50,7 +49,6 @@ public class RestApiApplication extends Application {
     s.add(AdminRestApi.class);
     s.add(ConfigurationsRestApi.class);
     s.add(CredentialRestApi.class);
-    s.add(HeliumRestApi.class);
     s.add(InterpreterRestApi.class);
     s.add(LoginRestApi.class);
     s.add(NotebookRepoRestApi.class);

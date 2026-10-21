@@ -70,8 +70,6 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.eventbus.EventBus;
 import org.apache.zeppelin.eventbus.NoteRemovedEvent;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -125,7 +123,6 @@ import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_A
 @ServerEndpoint(value = "/ws")
 public class NotebookServer implements AngularObjectRegistryListener,
     RemoteInterpreterProcessListener,
-    ApplicationEventListener,
     ParagraphJobListener,
     NoteEventListener,
     AutoCloseable {
@@ -510,9 +507,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
           break;
         case RUN_PARAGRAPH:
           runParagraph(conn, context, receivedMessage);
-          break;
-        case PARAGRAPH_EXECUTED_BY_SPELL:
-          broadcastSpellExecution(conn, context, receivedMessage);
           break;
         case RUN_ALL_PARAGRAPHS:
           runAllParagraphs(conn, context, receivedMessage);
@@ -1703,23 +1697,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     });
   }
 
-  private void broadcastSpellExecution(NotebookSocket conn,
-                                       ServiceContext context,
-                                       Message fromMessage) throws IOException {
-
-    String noteId = connectionManager.getAssociatedNoteId(conn);
-    getNotebookService().spell(noteId, fromMessage,
-        context, new WebSocketServiceCallback<Paragraph>(conn) {
-          @Override
-          public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
-            super.onSuccess(p, context);
-            // broadcast to other clients only
-            connectionManager.broadcastExcept(p.getNote().getId(),
-                new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
-          }
-        });
-  }
-
   private void runParagraph(NotebookSocket conn,
                             ServiceContext context,
                             Message fromMessage) throws IOException {
@@ -1991,50 +1968,6 @@ public class NotebookServer implements AngularObjectRegistryListener,
     } catch (IOException e) {
       LOGGER.warn("Fail to call onParagraphOutputClear", e);
     }
-  }
-
-  /**
-   * When application append output.
-   */
-  @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String appId,
-                             String output) {
-    Message msg =
-        new Message(OP.APP_APPEND_OUTPUT).put("noteId", noteId).put("paragraphId", paragraphId)
-            .put("index", index).put("appId", appId).put("data", output);
-    connectionManager.broadcast(noteId, msg);
-  }
-
-  /**
-   * When application update output.
-   */
-  @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index, String appId,
-                              InterpreterResult.Type type, String output) {
-    Message msg =
-        new Message(OP.APP_UPDATE_OUTPUT)
-            .put("noteId", noteId)
-            .put("paragraphId", paragraphId)
-            .put("index", index)
-            .put("type", type)
-            .put("appId", appId)
-            .put("data", output);
-    connectionManager.broadcast(noteId, msg);
-  }
-
-  @Override
-  public void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg) {
-    Message msg = new Message(OP.APP_LOAD).put("noteId", noteId).put("paragraphId", paragraphId)
-        .put("appId", appId).put("pkg", pkg);
-    connectionManager.broadcast(noteId, msg);
-  }
-
-  @Override
-  public void onStatusChange(String noteId, String paragraphId, String appId, String status) {
-    Message msg =
-        new Message(OP.APP_STATUS_CHANGE).put("noteId", noteId).put("paragraphId", paragraphId)
-            .put("appId", appId).put("status", status);
-    connectionManager.broadcast(noteId, msg);
   }
 
   @Override

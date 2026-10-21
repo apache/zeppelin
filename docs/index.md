@@ -83,7 +83,6 @@ limitations under the License.
   * [Notebook Repository API](./usage/rest_api/notebook_repository.html)
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
-  * [Helium API](./usage/rest_api/helium.html)
 * Zeppelin SDK: Java API of Zeppelin Client
   * [Client API](./usage/zeppelin_sdk/client_api.html)
   * [Session API](./usage/zeppelin_sdk/session_api.html)
@@ -115,18 +114,12 @@ limitations under the License.
 * Operation 
   * [Configuration](./setup/operation/configuration.html): lists for Apache Zeppelin
   * [Monitoring](./setup/operation/monitoring.html): monitoring instructions for Apache Zeppelin
-  * [Proxy Setting](./setup/operation/proxy_setting.html)
   * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
   * [Trouble Shooting](./setup/operation/trouble_shooting.html)
 
 #### Developer Guide
 * Extending Zeppelin
   * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
-  * [Helium: Overview](./development/helium/overview.html)
-  * [Helium: Writing Application](./development/helium/writing_application.html)
-  * [Helium: Writing Spell](./development/helium/writing_spell.html)
-  * [Helium: Writing Visualization: Basic](./development/helium/writing_visualization_basic.html)
-  * [Helium: Writing Visualization: Transformation](./development/helium/writing_visualization_transformation.html)
 * Contributing to Zeppelin
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
   * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)

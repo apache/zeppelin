@@ -163,34 +163,6 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
-    paragraphExecutedBySpell: function(paragraphId, paragraphTitle,
-                                        paragraphText, paragraphResultsMsg,
-                                        paragraphStatus, paragraphErrorMessage,
-                                        paragraphConfig, paragraphParams,
-                                        paragraphDateStarted, paragraphDateFinished) {
-      websocketEvents.sendNewEvent({
-        op: 'PARAGRAPH_EXECUTED_BY_SPELL',
-        data: {
-          id: paragraphId,
-          title: paragraphTitle,
-          paragraph: paragraphText,
-          results: {
-            code: paragraphStatus,
-            msg: paragraphResultsMsg.map((dataWithType) => {
-              let serializedData = dataWithType.data;
-              return {type: dataWithType.type, data: serializedData};
-            }),
-          },
-          status: paragraphStatus,
-          errorMessage: paragraphErrorMessage,
-          config: paragraphConfig,
-          params: paragraphParams,
-          dateStarted: paragraphDateStarted,
-          dateFinished: paragraphDateFinished,
-        },
-      });
-    },
-
     runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
       // short circuit update paragraph status for immediate visual feedback without waiting for server response
       $rootScope.$broadcast('updateStatus', {
