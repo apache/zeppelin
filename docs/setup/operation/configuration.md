@@ -380,25 +380,7 @@ Sources descending by priority:
     <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
     <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
     <td>local-repo</td>
-    <td>Local repository for dependency loader.<br>ex)visualiztion modules of npm.</td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_HELIUM_NODE_INSTALLER_URL</h6></td>
-    <td><h6 class="properties">zeppelin.helium.node.installer.url</h6></td>
-    <td>https://nodejs.org/dist/</td>
-    <td>Remote Node installer url for Helium dependency loader</td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_HELIUM_NPM_INSTALLER_URL</h6></td>
-    <td><h6 class="properties">zeppelin.helium.npm.installer.url</h6></td>
-    <td>http://registry.npmjs.org/</td>
-    <td>Remote Npm installer url for Helium dependency loader</td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL</h6></td>
-    <td><h6 class="properties">zeppelin.helium.yarnpkg.installer.url</h6></td>
-    <td>https://github.com/yarnpkg/yarn/releases/download/</td>
-    <td>Remote Yarn package installer url for Helium dependency loader</td>
+    <td>Local repository for interpreter dependencies.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE</h6></td>

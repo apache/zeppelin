@@ -18,7 +18,6 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -42,8 +41,7 @@ class ShellIntegrationTest extends AbstractTestRestApi {
     zepServer = new MiniZeppelinServer(ShellIntegrationTest.class.getSimpleName());
     zepServer.addInterpreter("sh");
     zepServer.copyBinDir();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
   }
 

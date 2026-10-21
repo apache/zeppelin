@@ -162,8 +162,8 @@ export interface ParagraphItem {
   config: ParagraphConfig;
   settings: ParagraphSettings;
   results?: ParagraphResults;
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  apps: any[];
+  // Legacy application metadata is preserved as opaque notebook data.
+  apps?: unknown[];
   progressUpdateIntervalMs: number;
   progress: number;
   jobName: string;
@@ -327,25 +327,6 @@ export interface PatchParagraphSend {
 
 export interface ParagraphRemoved {
   id: string;
-}
-
-export interface ParagraphExecutedBySpell {
-  id: string;
-  title: string;
-  paragraph: string;
-  results: {
-    code: string;
-    msg: Array<{
-      type: string;
-      serializedData: string;
-    }>;
-  };
-  status: string;
-  errorMessage: string;
-  config: ParagraphConfig;
-  params: DynamicFormParams;
-  dateStarted: string;
-  dateFinished: string;
 }
 
 export type VisualizationMode =

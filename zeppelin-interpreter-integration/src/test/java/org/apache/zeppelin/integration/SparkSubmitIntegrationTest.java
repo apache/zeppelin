@@ -27,7 +27,6 @@ import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -73,8 +72,7 @@ public class SparkSubmitIntegrationTest {
     zepServer.addInterpreter("sh");
     zepServer.addInterpreter("spark-submit");
     zepServer.copyBinDir();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
     interpreterSettingManager = zepServer.getService(InterpreterSettingManager.class);
     interpreterFactory = zepServer.getService(InterpreterFactory.class);

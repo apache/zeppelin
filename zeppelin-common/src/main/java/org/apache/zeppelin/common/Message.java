@@ -168,10 +168,6 @@ public class Message implements JsonSerializable {
                                   // @param noteId
                                   // @param revisionId
                                   // @param position
-    APP_APPEND_OUTPUT,            // [s-c] append output
-    APP_UPDATE_OUTPUT,            // [s-c] update (replace) output
-    APP_LOAD,                     // [s-c] on app load
-    APP_STATUS_CHANGE,            // [s-c] on app status change
 
     LIST_NOTE_JOBS,               // [c-s] get note job management information
     LIST_UPDATE_NOTE_JOBS,        // [s-c] update job management information
@@ -193,8 +189,6 @@ public class Message implements JsonSerializable {
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
     CANCEL_ALL_PARAGRAPHS,        // [c-s] cancel(abort) all paragraphs
-    PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
-    RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
     REMOVE_NOTE_FORMS,            // remove note forms
@@ -213,7 +207,6 @@ public class Message implements JsonSerializable {
       .unmodifiableSet(new HashSet<>(Arrays.asList(
           OP.COMMIT_PARAGRAPH,
           OP.RUN_PARAGRAPH,
-          OP.RUN_PARAGRAPH_USING_SPELL,
           OP.RUN_ALL_PARAGRAPHS,
           OP.PARAGRAPH_CLEAR_OUTPUT,
           OP.PARAGRAPH_CLEAR_ALL_OUTPUT,

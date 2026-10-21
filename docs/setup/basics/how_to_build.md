@@ -126,11 +126,6 @@ Hadoop version can be adjusted by `-Dhadoop.version=x.x.x`
 enable 3rd party vendor repository (Cloudera, Hortonworks)
 
 
-#### -Pexamples (optional)
-
-Build examples under zeppelin-examples directory
-
-
 ### Build command examples
 Here are some examples with several options:
 
