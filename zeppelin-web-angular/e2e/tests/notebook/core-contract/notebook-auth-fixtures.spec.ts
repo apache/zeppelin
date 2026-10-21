@@ -499,6 +499,7 @@ test.describe('Notebook authentication and permission fixtures', () => {
     expect(await send(second.page, 'POST', '/api/login', form, true)).toBe(200);
     expect(await send(second.page, 'POST', '/api/login/logout')).toBe(401);
     const dropped = await viewer.view.send('GET_NOTE', { id: noteId });
+    // JUSTIFIED: a dropped command has no reply to wait for, so only a quiet period shows it was dropped.
     await viewer.page.waitForTimeout(3000);
     expect((await viewer.view.receivedFrames(dropped)).filter(frame => frame.op !== 'PING')).toEqual([]);
     expect(await send(second.page, 'POST', '/api/login', form, true)).toBe(200);
@@ -564,6 +565,7 @@ test.describe('Notebook authentication and permission fixtures', () => {
     await reconnectTransport(viewer.view);
     await socketOpen(viewer.view);
     const dropped = await viewer.view.send('GET_NOTE', { id: noteId });
+    // JUSTIFIED: a dropped command has no reply to wait for, so only a quiet period shows it was dropped.
     await viewer.page.waitForTimeout(3000);
     expect((await viewer.view.receivedFrames(dropped)).filter(frame => frame.op !== 'PING')).toEqual([]);
     const form = `userName=${encodeURIComponent(roleMember.username)}&password=${encodeURIComponent(roleMember.password)}`;
