@@ -81,7 +81,13 @@ export const AssistantComposer = ({
           <small id={hintId} className={styles.hint}>
             Shift + Enter for a new line
           </small>
-          <Button type="primary" htmlType="submit" icon={<ArrowUpOutlined />} loading={sending} disabled={!canSubmit}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<ArrowUpOutlined aria-hidden="true" />}
+            loading={sending}
+            disabled={!canSubmit}
+          >
             Send
           </Button>
         </div>

@@ -10,7 +10,8 @@
  * limitations under the License.
  */
 
-import { DeleteOutlined, LockOutlined, PlusOutlined } from '@ant-design/icons';
+import type { Ref } from 'react';
+import { DeleteOutlined, LockOutlined, PlusOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import type { AssistantConversation } from '../model/assistantContract';
@@ -20,14 +21,36 @@ import * as styles from './ConversationHeader.css';
 export interface ConversationHeaderProps {
   conversation?: AssistantConversation;
   onCreate: () => void;
+  /** Disables only the New conversation action. */
+  newDisabled?: boolean;
   onDelete: (conversationId: string) => void;
+  onOpenList?: () => void;
+  listTriggerRef?: Ref<HTMLButtonElement>;
 }
 
-export const ConversationHeader = ({ conversation, onCreate, onDelete }: ConversationHeaderProps) => {
+export const ConversationHeader = ({
+  conversation,
+  onCreate,
+  newDisabled,
+  onDelete,
+  onOpenList,
+  listTriggerRef
+}: ConversationHeaderProps) => {
   const title = conversation ? conversationTitle(conversation) : 'No conversation selected';
   const readOnly = conversation?.canSendMessage === false;
   return (
     <header className={styles.header}>
+      {onOpenList && (
+        <button
+          ref={listTriggerRef}
+          type="button"
+          className={styles.listTrigger}
+          aria-label="Open conversations"
+          onClick={onOpenList}
+        >
+          <UnorderedListOutlined aria-hidden="true" />
+        </button>
+      )}
       {readOnly && (
         <>
           <LockOutlined className={styles.lock} aria-hidden="true" />
@@ -35,7 +58,14 @@ export const ConversationHeader = ({ conversation, onCreate, onDelete }: Convers
         </>
       )}
       <span className={styles.title}>{title}</span>
-      <Button size="small" type="text" icon={<PlusOutlined />} aria-label="New conversation" onClick={onCreate} />
+      <Button
+        size="small"
+        type="text"
+        icon={<PlusOutlined />}
+        aria-label="New conversation"
+        disabled={newDisabled}
+        onClick={onCreate}
+      />
       {conversation && !readOnly && (
         <Button
           size="small"

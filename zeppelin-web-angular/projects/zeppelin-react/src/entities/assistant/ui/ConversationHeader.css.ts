@@ -33,3 +33,20 @@ export const lock = style({
   marginRight: vars.space1,
   color: vars.textTertiary
 });
+
+export const listTrigger = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 32,
+  height: 32,
+  border: 0,
+  borderRadius: vars.radiusSm,
+  background: 'transparent',
+  color: vars.text,
+  cursor: 'pointer',
+  selectors: {
+    '&:hover': { background: vars.fill }
+  }
+});
