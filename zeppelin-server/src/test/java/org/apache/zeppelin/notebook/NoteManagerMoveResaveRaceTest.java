@@ -37,7 +37,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepoWithGetGate;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -47,25 +46,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Reproduction test for ZEPPELIN-5858. {@link NoteManager#moveNote} only re-saves a note (to
- * refresh the {@code path} field baked into its JSON) when the move changes the note's leaf
- * name, and it re-saves using the destination path that was passed into that specific
- * {@code moveNote} call, captured before the (possibly slow) reload from {@link NotebookRepo}.
- * If a second {@code moveNote} call for the same note (with the same leaf name, so it takes no
- * re-save path of its own) completes while the first call is still reloading the note, the
- * first call resumes and saves the note back at its own, now-stale destination path -- leaving
- * behind two {@code .zpln} files for the same noteId.
+ * Regression test for ZEPPELIN-5858 and ZEPPELIN-6595. {@link NoteManager#moveNote} used to
+ * reload and re-save a note after a rename so that the {@code name} field in its JSON matched
+ * the new leaf name. That reload could race with a concurrent move and leave two {@code .zpln}
+ * files for the same noteId. Since ZEPPELIN-6595 the leaf name is derived from the note tree
+ * on reload, so {@code moveNote} no longer reloads or re-saves at all.
  *
- * <p>The scenario is pinned deterministically with {@link VFSNotebookRepoWithGetGate}, which
- * parks the reloading {@code get()} call after it has read the note from disk, and with the
- * note cache threshold lowered to 1 (evicting the target note via a filler note) so the reload
- * actually happens.
+ * <p>{@link VFSNotebookRepoWithGetGate} detects any {@code get()} call made by
+ * {@code moveNote}, and the note cache threshold is lowered to 1 (evicting the target note via
+ * a filler note) so that such a call would have to go to the repo.
  */
 class NoteManagerMoveResaveRaceTest {
 
   private static final String DEFAULT_INTERPRETER_GROUP = "test";
   private static final long JOIN_TIMEOUT_MILLIS = 30_000L;
-  private static final long GATE_ARRIVAL_TIMEOUT_SECONDS = 30L;
 
   private File notebookDir;
   private Notebook notebook;
@@ -113,75 +107,56 @@ class NoteManagerMoveResaveRaceTest {
   }
 
   /**
-   * Given a note evicted from the (threshold=1) note cache, when a second, unrelated-looking
-   * {@code moveNote} call (same leaf name, so no re-save of its own) runs to completion while
-   * the first {@code moveNote} call's re-save is still reloading the note from the repo, then
-   * the first call must not resurrect a {@code .zpln} file at its own, now-stale destination.
+   * Given a note evicted from the (threshold=1) note cache, when it is renamed (leaf name
+   * changes) and then moved again, then {@code moveNote} must not reload the note from the
+   * repo, exactly one {@code .zpln} file remains, and a reload reports the latest path.
    */
   @Test
-  void testConcurrentMoveNoteResaveRace() throws Exception {
+  void testRenameDoesNotReloadOrResave() throws Exception {
     String noteId = notebook.createNote(
         "/folder_0/note", DEFAULT_INTERPRETER_GROUP, AuthenticationInfo.ANONYMOUS, true);
 
-    // A filler note pushes the target note out of the (threshold=1) cache, forcing the re-save
-    // path in moveNote to reload it from the repo.
+    // A filler note pushes the target note out of the (threshold=1) cache, so any reload by
+    // moveNote would have to go through the gated get() call.
     notebook.createNote(
         "/filler", DEFAULT_INTERPRETER_GROUP, AuthenticationInfo.ANONYMOUS, true);
     assertEquals(1, noteManager.getCacheSize(),
-        "creating the filler note should have evicted the target note from the cache; "
-            + "the race scenario depends on a cache miss during moveNote's re-save");
+        "creating the filler note should have evicted the target note from the cache");
 
     notebookRepo.armGate();
 
-    List<Throwable> thread1Errors = Collections.synchronizedList(new ArrayList<>());
-    List<Throwable> thread2Errors = Collections.synchronizedList(new ArrayList<>());
-
-    // Thread 1: rename note -> renamed. Leaf name changes, so moveNote reloads (cache miss)
-    // and parks inside the gated get() call, having already read the (still current) note
-    // path from disk.
-    Thread thread1 = new Thread(() -> {
+    List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+    // Run the moves on a separate thread so that a regression that reloads inside moveNote
+    // parks in the gate instead of blocking the test thread.
+    Thread mover = new Thread(() -> {
       try {
+        // Leaf name changes: this used to trigger the reload and re-save.
         notebook.moveNote(noteId, "/folder_1/renamed", AuthenticationInfo.ANONYMOUS);
-      } catch (Throwable t) {
-        thread1Errors.add(t);
-      }
-    }, "move-note-race-thread-1");
-    thread1.start();
-
-    assertTrue(
-        notebookRepo.awaitArrival(GATE_ARRIVAL_TIMEOUT_SECONDS, TimeUnit.SECONDS),
-        "Thread 1's gated get() call never arrived. The scenario did not pin as expected: "
-            + "either the target note was not evicted from the cache, or moveNote's re-save "
-            + "path was not entered.");
-
-    // Thread 2: rename renamed -> renamed (different folder, same leaf name), while thread 1
-    // is parked. Leaf name is unchanged, so this move takes no re-save path of its own and
-    // runs to completion using only the (fast) synchronized block in moveNote.
-    Thread thread2 = new Thread(() -> {
-      try {
+        // Folder changes, leaf name stays the same.
         notebook.moveNote(noteId, "/folder_2/renamed", AuthenticationInfo.ANONYMOUS);
       } catch (Throwable t) {
-        thread2Errors.add(t);
+        errors.add(t);
       }
-    }, "move-note-race-thread-2");
-    thread2.start();
-    thread2.join(JOIN_TIMEOUT_MILLIS);
-    assertFalse(thread2.isAlive(), "Thread 2's moveNote did not finish within the timeout");
+    }, "move-note-thread");
+    mover.start();
+    mover.join(JOIN_TIMEOUT_MILLIS);
 
-    // Only now let thread 1 resume: it will save the reloaded note back at its own, stale
-    // destination path ("/folder_1/renamed"), even though thread 2 already moved the note to
-    // "/folder_2/renamed".
+    boolean reloaded = notebookRepo.awaitArrival(0, TimeUnit.SECONDS);
+    // Let a parked get() (if any) and later reloads pass through.
     notebookRepo.release();
-    thread1.join(JOIN_TIMEOUT_MILLIS);
-    assertFalse(thread1.isAlive(), "Thread 1's moveNote did not finish within the timeout");
+    mover.join(JOIN_TIMEOUT_MILLIS);
 
-    assertTrue(thread1Errors.isEmpty(), () -> "Thread 1 threw: " + thread1Errors);
-    assertTrue(thread2Errors.isEmpty(), () -> "Thread 2 threw: " + thread2Errors);
+    assertFalse(reloaded, "moveNote must not reload the note from the repo after a rename");
+    assertFalse(mover.isAlive(), "moveNote did not finish within the timeout");
+    assertTrue(errors.isEmpty(), () -> "moveNote threw: " + errors);
 
     List<String> zplnFilesForNote = findZplnFilesForNote(noteId);
     assertEquals(1, zplnFilesForNote.size(),
         () -> "Expected exactly one .zpln file for note " + noteId + ", but found: "
             + zplnFilesForNote);
+
+    assertEquals("/folder_2/renamed",
+        noteManager.processNote(noteId, true, note -> note.getPath()));
   }
 
   private List<String> findZplnFilesForNote(String noteId) throws IOException {
