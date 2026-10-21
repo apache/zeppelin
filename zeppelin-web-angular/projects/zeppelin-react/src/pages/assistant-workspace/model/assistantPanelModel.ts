@@ -19,6 +19,7 @@ export class AssistantPanelModel {
   private conversations: AssistantConversation[] = [];
   private listLoading = true;
   private listError?: string;
+  private deletionError?: string;
 
   private selectedKey = 'draft:0';
   private draftKey: string | undefined = 'draft:0';
@@ -30,6 +31,7 @@ export class AssistantPanelModel {
   private readonly listeners = new Set<() => void>();
   private active = false;
   private generation = 0;
+  private listVersion = 0;
   private snapshot: AssistantPanel;
 
   constructor(private readonly source: AssistantDataSource) {
@@ -57,6 +59,7 @@ export class AssistantPanelModel {
     this.conversations = [];
     this.listLoading = true;
     this.listError = undefined;
+    this.deletionError = undefined;
     this.selectedKey = 'draft:0';
     this.draftKey = 'draft:0';
     this.draftSequence = 0;
@@ -68,16 +71,20 @@ export class AssistantPanelModel {
   }
 
   private async loadList(generation: number): Promise<void> {
+    const version = ++this.listVersion;
     try {
       const conversations = await this.source.api.listConversations();
-      if (!this.active || this.generation !== generation) return;
+      if (!this.active || this.generation !== generation || this.listVersion !== version) return;
 
       const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
       const ids = new Set(visible.map(conversation => conversation.id));
-      this.conversations = [...this.conversations.filter(conversation => !ids.has(conversation.id)), ...visible];
+      this.conversations = [...this.conversations.filter(conversation => !ids.has(conversation.id)), ...visible].sort(
+        (a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0)
+      );
       this.listLoading = false;
+      this.listError = undefined;
     } catch (error) {
-      if (!this.active || this.generation !== generation) return;
+      if (!this.active || this.generation !== generation || this.listVersion !== version) return;
 
       this.listLoading = false;
       this.listError = error instanceof Error ? error.message : 'Could not load conversations.';
@@ -87,10 +94,21 @@ export class AssistantPanelModel {
   }
 
   private createSession(key: string, conversation?: AssistantConversation): AssistantConversationSession {
-    const session = new AssistantConversationSession(key, conversation, this.source, this.publish, this.confirmed);
+    const session = new AssistantConversationSession(
+      key,
+      conversation,
+      this.source,
+      this.publish,
+      this.confirmed,
+      this.refreshConversations
+    );
     this.sessions.set(key, session);
     return session;
   }
+
+  private readonly refreshConversations = (): void => {
+    if (this.active) void this.loadList(this.generation);
+  };
 
   private readonly confirmed = (session: AssistantConversationSession, conversation: AssistantConversation): void => {
     if (!this.active || this.sessions.get(session.key) !== session) return;
@@ -168,14 +186,14 @@ export class AssistantPanelModel {
     if (session.snapshot.deleting) return false;
 
     const generation = this.generation;
-    this.listError = undefined;
+    this.deletionError = undefined;
     const result = await session.delete();
 
     if (!this.active || this.generation !== generation || this.sessions.get(session.key) !== session) return false;
     if (result.status === 'ignored') return false;
 
     if (result.status === 'failed') {
-      this.listError = result.message;
+      this.deletionError = result.message;
       this.publish();
       return false;
     }
@@ -198,7 +216,7 @@ export class AssistantPanelModel {
     return {
       conversations: this.conversations,
       listLoading: this.listLoading,
-      listError: this.listError,
+      listError: this.deletionError ?? this.listError,
       selectedKey: this.selectedKey,
       entry: this.sessions.get(this.selectedKey)!.snapshot,
       creatingConversation: !!this.draftKey && this.sessions.get(this.draftKey)!.snapshot.phase === 'creating',

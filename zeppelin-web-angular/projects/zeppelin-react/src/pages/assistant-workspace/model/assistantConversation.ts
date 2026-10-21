@@ -42,7 +42,8 @@ export class AssistantConversationSession {
     conversation: AssistantConversation | undefined,
     private readonly source: AssistantDataSource,
     private readonly changed: () => void,
-    private readonly confirmed: (session: AssistantConversationSession, conversation: AssistantConversation) => void
+    private readonly confirmed: (session: AssistantConversationSession, conversation: AssistantConversation) => void,
+    private readonly activity: () => void
   ) {
     this.conversation = conversation;
     this.history = new AssistantHistory(key, !!conversation, this.publish);
@@ -228,6 +229,7 @@ export class AssistantConversationSession {
     this.phase = run.snapshot.outcome === 'unknown' ? 'unknown' : 'idle';
     this.publish();
 
+    if (run.snapshot.accepted) this.activity();
     if (run.snapshot.outcome === 'completed') await this.reload();
     else if (!run.snapshot.accepted && !this.history.snapshot.loaded && run.snapshot.outcome === 'failed') {
       // A rejected send invalidated the first history read; restore it without losing the retryable question.

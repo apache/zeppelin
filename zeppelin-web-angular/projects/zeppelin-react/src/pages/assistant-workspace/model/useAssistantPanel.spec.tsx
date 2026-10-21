@@ -1501,4 +1501,98 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.entry.draft).toBe('Keep this question');
   });
 
+  it('refreshes activity metadata and ordering after a send in an existing conversation', async () => {
+    const source = createAssistantFixture({
+      conversations: ASSISTANT_HISTORY_CONVERSATIONS,
+      now: FIXTURE_NOW,
+      delayMs: 0
+    });
+    const panel = await mountPanel(source);
+    await act(async () => panel.result.current.select('c2'));
+    await act(async () => panel.result.current.send('Follow-up question'));
+
+    const saved = await source.api.listConversations();
+    expect(panel.result.current.conversations).toEqual(saved);
+    expect(panel.result.current.conversations[0].id).toBe('c2');
+    expect(panel.result.current.conversations[0].updatedAt).toBe(new Date(FIXTURE_NOW + 1_000).toISOString());
+  });
+
+  it('orders refreshed activity by instant across ISO timestamp formats', async () => {
+    const harness = sourceHarness();
+    const panel = await mountPanel(harness.source);
+    const older = { ...conversation('a'), updatedAt: '2026-10-19T12:00:00Z' };
+    const newer = { ...conversation('b'), updatedAt: '2026-10-19T12:00:00.001Z' };
+    harness.api.listConversations.mockResolvedValueOnce([older, newer]);
+    await act(async () => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Refresh activity');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await sending.completion;
+    });
+
+    expect(panel.result.current.conversations.map(item => item.id)).toEqual(['b', 'a', 'read-only']);
+  });
+
+  it('preserves a deletion failure when an activity refresh succeeds later', async () => {
+    const harness = sourceHarness();
+    const panel = await mountPanel(harness.source);
+    const refresh = deferred<AssistantConversation[]>();
+    harness.api.listConversations.mockImplementationOnce(() => refresh.promise);
+    await act(async () => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Refresh activity');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await sending.completion;
+    });
+    harness.api.deleteConversation.mockRejectedValueOnce(new Error('Conversation busy'));
+    await act(async () => {
+      await panel.result.current.deleteConversation('b');
+    });
+    expect(panel.result.current.listError).toBe('Conversation busy');
+    await act(async () => refresh.resolve([conversation('a'), conversation('b')]));
+
+    expect(panel.result.current.listError).toBe('Conversation busy');
+    expect(panel.result.current.entry.failure).toBeUndefined();
+  });
+
+  it('clears a failed list read after a successful activity refresh', async () => {
+    const harness = sourceHarness();
+    harness.api.listConversations.mockRejectedValueOnce(new Error('List unavailable'));
+    const panel = await mountPanel(harness.source);
+    expect(panel.result.current.listError).toBe('List unavailable');
+    const sending = await sendQuestion(panel, 'Start a conversation');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await sending.completion;
+    });
+
+    expect(panel.result.current.listError).toBeUndefined();
+    expect(panel.result.current.conversations.map(item => item.id)).toContain('a');
+  });
+
+  it('ignores an older activity refresh that resolves after a newer send', async () => {
+    const harness = sourceHarness();
+    const older = deferred<AssistantConversation[]>();
+    const newer = deferred<AssistantConversation[]>();
+    const panel = await mountPanel(harness.source);
+    harness.api.listConversations
+      .mockImplementationOnce(() => older.promise)
+      .mockImplementationOnce(() => newer.promise);
+    await act(async () => panel.result.current.select('a'));
+    const first = await sendQuestion(panel, 'First');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await first.completion;
+    });
+    const second = await sendQuestion(panel, 'Second');
+    await act(async () => {
+      harness.feeds[1].push({ type: 'run.started' }, { type: 'run.completed' });
+      await second.completion;
+    });
+    const fresh = { ...conversation('a'), updatedAt: '2026-10-20T00:00:00Z' };
+    await act(async () => newer.resolve([fresh]));
+    await act(async () => older.resolve([conversation('a')]));
+
+    expect(panel.result.current.conversations.find(item => item.id === 'a')).toEqual(fresh);
+  });
 });
