@@ -13,13 +13,12 @@
 import type { AssistantConversation } from '@/entities/assistant/model/assistantContract';
 import { AssistantConversationSession } from './assistantConversation';
 import type { AssistantDataSource } from './assistantDataSource';
-import type { AssistantPanel } from './assistantPanelState';
+import type { AssistantDeletionResult, AssistantPanel } from './assistantPanelState';
 
 export class AssistantPanelModel {
   private conversations: AssistantConversation[] = [];
   private listLoading = true;
   private listError?: string;
-  private deletionError?: string;
 
   private selectedKey = 'draft:0';
   private draftKey: string | undefined = 'draft:0';
@@ -59,7 +58,6 @@ export class AssistantPanelModel {
     this.conversations = [];
     this.listLoading = true;
     this.listError = undefined;
-    this.deletionError = undefined;
     this.selectedKey = 'draft:0';
     this.draftKey = 'draft:0';
     this.draftSequence = 0;
@@ -77,10 +75,18 @@ export class AssistantPanelModel {
       if (!this.active || this.generation !== generation || this.listVersion !== version) return;
 
       const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
-      const ids = new Set(visible.map(conversation => conversation.id));
-      this.conversations = [...this.conversations.filter(conversation => !ids.has(conversation.id)), ...visible].sort(
-        (a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0)
-      );
+      const refreshed = new Map(visible.map(conversation => [conversation.id, conversation]));
+      this.conversations = [
+        ...this.conversations.filter(conversation => !refreshed.has(conversation.id)),
+        ...visible
+      ].sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
+
+      this.sessions.forEach(session => {
+        const id = session.snapshot.conversation?.id;
+        const conversation = id && refreshed.get(id);
+        if (conversation) session.updateConversation(conversation);
+      });
+
       this.listLoading = false;
       this.listError = undefined;
     } catch (error) {
@@ -174,36 +180,31 @@ export class AssistantPanelModel {
     return this.sessions.get(this.selectedKey)!.loadEarlier();
   };
 
-  readonly deleteConversation = async (id: string): Promise<boolean> => {
-    if (!this.active) return false;
+  readonly deleteConversation = async (id: string): Promise<AssistantDeletionResult> => {
+    if (!this.active) return { status: 'ignored' };
 
     const conversation = this.conversations.find(item => item.id === id);
-    if (!conversation) return false;
+    if (!conversation) return { status: 'ignored' };
 
     const session =
       Array.from(this.sessions.values()).find(item => item.snapshot.conversation?.id === id) ??
       this.createSession(`conversation:${id}`, conversation);
-    if (session.snapshot.deleting) return false;
+    if (session.snapshot.deleting) return { status: 'ignored' };
 
     const generation = this.generation;
-    this.deletionError = undefined;
     const result = await session.delete();
 
-    if (!this.active || this.generation !== generation || this.sessions.get(session.key) !== session) return false;
-    if (result.status === 'ignored') return false;
-
-    if (result.status === 'failed') {
-      this.deletionError = result.message;
-      this.publish();
-      return false;
+    if (!this.active || this.generation !== generation || this.sessions.get(session.key) !== session) {
+      return { status: 'ignored' };
     }
+    if (result.status !== 'deleted') return result;
 
     this.deleted.add(id);
     this.sessions.delete(session.key);
     this.conversations = this.conversations.filter(item => item.id !== id);
     if (this.selectedKey === session.key) this.selectDraft();
     this.publish();
-    return true;
+    return result;
   };
 
   private project(): AssistantPanel {
@@ -216,7 +217,7 @@ export class AssistantPanelModel {
     return {
       conversations: this.conversations,
       listLoading: this.listLoading,
-      listError: this.deletionError ?? this.listError,
+      listError: this.listError,
       selectedKey: this.selectedKey,
       entry: this.sessions.get(this.selectedKey)!.snapshot,
       creatingConversation: !!this.draftKey && this.sessions.get(this.draftKey)!.snapshot.phase === 'creating',

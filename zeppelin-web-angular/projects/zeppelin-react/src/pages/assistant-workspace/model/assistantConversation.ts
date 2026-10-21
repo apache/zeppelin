@@ -13,14 +13,16 @@
 import { AssistantStreamError, type AssistantConversation } from '@/entities/assistant/model/assistantContract';
 import type { AssistantDataSource } from './assistantDataSource';
 import { AssistantHistory } from './assistantHistory';
-import type { AssistantPanelEntry, AssistantPanelFailure, AssistantPanelPhase } from './assistantPanelState';
+import type {
+  AssistantDeletionResult,
+  AssistantPanelEntry,
+  AssistantPanelFailure,
+  AssistantPanelPhase
+} from './assistantPanelState';
 import { AssistantRun, type AssistantRunSnapshot } from './assistantRun';
 
 const UNKNOWN_OUTCOME =
   'The outcome of an earlier question is unknown. Reload can show saved messages, but cannot establish whether that run has finished. Sending again is an explicit new submission.';
-
-export type AssistantDeletionResult =
-  { status: 'deleted' } | { status: 'ignored' } | { status: 'failed'; message: string };
 
 export class AssistantConversationSession {
   private conversation?: AssistantConversation;
@@ -52,6 +54,24 @@ export class AssistantConversationSession {
 
   get snapshot(): AssistantPanelEntry {
     return this.entry;
+  }
+
+  /** Does not emit a change notification. */
+  updateConversation(conversation: AssistantConversation): void {
+    const current = this.conversation;
+    if (this.disposed || current?.id !== conversation.id) return;
+
+    if (
+      current.title === conversation.title &&
+      current.ownerId === conversation.ownerId &&
+      current.canSendMessage === conversation.canSendMessage &&
+      current.updatedAt === conversation.updatedAt
+    ) {
+      return;
+    }
+
+    this.conversation = conversation;
+    this.entry = this.project();
   }
 
   private project(): AssistantPanelEntry {

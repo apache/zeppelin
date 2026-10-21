@@ -22,6 +22,9 @@ export interface AssistantPanelFailure {
   recovery?: AssistantRecovery;
 }
 
+export type AssistantDeletionResult =
+  { status: 'deleted' } | { status: 'ignored' } | { status: 'failed'; message: string };
+
 export interface AssistantPanelHistory {
   messages: AssistantMessage[];
   /** Message IDs mapped to stable rendered-row keys. */
@@ -78,7 +81,7 @@ export interface AssistantPanelActions {
   /** Resolves to true only when an earlier page is applied to the current history. */
   loadEarlier(): Promise<boolean>;
 
-  deleteConversation(id: string): Promise<boolean>;
+  deleteConversation(id: string): Promise<AssistantDeletionResult>;
 }
 
 export interface AssistantPanel extends AssistantPanelSnapshot, AssistantPanelActions {}

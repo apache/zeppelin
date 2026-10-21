@@ -44,7 +44,6 @@ export const AssistantConversationPanel = ({ source, now }: AssistantConversatio
     conversations: panel.conversations,
     listLoading: panel.listLoading,
     deletingConversationIds: panel.deletingConversationIds,
-    error: panel.listError,
     onDelete: panel.deleteConversation,
     fallbackFocus
   });

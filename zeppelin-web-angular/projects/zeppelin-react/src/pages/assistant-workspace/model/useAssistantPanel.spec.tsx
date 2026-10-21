@@ -24,7 +24,7 @@ import type { AssistantDataSource } from './assistantDataSource';
 import { createAssistantFixture } from '../fixtures/assistantFixture';
 import { ASSISTANT_HISTORY_CONVERSATIONS, FIXTURE_NOW } from '../fixtures/assistantFixtureData';
 import { AssistantPanelModel } from './assistantPanelModel';
-import type { AssistantPanel } from './assistantPanelState';
+import type { AssistantDeletionResult, AssistantPanel } from './assistantPanelState';
 import { useAssistantPanel } from './useAssistantPanel';
 
 const conversation = (id: string, canSendMessage = true): AssistantConversation => ({
@@ -246,7 +246,7 @@ describe('useAssistantPanel', () => {
     await act(async () => {
       const deleted = await panel.result.current.deleteConversation('a');
 
-      expect(deleted).toBe(true);
+      expect(deleted).toEqual({ status: 'deleted' });
     });
 
     expect(panel.result.current.entry).toMatchObject({ key: draftKey, phase: 'creating', draft: 'Still creating' });
@@ -265,7 +265,7 @@ describe('useAssistantPanel', () => {
     await act(async () => {
       const deleted = await panel.result.current.deleteConversation('b');
 
-      expect(deleted).toBe(true);
+      expect(deleted).toEqual({ status: 'deleted' });
     });
 
     expect(panel.result.current.selectedKey).toBe(draftKey);
@@ -287,7 +287,7 @@ describe('useAssistantPanel', () => {
     await act(async () => {
       const deleted = await panel.result.current.deleteConversation('created');
 
-      expect(deleted).toBe(true);
+      expect(deleted).toEqual({ status: 'deleted' });
     });
 
     const fallbackKey = panel.result.current.selectedKey;
@@ -1011,22 +1011,22 @@ describe('useAssistantPanel', () => {
     const panel = await mountPanel(harness.source);
     act(() => panel.result.current.select('a'));
 
-    let deleted = true;
+    let deletion!: AssistantDeletionResult;
     await act(async () => {
-      deleted = await panel.result.current.deleteConversation('a');
+      deletion = await panel.result.current.deleteConversation('a');
     });
 
-    expect(deleted).toBe(false);
+    expect(deletion).toEqual({ status: 'failed', message: 'Conversation busy' });
     expect(panel.result.current.conversations.map(item => item.id)).toContain('a');
     expect(panel.result.current.entry.failure).toEqual({ message: 'Conversation busy', kind: 'failed' });
-    expect(panel.result.current.listError).toBe('Conversation busy');
+    expect(panel.result.current.listError).toBeUndefined();
     expect(panel.result.current.entry.failure?.recovery).toBeUndefined();
 
     await act(async () => {
-      deleted = await panel.result.current.deleteConversation('a');
+      deletion = await panel.result.current.deleteConversation('a');
     });
 
-    expect(deleted).toBe(true);
+    expect(deletion).toEqual({ status: 'deleted' });
     expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
 
     await act(async () =>
@@ -1045,7 +1045,7 @@ describe('useAssistantPanel', () => {
     const panel = await mountPanel(harness.source);
     await act(async () => panel.result.current.select('a'));
 
-    let removing!: Promise<boolean>;
+    let removing!: Promise<AssistantDeletionResult>;
     act(() => {
       removing = panel.result.current.deleteConversation('a');
     });
@@ -1089,12 +1089,12 @@ describe('useAssistantPanel', () => {
 
     expect(panel.result.current.entry.phase).toBe('unknown');
 
-    let deleted = false;
+    let deletion!: AssistantDeletionResult;
     await act(async () => {
-      deleted = await panel.result.current.deleteConversation('a');
+      deletion = await panel.result.current.deleteConversation('a');
     });
 
-    expect(deleted).toBe(true);
+    expect(deletion).toEqual({ status: 'deleted' });
     expect(harness.api.deleteConversation).toHaveBeenCalledWith('a');
     expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
     expect(panel.result.current.entry.conversation).toBeUndefined();
@@ -1116,7 +1116,7 @@ describe('useAssistantPanel', () => {
     );
     const signal = harness.run.mock.calls[0][2];
 
-    let removing!: Promise<boolean>;
+    let removing!: Promise<AssistantDeletionResult>;
     act(() => {
       removing = panel.result.current.deleteConversation('a');
     });
@@ -1131,13 +1131,13 @@ describe('useAssistantPanel', () => {
 
     expect(panel.result.current.entry.answer).toMatchObject({ content: 'Before deletion while deleting' });
 
-    let deleted = true;
+    let result!: AssistantDeletionResult;
     await act(async () => {
       deletion.reject(new Error('409: Conversation busy'));
-      deleted = await removing;
+      result = await removing;
     });
 
-    expect(deleted).toBe(false);
+    expect(result).toEqual({ status: 'failed', message: '409: Conversation busy' });
     expect(signal.aborted).toBe(false);
     expect(panel.result.current.entry).toMatchObject({
       phase: 'running',
@@ -1172,7 +1172,7 @@ describe('useAssistantPanel', () => {
     await act(async () => harness.feeds[0].push({ type: 'run.started' }));
     const signal = harness.run.mock.calls[0][2];
 
-    let removing!: Promise<boolean>;
+    let removing!: Promise<AssistantDeletionResult>;
     act(() => {
       removing = panel.result.current.deleteConversation('a');
     });
@@ -1180,13 +1180,13 @@ describe('useAssistantPanel', () => {
     expect(signal.aborted).toBe(false);
     expect(panel.result.current.entry.conversation?.id).toBe('a');
 
-    let deleted = false;
+    let result!: AssistantDeletionResult;
     await act(async () => {
       deletion.resolve(undefined);
-      deleted = await removing;
+      result = await removing;
     });
 
-    expect(deleted).toBe(true);
+    expect(result).toEqual({ status: 'deleted' });
     expect(signal.aborted).toBe(true);
     expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
 
@@ -1533,9 +1533,10 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.conversations.map(item => item.id)).toEqual(['b', 'a', 'read-only']);
   });
 
-  it('preserves a deletion failure when an activity refresh succeeds later', async () => {
+  it('preserves a session deletion failure across activity refresh without changing list errors', async () => {
     const harness = sourceHarness();
     const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('b'));
     const refresh = deferred<AssistantConversation[]>();
     harness.api.listConversations.mockImplementationOnce(() => refresh.promise);
     await act(async () => panel.result.current.select('a'));
@@ -1545,14 +1546,23 @@ describe('useAssistantPanel', () => {
       await sending.completion;
     });
     harness.api.deleteConversation.mockRejectedValueOnce(new Error('Conversation busy'));
+    let result!: AssistantDeletionResult;
+
     await act(async () => {
-      await panel.result.current.deleteConversation('b');
+      result = await panel.result.current.deleteConversation('b');
     });
-    expect(panel.result.current.listError).toBe('Conversation busy');
+
+    expect(result).toEqual({ status: 'failed', message: 'Conversation busy' });
+    expect(panel.result.current.listError).toBeUndefined();
+
     await act(async () => refresh.resolve([conversation('a'), conversation('b')]));
 
-    expect(panel.result.current.listError).toBe('Conversation busy');
+    expect(panel.result.current.listError).toBeUndefined();
     expect(panel.result.current.entry.failure).toBeUndefined();
+
+    await act(async () => panel.result.current.select('b'));
+
+    expect(panel.result.current.entry.failure).toEqual({ message: 'Conversation busy', kind: 'failed' });
   });
 
   it('clears a failed list read after a successful activity refresh', async () => {
@@ -1594,5 +1604,108 @@ describe('useAssistantPanel', () => {
     await act(async () => older.resolve([conversation('a')]));
 
     expect(panel.result.current.conversations.find(item => item.id === 'a')).toEqual(fresh);
+  });
+
+  it.each([true, false])(
+    'applies refreshed permissions to an existing session that was writable=%s',
+    async initiallyWritable => {
+      const harness = sourceHarness();
+      harness.api.listConversations.mockResolvedValue([conversation('a', initiallyWritable), conversation('b')]);
+      const saved: AssistantMessagePage = {
+        messages: [{ id: 'saved-question', role: 'user', content: 'Keep this history' }],
+        cursor: 'older'
+      };
+      harness.api.getMessages.mockResolvedValue(saved);
+      const panel = await mountPanel(harness.source);
+      await act(async () => panel.result.current.select('a'));
+      act(() => panel.result.current.setDraft('Keep the next A question'));
+      const key = panel.result.current.entry.key;
+      const refreshed = {
+        ...conversation('a', !initiallyWritable),
+        title: 'Updated A',
+        ownerId: 'updated-owner',
+        updatedAt: '2026-10-20T00:00:00Z'
+      };
+      harness.api.listConversations.mockResolvedValue([refreshed, conversation('b')]);
+      await act(async () => panel.result.current.select('b'));
+
+      const sending = await sendQuestion(panel, 'Refresh from B');
+      await act(async () => {
+        harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+        await sending.completion;
+      });
+      await act(async () => panel.result.current.select('a'));
+
+      expect(panel.result.current.entry).toMatchObject({
+        key,
+        conversation: refreshed,
+        draft: 'Keep the next A question',
+        messages: saved.messages,
+        cursor: 'older'
+      });
+
+      const followUp = await sendQuestion(panel);
+
+      expect(harness.run.mock.calls.map(([id, content]) => [id, content])).toEqual(
+        initiallyWritable
+          ? [['b', 'Refresh from B']]
+          : [
+              ['b', 'Refresh from B'],
+              ['a', 'Keep the next A question']
+            ]
+      );
+      expect(panel.result.current.entry.draft).toBe('Keep the next A question');
+      expect(panel.result.current.entry.phase).toBe(initiallyWritable ? 'idle' : 'pending');
+
+      await act(async () => {
+        if (!initiallyWritable) harness.feeds[1].push({ type: 'run.failed', message: 'Stop follow-up' });
+        await followUp.completion;
+      });
+    }
+  );
+
+  it('updates metadata without interrupting an active answer or clearing its next draft', async () => {
+    const harness = sourceHarness();
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    const first = await sendQuestion(panel, 'Question for A');
+    await act(async () =>
+      harness.feeds[0].push(
+        { type: 'run.started' },
+        { type: 'message.delta', messageId: 'answer-a', delta: 'A is running' }
+      )
+    );
+    act(() => panel.result.current.setDraft('Next A question'));
+    const key = panel.result.current.entry.key;
+    const refreshed = { ...conversation('a', false), title: 'Updated running A' };
+    harness.api.listConversations.mockResolvedValue([refreshed, conversation('b')]);
+    await act(async () => panel.result.current.select('b'));
+
+    const second = await sendQuestion(panel, 'Question for B');
+    await act(async () => {
+      harness.feeds[1].push({ type: 'run.started' }, { type: 'run.completed' });
+      await second.completion;
+    });
+    await act(async () => panel.result.current.select('a'));
+
+    expect(panel.result.current.entry).toMatchObject({
+      key,
+      conversation: refreshed,
+      phase: 'running',
+      draft: 'Next A question',
+      answer: { status: 'streaming', content: 'A is running' }
+    });
+    expect(harness.run.mock.calls[0][2].aborted).toBe(false);
+
+    await act(async () => {
+      harness.feeds[0].push(
+        { type: 'message.delta', messageId: 'answer-a', delta: ' and finishes' },
+        { type: 'run.failed', message: 'Stop A' }
+      );
+      await first.completion;
+    });
+
+    expect(panel.result.current.entry.answer).toMatchObject({ content: 'A is running and finishes' });
+    expect(panel.result.current.entry.draft).toBe('Next A question');
   });
 });

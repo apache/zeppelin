@@ -13,14 +13,14 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { AssistantConversation } from '@/entities/assistant/model/assistantContract';
 import { conversationTitle } from '@/entities/assistant/ui/conversationTitle';
+import type { AssistantDeletionResult } from '../model/assistantPanelState';
 
 interface DeleteConfirmationOptions {
   scope: object;
   conversations: readonly AssistantConversation[];
   listLoading: boolean;
   deletingConversationIds: readonly string[];
-  error?: string;
-  onDelete: (id: string) => Promise<boolean>;
+  onDelete: (id: string) => Promise<AssistantDeletionResult>;
   fallbackFocus: () => HTMLElement | null;
 }
 
@@ -32,7 +32,11 @@ interface DeleteTarget {
 type DeleteInteraction = {
   scope: object;
   trigger: HTMLElement | null;
-} & ({ kind: 'open'; target: DeleteTarget; status: 'ready' | 'pending' | 'failed' } | { kind: 'closed' });
+} & (
+  | { kind: 'open'; target: DeleteTarget; status: 'ready' | 'pending' }
+  | { kind: 'open'; target: DeleteTarget; status: 'failed'; message: string }
+  | { kind: 'closed' }
+);
 
 /** Closing the confirmation does not cancel an already requested deletion. */
 export const useDeleteConfirmation = ({
@@ -40,7 +44,6 @@ export const useDeleteConfirmation = ({
   conversations,
   listLoading,
   deletingConversationIds,
-  error,
   onDelete,
   fallbackFocus
 }: DeleteConfirmationOptions) => {
@@ -112,14 +115,21 @@ export const useDeleteConfirmation = ({
     )
       return;
 
-    const pending: DeleteInteraction = { ...active, status: 'pending' };
+    const pending: DeleteInteraction = {
+      kind: 'open',
+      scope,
+      trigger: active.trigger,
+      target: active.target,
+      status: 'pending'
+    };
     transition(pending);
 
-    const removed = await onDelete(active.target.id);
+    const result = await onDelete(active.target.id);
     if (current.current !== pending) return;
 
-    if (removed) transition({ kind: 'closed', scope, trigger: pending.trigger });
-    else transition({ ...pending, status: 'failed' });
+    if (result.status === 'deleted') transition({ kind: 'closed', scope, trigger: pending.trigger });
+    else if (result.status === 'failed') transition({ ...pending, status: 'failed', message: result.message });
+    else transition({ ...pending, status: 'ready' });
   };
 
   const active = interaction?.scope === scope && interaction.kind === 'open' ? interaction : null;
@@ -127,7 +137,7 @@ export const useDeleteConfirmation = ({
   return {
     target: active?.target ?? null,
     deleting: !!active && (active.status === 'pending' || deletingConversationIds.includes(active.target.id)),
-    error: active?.status === 'failed' ? (error ?? 'Could not delete the conversation.') : undefined,
+    error: active?.status === 'failed' ? active.message : undefined,
     request,
     cancel,
     confirm

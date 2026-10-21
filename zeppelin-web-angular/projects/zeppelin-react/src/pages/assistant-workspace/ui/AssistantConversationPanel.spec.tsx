@@ -833,4 +833,29 @@ describe('AssistantConversationPanel', () => {
       expect(screen.getByText('The next question was rejected.')).toBeTruthy();
     }
   );
+
+  it('keeps B deletion failure in its dialog when a dismissed A deletion fails later', async () => {
+    const source = fixture();
+    const a = Promise.withResolvers<void>();
+    const b = Promise.withResolvers<void>();
+    vi.spyOn(source.api, 'deleteConversation').mockImplementation(id => (id === 'c1' ? a.promise : b.promise));
+    await mountPanel(source);
+    fireEvent.click(listTrigger());
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Revenue analysis' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Notebook summary' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' }));
+
+    await act(async () => b.reject(new Error('B deletion denied')));
+
+    expect(within(screen.getByRole('dialog')).getByRole('alert').textContent).toContain('B deletion denied');
+
+    await act(async () => a.reject(new Error('A is still running')));
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(/Delete “Notebook summary”/)).toBeTruthy();
+    expect(within(dialog).getByRole('alert').textContent).toContain('B deletion denied');
+    expect(within(dialog).queryByText('A is still running')).toBeNull();
+  });
 });
