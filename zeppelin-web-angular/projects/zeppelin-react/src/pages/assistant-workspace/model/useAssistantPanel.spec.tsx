@@ -1443,4 +1443,62 @@ describe('useAssistantPanel', () => {
       model.dispose();
     }
   );
+
+  it('restores initial history after a rejected send without losing its error or draft', async () => {
+    const harness = sourceHarness();
+    const initial = deferred<AssistantMessagePage>();
+    const saved: AssistantMessagePage = {
+      messages: [{ id: 'saved-question', role: 'user', content: 'Existing question' }],
+      cursor: 'earlier'
+    };
+    harness.api.getMessages.mockImplementationOnce(() => initial.promise).mockResolvedValueOnce(saved);
+    const panel = await mountPanel(harness.source);
+    act(() => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Retry this question');
+
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Message rejected' });
+      await sending.completion;
+      initial.resolve({ messages: [], cursor: null });
+    });
+
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      loading: false,
+      messages: saved.messages,
+      cursor: 'earlier',
+      draft: 'Retry this question',
+      failure: { message: 'Message rejected', recovery: 'send' }
+    });
+  });
+
+  it('offers history recovery when restoring initial history after rejection fails', async () => {
+    const harness = sourceHarness();
+    const initial = deferred<AssistantMessagePage>();
+    harness.api.getMessages
+      .mockImplementationOnce(() => initial.promise)
+      .mockRejectedValueOnce(new Error('History unavailable'));
+    const panel = await mountPanel(harness.source);
+    act(() => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Keep this question');
+
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Message rejected' });
+      await sending.completion;
+      initial.resolve({ messages: [], cursor: null });
+    });
+
+    expect(panel.result.current.entry).toMatchObject({
+      draft: 'Keep this question',
+      failure: { message: 'History unavailable', recovery: 'reload' }
+    });
+    harness.api.getMessages.mockResolvedValueOnce({
+      messages: [{ id: 'saved', role: 'user', content: 'Recovered history' }],
+      cursor: null
+    });
+    await act(async () => panel.result.current.reload());
+    expect(panel.result.current.entry.messages).toEqual([{ id: 'saved', role: 'user', content: 'Recovered history' }]);
+    expect(panel.result.current.entry.draft).toBe('Keep this question');
+  });
+
 });

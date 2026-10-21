@@ -86,12 +86,12 @@ export class AssistantConversationSession {
     if (!history.loaded && !history.loading && !this.deleting && this.phase === 'idle') void this.reload();
   }
 
-  async reload(): Promise<void> {
+  async reload(preserveFailure = false): Promise<void> {
     if (this.disposed || !this.conversation || this.deleting || (this.phase !== 'idle' && this.phase !== 'unknown')) {
       return;
     }
 
-    this.failure = undefined;
+    if (!preserveFailure) this.failure = undefined;
     const result = await this.history.loadLatest(this.source.api, this.conversation.id);
     if (this.disposed || result.status === 'ignored' || !this.history.isCurrent(result)) return;
 
@@ -101,7 +101,7 @@ export class AssistantConversationSession {
         kind: 'connection',
         recovery: 'reload'
       };
-    } else if (this.phase !== 'unknown') {
+    } else if (this.phase !== 'unknown' && !preserveFailure) {
       this.submittedQuestion = undefined;
     }
 
@@ -229,6 +229,10 @@ export class AssistantConversationSession {
     this.publish();
 
     if (run.snapshot.outcome === 'completed') await this.reload();
+    else if (!run.snapshot.accepted && !this.history.snapshot.loaded && run.snapshot.outcome === 'failed') {
+      // A rejected send invalidated the first history read; restore it without losing the retryable question.
+      await this.reload(true);
+    }
   }
 
   async delete(): Promise<AssistantDeletionResult> {
