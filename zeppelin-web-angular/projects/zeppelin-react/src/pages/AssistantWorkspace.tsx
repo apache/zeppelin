@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, Root } from 'react-dom/client';
 import { CloseOutlined } from '@ant-design/icons';
@@ -18,9 +18,12 @@ import { theme } from 'antd';
 import type { AssistantShellProps } from '@zeppelin/sdk';
 import { ReactErrorBoundary } from '@/components';
 import { ZeppelinThemeProvider } from '@/theme';
-import { assistantThemeStyles } from '@/shared/ui/assistant-theme';
+import { assistantThemeStyles, ASSISTANT_PREFIX_CLS, ASSISTANT_SEED_TOKENS } from '@/shared/ui/assistant-theme';
 import { scope } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { usePanelResize } from './assistant-workspace/lib/usePanelResize';
+import { createAssistantFixture } from './assistant-workspace/fixtures/assistantFixture';
+import { ASSISTANT_HISTORY_CONVERSATIONS, FIXTURE_NOW } from './assistant-workspace/fixtures/assistantFixtureData';
+import { AssistantConversationPanel } from './assistant-workspace/ui/AssistantConversationPanel';
 import * as styles from './AssistantWorkspace.css';
 
 export type AssistantWorkspaceProps = AssistantShellProps;
@@ -36,6 +39,13 @@ export const AssistantWorkspace = ({
   const { token } = theme.useToken();
   const themeStyles = assistantThemeStyles(token);
   const [visible, setVisible] = useState(false);
+  const fixture = useMemo(
+    () => ({
+      noteId,
+      source: createAssistantFixture({ conversations: ASSISTANT_HISTORY_CONVERSATIONS, now: FIXTURE_NOW })
+    }),
+    [noteId]
+  );
   const button = useRef<HTMLButtonElement>(null);
   const navigation = slots.find(slot => slot.kind === 'navigation');
   const panel = slots.find(slot => slot.kind === 'panel');
@@ -101,6 +111,7 @@ export const AssistantWorkspace = ({
                 <CloseOutlined aria-hidden="true" />
               </button>
             </header>
+            <AssistantConversationPanel key={fixture.noteId} source={fixture.source} now={FIXTURE_NOW} />
             <div className={styles.resize} {...handleProps} />
           </aside>,
           panel.element
@@ -114,7 +125,7 @@ export const mount = (element: HTMLElement, initialProps: AssistantWorkspaceProp
   const renderWith = (props: AssistantWorkspaceProps) => {
     root.render(
       <ReactErrorBoundary onError={props.onError}>
-        <ZeppelinThemeProvider>
+        <ZeppelinThemeProvider prefixCls={ASSISTANT_PREFIX_CLS} token={ASSISTANT_SEED_TOKENS}>
           <AssistantWorkspace {...props} />
         </ZeppelinThemeProvider>
       </ReactErrorBoundary>
