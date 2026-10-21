@@ -19,7 +19,9 @@
 package org.apache.zeppelin.realm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -48,6 +52,29 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
 class LdapRealmTest {
+  @Test
+  void testCreateAuthenticationInfoMatchesSubmittedCredentials() throws NamingException {
+    // ZEPPELIN-6731: after a successful LDAP bind, the cached credentials must be
+    // hashable with the installed Shiro hash providers and must match the same password.
+    LdapRealm realm = new LdapRealm();
+    UsernamePasswordToken token = new UsernamePasswordToken("alice", "alice123");
+
+    AuthenticationInfo info = realm.createAuthenticationInfo(token, "alice", "alice123", null);
+
+    assertTrue(realm.getCredentialsMatcher().doCredentialsMatch(token, info));
+  }
+
+  @Test
+  void testCreateAuthenticationInfoRejectsDifferentCredentials() throws NamingException {
+    LdapRealm realm = new LdapRealm();
+    UsernamePasswordToken token = new UsernamePasswordToken("alice", "alice123");
+    AuthenticationInfo info = realm.createAuthenticationInfo(token, "alice", "alice123", null);
+
+    UsernamePasswordToken wrongToken = new UsernamePasswordToken("alice", "wrong-pw");
+
+    assertFalse(realm.getCredentialsMatcher().doCredentialsMatch(wrongToken, info));
+  }
+
   @Test
   void testGetUserDn() {
     LdapRealm realm = new LdapRealm();
