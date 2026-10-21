@@ -369,9 +369,8 @@ view (ZEPPELIN-6737). They are separate from the seven lifecycle captures and th
 | `read-anonymous.json` | `GET_NOTE` and `NOTE_REVISION` replies, a missing note's `ERROR_INFO`, and note permission reads.  |
 | `read-denied.json`    | An authenticated read the note permissions deny: `AUTH_INFO` and a `403` permissions response.     |
 
-Each read reply and each failure carries the msgId of its request. That depends on a server change
-that is not on Apache master yet, so the committed captures name the branch commit that was built and
-served in `metadata.source`. Recapture from Apache master once that change is merged.
+Each read reply and each failure carries the msgId of its request. Both committed captures were taken
+from Apache master commit `bf658867be1067a208d3b41cd07cb0a3feb4ef06`, which `metadata.source` names.
 
 Capture with the server running and its UI served on `PLAYWRIGHT_BASE_URL`; the denied read
 needs an authenticated server with two Shiro accounts:
