@@ -32,6 +32,7 @@ export class AssistantConversationSession {
   private uncertainty?: string;
   private submittedQuestion?: string;
   private deleting = false;
+  private historyRefreshPending = false;
 
   private disposed = false;
   private controller?: AbortController;
@@ -112,6 +113,7 @@ export class AssistantConversationSession {
       return;
     }
 
+    this.historyRefreshPending = false;
     if (!preserveFailure) this.failure = undefined;
     const result = await this.history.loadLatest(this.source.api, this.conversation.id);
     if (this.disposed || result.status === 'ignored' || !this.history.isCurrent(result)) return;
@@ -122,11 +124,17 @@ export class AssistantConversationSession {
         kind: 'connection',
         recovery: 'reload'
       };
-    } else if (this.phase !== 'unknown' && !preserveFailure) {
+    } else if (this.phase !== 'unknown' && !preserveFailure && this.history.snapshot.answerRecovery !== 'send') {
       this.submittedQuestion = undefined;
     }
 
     this.publish();
+  }
+
+  private async refreshHistory(): Promise<void> {
+    if (!this.historyRefreshPending || this.disposed || this.deleting || this.phase !== 'idle') return;
+
+    await this.reload(this.failure?.kind === 'failed');
   }
 
   async loadEarlier(): Promise<boolean> {
@@ -173,6 +181,7 @@ export class AssistantConversationSession {
     this.submittedQuestion = content;
     this.failure = undefined;
     this.phase = this.conversation ? 'pending' : 'creating';
+    if (this.history.snapshot.loading) this.historyRefreshPending = true;
     const answerKey = this.history.beginTurn();
 
     if (!this.conversation) {
@@ -246,15 +255,13 @@ export class AssistantConversationSession {
     if (this.disposed) return;
 
     // The next send must wait for this consumer to release the conversation.
+    this.historyRefreshPending ||=
+      run.snapshot.outcome === 'completed' || (run.snapshot.outcome === 'failed' && !this.history.snapshot.loaded);
     this.phase = run.snapshot.outcome === 'unknown' ? 'unknown' : 'idle';
     this.publish();
 
     if (run.snapshot.accepted) this.activity();
-    if (run.snapshot.outcome === 'completed') await this.reload();
-    else if (!run.snapshot.accepted && !this.history.snapshot.loaded && run.snapshot.outcome === 'failed') {
-      // A rejected send invalidated the first history read; restore it without losing the retryable question.
-      await this.reload(true);
-    }
+    await this.refreshHistory();
   }
 
   async delete(): Promise<AssistantDeletionResult> {
@@ -276,6 +283,7 @@ export class AssistantConversationSession {
       this.deleting = false;
       this.failure = { message, kind: 'failed' };
       this.publish();
+      void this.refreshHistory();
 
       return { status: 'failed', message };
     }

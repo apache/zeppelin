@@ -131,6 +131,44 @@ interface RetainedTurn {
   recovery?: AssistantRecovery;
 }
 
+/** Restores saved history without replacing the current failed turn's runtime error and partial answer. */
+const retainFailedTurn = (
+  entry: AssistantPanelHistory,
+  messages: AssistantMessage[],
+  keys: Map<string, string>,
+  turn?: RetainedTurn
+): Pick<AssistantPanelHistory, 'messages' | 'messageKeys'> => {
+  if (turn?.recovery !== 'send') return { messages, messageKeys: keys };
+
+  const question = entry.messages.find(
+    message => message.role === 'user' && (entry.messageKeys.get(message.id) ?? message.id) === turn.questionKey
+  );
+  if (!question || question.role !== 'user') return { messages, messageKeys: keys };
+
+  const messageKeys = new Map(keys);
+  let savedQuestion =
+    messages.find(
+      message =>
+        message.role === 'user' && message.id !== question.id && messageKeys.get(message.id) === turn.questionKey
+    ) ?? messages.find(message => message.id === question.id);
+
+  // The fixture has one writer: only this failed turn's trailing question may match without a shared user ID.
+  const trailing = messages.at(-1);
+  if (!savedQuestion && trailing?.role === 'user' && trailing.content === question.content) savedQuestion = trailing;
+  if (savedQuestion) messageKeys.set(savedQuestion.id, turn.questionKey);
+
+  const retained = messages.filter(
+    message =>
+      message.role !== 'user' ||
+      !savedQuestion ||
+      message.id === savedQuestion.id ||
+      (messageKeys.get(message.id) ?? message.id) !== turn.questionKey
+  );
+  if (!savedQuestion) retained.push(question);
+
+  return { messages: retained, messageKeys };
+};
+
 export class AssistantHistory {
   private messages: AssistantMessage[] = [];
   private messageKeys = new Map<string, string>();
@@ -156,8 +194,15 @@ export class AssistantHistory {
   }
 
   get snapshot(): AssistantPanelHistory {
+    const failedKey = this.turn?.recovery === 'send' ? this.turn.key : undefined;
+
     return {
-      messages: this.messages,
+      // Keep saved answer boundaries for pagination, but render the retained failed answer only once.
+      messages: failedKey
+        ? this.messages.filter(
+            message => message.role !== 'assistant' || this.messageKeys.get(message.id) !== failedKey
+          )
+        : this.messages,
       messageKeys: this.messageKeys,
       localAnswerViews: this.localAnswerViews,
       cursor: this.cursor,
@@ -189,7 +234,13 @@ export class AssistantHistory {
     if (!this.turn?.message) return;
 
     const { message, key, view } = this.turn;
-    this.messages = [...this.messages, message];
+    const saved = this.messages.findIndex(
+      current => current.role === 'assistant' && this.messageKeys.get(current.id) === key
+    );
+    this.messages =
+      saved < 0
+        ? [...this.messages, message]
+        : this.messages.map((current, index) => (index === saved ? message : current));
     this.messageKeys = new Map(this.messageKeys).set(message.id, key);
     if (view) this.localAnswerViews = new Map(this.localAnswerViews).set(message.id, view);
   }
@@ -230,11 +281,12 @@ export class AssistantHistory {
       if (!this.current(version)) return { status: 'ignored' };
 
       const reconciled = reconcileLatestHistory(this.snapshot, page, this.turn?.message);
-      this.messages = reconciled.messages;
-      this.messageKeys = reconciled.messageKeys;
+      const retained = retainFailedTurn(this.snapshot, reconciled.messages, reconciled.messageKeys, this.turn);
+      this.messages = retained.messages;
+      this.messageKeys = retained.messageKeys;
       this.localAnswerViews = reconciled.localAnswerViews;
       this.cursor = reconciled.cursor;
-      this.turn = undefined;
+      if (this.turn?.recovery !== 'send') this.turn = undefined;
       this.loaded = true;
       this.requestStatus = 'idle';
       this.consumedCursors.clear();
@@ -266,7 +318,11 @@ export class AssistantHistory {
       const page = await api.getMessages(conversationId, cursor);
       if (!this.current(version)) return { status: 'ignored' };
 
-      this.messages = joinPages(page.messages, this.messages);
+      const messages = joinPages(page.messages, this.messages);
+      const keys = reconcileMessageKeys(this.snapshot, messages, this.turn?.message);
+      const retained = retainFailedTurn(this.snapshot, messages, keys, this.turn);
+      this.messages = retained.messages;
+      this.messageKeys = retained.messageKeys;
       this.cursor = page.cursor;
       this.requestStatus = 'idle';
       this.consumedCursors.add(cursor);
