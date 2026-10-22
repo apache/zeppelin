@@ -39,25 +39,44 @@ export const ConversationMessages = ({
 }) => {
   const { messages, messageKeys, localAnswerViews, answer, answerKey } = entry;
 
-  const rows = useMemo(
-    () =>
-      messages.map(message => ({
-        key: messageKeys.get(message.id) ?? message.id,
-        message
-      })),
-    [messages, messageKeys]
-  );
+  const messageItems = useMemo(() => {
+    const items = messages.map(message => {
+      const key = messageKeys.get(message.id) ?? message.id;
+      return (
+        <div key={key} data-message-key={key} className={styles.messageRow}>
+          {message.role === 'user' ? (
+            <AssistantMessageItem role="user" content={message.content} />
+          ) : (
+            <AssistantAnswer
+              view={localAnswerViews.get(message.id) ?? { status: 'done', message }}
+              renderContent={renderMarkdown}
+            />
+          )}
+        </div>
+      );
+    });
+
+    if (answer) {
+      items.push(
+        <div key={answerKey} data-message-key={answerKey} className={styles.messageRow}>
+          <AssistantAnswer view={answer} renderContent={renderMarkdown} onRetry={onRetry} />
+        </div>
+      );
+    }
+
+    return items;
+  }, [messages, messageKeys, localAnswerViews, answer, answerKey, onRetry]);
 
   const completedMessage = answer?.status === 'done' ? answer.message : undefined;
   const rowSegments = useMemo(() => {
     const segments = new Map<string, readonly { id: string }[]>();
-    for (const { key, message } of rows) {
-      if (message.role === 'assistant') segments.set(key, message.segments);
+    for (const message of messages) {
+      if (message.role === 'assistant') segments.set(messageKeys.get(message.id) ?? message.id, message.segments);
     }
 
     if (answerKey && completedMessage) segments.set(answerKey, completedMessage.segments);
     return segments;
-  }, [rows, answerKey, completedMessage]);
+  }, [messages, messageKeys, answerKey, completedMessage]);
 
   const { viewport, content, onScroll } = useConversationScroll({
     scope,
@@ -66,27 +85,6 @@ export const ConversationMessages = ({
     visible,
     loadEarlier
   });
-
-  const messageItems = rows.map(({ key, message }) => (
-    <div key={key} data-message-key={key} className={styles.messageRow}>
-      {message.role === 'user' ? (
-        <AssistantMessageItem role="user" content={message.content} />
-      ) : (
-        <AssistantAnswer
-          view={localAnswerViews.get(message.id) ?? { status: 'done', message }}
-          renderContent={renderMarkdown}
-        />
-      )}
-    </div>
-  ));
-
-  if (answer) {
-    messageItems.push(
-      <div key={answerKey} data-message-key={answerKey} className={styles.messageRow}>
-        <AssistantAnswer view={answer} renderContent={renderMarkdown} onRetry={onRetry} />
-      </div>
-    );
-  }
 
   return (
     <div

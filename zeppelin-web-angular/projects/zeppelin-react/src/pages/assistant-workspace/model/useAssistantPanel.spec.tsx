@@ -1981,4 +1981,24 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.entry.conversation).toBeUndefined();
     expect(harness.api.getMessages).toHaveBeenCalledTimes(1);
   });
+
+  it('does not submit after disposal between conversation confirmation and the send continuation', async () => {
+    const harness = sourceHarness();
+    const run = vi.fn(async function* (): AsyncIterable<AssistantRunEvent> {
+      yield { type: 'run.started' };
+      yield { type: 'run.completed' };
+    });
+    const model = new AssistantPanelModel({ ...harness.source, run });
+    model.start();
+    const unsubscribe = model.subscribe(() => {
+      if (model.getSnapshot().entry.conversation?.id === 'created') queueMicrotask(() => model.dispose());
+    });
+
+    await model.send('Do not submit after disposal');
+    unsubscribe();
+    model.dispose();
+
+    expect(harness.api.createConversation).toHaveBeenCalledTimes(1);
+    expect(run).not.toHaveBeenCalled();
+  });
 });

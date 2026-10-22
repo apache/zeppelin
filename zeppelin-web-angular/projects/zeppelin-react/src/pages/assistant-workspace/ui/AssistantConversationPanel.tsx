@@ -31,7 +31,7 @@ const ignoreSearchChange = () => undefined;
 
 export const AssistantConversationPanel = ({ source, now }: AssistantConversationPanelProps) => {
   const panel = useAssistantPanel(source);
-  const { entry } = panel;
+  const { entry, send: sendQuestion, reload: reloadHistory } = panel;
 
   const [listOpen, setListOpen] = useState(false);
   const listTrigger = useRef<HTMLButtonElement>(null);
@@ -72,14 +72,14 @@ export const AssistantConversationPanel = ({ source, now }: AssistantConversatio
 
   const busy = entry.phase === 'creating' || entry.phase === 'pending' || entry.phase === 'running';
 
-  const recoveryActions = {
-    send: () => {
-      void panel.send();
-    },
-    reload: () => {
-      void panel.reload();
-    }
-  };
+  const retrySend = useCallback(() => {
+    void sendQuestion();
+  }, [sendQuestion]);
+  const retryReload = useCallback(() => {
+    void reloadHistory();
+  }, [reloadHistory]);
+
+  const recoveryActions = { send: retrySend, reload: retryReload };
   const retry = entry.failure?.recovery ? recoveryActions[entry.failure.recovery] : undefined;
   const answerRetry = entry.answerRecovery ? recoveryActions[entry.answerRecovery] : undefined;
 

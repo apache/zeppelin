@@ -511,7 +511,7 @@ describe('AssistantConversationPanel', () => {
     expect(screen.getByRole('table')).toBeTruthy();
   });
 
-  it('offers the existing explicit Retry after an accepted failure without requiring a history reload', async () => {
+  it('retries the edited draft after an accepted failure without requiring a history reload', async () => {
     const source = fixture('run-failure');
     const run = vi.spyOn(source, 'run');
     const getMessages = vi.spyOn(source.api, 'getMessages');
@@ -525,11 +525,51 @@ describe('AssistantConversationPanel', () => {
     expect(run).toHaveBeenCalledTimes(1);
     expect(getMessages).not.toHaveBeenCalled();
 
+    const failedAnswer = within(messages()).getByRole('article', { name: /^Assistant answer$/ });
+
+    fireEvent.change(input(), { target: { value: 'Read only the Europe revenue data' } });
+
+    expect(failedAnswer.isConnected).toBe(true);
+    expect(failedAnswer.textContent).toContain('stopped while reading');
+
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     await flush();
 
     expect(run).toHaveBeenCalledTimes(2);
-    expect(run.mock.calls.map(([id]) => id)).toEqual(['c4', 'c4']);
+    expect(run.mock.calls.map(([id, question]) => [id, question])).toEqual([
+      ['c4', 'Read the revenue data'],
+      ['c4', 'Read only the Europe revenue data']
+    ]);
+    expect(within(messages()).getByText('Read only the Europe revenue data', { exact: true })).toBeTruthy();
+    expect(screen.getByRole('table')).toBeTruthy();
+    expect(input().value).toBe('');
+  });
+
+  it('uses the current source for answer recovery after the panel source changes', async () => {
+    const first = fixture('run-failure');
+    const second = fixture('run-failure');
+    const firstRun = vi.spyOn(first, 'run');
+    const secondRun = vi.spyOn(second, 'run');
+    const view = render(<AssistantConversationPanel source={first} now={FIXTURE_NOW} />);
+    await flush();
+    await submit('Question for the first source');
+
+    view.rerender(<AssistantConversationPanel source={second} now={FIXTURE_NOW} />);
+    await flush();
+    await submit('Question for the second source');
+    fireEvent.change(input(), { target: { value: 'Retry in the second source' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await flush();
+
+    expect(firstRun).toHaveBeenCalledTimes(1);
+    expect(secondRun.mock.calls.map(([, question]) => question)).toEqual([
+      'Question for the second source',
+      'Retry in the second source'
+    ]);
+    expect(within(messages()).getByText('Retry in the second source', { exact: true })).toBeTruthy();
+    expect(within(messages()).queryByText('Question for the first source', { exact: true })).toBeNull();
+    expect(screen.getByRole('table')).toBeTruthy();
   });
 
   it('keeps a late A stream out of B and returns to A without starting a second consumer', async () => {

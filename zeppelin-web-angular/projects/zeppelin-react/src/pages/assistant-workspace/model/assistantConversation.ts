@@ -96,11 +96,13 @@ export class AssistantConversationSession {
     this.changed();
   };
 
+  /** Draft-only edits preserve the current message snapshot. */
   setDraft(value: string): void {
-    if (this.disposed) return;
+    if (this.disposed || this.draft === value) return;
 
     this.draft = value;
-    this.publish();
+    this.entry = { ...this.entry, draft: value };
+    this.changed();
   }
 
   ensureHistory(): void {
@@ -184,33 +186,11 @@ export class AssistantConversationSession {
     if (this.history.snapshot.loading) this.historyRefreshPending = true;
     const answerKey = this.history.beginTurn();
 
-    if (!this.conversation) {
-      try {
-        const conversation = await this.source.api.createConversation({});
-        if (this.disposed || this.controller !== controller) return;
-
-        // A rejected first send must reuse the conversation already created.
-        this.conversation = conversation;
-        this.phase = 'pending';
-        this.entry = this.project();
-        this.confirmed(this, conversation);
-      } catch (error) {
-        if (!this.disposed && this.controller === controller) {
-          this.controller = undefined;
-          this.phase = 'idle';
-          this.failure = {
-            message: error instanceof Error ? error.message : 'Could not create a conversation.',
-            kind: 'failed',
-            recovery: 'send'
-          };
-          this.publish();
-        }
-        return;
-      }
-    }
+    const conversation = this.conversation ?? (await this.createConversation(controller));
+    if (!conversation || this.disposed || this.controller !== controller) return;
 
     const run = new AssistantRun(answerKey);
-    const publishRun = (previous: AssistantRunSnapshot, next: AssistantRunSnapshot) => {
+    const applyRunTransition = (previous: AssistantRunSnapshot, next: AssistantRunSnapshot) => {
       if (!previous.accepted && next.accepted) {
         this.phase = 'running';
         if (this.draft === submitted) this.draft = '';
@@ -231,12 +211,12 @@ export class AssistantConversationSession {
     };
 
     try {
-      for await (const event of this.source.run(this.conversation.id, content, controller.signal)) {
+      for await (const event of this.source.run(conversation.id, content, controller.signal)) {
         if (this.disposed || this.controller !== controller) return;
 
         const previous = run.snapshot;
         const next = run.receive(event);
-        if (next !== previous) publishRun(previous, next);
+        if (next !== previous) applyRunTransition(previous, next);
         if (next.outcome) break;
       }
 
@@ -247,7 +227,7 @@ export class AssistantConversationSession {
 
       const previous = run.snapshot;
       const next = run.interrupt(error);
-      if (next !== previous) publishRun(previous, next);
+      if (next !== previous) applyRunTransition(previous, next);
     } finally {
       if (this.controller === controller) this.controller = undefined;
     }
@@ -262,6 +242,32 @@ export class AssistantConversationSession {
 
     if (run.snapshot.accepted) this.activity();
     await this.refreshHistory();
+  }
+
+  private async createConversation(controller: AbortController): Promise<AssistantConversation | undefined> {
+    try {
+      const conversation = await this.source.api.createConversation({});
+      if (this.disposed || this.controller !== controller) return undefined;
+
+      // A rejected first send must reuse the conversation already created.
+      this.conversation = conversation;
+      this.phase = 'pending';
+      this.entry = this.project();
+      this.confirmed(this, conversation);
+      return conversation;
+    } catch (error) {
+      if (!this.disposed && this.controller === controller) {
+        this.controller = undefined;
+        this.phase = 'idle';
+        this.failure = {
+          message: error instanceof Error ? error.message : 'Could not create a conversation.',
+          kind: 'failed',
+          recovery: 'send'
+        };
+        this.publish();
+      }
+      return undefined;
+    }
   }
 
   async delete(): Promise<AssistantDeletionResult> {
