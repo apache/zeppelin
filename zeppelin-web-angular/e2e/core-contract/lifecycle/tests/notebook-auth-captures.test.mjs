@@ -143,7 +143,8 @@ test('an HTTP-only expiry keeps the socket working and logs out once per rejecte
   const capture = readCapture('http-session-expired.json');
   const sent = frames(capture, 'role2-member', 'send').filter(frame => frame.op === 'GET_NOTE');
   const notes = frames(capture, 'role2-member', 'receive').filter(frame => frame.op === 'NOTE');
-  assert.ok(sent.some(read => notes.some(note => note.msgId === read.msgId)));
+  const lastRead = sent.at(-1);
+  assert.ok(notes.some(note => note.msgId === lastRead.msgId));
 
   const rejected = rest(capture, 'request', 'GET', '/api/login').filter(
     login =>
