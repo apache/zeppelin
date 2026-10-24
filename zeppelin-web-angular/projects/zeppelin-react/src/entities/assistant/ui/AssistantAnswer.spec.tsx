@@ -20,6 +20,7 @@ const answer = () => screen.getByRole('article', { name: 'Assistant answer' });
 describe('AssistantAnswer', () => {
   it('shows only the current state as the run moves from loading to done', () => {
     const { rerender } = render(<AssistantAnswer view={{ status: 'loading' }} />);
+
     expect(screen.getByRole('status').textContent).toBe('Thinking…');
     expect(answer().getAttribute('aria-busy')).toBe('true');
 
@@ -32,6 +33,7 @@ describe('AssistantAnswer', () => {
         }}
       />
     );
+
     expect(screen.getByRole('status').textContent).toBe('Writing answer…');
     expect(answer().textContent).toContain('Revenue is grouped');
 
@@ -50,6 +52,7 @@ describe('AssistantAnswer', () => {
         }}
       />
     );
+
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(answer().hasAttribute('aria-busy')).toBe(false);
@@ -70,6 +73,7 @@ describe('AssistantAnswer', () => {
         }}
       />
     );
+
     expect(screen.getByRole('status').textContent).toBe('Running read_results…');
     expect(screen.getByText('Using 2 tools')).toBeTruthy();
     const [first, second] = screen.getAllByRole('listitem');
@@ -77,19 +81,22 @@ describe('AssistantAnswer', () => {
     expect(within(second).getByRole('img', { name: 'Running' })).toBeTruthy();
   });
 
-  it('opens the tool log while a tool runs and collapses it when the answer completes', () => {
+  it('keeps a user-collapsed tool log closed through answer updates and completion', () => {
     const running: AssistantAnswerView = {
       status: 'streaming',
       content: '',
       tools: [{ id: 't1', name: 'list_paragraphs', status: 'running' }]
     };
-    const toolLog = () => screen.getByText(/tool$/).closest('details')!;
+    const toolLog = () => within(answer()).getByRole('group') as HTMLDetailsElement;
+
     const { rerender } = render(<AssistantAnswer view={running} />);
+
     expect(toolLog().open).toBe(true);
 
     // A user who collapses the log keeps it collapsed while more of the answer arrives.
     toolLog().open = false;
     rerender(<AssistantAnswer view={{ ...running, content: 'Revenue' }} />);
+
     expect(toolLog().open).toBe(false);
 
     rerender(
@@ -104,11 +111,80 @@ describe('AssistantAnswer', () => {
         }}
       />
     );
+
     expect(toolLog().open).toBe(false);
+  });
+
+  it('preserves an explicitly expanded finished tool log when streaming completes', () => {
+    const { rerender } = render(
+      <AssistantAnswer
+        view={{
+          status: 'streaming',
+          content: 'Revenue',
+          tools: [{ id: 't1', name: 'list_paragraphs', status: 'done' }]
+        }}
+      />
+    );
+
+    const log = within(answer()).getByRole('group') as HTMLDetailsElement;
+    const summary = log.querySelector('summary')!;
+    log.open = true;
+    summary.focus();
+
+    rerender(
+      <AssistantAnswer
+        view={{
+          status: 'done',
+          message: {
+            id: 'm1',
+            role: 'assistant',
+            segments: [{ id: 's1', content: 'Revenue', toolCalls: [{ id: 't1', name: 'list_paragraphs' }] }]
+          }
+        }}
+      />
+    );
+
+    expect(within(answer()).getByRole('group')).toHaveProperty('open', true);
+    expect(document.activeElement).toBe(summary);
+  });
+
+  it('keeps the native tool log and its focused summary when streaming fails', () => {
+    const tools = [
+      { id: 't1', name: 'list_paragraphs', status: 'done' as const },
+      { id: 't2', name: 'read_results', status: 'running' as const }
+    ];
+    const { rerender } = render(<AssistantAnswer view={{ status: 'streaming', content: 'Revenue', tools }} />);
+    const log = within(answer()).getByRole('group') as HTMLDetailsElement;
+    const summary = log.querySelector('summary')!;
+    log.open = false;
+    summary.focus();
+
+    rerender(
+      <AssistantAnswer
+        view={{
+          status: 'error',
+          kind: 'connection',
+          message: 'Connection lost',
+          content: 'Revenue',
+          tools
+        }}
+      />
+    );
+
+    expect(within(answer()).getByRole('group')).toBe(log);
+    expect(log.open).toBe(false);
+    expect(document.activeElement).toBe(summary);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByRole('alert').textContent).toContain('Connection lost');
+    expect(answer().textContent).toContain('Revenue');
+    expect(screen.getByRole('img', { name: 'Done' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Status unknown' })).toBeTruthy();
+    expect(screen.queryByRole('img', { name: 'Running' })).toBeNull();
   });
 
   it('labels a tool whose completion event carried no name', () => {
     render(<AssistantAnswer view={{ status: 'streaming', content: '', tools: [{ id: 't1', status: 'running' }] }} />);
+
     expect(screen.getByRole('status').textContent).toBe('Running Tool…');
   });
 
@@ -141,7 +217,9 @@ describe('AssistantAnswer', () => {
       message: 'The assistant stopped responding before the reply finished. Retry the request.',
       content: 'Revenue is grouped'
     };
+
     render(<AssistantAnswer view={view} />);
+
     expect(screen.queryByRole('status')).toBeNull();
     expect(answer().hasAttribute('aria-busy')).toBe(false);
     expect(answer().textContent).toContain('Revenue is grouped');
@@ -175,6 +253,7 @@ describe('AssistantAnswer', () => {
         renderContent={content => <strong>{content.replaceAll('*', '')}</strong>}
       />
     );
+
     expect(answer().querySelector('strong')?.textContent).toBe('bold');
   });
 });

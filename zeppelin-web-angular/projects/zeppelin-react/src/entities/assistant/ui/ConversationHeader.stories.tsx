@@ -33,7 +33,7 @@ const readOnly: AssistantConversation = {
 const meta = {
   title: 'Assistant/ConversationHeader',
   component: ConversationHeader,
-  args: { conversation: current, onCreate: fn(), onDelete: fn() }
+  args: { conversation: current, onCreate: fn(), onDelete: fn(), onOpenList: fn() }
 } satisfies Meta<typeof ConversationHeader>;
 
 export default meta;
