@@ -9,14 +9,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import {
-  createLifecycleRecorder,
-  validateLifecycleFixture,
-  type LifecycleFixture
-} from '../../../core-contract/lifecycle/fixture.mjs';
+import { writeWithoutAccountNames } from '../../../core-contract/lifecycle/capture';
+import { createLifecycleRecorder, type LifecycleFixture } from '../../../core-contract/lifecycle/fixture.mjs';
 import { NotebookCoreReadPage } from '../../../models/notebook-core-read-page';
 import {
   checkpoint,
@@ -78,21 +74,6 @@ const readCaptureMetadata = async (
     // Captures are taken from Apache master, so `commit` lives in apache/zeppelin.
     source: { repository: 'apache/zeppelin', commit, serverCommit: version['git-commit-id'] }
   } as LifecycleFixture['metadata'];
-};
-
-/**
- * The recorder redacts principals by field name, but AUTH_INFO names the allowed and denied users in
- * its free text, so the account names are replaced there too.
- */
-const writeWithoutAccountNames = (fixture: LifecycleFixture, names: string[], file: string) => {
-  let text = JSON.stringify(fixture, null, 2);
-  for (const name of names) {
-    text = text.replace(new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), '<user>');
-  }
-  const redacted = JSON.parse(text) as LifecycleFixture;
-  expect(validateLifecycleFixture(redacted)).toEqual([]);
-  mkdirSync(path.dirname(file), { recursive: true });
-  writeFileSync(file, `${text}\n`);
 };
 
 test.describe('Notebook read transport fixtures', () => {

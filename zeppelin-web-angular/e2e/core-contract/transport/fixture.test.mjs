@@ -2627,3 +2627,44 @@ test('a response without a download completion event cannot be written as a comp
     /outstanding notebook request/
   );
 });
+
+test('version 1 validation rejects a failed REST record', () => {
+  const shape = { method: 'GET', url: '/api/notebook', headers: {}, bodyRaw: '' };
+  assert.match(
+    validateFixture({
+      metadata: fixtureMetadata(),
+      records: [
+        { kind: 'rest', sequence: 1, rest: { direction: 'failed', request: shape, failure: 'net::ERR_ABORTED' } }
+      ],
+      version: fixtureVersion
+    }).join(),
+    /direction must be request or response/
+  );
+});
+
+test('version 1 sanitization keeps only the path of a Location header and drops cookies', () => {
+  const shape = { method: 'POST', url: '/api/notebook', headers: {}, bodyRaw: '' };
+  const fixture = fixtureModule.sanitizeFixture({
+    metadata: fixtureMetadata(),
+    records: [
+      {
+        kind: 'rest',
+        sequence: 1,
+        rest: {
+          direction: 'response',
+          request: shape,
+          status: 201,
+          headers: {
+            location: 'http://127.0.0.1:18080/api/notebook/x;jsessionid=private-session?ticket=private-ticket',
+            'set-cookie': 'JSESSIONID=private-session'
+          },
+          bodyRaw: ''
+        }
+      }
+    ],
+    version: fixtureVersion
+  });
+
+  assert.deepEqual(fixture.records[0].rest.headers, { location: '/api/notebook/x' });
+  assert.equal(JSON.stringify(fixture).includes('private-'), false);
+});

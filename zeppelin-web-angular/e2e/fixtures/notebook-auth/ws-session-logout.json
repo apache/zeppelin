@@ -1,0 +1,444 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "The same account logs out and signs in again elsewhere; the first page keeps its socket and old ticket",
+    "coveredOperations": ["POST /api/login", "POST /api/login/logout", "GET_NOTE", "SESSION_LOGOUT"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:06:33.656Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    }
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/security/ticket",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:1>\",\"data\":{\"id\":\"2N4ZTFWJA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:2>\",\"data\":{\"noteId\":\"2N4ZTFWJA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"COLLABORATIVE_MODE_STATUS\",\"data\":{\"status\":false},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 6
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"NOTE\",\"data\":{\"note\":{\"paragraphs\":[{\"text\":\"%md synthetic\",\"user\":\"<user>\",\"dateUpdated\":\"<dateUpdated>\",\"progress\":0,\"config\":{},\"settings\":{\"params\":{},\"forms\":{}},\"apps\":[],\"runtimeInfos\":{},\"progressUpdateIntervalMs\":500,\"jobName\":\"paragraph_1792490793569_1849882011\",\"id\":\"paragraph_1792490793569_1849882011\",\"dateCreated\":\"<dateCreated>\",\"status\":\"READY\"}],\"name\":\"ws-session-logout-1792490793559\",\"id\":\"2N4ZTFWJA\",\"defaultInterpreterGroup\":\"spark\",\"version\":\"0.13.0-SNAPSHOT\",\"noteParams\":{},\"noteForms\":{},\"angularObjects\":{},\"config\":{\"isZeppelinNotebookCronEnable\":false},\"info\":{},\"path\":\"/AuthCapture/ws-session-logout-1792490793559\"}},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\",\"msgId\":\"<msgId:1>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_INTERPRETER_BINDINGS\",\"msgId\":\"<msgId:3>\",\"data\":{\"noteId\":\"2N4ZTFWJA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4ZTFWJA/permissions",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 9
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"data\":{\"noteId\":\"2N4ZTFWJA\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 10
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 11
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"msgId\":\"<msgId:4>\",\"data\":{\"paragraphId\":\"paragraph_1792490793569_1849882011\",\"paragraphText\":\"%md synthetic\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 12
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:2",
+      "sequence": 13,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/2N4ZTFWJA/permissions",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "readers": ["<readers>", "<readers>"],
+            "owners": ["<owners>"],
+            "writers": ["<writers>"],
+            "runners": ["<runners>"]
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "viewer",
+      "requestId": "viewer:request:3",
+      "sequence": 14,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "accept": "application/json, text/plain, */*"
+          },
+          "method": "GET",
+          "url": "/api/notebook/capabilities",
+          "bodyRaw": ""
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "isRevisionSupported": false
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"INTERPRETER_BINDINGS\",\"data\":{\"interpreterBindings\":[{\"id\":\"md\",\"name\":\"md\",\"interpreters\":[{\"name\":\"md\",\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"defaultInterpreter\":false,\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false}}],\"selected\":true}],\"noteId\":\"2N4ZTFWJA\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 15
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"EDITOR_SETTING\",\"data\":{\"editor\":{\"language\":\"markdown\",\"editOnDblClick\":true,\"completionSupport\":false},\"paragraphId\":\"paragraph_1792490793569_1849882011\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 16
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        }
+      },
+      "sequence": 17
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:1",
+      "sequence": 18,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:2",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "POST",
+          "url": "/api/login/logout",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 19
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:2",
+      "sequence": 20,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "POST",
+          "url": "/api/login/logout",
+          "bodyRaw": ""
+        },
+        "status": 401,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "UNAUTHORIZED",
+          "message": "",
+          "body": {
+            "clearAuthorizationHeader": "<clearAuthorizationHeader>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:5>\",\"data\":{\"id\":\"2N4ZTFWJA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 21
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:3",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        }
+      },
+      "sequence": 22
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:3",
+      "sequence": 23,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:6>\",\"data\":{\"id\":\"2N4ZTFWJA\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 24
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SESSION_LOGOUT\",\"data\":{\"info\":\"Your ticket is invalid possibly due to server restart. Please login again.\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 25
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer"
+    },
+    {
+      "id": "second-browser"
+    }
+  ]
+}

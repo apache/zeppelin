@@ -1,0 +1,149 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "The server restarts while a page keeps its socket; the page reconnects with its old ticket",
+    "coveredOperations": ["POST /api/login", "GET_NOTE", "SESSION_LOGOUT"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:19:10.652Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    },
+    "restart": {
+      "method": "capture/server.sh stop and start on the same capture root within the test"
+    }
+  },
+  "records": [
+    {
+      "kind": "connection",
+      "event": "open",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "sequence": 1
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:1>\",\"data\":{\"id\":\"2N55PN1SW\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 2
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"LIST_REVISION_HISTORY\",\"msgId\":\"<msgId:2>\",\"data\":{\"noteId\":\"2N55PN1SW\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 3
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:3>\",\"data\":{\"id\":\"2N55PN1SW\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 4
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        }
+      },
+      "sequence": 5
+    },
+    {
+      "kind": "rest",
+      "sessionId": "second-browser",
+      "requestId": "second-browser:request:1",
+      "sequence": 6,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          "method": "POST",
+          "url": "/api/login",
+          "bodyRaw": "userName=<user>&password=<redacted>"
+        },
+        "status": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "OK",
+          "message": "",
+          "body": {
+            "principal": "<principal>",
+            "ticket": "<ticket>",
+            "roles": "<roles>"
+          }
+        }
+      }
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "send",
+        "payloadText": "{\"op\":\"GET_NOTE\",\"msgId\":\"<msgId:4>\",\"data\":{\"id\":\"2N55PN1SW\"},\"principal\":\"<principal>\",\"ticket\":\"<ticket>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 7
+    },
+    {
+      "kind": "websocket",
+      "sessionId": "viewer",
+      "connectionId": "viewer:socket:1",
+      "websocket": {
+        "direction": "receive",
+        "payloadText": "{\"op\":\"SESSION_LOGOUT\",\"data\":{\"info\":\"Your ticket is invalid possibly due to server restart. Please login again.\"},\"ticket\":\"<ticket>\",\"principal\":\"<principal>\",\"roles\":\"<roles>\"}"
+      },
+      "sequence": 8
+    }
+  ],
+  "sessions": [
+    {
+      "id": "viewer"
+    },
+    {
+      "id": "second-browser"
+    }
+  ]
+}

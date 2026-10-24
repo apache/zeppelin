@@ -284,7 +284,9 @@ Envelope `msgId` values receive distinct placeholders that preserve repeated ref
 Replay binds these placeholders to runtime IDs and preserves equality across viewers.
 Legacy fixtures with the erased `<msgId>` value require recapture.
 
-Only `accept` and `content-type` headers survive filtering. Redirect and authentication headers are outside this contract.
+Only `accept`, `content-type` and `location` headers survive filtering in both formats.
+`location` keeps only its path without host, query or path parameters, and an unparseable value is dropped.
+Cookie and authorization headers are never recorded.
 JSON strings, including notebook text, are not generally scanned for secrets.
 Text scanning applies to URLs, raw bodies, and non-JSON frames, and cannot detect every credential form.
 Use only the isolated server and synthetic notebook content. Review captures before committing them.
@@ -295,6 +297,11 @@ Each WebSocket record requires exactly one of `payloadText` and `payloadBase64`.
 
 Wait for the scenario to finish before calling recorder `stop()` or `write()`.
 Both wait for already observed response-body reads. Failed or unfinished requests fail capture.
+A lifecycle recorder created with `{ authentication: true }` also records `/api/security/ticket`, `/api/login` and
+`/api/login/logout`, records each redirect hop as its own request with its `location` and no body, names the request a
+hop was redirected from in `redirectedFrom`, and records a
+failed sign-in request as a `failed` record with the browser's error text. A failed notebook request still fails capture.
+Lifecycle replay rejects a capture that contains these sign-in requests, a `failed` record or a `location` header.
 A snapshot taken before successful stop can contain gaps and is not a complete replay fixture.
 
 These fixtures replay complete REST bodies, not HTTP chunks, header availability, or application callback timing.
@@ -362,9 +369,8 @@ view (ZEPPELIN-6737). They are separate from the seven lifecycle captures and th
 | `read-anonymous.json` | `GET_NOTE` and `NOTE_REVISION` replies, a missing note's `ERROR_INFO`, and note permission reads.  |
 | `read-denied.json`    | An authenticated read the note permissions deny: `AUTH_INFO` and a `403` permissions response.     |
 
-Each read reply and each failure carries the msgId of its request. That depends on a server change
-that is not on Apache master yet, so the committed captures name the branch commit that was built and
-served in `metadata.source`. Recapture from Apache master once that change is merged.
+Each read reply and each failure carries the msgId of its request. Both committed captures were taken
+from Apache master commit `bf658867be1067a208d3b41cd07cb0a3feb4ef06`, which `metadata.source` names.
 
 Capture with the server running and its UI served on `PLAYWRIGHT_BASE_URL`; the denied read
 needs an authenticated server with two Shiro accounts:
@@ -384,3 +390,76 @@ signed-in one. `metadata.source.repository` is `apache/zeppelin`, so capture fro
 The capture replaces the account names that `AUTH_INFO` prints in its text with `<user>`.
 `src/app/pages/workspace/notebook/core-read/notebook-read-fixture.spec.ts` replays both captures
 through the production read transport and Core.
+
+## Authentication and permission captures
+
+[notebook-auth](../fixtures/notebook-auth/) holds server behavior around note permissions, sign-in and
+session expiry (ZEPPELIN-6673). Its [manifest](../fixtures/notebook-auth/manifest.json) records capture
+outcomes, and `lifecycle/tests/notebook-auth-captures.test.mjs` checks the inventory. All supported captures
+use Apache master commit `bf658867be1067a208d3b41cd07cb0a3feb4ef06`.
+
+| Fixture                              | Behavior covered                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `acl-write.json`                     | A permission write by the note owner (`200`) and by a non-owner (`403`).                              |
+| `acl-write-role-owner.json`          | The same writes when the owner is named only by a role.                                               |
+| `acl-write-unauthenticated.json`     | A write without a session: `302` to `/api/login`, which answers `405`.                                |
+| `acl-write-anonymous.json`           | A write on an anonymous server, which succeeds.                                                       |
+| `rest-401-logout.json`               | A signed-in logout, answered with `401` and no `Location`.                                            |
+| `rest-401-with-location.json` (no file) | Skipped: this server never sends a `401` with `Location`; that needs an SSO realm such as Knox.       |
+| `http-session-expired.json`          | An expired HTTP session while the WebSocket still works, and the logouts that the `405`s start.       |
+| `ws-global-auth-info.json`           | An `AUTH_INFO` with no msgId, after which reads on the same socket still succeed.                     |
+| `ws-global-error-info.json`          | An `ERROR_INFO` with no msgId.                                                                        |
+| `ws-read-correlation.json`           | Read failures that carry their request msgId next to an unrelated global `ERROR_INFO`.                |
+| `ws-session-logout.json`             | After a logout, a command on the old ticket is dropped. Once the account signs in again, it is answered with `SESSION_LOGOUT`. |
+| `session-expiry-server-restart.json` | The same signals after a server restart clears the tickets.                                           |
+
+The recorder is created with `{ authentication: true }`, so sign-in requests, redirect hops and their `location`
+paths are recorded. Account names in response text are replaced with `<user>`, and the environment omits server
+directories.
+
+Capture with the baseline helper from [Prepare the baseline](#prepare-the-baseline). Most rows need an authenticated
+server with an owner, a non-owner and a `role2` member in its Shiro template; the anonymous write needs a second run:
+
+```bash
+export ZEPPELIN_CAPTURE_MASTER_COMMIT="$(git -C "$BASELINE_CHECKOUT" rev-parse HEAD)"
+export ZEPPELIN_CAPTURE_HELPER="$CAPTURE_HELPER"
+export ZEPPELIN_AUTH_FIXTURE_DIR="$(mktemp -d)"
+export PLAYWRIGHT_BASE_URL=http://127.0.0.1:18080
+
+export CAPTURE_ROOT="$(mktemp -d)"
+bash "$CAPTURE_HELPER" start --root "$CAPTURE_ROOT" --port 18080 --mode auth
+export ZEPPELIN_CAPTURE_ENVIRONMENT="$CAPTURE_ROOT/capture-environment.json"
+export ZEPPELIN_E2E_SHIRO_INI="$CAPTURE_ROOT/conf/shiro.ini"
+npm run e2e:core-contract:live -- notebook-auth-fixtures
+bash "$CAPTURE_HELPER" stop --root "$CAPTURE_ROOT"
+
+export CAPTURE_ROOT="$(mktemp -d)"
+bash "$CAPTURE_HELPER" start --root "$CAPTURE_ROOT" --port 18080
+export ZEPPELIN_CAPTURE_ENVIRONMENT="$CAPTURE_ROOT/capture-environment.json"
+export ZEPPELIN_E2E_SHIRO_INI="$CAPTURE_ROOT/conf/shiro.ini"
+npm run e2e:core-contract:live -- notebook-auth-fixtures -g 'anonymous permission write'
+bash "$CAPTURE_HELPER" stop --root "$CAPTURE_ROOT"
+
+npx prettier --write "$ZEPPELIN_AUTH_FIXTURE_DIR"
+```
+
+The server restart row restarts the server through `ZEPPELIN_CAPTURE_HELPER` and runs last. After it, signing in
+through the UI in global setup failed repeatedly on the restarted server for a reason not yet found, so stop the
+server and start a new one from the shell before capturing again. Review the files and copy them to
+`e2e/fixtures/notebook-auth/`, then run `npm run check:core-contract-fixtures`.
+
+### Handoff to ZEPPELIN-6727
+
+| Fixtures                                                           | What a consumer checks                                                                                    | Behavior owner | Server                         |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------ |
+| `acl-write.json`, `acl-write-role-owner.json`                      | The write result comes from the server reply, not from a client owner check.                              | Server        | `--mode auth`                  |
+| `acl-write-anonymous.json`                                         | An anonymous server accepts the write.                                                                    | Server        | anonymous                      |
+| `acl-write-unauthenticated.json`, `http-session-expired.json`      | Each `405` on a request that is not the logout starts one logout; a `405` on the logout does not.         | Angular shell | `--mode auth`                  |
+| `rest-401-logout.json`                                             | A `401` without `Location` leaves the page as it is. A `401` with `Location` is covered by a synthetic test. | Angular shell | `--mode auth`                  |
+| `ws-global-auth-info.json`, `ws-global-error-info.json`            | A message without msgId is shown by the shell, does not change the sign-in state and is not a Core event. | Angular shell | `--mode auth`                  |
+| `ws-read-correlation.json`                                         | A failure with the read's msgId ends that read; an unrelated global error does not.                       | Core          | `--mode auth`                  |
+| `ws-session-logout.json`, `session-expiry-server-restart.json`     | `SESSION_LOGOUT` is recorded as an invalid-ticket signal that nothing handles yet.                        | Angular shell (session foundation) | `--mode auth`, restart helper |
+
+Behavior owner names who handles the behavior, which is not `metadata.owner`, the package that keeps the capture.
+`src/app/app-http.interceptor.spec.ts` and `src/app/app-message.interceptor.spec.ts` replay the shell rows
+through the production interceptors.

@@ -66,6 +66,14 @@ class LifecycleReplay {
   constructor(fixture, faults) {
     const errors = validateLifecycleFixture(fixture);
     if (errors.length) throw new Error(errors.join('\n'));
+    const authentication = ({ rest }) =>
+      rest &&
+      (rest.direction === 'failed' ||
+        rest.headers?.location ||
+        !isNotebookRestUrl(`http://fixture.test${rest.request.url}`));
+    if (fixture.records.some(authentication)) {
+      throw new Error('Lifecycle replay does not support authentication captures');
+    }
     this.#fixture = fixture;
     this.#correlation = createMessageCorrelation(fixture);
     // Each expected input has one bounded gate; unmatched traffic never enters the stream.

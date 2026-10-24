@@ -23,7 +23,7 @@ export const fixtureVersion = 1;
 const restDirections = new Set(['request', 'response']);
 const websocketDirections = new Set(['send', 'receive']);
 
-const safeHeaderNames = new Set(['accept', 'content-type']);
+const safeHeaderNames = new Set(['accept', 'content-type', 'location']);
 const volatileFieldNames = new Set([
   'dateCreated',
   'dateFinished',
@@ -722,11 +722,21 @@ function sanitizeRecord(record) {
   };
 }
 
+function locationPath(value) {
+  try {
+    return new URL(value, 'http://fixture.test').pathname.replace(/;[^/]*/g, '');
+  } catch {
+    return undefined;
+  }
+}
+
 function filterHeaders(headers = {}) {
   return Object.fromEntries(
     Object.entries(headers)
       .map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value.join(', ') : String(value ?? '')])
       .filter(([key, value]) => safeHeaderNames.has(key) && !isDefaultAccept(key, value))
+      .map(([key, value]) => [key, key === 'location' ? locationPath(value) : value])
+      .filter(([, value]) => value !== undefined)
   );
 }
 
@@ -1002,13 +1012,17 @@ function toBinaryBuffer(value) {
   return null;
 }
 
-export const validateRestRecord = (errors, prefix, record) => {
+export const validateRestRecord = (errors, prefix, record, { allowFailed = false } = {}) => {
   if (!record.rest || typeof record.rest !== 'object') {
     errors.push(`${prefix}.rest is required`);
     return;
   }
-  if (!restDirections.has(record.rest.direction)) {
+  const failed = allowFailed && record.rest.direction === 'failed';
+  if (!restDirections.has(record.rest.direction) && !failed) {
     errors.push(`${prefix}.rest.direction must be request or response`);
+  }
+  if (failed && !(typeof record.rest.failure === 'string' && record.rest.failure)) {
+    errors.push(`${prefix}.rest.failure is required for failed requests`);
   }
   if (!isHttpMethod(record.rest.request?.method)) {
     errors.push(`${prefix}.rest.request.method is required`);

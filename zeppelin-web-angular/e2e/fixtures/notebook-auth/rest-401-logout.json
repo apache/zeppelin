@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "metadata": {
+    "owner": "zeppelin-web-angular",
+    "scenario": "Logout of a signed-in non-owner account",
+    "coveredOperations": ["POST /api/login/logout"],
+    "knownExclusions": [
+      "Accounts are named by role. Account names are replaced with <user>, and ticket, principal and role values are masked, so a ticket change or an unchanged authentication state is shown by server behaviour, not by values.",
+      "Shell-owned AUTH_INFO, ERROR_INFO and SESSION_LOGOUT are observations of the host, not Shared Notebook Core events."
+    ],
+    "environment": {
+      "authentication": "auth",
+      "browser": {
+        "name": "chromium",
+        "version": "140.0.7339.186"
+      },
+      "origin": "http://127.0.0.1:18080",
+      "serverPort": 18080,
+      "paragraphStatusProgress": "true",
+      "interpreterExecution": "none",
+      "configurationSource": "capture-helper",
+      "storage": "org.apache.zeppelin.notebook.repo.VFSNotebookRepo"
+    },
+    "capturedAt": "2026-10-20T10:06:23.605Z",
+    "zeppelinVersion": "0.13.0-SNAPSHOT",
+    "source": {
+      "repository": "apache/zeppelin",
+      "commit": "bf658867be1067a208d3b41cd07cb0a3feb4ef06",
+      "serverCommit": "bf65886"
+    },
+    "authorizationHeaderClear": true
+  },
+  "records": [
+    {
+      "kind": "rest",
+      "sessionId": "non-owner",
+      "requestId": "non-owner:request:1",
+      "rest": {
+        "direction": "request",
+        "request": {
+          "headers": {},
+          "method": "POST",
+          "url": "/api/login/logout",
+          "bodyRaw": ""
+        }
+      },
+      "sequence": 1
+    },
+    {
+      "kind": "rest",
+      "sessionId": "non-owner",
+      "requestId": "non-owner:request:1",
+      "sequence": 2,
+      "rest": {
+        "direction": "response",
+        "request": {
+          "headers": {},
+          "method": "POST",
+          "url": "/api/login/logout",
+          "bodyRaw": ""
+        },
+        "status": 401,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "bodyJson": {
+          "status": "UNAUTHORIZED",
+          "message": "",
+          "body": {
+            "clearAuthorizationHeader": "<clearAuthorizationHeader>"
+          }
+        }
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "id": "non-owner"
+    }
+  ]
+}

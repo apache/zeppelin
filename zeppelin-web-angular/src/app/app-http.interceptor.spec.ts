@@ -10,17 +10,43 @@
  * limitations under the License.
  */
 
-import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandler, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { defer, firstValueFrom, of, Subject, throwError } from 'rxjs';
 
 import { NzMessageService } from 'ng-zorro-antd/message';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BaseUrlService, TicketService } from '@zeppelin/services';
 
+import sessionExpiredCapture from '../../e2e/fixtures/notebook-auth/http-session-expired.json?raw';
+import logoutCapture from '../../e2e/fixtures/notebook-auth/rest-401-logout.json?raw';
 import { AppHttpInterceptor } from './app-http.interceptor';
+
+interface CapturedRest {
+  kind: string;
+  requestId?: string;
+  redirectedFrom?: string;
+  rest?: {
+    direction: string;
+    status?: number;
+    headers?: Record<string, string>;
+    request: { method: string; url: string };
+  };
+}
+
+const capturedRecords = (raw: string): CapturedRest[] => (JSON.parse(raw) as { records: CapturedRest[] }).records;
+
+/** Each captured 405 together with the request the browser was redirected from, which is what Angular sent. */
+const captured405s = (raw: string) => {
+  const records = capturedRecords(raw);
+  const request = (requestId?: string) =>
+    records.find(record => record.rest?.direction === 'request' && record.requestId === requestId);
+  return records
+    .filter(record => record.rest?.direction === 'response' && record.rest.status === 405)
+    .map(response => request(request(response.requestId)?.redirectedFrom)!.rest!.request);
+};
 
 const REST_BASE = 'http://localhost:8080/api';
 
@@ -166,5 +192,65 @@ describe('AppHttpInterceptor', () => {
     await expect(intercept(firstFailure, `${REST_BASE}/notebook`)).rejects.toBe(firstFailure);
     expect(logout).toHaveBeenCalledTimes(2);
     expect(logoutSubscribed).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs out once for each captured 405 on a request that is not the logout itself', async () => {
+    const sources = captured405s(sessionExpiredCapture);
+    const fromLogout = sources.filter(source => source.url === '/api/login/logout');
+    expect(fromLogout.length).toBeGreaterThan(0);
+    expect(sources.length - fromLogout.length).toBeGreaterThan(0);
+
+    for (const source of sources) {
+      const failure = sessionExpired(`${REST_BASE}/login`);
+      await expect(intercept(failure, `${REST_BASE}${source.url.replace(/^\/api/, '')}`, source.method)).rejects.toBe(
+        failure
+      );
+    }
+
+    expect(logout).toHaveBeenCalledTimes(sources.length - fromLogout.length);
+  });
+
+  describe('a REST 401', () => {
+    // jsdom ignores navigation to anything but a hash, so record the assignments instead.
+    let navigations: string[];
+
+    beforeEach(() => {
+      navigations = [];
+      vi.spyOn(window, 'location', 'get').mockReturnValue({
+        set href(value: string) {
+          navigations.push(value);
+        }
+      } as Location);
+    });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('stays on the page for the captured logout 401, which has no Location', async () => {
+      const response = capturedRecords(logoutCapture).find(record => record.rest?.status === 401)!.rest!;
+      const failure = new HttpErrorResponse({
+        status: 401,
+        url: `${REST_BASE}/login/logout`,
+        headers: new HttpHeaders(response.headers)
+      });
+
+      await expect(intercept(failure, `${REST_BASE}/login/logout`, 'POST')).rejects.toBe(failure);
+
+      expect(navigations).toEqual([]);
+      expect(logout).not.toHaveBeenCalled();
+    });
+
+    // Synthetic: the captured server never sends a 401 with Location; that needs an SSO realm such as Knox.
+    it('follows the Location of a synthetic 401 that has one', async () => {
+      const failure = new HttpErrorResponse({
+        status: 401,
+        url: `${REST_BASE}/notebook`,
+        headers: new HttpHeaders({ Location: '/sso/login' })
+      });
+
+      await expect(intercept(failure, `${REST_BASE}/notebook`)).rejects.toBe(failure);
+
+      expect(navigations).toEqual(['/sso/login']);
+      expect(logout).not.toHaveBeenCalled();
+    });
   });
 });

@@ -73,7 +73,7 @@ function validateRouteContext(errors, prefix, record) {
 }
 
 function validateLifecycleRest(errors, prefix, record, state) {
-  validateRestRecord(errors, prefix, record);
+  validateRestRecord(errors, prefix, record, { allowFailed: true });
 
   if (typeof record.requestId !== 'string' || !record.requestId) {
     errors.push(`${prefix}: requestId required`);
@@ -87,10 +87,17 @@ function validateLifecycleRest(errors, prefix, record, state) {
       errors.push(`${prefix}: duplicate REST request`);
     }
 
+    if (
+      record.redirectedFrom !== undefined &&
+      !state.seenRequests.has(`${record.sessionId}:${record.redirectedFrom}`)
+    ) {
+      errors.push(`${prefix}: redirectedFrom must name an earlier request`);
+    }
+
     state.seenRequests.add(requestId);
     state.requests.set(requestId, rest.request);
-  } else if (rest?.direction === 'response') {
-    if (!Number.isInteger(rest.status) || rest.status < 100 || rest.status > 599) {
+  } else if (rest?.direction === 'response' || rest?.direction === 'failed') {
+    if (rest.direction === 'response' && (!Number.isInteger(rest.status) || rest.status < 100 || rest.status > 599)) {
       errors.push(`${prefix}: response status required`);
     }
 

@@ -17,6 +17,7 @@
     "../../models/notebook-save-timing.util.ts",
     "../../tests/notebook/core-contract/lifecycle-fixtures.spec.ts",
     "../../tests/notebook/core-contract/commit-fixtures.spec.ts",
+    "../../tests/notebook/core-contract/notebook-auth-fixtures.spec.ts",
     "core/runtime/form-values.typecheck.ts"
   ]
 }
