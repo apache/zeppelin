@@ -39,6 +39,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version-file: 'zeppelin-web-angular/.nvmrc'
+
+      - name: Set up npm
+        run: npm install --global npm@11.21.1
       # TODO: Add zeppelin-web-angular root audit after Angular version upgrade and stabilization
       - name: Run npm audit on zeppelin-react
         working-directory: zeppelin-web-angular/projects/zeppelin-react

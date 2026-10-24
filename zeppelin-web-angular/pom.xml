@@ -43,8 +43,8 @@
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
     <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
-    <node.version>v22.21.1</node.version>
-    <npm.version>10.9.4</npm.version>
+    <node.version>v22.23.4</node.version>
+    <npm.version>11.21.1</npm.version>
   </properties>
 
   <dependencies>
