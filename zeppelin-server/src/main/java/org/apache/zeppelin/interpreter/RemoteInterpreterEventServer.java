@@ -299,7 +299,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void addAngularObject(String intpGroupId, String json) throws InterpreterRPCException, TException {
     LOGGER.debug("Add AngularObject, interpreterGroupId: {}, json: {}", intpGroupId, json);
-    AngularObject<?> angularObject = AngularObject.fromJson(json);
+    AngularObject angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
@@ -327,7 +327,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void updateAngularObject(String intpGroupId, String json) throws InterpreterRPCException, TException {
-    AngularObject<?> angularObject = AngularObject.fromJson(json);
+    AngularObject angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
