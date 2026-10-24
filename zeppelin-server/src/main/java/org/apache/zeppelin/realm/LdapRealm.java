@@ -60,6 +60,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.crypto.hash.DefaultHashService;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.HashRequest;
+import org.apache.shiro.crypto.hash.SimpleHashProvider;
 import org.apache.shiro.crypto.hash.HashService;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
@@ -145,7 +146,10 @@ public class LdapRealm extends DefaultLdapRealm {
 
   private static final String DEFAULT_PRINCIPAL_REGEX = "(.*)";
   private static final String MEMBER_SUBSTITUTION_TOKEN = "{0}";
-  private static final String HASHING_ALGORITHM = "SHA-1";
+  private static final String HASHING_ALGORITHM = "SHA-256";
+  // The hash service and the credentials matcher must use the same iteration count,
+  // otherwise the cached credentials never match the submitted ones (ZEPPELIN-6731).
+  private static final int HASH_ITERATIONS = SimpleHashProvider.Parameters.DEFAULT_ITERATIONS;
   private static final Logger LOGGER = LoggerFactory.getLogger(LdapRealm.class);
 
   static {
@@ -204,6 +208,7 @@ public class LdapRealm extends DefaultLdapRealm {
 
   public LdapRealm() {
     HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher(HASHING_ALGORITHM);
+    credentialsMatcher.setHashIterations(HASH_ITERATIONS);
     setCredentialsMatcher(credentialsMatcher);
   }
 
@@ -1185,7 +1190,9 @@ public class LdapRealm extends DefaultLdapRealm {
     HashRequest.Builder builder = new HashRequest.Builder();
     Hash credentialsHash = hashService
         .computeHash(builder.setSource(token.getCredentials())
-            .setAlgorithmName(HASHING_ALGORITHM).build());
+            .setAlgorithmName(HASHING_ALGORITHM)
+            .addParameter(SimpleHashProvider.Parameters.PARAMETER_ITERATIONS, HASH_ITERATIONS)
+            .build());
     return new SimpleAuthenticationInfo(token.getPrincipal(),
         credentialsHash.toHex(), credentialsHash.getSalt(),
         getName());
