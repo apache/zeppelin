@@ -82,7 +82,8 @@ public class AssistantImpl implements Assistant {
     this.conversationRepository = conversationRepository;
     this.toolExecutor = new ToolExecutor(
         List.of(
-            new ListParagraphsTool(notebookService)
+            new ListParagraphsTool(notebookService),
+            new GetParagraphTool(notebookService)
         )
     );
   }

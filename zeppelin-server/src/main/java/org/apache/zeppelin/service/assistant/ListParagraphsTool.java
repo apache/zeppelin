@@ -18,15 +18,13 @@
 package org.apache.zeppelin.service.assistant;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
-import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
@@ -62,19 +60,13 @@ public class ListParagraphsTool implements Tool {
       Set<String> userAndRoles
   ) throws IOException {
     ServiceContext context = new ServiceContext(authInfo, userAndRoles);
-    return notebookService.getNote(noteId, context, callback(), note -> {
-      List<Map<String, Object>> result = new ArrayList<>();
-      for (int i = 0; i < note.getParagraphCount(); i++) {
-        Paragraph p = note.getParagraph(i);
-        Map<String, Object> info = new HashMap<>();
-        info.put("id", p.getId());
-        info.put("title", p.getTitle());
-        info.put("text", StringUtils.abbreviate(p.getText(), 500));
-        info.put("index", i);
-        result.add(info);
-      }
-      return result;
-    });
+    return notebookService.getNote(noteId, context, callback(), note ->
+        note.getParagraphs().stream()
+            .map(p -> Map.<String, Object>of(
+                "id", p.getId(),
+                "title", StringUtils.defaultString(p.getTitle()),
+                "input", StringUtils.abbreviate(StringUtils.defaultString(p.getText()), 500)))
+            .collect(Collectors.toList()));
   }
 
   private static <T> SimpleServiceCallback<T> callback() {

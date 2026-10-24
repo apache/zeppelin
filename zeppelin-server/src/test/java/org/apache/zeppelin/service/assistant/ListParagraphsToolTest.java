@@ -59,11 +59,10 @@ class ListParagraphsToolTest {
     assertEquals(2, paragraphs.size());
     assertEquals(shortParagraph.getId(), paragraphs.get(0).get("id"));
     assertEquals(longParagraph.getId(), paragraphs.get(1).get("id"));
-    assertEquals("%md hello", paragraphs.get(0).get("text"));
-    assertEquals(longText.substring(0, 497) + "...", paragraphs.get(1).get("text"));
+    assertEquals("%md hello", paragraphs.get(0).get("input"));
+    assertEquals(longText.substring(0, 497) + "...", paragraphs.get(1).get("input"));
     assertFalse(paragraphs.get(1).containsKey("interpreter"));
     assertEquals(longText, longParagraph.getText());
-    assertEquals(1, paragraphs.get(1).get("index"));
   }
 
   @Test
