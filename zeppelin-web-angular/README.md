@@ -23,8 +23,8 @@ Zeppelin notebooks front-end built with Angular.
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) 22.21.1 or use [creationix/nvm](https://github.com/creationix/nvm).
-- NPM package manager (which is installed with Node.js by default).
+- [Node.js](https://nodejs.org) 22.23.4 or use [creationix/nvm](https://github.com/creationix/nvm).
+- npm 11.21.1 (`npm install --global npm@11.21.1` after selecting Node.js).
 - [Angular CLI](https://angular.io/cli) version 8.3.0 or later.
 
 ### Install

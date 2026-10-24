@@ -22,6 +22,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/npm-audit-remediation.yml'
+      - 'zeppelin-web-angular/.nvmrc'
+      - 'zeppelin-web-angular/pom.xml'
       - 'zeppelin-web-angular/projects/zeppelin-react/audit-ci.jsonc'
       - 'zeppelin-web-angular/projects/zeppelin-react/patches/**'
       - 'zeppelin-web-angular/projects/zeppelin-react/scripts/check-braces-patch.cjs'
@@ -65,6 +67,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version-file: 'zeppelin-web-angular/.nvmrc'
+
+      - name: Set up npm
+        run: npm install --global npm@11.21.1
 
       - name: Install and verify patched dependencies
         working-directory: ${{ env.PACKAGE_DIRECTORY }}
@@ -179,6 +184,15 @@ jobs:
           name: npm-audit-remediation
           path: ${{ runner.temp }}/npm-audit-remediation
           retention-days: 1
+
+      - name: Upload npm failure logs
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: npm-audit-failure-logs
+          path: ~/.npm/_logs/*.log
+          if-no-files-found: ignore
+          retention-days: 3
 
   publish:
     needs: prepare

@@ -94,7 +94,7 @@ itself, not in the Vagrant scripts.
   </tr>
   <tr>
     <td>Node.js / npm</td>
-    <td>22.21.1 / 10.9.4</td>
+    <td>22.23.4 / 11.21.1</td>
     <td><code>node.version</code> / <code>npm.version</code> in <code>zeppelin-web-angular/pom.xml</code></td>
   </tr>
 </table>

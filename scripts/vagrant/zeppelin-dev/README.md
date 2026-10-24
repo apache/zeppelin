@@ -66,7 +66,7 @@ not here.
 | --- | --- | --- |
 | OpenJDK / Oracle JDK | 11 | `java.version` in the root `pom.xml` |
 | Maven | 3.6.3 or higher | `maven.version` in the root `pom.xml` |
-| Node.js / npm | 22.21.1 / 10.9.4 | `node.version` / `npm.version` in `zeppelin-web-angular/pom.xml` |
+| Node.js / npm | 22.23.4 / 11.21.1 | `node.version` / `npm.version` in `zeppelin-web-angular/pom.xml` |
 
 Only the JDK has to be installed by hand. `./mvnw` downloads Maven, and
 `frontend-maven-plugin` downloads the pinned Node.js and npm into each web
