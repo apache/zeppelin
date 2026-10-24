@@ -1,0 +1,432 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Backend tests
+
+on:
+  workflow_call:
+    inputs:
+      python-lock-artifact:
+        description: Same-run artifact containing the candidate pixi.lock
+        type: string
+        required: false
+        default: ''
+
+env:
+  # Disable keepAlive and pool
+  # https://github.com/actions/virtual-environments/issues/1499#issuecomment-689467080
+  MAVEN_OPTS: >-
+      -Xms1024M -Xmx2048M -XX:MaxMetaspaceSize=1024m -XX:-UseGCOverheadLimit
+      -Dhttp.keepAlive=false
+      -Dmaven.wagon.http.pool=false
+      -Dmaven.wagon.http.retryHandler.count=3
+  MAVEN_ARGS: >-
+      -B --no-transfer-progress
+  ZEPPELIN_HELIUM_REGISTRY: helium
+  SPARK_PRINT_LAUNCH_COMMAND: "true"
+  SPARK_LOCAL_IP: 127.0.0.1
+  ZEPPELIN_LOCAL_IP: 127.0.0.1
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  # test on core-modules (zeppelin-interpreter,zeppelin-server),
+  # some interpreters are included, because zeppelin-server test depends on them: spark, shell & markdown
+  core-modules:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11, 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ runner.arch }}-npm-v1-${{ hashFiles('zeppelin-web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-npm-v1-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install application with some interpreter
+        run: pixi run --locked -e py39 ./mvnw install -Pbuild-distr -DskipTests -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples ${MAVEN_ARGS}
+      - name: install and test plugins
+        run: pixi run --locked -e py39 ./mvnw package -pl zeppelin-plugins -amd ${MAVEN_ARGS}
+      - name: run tests # skip spark test because we would run them in other CI
+        run: pixi run --locked -e py39 ./mvnw verify -Pusing-packaged-distr -pl zeppelin-server,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,angular,shell -am -Pweb-classic -Phelium-dev -Pexamples -Dtests.to.exclude=**/org/apache/zeppelin/spark/* -DfailIfNoTests=false
+
+  # test interpreter modules except spark, flink, python, jupyter
+  interpreter-test-non-core:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11, 17 ]
+    env:
+      INTERPRETERS: 'hbase,jdbc,file,flink-cmd,cassandra,elasticsearch,bigquery,livy,groovy,java,neo4j,sparql,mongodb,influxdb,shell'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: py39-tensorflow
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: pixi run --locked -e py39-tensorflow ./mvnw install -DskipTests -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
+      - name: verify interpreter
+        run: pixi run --locked -e py39-tensorflow ./mvnw verify -am -pl ${INTERPRETERS} ${MAVEN_ARGS}
+
+  # test interpreter modules for jupyter, python
+  interpreter-test-jupyter-python:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [ py39 ]
+        java: [ 11, 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: |
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -pl python,zeppelin-jupyter-interpreter -am ${MAVEN_ARGS}
+      - name: run tests with ${{ matrix.environment }}
+        run: |
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw test -pl python,zeppelin-jupyter-interpreter -DfailIfNoTests=false ${MAVEN_ARGS}
+
+  # zeppelin integration test except Spark & Flink
+  zeppelin-integration-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11, 17 ]
+    steps:
+      # user/password => root/root
+      - name: Start mysql
+        run: sudo systemctl start mysql.service
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: |
+          pixi run --locked -e py39 ./mvnw install -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-1.20 ${MAVEN_ARGS}
+          pixi run --locked -e py39 ./mvnw package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
+      - name: run tests
+        run: pixi run --locked -e py39 ./mvnw test -pl zeppelin-interpreter-integration -Pintegration -DfailIfNoTests=false -Dtest=ZeppelinClientIntegrationTest,ZeppelinClientWithAuthIntegrationTest,ZSessionIntegrationTest,ShellIntegrationTest,JdbcIntegrationTest
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
+
+  flink-test-and-flink-integration-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - java: 11
+            environment: py39-flink119
+            flink: 119
+            flink-profile: "1.19"
+          - java: 17
+            environment: py39-flink120
+            flink: 120
+            flink-profile: "1.20"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment for flink
+        run: |
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -am -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink-profile }} -Pintegration ${MAVEN_ARGS}
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
+      - name: run tests for flink
+        run: pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl flink/flink-scala-2.12,flink-cmd,zeppelin-interpreter-integration -Pflink-${{ matrix.flink-profile }} -am -Pintegration -DfailIfNoTests=false -Dtest=org.apache.zeppelin.flink.*Test,FlinkIntegrationTest${{ matrix.flink }} ${MAVEN_ARGS}
+      - name: Print zeppelin logs
+        if: always()
+        run: if [ -d "logs" ]; then cat logs/*; fi
+
+
+  spark-integration-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11, 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: |
+          pixi run --locked -e py39 ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Pweb-classic -Pintegration ${MAVEN_ARGS}
+          pixi run --locked -e py39 ./mvnw clean package -pl zeppelin-plugins -amd -DskipTests ${MAVEN_ARGS}
+      - name: run tests
+        run: pixi run --locked -e py39 ./mvnw test -pl zeppelin-interpreter-integration -Pintegration -Dtest=SparkSubmitIntegrationTest,ZeppelinSparkClusterTest32,SparkIntegrationTest32,ZeppelinSparkClusterTest33,SparkIntegrationTest33 -DfailIfNoTests=false ${MAVEN_ARGS}
+
+  # test on spark for each spark version & scala version
+  spark-test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [ py39 ]
+        java: [ 11, 17 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: ${{ matrix.environment }}
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: pixi run --locked -e ${{ matrix.environment }} ./mvnw install -DskipTests -pl spark-submit,spark/scala-2.12,spark/scala-2.13 -am ${MAVEN_ARGS}
+      - name: run spark-3.3 tests with scala-2.12 and ${{ matrix.environment }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.12 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-3.3 tests with scala-2.13 and ${{ matrix.environment }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.3 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-3.4 tests with scala-2.13 and ${{ matrix.environment }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.4 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-3.5 tests with scala-2.13 and ${{ matrix.environment }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-3.5 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+      - name: run spark-4.0 tests with scala-2.13 and ${{ matrix.environment }}
+        if: ${{ matrix.java == 17 }}
+        run: |
+          rm -rf spark/interpreter/metastore_db
+          pixi run --locked -e ${{ matrix.environment }} ./mvnw verify -pl spark-submit,spark/interpreter -am -Dtest=org/apache/zeppelin/spark/* -Pspark-4.0 -Pspark-scala-2.13 -Pintegration -DfailIfNoTests=false ${MAVEN_ARGS}
+
+  # Livy 0.8.0 tested with Spark 3.2
+  # https://github.com/apache/incubator-livy/blob/v0.8.0-incubating/dev/docker/livy-dev-spark/Dockerfile#L20
+  livy-0-8-with-spark-3-2-under-python39:
+    runs-on: ubuntu-24.04
+    env:
+      SPARK_VERSION: '3.2.4'
+      HADOOP_VERSION: '3.2'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+      - name: Tune Runner VM
+        uses: ./.github/actions/tune-runner-vm
+      - name: Set up JDK 11
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 11
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/org/apache/zeppelin/
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      # Only this job downloads a standalone Spark archive; spark-test uses Maven artifacts.
+      - name: Cache Spark distributions
+        uses: actions/cache@v5
+        with:
+          path: .spark-dist
+          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-${{ hashFiles('testing/downloadSpark.sh', 'pom.xml', 'spark/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-
+      - name: Set up Python
+        uses: ./.github/actions/setup-python
+        with:
+          environment: py39
+          lock-artifact: ${{ inputs.python-lock-artifact }}
+      - name: install environment
+        run: |
+          pixi run --locked -e py39 ./mvnw install -DskipTests -pl livy -am ${MAVEN_ARGS}
+          ./testing/downloadSpark.sh "${SPARK_VERSION}" "${HADOOP_VERSION}"
+          ./testing/downloadLivy.sh "0.8.0-incubating" "2.12"
+      - name: run tests
+        run: |
+          export SPARK_HOME=$PWD/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+          export LIVY_HOME=$PWD/apache-livy-0.8.0-incubating_2.12-bin
+          pixi run --locked -e py39 ./mvnw verify -pl livy ${MAVEN_ARGS}
+

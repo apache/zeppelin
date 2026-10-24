@@ -976,6 +976,8 @@
               <exclude>.github/</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.gitattributes</exclude>
+              <exclude>pixi.lock</exclude>
+              <exclude>.pixi/**</exclude>
               <exclude>git.properties</exclude>
               <exclude>.repository/</exclude>
               <exclude>.rat-excludes/</exclude>

@@ -147,6 +147,9 @@ tramp
 # python venv
 .venv
 
+# Pixi environments and local metadata
+/.pixi/
+
 # dotenv files
 .env
 
