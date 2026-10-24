@@ -17,6 +17,6 @@ limitations under the License.
 <configuration>
   <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://0.0.0.0:9000</value>
+    <value>hdfs://sparkmaster:9000</value>
   </property>
 </configuration>
