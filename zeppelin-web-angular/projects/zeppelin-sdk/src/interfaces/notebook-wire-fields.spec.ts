@@ -35,7 +35,6 @@ it('separates received wire fields from backward-compatible import input', () =>
     dateUpdated: '2026-09-14T00:00:00.000Z',
     config: {},
     settings: { params: {}, forms: {} },
-    apps: [],
     progressUpdateIntervalMs: 500,
     jobName: 'paragraph',
     id: 'paragraph-1',
@@ -65,6 +64,7 @@ it('separates received wire fields from backward-compatible import input', () =>
     }
   });
 
+  expectTypeOf<ImportParagraphItem>().toHaveProperty('apps').toEqualTypeOf<unknown[] | undefined>();
   expectTypeOf<ImportNote['note']>().toHaveProperty('version').toEqualTypeOf<string | undefined>();
   expectTypeOf<ImportNote['note']['paragraphs'][number]>()
     .toHaveProperty('progress')

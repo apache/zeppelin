@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.service;
-
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
@@ -25,8 +23,6 @@ import static org.apache.zeppelin.scheduler.Job.Status.ABORT;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -1369,63 +1365,6 @@ public class NotebookService {
       callback.onFailure(e, context);
       return null;
     }
-  }
-
-  public void spell(String noteId,
-                    Message message,
-                    ServiceContext context,
-                    ServiceCallback<Paragraph> callback) throws IOException {
-
-    try {
-      if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_PARAGRAPH_USING_SPELL, context,
-          callback)) {
-        return;
-      }
-
-      String paragraphId = (String) message.get("id");
-      if (paragraphId == null) {
-        return;
-      }
-
-      String text = (String) message.get("paragraph");
-      String title = (String) message.get("title");
-      Job.Status status = Job.Status.valueOf((String) message.get("status"));
-      Map<String, Object> params = (Map<String, Object>) message.get("params");
-      Map<String, Object> config = (Map<String, Object>) message.get("config");
-      notebook.processNote(noteId,
-        note -> {
-          Paragraph p = setParagraphUsingMessage(note, message, paragraphId,
-            text, title, params, config);
-          p.setResult((InterpreterResult) message.get("results"));
-          p.setErrorMessage((String) message.get("errorMessage"));
-          p.setStatusWithoutNotification(status);
-
-          // Spell uses ISO 8601 formatted string generated from moment
-          String dateStarted = (String) message.get("dateStarted");
-          String dateFinished = (String) message.get("dateFinished");
-          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-
-          try {
-            p.setDateStarted(df.parse(dateStarted));
-          } catch (ParseException e) {
-            LOGGER.error("Failed parse dateStarted", e);
-          }
-
-          try {
-            p.setDateFinished(df.parse(dateFinished));
-          } catch (ParseException e) {
-            LOGGER.error("Failed parse dateFinished", e);
-          }
-
-          addNewParagraphIfLastParagraphIsExecuted(note, p);
-          notebook.saveNote(note, context.getAutheInfo());
-          callback.onSuccess(p, context);
-          return null;
-        });
-    } catch (IOException e) {
-      callback.onFailure(new IOException("Fail to run spell", e), context);
-    }
-
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {

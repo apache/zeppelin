@@ -71,7 +71,6 @@ import {
   ParagraphAppendOutput,
   ParagraphClearAllOutput,
   ParagraphClearOutput,
-  ParagraphExecutedBySpell,
   ParagraphRemove,
   ParagraphRemoved,
   ParagraphStatus,
@@ -157,7 +156,6 @@ export interface MessageSendDataTypeMap {
   [OP.ANGULAR_OBJECT_CLIENT_BIND]: AngularObjectClientBind;
   [OP.ANGULAR_OBJECT_CLIENT_UNBIND]: AngularObjectClientUnbind;
   [OP.CANCEL_PARAGRAPH]: CancelParagraph;
-  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: ParagraphExecutedBySpell;
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
   [OP.CANCEL_ALL_PARAGRAPHS]: CancelAllParagraphs;

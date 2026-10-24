@@ -205,22 +205,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.eirslett</groupId>
-      <artifactId>frontend-plugin-core</artifactId>
-      <version>${eirslett.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-compress</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-vfs2</artifactId>
       <version>${commons.vfs2.version}</version>

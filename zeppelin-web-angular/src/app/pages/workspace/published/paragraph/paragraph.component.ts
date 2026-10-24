@@ -27,8 +27,7 @@ import {
   ParagraphItem,
   ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
-import { HeliumService, MessageService, NgZService, NoteStatusService, ReactFeatureService } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell';
+import { MessageService, NgZService, NoteStatusService, ReactFeatureService } from '@zeppelin/services';
 import { isNil } from 'lodash';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NotebookParagraphResultComponent } from '../../share/result/result.component';
@@ -65,7 +64,6 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   constructor(
     public messageService: MessageService,
     private activatedRoute: ActivatedRoute,
-    private heliumService: HeliumService,
     private router: Router,
     private nzModalService: NzModalService,
     private reactFeature: ReactFeatureService,
@@ -146,12 +144,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     }
     const text = this.paragraph.text;
     if (text && !this.isParagraphRunning) {
-      const magic = SpellResult.extractMagic(this.paragraph.text);
-      if (magic && this.heliumService.getSpellByMagic(magic)) {
-        this.runParagraphUsingSpell(text, magic, false);
-      } else {
-        this.runParagraphUsingBackendInterpreter(text);
-      }
+      this.runParagraphUsingBackendInterpreter(text);
     }
   }
 

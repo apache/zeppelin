@@ -836,20 +836,6 @@
     </profile>
 
     <profile>
-      <id>examples</id>
-      <modules>
-        <module>zeppelin-examples</module>
-      </modules>
-    </profile>
-
-    <profile>
-      <id>helium-dev</id>
-      <modules>
-        <module>helium-dev</module>
-      </modules>
-    </profile>
-
-    <profile>
       <id>include-hadoop</id>
       <properties>
         <hadoop.deps.scope>compile</hadoop.deps.scope>
@@ -1011,7 +997,6 @@
               <exclude>conf/notebook-authorization.json</exclude>
               <exclude>conf/credentials.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
-              <exclude>conf/helium.json</exclude>
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>

@@ -10,26 +10,14 @@
  * limitations under the License.
  */
 
-import { CdkPortalOutlet, PortalModule } from '@angular/cdk/portal';
-import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Injector,
-  NO_ERRORS_SCHEMA,
-  provideZoneChangeDetection,
-  ViewContainerRef
-} from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { CdkPortalOutlet } from '@angular/cdk/portal';
+import { ChangeDetectorRef, Injector, ViewContainerRef } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { DatasetType, GraphConfig } from '@zeppelin/sdk';
-import { HeliumClassicVisualization, HeliumClassicVisualizationConstructor } from '@zeppelin/interfaces';
-import { Visualization } from '@zeppelin/visualization';
-import { EMPTY, Subscription } from 'rxjs';
+import { TableTransformation, Visualization } from '@zeppelin/visualization';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@zeppelin/services', () => ({
-  ClassicVisualizationService: class {},
-  HeliumService: class {},
   NgZService: class {},
   RuntimeCompilerService: class {}
 }));
@@ -42,29 +30,17 @@ vi.mock('@zeppelin/visualizations', () => ({
   TableVisualization: class {}
 }));
 
-import {
-  ClassicVisualizationService,
-  DynamicTemplate,
-  HeliumService,
-  NgZService,
-  RuntimeCompilerService
-} from '@zeppelin/services';
+import { DynamicTemplate, NgZService, RuntimeCompilerService } from '@zeppelin/services';
 import { NotebookParagraphResultComponent } from './result.component';
-import template from './result.component.html?raw';
 
-const component = (
-  compiler: Partial<RuntimeCompilerService> = {},
-  classic: Partial<ClassicVisualizationService> = {}
-) =>
+const component = (compiler: Partial<RuntimeCompilerService> = {}) =>
   new NotebookParagraphResultComponent(
     {} as Injector,
     {} as ViewContainerRef,
     { detectChanges: vi.fn(), markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
     compiler as RuntimeCompilerService,
     {} as DomSanitizer,
-    {} as NgZService,
-    {} as HeliumService,
-    { destroyAllInstances: vi.fn(), ...classic } as unknown as ClassicVisualizationService
+    {} as NgZService
   );
 
 const pendingResult = <T>() => {
@@ -145,195 +121,6 @@ describe('SVG and NULL invalidate pending Angular output', () => {
     expect(result.angularComponent).toBeNull();
     expect(result.frontEndError).toBe('');
   });
-
-  it('reports errors from the current Angular compilation', async () => {
-    const pending = pendingCompilation();
-    const result = component({ createAndCompileTemplate: vi.fn().mockReturnValue(pending.promise) });
-    result.result = { type: DatasetType.ANGULAR, data: '<p>current</p>' };
-    result.renderDefaultDisplay();
-
-    pending.reject(new Error('current compilation failed'));
-    await flushCompilation();
-
-    expect(result.angularComponent).toBeNull();
-    expect(result.frontEndError).toBe('current compilation failed');
-  });
-});
-
-describe('result type transitions', () => {
-  it.each([DatasetType.SVG, DatasetType.NULL])('destroys an attached modern visualization for %s', type => {
-    const result = component();
-    const destroy = vi.fn();
-    const detach = vi.fn();
-    const unsubscribe = vi.fn();
-    const subscription = new Subscription(unsubscribe);
-    result.visualizations[0].instance = { destroy } as unknown as Visualization;
-    result.visualizations[0].changeSubscription = subscription;
-    result.portalOutlet = { hasAttached: () => true, detach } as unknown as CdkPortalOutlet;
-    result.result = { type, data: '<svg />' };
-
-    result.renderDefaultDisplay();
-
-    expect(destroy).toHaveBeenCalledOnce();
-    expect(detach).toHaveBeenCalledOnce();
-    expect(unsubscribe).toHaveBeenCalledOnce();
-    expect(result.visualizations[0].instance).toBeUndefined();
-    expect(result.visualizations[0].changeSubscription).toBeNull();
-  });
-
-  it.each([DatasetType.SVG, DatasetType.NULL])('destroys a previous classic visualization for %s', type => {
-    const destroyInstance = vi.fn();
-    const result = component({}, { destroyInstance });
-    result.id = 'paragraph';
-    result.visualizations.push({
-      id: 'classic',
-      name: 'classic',
-      isClassic: true,
-      icon: {},
-      Class: vi.fn() as unknown as HeliumClassicVisualizationConstructor,
-      instance: {} as HeliumClassicVisualization,
-      changeSubscription: null
-    });
-    result.result = { type, data: '<svg />' };
-
-    result.renderDefaultDisplay();
-
-    expect(destroyInstance).toHaveBeenCalledExactlyOnceWith('pparagraph_classic');
-    expect(result.visualizations.at(-1)?.instance).toBeUndefined();
-  });
-
-  it('preserves an existing visualization during a TABLE refresh', () => {
-    const result = component();
-    const destroy = vi.fn();
-    const instance = { destroy } as unknown as Visualization;
-    result.visualizations[0].instance = instance;
-    result.result = { type: DatasetType.TABLE, data: 'column\nvalue' };
-    const renderGraph = vi.spyOn(result, 'renderGraph').mockImplementation(() => {});
-
-    result.renderDefaultDisplay();
-
-    expect(renderGraph).toHaveBeenCalledOnce();
-    expect(destroy).not.toHaveBeenCalled();
-    expect(result.visualizations[0].instance).toBe(instance);
-  });
-
-  it.each([DatasetType.SVG, DatasetType.NULL])('cancels a pending classic visualization after %s', async type => {
-    const pending = pendingResult<HeliumClassicVisualization | undefined>();
-    const createClassicVisualization = vi.fn().mockReturnValue(pending.promise);
-    const result = component({}, { createClassicVisualization });
-    result.id = 'paragraph';
-    result.visualizations.push({
-      id: 'classic',
-      name: 'classic',
-      isClassic: true,
-      icon: {},
-      Class: vi.fn() as unknown as HeliumClassicVisualizationConstructor,
-      instance: undefined,
-      changeSubscription: null
-    });
-    result.config = { graph: { ...new GraphConfig(), mode: 'classic' } };
-    result.result = { type: DatasetType.TABLE, data: 'column\nvalue' };
-    result.renderDefaultDisplay();
-    const isCurrentRender = createClassicVisualization.mock.calls[0][5] as () => boolean;
-    expect(isCurrentRender()).toBe(true);
-
-    result.result = { type, data: '<svg />' };
-    result.renderDefaultDisplay();
-    expect(isCurrentRender()).toBe(false);
-    pending.resolve(undefined);
-    await flushCompilation();
-
-    expect(result.visualizations.at(-1)?.instance).toBeUndefined();
-    expect(result.frontEndError).toBe('');
-  });
-
-  it('keeps the current classic instance when an obsolete render completes after returning to TABLE', async () => {
-    const previous = pendingResult<HeliumClassicVisualization | undefined>();
-    const current = pendingResult<HeliumClassicVisualization | undefined>();
-    const destroyInstance = vi.fn();
-    const result = component(
-      {},
-      {
-        createClassicVisualization: vi.fn().mockReturnValueOnce(previous.promise).mockReturnValueOnce(current.promise),
-        destroyInstance
-      }
-    );
-    result.id = 'paragraph';
-    result.visualizations.push({
-      id: 'classic',
-      name: 'classic',
-      isClassic: true,
-      icon: {},
-      Class: vi.fn() as unknown as HeliumClassicVisualizationConstructor,
-      instance: undefined,
-      changeSubscription: null
-    });
-    result.config = { graph: { ...new GraphConfig(), mode: 'classic' } };
-    result.result = { type: DatasetType.TABLE, data: 'column\nprevious' };
-    result.renderDefaultDisplay();
-    result.result = { type: DatasetType.NULL, data: '' };
-    result.renderDefaultDisplay();
-    result.result = { type: DatasetType.TABLE, data: 'column\ncurrent' };
-    result.renderDefaultDisplay();
-    const currentInstance = {} as HeliumClassicVisualization;
-    const previousInstance = {} as HeliumClassicVisualization;
-
-    current.resolve(currentInstance);
-    await flushCompilation();
-    previous.resolve(previousInstance);
-    await flushCompilation();
-
-    expect(result.visualizations.at(-1)?.instance).toBe(currentInstance);
-    expect(destroyInstance).toHaveBeenCalledExactlyOnceWith('pparagraph_classic', false, previousInstance);
-  });
-
-  it.each([DatasetType.SVG, DatasetType.NULL])(
-    'removes classic visualization containers for %s in the template',
-    async type => {
-      await TestBed.configureTestingModule({
-        declarations: [NotebookParagraphResultComponent],
-        imports: [CommonModule, PortalModule],
-        schemas: [NO_ERRORS_SCHEMA],
-        providers: [
-          provideZoneChangeDetection(),
-          { provide: RuntimeCompilerService, useValue: {} },
-          { provide: NgZService, useValue: { contextChanged: () => EMPTY } },
-          { provide: HeliumService, useValue: { visualizationBundles: () => EMPTY } },
-          { provide: ClassicVisualizationService, useValue: { destroyAllInstances: vi.fn() } }
-        ]
-      })
-        .overrideComponent(NotebookParagraphResultComponent, {
-          set: { template, templateUrl: undefined, styles: [], styleUrls: [] }
-        })
-        .compileComponents();
-      const fixture = TestBed.createComponent(NotebookParagraphResultComponent);
-      const result = fixture.componentInstance;
-      result.published = true;
-      result.id = 'paragraph';
-      result.visualizations.push({
-        id: 'classic',
-        name: 'classic',
-        isClassic: true,
-        icon: {},
-        Class: vi.fn() as unknown as HeliumClassicVisualizationConstructor,
-        instance: undefined,
-        changeSubscription: null
-      });
-      result.config = { graph: { ...new GraphConfig(), mode: 'classic' } };
-      result.result = { type: DatasetType.TABLE, data: 'column\nvalue' };
-      vi.spyOn(result, 'renderGraph').mockImplementation(() => {});
-      fixture.detectChanges();
-      const element = fixture.nativeElement as HTMLElement;
-      const containers = '.classic-visualization-container, .transformation-setting, .visualization-setting';
-      expect(element.querySelectorAll(containers)).toHaveLength(3);
-
-      result.updateResult(result.config, { type, data: '<svg />' });
-      fixture.detectChanges();
-
-      expect(element.querySelectorAll(containers)).toHaveLength(0);
-      expect(element.querySelectorAll('img')).toHaveLength(type === DatasetType.SVG ? 1 : 0);
-    }
-  );
 });
 
 describe('NotebookParagraphResultComponent HTML highlighting', () => {
@@ -345,9 +132,7 @@ describe('NotebookParagraphResultComponent HTML highlighting', () => {
       {} as ChangeDetectorRef,
       {} as RuntimeCompilerService,
       sanitizer,
-      {} as NgZService,
-      {} as HeliumService,
-      {} as ClassicVisualizationService
+      {} as NgZService
     );
     component.result = {
       type: DatasetType.HTML,
@@ -361,5 +146,78 @@ describe('NotebookParagraphResultComponent HTML highlighting', () => {
     expect(output.querySelector('p')?.textContent).toBe('Result');
     expect(output.querySelector('code')?.textContent).toBe('const value = 42;');
     expect(output.querySelector('.hljs-keyword')?.textContent).toBe('const');
+  });
+});
+
+describe('built-in visualizations without external bundles', () => {
+  class TestVisualization extends Visualization {
+    render = vi.fn();
+    refresh = vi.fn();
+    destroy = vi.fn();
+
+    constructor(_outlet: CdkPortalOutlet, _container: ViewContainerRef, config: GraphConfig) {
+      super(config);
+    }
+
+    getTransformation() {
+      return new TableTransformation(this.getConfig());
+    }
+  }
+
+  const tableResult = (mode: string) => {
+    const result = component();
+    result.result = { type: DatasetType.TABLE, data: 'column\nvalue' };
+    result.config = { graph: { ...new GraphConfig(), mode } };
+    result.visualizations.forEach(item => (item.Class = TestVisualization));
+    return result;
+  };
+
+  it.each(['table', 'multiBarChart', 'pieChart', 'lineChart', 'stackedAreaChart', 'scatterChart'])(
+    'renders saved %s settings with the built-in visualization',
+    mode => {
+      const result = tableResult(mode);
+      result.config!.graph.height = 420;
+      result.renderDefaultDisplay();
+      const instance = result.getCurrentVisualization().instance!;
+
+      expect(instance.getConfig()).toBe(result.config!.graph);
+      expect(instance.getConfig().height).toBe(420);
+      expect(result.tableData.columns).toEqual(['column']);
+      expect(result.tableData.rows).toEqual([{ column: 'value' }]);
+      expect(result.frontEndError).toBe('');
+    }
+  );
+
+  it('falls back to table data while preserving saved external visualization settings', () => {
+    const result = tableResult('external-chart');
+    const original = JSON.parse(JSON.stringify(result.config));
+    const configChange = vi.spyOn(result.configChange, 'emit');
+    result.renderDefaultDisplay();
+
+    expect(result.getCurrentVisualization().id).toBe('table');
+    expect(result.getCurrentVisualization().instance!.getConfig().mode).toBe('table');
+    expect(result.tableData.rows).toEqual([{ column: 'value' }]);
+    expect(result.config).toEqual(original);
+    expect(configChange).not.toHaveBeenCalled();
+    expect(result.frontEndError).toContain('external-chart');
+
+    result.switchMode('table');
+    expect(result.config!.graph.mode).toBe('table');
+    expect(result.frontEndError).toBe('');
+  });
+
+  it('persists user chart changes and destroys the previous visualization', () => {
+    const result = tableResult('table');
+    result.renderDefaultDisplay();
+    const previous = result.getCurrentVisualization().instance as TestVisualization;
+    const configChange = vi.spyOn(result.configChange, 'emit');
+    result.switchMode('lineChart');
+    const graph = { ...result.config!.graph, height: 420 };
+    result.getCurrentVisualization().instance!.configChange$!.next(graph);
+
+    expect(previous.destroy).toHaveBeenCalledOnce();
+    expect(result.config!.graph).toBe(graph);
+    expect(configChange).toHaveBeenLastCalledWith({ graph });
+    expect(result.frontEndError).toBe('');
   });
 });

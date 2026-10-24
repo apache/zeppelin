@@ -139,7 +139,7 @@ public abstract class Job<T> {
   }
 
   /**
-   * just set status without notifying to listeners for spell.
+   * Set status without notifying listeners.
    */
   public void setStatusWithoutNotification(Status status) {
     this.status = status;

@@ -19,7 +19,6 @@ env:
       -Dmaven.wagon.http.retryHandler.count=3
   MAVEN_ARGS: >-
       -B --no-transfer-progress
-  ZEPPELIN_HELIUM_REGISTRY: helium
   SPARK_PRINT_LAUNCH_COMMAND: "true"
   SPARK_LOCAL_IP: 127.0.0.1
   ZEPPELIN_LOCAL_IP: 127.0.0.1

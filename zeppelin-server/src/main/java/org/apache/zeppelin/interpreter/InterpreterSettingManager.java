@@ -45,14 +45,12 @@ import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.lifecycle.IdleInterpreterReclaimer;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
@@ -142,7 +140,6 @@ public class InterpreterSettingManager implements NoteEventListener {
   private Notebook notebook;
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
-  private ApplicationEventListener appEventListener;
   private DependencyResolver dependencyResolver;
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
@@ -157,14 +154,12 @@ public class InterpreterSettingManager implements NoteEventListener {
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
                                        remoteInterpreterProcessListener,
-                                   ApplicationEventListener appEventListener,
                                    ConfigStorage storage,
                                    PluginManager pluginManager)
       throws IOException {
     this(zConf, new InterpreterOption(),
         angularObjectRegistryListener,
         remoteInterpreterProcessListener,
-        appEventListener,
         storage,
         pluginManager);
   }
@@ -173,7 +168,6 @@ public class InterpreterSettingManager implements NoteEventListener {
       InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
-      ApplicationEventListener appEventListener,
       ConfigStorage configStorage,
       PluginManager pluginManager)
       throws IOException {
@@ -196,7 +190,6 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
-    this.appEventListener = appEventListener;
 
     this.interpreterEventServer = new RemoteInterpreterEventServer(zConf, this);
     this.interpreterEventServer.start();
@@ -241,13 +234,11 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
   }
 
-
   private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
     interpreterSetting.setConf(zConf)
         .setInterpreterSettingManager(this)
         .setAngularObjectRegistryListener(angularObjectRegistryListener)
         .setRemoteInterpreterProcessListener(remoteInterpreterProcessListener)
-        .setAppEventListener(appEventListener)
         .setDependencyResolver(dependencyResolver)
         .setRecoveryStorage(recoveryStorage)
         .setInterpreterEventServer(interpreterEventServer)
@@ -490,10 +481,6 @@ public class InterpreterSettingManager implements NoteEventListener {
 
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
     return remoteInterpreterProcessListener;
-  }
-
-  public ApplicationEventListener getAppEventListener() {
-    return appEventListener;
   }
 
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
@@ -1216,15 +1203,6 @@ public class InterpreterSettingManager implements NoteEventListener {
           // remove paragraph scope object
           for (Paragraph p : note.getParagraphs()) {
             ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(note.getId(), p.getId());
-
-            // remove app scope object
-            List<ApplicationState> appStates = p.getAllApplicationStates();
-            if (appStates != null) {
-              for (ApplicationState app : appStates) {
-                ((RemoteAngularObjectRegistry) registry)
-                    .removeAllAndNotifyRemoteProcess(note.getId(), app.getId());
-              }
-            }
           }
           // remove note scope object
           ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(note.getId(), null);
@@ -1232,14 +1210,6 @@ public class InterpreterSettingManager implements NoteEventListener {
           // remove paragraph scope object
           for (Paragraph p : note.getParagraphs()) {
             registry.removeAll(note.getId(), p.getId());
-
-            // remove app scope object
-            List<ApplicationState> appStates = p.getAllApplicationStates();
-            if (appStates != null) {
-              for (ApplicationState app : appStates) {
-                registry.removeAll(note.getId(), app.getId());
-              }
-            }
           }
           // remove note scope object
           registry.removeAll(note.getId(), null);
