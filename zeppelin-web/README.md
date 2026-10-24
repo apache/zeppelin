@@ -6,7 +6,7 @@ This is Zeppelin's frontend project.
 
 ### Local Development
 
-It is recommended to install [Node.js](https://nodejs.org) v16 or use [creationix/nvm](https://github.com/creationix/nvm).
+Use the [Node.js](https://nodejs.org) version pinned in [.nvmrc](./.nvmrc) for local development. You can manage this version with [nvm](https://github.com/nvm-sh/nvm).
 
 All build commands are described in [package.json](./package.json)
 

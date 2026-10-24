@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HeliumBundleFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(HeliumBundleFactory.class);
-  private static final String NODE_VERSION = "v16.16.0";
+  private static final String NODE_VERSION = "v22.23.4";
   private static final String NPM_VERSION = "8.11.0";
   private static final String YARN_VERSION = "v1.22.0";
   private static final String NPM_PACKAGE_NAME = "npm";
