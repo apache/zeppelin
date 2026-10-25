@@ -1,11 +1,11 @@
 # Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
+# contributor license agreements. See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
 # The ASF licenses this file to You under the Apache License, Version 2.0
 # (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# the License. You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,26 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apache-beam==2.48.0
-apache-flink==1.20.4
-apache-flink-libraries==1.20.4
-avro-python3==1.10.2
-cloudpickle==2.2.1
-crcmod==1.7
-dill==0.3.1.1
-dnspython==2.7.0
-docopt==0.6.2
-fastavro==1.12.2
-find-libpython==0.5.1
-hdfs==2.7.3
-httplib2==0.22.0
-numpy==1.24.4
-objsize==0.6.1
-orjson==3.11.5
-pemja==0.5.6
-proto-plus==1.27.1
-py4j==0.10.9.7
-pydot==1.4.2
-pymongo==4.18.1
-regex==2026.1.15
-ruamel.yaml==0.19.1
+# Compatibility bounds for the existing Python 3.9 notebook stack.
+dependencies:
+  - python=3.9
+  - protobuf<4
+  - sqlalchemy=1.4.46
+  - pandas<2.2
+  - jupyter_client=5
+  - holoviews=1.16
+  - bokeh=2.4
+  - jinja2=3.0.3
