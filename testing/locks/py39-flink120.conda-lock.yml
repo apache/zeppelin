@@ -13,7 +13,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: 45f45519596c05b65bee4d44320c5a90871f4bd8ffad7d32addd6e1740325bca
+    linux-64: 6bad7fb0f8241a86a4cf800ffe0aaac9d9e33fe64e343dea198f61fa3be40565
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -3594,14 +3594,14 @@ package:
   category: main
   optional: false
 - name: grpcio
-  version: 1.80.0
+  version: 1.78.0
   manager: pip
   platform: linux-64
   dependencies:
     typing-extensions: '>=4.12,<5.0'
-  url: https://files.pythonhosted.org/packages/54/b1/50fdb826acafd5ac661e10df25b089721172530f2eb4aa1f36bd3c3d4254/grpcio-1.80.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+  url: https://files.pythonhosted.org/packages/68/2f/42a52d78bdbdb3f1310ed690a3511cd004740281ca75d300b7bd6d9d3de3/grpcio-1.78.0-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   hash:
-    sha256: bac1d573dfa84ce59a5547073e28fa7326d53352adda6912e362da0b917fcef4
+    sha256: b0c689c02947d636bc7fab3e30cc3a3445cca99c834dfb77cd4a6cabfc1c5597
   category: main
   optional: false
 - name: hdfs

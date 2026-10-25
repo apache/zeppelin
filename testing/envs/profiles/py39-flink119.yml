@@ -23,4 +23,6 @@ dependencies:
   - pip:
       - apache-flink==1.19.3
       # Resolve Beam's grpcio dependency through the same package manager.
-      - grpcio
+      # Avoid the Linux fork/exec regression introduced in grpcio 1.80.
+      # https://github.com/grpc/grpc/issues/43055
+      - grpcio<1.80
