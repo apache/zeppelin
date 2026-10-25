@@ -75,6 +75,50 @@ describe('AssistantComposer', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('keeps a blocked draft editable and submits its edited value only after submission is enabled', () => {
+    const onChange = vi.fn();
+    const onSubmit = vi.fn();
+    const { rerender } = render(
+      <AssistantComposer value="Original question" onChange={onChange} onSubmit={onSubmit} submitDisabled />
+    );
+    const field = input();
+
+    expect(field.disabled).toBe(false);
+    expect(field.readOnly).toBe(false);
+    expect(send().disabled).toBe(true);
+    expect(screen.queryByRole('note')).toBeNull();
+
+    fireEvent.change(field, { target: { value: '  Edited question  ' } });
+
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('  Edited question  ');
+
+    rerender(<AssistantComposer value="  Edited question  " onChange={onChange} onSubmit={onSubmit} submitDisabled />);
+    fireEvent.click(send());
+    pressEnter();
+    fireEvent.submit(field.form!);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(input()).toBe(field);
+    expect(field.value).toBe('  Edited question  ');
+    expect(field.disabled).toBe(false);
+    expect(field.readOnly).toBe(false);
+
+    rerender(
+      <AssistantComposer value="  Edited question  " onChange={onChange} onSubmit={onSubmit} submitDisabled={false} />
+    );
+
+    expect(input()).toBe(field);
+    expect(field.value).toBe('  Edited question  ');
+    expect(send().disabled).toBe(false);
+
+    fireEvent.click(send());
+    pressEnter();
+    fireEvent.submit(field.form!);
+
+    expect(onSubmit.mock.calls).toEqual([['Edited question'], ['Edited question'], ['Edited question']]);
+    expect(field.value).toBe('  Edited question  ');
+  });
+
   it('keeps the question visible but does not send it again while sending', () => {
     const { onSubmit } = renderComposer({ value: 'Explain this notebook', sending: true });
     expect(input().readOnly).toBe(true);

@@ -144,6 +144,7 @@ describe('AssistantConversationPanel', () => {
 
     try {
       const source = fixture('send-rejection');
+      const run = vi.spyOn(source, 'run');
       const getMessages = source.api.getMessages;
       let pending = true;
       vi.spyOn(source.api, 'getMessages').mockImplementation(async (id, before) => {
@@ -158,8 +159,23 @@ describe('AssistantConversationPanel', () => {
       await select('Revenue analysis');
 
       expect(source.api.getMessages).toHaveBeenCalledWith('c1', 'c1:earlier');
+      expect(screen.getByText('Loading earlier messages…')).toBeTruthy();
+      expect(input().disabled).toBe(false);
+      expect(input().readOnly).toBe(false);
 
-      await submit('A question rejected before acceptance');
+      fireEvent.change(input(), { target: { value: 'A question rejected before acceptance' } });
+
+      expect(send().matches(':disabled')).toBe(false);
+
+      fireEvent.click(send());
+      await flush();
+
+      expect(run).toHaveBeenCalledExactlyOnceWith(
+        'c1',
+        'A question rejected before acceptance',
+        expect.any(AbortSignal)
+      );
+
       await act(async () => earlier.resolve());
 
       expect(await within(messages()).findByText('I checked the regional revenue paragraph.')).toBeTruthy();
@@ -621,25 +637,70 @@ describe('AssistantConversationPanel', () => {
     expect(run).not.toHaveBeenCalled();
   });
 
-  it('shows a history failure and reloads explicitly without sending a question', async () => {
+  it('keeps a draft blocked after an initial history failure until explicit reload succeeds without resending', async () => {
     const source = fixture();
+    const initial = deferred();
+    const retry = deferred();
+    const originalGetMessages = source.api.getMessages;
     const getMessages = vi
       .spyOn(source.api, 'getMessages')
-      .mockRejectedValueOnce(new Error('Saved history is unavailable.'));
+      .mockImplementationOnce(async () => {
+        await initial.promise;
+        throw new Error('Saved history is unavailable.');
+      })
+      .mockImplementationOnce(async id => {
+        await retry.promise;
+        return originalGetMessages(id);
+      });
     const run = vi.spyOn(source, 'run');
     await mountPanel(source);
-
     await select('Revenue analysis');
 
+    fireEvent.change(input(), { target: { value: 'Keep this draft after the failed lookup' } });
+    await act(async () => initial.resolve());
+
     expect(screen.getByRole('alert').textContent).toContain('Saved history is unavailable.');
+    expect(input().value).toBe('Keep this draft after the failed lookup');
+    expect(input().disabled).toBe(false);
+    expect(input().readOnly).toBe(false);
+    expect(send().matches(':disabled')).toBe(true);
+
+    fireEvent.change(input(), { target: { value: 'Edited question after lookup failure' } });
+    fireEvent.click(send());
+    fireEvent.keyDown(input(), { key: 'Enter' });
+    fireEvent.submit(input().form!);
+    await flush();
+
+    expect(input().value).toBe('Edited question after lookup failure');
+    expect(getMessages.mock.calls).toEqual([['c1']]);
+    expect(run).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Reload conversation' }));
     await flush();
 
     expect(getMessages.mock.calls).toEqual([['c1'], ['c1']]);
+    expect(input().value).toBe('Edited question after lookup failure');
+    expect(send().matches(':disabled')).toBe(true);
+    expect(run).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(input(), { key: 'Enter' });
+    fireEvent.submit(input().form!);
+    await flush();
+
+    expect(run).not.toHaveBeenCalled();
+
+    await act(async () => retry.resolve());
+
     expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
+    expect(input().value).toBe('Edited question after lookup failure');
+    expect(send().matches(':disabled')).toBe(false);
     expect(run).not.toHaveBeenCalled();
+
+    fireEvent.click(send());
+    await flush();
+
+    expect(run).toHaveBeenCalledExactlyOnceWith('c1', 'Edited question after lookup failure', expect.any(AbortSignal));
   });
 
   it('confirms deletion of an active conversation and lets the API decide the result', async () => {
@@ -736,7 +797,7 @@ describe('AssistantConversationPanel', () => {
     expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
   });
 
-  it('keeps the draft editable and normal Send available while history is loading', async () => {
+  it('keeps the initial history draft editable but blocks every submission until the read succeeds', async () => {
     const source = fixture();
     const history = deferred();
     const originalGetMessages = source.api.getMessages;
@@ -746,24 +807,46 @@ describe('AssistantConversationPanel', () => {
     });
     const run = vi.spyOn(source, 'run');
     await mountPanel(source);
-
     await select('Revenue analysis');
+    const field = input();
 
     expect(screen.getByText('Loading conversation…')).toBeTruthy();
-    expect(input().disabled).toBe(false);
+    expect(field.disabled).toBe(false);
+    expect(field.readOnly).toBe(false);
+    expect(screen.queryByText('Sending question…')).toBeNull();
+    expect(screen.queryByText('Thinking…')).toBeNull();
 
-    fireEvent.change(input(), { target: { value: 'Question during history lookup' } });
+    fireEvent.change(field, { target: { value: 'Question during history lookup' } });
 
-    expect(input().value).toBe('Question during history lookup');
+    expect(field.value).toBe('Question during history lookup');
+    expect(send().matches(':disabled')).toBe(true);
+
+    fireEvent.click(send());
+    fireEvent.keyDown(field, { key: 'Enter' });
+    fireEvent.submit(field.form!);
+    await flush();
+
+    expect(run).not.toHaveBeenCalled();
+    expect(field.value).toBe('Question during history lookup');
+    expect(screen.getByText('Loading conversation…')).toBeTruthy();
+
+    fireEvent.change(field, { target: { value: 'Edited question before history arrives' } });
+    await act(async () => history.resolve());
+
+    expect(input()).toBe(field);
+    expect(field.value).toBe('Edited question before history arrives');
+    expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
     expect(send().matches(':disabled')).toBe(false);
     expect(run).not.toHaveBeenCalled();
 
-    fireEvent.click(send());
+    fireEvent.keyDown(field, { key: 'Enter' });
     await flush();
 
-    expect(run).toHaveBeenCalledExactlyOnceWith('c1', 'Question during history lookup', expect.any(AbortSignal));
-
-    await act(async () => history.resolve());
+    expect(run).toHaveBeenCalledExactlyOnceWith(
+      'c1',
+      'Edited question before history arrives',
+      expect.any(AbortSignal)
+    );
   });
 
   it.each(['Cancel', 'Escape'])(
@@ -897,5 +980,41 @@ describe('AssistantConversationPanel', () => {
     expect(within(dialog).getByText(/Delete “Notebook summary”/)).toBeTruthy();
     expect(within(dialog).getByRole('alert').textContent).toContain('B deletion denied');
     expect(within(dialog).queryByText('A is still running')).toBeNull();
+  });
+
+  it('keeps initial-history readiness and drafts separate when switching conversations', async () => {
+    const source = fixture();
+    const history = deferred();
+    const getMessages = source.api.getMessages;
+    vi.spyOn(source.api, 'getMessages').mockImplementationOnce(async id => {
+      await history.promise;
+      return getMessages(id);
+    });
+    const run = vi.spyOn(source, 'run');
+    await mountPanel(source);
+    await select('Revenue analysis');
+    fireEvent.change(input(), { target: { value: 'Keep the pending A draft' } });
+
+    expect(send().matches(':disabled')).toBe(true);
+
+    await select('Notebook summary');
+    fireEvent.change(input(), { target: { value: 'Question for loaded B' } });
+
+    expect(send().matches(':disabled')).toBe(false);
+
+    fireEvent.click(send());
+    await flush();
+    await act(async () => history.resolve());
+
+    expect(run).toHaveBeenCalledExactlyOnceWith('c2', 'Question for loaded B', expect.any(AbortSignal));
+    expect(within(messages()).getByText('Question for loaded B', { exact: true })).toBeTruthy();
+    expect(within(messages()).queryByText('Keep the pending A draft', { exact: true })).toBeNull();
+    expect(input().value).toBe('');
+
+    await select('Revenue analysis');
+
+    expect(input().value).toBe('Keep the pending A draft');
+    expect(send().matches(':disabled')).toBe(false);
+    expect(run).toHaveBeenCalledTimes(1);
   });
 });

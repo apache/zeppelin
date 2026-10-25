@@ -144,6 +144,7 @@ export const AssistantConversationPanel = ({ source, now }: AssistantConversatio
                 void panel.send(question);
               }}
               readOnly={entry.conversation?.canSendMessage === false}
+              submitDisabled={!!entry.conversation && !entry.loaded}
               sending={busy || entry.deleting}
             />
           </div>

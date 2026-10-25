@@ -163,6 +163,7 @@ export class AssistantConversationSession {
     return result.status === 'committed';
   }
 
+  /** Existing conversations must load their initial history page before sending. */
   async send(question?: string): Promise<void> {
     const submitted = question ?? this.draft;
     const content = submitted.trim();
@@ -172,6 +173,7 @@ export class AssistantConversationSession {
       !content ||
       (this.phase !== 'idle' && this.phase !== 'unknown') ||
       this.deleting ||
+      (this.conversation && !this.history.snapshot.loaded) ||
       this.conversation?.canSendMessage === false
     ) {
       return;
@@ -235,8 +237,7 @@ export class AssistantConversationSession {
     if (this.disposed) return;
 
     // The next send must wait for this consumer to release the conversation.
-    this.historyRefreshPending ||=
-      run.snapshot.outcome === 'completed' || (run.snapshot.outcome === 'failed' && !this.history.snapshot.loaded);
+    this.historyRefreshPending ||= run.snapshot.outcome === 'completed';
     this.phase = run.snapshot.outcome === 'unknown' ? 'unknown' : 'idle';
     this.publish();
 

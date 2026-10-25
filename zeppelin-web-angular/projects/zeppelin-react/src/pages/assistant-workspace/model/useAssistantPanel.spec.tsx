@@ -914,35 +914,108 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.entry.loadingEarlier).toBe(false);
   });
 
-  it('allows sending during initial history loading and ignores that old latest page', async () => {
+  it('blocks direct sends before initial history succeeds without changing the draft or invalidating the read', async () => {
     const harness = sourceHarness();
     const history = deferred<AssistantMessagePage>();
     harness.api.getMessages.mockImplementationOnce(() => history.promise);
     const panel = await mountPanel(harness.source);
-
     act(() => panel.result.current.select('a'));
+    act(() => panel.result.current.setDraft('Keep this draft'));
+    const entry = panel.result.current.entry;
 
-    expect(panel.result.current.entry.loading).toBe(true);
+    await act(async () => panel.result.current.send('Do not replace the draft'));
+    await act(async () => panel.result.current.send());
 
-    act(() => panel.result.current.setDraft('Question during history loading'));
-    const sending = await sendQuestion(panel);
-
-    expect(panel.result.current.entry).toMatchObject({ phase: 'pending', loading: false, loadingEarlier: false });
+    expect(panel.result.current.entry).toBe(entry);
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: false,
+      loading: true,
+      phase: 'idle',
+      draft: 'Keep this draft',
+      messages: []
+    });
+    expect(harness.run).not.toHaveBeenCalled();
+    expect(harness.api.createConversation).not.toHaveBeenCalled();
+    expect(harness.api.getMessages.mock.calls).toEqual([['a']]);
 
     await act(async () =>
-      harness.feeds[0].push(
-        { type: 'run.started' },
-        { type: 'message.delta', messageId: 'current-answer', delta: 'Current answer' }
-      )
-    );
-    await act(async () =>
-      history.resolve({ messages: [{ id: 'stale-history', role: 'user', content: 'Old history' }], cursor: null })
+      history.resolve({ messages: [{ id: 'saved-question', role: 'user', content: 'Existing history' }], cursor: null })
     );
 
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      loading: false,
+      phase: 'idle',
+      draft: 'Keep this draft',
+      messages: [{ id: 'saved-question', role: 'user', content: 'Existing history' }]
+    });
+    expect(harness.api.getMessages).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows sending after the latest page succeeds without loading its earlier cursor', async () => {
+    const harness = sourceHarness();
+    const saved: AssistantMessagePage = {
+      messages: [
+        { id: 'saved-answer', role: 'assistant', segments: [{ id: 'saved-round', content: 'Latest answer' }] }
+      ],
+      cursor: 'older-question'
+    };
+    harness.api.getMessages.mockResolvedValueOnce(saved);
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+
+    const sending = await sendQuestion(panel, 'Next question');
+    await act(async () => harness.feeds[0].push({ type: 'run.started' }));
+
+    expect(harness.api.getMessages.mock.calls).toEqual([['a']]);
+    expect(harness.api.createConversation).not.toHaveBeenCalled();
+    expect(harness.run).toHaveBeenCalledWith('a', 'Next question', expect.any(AbortSignal));
+    expect(panel.result.current.entry).toMatchObject({ loaded: true, cursor: 'older-question', phase: 'running' });
     expect(panel.result.current.entry.messages).toEqual([
-      expect.objectContaining({ role: 'user', content: 'Question during history loading' })
+      ...saved.messages,
+      expect.objectContaining({ role: 'user', content: 'Next question' })
     ]);
-    expect(panel.result.current.entry.answer).toMatchObject({ status: 'streaming', content: 'Current answer' });
+
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Stopped' });
+      await sending.completion;
+    });
+  });
+
+  it('allows sending during a later latest-page reload and ignores its stale result', async () => {
+    const harness = sourceHarness();
+    const history = deferred<AssistantMessagePage>();
+    const saved: AssistantMessagePage = {
+      messages: [{ id: 'saved-question', role: 'user', content: 'Existing history' }],
+      cursor: 'earlier'
+    };
+    harness.api.getMessages.mockResolvedValueOnce(saved).mockImplementationOnce(() => history.promise);
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    let reload!: Promise<void>;
+    act(() => {
+      reload = panel.result.current.reload();
+    });
+
+    expect(panel.result.current.entry).toMatchObject({ loaded: true, loading: true });
+
+    const sending = await sendQuestion(panel, 'Question during reload');
+
+    expect(harness.run).toHaveBeenCalledWith('a', 'Question during reload', expect.any(AbortSignal));
+    expect(panel.result.current.entry).toMatchObject({ phase: 'pending', loading: false });
+
+    await act(async () => {
+      history.resolve({ messages: [{ id: 'stale-question', role: 'user', content: 'Stale history' }], cursor: null });
+      await reload;
+    });
+
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      messages: saved.messages,
+      cursor: 'earlier',
+      draft: 'Question during reload',
+      phase: 'pending'
+    });
 
     await act(async () => {
       harness.feeds[0].push({ type: 'run.failed', message: 'Stopped' });
@@ -1341,9 +1414,10 @@ describe('useAssistantPanel', () => {
     model.dispose();
   });
 
-  it('keeps inline answer recovery independent of a failed history reload', async () => {
+  it('keeps a loaded failed answer after a later reload fails and permits the next send', async () => {
     const harness = sourceHarness();
     const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
     const sending = await sendQuestion(panel, 'Accepted but failed');
     await act(async () => {
       harness.feeds[0].push(
@@ -1359,6 +1433,7 @@ describe('useAssistantPanel', () => {
     await act(async () => panel.result.current.reload());
 
     expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
       phase: 'idle',
       failure: { message: 'History unavailable', kind: 'connection', recovery: 'reload' },
       answerRecovery: 'send',
@@ -1366,6 +1441,24 @@ describe('useAssistantPanel', () => {
     });
 
     expect(await panel.result.current.loadEarlier()).toBe(false);
+
+    const next = await sendQuestion(panel, 'Next question');
+
+    expect(harness.api.createConversation).not.toHaveBeenCalled();
+    expect(harness.run.mock.calls.map(([id, content]) => [id, content])).toEqual([
+      ['a', 'Accepted but failed'],
+      ['a', 'Next question']
+    ]);
+    expect(panel.result.current.entry.failure).toBeUndefined();
+    expect(panel.result.current.entry.messages).toMatchObject([
+      { role: 'user', content: 'Accepted but failed' },
+      { id: 'partial', role: 'assistant', segments: [{ id: 'partial', content: 'Retained partial' }] }
+    ]);
+
+    await act(async () => {
+      harness.feeds[1].push({ type: 'run.failed', message: 'Next question rejected' });
+      await next.completion;
+    });
   });
 
   it('renders a fresh initial snapshot synchronously when the source identity changes', async () => {
@@ -1444,61 +1537,57 @@ describe('useAssistantPanel', () => {
     }
   );
 
-  it('restores initial history after a rejected send without losing its error or draft', async () => {
+  it('keeps a failed initial read and draft unchanged by send until a successful history retry', async () => {
     const harness = sourceHarness();
-    const initial = deferred<AssistantMessagePage>();
-    const saved: AssistantMessagePage = {
-      messages: [{ id: 'saved-question', role: 'user', content: 'Existing question' }],
-      cursor: 'earlier'
-    };
-    harness.api.getMessages.mockImplementationOnce(() => initial.promise).mockResolvedValueOnce(saved);
+    const history = deferred<AssistantMessagePage>();
+    harness.api.getMessages.mockImplementationOnce(() => history.promise);
     const panel = await mountPanel(harness.source);
     act(() => panel.result.current.select('a'));
-    const sending = await sendQuestion(panel, 'Retry this question');
+    act(() => panel.result.current.setDraft('Keep this question'));
 
-    await act(async () => {
-      harness.feeds[0].push({ type: 'run.failed', message: 'Message rejected' });
-      await sending.completion;
-      initial.resolve({ messages: [], cursor: null });
-    });
+    await act(async () => history.reject(new Error('History unavailable')));
 
+    const entry = panel.result.current.entry;
+
+    await act(async () => panel.result.current.send('Do not replace the draft'));
+    await act(async () => panel.result.current.send());
+
+    expect(panel.result.current.entry).toBe(entry);
     expect(panel.result.current.entry).toMatchObject({
-      loaded: true,
+      loaded: false,
       loading: false,
-      messages: saved.messages,
-      cursor: 'earlier',
-      draft: 'Retry this question',
-      failure: { message: 'Message rejected', recovery: 'send' }
-    });
-  });
-
-  it('offers history recovery when restoring initial history after rejection fails', async () => {
-    const harness = sourceHarness();
-    const initial = deferred<AssistantMessagePage>();
-    harness.api.getMessages
-      .mockImplementationOnce(() => initial.promise)
-      .mockRejectedValueOnce(new Error('History unavailable'));
-    const panel = await mountPanel(harness.source);
-    act(() => panel.result.current.select('a'));
-    const sending = await sendQuestion(panel, 'Keep this question');
-
-    await act(async () => {
-      harness.feeds[0].push({ type: 'run.failed', message: 'Message rejected' });
-      await sending.completion;
-      initial.resolve({ messages: [], cursor: null });
-    });
-
-    expect(panel.result.current.entry).toMatchObject({
+      phase: 'idle',
       draft: 'Keep this question',
-      failure: { message: 'History unavailable', recovery: 'reload' }
+      failure: { message: 'History unavailable', kind: 'connection', recovery: 'reload' }
     });
+    expect(harness.api.getMessages.mock.calls).toEqual([['a']]);
+    expect(harness.api.createConversation).not.toHaveBeenCalled();
+    expect(harness.run).not.toHaveBeenCalled();
+
     harness.api.getMessages.mockResolvedValueOnce({
       messages: [{ id: 'saved', role: 'user', content: 'Recovered history' }],
       cursor: null
     });
     await act(async () => panel.result.current.reload());
-    expect(panel.result.current.entry.messages).toEqual([{ id: 'saved', role: 'user', content: 'Recovered history' }]);
-    expect(panel.result.current.entry.draft).toBe('Keep this question');
+
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      draft: 'Keep this question',
+      messages: [{ id: 'saved', role: 'user', content: 'Recovered history' }]
+    });
+    expect(panel.result.current.entry.failure).toBeUndefined();
+    expect(harness.api.getMessages.mock.calls).toEqual([['a'], ['a']]);
+    expect(harness.run).not.toHaveBeenCalled();
+
+    const sending = await sendQuestion(panel);
+
+    expect(harness.run).toHaveBeenCalledWith('a', 'Keep this question', expect.any(AbortSignal));
+    expect(harness.api.createConversation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Stopped' });
+      await sending.completion;
+    });
   });
 
   it('refreshes activity metadata and ordering after a send in an existing conversation', async () => {
@@ -1709,228 +1798,229 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.entry.draft).toBe('Next A question');
   });
 
-  it.each([false, true])(
-    'recovers interrupted initial history without losing a failed answer, persisted partial=%s',
-    async persisted => {
-      const harness = sourceHarness();
-      const initial = Promise.withResolvers<AssistantMessagePage>();
-      const content = 'Repeated question';
-      const questions: AssistantMessagePage['messages'] = [
-        { id: 'older-question', role: 'user', content },
-        { id: 'older-answer', role: 'assistant', segments: [{ id: 'older-round', content: 'Older answer' }] },
-        { id: 'saved-question', role: 'user', content }
-      ];
-      harness.api.getMessages
-        .mockImplementationOnce(() => initial.promise)
-        .mockResolvedValueOnce({
-          messages: persisted
-            ? [...questions, { id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }]
-            : questions,
-          cursor: 'earlier'
-        });
-      const panel = await mountPanel(harness.source);
-      act(() => panel.result.current.select('a'));
-      const sending = await sendQuestion(panel, content);
-      await act(async () =>
-        harness.feeds[0].push(
-          { type: 'run.started' },
-          { type: 'message.done', messageId: 'round', content: 'Partial' },
-          { type: 'tool_call.started', toolCallId: 'tool', name: 'read_note' },
-          { type: 'tool_call.done', toolCallId: 'tool' },
-          { type: 'message.delta', messageId: 'continuation', delta: 'Unsaved continuation' }
-        )
-      );
-      const answerKey = panel.result.current.entry.answerKey;
-      const questionKey = panel.result.current.entry.messages.at(-1)!.id;
-
-      await act(async () => {
-        harness.feeds[0].push({ type: 'run.failed', message: 'Execution failed' });
-        await sending.completion;
-        initial.resolve({ messages: [], cursor: 'obsolete' });
-      });
-
-      expect(panel.result.current.entry).toMatchObject({
-        loaded: true,
-        loading: false,
-        cursor: 'earlier',
-        draft: content,
-        answerKey,
-        answerRecovery: 'send',
-        answer: {
-          status: 'error',
-          message: 'Execution failed',
-          content: 'Partial\n\nUnsaved continuation',
-          tools: [{ id: 'tool', name: 'read_note', status: 'done' }]
-        }
-      });
-      expect(panel.result.current.entry.messages).toEqual(questions);
-      expect(panel.result.current.entry.messageKeys.get('saved-question')).toBe(questionKey);
-      expect(harness.run).toHaveBeenCalledTimes(1);
-    }
-  );
-
-  it.each([false, true])(
-    'resumes deferred completion history after deletion fails, initial history loaded=%s',
-    async loaded => {
-      const harness = sourceHarness();
-      const initial = Promise.withResolvers<AssistantMessagePage>();
-      const canonical = Promise.withResolvers<AssistantMessagePage>();
-      const deletion = Promise.withResolvers<void>();
-      const saved: AssistantMessagePage = {
-        messages: [{ id: 'earlier-question', role: 'user', content: 'Earlier question' }],
+  it.each([false, true])('reloads history without losing a failed answer, persisted partial=%s', async persisted => {
+    const harness = sourceHarness();
+    const content = 'Repeated question';
+    const questions: AssistantMessagePage['messages'] = [
+      { id: 'older-question', role: 'user', content },
+      { id: 'older-answer', role: 'assistant', segments: [{ id: 'older-round', content: 'Older answer' }] },
+      { id: 'saved-question', role: 'user', content }
+    ];
+    harness.api.getMessages
+      .mockResolvedValueOnce({ messages: questions.slice(0, -1), cursor: 'earlier' })
+      .mockResolvedValueOnce({
+        messages: persisted
+          ? [...questions, { id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }]
+          : questions,
         cursor: 'earlier'
-      };
-      harness.api.getMessages
-        .mockImplementationOnce(() => (loaded ? Promise.resolve(saved) : initial.promise))
-        .mockImplementationOnce(() => canonical.promise);
-      harness.api.deleteConversation.mockImplementationOnce(() => deletion.promise);
-      const panel = await mountPanel(harness.source);
-      await act(async () => panel.result.current.select('a'));
-      const sending = await sendQuestion(panel, 'Complete this question');
-      await act(async () =>
-        harness.feeds[0].push(
-          { type: 'run.started' },
-          { type: 'message.done', messageId: 'round', content: 'Completed answer' }
-        )
-      );
-      let removing!: Promise<AssistantDeletionResult>;
-      act(() => {
-        removing = panel.result.current.deleteConversation('a');
       });
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, content);
+    await act(async () =>
+      harness.feeds[0].push(
+        { type: 'run.started' },
+        { type: 'message.done', messageId: 'round', content: 'Partial' },
+        { type: 'tool_call.started', toolCallId: 'tool', name: 'read_note' },
+        { type: 'tool_call.done', toolCallId: 'tool' },
+        { type: 'message.delta', messageId: 'continuation', delta: 'Unsaved continuation' }
+      )
+    );
+    const answerKey = panel.result.current.entry.answerKey;
+    const questionKey = panel.result.current.entry.messages.at(-1)!.id;
 
-      await act(async () => {
-        harness.feeds[0].push({ type: 'run.completed' });
-        await sending.completion;
-      });
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Execution failed' });
+      await sending.completion;
+    });
 
-      expect(harness.api.getMessages).toHaveBeenCalledTimes(1);
-      expect(panel.result.current.entry).toMatchObject({ deleting: true, answer: { status: 'done' } });
+    await act(async () => panel.result.current.reload());
 
-      let result!: AssistantDeletionResult;
-      await act(async () => {
-        deletion.reject(new Error('Deletion denied'));
-        result = await removing;
-      });
-
-      expect(result).toEqual({ status: 'failed', message: 'Deletion denied' });
-      expect(panel.result.current.entry).toMatchObject({
-        deleting: false,
-        loading: true,
-        failure: { message: 'Deletion denied', kind: 'failed' }
-      });
-      const page: AssistantMessagePage = {
-        messages: [
-          ...saved.messages,
-          { id: 'saved-question', role: 'user', content: 'Complete this question' },
-          { id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Completed answer' }] }
-        ],
-        cursor: 'earlier'
-      };
-
-      await act(async () => {
-        canonical.resolve(page);
-        initial.resolve({ messages: [], cursor: 'obsolete' });
-      });
-
-      expect(panel.result.current.entry).toMatchObject({
-        loaded: true,
-        loading: false,
-        messages: page.messages,
-        cursor: 'earlier',
-        failure: { message: 'Deletion denied', kind: 'failed' }
-      });
-      expect(panel.result.current.entry.answer).toBeUndefined();
-      expect(harness.api.getMessages).toHaveBeenCalledTimes(2);
-      expect(harness.run).toHaveBeenCalledTimes(1);
-    }
-  );
-
-  it.each([false, true])(
-    'joins the retained failed turn when the earlier page includes a partial=%s',
-    async includePartial => {
-      const harness = sourceHarness();
-      const initial = Promise.withResolvers<AssistantMessagePage>();
-      harness.api.getMessages
-        .mockImplementationOnce(() => initial.promise)
-        .mockResolvedValueOnce({
-          messages: [{ id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }],
-          cursor: 'earlier'
-        })
-        .mockResolvedValueOnce({
-          messages: [
-            { id: 'older-question', role: 'user', content: 'Earlier question' },
-            { id: 'saved-question', role: 'user', content: 'Failed question' },
-            ...(includePartial
-              ? [{ id: 'saved-prefix', role: 'assistant' as const, segments: [{ id: 'round', content: 'Partial' }] }]
-              : [])
-          ],
-          cursor: null
-        });
-      const panel = await mountPanel(harness.source);
-      act(() => panel.result.current.select('a'));
-      const sending = await sendQuestion(panel, 'Failed question');
-      await act(async () => {
-        harness.feeds[0].push(
-          { type: 'run.started' },
-          { type: 'message.delta', messageId: 'round', delta: 'Partial' },
-          { type: 'run.failed', message: 'Execution failed' }
-        );
-        await sending.completion;
-      });
-      const answerKey = panel.result.current.entry.answerKey;
-      const questionKey = panel.result.current.entry.messages.at(-1)!.id;
-
-      await act(async () => {
-        await panel.result.current.loadEarlier();
-        initial.resolve({ messages: [], cursor: 'obsolete' });
-      });
-
-      expect(panel.result.current.entry.messages).toEqual([
-        { id: 'older-question', role: 'user', content: 'Earlier question' },
-        { id: 'saved-question', role: 'user', content: 'Failed question' }
-      ]);
-      expect(panel.result.current.entry.messageKeys.get('saved-question')).toBe(questionKey);
-      expect(panel.result.current.entry).toMatchObject({
-        cursor: null,
-        answerKey,
-        answerRecovery: 'send',
-        answer: { status: 'error', message: 'Execution failed', content: 'Partial' }
-      });
-
-      const retry = await sendQuestion(panel, 'Another question');
-      await act(async () => {
-        harness.feeds[1].push({ type: 'run.failed', message: 'Not accepted' });
-        await retry.completion;
-      });
-
-      expect(panel.result.current.entry.messages.filter(message => message.role === 'assistant')).toMatchObject([
-        { id: 'round', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }
-      ]);
-      expect(panel.result.current.entry.localAnswerViews.get('round')).toMatchObject({
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      loading: false,
+      cursor: 'earlier',
+      draft: content,
+      answerKey,
+      answerRecovery: 'send',
+      answer: {
         status: 'error',
-        message: 'Execution failed'
+        message: 'Execution failed',
+        content: 'Partial\n\nUnsaved continuation',
+        tools: [{ id: 'tool', name: 'read_note', status: 'done' }]
+      }
+    });
+    expect(panel.result.current.entry.messages).toEqual(questions);
+    expect(panel.result.current.entry.messageKeys.get('saved-question')).toBe(questionKey);
+    expect(harness.run).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes deferred completion history after deletion fails', async () => {
+    const harness = sourceHarness();
+    const canonical = Promise.withResolvers<AssistantMessagePage>();
+    const deletion = Promise.withResolvers<void>();
+    const saved: AssistantMessagePage = {
+      messages: [{ id: 'earlier-question', role: 'user', content: 'Earlier question' }],
+      cursor: 'earlier'
+    };
+    harness.api.getMessages.mockResolvedValueOnce(saved).mockImplementationOnce(() => canonical.promise);
+    harness.api.deleteConversation.mockImplementationOnce(() => deletion.promise);
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Complete this question');
+    await act(async () =>
+      harness.feeds[0].push(
+        { type: 'run.started' },
+        { type: 'message.done', messageId: 'round', content: 'Completed answer' }
+      )
+    );
+    let removing!: Promise<AssistantDeletionResult>;
+    act(() => {
+      removing = panel.result.current.deleteConversation('a');
+    });
+
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.completed' });
+      await sending.completion;
+    });
+
+    expect(harness.api.getMessages).toHaveBeenCalledTimes(1);
+    expect(panel.result.current.entry).toMatchObject({ deleting: true, answer: { status: 'done' } });
+
+    let result!: AssistantDeletionResult;
+    await act(async () => {
+      deletion.reject(new Error('Deletion denied'));
+      result = await removing;
+    });
+
+    expect(result).toEqual({ status: 'failed', message: 'Deletion denied' });
+    expect(panel.result.current.entry).toMatchObject({
+      deleting: false,
+      loading: true,
+      failure: { message: 'Deletion denied', kind: 'failed' }
+    });
+    const page: AssistantMessagePage = {
+      messages: [
+        ...saved.messages,
+        { id: 'saved-question', role: 'user', content: 'Complete this question' },
+        { id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Completed answer' }] }
+      ],
+      cursor: 'earlier'
+    };
+
+    await act(async () => canonical.resolve(page));
+
+    expect(panel.result.current.entry).toMatchObject({
+      loaded: true,
+      loading: false,
+      messages: page.messages,
+      cursor: 'earlier',
+      failure: { message: 'Deletion denied', kind: 'failed' }
+    });
+    expect(panel.result.current.entry.answer).toBeUndefined();
+    expect(harness.api.getMessages).toHaveBeenCalledTimes(2);
+    expect(harness.run).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves a recovered failed turn while loading distinct older history and promotes its partial once', async () => {
+    const harness = sourceHarness();
+    harness.api.getMessages
+      .mockResolvedValueOnce({
+        messages: [{ id: 'loaded-question', role: 'user', content: 'Previously loaded question' }],
+        cursor: 'before-loaded-question'
+      })
+      .mockResolvedValueOnce({
+        messages: [
+          { id: 'loaded-question', role: 'user', content: 'Previously loaded question' },
+          { id: 'saved-question', role: 'user', content: 'Failed question' },
+          { id: 'saved-answer', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }
+        ],
+        cursor: 'before-loaded-question'
+      })
+      .mockResolvedValueOnce({
+        messages: [
+          { id: 'oldest-question', role: 'user', content: 'Oldest question' },
+          { id: 'oldest-answer', role: 'assistant', segments: [{ id: 'oldest-round', content: 'Oldest answer' }] }
+        ],
+        cursor: null
       });
-    }
-  );
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    const sending = await sendQuestion(panel, 'Failed question');
+    await act(async () => {
+      harness.feeds[0].push(
+        { type: 'run.started' },
+        { type: 'message.delta', messageId: 'round', delta: 'Partial' },
+        { type: 'run.failed', message: 'Execution failed' }
+      );
+      await sending.completion;
+    });
+    const answerKey = panel.result.current.entry.answerKey;
+    const questionKey = panel.result.current.entry.messages.at(-1)!.id;
+
+    await act(async () => panel.result.current.reload());
+
+    expect(panel.result.current.entry).toMatchObject({
+      cursor: 'before-loaded-question',
+      answerKey,
+      answerRecovery: 'send',
+      answer: { status: 'error', message: 'Execution failed', content: 'Partial' }
+    });
+    expect(panel.result.current.entry.messages).toEqual([
+      { id: 'loaded-question', role: 'user', content: 'Previously loaded question' },
+      { id: 'saved-question', role: 'user', content: 'Failed question' }
+    ]);
+    expect(panel.result.current.entry.messageKeys.get('saved-question')).toBe(questionKey);
+
+    await act(async () => panel.result.current.loadEarlier());
+
+    expect(harness.api.getMessages.mock.calls).toEqual([['a'], ['a'], ['a', 'before-loaded-question']]);
+    expect(panel.result.current.entry.messages).toEqual([
+      { id: 'oldest-question', role: 'user', content: 'Oldest question' },
+      { id: 'oldest-answer', role: 'assistant', segments: [{ id: 'oldest-round', content: 'Oldest answer' }] },
+      { id: 'loaded-question', role: 'user', content: 'Previously loaded question' },
+      { id: 'saved-question', role: 'user', content: 'Failed question' }
+    ]);
+    expect(panel.result.current.entry).toMatchObject({
+      cursor: null,
+      answerKey,
+      answerRecovery: 'send',
+      answer: { status: 'error', message: 'Execution failed', content: 'Partial' }
+    });
+
+    const retry = await sendQuestion(panel, 'Another question');
+    await act(async () => {
+      harness.feeds[1].push({ type: 'run.failed', message: 'Not accepted' });
+      await retry.completion;
+    });
+
+    expect(panel.result.current.entry.messages.filter(message => message.role === 'assistant')).toMatchObject([
+      { id: 'oldest-answer', role: 'assistant', segments: [{ id: 'oldest-round', content: 'Oldest answer' }] },
+      { id: 'round', role: 'assistant', segments: [{ id: 'round', content: 'Partial' }] }
+    ]);
+    expect(panel.result.current.entry.localAnswerViews.get('round')).toMatchObject({
+      status: 'error',
+      message: 'Execution failed'
+    });
+  });
 
   it('keeps failed recovery available for explicit reload without retrying automatically', async () => {
     const harness = sourceHarness();
-    const initial = Promise.withResolvers<AssistantMessagePage>();
     harness.api.getMessages
-      .mockImplementationOnce(() => initial.promise)
+      .mockResolvedValueOnce({ messages: [], cursor: null })
       .mockRejectedValueOnce(new Error('History unavailable'));
     const panel = await mountPanel(harness.source);
-    act(() => panel.result.current.select('a'));
+    await act(async () => panel.result.current.select('a'));
     const sending = await sendQuestion(panel, 'Failed question');
 
     await act(async () => {
       harness.feeds[0].push({ type: 'run.started' }, { type: 'run.failed', message: 'Execution failed' });
       await sending.completion;
-      initial.resolve({ messages: [], cursor: 'obsolete' });
+      await panel.result.current.reload();
     });
 
     expect(panel.result.current.entry).toMatchObject({
-      loaded: false,
+      loaded: true,
       failure: { message: 'History unavailable', recovery: 'reload' },
       answer: { status: 'error', message: 'Execution failed' }
     });
