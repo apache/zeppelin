@@ -11,6 +11,7 @@
  */
 
 import { Skeleton } from 'antd';
+import type { ReactNode } from 'react';
 import { answerText, answerToolCalls } from '../model/messageHistory';
 import type { AssistantContentRenderer, AssistantAnswerView, AssistantToolActivity } from './answerView';
 import { AssistantAnswerError } from './AssistantAnswerError';
@@ -32,6 +33,7 @@ const Progress = ({ text }: { text: string }) => (
 const progressText = (content: string, tools: AssistantToolActivity[]) => {
   const running = tools.find(tool => tool.status === 'running');
   if (running) return `Running ${toolLabel(running)}…`;
+
   return content ? 'Writing answer…' : 'Thinking…';
 };
 
@@ -42,43 +44,66 @@ export interface AssistantAnswerProps {
   renderContent?: AssistantContentRenderer;
 }
 
-/** One assistant answer in whichever state its run is in. Each state replaces the last, so only one shows at a time. */
-export const AssistantAnswer = ({ view, onRetry, renderContent }: AssistantAnswerProps) => {
+const renderAnswerState = (
+  view: AssistantAnswerView,
+  onRetry?: () => void
+): { content: string; tools: AssistantToolActivity[]; streaming: boolean; details: ReactNode } => {
   switch (view.status) {
     case 'loading':
-      return (
-        <AssistantMessageItem role="assistant" content="" streaming>
-          <Progress text="Thinking…" />
-          <Skeleton className={styles.skeleton} active title={false} paragraph={{ rows: 2, width: ['92%', '64%'] }} />
-        </AssistantMessageItem>
-      );
+      return {
+        content: '',
+        tools: [],
+        streaming: true,
+        details: (
+          <>
+            <Progress text="Thinking…" />
+            <Skeleton className={styles.skeleton} active title={false} paragraph={{ rows: 2, width: ['92%', '64%'] }} />
+          </>
+        )
+      };
+
     case 'streaming': {
       const tools = view.tools ?? [];
-      return (
-        <AssistantMessageItem role="assistant" content={view.content} streaming renderContent={renderContent}>
-          <AssistantToolLog tools={tools} />
-          <Progress text={progressText(view.content, tools)} />
-        </AssistantMessageItem>
-      );
+      return {
+        content: view.content,
+        tools,
+        streaming: true,
+        details: <Progress text={progressText(view.content, tools)} />
+      };
     }
-    case 'done': {
-      const tools = answerToolCalls(view.message).map(call => ({ ...call, status: 'done' as const }));
-      return (
-        <AssistantMessageItem role="assistant" content={answerText(view.message)} renderContent={renderContent}>
-          <AssistantToolLog tools={tools} />
-        </AssistantMessageItem>
-      );
-    }
-    case 'error': {
-      const tools = (view.tools ?? []).map(tool =>
-        tool.status === 'running' ? { ...tool, status: 'unknown' as const } : tool
-      );
-      return (
-        <AssistantMessageItem role="assistant" content={view.content ?? ''} renderContent={renderContent}>
-          <AssistantToolLog tools={tools} />
-          <AssistantAnswerError kind={view.kind} message={view.message} onRetry={onRetry} />
-        </AssistantMessageItem>
-      );
-    }
+
+    case 'done':
+      return {
+        content: answerText(view.message),
+        tools: answerToolCalls(view.message).map(call => ({ ...call, status: 'done' as const })),
+        streaming: false,
+        details: null
+      };
+
+    case 'error':
+      return {
+        content: view.content ?? '',
+        tools: (view.tools ?? []).map(tool =>
+          tool.status === 'running' ? { ...tool, status: 'unknown' as const } : tool
+        ),
+        streaming: false,
+        details: <AssistantAnswerError kind={view.kind} message={view.message} onRetry={onRetry} />
+      };
   }
+};
+
+export const AssistantAnswer = ({ view, onRetry, renderContent }: AssistantAnswerProps) => {
+  const presentation = renderAnswerState(view, onRetry);
+
+  return (
+    <AssistantMessageItem
+      role="assistant"
+      content={presentation.content}
+      streaming={presentation.streaming}
+      renderContent={renderContent}
+    >
+      <AssistantToolLog tools={presentation.tools} />
+      {presentation.details}
+    </AssistantMessageItem>
+  );
 };

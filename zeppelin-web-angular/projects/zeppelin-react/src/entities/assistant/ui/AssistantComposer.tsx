@@ -23,6 +23,8 @@ export interface AssistantComposerProps {
   /** The question cannot be sent here, for example in a conversation started by another user. */
   readOnly?: boolean;
   readOnlyReason?: string;
+  /** Prevents submission while the question remains editable. */
+  submitDisabled?: boolean;
   /** A question is on its way: the input keeps its text but cannot be changed or sent again. */
   sending?: boolean;
 }
@@ -33,12 +35,13 @@ export const AssistantComposer = ({
   onSubmit,
   readOnly = false,
   readOnlyReason = "You can't send messages to this conversation.",
+  submitDisabled = false,
   sending = false
 }: AssistantComposerProps) => {
   const hintId = useId();
   const question = value.trim();
   // The server rejects a blank question, and it accepts one question per conversation at a time.
-  const canSubmit = question !== '' && !readOnly && !sending;
+  const canSubmit = question !== '' && !readOnly && !sending && !submitDisabled;
 
   const submit = () => {
     if (canSubmit) onSubmit(question);
@@ -81,7 +84,13 @@ export const AssistantComposer = ({
           <small id={hintId} className={styles.hint}>
             Shift + Enter for a new line
           </small>
-          <Button type="primary" htmlType="submit" icon={<ArrowUpOutlined />} loading={sending} disabled={!canSubmit}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<ArrowUpOutlined aria-hidden="true" />}
+            loading={sending}
+            disabled={!canSubmit}
+          >
             Send
           </Button>
         </div>

@@ -17,11 +17,31 @@ export class NotebookAssistantPage extends BasePage {
   readonly toggleButton: Locator;
   readonly panel: Locator;
   readonly closeButton: Locator;
+  readonly question: Locator;
+  readonly sendButton: Locator;
+  readonly messages: Locator;
 
   constructor(page: Page) {
     super(page);
     this.toggleButton = page.getByRole('button', { name: 'Toggle AI Assistant' });
     this.panel = page.getByRole('complementary', { name: 'AI Assistant workspace' });
     this.closeButton = page.getByRole('button', { name: 'Close AI Assistant' });
+    this.question = this.panel.getByRole('textbox', { name: 'Question' });
+    this.sendButton = this.panel.getByRole('button', { name: 'Send', exact: true });
+    this.messages = this.panel.getByRole('region', { name: 'Conversation messages' });
+  }
+
+  async selectConversation(title: string): Promise<void> {
+    await this.panel.getByRole('button', { name: 'Open conversations' }).click();
+    await this.panel
+      .getByRole('region', { name: 'Conversations', exact: true })
+      .getByRole('button')
+      .filter({ has: this.page.getByText(title, { exact: true }) })
+      .click();
+  }
+
+  async sendQuestion(content: string): Promise<void> {
+    await this.question.fill(content);
+    await this.sendButton.click();
   }
 }

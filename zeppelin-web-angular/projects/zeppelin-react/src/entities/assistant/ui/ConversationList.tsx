@@ -36,6 +36,8 @@ export interface ConversationListProps {
   selectedId?: string;
   onSelect: (conversationId: string) => void;
   onCreate: () => void;
+  /** Disables only the New conversation action. */
+  newDisabled?: boolean;
   onDelete: (conversationId: string) => void;
   onSearchTermChange: (term: string) => void;
   now?: number;
@@ -102,6 +104,7 @@ export const ConversationList = ({
   selectedId,
   onSelect,
   onCreate,
+  newDisabled,
   onDelete,
   onSearchTermChange,
   now = Date.now()
@@ -134,7 +137,14 @@ export const ConversationList = ({
     <section aria-label="Conversations" className={styles.list}>
       <div className={styles.header}>
         <h3 className={styles.title}>Conversations</h3>
-        <Button size="small" type="text" icon={<PlusOutlined />} aria-label="New conversation" onClick={onCreate} />
+        <Button
+          size="small"
+          type="text"
+          icon={<PlusOutlined />}
+          aria-label="New conversation"
+          disabled={newDisabled}
+          onClick={onCreate}
+        />
       </div>
       <div className={styles.search}>
         <Input
