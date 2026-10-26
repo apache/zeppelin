@@ -148,7 +148,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   private List<String> includesInterpreters;
   private List<String> excludesInterpreters;
   private final IdleInterpreterReclaimer idleInterpreterReclaimer;
-  private final InterpreterHealthChecker interpreterHealthChecker = new InterpreterHealthChecker();
+  private final InterpreterHealthChecker interpreterHealthChecker;
 
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zConf,
@@ -176,6 +176,9 @@ public class InterpreterSettingManager implements NoteEventListener {
       PluginManager pluginManager)
       throws IOException {
     this.zConf = zConf;
+    // First, so that an invalid timeout fails before anything below starts a thread.
+    this.interpreterHealthChecker =
+        new InterpreterHealthChecker(zConf.getInterpreterHealthCheckTimeout());
     this.pluginManager = pluginManager;
     this.defaultOption = defaultOption;
     this.interpreterDirPath = Paths.get(zConf.getInterpreterDir());
@@ -220,7 +223,8 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   /**
-   * Probes the interpreter processes of the given setting and reports whether they answer.
+   * Probes the interpreter processes of the given setting and reports what their launchers say
+   * about them.
    *
    * @see InterpreterHealthChecker
    */

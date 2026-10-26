@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess.CheckMethod;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -26,13 +28,14 @@ import java.util.List;
  * <p>A setting owns zero or more {@link ManagedInterpreterGroup}s, one per interpreter process, so
  * the result reports an entry per group instead of one verdict for the setting.
  *
- * <p>{@code healthy} follows {@code InterpreterClient#isRunning()}, documented as "the interpreter
- * can communicate with server", while {@code isAlive()} only states that a process exists. Both are
- * reported so that a process which is up but no longer answering stays distinguishable from one
- * that is gone.
+ * <p>{@code healthy} follows {@code InterpreterClient#isRunning()}. That call is documented as "the
+ * interpreter can communicate with server", but no launcher asks the interpreter: each one looks at
+ * its own state, from a process launcher flag to a Kubernetes Pod phase. {@code healthy} therefore
+ * means the launcher reports the interpreter as running, not that the interpreter replied, and
+ * {@code checkMethod} says what was looked at.
  *
- * <p>{@code alive} and {@code running} are {@code null} whenever no probe was performed, so that
- * "probed and found dead" does not read the same as "never probed".
+ * <p>{@code alive}, {@code running} and {@code probeTookMs} are {@code null} whenever no probe was
+ * performed, so that "probed and found dead" does not read the same as "never probed".
  */
 public class InterpreterHealthCheck {
 
@@ -42,12 +45,17 @@ public class InterpreterHealthCheck {
    * them as a failure.
    */
   public enum Reason {
-    /** The interpreter answered the probe. */
+    /** The launcher reports the interpreter as running. */
     OK,
-    /** A process handle exists, but the interpreter did not answer. */
+    /** A process handle exists, but the launcher reports it as not running or could not tell. */
     NOT_REACHABLE,
-    /** The probe did not finish within the budget of this health check. */
+    /** The probe started but did not finish within the budget of this health check. */
     PROBE_TIMEOUT,
+    /**
+     * The probe never started, because every probe thread was busy and the queue was full or the
+     * budget ran out first. Nothing was checked, so this says nothing about the interpreter.
+     */
+    PROBE_UNAVAILABLE,
     /** A process is currently being launched for this group, which is not a failure. */
     LAUNCHING,
     /** No process is running, which is the normal state right after a restart. */
@@ -111,24 +119,26 @@ public class InterpreterHealthCheck {
     private final String groupId;
     private final boolean healthy;
     private final Reason reason;
+    private final CheckMethod checkMethod;
     private final Boolean alive;
     private final Boolean running;
-    private final long probeTookMs;
+    private final Long probeTookMs;
 
-    private GroupHealth(String groupId, Reason reason, Boolean alive, Boolean running,
-                        long probeTookMs) {
+    private GroupHealth(String groupId, Reason reason, CheckMethod checkMethod, Boolean alive,
+                        Boolean running, Long probeTookMs) {
       this.groupId = groupId;
       this.reason = reason;
+      this.checkMethod = checkMethod;
       this.alive = alive;
       this.running = running;
       this.probeTookMs = probeTookMs;
       this.healthy = Boolean.TRUE.equals(running);
     }
 
-    /** The probe came back, and whether the interpreter answered decides the reason. */
-    public static GroupHealth probed(String groupId, boolean alive, boolean running,
-                                     long probeTookMs) {
-      return new GroupHealth(groupId, running ? Reason.OK : Reason.NOT_REACHABLE,
+    /** The probe came back, and what the launcher reported decides the reason. */
+    public static GroupHealth probed(String groupId, CheckMethod checkMethod, boolean alive,
+                                     boolean running, long probeTookMs) {
+      return new GroupHealth(groupId, running ? Reason.OK : Reason.NOT_REACHABLE, checkMethod,
           alive, running, probeTookMs);
     }
 
@@ -136,26 +146,38 @@ public class InterpreterHealthCheck {
      * The probe did not come back within the budget. Nothing is known about the process, hence no
      * {@code alive} or {@code running}.
      */
-    public static GroupHealth timedOut(String groupId, long probeTookMs) {
-      return new GroupHealth(groupId, Reason.PROBE_TIMEOUT, null, null, probeTookMs);
+    public static GroupHealth timedOut(String groupId, CheckMethod checkMethod,
+                                       long probeTookMs) {
+      return new GroupHealth(groupId, Reason.PROBE_TIMEOUT, checkMethod, null, null,
+          probeTookMs);
     }
 
     /**
      * The probe itself failed, which says the interpreter could not be reached but leaves the state
      * of the process unknown, hence no {@code alive} or {@code running}.
      */
-    public static GroupHealth probeFailed(String groupId, long probeTookMs) {
-      return new GroupHealth(groupId, Reason.NOT_REACHABLE, null, null, probeTookMs);
+    public static GroupHealth probeFailed(String groupId, CheckMethod checkMethod,
+                                          long probeTookMs) {
+      return new GroupHealth(groupId, Reason.NOT_REACHABLE, checkMethod, null, null,
+          probeTookMs);
+    }
+
+    /**
+     * The probe never got a thread to run on, so nothing was checked and no time was spent on the
+     * process; reporting a timeout here would blame an interpreter that was never asked.
+     */
+    public static GroupHealth unavailable(String groupId, CheckMethod checkMethod) {
+      return new GroupHealth(groupId, Reason.PROBE_UNAVAILABLE, checkMethod, null, null, null);
     }
 
     /** A process is being launched for this group, so it is deliberately left unprobed. */
     public static GroupHealth launching(String groupId) {
-      return new GroupHealth(groupId, Reason.LAUNCHING, null, null, 0);
+      return new GroupHealth(groupId, Reason.LAUNCHING, null, null, null, null);
     }
 
     /** The group carries no process handle, so there is nothing to probe. */
     public static GroupHealth notRunning(String groupId) {
-      return new GroupHealth(groupId, Reason.NOT_RUNNING, null, null, 0);
+      return new GroupHealth(groupId, Reason.NOT_RUNNING, null, null, null, null);
     }
 
     public String getGroupId() {
@@ -170,6 +192,10 @@ public class InterpreterHealthCheck {
       return reason;
     }
 
+    public CheckMethod getCheckMethod() {
+      return checkMethod;
+    }
+
     public Boolean getAlive() {
       return alive;
     }
@@ -178,7 +204,7 @@ public class InterpreterHealthCheck {
       return running;
     }
 
-    public long getProbeTookMs() {
+    public Long getProbeTookMs() {
       return probeTookMs;
     }
   }

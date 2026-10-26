@@ -492,6 +492,11 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.TCP_CONNECT;
+  }
+
+  @Override
   public String getErrorMessage() {
     DockerClient client = docker;
     if (client == null) {

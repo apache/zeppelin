@@ -226,13 +226,14 @@ public class InterpreterRestApi extends AbstractRestApi {
   }
 
   /**
-   * Health check of an interpreter setting: probes its interpreter processes and reports whether
-   * they answer.
+   * Health check of an interpreter setting: probes its interpreter processes and reports what their
+   * launchers say about them.
    *
-   * <p>This is the one interpreter read path that does contact the interpreter, which is acceptable
-   * because a user asks for it explicitly, it names a single setting, and the server bounds the
-   * wait. It never starts an interpreter: a setting with nothing running is reported as such,
-   * since that is the normal state right after a restart.
+   * <p>This is the one interpreter read path that calls into the launchers, which may mean a socket
+   * connect or a Kubernetes API request. That is acceptable because a user asks for it explicitly,
+   * it names a single setting, and the server bounds the wait. It never starts an interpreter: a
+   * setting with nothing running is reported as such, since that is the normal state right after a
+   * restart.
    *
    * @param message HealthCheckInterpreterRequest, optional
    */

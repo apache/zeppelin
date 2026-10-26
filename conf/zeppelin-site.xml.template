@@ -434,6 +434,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.healthcheck.timeout</name>
+  <value>3s</value>
+  <description>How long one interpreter health check request waits, shared by all interpreter processes of the setting. Default time unit is msec.</description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.output.limit</name>
   <value>102400</value>
   <description>Output message from interpreter exceeding the limit will be truncated</description>

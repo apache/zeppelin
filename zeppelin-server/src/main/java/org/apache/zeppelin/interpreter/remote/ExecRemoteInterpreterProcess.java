@@ -157,6 +157,11 @@ public class ExecRemoteInterpreterProcess extends RemoteInterpreterManagedProces
   }
 
   @Override
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.LOCAL_PROCESS_STATE;
+  }
+
+  @Override
   public String getErrorMessage() {
     return this.interpreterProcessLauncher != null
         ? this.interpreterProcessLauncher.getErrorMessage()
