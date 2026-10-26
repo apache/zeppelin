@@ -58,6 +58,8 @@ export class TableVisualizationComponent implements OnInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rows: any[] = [];
   columns: string[] = [];
+  pageIndex = 1;
+  pageSize = 10;
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
   aggregations: readonly AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];

@@ -10,10 +10,6 @@
 ~ limitations under the License.
 -->
 
-<button class="export-dropdown" nz-button nz-dropdown nzSize="small" [nzDropdownMenu]="menu">
-  <span>Export</span>
-  <i nz-icon nzType="down"></i>
-</button>
 <nz-dropdown-menu #menu="nzDropdownMenu">
   <ul nz-menu>
     <li nz-menu-item>
@@ -46,10 +42,12 @@
 <nz-table
   #table
   nzSize="small"
-  nzShowSizeChanger
   [nzScroll]="{ x: '1300px' }"
   [nzData]="rows"
   [nzFooter]="aggregatesFooter"
+  [nzShowPagination]="false"
+  [(nzPageIndex)]="pageIndex"
+  [(nzPageSize)]="pageSize"
 >
   <thead>
     <tr>
@@ -136,6 +134,22 @@
     }
   </tbody>
 </nz-table>
+<div class="table-footer">
+  <button class="export-dropdown" nz-button nz-dropdown nzSize="small" [nzDropdownMenu]="menu">
+    <span>Export</span>
+    <i nz-icon nzType="down"></i>
+  </button>
+  @if (rows.length > 0) {
+    <nz-pagination
+      class="footer-pagination"
+      nzSize="small"
+      nzShowSizeChanger
+      [nzTotal]="rows.length"
+      [(nzPageIndex)]="pageIndex"
+      [(nzPageSize)]="pageSize"
+    ></nz-pagination>
+  }
+</div>
 <ng-template #aggregatesFooter>
   <div class="aggregation-wrap">
     @for (col of columns; track col) {
