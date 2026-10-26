@@ -326,6 +326,20 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
     this.configChange.emit(this.config);
   }
 
+  dismissResultAlert(event: MouseEvent): void {
+    const container = event.currentTarget;
+    const target = event.target;
+    if (!(container instanceof Element) || !(target instanceof Element)) {
+      return;
+    }
+    const button = target.closest('button.close[data-dismiss="alert"]');
+    const alert = button?.parentElement;
+    // ResultMessages warnings are dismissed locally, without changing the saved output.
+    if (alert?.classList.contains('result-alert') && alert !== container && container.contains(alert)) {
+      alert.remove();
+    }
+  }
+
   updateResult(config: ParagraphConfigResult, result: ParagraphIResultsMsgItem) {
     this.config = config;
     this.result = result;

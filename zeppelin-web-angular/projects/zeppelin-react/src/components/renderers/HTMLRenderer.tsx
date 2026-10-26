@@ -28,6 +28,14 @@ export const HTMLRenderer = ({ html }: HTMLRendererProps) => {
       // to the DOM to execute them.
       container.innerHTML = html;
 
+      // ResultMessages HTML needs dismissal without loading Bootstrap's alert plugin.
+      container
+        .querySelectorAll<HTMLButtonElement>('.result-alert > button.close[data-dismiss="alert"]')
+        .forEach(button => {
+          const alert = button.parentElement!;
+          button.addEventListener('click', () => alert.remove(), { once: true });
+        });
+
       // Highlight code blocks (matches Angular: result.component.ts renderHTML)
       const codeEle = container.querySelector<HTMLElement>('pre code');
       if (codeEle) {
