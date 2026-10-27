@@ -363,3 +363,26 @@ describe('NotebookParagraphResultComponent HTML highlighting', () => {
     expect(output.querySelector('.hljs-keyword')?.textContent).toBe('const');
   });
 });
+
+describe('HTML result alert dismissal', () => {
+  it('closes only the selected warning without changing the result data', () => {
+    const result = component();
+    const html = ['102400 bytes', '1000 rows']
+      .map(
+        limit =>
+          `<div class="result-alert alert-warning" role="alert"><button class="close" data-dismiss="alert"><span>&times;</span></button>${limit}</div>`
+      )
+      .join('');
+    result.result = { type: DatasetType.HTML, data: html };
+    const container = document.createElement('div');
+    container.innerHTML = `${html}<button class="close" data-dismiss="alert">Ordinary output</button>`;
+    container.addEventListener('click', event => result.dismissResultAlert(event));
+
+    container.querySelector<HTMLElement>('button span')!.click();
+    container.querySelector<HTMLButtonElement>('div + button')!.click();
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe('×1000 rows');
+    expect(container.textContent).toContain('Ordinary output');
+    expect(result.result.data).toBe(html);
+  });
+});

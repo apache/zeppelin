@@ -95,6 +95,7 @@
         zeppelin-run-scripts
         [scriptsContent]="innerHTML"
         [innerHTML]="innerHTML"
+        (click)="dismissResultAlert($event)"
       ></div>
     }
     @case (datasetType.TEXT) {

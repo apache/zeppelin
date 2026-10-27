@@ -1,0 +1,57 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Shell-owned styles also cover the React remote and dynamically inserted HTML.
+.inner-html .result-alert.alert-warning {
+  @import (reference, multiple) './theme/light/theme-light';
+  position: relative;
+  padding: 12px 44px 12px 16px;
+  color: @text-color;
+  background: @alert-warning-bg-color;
+  border: 1px solid @alert-warning-border-color;
+  border-radius: @border-radius-base;
+  overflow-wrap: anywhere;
+
+  > button.close[data-dismiss='alert'] {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 20px;
+    line-height: 24px;
+    cursor: pointer;
+    opacity: 0.65;
+
+    &:hover,
+    &:focus-visible {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+}
+
+html.dark .inner-html .result-alert.alert-warning {
+  @import (reference, multiple) './theme/dark/theme-dark';
+  color: @text-color;
+  background: mix(@warning-color, @component-background, 10%);
+  border-color: mix(@warning-color, @component-background, 30%);
+}
