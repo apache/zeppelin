@@ -135,7 +135,7 @@
   </tbody>
 </nz-table>
 <div class="table-footer">
-  <button class="export-dropdown" nz-button nz-dropdown nzSize="small" [nzDropdownMenu]="menu">
+  <button class="export-dropdown" aria-label="Export" nz-button nz-dropdown nzSize="small" [nzDropdownMenu]="menu">
     <span>Export</span>
     <i nz-icon nzType="down"></i>
   </button>
@@ -144,6 +144,7 @@
       class="footer-pagination"
       nzSize="small"
       nzShowSizeChanger
+      [nzPageSizeOptions]="[10, 20, 30, 40, 50]"
       [nzTotal]="rows.length"
       [(nzPageIndex)]="pageIndex"
       [(nzPageSize)]="pageSize"

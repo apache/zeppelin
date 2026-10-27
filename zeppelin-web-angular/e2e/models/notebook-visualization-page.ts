@@ -40,6 +40,7 @@ export class NotebookVisualizationPage extends BasePage {
   readonly selectedPage: Locator;
   readonly nextPage: Locator;
   readonly tableExportButton: Locator;
+  readonly noData: Locator;
   private readonly sizeChanger: Locator;
   private readonly cityFilterTrigger: Locator;
   private readonly resultDisplay: Locator;
@@ -67,7 +68,8 @@ export class NotebookVisualizationPage extends BasePage {
     this.pagination = this.resultDisplay.locator('.ant-pagination');
     this.selectedPage = this.pagination.locator('.ant-pagination-item-active');
     this.nextPage = this.pagination.getByRole('listitem', { name: 'Next Page', exact: true });
-    this.tableExportButton = this.resultDisplay.getByRole('button', { name: /^Export\b/, exact: true });
+    this.tableExportButton = this.resultDisplay.getByRole('button', { name: 'Export', exact: true });
+    this.noData = this.resultDisplay.getByText('No Data', { exact: true });
     this.sizeChanger = this.pagination.locator('.ant-select-selector');
     // JUSTIFIED: ng-zorro's icon-only filter trigger has no accessible label.
     this.cityFilterTrigger = this.tableHeaders.filter({ hasText: 'city' }).locator('.filter-icon');
@@ -92,7 +94,8 @@ export class NotebookVisualizationPage extends BasePage {
     const search = this.page.getByPlaceholder('Search...', { exact: true });
     await search.fill(term);
     await search.press('Enter');
-    await this.cityFilterTrigger.click();
+    await search.press('Escape');
+    await expect(search).toBeHidden();
   }
 
   modeRadio(mode: Locator): Locator {
