@@ -228,7 +228,7 @@ public class RemoteInterpreterServer extends Thread
     if (intpEventClient != null) {
       try {
         LOGGER.info("Unregister interpreter process");
-        intpEventClient.unRegisterInterpreterProcess();
+        intpEventClient.unRegisterInterpreterProcess(getRegisterInfo());
       } catch (Exception e) {
         LOGGER.error("Fail to unregister remote interpreter process", e);
       }
@@ -248,6 +248,15 @@ public class RemoteInterpreterServer extends Thread
 
   public Properties getProperties() {
     return this.zProperties;
+  }
+
+  /**
+   * What this process registers with. host and port are fixed in the constructor, so an
+   * unregister carries the same values as the registration. null for a DevInterpreter, which does
+   * not register.
+   */
+  private RegisterInfo getRegisterInfo() {
+    return host == null ? null : new RegisterInfo(host, port, interpreterGroupId);
   }
 
   public LifecycleManager getLifecycleManager() {
@@ -593,7 +602,7 @@ public class RemoteInterpreterServer extends Thread
         }
       }
       if (!Thread.currentThread().isInterrupted()) {
-        RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
+        RegisterInfo registerInfo = getRegisterInfo();
         try {
           intpEventClient = new RemoteInterpreterEventClient(intpEventServerHost, intpEventServerPort, 10);
           LOGGER.info("Registering interpreter process");
@@ -668,7 +677,7 @@ public class RemoteInterpreterServer extends Thread
       if (intpEventClient != null && CAUSE_SHUTDOWN_HOOK.equals(cause)) {
         try {
           LOGGER.info("Unregister interpreter process");
-          intpEventClient.unRegisterInterpreterProcess();
+          intpEventClient.unRegisterInterpreterProcess(getRegisterInfo());
         } catch (Exception e) {
           LOGGER.error("Fail to unregister remote interpreter process", e);
         }
