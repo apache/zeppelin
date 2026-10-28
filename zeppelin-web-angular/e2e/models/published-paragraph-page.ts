@@ -20,6 +20,11 @@ export class PublishedParagraphPage extends BasePage {
   readonly angularRenderer: Locator;
   readonly reactWidget: Locator;
   readonly reactWidgetOrEmptyState: Locator;
+  readonly dataTable: Locator;
+  readonly tableHeaders: Locator;
+  readonly tableCells: Locator;
+  readonly visualizationModeControls: Locator;
+  readonly exportControls: Locator;
   private readonly errorModalContent: Locator;
   private readonly errorModalOkButton: Locator;
 
@@ -34,6 +39,18 @@ export class PublishedParagraphPage extends BasePage {
     this.textOutput = page.locator('zeppelin-publish-paragraph pre');
     // Without paragraph data the remote mounts an <Empty>, so tests that only assert "React took over" accept either.
     this.reactWidgetOrEmptyState = this.reactWidget.or(page.getByTestId('react-empty-paragraph'));
+    this.dataTable = page.getByRole('table');
+    // NG-ZORRO exposes its sortable header cells as role=cell, unlike antd's columnheader.
+    this.tableHeaders = this.dataTable.locator('thead th');
+    this.tableCells = this.dataTable.locator('tbody tr:not(.ant-table-measure-now)').getByRole('cell');
+    // Angular's icon-only controls have no accessible names; React's controls have visible labels.
+    this.visualizationModeControls = page.locator('.viz-icon:visible').or(
+      page.getByRole('button', {
+        name: /\b(Table|Bar Chart|Pie Chart|Line Chart|Area Chart|Scatter Chart)$/,
+        exact: true
+      })
+    );
+    this.exportControls = page.getByRole('button', { name: /^Export\b/, exact: true });
   }
 
   async navigateToNotebook(noteId: string): Promise<void> {

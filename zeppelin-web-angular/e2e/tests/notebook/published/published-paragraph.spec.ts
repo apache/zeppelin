@@ -12,7 +12,8 @@
 
 import { expect, test } from '@playwright/test';
 import { PublishedParagraphPage } from 'e2e/models/published-paragraph-page';
-import { PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
+import { deleteNote, firstParagraphId } from '../../../models/notebook-core-read-page.util';
+import { importPublishedTable, PublishedParagraphTestUtil } from '../../../models/published-paragraph-page.util';
 import {
   addPageAnnotationBeforeEach,
   waitForNotebookLinks,
@@ -253,4 +254,37 @@ test.describe('Published Paragraph', () => {
       });
     }
   });
+});
+
+test.describe('Published table results', () => {
+  addPageAnnotationBeforeEach(PAGES.WORKSPACE.PUBLISHED_PARAGRAPH);
+
+  for (const { label, query, exportCount } of [
+    { label: 'Angular', query: '', exportCount: 1 },
+    { label: 'React', query: '?react=true', exportCount: 2 }
+  ]) {
+    test(`keeps table results and exports without visualization switching (${label})`, async ({ page }) => {
+      const noteId = await importPublishedTable(page.request);
+      try {
+        const paragraphId = await firstParagraphId(page.request, noteId);
+        const published = new PublishedParagraphPage(page);
+        const renderer = label === 'React' ? published.reactWidget : published.angularRenderer;
+        const otherRenderer = label === 'React' ? published.angularRenderer : published.reactWidget;
+
+        await page.goto(`/#/notebook/${noteId}/paragraph/${paragraphId}${query}`);
+
+        // A failed React mount must not pass through the Angular fallback.
+        await expect(renderer).toBeAttached({ timeout: 30000 });
+        await expect(otherRenderer).toHaveCount(0);
+        await expect(published.dataTable).toBeVisible();
+        await expect(published.tableHeaders).toHaveText(['city', 'sales']);
+        await expect(published.tableCells).toHaveText(['Seoul', '30', 'Busan', '20']);
+        await expect(published.visualizationModeControls).toHaveCount(0);
+        await expect(published.exportControls).toHaveCount(exportCount);
+        await expect(published.exportControls.first()).toBeVisible();
+      } finally {
+        await deleteNote(page.request, noteId);
+      }
+    });
+  }
 });
