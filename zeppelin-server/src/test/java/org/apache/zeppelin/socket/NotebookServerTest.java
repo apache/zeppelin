@@ -842,6 +842,58 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
+  void interpreterRemovalPreservesGroupAndRoutesAllScopes() throws Exception {
+    final String noteId = "angular-removal-note";
+    final String otherNoteId = "angular-removal-other-note";
+    final String groupId = "angular-setting:session";
+    final Notebook mockedNotebook = mock(Notebook.class, RETURNS_DEEP_STUBS);
+    when(mockedNotebook.getInterpreterSettingManager().getSettingIds())
+        .thenReturn(Collections.singletonList("angular-setting"));
+    final NoteInfo noteInfo = mock(NoteInfo.class);
+    final NoteInfo otherNoteInfo = mock(NoteInfo.class);
+    when(noteInfo.getId()).thenReturn(noteId);
+    when(otherNoteInfo.getId()).thenReturn(otherNoteId);
+    when(mockedNotebook.getNotesInfo()).thenReturn(Arrays.asList(noteInfo, otherNoteInfo));
+    final NotebookSocket conn = mock(NotebookSocket.class);
+    final NotebookSocket otherConn = mock(NotebookSocket.class);
+    notebookServer.getConnectionManager().noteSocketMap.put(noteId, Collections.singleton(conn));
+    notebookServer.getConnectionManager().noteSocketMap.put(otherNoteId, Collections.singleton(otherConn));
+
+    try {
+      notebookServer.setNotebook(() -> mockedNotebook);
+      for (String paragraphId : Arrays.asList("paragraph", null)) {
+        AngularObject<String> object = AngularObjectBuilder.build("value", "old", noteId, paragraphId);
+
+        notebookServer.onRemoveAngularObject(groupId, object);
+
+        Message expected = new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("name", "value")
+            .put("interpreterGroupId", groupId)
+            .put("noteId", noteId)
+            .put("paragraphId", paragraphId);
+        verify(conn).send(notebookServer.serializeMessage(expected));
+      }
+      verify(otherConn, never()).send(anyString());
+      reset(conn);
+
+      AngularObject<String> globalObject = AngularObjectBuilder.build("value", "old", null, null);
+      notebookServer.onRemoveAngularObject(groupId, globalObject);
+
+      Message expectedGlobal = new Message(OP.ANGULAR_OBJECT_REMOVE)
+          .put("name", "value")
+          .put("interpreterGroupId", groupId)
+          .put("noteId", null)
+          .put("paragraphId", null);
+      verify(conn).send(notebookServer.serializeMessage(expectedGlobal));
+      verify(otherConn).send(notebookServer.serializeMessage(expectedGlobal));
+    } finally {
+      notebookServer.setNotebook(() -> NotebookServerTest.notebook);
+      notebookServer.getConnectionManager().noteSocketMap.remove(noteId);
+      notebookServer.getConnectionManager().noteSocketMap.remove(otherNoteId);
+    }
+  }
+
+  @Test
   void testCreateNoteWithDefaultInterpreterId() throws IOException {
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();
