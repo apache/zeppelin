@@ -813,6 +813,16 @@ public class ZeppelinConfiguration {
   }
 
   /**
+   * Budget for one on demand interpreter health check, shared by all interpreter processes of the
+   * setting being checked.
+   *
+   * @return budget in milliseconds
+   */
+  public long getInterpreterHealthCheckTimeout() {
+    return getTimeMillis(ConfVars.ZEPPELIN_INTERPRETER_HEALTHCHECK_TIMEOUT);
+  }
+
+  /**
    * Reads a time valued property. {@link #getString(ConfVars)} returns null for a ConfVars
    * declared with a numeric default, so the declared default is used when nothing is configured.
    */
@@ -1044,6 +1054,7 @@ public class ZeppelinConfiguration {
     ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
         "https://repo1.maven.org/maven2/"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 600000L),
+    ZEPPELIN_INTERPRETER_HEALTHCHECK_TIMEOUT("zeppelin.interpreter.healthcheck.timeout", 3000L),
     ZEPPELIN_INTERPRETER_CONNECTION_POOL_SIZE("zeppelin.interpreter.connection.poolsize", 100),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),

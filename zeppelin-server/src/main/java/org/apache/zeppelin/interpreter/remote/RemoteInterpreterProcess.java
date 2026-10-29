@@ -157,4 +157,32 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient, Aut
   public abstract void processStarted(int port, String host);
 
   public abstract String getErrorMessage();
+
+  /**
+   * Says what {@link #isRunning()} of this process actually observes. Despite its documentation,
+   * no launcher asks the interpreter itself: each one looks at a different piece of state, and a
+   * caller reporting the answer needs to know which one so as not to promise more than was checked.
+   *
+   * @return {@link CheckMethod#UNKNOWN} unless a subclass describes its own check
+   */
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.UNKNOWN;
+  }
+
+  /**
+   * What {@link #isRunning()} looks at to decide its answer. None of these is a reply from the
+   * interpreter, since the interpreter service has no call to ask for one.
+   */
+  public enum CheckMethod {
+    /** The state of a process this server launched, as last recorded by its launcher. */
+    LOCAL_PROCESS_STATE,
+    /** Whether the YARN application reached RUNNING once; it is not cleared afterwards. */
+    YARN_APPLICATION_STATE,
+    /** A TCP connect to the interpreter port, which shows the port accepts connections. */
+    TCP_CONNECT,
+    /** The Pod phase reported by the Kubernetes API server. */
+    KUBERNETES_POD_PHASE,
+    /** A launcher whose check is not described here. */
+    UNKNOWN
+  }
 }
