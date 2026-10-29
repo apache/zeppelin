@@ -105,14 +105,16 @@ module, so neither has to be on `PATH`. Building the classic UI with
 `-Pweb-classic` pulls in `zeppelin-web`, which pins its own pair in
 `zeppelin-web/pom.xml`.
 
-## Create a Zeppelin Ready VM
+## Attempting to recreate the legacy VM
 
-This setup requires [Vagrant](https://developer.hashicorp.com/vagrant/install),
+This deprecated setup requires [Vagrant](https://developer.hashicorp.com/vagrant/install),
 [VirtualBox](https://www.virtualbox.org/) and
 [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
-With all three installed, run `vagrant up` from within the
-`scripts/vagrant/zeppelin-dev` directory, then `vagrant ssh` to get a shell on
-the guest machine.
+Even with all three installed, provisioning is not expected to work; see the
+reasons above. The following commands are retained only as a historical
+reference. If you still wish to try, run `vagrant up` from within the
+`scripts/vagrant/zeppelin-dev` directory, then `vagrant ssh` to access the
+guest machine.
 
 If you don't wish to build Zeppelin from scratch, run the z-manager installer
 script while running in the guest VM:
