@@ -24,6 +24,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -60,6 +61,7 @@ const VisualizationComponents = [
     FormsModule,
     DragDropModule,
     NzTableModule,
+    NzPaginationModule,
     NzCardModule,
     NzTagModule,
     NzFormModule,

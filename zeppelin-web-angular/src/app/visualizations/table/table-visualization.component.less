@@ -21,16 +21,23 @@
   }
 }
 
-.export-dropdown {
-  margin-bottom: 16px;
-  position: absolute;
-  bottom: 0;
-  left: 0;
+.table-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+
+  .footer-pagination {
+    max-width: 100%;
+    margin-left: auto;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
 }
 
 .themeMixin({
   display: block;
-  position: relative;
   ::ng-deep .filter-icon svg {
     transition: transform 300ms;
   }
