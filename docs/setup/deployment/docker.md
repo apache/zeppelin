@@ -62,34 +62,60 @@ docker run -p 8080:8080 --rm \
 
 ### Building dockerfile locally
 
+The Dockerfiles select architecture-specific packages through the `TARGETARCH` build argument, which is set automatically by `docker buildx` (BuildKit).
+So **`docker buildx` is required**: the legacy `docker build` without BuildKit does not set `TARGETARCH` and the build fails.
+
+To build an image for both amd64 and arm64 (e.g. Apple Silicon):
+
 ```bash
 cd $ZEPPELIN_HOME
 cd scripts/docker/zeppelin/bin
 
-docker build -t my-zeppelin:my-tag ./
+docker buildx build --platform linux/amd64,linux/arm64 \
+  --build-arg Z_VERSION=<release-version> \
+  -t my-zeppelin:my-tag --push ./
 ```
+
+A multi-platform image can't be loaded into the local docker image store, so push it to a registry (`--push`) as above.
+To build for a single architecture and use it locally, give only one platform and `--load` the result:
+
+```bash
+docker buildx build --platform linux/arm64 \
+  --build-arg Z_VERSION=<release-version> \
+  -t my-zeppelin:my-tag --load ./
+```
+
+`Z_VERSION` is optional; when it is omitted, the version declared in the Dockerfile is used.
+
+The official multi-arch `apache/zeppelin` image is built and pushed to Docker Hub by the manually triggered `docker-publish` GitHub Actions workflow (`.github/workflows/docker-publish.yml`).
 
 ### Build docker image for Zeppelin server & interpreters
 
 Starting from 0.9, Zeppelin support to run in k8s or docker. So we add the capability to
 build docker images for Zeppelin server & interpreter.
 Recommendation: Edit the Docker files yourself to adapt them to your needs and reduce the image size.
+These images also require `docker buildx` (see "Building dockerfile locally" above).
 
 At first your need to build a zeppelin-distribution docker image.
 ```bash
 cd $ZEPPELIN_HOME
-docker build -t zeppelin-distribution .
+docker buildx build --platform linux/arm64 -t zeppelin-distribution --load .
 ```
 
 Build docker image for zeppelin server.
 ```bash
 cd $ZEPPELIN_HOME/scripts/docker/zeppelin-server
-docker build -t zeppelin-server .
+docker buildx build --platform linux/arm64 -t zeppelin-server --load .
 ```
 
 Build base docker image for zeppelin interpreter.
 ```bash
 cd $ZEPPELIN_HOME/scripts/docker/zeppelin-interpreter
-docker build -t zeppelin-interpreter-base  .
+docker buildx build --platform linux/arm64 -t zeppelin-interpreter-base --load .
 ```
+
+Use `--platform linux/amd64` instead on an amd64 host. The zeppelin-server and zeppelin-interpreter images start `FROM` the
+distribution image (`ZEPPELIN_DISTRIBUTION_IMAGE` build argument, default `zeppelin-distribution:latest`), so build them for the same platform as the distribution image.
+To publish multi-arch images (`--platform linux/amd64,linux/arm64 --push`), push the distribution image to a registry first and
+pass it with `--build-arg ZEPPELIN_DISTRIBUTION_IMAGE=<registry>/zeppelin-distribution:<tag>`.
 
