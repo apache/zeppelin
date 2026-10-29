@@ -11,6 +11,7 @@
  */
 
 import { act } from 'react';
+import { within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DatasetType } from '@zeppelin/sdk';
 import { mount, PublishedParagraphMountHandle, PublishedParagraphProps } from './PublishedParagraph';
@@ -58,6 +59,22 @@ describe('PublishedParagraph mount contract', () => {
     const rendered = host!.querySelector('[data-testid="react-published-paragraph"]');
     expect(rendered).not.toBeNull();
     expect(rendered!.textContent).toContain('first output');
+  });
+
+  it('renders table exports without visualization mode controls', () => {
+    mountParagraph({
+      paragraphId: 'paragraph-1',
+      results: [{ type: DatasetType.TABLE, data: 'city\tsales\nSeoul\t30' }]
+    });
+
+    const published = within(host!);
+    expect(published.getByRole('cell', { name: 'Seoul' })).toBeTruthy();
+    expect(published.getByRole('cell', { name: '30' })).toBeTruthy();
+    expect(
+      published.queryAllByRole('button', { name: /Table|Bar Chart|Pie Chart|Line Chart|Area Chart|Scatter Chart/ })
+    ).toEqual([]);
+    expect(published.getByRole('button', { name: /Export CSV/ })).toBeTruthy();
+    expect(published.getByRole('button', { name: /Export Excel/ })).toBeTruthy();
   });
 
   it('renders the empty state when the paragraph has no results', () => {
