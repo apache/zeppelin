@@ -33,9 +33,14 @@ export class DynamicTemplateError {
   providedIn: 'root'
 })
 export class RuntimeCompilerService {
+  constructor(
+    private compiler: Compiler,
+    private ngZService: NgZService
+  ) {}
+
   public async createAndCompileTemplate(paragraphId: string, template: string): Promise<DynamicTemplate> {
     const ngZService = this.ngZService;
-    const dynamicComponent = Component({ template, selector: `dynamic-${paragraphId}` })(
+    const dynamicComponent = Component({ template, selector: `dynamic-${paragraphId}`, standalone: false })(
       class DynamicTemplateComponent {
         z = {
           set: (key: string, value: unknown, id: string) => ngZService.setContextValue(key, value, id),
@@ -43,9 +48,15 @@ export class RuntimeCompilerService {
           run: (id: string) => ngZService.runParagraph(id)
         };
 
+        private readonly releaseContext: () => void;
+
         constructor() {
-          ngZService.bindParagraph(paragraphId, this as Record<string, unknown>);
+          this.releaseContext = ngZService.bindParagraphContext(paragraphId, this as Record<string, unknown>);
           Object.freeze(this.z);
+        }
+
+        ngOnDestroy() {
+          this.releaseContext();
         }
       }
     );
@@ -63,9 +74,4 @@ export class RuntimeCompilerService {
       throw new DynamicTemplateError(`${e}`);
     }
   }
-
-  constructor(
-    private compiler: Compiler,
-    private ngZService: NgZService
-  ) {}
 }

@@ -14,6 +14,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import {
   AngularObjectRemove,
   AngularObjectUpdate,
+  getAngularObjectRemovalName,
   GraphConfig,
   Message,
   MessageReceiveDataTypeMap,
@@ -24,7 +25,6 @@ import {
   ParagraphEditorSetting,
   ParagraphSettings,
   ParagraphStates,
-  getAngularObjectRemovalName,
   isTerminalParagraphState,
   ParagraphItem,
   ParagraphIResultsMsgItem,
@@ -217,10 +217,22 @@ export abstract class ParagraphBase extends MessageListenersManager {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');
     }
-    if (data.paragraphId === this.paragraph.id) {
-      const { name, object } = data.angularObject;
-      this.angularContextManager.setContextValue(name, object, data.paragraphId, false);
+    const noteId = this.currentNoteId;
+    const object = data.angularObject;
+    const paragraphId = object.paragraphId ?? data.paragraphId ?? null;
+    if (
+      !noteId ||
+      data.noteId !== noteId ||
+      (object.noteId != null && object.noteId !== noteId) ||
+      (paragraphId !== null && paragraphId !== this.paragraph.id)
+    ) {
+      return;
     }
+    this.angularContextManager.setContextValue(object.name, object.object, this.paragraph.id, false, {
+      noteId: object.noteId ?? null,
+      paragraphId,
+      interpreterGroupId: data.interpreterGroupId
+    });
   }
 
   @MessageListener(OP.ANGULAR_OBJECT_REMOVE)
@@ -228,11 +240,24 @@ export abstract class ParagraphBase extends MessageListenersManager {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');
     }
-    if (data.paragraphId === this.paragraph.id) {
-      const name = getAngularObjectRemovalName(data);
-      if (name !== undefined) {
-        this.angularContextManager.unsetContextValue(name, data.paragraphId, false);
-      }
+    const noteId = this.currentNoteId;
+    const objectNoteId = data.angularObject ? (data.angularObject.noteId ?? null) : (data.noteId ?? null);
+    const paragraphId = data.angularObject?.paragraphId ?? data.paragraphId ?? null;
+    if (
+      !noteId ||
+      (data.noteId != null && data.noteId !== noteId) ||
+      (objectNoteId !== null && objectNoteId !== noteId) ||
+      (paragraphId !== null && paragraphId !== this.paragraph.id)
+    ) {
+      return;
+    }
+    const name = getAngularObjectRemovalName(data);
+    if (name !== undefined) {
+      this.angularContextManager.unsetContextValue(name, this.paragraph.id, false, {
+        noteId: objectNoteId,
+        paragraphId,
+        interpreterGroupId: data.interpreterGroupId
+      });
     }
   }
 
@@ -464,6 +489,10 @@ export abstract class ParagraphBase extends MessageListenersManager {
   }
   protected setParagraphSnapshot(paragraph: ParagraphItem | undefined): void {
     this.paragraph = paragraph;
+    const noteId = this.currentNoteId;
+    if (paragraph && noteId) {
+      this.angularContextManager.registerParagraphBindings(noteId, paragraph.id);
+    }
     this.results = [];
     this.configs = {};
     if (paragraph) {

@@ -89,17 +89,21 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   useReactFooter = false;
   useReactAssistant = false;
 
-  @MessageListener(OP.NOTE)
-  getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
-    const note = data.note;
+  @MessageEnvelopeListener(OP.NOTE)
+  getNote(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE>) {
+    const note = message.data?.note;
     if (isNil(note)) {
       this.router.navigate(['/']).then();
     } else {
-      this.removeParagraphFromNgZ();
-      this.note = note;
       const { paragraphId } = this.activatedRoute.snapshot.params;
+      const nextNote = paragraphId ? this.cleanParagraphExcept(note, paragraphId) : note;
+      this.removeObsoleteParagraphBindings(nextNote);
+      // Read replies replay the registry; ordinary NOTE broadcasts do not.
+      if (message.msgId) {
+        this.ngZService.clearNoteContextValues(note.id);
+      }
+      this.note = nextNote;
       if (paragraphId) {
-        this.note = this.cleanParagraphExcept(this.note, paragraphId);
         this.initializeLookAndFeel(this.note);
       } else {
         this.initializeLookAndFeel(this.note);
@@ -146,6 +150,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       return;
     }
     const definedNote = this.note;
+    this.ngZService.removeParagraphBindings(data.id);
     const paragraphIndex = definedNote.paragraphs.findIndex(p => p.id === data.id);
     definedNote.paragraphs = definedNote.paragraphs.filter((p, index) => index !== paragraphIndex);
     const adjustedCursorIndex =
@@ -208,6 +213,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     if (isNil(note)) {
       this.router.navigate(['/']).then();
     } else {
+      this.removeObsoleteParagraphBindings(note);
       this.note = note;
       this.initializeLookAndFeel(this.note);
       this.cdr.markForCheck();
@@ -525,11 +531,15 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     });
   }
 
-  removeParagraphFromNgZ(): void {
-    if (this.note && Array.isArray(this.note.paragraphs)) {
-      this.note.paragraphs.forEach(p => {
-        this.ngZService.removeParagraph(p.id);
-      });
+  removeObsoleteParagraphBindings(nextNote?: NonNullable<Note['note']>): void {
+    if (this.note) {
+      const retainedIds =
+        nextNote?.id === this.note.id ? new Set(nextNote.paragraphs.map(p => p.id)) : new Set<string>();
+      for (const paragraph of this.note.paragraphs) {
+        if (!retainedIds.has(paragraph.id)) {
+          this.ngZService.removeParagraphBindings(paragraph.id);
+        }
+      }
     }
   }
 
@@ -537,6 +547,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     super.ngOnDestroy();
     this.killSaveTimer();
     this.saveNote();
+    this.removeObsoleteParagraphBindings();
     this.destroy$.next();
     this.destroy$.complete();
     this.titleService.setTitle('Zeppelin');

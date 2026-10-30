@@ -650,9 +650,19 @@ export class NotebookParagraphComponent
       .contextChanged()
       .pipe(takeUntil(this.destroy$))
       .subscribe(change => {
-        if (change.paragraphId === this.paragraph.id && change.emit) {
+        if (change.noteId === this.note.id && change.paragraphId === this.paragraph.id && change.emit) {
           if (change.set) {
-            this.messageService.angularObjectClientBind(this.note.id, change.key, change.value, change.paragraphId);
+            if (change.binding?.interpreterGroupId !== undefined) {
+              this.messageService.angularObjectUpdate(
+                this.note.id,
+                change.binding.paragraphId,
+                change.key,
+                change.value,
+                change.binding.interpreterGroupId
+              );
+            } else {
+              this.messageService.angularObjectClientBind(this.note.id, change.key, change.value, change.paragraphId);
+            }
           } else {
             this.messageService.angularObjectClientUnbind(this.note.id, change.key, change.paragraphId);
           }

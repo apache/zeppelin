@@ -196,7 +196,7 @@ export class MessageService extends Message implements OnDestroy {
 
   angularObjectUpdate(
     noteId: string,
-    paragraphId: string,
+    paragraphId: string | null | undefined,
     name: string,
     value: unknown,
     interpreterGroupId: string

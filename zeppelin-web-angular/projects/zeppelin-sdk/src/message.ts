@@ -322,7 +322,7 @@ export class Message {
 
   angularObjectUpdate(
     noteId: string,
-    paragraphId: string,
+    paragraphId: string | null | undefined,
     name: string,
     value: unknown,
     interpreterGroupId: string

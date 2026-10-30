@@ -234,21 +234,21 @@ export interface MoveParagraph {
 
 export interface AngularObjectUpdated {
   noteId: string;
-  paragraphId: string;
+  paragraphId?: string | null;
   name: string;
   value: unknown;
   interpreterGroupId: string;
 }
 
 interface AngularObjectRemoveContext {
-  noteId: string;
-  paragraphId: string;
+  noteId?: string | null;
+  paragraphId?: string | null;
   angularObject?: {
     name: string;
     object: unknown;
     // Omitted for global (noteId) and note (paragraphId) scoped objects.
-    noteId?: string;
-    paragraphId?: string;
+    noteId?: string | null;
+    paragraphId?: string | null;
   };
   interpreterGroupId?: string;
 }
@@ -258,13 +258,13 @@ export type AngularObjectRemove = AngularObjectRemoveContext &
 
 export interface AngularObjectUpdate {
   noteId: string;
-  paragraphId: string;
+  paragraphId?: string | null;
   interpreterGroupId: string;
   angularObject: {
     name: string;
     object: unknown;
-    noteId: string;
-    paragraphId: string;
+    noteId?: string | null;
+    paragraphId?: string | null;
   };
 }
 

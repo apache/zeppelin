@@ -19,13 +19,14 @@ import {
   ViewChildren
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { publishedSymbol, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
+import { publishedSymbol, MessageEnvelopeListener, MessageListener, ParagraphBase, Published } from '@zeppelin/core';
 import {
   MessageReceiveDataTypeMap,
   OP,
   ParagraphConfigResult,
   ParagraphItem,
-  ParagraphIResultsMsgItem
+  ParagraphIResultsMsgItem,
+  WebSocketMessage
 } from '@zeppelin/sdk';
 import { HeliumService, MessageService, NgZService, NoteStatusService, ReactFeatureService } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell';
@@ -58,6 +59,8 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
   @ViewChildren(NotebookParagraphResultComponent)
   notebookParagraphResultComponents!: QueryList<NotebookParagraphResultComponent>;
 
+  private readonly ngZService: NgZService;
+
   protected get currentNoteId(): string | null {
     return this.noteId;
   }
@@ -74,6 +77,7 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     cdr: ChangeDetectorRef
   ) {
     super(messageService, noteStatusService, ngZService, cdr);
+    this.ngZService = ngZService;
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.useReact = this.reactFeature.isEnabled('publishedParagraph', params);
     });
@@ -82,6 +86,9 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
       if (typeof params.noteId !== 'string') {
         throw new Error(`noteId path parameter should be string, but got ${typeof params.noteId} instead.`);
       }
+      if (this.paragraph) {
+        this.ngZService.removeParagraphBindings(this.paragraph.id);
+      }
       this.noteId = params.noteId;
       this.paragraphId = params.paragraphId!;
       this.setParagraphSnapshot(undefined);
@@ -89,11 +96,18 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
     });
   }
 
-  @MessageListener(OP.NOTE)
-  getNote(data: MessageReceiveDataTypeMap[OP.NOTE]) {
-    const note = data.note;
+  @MessageEnvelopeListener(OP.NOTE)
+  getNote(message: WebSocketMessage<MessageReceiveDataTypeMap, OP.NOTE>) {
+    const note = message.data?.note;
     if (!isNil(note) && note.id === this.noteId) {
-      this.setParagraphSnapshot(note.paragraphs.find(p => p.id === this.paragraphId));
+      const paragraph = note.paragraphs.find(p => p.id === this.paragraphId);
+      if (this.paragraph && this.paragraph.id !== paragraph?.id) {
+        this.ngZService.removeParagraphBindings(this.paragraph.id);
+      }
+      if (message.msgId) {
+        this.ngZService.clearNoteContextValues(note.id);
+      }
+      this.setParagraphSnapshot(paragraph);
       if (this.paragraph) {
         if (!this.paragraph.results) {
           this.showRunConfirmationModal();
@@ -113,6 +127,13 @@ export class PublishedParagraphComponent extends ParagraphBase implements Publis
       }
     }
     this.cdr.markForCheck();
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    if (this.paragraph) {
+      this.ngZService.removeParagraphBindings(this.paragraph.id);
+    }
   }
 
   @MessageListener(OP.ERROR_INFO)

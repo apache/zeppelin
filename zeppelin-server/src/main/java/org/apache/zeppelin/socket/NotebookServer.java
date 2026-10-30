@@ -2355,6 +2355,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         connectionManager.broadcast(noteId,
             new Message(OP.ANGULAR_OBJECT_REMOVE)
                 .put("name", angularObject.getName())
+                .put("interpreterGroupId", interpreterGroupId)
                 .put("noteId", angularObject.getNoteId())
                 .put("paragraphId", angularObject.getParagraphId()));
         break;

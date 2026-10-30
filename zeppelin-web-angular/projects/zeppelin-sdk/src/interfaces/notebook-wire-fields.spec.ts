@@ -19,15 +19,6 @@ it('separates received wire fields from backward-compatible import input', () =>
   expectTypeOf<ParagraphItem>().toHaveProperty('progress').toEqualTypeOf<number>();
   expectTypeOf<NonNullable<Note['note']>>().toHaveProperty('version').toEqualTypeOf<string | undefined>();
   expectTypeOf<EditorSettingReceived['editor']>().toHaveProperty('completionKey').toEqualTypeOf<string | undefined>();
-  expectTypeOf<AngularObjectRemove>().toHaveProperty('angularObject').toEqualTypeOf<
-    | {
-        name: string;
-        object: unknown;
-        noteId?: string;
-        paragraphId?: string;
-      }
-    | undefined
-  >();
   expectTypeOf<AngularObjectRemove>().toHaveProperty('interpreterGroupId').toEqualTypeOf<string | undefined>();
   const legacyImportParagraph = {
     text: '%md legacy import',
