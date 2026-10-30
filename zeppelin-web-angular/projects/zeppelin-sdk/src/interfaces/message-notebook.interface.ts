@@ -68,8 +68,16 @@ export type ImportNoteData = Omit<NonNullable<Note['note']>, 'paragraphs' | 'ver
   version?: string;
 };
 
+export interface JupyterImportNoteData {
+  cells: unknown[];
+  metadata: Record<string, unknown>;
+  nbformat?: number;
+  nbformat_minor?: number;
+  name?: string;
+}
+
 export interface ImportNote {
-  note: ImportNoteData;
+  note: ImportNoteData | JupyterImportNoteData;
 }
 
 export interface NoteAngularObjects {

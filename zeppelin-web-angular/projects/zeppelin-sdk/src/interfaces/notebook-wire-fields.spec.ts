@@ -12,7 +12,7 @@
 
 import { assertType, expectTypeOf, it } from 'vitest';
 
-import { EditorSettingReceived, ImportNote, Note } from './message-notebook.interface';
+import { EditorSettingReceived, ImportNote, ImportNoteData, Note } from './message-notebook.interface';
 import { AngularObjectRemove, ImportParagraphItem, ParagraphItem } from './message-paragraph.interface';
 
 it('separates received wire fields from backward-compatible import input', () => {
@@ -65,10 +65,19 @@ it('separates received wire fields from backward-compatible import input', () =>
     }
   });
 
-  expectTypeOf<ImportNote['note']>().toHaveProperty('version').toEqualTypeOf<string | undefined>();
-  expectTypeOf<ImportNote['note']['paragraphs'][number]>()
-    .toHaveProperty('progress')
-    .toEqualTypeOf<number | undefined>();
+  expectTypeOf<ImportNoteData>().toHaveProperty('version').toEqualTypeOf<string | undefined>();
+  expectTypeOf<ImportNoteData['paragraphs'][number]>().toHaveProperty('progress').toEqualTypeOf<number | undefined>();
+});
+
+it('accepts Jupyter import input without Zeppelin fields or kernel metadata', () => {
+  assertType<ImportNote>({
+    note: {
+      cells: [{ cell_type: 'markdown', source: ['# Imported'], metadata: {} }],
+      metadata: {},
+      nbformat: 4,
+      nbformat_minor: 5
+    }
+  });
 });
 
 it('accepts the personalized GET_NOTE response without a version', () => {
