@@ -10,15 +10,45 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@playwright/test';
+/// <reference lib="es2024.promise" />
+
+import { readFile } from 'node:fs/promises';
+import { Download, expect, test } from '@playwright/test';
 import { NotebookActionBarPage } from '../../../models/notebook-action-bar-page';
+import { deleteNote } from '../../../models/notebook-core-read-page.util';
 import {
   addPageAnnotationBeforeEach,
   waitForZeppelinReady,
   PAGES,
-  createTestNotebook,
-  navigateToNotebookWithFallback
+  createTestNotebookWithName,
+  navigateToNotebookWithFallback,
+  setParagraphText
 } from '../../../utils';
+
+const MARKDOWN = '# Export regression 한글 📝\nMarkdown keeps café and 日本語.';
+const CODE = 'val message = "Hello 🌍"\nprintln(message)';
+const PARAGRAPHS = [`%md\n${MARKDOWN}`, CODE];
+
+interface ExportedNbformat {
+  nbformat: number;
+  nbformat_minor: number;
+  metadata: { name: string };
+  cells: Array<{ cell_type: string; source: string | string[]; outputs?: unknown[] }>;
+}
+
+interface ExportedZeppelinNote {
+  id: string;
+  name: string;
+  paragraphs: Array<{ text: string }>;
+}
+
+const readDownload = async (download: Download): Promise<string> => {
+  const file = await download.path();
+  if (!file) {
+    throw new Error('The notebook export did not produce a local file');
+  }
+  return readFile(file, 'utf8');
+};
 
 test.describe('Notebook Action Bar Functionality', () => {
   // JUSTIFIED: page objects and notebook ids are stored in describe scope; fullyParallel can overwrite them.
@@ -27,16 +57,20 @@ test.describe('Notebook Action Bar Functionality', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_ACTION_BAR);
 
   let actionBarPage: NotebookActionBarPage;
-  let testNotebook: { noteId: string; paragraphId: string };
+  let testNotebook: { noteId: string; paragraphId: string; notebookName: string };
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/#/');
     await waitForZeppelinReady(page);
 
-    testNotebook = await createTestNotebook(page);
+    testNotebook = await createTestNotebookWithName(page, { namePrefix: 'TestNotebook_한글' });
     actionBarPage = new NotebookActionBarPage(page);
 
     await navigateToNotebookWithFallback(page, testNotebook.noteId);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await deleteNote(page.request, testNotebook?.noteId);
   });
 
   test('should display and allow title editing with tooltip', { tag: '@NB-PARITY-002' }, async ({ page }) => {
@@ -145,6 +179,108 @@ test.describe('Notebook Action Bar Functionality', () => {
     await expect(actionBarPage.exportButton).toBeEnabled();
     await expect(actionBarPage.reloadButton).toBeVisible();
     await expect(actionBarPage.reloadButton).toBeEnabled();
+  });
+
+  test('downloads converted ipynb once per click after SPA reopen and preserves zpln export', async ({ page }) => {
+    const notebook = testNotebook;
+    const downloads: Download[] = [];
+    const recordDownload = (download: Download): void => {
+      downloads.push(download);
+    };
+    page.on('download', recordDownload);
+
+    try {
+      await test.step('Given a saved note with deterministic Unicode markdown and code', async () => {
+        await setParagraphText(page, notebook.noteId, notebook.paragraphId, PARAGRAPHS[0]);
+        const response = await page.request.post(`/api/notebook/${notebook.noteId}/paragraph`, {
+          data: { text: PARAGRAPHS[1] }
+        });
+        expect(response.ok(), `Code paragraph creation failed (${response.status()}): ${await response.text()}`).toBe(
+          true
+        );
+        await navigateToNotebookWithFallback(page, notebook.noteId);
+        await expect(actionBarPage.titleEditor).toHaveText(notebook.notebookName);
+      });
+
+      await test.step('Then both export formats are available with distinct accessible names', async () => {
+        await expect(actionBarPage.exportIpynbButton).toBeVisible();
+        await expect(actionBarPage.exportIpynbButton).toBeEnabled();
+        await expect(actionBarPage.exportButton).toBeVisible();
+        await expect(actionBarPage.exportButton).toBeEnabled();
+      });
+
+      const exportAndVerifyIpynb = async (): Promise<void> => {
+        const downloadEvent = page.waitForEvent('download');
+        await actionBarPage.exportIpynbButton.click();
+        const download = await downloadEvent;
+        expect(download.suggestedFilename()).toBe(`${notebook.notebookName}.ipynb`);
+        const content = await readDownload(download);
+        expect(content.charCodeAt(0)).not.toBe(0xfeff);
+        const converted = JSON.parse(content) as ExportedNbformat;
+        expect(converted.nbformat).toBe(4);
+        expect(converted.metadata.name).toBe(notebook.notebookName);
+        expect(
+          converted.cells.map(cell => ({
+            type: cell.cell_type,
+            source: Array.isArray(cell.source) ? cell.source.join('') : cell.source
+          }))
+        ).toEqual([
+          { type: 'markdown', source: MARKDOWN },
+          { type: 'code', source: CODE }
+        ]);
+        expect(converted.cells[1].outputs).toEqual([]);
+      };
+
+      await test.step(
+        'When ipynb is exported, then it contains real converted Unicode cells without a BOM',
+        exportAndVerifyIpynb
+      );
+
+      await test.step('When the user leaves the notebook through SPA navigation and returns', async () => {
+        await page.evaluate(() => {
+          window.location.hash = '/';
+        });
+        await expect(actionBarPage.exportIpynbButton).toHaveCount(0);
+        await waitForZeppelinReady(page);
+        await page.evaluate(id => {
+          window.location.hash = `/notebook/${id}`;
+        }, notebook.noteId);
+        await waitForZeppelinReady(page);
+        await expect(actionBarPage.titleEditor).toHaveText(notebook.notebookName);
+        await expect(actionBarPage.exportIpynbButton).toBeVisible();
+      });
+
+      await test.step(
+        'When ipynb is exported again, then the reopened note downloads the same converted cells',
+        exportAndVerifyIpynb
+      );
+
+      await test.step('Then zpln still downloads the original Zeppelin note and no duplicate ipynb download occurred', async () => {
+        const downloadEvent = page.waitForEvent('download');
+        await actionBarPage.exportButton.click();
+        const download = await downloadEvent;
+        expect(download.suggestedFilename()).toBe(`${notebook.notebookName}.zpln`);
+        const content = await readDownload(download);
+        expect(content.charCodeAt(0)).not.toBe(0xfeff);
+        const exported = JSON.parse(content) as ExportedZeppelinNote;
+        expect(exported.id).toBe(notebook.noteId);
+        expect(exported.name).toBe(notebook.notebookName);
+        expect(exported.paragraphs.map(paragraph => paragraph.text)).toEqual(PARAGRAPHS);
+        // Completed files and the next render task bound synchronous response listeners without a sleep.
+        await page.evaluate(() => {
+          const { promise, resolve } = Promise.withResolvers<void>();
+          requestAnimationFrame(() => resolve());
+          return promise;
+        });
+        expect(downloads.map(item => item.suggestedFilename())).toEqual([
+          `${notebook.notebookName}.ipynb`,
+          `${notebook.notebookName}.ipynb`,
+          `${notebook.notebookName}.zpln`
+        ]);
+      });
+    } finally {
+      page.off('download', recordDownload);
+    }
   });
 
   // Toggle coverage lives in collaboration/collaborative-mode.spec.ts.
