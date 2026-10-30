@@ -83,7 +83,9 @@ export class ScatterChartVisualizationComponent extends G2VisualizationComponent
       .shape('circle');
 
     if (size) {
-      geom.size('__value__');
+      geom.size(size);
+      chart.legend(size, false);
+      geom.tooltip('__key__*__value__', (name: string, value: number) => ({ name, value: String(value) }));
     }
   }
 
