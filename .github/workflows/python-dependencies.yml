@@ -1,0 +1,169 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Python dependency refresh
+
+on:
+  schedule:
+    - cron: '17 4 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-dependencies
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.event_name == 'workflow_dispatch' || github.repository == 'apache/zeppelin'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.candidate.outputs.changed }}
+    steps:
+      - name: Checkout fixed revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Require checked-in locks
+        shell: bash
+        run: |
+          for lock in testing/locks/*.conda-lock.yml; do
+            git ls-files --error-unmatch "${lock}"
+            test -s "${lock}"
+          done
+
+      - name: Set up conda-lock without installing a target environment
+        uses: ./.github/actions/setup-conda-lock
+
+      - name: Resolve candidate locks
+        shell: bash
+        run: python testing/update_python_locks.py
+
+      - name: Check and retain candidate locks
+        id: candidate
+        shell: bash
+        run: |
+          while IFS= read -r path; do
+            case "${path}" in
+              testing/locks/*.conda-lock.yml) ;;
+              *)
+                echo "::error::Resolution changed a file other than a canonical lockfile: ${path}"
+                exit 1
+                ;;
+            esac
+          done < <(git diff --name-only)
+          git diff --check
+          if git diff --quiet -- testing/locks/*.conda-lock.yml; then
+            echo 'changed=false' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'changed=true' >> "${GITHUB_OUTPUT}"
+          fi
+          mkdir -p "${RUNNER_TEMP}/python-lock-candidate"
+          for lock in testing/locks/*.conda-lock.yml; do
+            test -s "${lock}"
+            cp "${lock}" "${RUNNER_TEMP}/python-lock-candidate/"
+          done
+
+      - name: Retain candidate locks
+        uses: actions/upload-artifact@v6
+        with:
+          name: python-lock-candidate
+          path: ${{ runner.temp }}/python-lock-candidate/*.conda-lock.yml
+          if-no-files-found: error
+          retention-days: 14
+
+  validate-backends:
+    needs: prepare
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/backend-tests.yml
+    with:
+      python-lock-artifact: python-lock-candidate
+
+  validate-selenium:
+    needs: prepare
+    permissions:
+      actions: read
+      contents: read
+    uses: ./.github/workflows/selenium-integration.yml
+    with:
+      python-lock-artifact: python-lock-candidate
+
+  publish:
+    needs: [prepare, validate-backends, validate-selenium]
+    if: >-
+      needs.prepare.result == 'success' &&
+      needs.validate-backends.result == 'success' &&
+      needs.validate-selenium.result == 'success' &&
+      needs.prepare.outputs.changed == 'true' &&
+      github.repository == 'apache/zeppelin' &&
+      github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout validated revision
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Download validated candidate
+        uses: actions/download-artifact@v7
+        with:
+          name: python-lock-candidate
+          path: ${{ runner.temp }}/python-lock-candidate
+
+      - name: Stage only the validated candidate
+        shell: bash
+        run: |
+          # Keep the validated source and locks together; detached-HEAD mode rebases onto master.
+          git switch -C master
+          for lock in testing/locks/*.conda-lock.yml; do
+            candidate="${RUNNER_TEMP}/python-lock-candidate/${lock##*/}"
+            test -s "${candidate}"
+            cp "${candidate}" "${lock}"
+          done
+
+      - name: Publish draft dependency review
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          add-paths: testing/locks/*.conda-lock.yml
+          commit-message: Update Python dependency locks
+          branch: automation/python-dependencies
+          base: master
+          draft: true
+          title: 'CI: Update Python dependency locks'
+          body: |
+            Refresh `testing/locks/*.conda-lock.yml` within the supported versions declared in `testing/envs/`.
+
+            The exact candidate passed the backend and Selenium compatibility tests at
+            [source revision `${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}).
+            Review the [generation and validation run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            For reproduction instructions, see [testing/README.md](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/testing/README.md).
+            Compatibility checks run before publication. This PR requires manual review and merge.
