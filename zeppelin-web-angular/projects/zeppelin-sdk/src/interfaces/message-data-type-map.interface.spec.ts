@@ -12,7 +12,8 @@
 
 import { assertType, expectTypeOf, it } from 'vitest';
 
-import { MessageReceiveDataTypeMap } from './message-data-type-map.interface';
+import { MessageReceiveDataTypeMap, MessageSendDataTypeMap } from './message-data-type-map.interface';
+import { ConvertNote, ConvertedNote } from './message-notebook.interface';
 import { OP } from './message-operator.interface';
 import { DatasetType, ParagraphAppendOutput, ParagraphUpdateOutput } from './message-paragraph.interface';
 
@@ -33,4 +34,27 @@ it('declares the asymmetric paragraph output payloads sent by the server', () =>
   expectTypeOf<MessageReceiveDataTypeMap[OP.PARAGRAPH_UPDATE_OUTPUT]>()
     .toHaveProperty('type')
     .toEqualTypeOf<DatasetType>();
+});
+
+it('requires the notebook conversion request fields and a serialized response', () => {
+  assertType<MessageSendDataTypeMap[OP.CONVERT_NOTE_NBFORMAT]>({
+    noteId: 'note',
+    noteName: 'folder/notebook'
+  });
+  assertType<MessageReceiveDataTypeMap[OP.CONVERTED_NOTE_NBFORMAT]>({
+    nbformat: '{"cells":[],"nbformat":4,"nbformat_minor":0}',
+    noteName: 'folder/notebook'
+  });
+  expectTypeOf<MessageSendDataTypeMap[OP.CONVERT_NOTE_NBFORMAT]>().toEqualTypeOf<ConvertNote>();
+  expectTypeOf<MessageSendDataTypeMap[OP.CONVERT_NOTE_NBFORMAT]>().toEqualTypeOf<{
+    noteId: string;
+    noteName: string;
+  }>();
+  expectTypeOf<MessageReceiveDataTypeMap[OP.CONVERTED_NOTE_NBFORMAT]>().toEqualTypeOf<ConvertedNote>();
+  expectTypeOf<MessageReceiveDataTypeMap[OP.CONVERTED_NOTE_NBFORMAT]>().toEqualTypeOf<{
+    nbformat: string;
+    noteName: string;
+  }>();
+  expectTypeOf<{ noteId: string }>().not.toMatchTypeOf<ConvertNote>();
+  expectTypeOf<{ nbformat: { cells: [] }; noteName: string }>().not.toMatchTypeOf<ConvertedNote>();
 });

@@ -261,6 +261,10 @@ export class Message {
     this.send<OP.CLONE_NOTE>(OP.CLONE_NOTE, { id: noteIdToClone, name: newNoteName });
   }
 
+  convertNote(noteId: string, noteName: string): void {
+    this.send<OP.CONVERT_NOTE_NBFORMAT>(OP.CONVERT_NOTE_NBFORMAT, { noteId, noteName });
+  }
+
   /**
    * get nodes list
    */
