@@ -35,7 +35,7 @@ export class NoteCreateComponent extends MessageListenersManager implements OnIn
   @MessageListener(OP.INTERPRETER_SETTINGS)
   getInterpreterSettings(data: MessageReceiveDataTypeMap[OP.INTERPRETER_SETTINGS]) {
     this.listOfInterpreter = data.interpreterSettings;
-    this.defaultInterpreter = data.interpreterSettings[0].name;
+    this.defaultInterpreter = data.interpreterSettings[0]?.name;
     this.cdr.markForCheck();
   }
 
