@@ -98,6 +98,45 @@ test.describe('Login Page', () => {
     await expect(loginPage.formContainer).not.toBeVisible();
   });
 
+  for (const entry of ['login', 'protected route']) {
+    test(`should preserve returnUrl through a cold ${entry} entry and successful authentication`, async ({ page }) => {
+      const destination = '/credential?probe=returnurl';
+      const credentials = Object.values(testCredentials).find(account => account.roles?.includes('admin'));
+      if (!credentials) {
+        throw new Error('The returnUrl regression requires an admin account for the credential destination');
+      }
+      const entryUrl = entry === 'login' ? `/#/login?returnUrl=${encodeURIComponent(destination)}` : `/#${destination}`;
+
+      // Force a new document, rather than updating query params on an already mounted login component.
+      await page.goto('about:blank');
+      await page.goto(entryUrl);
+      await expect(loginPage.userNameInput).toBeVisible();
+      await expect(page).toHaveURL(url => {
+        const [path, query] = url.hash.split('?');
+        return path === '#/login' && new URLSearchParams(query).get('returnUrl') === destination;
+      });
+
+      const responsePromise = page.waitForResponse(
+        response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/api/login'
+      );
+      await loginPage.login(credentials.username, credentials.password);
+      const response = await responsePromise;
+      expect(response.status()).toBe(200);
+      expect((await response.json()).body.principal).toBe(credentials.username);
+      await expect(page).toHaveURL(url => url.hash === `#${destination}`);
+      await expect(
+        page.getByText('Manage your credentials. You can add new credential information.', { exact: true })
+      ).toBeVisible();
+      await expect(loginPage.userNameInput).toBeHidden();
+
+      const cookies = await page.context().cookies(page.url());
+      expect(cookies.some(cookie => cookie.name === 'JSESSIONID' && cookie.value !== '' && cookie.httpOnly)).toBe(true);
+      const ticket = await page.context().request.get('/api/security/ticket', { maxRedirects: 0 });
+      expect(ticket.status()).toBe(200);
+      expect((await ticket.json()).body.principal).toBe(credentials.username);
+    });
+  }
+
   test('should maintain form state after failed login', async () => {
     const invalidCreds = testCredentials.INVALID_USER;
     await loginPage.login(invalidCreds.username, invalidCreds.password);
