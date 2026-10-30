@@ -85,7 +85,24 @@
         </button>
       }
       @if (!viewOnly) {
-        <button nz-button nz-tooltip nzTooltipTitle="Export this note" (click)="exportNote()" [disabled]="revisionView">
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Export this note (zpln)"
+          aria-label="Export this note (zpln)"
+          (click)="exportNote()"
+          [disabled]="revisionView"
+        >
+          <i nz-icon nzType="download" nzTheme="outline"></i>
+        </button>
+        <button
+          nz-button
+          nz-tooltip
+          nzTooltipTitle="Export this note (ipynb)"
+          aria-label="Export this note (ipynb)"
+          (click)="exportNbformat()"
+          [disabled]="revisionView"
+        >
           <i nz-icon nzType="download" nzTheme="outline"></i>
         </button>
       }

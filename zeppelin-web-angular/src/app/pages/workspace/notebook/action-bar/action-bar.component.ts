@@ -84,6 +84,11 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     { name: '1d', value: '0 0 0 * * ?' }
   ];
 
+  @MessageListener(OP.CONVERTED_NOTE_NBFORMAT)
+  saveConvertedNote(data: MessageReceiveDataTypeMap[OP.CONVERTED_NOTE_NBFORMAT]) {
+    this.saveAsService.saveAs(data.nbformat, data.noteName, 'ipynb');
+  }
+
   updateNoteName(name: string) {
     const trimmedNewName = name.trim();
     if (trimmedNewName.length > 0 && this.note.name !== trimmedNewName) {
@@ -216,6 +221,10 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     } else {
       this.saveAsService.saveAs(jsonContent, this.note.name, 'zpln');
     }
+  }
+
+  exportNbformat() {
+    this.messageService.convertNote(this.note.id, this.note.name);
   }
 
   reloadNote() {
