@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpContextToken } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin, BehaviorSubject, EMPTY, Subject } from 'rxjs';
@@ -21,6 +21,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { ITicket, ITicketWrapped, IZeppelinVersion } from '@zeppelin/interfaces';
 
 import { BaseUrlService } from './base-url.service';
+
+// Initial authentication failures belong to route guards, not established-session logout handling.
+export const INITIAL_AUTHENTICATION_CHECK = new HttpContextToken<boolean>(() => false);
 
 @Injectable({
   providedIn: 'root'
@@ -35,7 +38,9 @@ export class TicketService {
 
   getTicket() {
     return forkJoin([
-      this.httpClient.get<ITicket>(`${this.baseUrlService.getRestApiBase()}/security/ticket`),
+      this.httpClient.get<ITicket>(`${this.baseUrlService.getRestApiBase()}/security/ticket`, {
+        context: new HttpContext().set(INITIAL_AUTHENTICATION_CHECK, !this.ticket.init)
+      }),
       this.getZeppelinVersion()
     ]).pipe(
       tap(data => {
