@@ -20,14 +20,14 @@
 </form>
 
 <nz-tabs>
-  <nz-tab nzTitle="Import From JSON File">
-    <nz-upload nzType="drag" [nzBeforeUpload]="beforeUpload" nzAccept="application/json, .zpln">
+  <nz-tab nzTitle="Import From JSON/IPYNB File">
+    <nz-upload nzType="drag" [nzBeforeUpload]="beforeUpload" nzAccept="application/json, .json, .zpln, .ipynb">
       <p class="ant-upload-drag-icon">
         <i nz-icon nzType="inbox"></i>
       </p>
-      <p class="ant-upload-text">Click or drag JSON file to this area to upload</p>
+      <p class="ant-upload-text">Click or drag Zeppelin JSON or Jupyter IPYNB file to this area to upload</p>
       <p class="ant-upload-hint">
-        JSON file size cannot exceed
+        File size cannot exceed
         <strong class="tips warning">{{ wsMaxLimit | humanizeBytes }}</strong>
       </p>
     </nz-upload>

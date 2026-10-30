@@ -21,8 +21,15 @@ import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { ImportNote, MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
 import { isRecord } from '@zeppelin/utility';
 
-const isImportNote = (value: unknown): value is ImportNote['note'] =>
-  isRecord(value) && Array.isArray(value.paragraphs) && value.paragraphs.length > 0;
+const isImportNote = (value: unknown): value is ImportNote['note'] => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  if (value.cells != null) {
+    return Array.isArray(value.cells) && value.cells.length > 0 && isRecord(value.metadata);
+  }
+  return Array.isArray(value.paragraphs) && value.paragraphs.length > 0;
+};
 
 @Component({
   selector: 'zeppelin-note-import',
