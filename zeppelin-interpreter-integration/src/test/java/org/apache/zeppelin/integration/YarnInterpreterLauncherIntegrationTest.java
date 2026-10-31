@@ -69,8 +69,7 @@ public class YarnInterpreterLauncherIntegrationTest {
     zepServer.addLauncher("YarnInterpreterLauncher");
     zepServer.copyLogProperties();
     zepServer.copyBinDir();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
     zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "120000");
 

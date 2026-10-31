@@ -24,7 +24,6 @@ import {
 } from '@zeppelin/pages/workspace/notebook/notebook-route-boundary';
 import { WorkspaceGuard } from '@zeppelin/pages/workspace/workspace.guard';
 import { MessageService, ReactFeatureService } from '@zeppelin/services';
-import { HeliumService } from '@zeppelin/services/helium.service';
 import { ThemeService } from '@zeppelin/services/theme.service';
 import { TicketService } from '@zeppelin/services/ticket.service';
 import { ShareModule } from '@zeppelin/share';
@@ -259,7 +258,6 @@ class ProofWorkspaceGuard {
   providers: [
     { provide: WorkspaceGuard, useClass: ProofWorkspaceGuard },
     { provide: MessageService, useClass: ProofMessageService },
-    { provide: HeliumService, useValue: { initPackages: () => undefined } },
     { provide: NzMessageService, useValue: { loading: () => ({ messageId: 'proof' }), remove: () => undefined } },
     { provide: ReactFeatureService, useValue: { isEnabled: () => false } },
     {

@@ -22,7 +22,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.eventbus.ZeppelinEventBus;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.GsonNoteParser;
@@ -113,7 +112,7 @@ public abstract class AbstractInterpreterTest {
 
     interpreterSettingManager = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     interpreterFactory = new InterpreterFactory(interpreterSettingManager);
     Credentials credentials = new Credentials(zConf, storage);
     notebook = new Notebook(zConf, authorizationService, notebookRepo, noteManager, interpreterFactory, interpreterSettingManager, credentials, eventBus);

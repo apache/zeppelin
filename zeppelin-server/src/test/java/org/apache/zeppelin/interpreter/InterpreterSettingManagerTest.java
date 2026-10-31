@@ -25,7 +25,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +82,6 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(0, interpreterSetting.getDependencies().size());
     assertNotNull(interpreterSetting.getAngularObjectRegistryListener());
     assertNotNull(interpreterSetting.getRemoteInterpreterProcessListener());
-    assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
 
@@ -96,7 +94,7 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     assertEquals(6, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
@@ -150,14 +148,13 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(0, interpreterSetting.getDependencies().size());
     assertNotNull(interpreterSetting.getAngularObjectRegistryListener());
     assertNotNull(interpreterSetting.getRemoteInterpreterProcessListener());
-    assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
 
     // load it again, it should be saved in interpreter-setting.json. So we can restore it properly
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     assertEquals(7, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
@@ -187,7 +184,6 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, interpreterSetting.getDependencies().size());
     assertNotNull(interpreterSetting.getAngularObjectRegistryListener());
     assertNotNull(interpreterSetting.getRemoteInterpreterProcessListener());
-    assertNotNull(interpreterSetting.getAppEventListener());
     assertNotNull(interpreterSetting.getDependencyResolver());
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
 
@@ -210,7 +206,7 @@ class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // load it again
     InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     assertEquals(6, interpreterSettingManager3.get().size());
 
   }

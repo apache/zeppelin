@@ -80,8 +80,8 @@ you can use this function like `setjdk 1.8` / `setjdk 1.7`
 ### Running Individual Tests
 
 ```bash
-# run the `HeliumBundleFactoryTest` test class
-./mvnw test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=HeliumBundleFactoryTest
+# run the `NotebookServerTest` test class
+./mvnw test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=NotebookServerTest
 ```
 
 ### Running Selenium Tests

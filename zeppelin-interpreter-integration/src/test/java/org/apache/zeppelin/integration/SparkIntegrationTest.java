@@ -28,7 +28,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -90,8 +89,7 @@ public abstract class SparkIntegrationTest {
     zepServer.addInterpreter("spark-submit");
     zepServer.copyBinDir();
     zepServer.copyLogProperties();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
     interpreterSettingManager = zepServer.getService(InterpreterSettingManager.class);
     interpreterFactory = zepServer.getService(InterpreterFactory.class);

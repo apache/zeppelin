@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.service;
 
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.AfterAll;
@@ -51,9 +49,7 @@ class ConfigurationServiceTest extends AbstractTestRestApi {
   @BeforeAll
   public static void init() throws Exception {
     zepServer = new MiniZeppelinServer(ConfigurationServiceTest.class.getSimpleName());
-    zepServer.getZeppelinConfiguration().setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
     configurationService = zepServer.getService(ConfigurationService.class);
   }

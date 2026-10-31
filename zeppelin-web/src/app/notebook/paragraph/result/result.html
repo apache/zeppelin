@@ -18,7 +18,6 @@ limitations under the License.
     ng-mouseout="onMouseOut()"
     ng-mouseover="onMouseOver()"
     id="p{{id}}_resize"
-    ng-if="!config.helium.activeApp"
     style="padding-bottom: 5px;"
     resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{type}}"}'
     resizable on-resize="resize(width, height);">
@@ -95,18 +94,6 @@ limitations under the License.
            uib-tooltip="Scroll Top"></div>
     </div>
 
-    <div id="p{{id}}_custom"
-         class="resultContained"
-         ng-if="!isDefaultDisplay()"
-         ng-style="getPointerEvent()">
-    </div>
-
-    <div id="p{{id}}_elem"
-         class="resultContained"
-         ng-if="type == 'ELEMENT'"
-         ng-style="getPointerEvent()">
-    </div>
-
     <div id="p{{id}}_html"
          class="resultContained html-result"
          ng-if="type == 'HTML'"
@@ -125,10 +112,5 @@ limitations under the License.
          ng-style="getPointerEvent()" />
   </div>
 
-  <div ng-repeat="app in apps">
-    <div id="p{{app.id}}"
-         ng-show="config.helium.activeApp == app.id"
-         ng-style="getPointerEvent()">
-    </div>
-  </div>
+
 </div>
