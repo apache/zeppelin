@@ -100,8 +100,7 @@ test.describe('Table footer interactions', () => {
       openTable(page, 12));
 
     await test.step('Given the user is on the last page', async () => {
-      await visualizationPage.nextPage.click();
-      await visualizationPage.nextPage.click();
+      await visualizationPage.pagination.getByRole('listitem', { name: '3', exact: true }).click();
       await expect(visualizationPage.selectedPage).toHaveText('3');
       await expect(visualizationPage.tableCells).toHaveText(ROWS.slice(20).flat());
     });
