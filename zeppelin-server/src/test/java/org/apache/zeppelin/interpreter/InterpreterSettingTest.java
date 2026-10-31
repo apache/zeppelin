@@ -20,21 +20,31 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -599,5 +609,124 @@ class InterpreterSettingTest extends AbstractInterpreterTest{
     assertEquals(InterpreterSetting.Status.READY, interpreterSetting.getStatus());
     assertNull(interpreterSetting.getErrorReason());
 
+  }
+
+  @Test
+  void testCloseInterpretersKeepsGroupCreatedWhileProcessStops() throws Exception {
+    InterpreterSetting interpreterSetting = createEchoInterpreterSetting(InterpreterOption.SHARED);
+    interpreterSetting.getDefaultInterpreter("user1", note1Id);
+    ManagedInterpreterGroup closingGroup =
+        interpreterSetting.getInterpreterGroup("user1", note1Id);
+
+    // A paragraph that runs while the old process is stopping creates a new group with the same id.
+    AtomicReference<ManagedInterpreterGroup> newGroup = new AtomicReference<>();
+    setInterpreterProcess(closingGroup, processThatRunsOnStop(() ->
+        newGroup.set(interpreterSetting.getOrCreateInterpreterGroup("user1", note2Id))));
+
+    interpreterSetting.closeInterpreters("user1", note1Id);
+
+    assertNotSame(closingGroup, newGroup.get());
+    assertSame(newGroup.get(), interpreterSetting.getInterpreterGroup("user1", note2Id));
+  }
+
+  @Test
+  @Timeout(30)
+  void testConcurrentCloseOfLastSessionsKeepsGroupCreatedWhileProcessStops() throws Exception {
+    InterpreterSetting interpreterSetting = createEchoInterpreterSetting(InterpreterOption.SCOPED);
+    ManagedInterpreterGroup closingGroup =
+        interpreterSetting.getOrCreateInterpreterGroup("user1", note1Id);
+
+    // Both closers remove their session before either of them checks whether the group is empty.
+    CyclicBarrier sessionsRemoved = new CyclicBarrier(2);
+    closingGroup.sessions.put(note1Id, Lists.newArrayList(new BarrierInterpreter(sessionsRemoved)));
+    closingGroup.sessions.put(note2Id, Lists.newArrayList(new BarrierInterpreter(sessionsRemoved)));
+
+    AtomicReference<ManagedInterpreterGroup> newGroup = new AtomicReference<>();
+    setInterpreterProcess(closingGroup, processThatRunsOnStop(() ->
+        newGroup.set(interpreterSetting.getOrCreateInterpreterGroup("user1", note1Id))));
+
+    Thread closer1 = new Thread(() -> interpreterSetting.closeInterpreters("user1", note1Id));
+    Thread closer2 = new Thread(() -> interpreterSetting.closeInterpreters("user1", note2Id));
+    closer1.start();
+    closer2.start();
+    closer1.join();
+    closer2.join();
+
+    assertNotSame(closingGroup, newGroup.get());
+    assertSame(newGroup.get(), interpreterSetting.getInterpreterGroup("user1", note1Id));
+  }
+
+  private InterpreterSetting createEchoInterpreterSetting(String perNote) {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerNote(perNote);
+    InterpreterInfo interpreterInfo = new InterpreterInfo(EchoInterpreter.class.getName(),
+        "echo", true, new HashMap<String, Object>(), new HashMap<String, Object>());
+    return new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(Lists.newArrayList(interpreterInfo))
+        .setOption(interpreterOption)
+        .setIntepreterSettingManager(interpreterSettingManager)
+        .setConf(zConf)
+        .create();
+  }
+
+  private static RemoteInterpreterProcess processThatRunsOnStop(Runnable onStop) {
+    RemoteInterpreterProcess process = mock(RemoteInterpreterProcess.class);
+    doAnswer(invocation -> {
+      onStop.run();
+      return null;
+    }).when(process).stop();
+    return process;
+  }
+
+  private static void setInterpreterProcess(ManagedInterpreterGroup interpreterGroup,
+                                            RemoteInterpreterProcess process) throws Exception {
+    Field field = ManagedInterpreterGroup.class.getDeclaredField("remoteInterpreterProcess");
+    field.setAccessible(true);
+    field.set(interpreterGroup, process);
+  }
+
+  private static class BarrierInterpreter extends Interpreter {
+
+    private final CyclicBarrier barrier;
+
+    BarrierInterpreter(CyclicBarrier barrier) {
+      super(new Properties());
+      this.barrier = barrier;
+    }
+
+    @Override
+    public void close() {
+      try {
+        barrier.await(10, TimeUnit.SECONDS);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void open() {
+    }
+
+    @Override
+    public InterpreterResult interpret(String st, InterpreterContext context) {
+      return null;
+    }
+
+    @Override
+    public void cancel(InterpreterContext context) {
+    }
+
+    @Override
+    public FormType getFormType() {
+      return FormType.NATIVE;
+    }
+
+    @Override
+    public int getProgress(InterpreterContext context) {
+      return 0;
+    }
   }
 }
