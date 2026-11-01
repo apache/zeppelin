@@ -113,7 +113,7 @@ exception ServiceException{
 
 service RemoteInterpreterEventService {
   void registerInterpreterProcess(1: RegisterInfo registerInfo) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
-  void unRegisterInterpreterProcess(1: string intpGroupId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
+  void unRegisterInterpreterProcess(1: string intpGroupId, 2: RegisterInfo registerInfo) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
   void appendOutput(1: OutputAppendEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
   void updateOutput(1: OutputUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);

@@ -184,23 +184,54 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     LOGGER.info("Register interpreter process: {}:{}, interpreterGroup: {}",
             registerInfo.getHost(), registerInfo.getPort(), registerInfo.getInterpreterGroupId());
     interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
+    ((ManagedInterpreterGroup) interpreterGroup).setRegisterInfo(registerInfo);
   }
 
   @Override
-  public void unRegisterInterpreterProcess(String intpGroupId) throws InterpreterRPCException, TException {
+  public void unRegisterInterpreterProcess(String intpGroupId, RegisterInfo registerInfo)
+      throws InterpreterRPCException, TException {
     LOGGER.info("Unregister interpreter process: {}", intpGroupId);
-    InterpreterGroup interpreterGroup =
+    ManagedInterpreterGroup interpreterGroup =
             interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
       LOGGER.warn("Unable to unregister interpreter process because no such interpreterGroup: {}",
               intpGroupId);
       return;
     }
+    if (!isSentByProcessOf(interpreterGroup, registerInfo)) {
+      LOGGER.warn("Ignore the unregister of interpreter process {}:{}, because it is not the "
+          + "process of interpreterGroup: {}", registerInfo.getHost(), registerInfo.getPort(),
+          intpGroupId);
+      return;
+    }
     // Close RemoteInterpreter when RemoteInterpreterServer already timeout.
     // Otherwise the ProgressBar will be missing when rerun after the RemoteInterpreterServer timeout
     // and old RemoteInterpreterGroups will always alive after GC.
     interpreterGroup.close();
-    interpreterSettingManager.removeInterpreterGroup(intpGroupId);
+    if (interpreterGroup.getInterpreterSetting() != null) {
+      interpreterGroup.getInterpreterSetting().removeInterpreterGroup(interpreterGroup);
+    }
+  }
+
+  /**
+   * The unregister is resolved by group id, and a group with that id can belong to another process
+   * than the sender, e.g. when a new group is created while the old process is being stopped.
+   */
+  private static boolean isSentByProcessOf(ManagedInterpreterGroup interpreterGroup,
+                                           RegisterInfo sender) {
+    if (sender == null) {
+      // An interpreter process from before this check does not say who it is.
+      return true;
+    }
+    RegisterInfo registered = interpreterGroup.getRegisterInfo();
+    if (registered != null) {
+      return registered.equals(sender);
+    }
+    // No registration was accepted for this group. Without a process, or while its process is
+    // still launching, it has no process that could send this. A recovered or an externally
+    // running process is attached without a registration, so keep the id based behaviour for it.
+    return interpreterGroup.getInterpreterProcess() != null
+        && !interpreterGroup.isLaunchingInterpreterProcess();
   }
 
   @Override

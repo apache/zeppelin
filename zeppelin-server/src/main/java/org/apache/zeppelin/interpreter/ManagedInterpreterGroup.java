@@ -21,6 +21,7 @@ package org.apache.zeppelin.interpreter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.lifecycle.IdleInterpreterReclaimer;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -46,6 +47,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private final ZeppelinConfiguration zConf;
   private volatile long lastUsedTimeInMillis = System.currentTimeMillis();
   private volatile boolean launchingInterpreterProcess;
+  // The registration accepted for this group's process, null until the process registers.
+  private volatile RegisterInfo registerInfo;
 
   /**
    * Create InterpreterGroup with given id and interpreterSetting, used in ZeppelinServer
@@ -121,6 +124,14 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {
     return remoteInterpreterProcess;
+  }
+
+  RegisterInfo getRegisterInfo() {
+    return registerInfo;
+  }
+
+  void setRegisterInfo(RegisterInfo registerInfo) {
+    this.registerInfo = registerInfo;
   }
 
 

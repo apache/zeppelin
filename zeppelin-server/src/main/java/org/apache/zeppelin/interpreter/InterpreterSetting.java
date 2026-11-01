@@ -476,6 +476,22 @@ public class InterpreterSetting {
     }
   }
 
+  /**
+   * Removes the given group only if it is still the one registered under its id. A group with the
+   * same id can be created while this one is closing, and that group must stay registered.
+   * Compares references, because {@link InterpreterGroup#equals} compares ids only.
+   */
+  void removeInterpreterGroup(ManagedInterpreterGroup interpreterGroup) {
+    try {
+      interpreterGroupWriteLock.lock();
+      if (this.interpreterGroups.get(interpreterGroup.getId()) == interpreterGroup) {
+        this.interpreterGroups.remove(interpreterGroup.getId());
+      }
+    } finally {
+      interpreterGroupWriteLock.unlock();
+    }
+  }
+
   public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
     return getInterpreterGroup(getExecutionContext(user, noteId));
   }
