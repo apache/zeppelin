@@ -17,7 +17,7 @@ Zeppelin notebooks front-end built with Angular.
 - Jira issue [ZEPPELIN-4321](https://issues.apache.org/jira/browse/ZEPPELIN-4321)
 - Design Document: [Zeppelin Notebook Rework Proposal](https://docs.google.com/document/d/1z_VscS81Xwx_3QaexKB2s0uEMEuWKsPXh9mWFRq0-hY)
 
-![screenshot](/screenshot.png?raw=true "Screenshot")
+![screenshot](screenshot.png?raw=true "Screenshot")
 
 ## Setup
 
