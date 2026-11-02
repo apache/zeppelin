@@ -213,6 +213,14 @@ export class NgZService implements AngularContextManager, OnDestroy {
     emit: boolean,
     set: boolean
   ): void {
+    // Server messages already reach every matching paragraph listener.
+    if (!emit) {
+      const paragraph = this.paragraphBindingsById.get(sourceParagraphId);
+      if (paragraph) {
+        this.updateParagraphContextValue(sourceParagraphId, paragraph, key, false, set);
+      }
+      return;
+    }
     for (const [paragraphId, paragraph] of this.paragraphBindingsById) {
       if (paragraph.noteId === noteId) {
         this.updateParagraphContextValue(paragraphId, paragraph, key, emit && paragraphId === sourceParagraphId, set);

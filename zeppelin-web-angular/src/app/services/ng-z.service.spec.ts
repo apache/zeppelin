@@ -98,6 +98,39 @@ const setup = () => {
 };
 
 describe('Paragraph Angular object binding', () => {
+  it.each(['notebook', 'global'] as const)('notifies each paragraph once per %s server update and removal', scope => {
+    const { service, updates, removals, createParagraph, bind, message } = setup();
+    const paragraphIds = ['A', 'B', ...Array.from({ length: 18 }, (_, index) => `extra-${index}`)];
+    paragraphIds.slice(2).forEach(id => createParagraph(id));
+    const contexts = paragraphIds.map(id => bind(id).context);
+    const changes = vi.fn();
+    const subscription = service.contextChanged().subscribe(changes);
+    disposables.push(() => subscription.unsubscribe());
+    const angularObject = {
+      name: 'controlValue',
+      object: 'server',
+      noteId: scope === 'notebook' ? 'note' : null,
+      paragraphId: null
+    };
+    updates.next({ noteId: 'note', interpreterGroupId: 'spark', angularObject });
+    expect(contexts.map(context => context.controlValue)).toEqual(paragraphIds.map(() => 'server'));
+    expect(changes.mock.calls.map(([change]) => change.paragraphId)).toEqual(paragraphIds);
+
+    changes.mockClear();
+    contexts.forEach(context => (context.controlValue = 'template-local'));
+    updates.next({ noteId: 'note', interpreterGroupId: 'spark', angularObject });
+    expect(contexts.map(context => context.controlValue)).toEqual(paragraphIds.map(() => 'server'));
+    expect(changes.mock.calls.map(([change]) => change.paragraphId)).toEqual(paragraphIds);
+
+    changes.mockClear();
+    removals.next({ noteId: 'note', interpreterGroupId: 'spark', angularObject });
+    expect(contexts.map(context => context.controlValue)).toEqual(paragraphIds.map(() => undefined));
+    expect(changes.mock.calls.map(([change]) => change.paragraphId)).toEqual(paragraphIds);
+    expect(message.angularObjectUpdate).not.toHaveBeenCalled();
+    expect(message.angularObjectClientBind).not.toHaveBeenCalled();
+    expect(message.angularObjectClientUnbind).not.toHaveBeenCalled();
+  });
+
   it('retains initial values received by paragraph listeners until outputs are created', () => {
     const { update, bind } = setup();
     update('initial');
