@@ -48,15 +48,15 @@ export class RuntimeCompilerService {
           run: (id: string) => ngZService.runParagraph(id)
         };
 
-        private readonly releaseContext: () => void;
+        readonly #releaseContext: () => void;
 
         constructor() {
-          this.releaseContext = ngZService.bindParagraphContext(paragraphId, this as Record<string, unknown>);
+          this.#releaseContext = ngZService.bindParagraphContext(paragraphId, this as Record<string, unknown>);
           Object.freeze(this.z);
         }
 
         ngOnDestroy() {
-          this.releaseContext();
+          this.#releaseContext();
         }
       }
     );

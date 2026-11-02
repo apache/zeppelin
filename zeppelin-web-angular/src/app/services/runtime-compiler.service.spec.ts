@@ -108,3 +108,71 @@ it('reapplies repeated server values after a native template-local edit without 
   expect(firstElement.querySelector('output')?.textContent).toBe('server');
   expect(secondElement.querySelector('output')?.textContent).toBe('server');
 });
+
+it('keeps a releaseContext model separate from output cleanup', async () => {
+  TestBed.configureTestingModule({ imports: [OutputHost], providers: [provideZoneChangeDetection()] });
+  const service = TestBed.inject(NgZService);
+  service.registerParagraphBindings('note', 'A');
+  const binding = { noteId: 'note', paragraphId: null, interpreterGroupId: 'spark' };
+  service.setContextValue('releaseContext', 'initial', 'A', false, binding);
+  const dynamic = await TestBed.inject(RuntimeCompilerService).createAndCompileTemplate(
+    'A',
+    '<output>{{releaseContext}}</output>'
+  );
+  const fixture = TestBed.createComponent(OutputHost);
+  fixture.componentInstance.dynamic = dynamic;
+  fixture.detectChanges();
+  const element = fixture.nativeElement as HTMLElement;
+  expect(element.querySelector('output')?.textContent).toBe('initial');
+
+  service.setContextValue('releaseContext', 'updated', 'A', false, binding);
+  fixture.detectChanges();
+  expect(element.querySelector('output')?.textContent).toBe('updated');
+  fixture.componentInstance.dynamic = null;
+  fixture.detectChanges();
+  service.setContextValue('releaseContext', 'after-destroy', 'A', false, binding);
+  fixture.componentInstance.dynamic = dynamic;
+  fixture.detectChanges();
+  expect(element.querySelector('output')?.textContent).toBe('after-destroy');
+});
+
+it('propagates a native shared edit without resetting a different paragraph binding draft', async () => {
+  TestBed.configureTestingModule({ imports: [OutputHost], providers: [provideZoneChangeDetection()] });
+  const service = TestBed.inject(NgZService);
+  service.registerParagraphBindings('note', 'A');
+  service.registerParagraphBindings('note', 'B');
+  service.registerParagraphBindings('note', 'C');
+  const shared = { noteId: 'note', paragraphId: null, interpreterGroupId: 'spark' };
+  service.setContextValue('controlValue', 'shared', 'A', false, shared);
+  service.setContextValue('controlValue', 'private', 'B', false, { ...shared, paragraphId: 'B' });
+  const compiler = TestBed.inject(RuntimeCompilerService);
+  const fixtures = [];
+  for (const id of ['A', 'B', 'C']) {
+    const dynamic = await compiler.createAndCompileTemplate(
+      id,
+      id === 'A'
+        ? "<output>{{controlValue}}</output><button (click)=\"z.set('controlValue', 'edited', 'A')\">Edit shared</button>"
+        : '<output>{{controlValue}}</output><button (click)="controlValue = \'draft\'">Local edit</button>'
+    );
+    const fixture = TestBed.createComponent(OutputHost);
+    fixture.componentInstance.dynamic = dynamic;
+    fixture.detectChanges();
+    fixtures.push(fixture);
+  }
+  const [a, b, c] = fixtures;
+  const aElement = a.nativeElement as HTMLElement;
+  const bElement = b.nativeElement as HTMLElement;
+  const cElement = c.nativeElement as HTMLElement;
+  expect(cElement.querySelector('output')?.textContent).toBe('shared');
+  bElement.querySelector('button')!.click();
+  b.detectChanges();
+  expect(bElement.querySelector('output')?.textContent).toBe('draft');
+
+  aElement.querySelector('button')!.click();
+  a.detectChanges();
+  b.detectChanges();
+  c.detectChanges();
+  expect(aElement.querySelector('output')?.textContent).toBe('edited');
+  expect(bElement.querySelector('output')?.textContent).toBe('draft');
+  expect(cElement.querySelector('output')?.textContent).toBe('edited');
+});
