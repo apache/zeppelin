@@ -397,4 +397,59 @@ describe('Paragraph Angular object binding', () => {
       'other-group'
     );
   });
+  it('preserves a private draft when other scopes or interpreter groups change', () => {
+    const { update, removals, bind } = setup();
+    update('private', 'B', 'selected-group');
+    const context = bind('B').context;
+    context.controlValue = 'private-draft';
+
+    update('other-paragraph', 'A');
+    update('notebook');
+    update('hidden-private', 'B', 'other-group');
+    expect(context.controlValue).toBe('private-draft');
+    removals.next({ noteId: 'note', paragraphId: 'B', name: 'controlValue', interpreterGroupId: 'other-group' });
+    removals.next({ noteId: 'note', name: 'controlValue', interpreterGroupId: 'spark' });
+    expect(context.controlValue).toBe('private-draft');
+
+    update('new-private', 'B', 'selected-group');
+    expect(context.controlValue).toBe('new-private');
+  });
+
+  it('refreshes every consumer when removal selects a surviving shared interpreter-group binding', () => {
+    const { update, removals, bind } = setup();
+    update('first', undefined, 'first-group');
+    update('second', undefined, 'second-group');
+    const a = bind('A').context;
+    const b = bind('B').context;
+    expect(a.controlValue).toBe('first');
+    expect(b.controlValue).toBe('first');
+
+    removals.next({ noteId: 'note', name: 'controlValue', interpreterGroupId: 'first-group' });
+    expect(a.controlValue).toBe('second');
+    expect(b.controlValue).toBe('second');
+    removals.next({ noteId: 'note', name: 'controlValue', interpreterGroupId: 'second-group' });
+    expect(a.controlValue).toBeUndefined();
+    expect(b.controlValue).toBeUndefined();
+  });
+
+  it('reconciles a same-value client update for shared consumers and sends an explicit no-change unbind', () => {
+    const { update, bind, service, message } = setup();
+    update('shared');
+    const a = bind('A').context;
+    const b = bind('B').context;
+    b.controlValue = 'draft';
+    service.setContextValue('controlValue', 'shared', 'A');
+    expect(a.controlValue).toBe('shared');
+    expect(b.controlValue).toBe('shared');
+    expect(message.angularObjectUpdate).toHaveBeenCalledExactlyOnceWith(
+      'note',
+      null,
+      'controlValue',
+      'shared',
+      'spark'
+    );
+
+    service.unsetContextValue('not-cached', 'A');
+    expect(message.angularObjectClientUnbind).toHaveBeenCalledExactlyOnceWith('note', 'not-cached', 'A');
+  });
 });

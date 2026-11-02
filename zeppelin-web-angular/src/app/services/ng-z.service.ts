@@ -28,6 +28,7 @@ interface ParagraphBindings {
   noteId: string;
   outputContexts: Set<Record<string, unknown>>;
   localValues: Map<string, ContextValue>;
+  resolvedValues: Map<string, ContextValue>;
 }
 
 @Injectable({
@@ -53,7 +54,12 @@ export class NgZService implements AngularContextManager, OnDestroy {
       return;
     }
     this.removeParagraphBindings(paragraphId);
-    this.paragraphBindingsById.set(paragraphId, { noteId, outputContexts: new Set(), localValues: new Map() });
+    this.paragraphBindingsById.set(paragraphId, {
+      noteId,
+      outputContexts: new Set(),
+      localValues: new Map(),
+      resolvedValues: new Map()
+    });
   }
 
   removeParagraphBindings(paragraphId: string): void {
@@ -108,7 +114,11 @@ export class NgZService implements AngularContextManager, OnDestroy {
       ...paragraph.localValues.keys(),
       ...(this.boundValuesByNote.get(paragraph.noteId)?.keys() ?? [])
     ])) {
-      context[key] = this.resolveContextValue(paragraphId, paragraph, key)?.value;
+      const current = this.resolveContextValue(paragraphId, paragraph, key);
+      if (current) {
+        paragraph.resolvedValues.set(key, current);
+      }
+      context[key] = current?.value;
     }
     return () => paragraph.outputContexts.delete(context);
   }
@@ -118,6 +128,7 @@ export class NgZService implements AngularContextManager, OnDestroy {
     if (!paragraph) {
       return;
     }
+    let updatedValue: ContextValue;
     if (binding) {
       let noteBindings = this.boundValuesByNote.get(paragraph.noteId);
       if (!noteBindings) {
@@ -131,8 +142,9 @@ export class NgZService implements AngularContextManager, OnDestroy {
       }
       const identity = JSON.stringify([binding.interpreterGroupId, binding.noteId, binding.paragraphId]);
       const previous = values.get(identity);
-      if (!previous || previous.value !== value) {
-        values.set(identity, { value, binding });
+      updatedValue = previous && previous.value === value ? previous : { value, binding };
+      if (updatedValue !== previous) {
+        values.set(identity, updatedValue);
       }
       // Equal cached values must still reconcile fields changed directly by a template.
       if (binding.paragraphId !== null) {
@@ -141,12 +153,14 @@ export class NgZService implements AngularContextManager, OnDestroy {
     } else {
       const current = this.resolveContextValue(paragraphId, paragraph, key);
       if (current?.binding) {
+        updatedValue = current;
         current.value = value;
       } else {
-        paragraph.localValues.set(key, { value });
+        updatedValue = { value };
+        paragraph.localValues.set(key, updatedValue);
       }
     }
-    this.refreshNoteContextValue(paragraph.noteId, key, paragraphId, emit, true);
+    this.refreshNoteContextValue(paragraph.noteId, key, paragraphId, emit, true, updatedValue);
   }
 
   unsetContextValue(key: string, paragraphId: string, emit = true, binding?: AngularObjectBinding): void {
@@ -211,19 +225,27 @@ export class NgZService implements AngularContextManager, OnDestroy {
     key: string,
     sourceParagraphId: string,
     emit: boolean,
-    set: boolean
+    set: boolean,
+    updatedValue?: ContextValue
   ): void {
     // Server messages already reach every matching paragraph listener.
     if (!emit) {
       const paragraph = this.paragraphBindingsById.get(sourceParagraphId);
       if (paragraph) {
-        this.updateParagraphContextValue(sourceParagraphId, paragraph, key, false, set);
+        this.updateParagraphContextValue(sourceParagraphId, paragraph, key, false, set, updatedValue);
       }
       return;
     }
     for (const [paragraphId, paragraph] of this.paragraphBindingsById) {
       if (paragraph.noteId === noteId) {
-        this.updateParagraphContextValue(paragraphId, paragraph, key, emit && paragraphId === sourceParagraphId, set);
+        this.updateParagraphContextValue(
+          paragraphId,
+          paragraph,
+          key,
+          paragraphId === sourceParagraphId,
+          set,
+          updatedValue
+        );
       }
     }
   }
@@ -233,9 +255,23 @@ export class NgZService implements AngularContextManager, OnDestroy {
     paragraph: ParagraphBindings,
     key: string,
     emit: boolean,
-    set: boolean
+    set: boolean,
+    updatedValue?: ContextValue
   ): void {
     const current = this.resolveContextValue(paragraphId, paragraph, key);
+    // Other scopes and interpreter groups must not overwrite this output's local edits.
+    if (
+      !emit &&
+      paragraph.resolvedValues.get(key) === current &&
+      (updatedValue === undefined || current !== updatedValue)
+    ) {
+      return;
+    }
+    if (current) {
+      paragraph.resolvedValues.set(key, current);
+    } else {
+      paragraph.resolvedValues.delete(key);
+    }
     for (const context of paragraph.outputContexts) {
       context[key] = current?.value;
     }
