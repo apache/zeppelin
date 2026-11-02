@@ -1037,6 +1037,7 @@
               <exclude>**/.npmignore</exclude>
               <exclude>**/.jshintrc</exclude>
               <exclude>**/yarn.lock</exclude>
+              <exclude>testing/locks/*.conda-lock.yml</exclude>
               <exclude>**/bower.json</exclude>
               <exclude>**/src/fonts/Patua-One*</exclude>
               <exclude>**/src/fonts/patua-one*</exclude>
