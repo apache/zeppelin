@@ -16,7 +16,6 @@ import { EMPTY, Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@zeppelin/services', () => ({
-  HeliumService: class {},
   MessageService: class {},
   NgZService: class {},
   NoteStatusService: class {},
@@ -56,7 +55,6 @@ const setup = () => {
   const createParagraph = (id: string, noteId = 'note', revisionView = false) => {
     const component = new NotebookParagraphComponent(
       message as never,
-      {} as never,
       new ElementRef(document.createElement('div')),
       { set: vi.fn() } as never,
       {} as never,
