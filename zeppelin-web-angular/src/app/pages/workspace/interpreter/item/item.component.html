@@ -361,7 +361,7 @@
                       </a>
                     }
                     @default {
-                      {{ control.get('value')?.value || '' }}
+                      {{ displayPropertyValue(control.get('value')?.value) }}
                     }
                   }
                 }

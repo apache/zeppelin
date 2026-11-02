@@ -33,9 +33,8 @@ import java.util.List;
  * Interface for storing zeppelin configuration.
  *
  * 1. interpreter-setting.json
- * 2. helium.json
- * 3. notebook-authorization.json
- * 4. credentials.json
+ * 2. notebook-authorization.json
+ * 3. credentials.json
  *
  */
 public abstract class ConfigStorage {

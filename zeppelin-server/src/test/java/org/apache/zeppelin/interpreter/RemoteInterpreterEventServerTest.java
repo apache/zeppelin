@@ -63,10 +63,10 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server =
         serverWithRunner(listener, new AppendOutputRunner(listener));
     try {
-      server.updateOutput(new OutputUpdateEvent("note", "para", 0, "TEXT", "final", null, null));
+      server.updateOutput(new OutputUpdateEvent("note", "para", 0, "TEXT", "final", "owner"));
       // A caller may publish terminal status as soon as the RPC returns.
       verify(listener).onParagraphOutputUpdated(
-          "note", "para", 0, null, InterpreterResult.Type.TEXT, "final");
+          "note", "para", 0, "owner", InterpreterResult.Type.TEXT, "final");
     } finally {
       server.stop();
     }
@@ -78,10 +78,10 @@ public class RemoteInterpreterEventServerTest {
     RemoteInterpreterEventServer server =
         serverWithRunner(listener, new AppendOutputRunner(listener));
     try {
-      server.appendOutput(new OutputAppendEvent("note", "para", 0, "pending", null, null));
+      server.appendOutput(new OutputAppendEvent("note", "para", 0, "pending", "owner"));
       server.checkpointOutput("note", "para");
       InOrder order = inOrder(listener);
-      order.verify(listener).onParagraphOutputAppend("note", "para", 0, null, "pending");
+      order.verify(listener).onParagraphOutputAppend("note", "para", 0, "owner", "pending");
       order.verify(listener).checkpointOutput("note", "para");
     } finally {
       server.stop();

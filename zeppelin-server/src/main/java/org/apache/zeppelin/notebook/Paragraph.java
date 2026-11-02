@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.gson.JsonArray;
+
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +37,6 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.ExecutionContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -81,8 +81,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // form and parameter settings
   public GUI settings = new GUI();
   private InterpreterResult results;
-  // Application states in this paragraph
-  private final List<ApplicationState> apps = new LinkedList<>();
+  // Preserve legacy application metadata when a notebook is read and saved.
+  private JsonArray apps;
 
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
@@ -594,44 +594,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   public void setReturn(InterpreterResult value, Throwable t) {
     setResult(value);
     setException(t);
-  }
-
-  private String getApplicationId(HeliumPackage pkg) {
-    return "app_" + getNote().getId() + "-" + getId() + pkg.getName().replaceAll("\\.", "_");
-  }
-
-  public ApplicationState createOrGetApplicationState(HeliumPackage pkg) {
-    synchronized (apps) {
-      for (ApplicationState as : apps) {
-        if (as.equals(pkg)) {
-          return as;
-        }
-      }
-
-      String appId = getApplicationId(pkg);
-      ApplicationState appState = new ApplicationState(appId, pkg);
-      apps.add(appState);
-      return appState;
-    }
-  }
-
-
-  public ApplicationState getApplicationState(String appId) {
-    synchronized (apps) {
-      for (ApplicationState as : apps) {
-        if (as.getId().equals(appId)) {
-          return as;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  public List<ApplicationState> getAllApplicationStates() {
-    synchronized (apps) {
-      return new LinkedList<>(apps);
-    }
   }
 
   String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,

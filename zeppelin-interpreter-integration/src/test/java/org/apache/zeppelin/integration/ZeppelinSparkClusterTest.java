@@ -19,7 +19,6 @@ package org.apache.zeppelin.integration;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.display.ui.CheckBox;
@@ -140,8 +139,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     zepServer.addInterpreter("python");
     zepServer.copyBinDir();
     zepServer.copyLogProperties();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
   }
 

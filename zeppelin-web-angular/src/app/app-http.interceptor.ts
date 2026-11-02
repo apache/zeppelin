@@ -18,7 +18,7 @@ import { catchError, map } from 'rxjs/operators';
 import { isNil } from 'lodash';
 
 import { environment } from '@zeppelin/environment';
-import { TicketService } from '@zeppelin/services';
+import { INITIAL_AUTHENTICATION_CHECK, TicketService } from '@zeppelin/services';
 
 @Injectable()
 export class AppHttpInterceptor implements HttpInterceptor {
@@ -44,8 +44,10 @@ export class AppHttpInterceptor implements HttpInterceptor {
         }
       }),
       catchError(event => {
+        // Let guards handle a missing initial session without a competing logout navigation.
+        const initialCheck = event.status === 405 && httpRequest.context.get(INITIAL_AUTHENTICATION_CHECK);
         // A 405 from the logout request itself must not start another logout.
-        if (!(event.status === 405 && httpRequest.url.includes('logout'))) {
+        if (!initialCheck && !(event.status === 405 && httpRequest.url.includes('logout'))) {
           this.ticketService.handleAuthFailure(event.status, event.headers.get('Location'));
         }
         return throwError(event);

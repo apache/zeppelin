@@ -25,9 +25,6 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
-import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
@@ -226,7 +223,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     try {
       callRemoteFunction(client -> {
         client.appendOutput(new OutputAppendEvent(
-                noteId, paragraphId, outputIndex, output, null, executionOwner));
+                noteId, paragraphId, outputIndex, output, executionOwner));
         return null;
       });
     } catch (Exception e) {
@@ -240,7 +237,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     try {
       callRemoteFunction(client -> {
         client.updateOutput(new OutputUpdateEvent(
-                noteId, paragraphId, outputIndex, type.name(), output, null, executionOwner));
+                noteId, paragraphId, outputIndex, type.name(), output, executionOwner));
         return null;
       });
 
@@ -301,49 +298,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     } catch (Exception e) {
       LOGGER.warn("Fail to checkpointOutput of paragraph: {} of note: {}",
               paragraphId, noteId, e);
-    }
-  }
-
-  public void onAppOutputAppend(
-      String noteId, String paragraphId, int index, String appId, String output) {
-    AppOutputAppendEvent event =
-        new AppOutputAppendEvent(noteId, paragraphId, appId, index, output);
-    try {
-      callRemoteFunction(client -> {
-        client.appendAppOutput(event);
-        return null;
-      });
-    } catch (Exception e) {
-      LOGGER.warn("Fail to appendAppOutput: {}", event, e);
-    }
-  }
-
-
-  public void onAppOutputUpdate(
-      String noteId, String paragraphId, int index, String appId,
-      InterpreterResult.Type type, String output) {
-    AppOutputUpdateEvent event =
-        new AppOutputUpdateEvent(noteId, paragraphId, appId, index, type.name(), output);
-    try {
-      callRemoteFunction(client -> {
-        client.updateAppOutput(event);
-        return null;
-      });
-    } catch (Exception e) {
-      LOGGER.warn("Fail to updateAppOutput: {}", event, e);
-    }
-  }
-
-  public void onAppStatusUpdate(String noteId, String paragraphId, String appId,
-                                             String status) {
-    AppStatusUpdateEvent event = new AppStatusUpdateEvent(noteId, paragraphId, appId, status);
-    try {
-      callRemoteFunction(client -> {
-        client.updateAppStatus(event);
-        return null;
-      });
-    } catch (Exception e) {
-      LOGGER.warn("Fail to updateAppStatus: {}", event, e);
     }
   }
 

@@ -11,7 +11,6 @@
  */
 
 export * from './credential';
-export * from './helium';
 export * from './interpreter';
 export * from './message-interceptor';
 export * from './node-list';

@@ -34,27 +34,35 @@ describe('SingleResultRenderer', () => {
     expect(screen.getByText(/line one <b>not bold<\/b>/)).toBeTruthy();
   });
 
-  it('renders TABLE through the visualization', () => {
+  it('keeps mode selection and exports available outside published mode', () => {
     render(<SingleResultRenderer index={0} result={result(DatasetType.TABLE, TABLE_DATA)} />);
 
-    // Only that the arm was taken. The visualization's display-mode state is a
-    // known defect (projects/zeppelin-react/AGENTS.md), so nothing here pins it.
-    expect(screen.getByText('alice')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Bar Chart/ })).toBeTruthy();
+    expect(screen.getByRole('table')).toBeTruthy();
+    expect(
+      screen.getAllByRole('button', { name: /\b(Table|Bar Chart|Pie Chart|Line Chart|Area Chart|Scatter Chart)$/ })
+    ).toHaveLength(6);
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeTruthy();
   });
 
-  it('hands the visualization the display config for its own result index', () => {
-    // Both indices are rendered: index 1 alone would pass against a hard-coded [1],
-    // and the positive assertion keeps an absent chart from reading as success.
-    const table = render(
-      <SingleResultRenderer index={0} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} />
+  it('renders the host-selected mode for each result and follows config updates', () => {
+    const view = render(
+      <SingleResultRenderer index={0} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} published />
     );
+    expect(screen.getByRole('table')).toBeTruthy();
     expect(screen.getByText('alice')).toBeTruthy();
-    table.unmount();
 
-    render(<SingleResultRenderer index={1} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} />);
-    expect(screen.getByRole('button', { name: /Table/ })).toBeTruthy();
+    view.rerender(
+      <SingleResultRenderer index={1} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} published />
+    );
+    expect(screen.queryByRole('table')).toBeNull();
     expect(screen.queryByText('alice')).toBeNull();
+
+    view.rerender(
+      <SingleResultRenderer index={0} config={configs} result={result(DatasetType.TABLE, TABLE_DATA)} published />
+    );
+    expect(screen.getByRole('table')).toBeTruthy();
+    expect(screen.getByText('alice')).toBeTruthy();
   });
 
   it('renders IMG as a base64 png', () => {

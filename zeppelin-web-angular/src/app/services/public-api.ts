@@ -10,14 +10,11 @@
  * limitations under the License.
  */
 
-export * from './angular-drag-drop.service';
 export * from './array-ordering.service';
 export * from './base-url.service';
-export * from './classic-visualization.service';
 export * from './completion.service';
 export * from './configuration.service';
 export * from './credential.service';
-export * from './helium.service';
 export * from './inline-completion.service';
 export * from './interpreter.service';
 export * from './job-manager.service';

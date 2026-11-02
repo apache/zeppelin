@@ -862,25 +862,8 @@ public class Note implements JsonSerializable {
       if (registry instanceof RemoteAngularObjectRegistry) {
         // remove paragraph scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, paragraphId);
-
-        // remove app scope object
-        List<ApplicationState> appStates = getParagraph(paragraphId).getAllApplicationStates();
-        if (appStates != null) {
-          for (ApplicationState app : appStates) {
-            ((RemoteAngularObjectRegistry) registry)
-                    .removeAllAndNotifyRemoteProcess(id, app.getId());
-          }
-        }
       } else {
         registry.removeAll(id, paragraphId);
-
-        // remove app scope object
-        List<ApplicationState> appStates = getParagraph(paragraphId).getAllApplicationStates();
-        if (appStates != null) {
-          for (ApplicationState app : appStates) {
-            registry.removeAll(id, app.getId());
-          }
-        }
       }
     }
   }
@@ -1067,15 +1050,6 @@ public class Note implements JsonSerializable {
       }
       if (p.getStatus() == Status.RUNNING && !zConf.isRecoveryEnabled()) {
         p.setStatus(Status.ABORT);
-      }
-
-      List<ApplicationState> appStates = p.getAllApplicationStates();
-      if (appStates != null) {
-        for (ApplicationState app : appStates) {
-          if (app.getStatus() != ApplicationState.Status.ERROR) {
-            app.setStatus(ApplicationState.Status.UNLOADED);
-          }
-        }
       }
     }
   }

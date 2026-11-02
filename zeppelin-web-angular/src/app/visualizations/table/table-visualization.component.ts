@@ -58,6 +58,8 @@ export class TableVisualizationComponent implements OnInit {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rows: any[] = [];
   columns: string[] = [];
+  pageIndex = 1;
+  pageSize = 10;
   colOptions = new Map<string, FilterOption>();
   types: ColType[] = ['string', 'number', 'date'];
   aggregations: readonly AggregationType[] = ['count', 'sum', 'min', 'max', 'avg'];
@@ -215,6 +217,8 @@ export class TableVisualizationComponent implements OnInit {
     });
     this.rows = filter(this.tableData.rows, row => terms.every(term => term(row)));
     this.rows = orderBy(this.rows, sortKeys, sortTypes);
+    // Keep the table on a valid page even when the empty result removes the paginator.
+    this.pageIndex = Math.min(this.pageIndex, Math.max(1, Math.ceil(this.rows.length / this.pageSize)));
     this.cdr.markForCheck();
   }
 

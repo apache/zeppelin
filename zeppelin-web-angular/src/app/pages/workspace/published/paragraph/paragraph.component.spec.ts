@@ -19,7 +19,6 @@ import { NgZService } from '../../../../services/ng-z.service';
 
 vi.mock('@zeppelin/services', () => ({
   MessageService: class {},
-  HeliumService: class {},
   NgZService: class {},
   NoteStatusService: class {},
   ReactFeatureService: class {}
@@ -58,7 +57,6 @@ const setup = (useReact = false, ngZService = new NgZService()) => {
   const component = new PublishedParagraphComponent(
     { receive: () => EMPTY, receiveEnvelope: () => EMPTY, getNote: vi.fn() } as never,
     { params, queryParamMap: of(convertToParamMap({})) } as never,
-    {} as never,
     {} as never,
     {} as never,
     { isEnabled: () => useReact } as never,

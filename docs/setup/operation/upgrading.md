@@ -35,6 +35,16 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ## Migration Guide
 
+### Upgrading to Zeppelin 0.13
+
+Helium Applications, Spells, external visualization packages, and the Helium management API
+have been removed. Built-in tables and charts and their saved settings remain available.
+A saved external visualization falls back to a table; its original settings and legacy
+Application metadata remain in the notebook file, but Applications and Spells no longer run.
+Remove obsolete `zeppelin.helium.*` settings and `ZEPPELIN_HELIUM_*` environment variables.
+Upgrade and restart the server and all interpreter processes together, since the Helium
+RPC methods and events have also been removed.
+
 ### Upgrading from Zeppelin 0.9, 0.10 to 0.11
  - From 0.11, The type of `Pegdown` for parsing markdown was deprecated ([ZEPPELIN-5529](https://issues.apache.org/jira/browse/ZEPPELIN-2619)). It will use `Flexmark` instead.
 

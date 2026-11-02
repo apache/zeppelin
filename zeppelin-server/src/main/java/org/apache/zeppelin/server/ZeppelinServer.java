@@ -68,10 +68,6 @@ import org.apache.zeppelin.eventbus.EventBus;
 import org.apache.zeppelin.eventbus.NoOpEventBus;
 import org.apache.zeppelin.eventbus.ZeppelinEventBus;
 import org.apache.zeppelin.healthcheck.HealthChecks;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.helium.HeliumApplicationFactory;
-import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -192,7 +188,6 @@ public class ZeppelinServer implements AutoCloseable {
             }
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
             bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
-            bindAsContract(Helium.class).in(Singleton.class);
             bind(zConf).to(ZeppelinConfiguration.class);
             bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
             bindAsContract(InterpreterService.class).in(Singleton.class);
@@ -204,8 +199,6 @@ public class ZeppelinServer implements AutoCloseable {
             bind(AuthenticationServiceFactory.getAuthServiceClass(zConf))
                     .to(AuthenticationService.class)
                     .in(Singleton.class);
-            bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
-            bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
             bindAsContract(ConfigurationService.class).in(Singleton.class);
             bindAsContract(NotebookService.class).in(Singleton.class);
             bindAsContract(JobManagerService.class).in(Singleton.class);
@@ -213,7 +206,6 @@ public class ZeppelinServer implements AutoCloseable {
             bindAsContract(NotebookServer.class)
                 .to(AngularObjectRegistryListener.class)
                 .to(RemoteInterpreterProcessListener.class)
-                .to(ApplicationEventListener.class)
                 .to(NoteEventListener.class)
                 .in(Singleton.class);
             if (zConf.isZeppelinNotebookCronEnable()) {

@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 
-import {SpellResult} from '../../spell';
 import {isParagraphRunning, ParagraphStatus} from './paragraph.status';
 
 import moment from 'moment';
@@ -20,18 +19,11 @@ import DiffMatchPatch from 'diff-match-patch';
 
 require('moment-duration-format');
 
-const ParagraphExecutor = {
-  SPELL: 'SPELL',
-  INTERPRETER: 'INTERPRETER',
-  NONE: '', /** meaning `DONE` */
-};
-
 angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
-                       baseUrlSrv, ngToast, noteVarShareService,
-                       heliumService) {
+                       baseUrlSrv, ngToast, noteVarShareService) {
   'ngInject';
 
   let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
@@ -46,15 +38,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.cursorPosition = null;
   $scope.diffMatchPatch = new DiffMatchPatch();
   $scope.isNoteRunning = false;
-
-  // transactional info for spell execution
-  $scope.spellTransaction = {
-    totalResultCount: 0,
-    renderedResultCount: 0,
-    propagated: false,
-    resultsMsg: [],
-    paragraphText: '',
-  };
 
   let searchRanges = [];
   const getCurrentRangeDefault = function() {
@@ -291,123 +274,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
 
-  $scope.propagateSpellResult = function(paragraphId, paragraphTitle,
-                                         paragraphText, paragraphResults,
-                                         paragraphStatus, paragraphErrorMessage,
-                                         paragraphConfig, paragraphSettingsParam,
-                                         paragraphDateStarted, paragraphDateFinished) {
-    websocketMsgSrv.paragraphExecutedBySpell(
-      paragraphId, paragraphTitle,
-      paragraphText, paragraphResults,
-      paragraphStatus, paragraphErrorMessage,
-      paragraphConfig, paragraphSettingsParam,
-      paragraphDateStarted, paragraphDateFinished
-    );
-  };
-
-  $scope.handleSpellError = function(paragraphText, error,
-                                     digestRequired, propagated) {
-    const errorMessage = error.stack;
-    $scope.paragraph.status = ParagraphStatus.ERROR;
-    $scope.paragraph.errorMessage = errorMessage;
-    console.error('Failed to execute interpret() in spell\n', error);
-
-    if (!propagated) {
-      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime();
-    }
-
-    if (!propagated) {
-      $scope.propagateSpellResult(
-        $scope.paragraph.id, $scope.paragraph.title,
-        paragraphText, [], $scope.paragraph.status, errorMessage,
-        $scope.paragraph.config, $scope.paragraph.settings.params,
-        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished);
-    }
-  };
-
-  $scope.prepareSpellTransaction = function(resultsMsg, propagated, paragraphText) {
-    $scope.spellTransaction.totalResultCount = resultsMsg.length;
-    $scope.spellTransaction.renderedResultCount = 0;
-    $scope.spellTransaction.propagated = propagated;
-    $scope.spellTransaction.resultsMsg = resultsMsg;
-    $scope.spellTransaction.paragraphText = paragraphText;
-  };
-
-  /**
-   * - update spell transaction count and
-   * - check transaction is finished based on the result count
-   * @returns {boolean}
-   */
-  $scope.increaseSpellTransactionResultCount = function() {
-    $scope.spellTransaction.renderedResultCount += 1;
-
-    const total = $scope.spellTransaction.totalResultCount;
-    const current = $scope.spellTransaction.renderedResultCount;
-    return total === current;
-  };
-
-  $scope.cleanupSpellTransaction = function() {
-    const status = ParagraphStatus.FINISHED;
-    $scope.paragraph.executor = ParagraphExecutor.NONE;
-    $scope.paragraph.status = status;
-    $scope.paragraph.results.code = status;
-
-    const propagated = $scope.spellTransaction.propagated;
-    const resultsMsg = $scope.spellTransaction.resultsMsg;
-    const paragraphText = $scope.spellTransaction.paragraphText;
-
-    if (!propagated) {
-      $scope.paragraph.dateFinished = $scope.getFormattedParagraphTime();
-    }
-
-    if (!propagated) {
-      const propagable = SpellResult.createPropagable(resultsMsg);
-      $scope.propagateSpellResult(
-        $scope.paragraph.id, $scope.paragraph.title,
-        paragraphText, propagable, status, '',
-        $scope.paragraph.config, $scope.paragraph.settings.params,
-        $scope.paragraph.dateStarted, $scope.paragraph.dateFinished);
-    }
-  };
-
-  $scope.runParagraphUsingSpell = function(paragraphText,
-                                           magic, digestRequired, propagated) {
-    $scope.paragraph.status = 'RUNNING';
-    $scope.paragraph.executor = ParagraphExecutor.SPELL;
-    $scope.paragraph.results = {};
-    $scope.paragraph.errorMessage = '';
-    if (digestRequired) {
-      $scope.$digest();
-    }
-
-    try {
-      // remove magic from paragraphText
-      const splited = paragraphText.slice(paragraphText.indexOf(magic) + magic.length);
-      // remove leading spaces
-      const textWithoutMagic = splited.replace(/^\s+/g, '');
-
-      if (!propagated) {
-        $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime();
-      }
-
-      // handle actual result message in promise
-      heliumService.executeSpell(magic, textWithoutMagic)
-        .then((resultsMsg) => {
-          $scope.prepareSpellTransaction(resultsMsg, propagated, paragraphText);
-
-          $scope.paragraph.results.msg = resultsMsg;
-          $scope.paragraph.config.tableHide = false;
-        })
-        .catch((error) => {
-          $scope.handleSpellError(paragraphText, error,
-            digestRequired, propagated);
-        });
-    } catch (error) {
-      $scope.handleSpellError(paragraphText, error,
-        digestRequired, propagated);
-    }
-  };
-
   $scope.runParagraphUsingBackendInterpreter = function(paragraphText) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
       paragraphText, $scope.paragraph.config, $scope.paragraph.settings.params);
@@ -460,21 +326,13 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   /**
    * @param paragraphText to be parsed
-   * @param digestRequired true if calling `$digest` is required
-   * @param propagated true if update request is sent from other client
    */
-  $scope.runParagraph = function(paragraphText, digestRequired, propagated) {
+  $scope.runParagraph = function(paragraphText) {
     if (!paragraphText || $scope.isRunning($scope.paragraph)) {
       return;
     }
 
-    const magic = SpellResult.extractMagic(paragraphText);
-
-    if (heliumService.getSpellByMagic(magic)) {
-      $scope.runParagraphUsingSpell(paragraphText, magic, digestRequired, propagated);
-    } else {
-      $scope.runParagraphUsingBackendInterpreter(paragraphText);
-    }
+    $scope.runParagraphUsingBackendInterpreter(paragraphText);
 
     $scope.originalText = angular.copy(paragraphText);
     $scope.dirtyText = undefined;
@@ -491,17 +349,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.runParagraphFromShortcut = function(paragraphText) {
-    // passing `digestRequired` as true to update view immediately
-    // without this, results cannot be rendered in view more than once
-    $scope.runParagraph(paragraphText, true, false);
+    $scope.runParagraph(paragraphText);
   };
 
   $scope.runParagraphFromButton = function() {
     if ($scope.isNoteRunning) {
       return;
     }
-    // we come here from the view, so we don't need to call `$digest()`
-    $scope.runParagraph($scope.getEditorValue(), false, false);
+    $scope.runParagraph($scope.getEditorValue());
   };
 
   $scope.runAllToThis = function(paragraph) {
@@ -1594,20 +1449,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   /** $scope.$on */
 
-  $scope.$on('runParagraphUsingSpell', function(event, data) {
-    const oldPara = $scope.paragraph;
-    let newPara = data.paragraph;
-    const updateCallback = () => {
-      $scope.runParagraph(newPara.text, true, true);
-    };
-
-    if (!isUpdateRequired(oldPara, newPara)) {
-      return;
-    }
-
-    $scope.updateParagraph(oldPara, newPara, updateCallback);
-  });
-
   $scope.$on('updateParagraph', function(event, data) {
     const oldPara = $scope.paragraph;
     const newPara = data.paragraph;
@@ -1842,19 +1683,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     } else {
       $scope.hideNumbering($scope.paragraph);
     }
-  });
-
-  $scope.$on('resultRendered', function(event, paragraphId) {
-    if ($scope.paragraph.id !== paragraphId) {
-      return;
-    }
-
-    /** increase spell result count and return if not finished */
-    if (!$scope.increaseSpellTransactionResultCount()) {
-      return;
-    }
-
-    $scope.cleanupSpellTransaction();
   });
 
   $scope.$on('fontSizeChanged', function(event, fontSize) {

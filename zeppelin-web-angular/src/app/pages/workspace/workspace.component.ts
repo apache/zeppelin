@@ -16,7 +16,7 @@ import { isRecord } from '@zeppelin/utility';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { HeliumService, MessageService } from '@zeppelin/services';
+import { MessageService } from '@zeppelin/services';
 import { setTheme } from '@zeppelin/visualizations';
 import { NzMessageService } from 'ng-zorro-antd/message';
 
@@ -35,8 +35,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   constructor(
     public messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private nzMessageService: NzMessageService,
-    private heliumService: HeliumService
+    private nzMessageService: NzMessageService
   ) {}
 
   onActivate(component: unknown) {
@@ -72,7 +71,6 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   ngOnInit() {
     setTheme();
     this.setUpWebsocketReconnectMessage();
-    this.heliumService.initPackages();
   }
 
   ngOnDestroy(): void {

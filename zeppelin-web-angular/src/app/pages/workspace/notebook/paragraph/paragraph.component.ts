@@ -44,14 +44,12 @@ import {
   ParagraphIResultsMsgItem
 } from '@zeppelin/sdk';
 import {
-  HeliumService,
   MessageService,
   NgZService,
   NoteStatusService,
   NoteVarShareService,
   ShortcutService
 } from '@zeppelin/services';
-import { SpellResult } from '@zeppelin/spell';
 
 import {
   AngularKeyboardEventHandler,
@@ -400,18 +398,11 @@ export class NotebookParagraphComponent
     this.editorSetting.isOutputHidden = this.paragraph.config.editorSetting.editOnDblClick;
   }
 
-  runParagraph(paragraphText?: string, propagated: boolean = false) {
+  runParagraph(paragraphText?: string) {
     const text = paragraphText || this.paragraph.text;
     if (text && !this.isParagraphRunning) {
-      const magic = SpellResult.extractMagic(text);
-
-      if (magic && this.heliumService.getSpellByMagic(magic)) {
-        this.runParagraphUsingSpell(text, magic, propagated);
-        this.runParagraphAfter(text);
-      } else {
-        this.runParagraphUsingBackendInterpreter(text);
-        this.runParagraphAfter(text);
-      }
+      this.runParagraphUsingBackendInterpreter(text);
+      this.runParagraphAfter(text);
     }
   }
 
@@ -590,7 +581,6 @@ export class NotebookParagraphComponent
 
   constructor(
     public messageService: MessageService,
-    private heliumService: HeliumService,
     private host: ElementRef,
     private noteVarShareService: NoteVarShareService,
     private nzModalService: NzModalService,

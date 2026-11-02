@@ -41,7 +41,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.eventbus.EventBus;
 import org.apache.zeppelin.eventbus.ZeppelinEventBus;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -111,7 +110,7 @@ class NotebookRepoSyncTest {
     pluginManager = new PluginManager(zConf);
     interpreterSettingManager = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     factory = new InterpreterFactory(interpreterSettingManager);
 
     notebookRepoSync = new NotebookRepoSync(pluginManager);

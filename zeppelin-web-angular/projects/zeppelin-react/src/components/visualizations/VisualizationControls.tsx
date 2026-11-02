@@ -25,39 +25,49 @@ interface VisualizationControlsProps {
   currentMode: VisualizationMode;
   onModeChange: (mode: VisualizationMode) => void;
   onExport: (type: 'csv' | 'xlsx') => void;
+  published?: boolean;
 }
 
-export const VisualizationControls = ({ currentMode, onModeChange, onExport }: VisualizationControlsProps) => {
-  const visualizations = [
-    { id: 'table', name: 'Table', icon: <TableOutlined /> },
-    { id: 'multiBarChart', name: 'Bar Chart', icon: <BarChartOutlined /> },
-    { id: 'pieChart', name: 'Pie Chart', icon: <PieChartOutlined /> },
-    { id: 'lineChart', name: 'Line Chart', icon: <LineChartOutlined /> },
-    { id: 'stackedAreaChart', name: 'Area Chart', icon: <AreaChartOutlined /> },
-    { id: 'scatterChart', name: 'Scatter Chart', icon: <DotChartOutlined /> }
-  ] as const;
+const visualizations = [
+  { id: 'table', name: 'Table', icon: <TableOutlined /> },
+  { id: 'multiBarChart', name: 'Bar Chart', icon: <BarChartOutlined /> },
+  { id: 'pieChart', name: 'Pie Chart', icon: <PieChartOutlined /> },
+  { id: 'lineChart', name: 'Line Chart', icon: <LineChartOutlined /> },
+  { id: 'stackedAreaChart', name: 'Area Chart', icon: <AreaChartOutlined /> },
+  { id: 'scatterChart', name: 'Scatter Chart', icon: <DotChartOutlined /> }
+] as const;
+
+export const VisualizationControls = ({
+  currentMode,
+  onModeChange,
+  onExport,
+  published = false
+}: VisualizationControlsProps) => {
+  if (published && currentMode !== 'table') return null;
 
   return (
     <div>
-      <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+      <Space wrap style={{ width: '100%', justifyContent: published ? 'flex-end' : 'space-between' }}>
+        {!published && (
+          <Space.Compact>
+            {visualizations.map(viz => (
+              <Button
+                key={viz.id}
+                type={currentMode === viz.id ? 'primary' : 'default'}
+                icon={viz.icon}
+                onClick={() => onModeChange(viz.id as VisualizationMode)}
+                size="small"
+              >
+                {viz.name}
+              </Button>
+            ))}
+          </Space.Compact>
+        )}
         <Space.Compact>
-          {visualizations.map(viz => (
-            <Button
-              key={viz.id}
-              type={currentMode === viz.id ? 'primary' : 'default'}
-              icon={viz.icon}
-              onClick={() => onModeChange(viz.id as VisualizationMode)}
-              size="small"
-            >
-              {viz.name}
-            </Button>
-          ))}
-        </Space.Compact>
-        <Space.Compact>
-          <Button icon={<DownloadOutlined />} size="small" onClick={() => onExport('csv')}>
+          <Button aria-label="Export CSV" icon={<DownloadOutlined />} size="small" onClick={() => onExport('csv')}>
             Export CSV
           </Button>
-          <Button icon={<FileExcelOutlined />} size="small" onClick={() => onExport('xlsx')}>
+          <Button aria-label="Export Excel" icon={<FileExcelOutlined />} size="small" onClick={() => onExport('xlsx')}>
             Export Excel
           </Button>
         </Space.Compact>

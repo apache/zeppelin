@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { Locator, Page } from '@playwright/test';
+import { Download, expect, Locator, Page } from '@playwright/test';
 import { BasePage } from './base-page';
 
 export const TABLE_PARAGRAPH = `%sh
@@ -36,6 +36,13 @@ export class NotebookVisualizationPage extends BasePage {
   readonly settingTrigger: Locator;
   readonly pivotSetting: Locator;
   readonly scatterSetting: Locator;
+  readonly pagination: Locator;
+  readonly selectedPage: Locator;
+  readonly nextPage: Locator;
+  readonly tableExportButton: Locator;
+  readonly noData: Locator;
+  private readonly sizeChanger: Locator;
+  private readonly cityFilterTrigger: Locator;
   private readonly resultDisplay: Locator;
 
   constructor(page: Page) {
@@ -58,6 +65,37 @@ export class NotebookVisualizationPage extends BasePage {
     this.settingTrigger = this.resultDisplay.getByText('Setting', { exact: true });
     this.pivotSetting = this.resultDisplay.locator('zeppelin-visualization-pivot-setting');
     this.scatterSetting = this.resultDisplay.locator('zeppelin-visualization-scatter-setting');
+    this.pagination = this.resultDisplay.locator('.ant-pagination');
+    this.selectedPage = this.pagination.locator('.ant-pagination-item-active');
+    this.nextPage = this.pagination.getByRole('listitem', { name: 'Next Page', exact: true });
+    this.tableExportButton = this.resultDisplay.getByRole('button', { name: 'Export', exact: true });
+    this.noData = this.resultDisplay.getByText('No Data', { exact: true });
+    this.sizeChanger = this.pagination.locator('.ant-select-selector');
+    // JUSTIFIED: ng-zorro's icon-only filter trigger has no accessible label.
+    this.cityFilterTrigger = this.tableHeaders.filter({ hasText: 'city' }).locator('.filter-icon');
+  }
+
+  async downloadVisibleCsv(): Promise<Download> {
+    await this.tableExportButton.hover();
+    const exportAction = this.page.getByText('Export visible data as csv', { exact: true });
+    await expect(exportAction).toBeVisible();
+    const download = this.page.waitForEvent('download');
+    await exportAction.click();
+    return download;
+  }
+
+  async selectPageSize(size: number): Promise<void> {
+    await this.sizeChanger.click();
+    await this.page.getByText(`${size} / page`, { exact: true }).click();
+  }
+
+  async filterCity(term: string): Promise<void> {
+    await this.cityFilterTrigger.click();
+    const search = this.page.getByPlaceholder('Search...', { exact: true });
+    await search.fill(term);
+    await search.press('Enter');
+    await search.press('Escape');
+    await expect(search).toBeHidden();
   }
 
   modeRadio(mode: Locator): Locator {

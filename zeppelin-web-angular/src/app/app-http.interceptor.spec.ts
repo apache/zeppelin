@@ -10,7 +10,15 @@
  * limitations under the License.
  */
 
-import { HttpClient, HttpErrorResponse, HttpEvent, HttpHandler, HttpHeaders, HttpRequest } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandler,
+  HttpHeaders,
+  HttpRequest,
+  HttpResponse
+} from '@angular/common/http';
 import { Router } from '@angular/router';
 import { defer, firstValueFrom, of, Subject, throwError } from 'rxjs';
 
@@ -252,5 +260,81 @@ describe('AppHttpInterceptor', () => {
       expect(navigations).toEqual(['/sso/login']);
       expect(logout).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('Ticket authentication checks through AppHttpInterceptor', () => {
+  let service: TicketService;
+  let failure: HttpErrorResponse;
+  let requestedUrls: string[];
+  let navigate: ReturnType<typeof vi.fn>;
+  let redirects: string[];
+
+  beforeEach(() => {
+    failure = sessionExpired(`${REST_BASE}/login`);
+    requestedUrls = [];
+    redirects = [];
+    navigate = vi.fn(() => Promise.resolve(true));
+    vi.spyOn(window, 'location', 'get').mockReturnValue({
+      set href(value: string) {
+        redirects.push(value);
+      }
+    } as Location);
+    let interceptor: AppHttpInterceptor;
+    const backend: HttpHandler = {
+      handle: request => {
+        requestedUrls.push(request.url);
+        if (request.url === `${REST_BASE}/version`) {
+          return of(new HttpResponse({ body: { body: { version: 'test' } } }));
+        }
+        return throwError(() => failure);
+      }
+    };
+    const client = new HttpClient({ handle: request => interceptor.intercept(request, backend) });
+    service = new TicketService(
+      client,
+      createBaseUrl(),
+      { navigate } as unknown as Router,
+      { success: vi.fn() } as unknown as NzMessageService
+    );
+    interceptor = new AppHttpInterceptor(service);
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('leaves an initial unauthenticated check to its guard without logging out', async () => {
+    await expect(firstValueFrom(service.getTicket())).rejects.toBe(failure);
+
+    expect(requestedUrls).not.toContain(`${REST_BASE}/login/logout`);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(service.ticket.init).toBe(false);
+    expect(service.logout$.value).toBe(false);
+  });
+
+  it('still clears an initialized session when its ticket check fails with 405', async () => {
+    service.ticket.init = true;
+    service.ticket.principal = 'user1';
+
+    await expect(firstValueFrom(service.getTicket())).rejects.toBe(failure);
+
+    expect(requestedUrls.filter(url => url === `${REST_BASE}/login/logout`)).toHaveLength(1);
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/login']);
+    expect(service.ticket.init).toBe(false);
+    expect(service.ticket.principal).toBe('');
+    expect(service.logout$.value).toBe(false);
+  });
+
+  it('still follows an SSO 401 Location during an initial authentication check', async () => {
+    failure = new HttpErrorResponse({
+      status: 401,
+      url: `${REST_BASE}/security/ticket`,
+      headers: new HttpHeaders({ Location: '/sso/login' })
+    });
+
+    await expect(firstValueFrom(service.isAuthenticated())).rejects.toBe(failure);
+
+    expect(redirects).toEqual(['/sso/login']);
+    expect(requestedUrls).not.toContain(`${REST_BASE}/login/logout`);
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

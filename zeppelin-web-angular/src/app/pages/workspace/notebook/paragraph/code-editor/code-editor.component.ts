@@ -23,7 +23,7 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-import { editor as MonacoEditor, IDisposable, IPosition, KeyCode } from 'monaco-editor';
+import { editor as MonacoEditor, IDisposable, IPosition, KeyCode, Range } from 'monaco-editor';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, InlineCompletionService, MessageService } from '@zeppelin/services';
@@ -34,7 +34,7 @@ import { NotebookParagraphControlComponent } from '../control/control.component'
 
 type IStandaloneCodeEditor = MonacoEditor.IStandaloneCodeEditor;
 type IEditor = MonacoEditor.IEditor;
-type DecorationIdentifier = ReturnType<monaco.editor.ICodeEditor['deltaDecorations']>[number];
+type DecorationIdentifier = ReturnType<MonacoEditor.ICodeEditor['deltaDecorations']>[number];
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-code-editor',
@@ -75,7 +75,7 @@ export class NotebookParagraphCodeEditorComponent
     const model = editor?.getModel();
     if (editor && model) {
       this.ngZone.run(() => {
-        this.height = editor.getOption(monaco.editor.EditorOption.lineHeight) * (model.getLineCount() + 2);
+        this.height = editor.getOption(MonacoEditor.EditorOption.lineHeight) * (model.getLineCount() + 2);
         editor.layout();
         this.cdr.markForCheck();
       });
@@ -151,7 +151,7 @@ export class NotebookParagraphCodeEditorComponent
     if (position) {
       this.editor.executeEdits('my-source', [
         {
-          range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+          range: new Range(position.lineNumber, position.column, position.lineNumber, position.column),
           text,
           forceMoveMarkers: true
         }
@@ -261,7 +261,7 @@ export class NotebookParagraphCodeEditorComponent
 
     this.editor.executeEdits('cut-line', [
       {
-        range: new monaco.Range(lineNumber, 1, lineNumber, lineContent.length + 1),
+        range: new Range(lineNumber, 1, lineNumber, lineContent.length + 1),
         text: '',
         forceMoveMarkers: true
       }
@@ -391,7 +391,7 @@ export class NotebookParagraphCodeEditorComponent
       const startPos = model.getPositionAt(idx);
       const endPos = model.getPositionAt(idx + term.length);
       newDecorations.push({
-        range: new monaco.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+        range: new Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
         options: {
           inlineClassName: 'editor-search-highlight'
         }

@@ -77,12 +77,6 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
     // withCredentials when running locally via grunt
     $httpProvider.defaults.withCredentials = true;
 
-    let visBundleLoad = {
-      load: ['heliumService', function(heliumService) {
-        return heliumService.load;
-      }],
-    };
-
     $routeProvider
       .when('/', {
         templateUrl: 'app/home/home.html',
@@ -90,22 +84,18 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
       .when('/notebook/:noteId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/paragraph?=:paragraphId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/revision/:revisionId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad,
       })
       .when('/jobmanager', {
         templateUrl: 'app/jobmanager/jobmanager.html',
@@ -123,10 +113,6 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
       .when('/credential', {
         templateUrl: 'app/credential/credential.html',
         controller: 'CredentialCtrl',
-      })
-      .when('/helium', {
-        templateUrl: 'app/helium/helium.html',
-        controller: 'HeliumCtrl',
       })
       .when('/configuration', {
         templateUrl: 'app/configuration/configuration.html',

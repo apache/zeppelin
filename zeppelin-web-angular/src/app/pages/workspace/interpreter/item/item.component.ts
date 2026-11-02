@@ -97,6 +97,10 @@ export class InterpreterItemComponent extends DestroyHookComponent implements On
 
   interpreterRunningOption = 'Globally';
 
+  displayPropertyValue(value: PropertyValue | undefined): PropertyValue {
+    return value ?? '';
+  }
+
   switchToEditMode(): void {
     this.setupEditableForm();
     this.formGroup.enable();

@@ -21,10 +21,13 @@ import type { Chart, ChartConfiguration } from 'chart.js';
 interface TableVisualizationProps {
   result: ParagraphIResultsMsgItem;
   config?: ParagraphConfigResult;
+  published?: boolean;
 }
 
-export const TableVisualization = ({ result, config }: TableVisualizationProps) => {
-  const [currentMode, setCurrentMode] = useState<VisualizationMode>(config?.graph.mode || 'table');
+export const TableVisualization = ({ result, config, published = false }: TableVisualizationProps) => {
+  const savedMode = config?.graph.mode || 'table';
+  const [localMode, setLocalMode] = useState<VisualizationMode>(savedMode);
+  const currentMode = published ? savedMode : localMode;
   const chartRef = useRef<HTMLDivElement>(null);
   const themeMode = useHostThemeMode();
 
@@ -232,7 +235,12 @@ export const TableVisualization = ({ result, config }: TableVisualizationProps) 
 
   return (
     <div>
-      <VisualizationControls currentMode={currentMode} onModeChange={setCurrentMode} onExport={handleExport} />
+      <VisualizationControls
+        currentMode={currentMode}
+        onModeChange={setLocalMode}
+        onExport={handleExport}
+        published={published}
+      />
       {renderVisualization()}
     </div>
   );

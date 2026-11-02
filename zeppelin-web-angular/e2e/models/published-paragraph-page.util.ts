@@ -10,8 +10,9 @@
  * limitations under the License.
  */
 
-import { Page } from '@playwright/test';
-import { BasePage } from './base-page';
+import { randomUUID } from 'node:crypto';
+import { APIRequestContext, expect, Page } from '@playwright/test';
+import { BasePage, E2E_TEST_FOLDER } from './base-page';
 import { PublishedParagraphPage } from './published-paragraph-page';
 
 export class PublishedParagraphTestUtil extends BasePage {
@@ -42,3 +43,25 @@ export class PublishedParagraphTestUtil extends BasePage {
     };
   }
 }
+
+export const importPublishedTable = async (request: APIRequestContext): Promise<string> => {
+  const name = `published-table-${randomUUID()}`;
+  const response = await request.post('/api/notebook/import', {
+    params: { notePath: `/${E2E_TEST_FOLDER}/${name}` },
+    data: {
+      name,
+      paragraphs: [
+        {
+          title: 'Saved table',
+          text: '%md Saved table',
+          status: 'FINISHED',
+          config: { results: { '0': { graph: { mode: 'table' } } } },
+          results: { code: 'SUCCESS', msg: [{ type: 'TABLE', data: 'city\tsales\nSeoul\t30\nBusan\t20\n' }] }
+        }
+      ],
+      config: {}
+    }
+  });
+  expect(response.ok(), `Notebook import failed (${response.status()}): ${await response.text()}`).toBe(true);
+  return (await response.json()).body as string;
+};

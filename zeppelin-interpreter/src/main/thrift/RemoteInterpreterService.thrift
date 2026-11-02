@@ -56,22 +56,15 @@ enum RemoteInterpreterEventType {
   OUTPUT_UPDATE = 9,
   OUTPUT_UPDATE_ALL = 10,
   ANGULAR_REGISTRY_PUSH = 11,
-  APP_STATUS_UPDATE = 12,
   META_INFOS = 13,
   REMOTE_ZEPPELIN_SERVER_RESOURCE = 14,
   RESOURCE_INVOKE_METHOD = 15,
   PARA_INFOS = 16
 }
 
-
 struct RemoteInterpreterEvent {
   1: RemoteInterpreterEventType type,
   2: string data      // json serialized data
-}
-
-struct RemoteApplicationResult {
-  1: bool success,
-  2: string msg
 }
 
 /*
@@ -119,10 +112,5 @@ service RemoteInterpreterService {
   void angularObjectRemove(1: string name, 2: string sessionId, 3: string paragraphId) throws (1: InterpreterRPCException ex);
   void angularRegistryPush(1: string registry) throws (1: InterpreterRPCException ex);
 
-  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionId, 4: string paragraphId) throws (1: InterpreterRPCException ex);
-  RemoteApplicationResult unloadApplication(1: string applicationInstanceId) throws (1: InterpreterRPCException ex);
-  RemoteApplicationResult runApplication(1: string applicationInstanceId) throws (1: InterpreterRPCException ex);
-
 }
-
 

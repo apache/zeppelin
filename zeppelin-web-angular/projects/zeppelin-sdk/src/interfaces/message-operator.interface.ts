@@ -322,30 +322,6 @@ export enum OP {
 
   /**
    * [s-c]
-   * append output
-   */
-  APP_APPEND_OUTPUT = 'APP_APPEND_OUTPUT',
-
-  /**
-   * [s-c]
-   * update (replace) output
-   */
-  APP_UPDATE_OUTPUT = 'APP_UPDATE_OUTPUT',
-
-  /**
-   * [s-c]
-   * on app load
-   */
-  APP_LOAD = 'APP_LOAD',
-
-  /**
-   * [s-c]
-   * on app status change
-   */
-  APP_STATUS_CHANGE = 'APP_STATUS_CHANGE',
-
-  /**
-   * [s-c]
    * get note job management information
    */
   LIST_NOTE_JOBS = 'LIST_NOTE_JOBS',
@@ -452,18 +428,6 @@ export enum OP {
    * cancel all paragraphs
    */
   CANCEL_ALL_PARAGRAPHS = 'CANCEL_ALL_PARAGRAPHS',
-
-  /**
-   * [c-s]
-   * paragraph was executed by spell
-   */
-  PARAGRAPH_EXECUTED_BY_SPELL = 'PARAGRAPH_EXECUTED_BY_SPELL',
-
-  /**
-   * [s-c]
-   * run paragraph using spell
-   */
-  RUN_PARAGRAPH_USING_SPELL = 'RUN_PARAGRAPH_USING_SPELL',
 
   /**
    * [s-c]

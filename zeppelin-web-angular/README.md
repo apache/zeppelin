@@ -17,7 +17,7 @@ Zeppelin notebooks front-end built with Angular.
 - Jira issue [ZEPPELIN-4321](https://issues.apache.org/jira/browse/ZEPPELIN-4321)
 - Design Document: [Zeppelin Notebook Rework Proposal](https://docs.google.com/document/d/1z_VscS81Xwx_3QaexKB2s0uEMEuWKsPXh9mWFRq0-hY)
 
-![screenshot](/screenshot.png?raw=true "Screenshot")
+![screenshot](screenshot.png?raw=true "Screenshot")
 
 ## Setup
 
@@ -72,7 +72,6 @@ The React remote has a separate jsdom suite: run `npm test --prefix projects/zep
 | Notebook | `/notebook/{id}` | NotebookModule |  Y |
 | Notebook Repos | `/notebookRepos` |  |   |
 | Credential     | `/credential` |  |   |
-| Helium | `/helium` |  |  WIP  |
 | Configuration | `/configuration` |  |   |
 
 ### Notebook Features
@@ -112,15 +111,6 @@ The React remote has a separate jsdom suite: run `npm test --prefix projects/zep
 | Pie Chart  |  Y |
 | Area Chart  |  Y |
 | Scatter Chart  | Y |
-
-### Helium Visualization
-
-| Type | Description | Status |
-| ------  | ---- | ---- |
-| Prototype | To verify the implementable prototype | Y |
-| Publish Dependencies | Just like [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization)  | WIP |
-| Example Projects |   | Y |
-| Development Documents |   | WIP |
 
 ## Contributing
 

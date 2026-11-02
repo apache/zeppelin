@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { HTMLRenderer } from './HTMLRenderer';
 
@@ -74,6 +74,24 @@ describe('HTMLRenderer', () => {
 
     expect(screen.queryByText('first')).toBeNull();
     expect(screen.getByText('second')).toBeTruthy();
+  });
+
+  it('dismisses only result warnings, including after the HTML is replaced', () => {
+    const html =
+      '<div class="result-alert alert-warning" role="alert"><button class="close" data-dismiss="alert" aria-label="Close"><span>&times;</span></button>102400 bytes</div><button class="close" data-dismiss="alert">Ordinary output</button>';
+    const { rerender } = render(<HTMLRenderer html={html} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ordinary output' }));
+    expect(screen.getByRole('alert').textContent).toContain('102400 bytes');
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }).firstChild!);
+    rerender(<HTMLRenderer html={html} />);
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ordinary output' })).toBeTruthy();
+
+    rerender(<HTMLRenderer html={html.replace('102400 bytes', '1000 rows')} />);
+    expect(screen.getByRole('alert').textContent).toContain('1000 rows');
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('renders nothing visible for empty html', () => {

@@ -35,7 +35,7 @@ export const PublishedParagraph = ({ results, config }: PublishedParagraphProps)
       <div data-testid="react-published-paragraph">
         {results.map((result, index) => (
           <div key={index}>
-            <SingleResultRenderer result={result} index={index} config={config} />
+            <SingleResultRenderer result={result} index={index} config={config} published />
           </div>
         ))}
       </div>

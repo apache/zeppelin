@@ -64,8 +64,7 @@ class ZeppelinClientIntegrationTest extends AbstractTestRestApi {
     zepServer.copyBinDir();
     zepServer.copyLogProperties();
     ZeppelinConfiguration zConf = zepServer.getZeppelinConfiguration();
-    zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zConf.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
     zepServer.start();
     clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());
