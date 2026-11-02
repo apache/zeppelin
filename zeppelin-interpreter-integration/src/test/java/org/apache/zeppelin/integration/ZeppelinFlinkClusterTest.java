@@ -20,7 +20,6 @@ package org.apache.zeppelin.integration;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.test.DownloadUtils;
 import org.apache.zeppelin.MiniZeppelinServer;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -64,8 +63,7 @@ public abstract class ZeppelinFlinkClusterTest extends AbstractTestRestApi {
     zepServer.addInterpreter("flink-cmd");
     zepServer.copyBinDir();
     zepServer.addLauncher("FlinkInterpreterLauncher");
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.start();
   }
 

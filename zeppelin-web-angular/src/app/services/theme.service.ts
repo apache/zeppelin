@@ -11,6 +11,7 @@
  */
 
 import { Injectable, OnDestroy } from '@angular/core';
+import { editor } from 'monaco-editor';
 import { combineLatest, fromEvent, BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 
@@ -143,16 +144,12 @@ export class ThemeService implements OnDestroy {
   }
 
   updateMonacoTheme() {
-    if (!monaco?.editor) {
-      return;
-    }
-
     const effectiveTheme = this.getEffectiveTheme();
 
     try {
       // Fix editor not applying dark mode on first load when theme is set to "system"
       requestAnimationFrame(() => {
-        monaco.editor.setTheme(MONACO_THEMES[effectiveTheme]);
+        editor.setTheme(MONACO_THEMES[effectiveTheme]);
       });
     } catch (error) {
       console.error('Monaco theme setting failed:', error);

@@ -26,16 +26,12 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
 import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
-import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
 import org.apache.zeppelin.interpreter.thrift.LibraryMetadata;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
@@ -90,15 +86,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private ScheduledFuture<?> appendFuture;
   private AppendOutputRunner runner;
   private final RemoteInterpreterProcessListener listener;
-  private final ApplicationEventListener appListener;
-
 
   public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
                                       InterpreterSettingManager interpreterSettingManager) {
     this.zConf = zConf;
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
-    this.appListener = interpreterSettingManager.getAppEventListener();
   }
 
   public void start() throws IOException {
@@ -217,27 +210,16 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void appendOutput(OutputAppendEvent event) throws InterpreterRPCException, TException {
-    if (event.getAppId() == null) {
-      runner.appendBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getExecutionOwner(), event.getData());
-    } else {
-      appListener.onOutputAppend(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getAppId(), event.getData());
-    }
+    runner.appendBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
+        event.getExecutionOwner(), event.getData());
   }
 
   @Override
   public void updateOutput(OutputUpdateEvent event) throws InterpreterRPCException, TException {
-    if (event.getAppId() == null) {
-      runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getExecutionOwner(), InterpreterResult.Type.valueOf(event.getType()),
-          event.getData());
-      // Complete replacements before the interpreter can publish its terminal result.
-      runner.run();
-    } else {
-      appListener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getAppId(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
-    }
+    runner.updateBuffer(event.getNoteId(), event.getParagraphId(), event.getIndex(),
+        event.getExecutionOwner(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
+    // Complete replacements before the interpreter can publish its terminal result.
+    runner.run();
   }
 
   @Override
@@ -254,23 +236,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
             msg.getData());
       }
     }
-  }
-
-  @Override
-  public void appendAppOutput(AppOutputAppendEvent event) throws InterpreterRPCException, TException {
-    appListener.onOutputAppend(event.noteId, event.paragraphId, event.index, event.appId,
-        event.data);
-  }
-
-  @Override
-  public void updateAppOutput(AppOutputUpdateEvent event) throws InterpreterRPCException, TException {
-    appListener.onOutputUpdated(event.noteId, event.paragraphId, event.index, event.appId,
-        InterpreterResult.Type.valueOf(event.type), event.data);
-  }
-
-  @Override
-  public void updateAppStatus(AppStatusUpdateEvent event) throws InterpreterRPCException, TException {
-    appListener.onStatusChange(event.noteId, event.paragraphId, event.appId, event.status);
   }
 
   @Override

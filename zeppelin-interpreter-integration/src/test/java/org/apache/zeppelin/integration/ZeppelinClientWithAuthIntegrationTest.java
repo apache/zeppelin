@@ -48,8 +48,7 @@ class ZeppelinClientWithAuthIntegrationTest extends AbstractTestRestApi {
     zepServer.addInterpreter("md");
     zepServer.addConfigFile("shiro.ini", AbstractTestRestApi.ZEPPELIN_SHIRO);
     zepServer.copyBinDir();
-    zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+
     zepServer.getZeppelinConfiguration().setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS.getVarName(), "*");
     zepServer.start();
     clientConfig = new ClientConfig("http://localhost:" + zepServer.getZeppelinConfiguration().getServerPort());

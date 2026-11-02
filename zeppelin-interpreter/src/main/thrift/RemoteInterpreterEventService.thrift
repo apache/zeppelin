@@ -36,7 +36,6 @@ struct OutputAppendEvent {
   2: string paragraphId,
   3: i32 index,
   4: string data,
-  5: string appId,
   6: string executionOwner
 }
 
@@ -46,7 +45,6 @@ struct OutputUpdateEvent {
   3: i32 index,
   4: string type,
   5: string data,
-  6: string appId,
   7: string executionOwner
 }
 
@@ -68,30 +66,6 @@ struct AngularObjectId {
   1: string noteId,
   2: string paragraphId,
   3: string name
-}
-
-struct AppOutputAppendEvent {
-  1: string noteId,
-  2: string paragraphId,
-  3: string appId,
-  4: i32 index,
-  5: string data
-}
-
-struct AppOutputUpdateEvent {
-  1: string noteId,
-  2: string paragraphId,
-  3: string appId,
-  4: i32 index,
-  5: string type,
-  6: string data
-}
-
-struct AppStatusUpdateEvent {
-  1: string noteId,
-  2: string paragraphId,
-  3: string appId,
-  4: string status
 }
 
 struct ParagraphInfo {
@@ -118,10 +92,6 @@ service RemoteInterpreterEventService {
   void appendOutput(1: OutputAppendEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
   void updateOutput(1: OutputUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
   void updateAllOutput(1: OutputUpdateAllEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
-
-  void appendAppOutput(1: AppOutputAppendEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
-  void updateAppOutput(1: AppOutputUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
-  void updateAppStatus(1: AppStatusUpdateEvent event) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 
   void checkpointOutput(1: string noteId, 2: string paragraphId) throws (1: RemoteInterpreterService.InterpreterRPCException ex);
 

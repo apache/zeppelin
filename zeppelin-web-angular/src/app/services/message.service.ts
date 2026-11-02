@@ -15,7 +15,6 @@ import { Observable } from 'rxjs';
 
 import { MessageInterceptor, MESSAGE_INTERCEPTOR } from '@zeppelin/interfaces';
 import {
-  DynamicFormParams,
   ImportNote,
   Message,
   MessageReceiveDataTypeMap,
@@ -214,32 +213,6 @@ export class MessageService extends Message implements OnDestroy {
 
   cancelParagraph(paragraphId: string): void {
     super.cancelParagraph(paragraphId);
-  }
-
-  paragraphExecutedBySpell(
-    paragraphId: string,
-    paragraphTitle: string,
-    paragraphText: string,
-    paragraphResultsMsg: Array<{ data: string; type: string }>,
-    paragraphStatus: string,
-    paragraphErrorMessage: string,
-    paragraphConfig: ParagraphConfig,
-    paragraphParams: DynamicFormParams,
-    paragraphDateStarted: string,
-    paragraphDateFinished: string
-  ): void {
-    super.paragraphExecutedBySpell(
-      paragraphId,
-      paragraphTitle,
-      paragraphText,
-      paragraphResultsMsg,
-      paragraphStatus,
-      paragraphErrorMessage,
-      paragraphConfig,
-      paragraphParams,
-      paragraphDateStarted,
-      paragraphDateFinished
-    );
   }
 
   runParagraph(

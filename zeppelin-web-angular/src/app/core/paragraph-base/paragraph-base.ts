@@ -439,10 +439,6 @@ export abstract class ParagraphBase extends MessageListenersManager {
     }
   }
 
-  runParagraphUsingSpell(_paragraphText: string, _magic: string, _propagated: boolean) {
-    // TODO(hsuanxyz)
-  }
-
   runParagraphUsingBackendInterpreter(paragraphText: string) {
     if (!this.paragraph) {
       throw new Error('paragraph is not defined');

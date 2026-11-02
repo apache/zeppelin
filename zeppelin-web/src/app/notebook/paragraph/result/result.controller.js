@@ -22,9 +22,10 @@ import AreachartVisualization from '../../../visualization/builtins/visualizatio
 import LinechartVisualization from '../../../visualization/builtins/visualization-linechart';
 import ScatterchartVisualization from '../../../visualization/builtins/visualization-scatterchart';
 import NetworkVisualization from '../../../visualization/builtins/visualization-d3network';
-import {DefaultDisplayType, SpellResult} from '../../../spell';
 import {ParagraphStatus} from '../paragraph.status';
 import Result from './result';
+
+const DefaultDisplayType = {TABLE: 'TABLE', HTML: 'HTML', ANGULAR: 'ANGULAR', TEXT: 'TEXT', NETWORK: 'NETWORK'};
 
 const AnsiUp = require('ansi_up');
 const AnsiUpConverter = new AnsiUp.default; // eslint-disable-line new-parens,new-cap
@@ -34,7 +35,7 @@ angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
 function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateCache, $templateRequest, $sce, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
+                    baseUrlSrv, ngToast, saveAsService, noteVarShareService,
                     uiGridConstants) {
   'ngInject';
 
@@ -148,9 +149,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // available columns in tabledata
   $scope.tableDataColumns = [];
 
-  // enable helium
-  let enableHelium = false;
-
   // graphMode
   $scope.graphMode = null;
 
@@ -175,28 +173,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   $scope.init = function(result, config, paragraph, index) {
-    // register helium plugin vis packages
-    let visPackages = heliumService.getVisualizationCachedPackages();
-    const visPackageOrder = heliumService.getVisualizationCachedPackageOrder();
-
-    // push the helium vis packages following the order
-    visPackageOrder.map((visName) => {
-      visPackages.map((vis) => {
-        if (vis.name !== visName) {
-          return;
-        }
-        $scope.builtInTableDataVisualizationList.push({
-          id: vis.id,
-          name: vis.name,
-          icon: $sce.trustAsHtml(vis.icon),
-          supports: [DefaultDisplayType.TABLE, DefaultDisplayType.NETWORK],
-        });
-        builtInVisualizations[vis.id] = {
-          class: vis.class,
-        };
-      });
-    });
-
     updateData(result, config, paragraph, index);
     renderResult($scope.type);
   };
@@ -316,9 +292,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     $scope.graphMode = config.graph.mode;
     $scope.config = angular.copy(config);
 
-    // enable only when it is last result
-    enableHelium = (index === paragraphRef.results.msg.length - 1);
-
     if ($scope.type === 'TABLE' || $scope.type === 'NETWORK') {
       tableData = new DatasetFactory().createDataset($scope.type);
       tableData.loadParagraphResult({type: $scope.type, msg: data});
@@ -343,8 +316,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       return `${baseDOMId}_angular`;
     } else if (type === DefaultDisplayType.TEXT) {
       return `${baseDOMId}_text`;
-    } else if (type === DefaultDisplayType.ELEMENT) {
-      return `${baseDOMId}_elem`;
     } else {
       console.error(`Cannot create display DOM Id due to unknown display type: ${type}`);
     }
@@ -360,121 +331,28 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         renderAngular(targetElemId, data);
       } else if (type === DefaultDisplayType.TEXT) {
         renderText(targetElemId, data, refresh);
-      } else if (type === DefaultDisplayType.ELEMENT) {
-        renderElem(targetElemId, data);
       } else {
         console.error(`Unknown Display Type: ${type}`);
       }
     };
 
     retryUntilElemIsLoaded(targetElemId, afterLoaded);
-
-    // send message to parent that this result is rendered
-    const paragraphId = $scope.$parent.paragraph.id;
-    $scope.$emit('resultRendered', paragraphId);
   };
 
   const renderResult = function(type, refresh) {
-    let activeApp;
-    if (enableHelium) {
-      getSuggestions();
-      getApplicationStates();
-      activeApp = _.get($scope.config, 'helium.activeApp');
-    }
-
-    if (activeApp) {
-      const appState = _.find($scope.apps, {id: activeApp});
-      renderApp(`p${appState.id}`, appState);
-    } else {
-      if (!DefaultDisplayType[type]) {
-        $scope.renderCustomDisplay(type, data);
-      } else {
-        const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
-        $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
-      }
+    if (DefaultDisplayType[type]) {
+      const targetElemId = $scope.createDisplayDOMId(`p${$scope.id}`, type);
+      $scope.renderDefaultDisplay(targetElemId, type, data, refresh);
     }
   };
 
-  $scope.isDefaultDisplay = function() {
-    return DefaultDisplayType[$scope.type];
-  };
-
-  /**
-   * Render multiple sub results for custom display
-   */
-  $scope.renderCustomDisplay = function(type, data) {
-    // get result from intp
-    if (!heliumService.getSpellByMagic(type)) {
-      console.error(`Can't execute spell due to unknown display type: ${type}`);
-      return;
-    }
-
-    // custom display result can include multiple subset results
-    heliumService.executeSpellAsDisplaySystem(type, data)
-      .then((dataWithTypes) => {
-        const containerDOMId = `p${$scope.id}_custom`;
-        const afterLoaded = () => {
-          const containerDOM = angular.element(`#${containerDOMId}`);
-          // Spell.interpret() can create multiple outputs
-          for (let i = 0; i < dataWithTypes.length; i++) {
-            const dt = dataWithTypes[i];
-            const data = dt.data;
-            const type = dt.type;
-
-            // prepare each DOM to be filled
-            const subResultDOMId = $scope.createDisplayDOMId(`p${$scope.id}_custom_${i}`, type);
-            const subResultDOM = document.createElement('div');
-            containerDOM.append(subResultDOM);
-            subResultDOM.setAttribute('id', subResultDOMId);
-
-            $scope.renderDefaultDisplay(subResultDOMId, type, data, true);
-          }
-        };
-
-        retryUntilElemIsLoaded(containerDOMId, afterLoaded);
-      })
-      .catch((error) => {
-        console.error(`Failed to render custom display: ${$scope.type}\n` + error);
-      });
-  };
-
-  /**
-   * generates actually object which will be consumed from `data` property
-   * feed it to the success callback.
-   * if error occurs, the error is passed to the failure callback
-   *
-   * @param data {Object or Function}
-   * @param type {string} Display Type
-   * @param successCallback
-   * @param failureCallback
-   */
   const handleData = function(data, type, successCallback, failureCallback) {
-    if (SpellResult.isFunction(data)) {
-      try {
-        successCallback(data());
-      } catch (error) {
-        failureCallback(error);
-        console.error(`Failed to handle ${type} type, function data\n`, error);
-      }
-    } else if (SpellResult.isObject(data)) {
-      try {
-        successCallback(data);
-      } catch (error) {
-        console.error(`Failed to handle ${type} type, object data\n`, error);
-      }
+    try {
+      successCallback(data);
+    } catch (error) {
+      failureCallback(error);
+      console.error(`Failed to render ${type}`, error);
     }
-  };
-
-  const renderElem = function(targetElemId, data) {
-    const elem = angular.element(`#${targetElemId}`);
-    handleData(() => {
-      data(targetElemId);
-    }, DefaultDisplayType.ELEMENT,
-      () => {}, /** HTML element will be filled with data. thus pass empty success callback */
-      (error) => {
-        elem.html(`${error.stack}`);
-      }
-    );
   };
 
   const renderHtml = function(targetElemId, data) {
@@ -633,7 +511,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
     let builtInViz = builtInVisualizations[graphMode];
     if (!builtInViz) {
-      /** helium package is not available, fallback to table vis */
+      // Fall back to the table when a saved visualization is unavailable.
       graphMode = 'table';
       $scope.graphMode = graphMode; /** html depends on this scope value */
       builtInViz = builtInVisualizations[graphMode];
@@ -747,9 +625,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
 
     // graph options
     newConfig.graph.mode = newMode;
-
-    // see switchApp()
-    _.set(newConfig, 'helium.activeApp', undefined);
 
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
@@ -962,282 +837,4 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,' + base64Data;
   };
-
-  // Helium ----------------
-  let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
-
-  // app states
-  $scope.apps = [];
-
-  // suggested apps
-  $scope.suggestion = {};
-
-  $scope.switchApp = function(appId) {
-    let newConfig = angular.copy($scope.config);
-    let newParams = angular.copy(paragraph.settings.params);
-
-    // 'helium.activeApp' can be cleared by switchViz()
-    _.set(newConfig, 'helium.activeApp', appId);
-
-    commitConfig(newConfig, newParams);
-  };
-
-  $scope.loadApp = function(heliumPackage) {
-    let noteId = $route.current.pathParams.noteId;
-    $http.post(baseUrlSrv.getRestApiBase() + '/helium/load/' + noteId + '/' + paragraph.id, heliumPackage)
-      .success(function(data, status, headers, config) {
-        console.log('Load app %o', data);
-      })
-      .error(function(err, status, headers, config) {
-        console.log('Error %o', err);
-      });
-  };
-
-  const commitConfig = function(config, params) {
-    commitParagraphResult(paragraph.title, paragraph.text, config, params);
-  };
-
-  const getApplicationStates = function() {
-    let appStates = [];
-
-    // Display ApplicationState
-    if (paragraph.apps) {
-      _.forEach(paragraph.apps, function(app) {
-        appStates.push({
-          id: app.id,
-          pkg: app.pkg,
-          status: app.status,
-          output: app.output,
-        });
-      });
-    }
-
-    // update or remove app states no longer exists
-    _.forEach($scope.apps, function(currentAppState, idx) {
-      let newAppState = _.find(appStates, {id: currentAppState.id});
-      if (newAppState) {
-        angular.extend($scope.apps[idx], newAppState);
-      } else {
-        $scope.apps.splice(idx, 1);
-      }
-    });
-
-    // add new app states
-    _.forEach(appStates, function(app, idx) {
-      if ($scope.apps.length <= idx || $scope.apps[idx].id !== app.id) {
-        $scope.apps.splice(idx, 0, app);
-      }
-    });
-  };
-
-  const getSuggestions = function() {
-    // Get suggested apps
-    let noteId = $route.current.pathParams.noteId;
-    if (!noteId) {
-      return;
-    }
-    $http.get(baseUrlSrv.getRestApiBase() + '/helium/suggest/' + noteId + '/' + paragraph.id)
-      .success(function(data, status, headers, config) {
-        $scope.suggestion = data.body;
-      })
-      .error(function(err, status, headers, config) {
-        console.log('Error %o', err);
-      });
-  };
-
-  const renderApp = function(targetElemId, appState) {
-    const afterLoaded = (loadedElem) => {
-      try {
-        console.log('renderApp %o', appState);
-        loadedElem.html(appState.output);
-        $compile(loadedElem.contents())(getAppScope(appState));
-      } catch (err) {
-        console.log('App rendering error %o', err);
-      }
-    };
-    retryUntilElemIsLoaded(targetElemId, afterLoaded);
-  };
-
-  /*
-   ** $scope.$on functions below
-   */
-  $scope.$on('appendAppOutput', function(event, data) {
-    if (paragraph.id === data.paragraphId) {
-      let app = _.find($scope.apps, {id: data.appId});
-      if (app) {
-        app.output += data.data;
-
-        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
-        paragraphAppState.output = app.output;
-
-        let targetEl = angular.element(document.getElementById('p' + app.id));
-        targetEl.html(app.output);
-        $compile(targetEl.contents())(getAppScope(app));
-        console.log('append app output %o', $scope.apps);
-      }
-    }
-  });
-
-  $scope.$on('updateAppOutput', function(event, data) {
-    if (paragraph.id === data.paragraphId) {
-      let app = _.find($scope.apps, {id: data.appId});
-      if (app) {
-        app.output = data.data;
-
-        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
-        paragraphAppState.output = app.output;
-
-        let targetEl = angular.element(document.getElementById('p' + app.id));
-        targetEl.html(app.output);
-        $compile(targetEl.contents())(getAppScope(app));
-        console.log('append app output');
-      }
-    }
-  });
-
-  $scope.$on('appLoad', function(event, data) {
-    if (paragraph.id === data.paragraphId) {
-      let app = _.find($scope.apps, {id: data.appId});
-      if (!app) {
-        app = {
-          id: data.appId,
-          pkg: data.pkg,
-          status: 'UNLOADED',
-          output: '',
-        };
-
-        $scope.apps.push(app);
-        paragraph.apps.push(app);
-        $scope.switchApp(app.id);
-      }
-    }
-  });
-
-  $scope.$on('appStatusChange', function(event, data) {
-    if (paragraph.id === data.paragraphId) {
-      let app = _.find($scope.apps, {id: data.appId});
-      if (app) {
-        app.status = data.status;
-        let paragraphAppState = _.find(paragraph.apps, {id: data.appId});
-        paragraphAppState.status = app.status;
-      }
-    }
-  });
-
-  let getAppRegistry = function(appState) {
-    if (!appState.registry) {
-      appState.registry = {};
-    }
-
-    return appState.registry;
-  };
-
-  const getAppScope = function(appState) {
-    if (!appState.scope) {
-      appState.scope = $rootScope.$new(true, $rootScope);
-    }
-    return appState.scope;
-  };
-
-  $scope.$on('angularObjectUpdate', function(event, data) {
-    let noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || data.noteId === noteId) {
-      let scope;
-      let registry;
-
-      let app = _.find($scope.apps, {id: data.paragraphId});
-      if (app) {
-        scope = getAppScope(app);
-        registry = getAppRegistry(app);
-      } else {
-        // no matching app in this paragraph
-        return;
-      }
-
-      let varName = data.angularObject.name;
-
-      if (angular.equals(data.angularObject.object, scope[varName])) {
-        // return when update has no change
-        return;
-      }
-
-      if (!registry[varName]) {
-        registry[varName] = {
-          interpreterGroupId: data.interpreterGroupId,
-          noteId: data.noteId,
-          paragraphId: data.paragraphId,
-        };
-      } else {
-        registry[varName].noteId = registry[varName].noteId || data.noteId;
-        registry[varName].paragraphId = registry[varName].paragraphId || data.paragraphId;
-      }
-
-      registry[varName].skipEmit = true;
-
-      if (!registry[varName].clearWatcher) {
-        registry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          console.log('angular object (paragraph) updated %o %o', varName, registry[varName]);
-          if (registry[varName].skipEmit) {
-            registry[varName].skipEmit = false;
-            return;
-          }
-          websocketMsgSrv.updateAngularObject(
-            registry[varName].noteId,
-            registry[varName].paragraphId,
-            varName,
-            newValue,
-            registry[varName].interpreterGroupId);
-        });
-      }
-      console.log('angular object (paragraph) created %o', varName);
-      scope[varName] = data.angularObject.object;
-
-      // create proxy for AngularFunction
-      if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = function() {
-          // eslint-disable-next-line prefer-rest-params
-          scope[varName] = arguments;
-          // eslint-disable-next-line prefer-rest-params
-          console.log('angular function (paragraph) invoked %o', arguments);
-        };
-
-        console.log('angular function (paragraph) created %o', scope[funcName]);
-      }
-    }
-  });
-
-  $scope.$on('angularObjectRemove', function(event, data) {
-    let noteId = $route.current.pathParams.noteId;
-    if (!data.noteId || data.noteId === noteId) {
-      let scope;
-      let registry;
-
-      let app = _.find($scope.apps, {id: data.paragraphId});
-      if (app) {
-        scope = getAppScope(app);
-        registry = getAppRegistry(app);
-      } else {
-        // no matching app in this paragraph
-        return;
-      }
-
-      let varName = data.name;
-
-      // clear watcher
-      if (registry[varName]) {
-        registry[varName].clearWatcher();
-        registry[varName] = undefined;
-      }
-
-      // remove scope variable
-      scope[varName] = undefined;
-
-      // remove proxy for AngularFunction
-      if (varName.indexOf(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX) === 0) {
-        let funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
-        scope[funcName] = undefined;
-      }
-    }
-  });
 }

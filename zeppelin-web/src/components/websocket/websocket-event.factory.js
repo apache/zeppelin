@@ -136,8 +136,6 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       $rootScope.$broadcast('patchReceived', data);
     } else if (op === 'COLLABORATIVE_MODE_STATUS') {
       $rootScope.$broadcast('collaborativeModeStatus', data);
-    } else if (op === 'RUN_PARAGRAPH_USING_SPELL') {
-      $rootScope.$broadcast('runParagraphUsingSpell', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
       $rootScope.$broadcast('appendParagraphOutput', data);
     } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {
@@ -152,14 +150,6 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, sa
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
       $rootScope.$broadcast('angularObjectRemove', data);
-    } else if (op === 'APP_APPEND_OUTPUT') {
-      $rootScope.$broadcast('appendAppOutput', data);
-    } else if (op === 'APP_UPDATE_OUTPUT') {
-      $rootScope.$broadcast('updateAppOutput', data);
-    } else if (op === 'APP_LOAD') {
-      $rootScope.$broadcast('appLoad', data);
-    } else if (op === 'APP_STATUS_CHANGE') {
-      $rootScope.$broadcast('appStatusChange', data);
     } else if (op === 'LIST_REVISION_HISTORY') {
       $rootScope.$broadcast('listRevisionHistory', data);
     } else if (op === 'NOTE_REVISION') {

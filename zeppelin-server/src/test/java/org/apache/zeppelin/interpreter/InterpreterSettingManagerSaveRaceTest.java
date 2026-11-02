@@ -20,7 +20,6 @@ package org.apache.zeppelin.interpreter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -60,7 +59,7 @@ class InterpreterSettingManagerSaveRaceTest extends AbstractInterpreterTest {
     RecordingConfigStorage storage = new RecordingConfigStorage(zConf);
     InterpreterSettingManager manager = new InterpreterSettingManager(zConf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class),
-        mock(ApplicationEventListener.class), storage, pluginManager);
+        storage, pluginManager);
     try {
       storage.observe();
 

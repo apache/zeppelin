@@ -58,8 +58,6 @@ import './app/notebook/note-var-share.service.js';
 import './app/notebook-repository/notebook-repository.controller.js';
 import './app/search/result-list.controller.js';
 import './app/search/search.service.js';
-import './app/helium';
-import './app/helium/helium.service.js';
 import './app/notebook/dynamic-forms/dynamic-forms.directive.js';
 import './components/array-ordering/array-ordering.service.js';
 import './components/navbar/navbar.controller.js';

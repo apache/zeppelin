@@ -25,16 +25,9 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.helium.Application;
-import org.apache.zeppelin.helium.ApplicationContext;
-import org.apache.zeppelin.helium.ApplicationException;
-import org.apache.zeppelin.helium.ApplicationLoader;
-import org.apache.zeppelin.helium.HeliumAppAngularObjectRegistry;
-import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -54,7 +47,6 @@ import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.InterpreterRPCException;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
-import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
@@ -79,7 +71,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -109,7 +100,6 @@ public class RemoteInterpreterServer extends Thread
   private AngularObjectRegistry angularObjectRegistry;
   private InterpreterHookRegistry hookRegistry;
   private DistributedResourcePool resourcePool;
-  private ApplicationLoader appLoader;
   private Gson gson = new Gson();
   private String launcherEnv = System.getenv("ZEPPELIN_INTERPRETER_LAUNCHER");
 
@@ -119,11 +109,7 @@ public class RemoteInterpreterServer extends Thread
   private int port;
   private TThreadPoolServer server;
   RemoteInterpreterEventClient intpEventClient;
-  private DependencyResolver depLoader;
   private LifecycleManager lifecycleManager;
-
-  private final Map<String, RunningApplication> runningApplications =
-      Collections.synchronizedMap(new HashMap<String, RunningApplication>());
 
   // Hold information for manual progress update
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
@@ -328,18 +314,10 @@ public class RemoteInterpreterServer extends Thread
         interpreterGroup.setResourcePool(resourcePool);
         intpEventClient.setIntpGroupId(interpreterGroupId);
 
-        String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
         if (properties.containsKey("zeppelin.interpreter.output.limit")) {
           InterpreterOutput.LIMIT = Integer.parseInt(
                   properties.get("zeppelin.interpreter.output.limit"));
         }
-
-        depLoader = new DependencyResolver(localRepoPath,
-                zProperties.getProperty("zeppelin.proxy.url"),
-                zProperties.getProperty("zeppelin.proxy.user"),
-                zProperties.getProperty("zeppelin.proxy.password"),
-                zProperties.getProperty("zeppelin.interpreter.dep.mvnRepo"));
-        appLoader = new ApplicationLoader(resourcePool, depLoader);
 
         resultCacheInSeconds =
                 Integer.parseInt(properties.getOrDefault("zeppelin.interpreter.result.cache", "0"));
@@ -430,23 +408,6 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void close(String sessionId, String className) throws InterpreterRPCException, TException {
-    // unload all applications
-    for (String appId : runningApplications.keySet()) {
-      RunningApplication appInfo = runningApplications.get(appId);
-
-      // see NoteInterpreterLoader.SHARED_SESSION
-      if (appInfo.noteId.equals(sessionId) || sessionId.equals("shared_session")) {
-        try {
-          LOGGER.info("Unload App {} ", appInfo.pkg.getName());
-          appInfo.app.unload();
-          // see ApplicationState.Status.UNLOADED
-          intpEventClient.onAppStatusUpdate(appInfo.noteId, appInfo.paragraphId, appId, "UNLOADED");
-        } catch (ApplicationException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
-    }
-
     // close interpreters
     if (interpreterGroup != null) {
       synchronized (interpreterGroup) {
@@ -1272,144 +1233,4 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  protected InterpreterOutput createAppOutput(final String noteId,
-                                              final String paragraphId,
-                                              final String appId) {
-    return new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onUpdateAll(InterpreterOutput out) {
-
-      }
-
-      @Override
-      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-        intpEventClient.onAppOutputAppend(noteId, paragraphId, index, appId, new String(line));
-      }
-
-      @Override
-      public void onUpdate(int index, InterpreterResultMessageOutput out) {
-        try {
-          intpEventClient.onAppOutputUpdate(noteId, paragraphId, index, appId,
-              out.getType(), new String(out.toByteArray()));
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
-    });
-
-  }
-
-  private ApplicationContext getApplicationContext(
-      HeliumPackage packageInfo, String noteId, String paragraphId, String applicationInstanceId) {
-    InterpreterOutput out = createAppOutput(noteId, paragraphId, applicationInstanceId);
-    return new ApplicationContext(
-        noteId,
-        paragraphId,
-        applicationInstanceId,
-        new HeliumAppAngularObjectRegistry(angularObjectRegistry, noteId, applicationInstanceId),
-        out);
-  }
-
-  @Override
-  public RemoteApplicationResult loadApplication(
-      String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
-          throws InterpreterRPCException, TException{
-    if (runningApplications.containsKey(applicationInstanceId)) {
-      LOGGER.warn("Application instance {} is already running", applicationInstanceId);
-      return new RemoteApplicationResult(true, "");
-    }
-    HeliumPackage pkgInfo = HeliumPackage.fromJson(packageInfo);
-    ApplicationContext context = getApplicationContext(
-        pkgInfo, noteId, paragraphId, applicationInstanceId);
-    try {
-      Application app = null;
-      LOGGER.info(
-          "Loading application {}({}), artifact={}, className={} into note={}, paragraph={}",
-          pkgInfo.getName(),
-          applicationInstanceId,
-          pkgInfo.getArtifact(),
-          pkgInfo.getClassName(),
-          noteId,
-          paragraphId);
-      app = appLoader.load(pkgInfo, context);
-      runningApplications.put(
-          applicationInstanceId,
-          new RunningApplication(pkgInfo, app, noteId, paragraphId));
-      return new RemoteApplicationResult(true, "");
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-      return new RemoteApplicationResult(false, e.getMessage());
-    }
-  }
-
-  @Override
-  public RemoteApplicationResult unloadApplication(String applicationInstanceId)
-          throws InterpreterRPCException, TException{
-    RunningApplication runningApplication = runningApplications.remove(applicationInstanceId);
-    if (runningApplication != null) {
-      try {
-        LOGGER.info("Unloading application {}", applicationInstanceId);
-        runningApplication.app.unload();
-      } catch (ApplicationException e) {
-        LOGGER.error(e.getMessage(), e);
-        return new RemoteApplicationResult(false, e.getMessage());
-      }
-    }
-    return new RemoteApplicationResult(true, "");
-  }
-
-  @Override
-  public RemoteApplicationResult runApplication(String applicationInstanceId)
-          throws InterpreterRPCException, TException{
-    LOGGER.info("run application {}", applicationInstanceId);
-
-    RunningApplication runningApp = runningApplications.get(applicationInstanceId);
-    if (runningApp == null) {
-      LOGGER.error("Application instance {} not exists", applicationInstanceId);
-      return new RemoteApplicationResult(false, "Application instance does not exists");
-    } else {
-      ApplicationContext context = runningApp.app.context();
-      try {
-        context.out.clear();
-        context.out.setType(InterpreterResult.Type.ANGULAR);
-        ResourceSet resource = appLoader.findRequiredResourceSet(
-            runningApp.pkg.getResources(),
-            context.getNoteId(),
-            context.getParagraphId());
-        for (Resource res : resource) {
-          System.err.println("Resource " + res.get());
-        }
-        runningApp.app.run(resource);
-        context.out.flush();
-        InterpreterResultMessageOutput out = context.out.getOutputAt(0);
-        intpEventClient.onAppOutputUpdate(
-            context.getNoteId(),
-            context.getParagraphId(),
-            0,
-            applicationInstanceId,
-            out.getType(),
-            new String(out.toByteArray()));
-        return new RemoteApplicationResult(true, "");
-      } catch (ApplicationException | IOException e) {
-        return new RemoteApplicationResult(false, e.getMessage());
-      }
-    }
-  }
-
-  private static class RunningApplication {
-    public final Application app;
-    public final HeliumPackage pkg;
-    public final String noteId;
-    public final String paragraphId;
-
-    RunningApplication(HeliumPackage pkg,
-                              Application app,
-                              String noteId,
-                              String paragraphId) {
-      this.app = app;
-      this.pkg = pkg;
-      this.noteId = noteId;
-      this.paragraphId = paragraphId;
-    }
-  }
 }

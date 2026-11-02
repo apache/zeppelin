@@ -22,12 +22,7 @@ import {
 } from './interfaces/message-data-type-map.interface';
 import { ImportNote, Note, NoteConfig, PersonalizedMode, SendNote } from './interfaces/message-notebook.interface';
 import { OP } from './interfaces/message-operator.interface';
-import {
-  DynamicFormParams,
-  ParagraphConfig,
-  ParagraphParams,
-  SendParagraph
-} from './interfaces/message-paragraph.interface';
+import { ParagraphConfig, ParagraphParams, SendParagraph } from './interfaces/message-paragraph.interface';
 import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
 import { getMessagePayloadGuard } from './message-payload-guards';
@@ -355,38 +350,6 @@ export class Message {
 
   cancelParagraph(paragraphId: string): void {
     this.send<OP.CANCEL_PARAGRAPH>(OP.CANCEL_PARAGRAPH, { id: paragraphId });
-  }
-
-  paragraphExecutedBySpell(
-    paragraphId: string,
-    paragraphTitle: string,
-    paragraphText: string,
-    paragraphResultsMsg: Array<{ data: string; type: string }>,
-    paragraphStatus: string,
-    paragraphErrorMessage: string,
-    paragraphConfig: ParagraphConfig,
-    paragraphParams: DynamicFormParams,
-    paragraphDateStarted: string,
-    paragraphDateFinished: string
-  ): void {
-    this.send<OP.PARAGRAPH_EXECUTED_BY_SPELL>(OP.PARAGRAPH_EXECUTED_BY_SPELL, {
-      id: paragraphId,
-      title: paragraphTitle,
-      paragraph: paragraphText,
-      results: {
-        code: paragraphStatus,
-        msg: paragraphResultsMsg.map(dataWithType => {
-          const serializedData = dataWithType.data;
-          return { type: dataWithType.type, serializedData };
-        })
-      },
-      status: paragraphStatus,
-      errorMessage: paragraphErrorMessage,
-      config: paragraphConfig,
-      params: paragraphParams,
-      dateStarted: paragraphDateStarted,
-      dateFinished: paragraphDateFinished
-    });
   }
 
   runParagraph(

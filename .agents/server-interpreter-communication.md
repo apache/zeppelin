@@ -55,7 +55,6 @@ registerInterpreterProcess(info)    — register after process startup
 appendOutput(event)                 — stream execution output incrementally
 updateOutput(event)                 — replace output content
 sendParagraphInfo(info)             — update paragraph metadata
-updateAppStatus(event)              — Zeppelin Application status
 runParagraphs(request)              — trigger paragraph execution from interpreter
 getResource(resourceId)             — access ResourcePool shared state
 getParagraphList(noteId)            — query notebook structure

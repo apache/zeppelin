@@ -44,7 +44,7 @@ public class StopInterpreter {
     ConfigStorage storage = ConfigStorage.createConfigStorage(zConf);
     PluginManager pluginManager = new PluginManager(zConf);
     InterpreterSettingManager interpreterSettingManager =
-        new InterpreterSettingManager(zConf, null, null, null, storage, pluginManager);
+        new InterpreterSettingManager(zConf, null, null, storage, pluginManager);
 
     RecoveryStorage recoveryStorage =
         ReflectionUtils.createClazzInstance(zConf.getRecoveryStorageClass(),
