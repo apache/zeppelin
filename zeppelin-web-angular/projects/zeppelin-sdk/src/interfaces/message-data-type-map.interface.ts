@@ -16,6 +16,8 @@ import {
   CheckpointNote,
   CloneNote,
   CollaborativeModeStatus,
+  ConvertNote,
+  ConvertedNote,
   DeleteNote,
   EditorSettingReceived,
   EditorSettingSend,
@@ -95,6 +97,7 @@ export interface MessageReceiveDataTypeMap {
   [OP.COMPLETION_LIST]: CompletionReceived;
   [OP.NOTES_INFO]: NotesInfo;
   [OP.NOTE]: Note;
+  [OP.CONVERTED_NOTE_NBFORMAT]: ConvertedNote;
   [OP.NOTE_REVISION]: NoteRevision;
   [OP.ERROR_INFO]: ErrorInfo;
   [OP.LIST_NOTE_JOBS]: ListNoteJobs;
@@ -145,6 +148,7 @@ export interface MessageSendDataTypeMap {
   [OP.REMOVE_FOLDER]: RemoveFolder;
   [OP.DEL_NOTE]: DeleteNote;
   [OP.CLONE_NOTE]: CloneNote;
+  [OP.CONVERT_NOTE_NBFORMAT]: ConvertNote;
   [OP.NOTE_UPDATE]: NoteUpdate;
   [OP.UPDATE_PERSONALIZED_MODE]: UpdatePersonalizedMode;
   [OP.NOTE_RENAME]: NoteRename;

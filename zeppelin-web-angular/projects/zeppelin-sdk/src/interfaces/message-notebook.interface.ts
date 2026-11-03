@@ -32,6 +32,16 @@ export type CloneNote = ID & Name;
 export type FolderRename = ID & Name;
 export type PersonalizedMode = 'true' | 'false';
 
+export interface ConvertNote {
+  noteId: string;
+  noteName: string;
+}
+
+export interface ConvertedNote {
+  nbformat: string;
+  noteName: string;
+}
+
 export interface NoteRename extends Name, ID {
   relative?: boolean;
 }

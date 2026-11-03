@@ -22,6 +22,7 @@ export class NotebookActionBarPage extends BasePage {
   readonly clearOutputButton: Locator;
   readonly cloneButton: Locator;
   readonly exportButton: Locator;
+  readonly exportIpynbButton: Locator;
   readonly reloadButton: Locator;
   readonly commitButton: Locator;
   readonly setRevisionButton: Locator;
@@ -46,7 +47,8 @@ export class NotebookActionBarPage extends BasePage {
     this.showHideOutputButton = page.locator('button[nzTooltipTitle="Show/hide the output"]');
     this.clearOutputButton = page.locator('button[nzTooltipTitle="Clear all output"]');
     this.cloneButton = page.locator('button[nzTooltipTitle="Clone this note"]');
-    this.exportButton = page.locator('button[nzTooltipTitle="Export this note"]');
+    this.exportButton = page.getByRole('button', { name: 'Export this note (zpln)', exact: true });
+    this.exportIpynbButton = page.getByRole('button', { name: 'Export this note (ipynb)', exact: true });
     this.reloadButton = page.locator('button[nzTooltipTitle="Reload from note file"]');
     this.commitButton = page.getByRole('button', { name: 'Commit' });
     this.setRevisionButton = page.getByRole('button', { name: 'Set as default revision' });
