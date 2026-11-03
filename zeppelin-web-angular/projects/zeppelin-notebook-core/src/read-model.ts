@@ -10,7 +10,11 @@
  * limitations under the License.
  */
 
-import type { NotebookCoreSnapshot } from './host-remote-contract';
+import type {
+  NotebookCoreSnapshot,
+  NotebookCoreSnapshotListener,
+  NotebookCoreUnsubscribe
+} from './host-remote-contract';
 
 // Inputs: the read payload fields the Core consumes. The Core cannot import SDK types, so these
 // mirror the wire shapes structurally; the host converts NOTE, NOTE_REVISION and the permissions
@@ -114,3 +118,9 @@ export type NotebookReadSnapshot = NotebookCoreSnapshot &
     note: NotebookReadNote | null;
     acl: NotebookReadAcl;
   }>;
+
+/** A NotebookPort whose snapshot is the read state, so a remote can read it without a cast. */
+export type NotebookReadPort = Readonly<{
+  getSnapshot: () => NotebookReadSnapshot;
+  subscribe: (listener: NotebookCoreSnapshotListener) => NotebookCoreUnsubscribe;
+}>;
