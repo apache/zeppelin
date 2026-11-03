@@ -10,10 +10,10 @@
  * limitations under the License.
  */
 
-import { assertType, describe, expect, it } from 'vitest';
+import { assertType, describe, expect, expectTypeOf, it } from 'vitest';
 
 import type { NotebookCorePort } from './host-remote-contract';
-import type { NotebookNoteInput, NotebookParagraphInput, NotebookReadSnapshot } from './read-model';
+import type { NotebookNoteInput, NotebookParagraphInput, NotebookReadPort, NotebookReadSnapshot } from './read-model';
 import { createNotebookReadStore } from './read-store';
 
 const paragraph = (id: string, overrides: Partial<NotebookParagraphInput> = {}): NotebookParagraphInput => ({
@@ -58,6 +58,10 @@ assertType<(snapshot: NotebookReadSnapshot) => void>(snapshot => {
 
 // The store's snapshot extends the NotebookPort snapshot, so the store can serve as a port.
 assertType<NotebookCorePort>(createNotebookReadStore());
+assertType<NotebookReadPort>(createNotebookReadStore());
+// A read port can be passed wherever a NotebookPort is expected.
+assertType<(port: NotebookReadPort) => NotebookCorePort>(port => port);
+expectTypeOf<ReturnType<NotebookReadPort['getSnapshot']>>().toEqualTypeOf<NotebookReadSnapshot>();
 
 describe('notebook read store', () => {
   it('starts idle with no target and unknown permissions', () => {

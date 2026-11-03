@@ -14,7 +14,7 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 import {
   createNotebookReadStore,
-  NotebookCorePort,
+  NotebookReadPort,
   NotebookReadSnapshot,
   NotebookReadStore,
   NotebookReadTarget
@@ -48,7 +48,7 @@ export type NotebookCoreReadState = Readonly<{
  */
 export class NotebookCoreReadHost {
   /** Stable for the whole lifetime, so a remote can keep it as its NotebookPort. */
-  readonly port: NotebookCorePort;
+  readonly port: NotebookReadPort;
   readonly state$: Observable<NotebookCoreReadState>;
 
   private readonly store: NotebookReadStore = createNotebookReadStore();
