@@ -300,7 +300,7 @@ public class ProcessData {
           try {
             if ((System.currentTimeMillis() > unconditionalExitTime)) {
               LOGGER.error(
-                  "!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Unconditional exit occured@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!\nsome process hag up for more than "
+                  "!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Unconditional exit occurred@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@!\nsome process hag up for more than "
                       + unconditionalExitDelayMinutes + " minutes.");
             }
             LOGGER.error("!##################################!");
