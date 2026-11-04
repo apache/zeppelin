@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, JSHandle, Locator, Page } from '@playwright/test';
 import { waitForZeppelinReady } from '../utils';
 import { BasePage } from './base-page';
 
@@ -112,6 +112,38 @@ export class NotebookRepoItemPage extends BasePage {
     const row = this.repositoryCard.locator('tbody tr').filter({ hasText: settingName });
     const input = row.getByRole('textbox');
     await this.fillAndVerifyInput(input, value);
+  }
+
+  async observeSettingValues(settingName: string): Promise<JSHandle<{ stop: () => string[] }>> {
+    return this.repositoryCard.evaluateHandle((card, name) => {
+      const container = card.closest('.content');
+      if (!container) {
+        throw new Error('Notebook repository content was not found');
+      }
+      const repoName = card.getAttribute('data-repo-name');
+      const values: string[] = [];
+      const record = () => {
+        const currentCard = Array.from(container.querySelectorAll('[data-testid="notebook-repo-item"]')).find(
+          item => item.getAttribute('data-repo-name') === repoName
+        );
+        const table = currentCard?.querySelector('table');
+        const row = Array.from(table?.rows ?? []).find(item => item.cells[0]?.textContent?.trim() === name);
+        const value = row?.cells[1]?.textContent?.trim() ?? '<missing>';
+        if (values.at(-1) !== value) {
+          values.push(value);
+        }
+      };
+      const observer = new MutationObserver(record);
+      observer.observe(container, { childList: true, characterData: true, subtree: true });
+      record();
+      return {
+        stop: () => {
+          record();
+          observer.disconnect();
+          return values;
+        }
+      };
+    }, settingName);
   }
 
   async getSettingInputValue(settingName: string): Promise<string> {
