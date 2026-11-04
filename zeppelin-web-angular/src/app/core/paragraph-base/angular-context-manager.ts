@@ -12,18 +12,32 @@
 
 import { Observable } from 'rxjs';
 
+export interface AngularObjectBinding {
+  noteId: string | null;
+  paragraphId: string | null;
+  interpreterGroupId?: string;
+}
+
 export interface AngularContext {
+  noteId: string;
   paragraphId: string;
   key: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
+  value: unknown;
   emit: boolean;
   set: boolean;
+  binding?: AngularObjectBinding;
 }
 
 export interface AngularContextManager {
-  setContextValue(key: string, value: unknown, paragraphId: string, emit?: boolean): void;
-  unsetContextValue(key: string, paragraphId: string, emit?: boolean): unknown;
+  registerParagraphBindings(noteId: string, paragraphId: string): void;
+  setContextValue(
+    key: string,
+    value: unknown,
+    paragraphId: string,
+    emit?: boolean,
+    binding?: AngularObjectBinding
+  ): void;
+  unsetContextValue(key: string, paragraphId: string, emit?: boolean, binding?: AngularObjectBinding): void;
   contextChanged(): Observable<AngularContext>;
   runParagraphAction(): Observable<string>;
 }

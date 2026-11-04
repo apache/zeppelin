@@ -85,6 +85,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -842,6 +844,58 @@ class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
+  void interpreterRemovalPreservesGroupAndRoutesAllScopes() throws Exception {
+    final String noteId = "angular-removal-note";
+    final String otherNoteId = "angular-removal-other-note";
+    final String groupId = "angular-setting:session";
+    final Notebook mockedNotebook = mock(Notebook.class, RETURNS_DEEP_STUBS);
+    when(mockedNotebook.getInterpreterSettingManager().getSettingIds())
+        .thenReturn(Collections.singletonList("angular-setting"));
+    final NoteInfo noteInfo = mock(NoteInfo.class);
+    final NoteInfo otherNoteInfo = mock(NoteInfo.class);
+    when(noteInfo.getId()).thenReturn(noteId);
+    when(otherNoteInfo.getId()).thenReturn(otherNoteId);
+    when(mockedNotebook.getNotesInfo()).thenReturn(Arrays.asList(noteInfo, otherNoteInfo));
+    final NotebookSocket conn = mock(NotebookSocket.class);
+    final NotebookSocket otherConn = mock(NotebookSocket.class);
+    notebookServer.getConnectionManager().noteSocketMap.put(noteId, Collections.singleton(conn));
+    notebookServer.getConnectionManager().noteSocketMap.put(otherNoteId, Collections.singleton(otherConn));
+
+    try {
+      notebookServer.setNotebook(() -> mockedNotebook);
+      for (String paragraphId : Arrays.asList("paragraph", null)) {
+        AngularObject<String> object = AngularObjectBuilder.build("value", "old", noteId, paragraphId);
+
+        notebookServer.onRemoveAngularObject(groupId, object);
+
+        Message expected = new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("name", "value")
+            .put("interpreterGroupId", groupId)
+            .put("noteId", noteId)
+            .put("paragraphId", paragraphId);
+        verify(conn).send(notebookServer.serializeMessage(expected));
+      }
+      verify(otherConn, never()).send(anyString());
+      reset(conn);
+
+      AngularObject<String> globalObject = AngularObjectBuilder.build("value", "old", null, null);
+      notebookServer.onRemoveAngularObject(groupId, globalObject);
+
+      Message expectedGlobal = new Message(OP.ANGULAR_OBJECT_REMOVE)
+          .put("name", "value")
+          .put("interpreterGroupId", groupId)
+          .put("noteId", null)
+          .put("paragraphId", null);
+      verify(conn).send(notebookServer.serializeMessage(expectedGlobal));
+      verify(otherConn).send(notebookServer.serializeMessage(expectedGlobal));
+    } finally {
+      notebookServer.setNotebook(() -> NotebookServerTest.notebook);
+      notebookServer.getConnectionManager().noteSocketMap.remove(noteId);
+      notebookServer.getConnectionManager().noteSocketMap.remove(otherNoteId);
+    }
+  }
+
+  @Test
   void testCreateNoteWithDefaultInterpreterId() throws IOException {
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();
@@ -1282,14 +1336,15 @@ class NotebookServerTest extends AbstractTestRestApi {
     }
   }
 
-  @Test
-  void getNoteReplyCarriesTheRequestMsgId() throws IOException {
+  @ParameterizedTest
+  @EnumSource(value = OP.class, names = {"GET_NOTE", "RELOAD_NOTE"})
+  void noteReadReplyCarriesTheRequestMsgId(OP op) throws IOException {
     String noteId = notebook.createNote("read-reply-msg-id", anonymous);
     try {
       NotebookSocket socket = createWebSocket();
 
       notebookServer.onMessage(socket,
-          new Message(OP.GET_NOTE).withMsgId("read-1").put("id", noteId).toJson());
+          new Message(op).withMsgId("read-1").put("id", noteId).toJson());
 
       Message reply = onlySent(socket, OP.NOTE);
       assertEquals("read-1", reply.msgId);
@@ -1298,13 +1353,14 @@ class NotebookServerTest extends AbstractTestRestApi {
     }
   }
 
-  @Test
-  void getNoteWithoutMsgIdKeepsTheReplyUncorrelated() throws IOException {
+  @ParameterizedTest
+  @EnumSource(value = OP.class, names = {"GET_NOTE", "RELOAD_NOTE"})
+  void noteReadWithoutMsgIdKeepsTheReplyUncorrelated(OP op) throws IOException {
     String noteId = notebook.createNote("read-reply-without-msg-id", anonymous);
     try {
       NotebookSocket socket = createWebSocket();
 
-      notebookServer.onMessage(socket, new Message(OP.GET_NOTE).put("id", noteId).toJson());
+      notebookServer.onMessage(socket, new Message(op).put("id", noteId).toJson());
 
       String reply = onlySentPayload(socket, OP.NOTE);
       assertNull(notebookServer.deserializeMessage(reply).msgId);
@@ -1314,12 +1370,13 @@ class NotebookServerTest extends AbstractTestRestApi {
     }
   }
 
-  @Test
-  void getNoteFailuresCarryTheRequestMsgId() throws IOException {
+  @ParameterizedTest
+  @EnumSource(value = OP.class, names = {"GET_NOTE", "RELOAD_NOTE"})
+  void noteReadFailuresCarryTheRequestMsgId(OP op) throws IOException {
     NotebookSocket socket = createWebSocket();
 
     notebookServer.onMessage(socket,
-        new Message(OP.GET_NOTE).withMsgId("read-missing").put("id", "missing-note").toJson());
+        new Message(op).withMsgId("read-missing").put("id", "missing-note").toJson());
 
     assertEquals("read-missing", onlySent(socket, OP.ERROR_INFO).msgId);
 
@@ -1329,10 +1386,10 @@ class NotebookServerTest extends AbstractTestRestApi {
       reset(socket);
 
       notebookServer.onMessage(socket,
-          new Message(OP.GET_NOTE).withMsgId("read-forbidden").put("id", noteId).toJson());
+          new Message(op).withMsgId("read-forbidden").put("id", noteId).toJson());
 
       assertEquals("read-forbidden", onlySent(socket, OP.AUTH_INFO).msgId);
-      assertTrue(sentOps(socket).stream().noneMatch(op -> op == OP.NOTE));
+      assertTrue(sentOps(socket).stream().noneMatch(sentOp -> sentOp == OP.NOTE));
     } finally {
       notebook.removeNote(noteId, anonymous);
     }
@@ -1382,6 +1439,12 @@ class NotebookServerTest extends AbstractTestRestApi {
     assertEquals("read-throws", onlySent(socket, OP.ERROR_INFO).msgId);
 
     reset(socket);
+    notebookServer.onMessage(socket,
+        new Message(OP.RELOAD_NOTE).withMsgId("reload-throws").put("id", 42).toJson());
+
+    assertEquals("reload-throws", onlySent(socket, OP.ERROR_INFO).msgId);
+
+    reset(socket);
     notebookServer.onMessage(socket, new Message(OP.NOTE_REVISION).withMsgId("revision-throws")
         .put("noteId", 42).put("revisionId", "some-revision").toJson());
 
@@ -1392,13 +1455,15 @@ class NotebookServerTest extends AbstractTestRestApi {
   void unrelatedFailuresAndNoteBroadcastsStayUncorrelated() throws IOException {
     NotebookSocket socket = createWebSocket();
     notebookServer.onMessage(socket,
-        new Message(OP.RELOAD_NOTE).withMsgId("reload-missing").put("id", "missing-note").toJson());
+        new Message(OP.PARAGRAPH_CLEAR_ALL_OUTPUT)
+            .withMsgId("clear-missing").put("id", "missing-note").toJson());
 
     assertNull(onlySent(socket, OP.ERROR_INFO).msgId);
 
     reset(socket);
     notebookServer.onMessage(socket,
-        new Message(OP.RELOAD_NOTE).withMsgId("reload-throws").put("id", 42).toJson());
+        new Message(OP.PARAGRAPH_CLEAR_ALL_OUTPUT)
+            .withMsgId("clear-throws").put("id", 42).toJson());
 
     assertNull(onlySent(socket, OP.ERROR_INFO).msgId);
 

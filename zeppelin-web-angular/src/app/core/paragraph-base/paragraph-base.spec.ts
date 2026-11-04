@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectorRef } from '@angular/core';
-import { AngularObjectRemove, DatasetType, Message, OP, ParagraphItem, ParagraphState } from '@zeppelin/sdk';
+import { DatasetType, Message, OP, ParagraphItem, ParagraphState } from '@zeppelin/sdk';
 import { EMPTY } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -22,7 +22,6 @@ class TestParagraph extends ParagraphBase {
   changeColWidth = vi.fn();
   updateParagraphResult = vi.fn();
   protected currentNoteId = 'note';
-  unsetContextValue = vi.fn();
 
   hydrate(snapshot: ParagraphItem) {
     this.setParagraphSnapshot(snapshot);
@@ -32,7 +31,7 @@ class TestParagraph extends ParagraphBase {
     super(
       { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
       { isParagraphRunning: item => item.status === 'RUNNING', isEntireNoteRunning: () => false },
-      { unsetContextValue: (...args) => this.unsetContextValue(...args) } as AngularContextManager,
+      { registerParagraphBindings: vi.fn() } as unknown as AngularContextManager,
       { markForCheck: vi.fn() } as unknown as ChangeDetectorRef
     );
     this.paragraph = paragraph;
@@ -73,25 +72,6 @@ const beginOutput = (component: TestParagraph) =>
 
 const appendOutput = (component: TestParagraph) =>
   component.onParagraphAppendOutput({ noteId: 'note', paragraphId: 'A', index: 0, data: 'second\n' });
-
-describe('ParagraphBase Angular object removal', () => {
-  const payloads: AngularObjectRemove[] = [
-    { noteId: 'note', paragraphId: 'A', name: 'bound' },
-    { noteId: 'note', paragraphId: 'A', angularObject: { name: 'bound', object: 42 }, interpreterGroupId: 'group' }
-  ];
-
-  it.each(payloads)('removes the binding for %j', data => {
-    const component = new TestParagraph(paragraph('A'));
-    component.angularObjectRemove(data);
-    expect(component.unsetContextValue).toHaveBeenCalledWith('bound', 'A', false);
-  });
-
-  it('does not remove a binding belonging to another paragraph', () => {
-    const component = new TestParagraph(paragraph('A'));
-    component.angularObjectRemove({ noteId: 'note', paragraphId: 'other', name: 'bound' });
-    expect(component.unsetContextValue).not.toHaveBeenCalled();
-  });
-});
 
 describe('ParagraphBase streaming state isolation', () => {
   it.each(['append', 'update'])('ignores %s from another note with the same paragraph ID', kind => {
@@ -307,6 +287,7 @@ const createSaveTestParagraph = (text: string, dirtyText?: string): SaveTestPara
     { receive: () => EMPTY, receiveEnvelope: () => EMPTY } as unknown as Message,
     { isParagraphRunning: () => false, isEntireNoteRunning: () => false },
     {
+      registerParagraphBindings: vi.fn(),
       setContextValue: vi.fn(),
       unsetContextValue: vi.fn(),
       contextChanged: () => EMPTY,

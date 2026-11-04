@@ -20,7 +20,6 @@ import { OP, type MessageReceiveDataTypeMap, type WebSocketMessage } from '@zepp
 
 import type {
   MessageService,
-  NgZService,
   NoteStatusService,
   NoteVarShareService,
   ReactFeatureService,
@@ -28,6 +27,7 @@ import type {
   ThemeService,
   TicketService
 } from '@zeppelin/services';
+import { NgZService } from '../../../services/ng-z.service';
 
 vi.mock('./paragraph/paragraph.component', () => ({
   NotebookParagraphComponent: class NotebookParagraphComponent {}
@@ -39,21 +39,22 @@ const createComponent = () => {
   const messageService = {
     receive: vi.fn(() => NEVER),
     receiveEnvelope: vi.fn(() => NEVER),
-    consumeLocalAddFocusMsgId: vi.fn(() => false)
+    consumeLocalAddFocusMsgId: vi.fn(() => false),
+    getInterpreterBindings: vi.fn()
   };
 
   const router = {
     navigate: vi.fn(() => Promise.resolve(true))
   } as unknown as Router;
+  const ngZService = new NgZService();
+  const routeParams: Record<string, string> = { noteId: 'note-b' };
 
   const component = new NotebookComponent(
     messageService as unknown as MessageService,
-    {} as NgZService,
+    ngZService,
     {
       snapshot: {
-        params: {
-          noteId: 'note-b'
-        }
+        params: routeParams
       }
     } as unknown as ActivatedRoute,
     {
@@ -62,17 +63,19 @@ const createComponent = () => {
     {} as NoteStatusService,
     {} as NoteVarShareService,
     {} as TicketService,
-    {} as SecurityService,
+    { getPermissions: () => NEVER } as unknown as SecurityService,
     router,
-    {} as Title,
-    {} as ThemeService,
+    { setTitle: vi.fn() } as unknown as Title,
+    { updateMonacoTheme: vi.fn() } as unknown as ThemeService,
     {} as ReactFeatureService
   );
 
   return {
     component,
     router,
-    messageService
+    messageService,
+    ngZService,
+    routeParams
   };
 };
 
@@ -193,5 +196,112 @@ describe('NotebookComponent', () => {
     component.addParagraph(message);
 
     expect(messageService.consumeLocalAddFocusMsgId).toHaveBeenCalledWith('local-add-msg');
+  });
+
+  it('clears models missing from a reconnected NOTE snapshot without disconnecting existing outputs', () => {
+    const { component, ngZService } = createComponent();
+    const note = {
+      id: 'note-b',
+      name: 'Notebook',
+      config: {},
+      paragraphs: [{ id: 'A', config: {} }]
+    } as NonNullable<MessageReceiveDataTypeMap[OP.NOTE]['note']>;
+    component.note = note;
+    ngZService.registerParagraphBindings(note.id, 'A');
+    const context: Record<string, unknown> = {};
+    ngZService.bindParagraphContext('A', context);
+    const binding = { noteId: note.id, paragraphId: null, interpreterGroupId: 'spark' };
+    ngZService.setContextValue('controlValue', 'deleted-while-disconnected', 'A', false, binding);
+
+    component.getNote({ op: OP.NOTE, data: { note } });
+    expect(context.controlValue).toBe('deleted-while-disconnected');
+
+    component.getNote({ op: OP.NOTE, msgId: 'reload-read', data: { note } });
+
+    expect(context.controlValue).toBeUndefined();
+    ngZService.setContextValue('currentValue', 'replayed', 'A', false, binding);
+    expect(context.currentValue).toBe('replayed');
+    expect(context.controlValue).toBeUndefined();
+  });
+
+  it('cleans up removed paragraph state when a revision replaces the notebook snapshot', () => {
+    const { component, ngZService } = createComponent();
+    component.note = {
+      id: 'note-b',
+      config: {},
+      paragraphs: [{ id: 'removed', config: {} }]
+    } as NonNullable<typeof component.note>;
+    ngZService.registerParagraphBindings('note-b', 'removed');
+    ngZService.setContextValue('localValue', 'old-paragraph', 'removed');
+
+    component.getNoteRevision({
+      noteId: 'note-b',
+      revisionId: 'r1',
+      note: { ...component.note, paragraphs: [] }
+    });
+
+    ngZService.registerParagraphBindings('note-b', 'removed');
+    const context: Record<string, unknown> = {};
+    ngZService.bindParagraphContext('removed', context);
+    expect(context.localValue).toBeUndefined();
+  });
+
+  it('releases bindings outside the visible snapshot when switching a single-paragraph route', () => {
+    const { component, ngZService, routeParams } = createComponent();
+    const note = {
+      id: 'note-b',
+      name: 'Notebook',
+      config: {},
+      paragraphs: [
+        { id: 'A', config: {} },
+        { id: 'B', config: {} }
+      ]
+    } as NonNullable<typeof component.note>;
+    component.note = { ...note, paragraphs: [note.paragraphs[0]] };
+    ngZService.registerParagraphBindings(note.id, 'A');
+    ngZService.setContextValue('privateValue', 'previous-output', 'A');
+    routeParams.paragraphId = 'B';
+
+    component.getNote({ op: OP.NOTE, msgId: 'single-paragraph-read', data: { note } });
+
+    expect(component.note?.paragraphs.map(paragraph => paragraph.id)).toEqual(['B']);
+    const staleOutput: Record<string, unknown> = {};
+    ngZService.bindParagraphContext('A', staleOutput);
+    ngZService.setContextValue('privateValue', 'late-old-output', 'A');
+    expect(staleOutput.privateValue).toBeUndefined();
+  });
+
+  it('preserves bindings while viewing a revision and reconciles them only on a live read', () => {
+    const { component, ngZService } = createComponent();
+    const note = {
+      id: 'note-b',
+      name: 'Notebook',
+      config: {},
+      paragraphs: [{ id: 'A', config: {} }]
+    } as NonNullable<typeof component.note>;
+    component.note = note;
+    ngZService.registerParagraphBindings(note.id, 'A');
+    const context: Record<string, unknown> = {};
+    const release = ngZService.bindParagraphContext('A', context);
+    const binding = { noteId: note.id, paragraphId: null, interpreterGroupId: 'spark' };
+    ngZService.setContextValue('controlValue', 'before-revision', 'A', false, binding);
+    ngZService.setContextValue('localValue', 'client-local', 'A');
+
+    component.getNoteRevision({ noteId: note.id, revisionId: 'r1', note });
+
+    expect(context.controlValue).toBe('before-revision');
+    expect(context.localValue).toBe('client-local');
+    release();
+    const recreatedOutput: Record<string, unknown> = {};
+    ngZService.bindParagraphContext('A', recreatedOutput);
+    expect(recreatedOutput.controlValue).toBe('before-revision');
+    expect(recreatedOutput.localValue).toBe('client-local');
+
+    component.getNote({ op: OP.NOTE, msgId: 'return-to-live', data: { note } });
+
+    expect(recreatedOutput.controlValue).toBeUndefined();
+    expect(recreatedOutput.localValue).toBeUndefined();
+    ngZService.setContextValue('controlValue', 'live-model', 'A', false, binding);
+    expect(recreatedOutput.controlValue).toBe('live-model');
   });
 });

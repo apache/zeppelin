@@ -153,7 +153,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
   // Read requests whose direct reply and failures carry the request msgId back to the sender.
   // Broadcasts of the same ops stay uncorrelated.
   private static final Set<OP> MSG_ID_CORRELATED_READS = Collections.unmodifiableSet(
-      new HashSet<>(Arrays.asList(OP.GET_NOTE, OP.NOTE_REVISION)));
+      new HashSet<>(Arrays.asList(OP.GET_NOTE, OP.RELOAD_NOTE, OP.NOTE_REVISION)));
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -949,11 +949,12 @@ public class NotebookServer implements AngularObjectRegistryListener,
       return;
     }
     getNotebookService().getNote(noteId, true, context,
-        new WebSocketServiceCallback<Note>(conn) {
+        new WebSocketServiceCallback<Note>(conn, fromMessage.msgId) {
           @Override
           public void onSuccess(Note note, ServiceContext context) throws IOException {
             connectionManager.addNoteConnection(note.getId(), conn);
-            conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+            conn.send(serializeMessage(
+                new Message(OP.NOTE).withMsgId(fromMessage.msgId).put("note", note)));
             updateAngularObjectRegistry(conn, note);
             sendAllAngularObjects(note, context.getAutheInfo().getUser(), conn);
           }
@@ -2288,6 +2289,7 @@ public class NotebookServer implements AngularObjectRegistryListener,
         connectionManager.broadcast(noteId,
             new Message(OP.ANGULAR_OBJECT_REMOVE)
                 .put("name", angularObject.getName())
+                .put("interpreterGroupId", interpreterGroupId)
                 .put("noteId", angularObject.getNoteId())
                 .put("paragraphId", angularObject.getParagraphId()));
         break;
