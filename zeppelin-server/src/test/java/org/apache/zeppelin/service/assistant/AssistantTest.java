@@ -36,6 +36,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.ServiceUnavailableException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -361,6 +362,10 @@ class AssistantTest {
 
     doAnswer(invocation -> {
       Consumer<AssistantEvent> consumer = invocation.getArgument(3);
+      List<ToolSpec> tools = invocation.getArgument(2);
+      var getParagraph = tools.stream().filter(tool -> tool.name.equals("get_paragraph"))
+          .findFirst().orElseThrow();
+      assertEquals(List.of("paragraphId"), getParagraph.parameters.get("required"));
       consumer.accept(new AssistantEvent.ToolCall("call_1", "list_paragraphs", "{}"));
       return null;
     }).doAnswer(invocation -> {
@@ -452,5 +457,71 @@ class AssistantTest {
     } finally {
       finish.countDown();
     }
+  }
+
+  @Test
+  void runsToolLoop() throws Exception {
+    var note = new Note();
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
+    var paragraph = note.addNewParagraph(authInfo);
+    paragraph.setText("%md hello");
+    var notebook = mock(Notebook.class);
+    when(notebook.processNote(eq("noteId"), any()))
+        .thenAnswer(invocation -> ((NoteProcessor<?>) invocation.getArgument(1)).process(note));
+    when(notebook.processNote(eq("noteId"), eq(false), any()))
+        .thenAnswer(invocation -> ((NoteProcessor<?>) invocation.getArgument(2)).process(note));
+    var authorization = mock(AuthorizationService.class);
+    when(authorization.isReader("noteId", userAndRoles)).thenReturn(true);
+
+    // Scripted model: list_paragraphs -> get_paragraph -> final answer.
+    var responses = List.<AssistantEvent>of(
+        new AssistantEvent.ToolCall("call_1", "list_paragraphs", "{}"),
+        new AssistantEvent.ToolCall(
+            "call_2", "get_paragraph", "{\"paragraphId\":\"" + paragraph.getId() + "\"}"),
+        new AssistantEvent.TextDelta("done")
+    );
+
+    var capturedHistories = new ArrayList<List<Message>>();
+    ChatModel model = (systemPrompt, history, tools, consumer) -> {
+      capturedHistories.add(List.copyOf(history));
+      consumer.accept(responses.get(capturedHistories.size() - 1));
+    };
+
+    var conversation = Conversation.create("noteId", "test", authInfo.getUser());
+    var repository = mock(ConversationRepository.class);
+
+    when(repository.find("noteId", conversation.getId())).thenReturn(Optional.of(conversation));
+    doAnswer(invocation -> {
+      invocation.<Consumer<Conversation>>getArgument(1).accept(invocation.getArgument(0));
+      return null;
+    }).when(repository).update(any(), any());
+
+    var sut = new AssistantImpl(
+        notebook,
+        model,
+        new NotebookService(notebook, authorization, null, null),
+        authorization,
+        repository,
+        executor
+    );
+
+    var events = new ArrayList<AssistantEventType>();
+    sut.sendMessage("noteId", conversation.getId(), "show the paragraph", authInfo, userAndRoles,
+        (type, payload) -> events.add(type)
+    ).get(5, TimeUnit.SECONDS);
+
+    assertEquals(List.of(
+        AssistantEventType.RUN_STARTED,
+        AssistantEventType.TOOL_CALL_STARTED, AssistantEventType.TOOL_CALL_DONE,
+        AssistantEventType.TOOL_CALL_STARTED, AssistantEventType.TOOL_CALL_DONE,
+        AssistantEventType.MESSAGE_DELTA, AssistantEventType.MESSAGE_DONE,
+        AssistantEventType.RUN_COMPLETED
+    ), events);
+
+    assertEquals(3, capturedHistories.size());
+    var lastHistory = capturedHistories.get(2);
+    var toolMessage = (Message.Tool) lastHistory.get(lastHistory.size() - 1);
+    assertEquals("call_2", toolMessage.getToolCallId());
+    assertTrue(toolMessage.getContent().contains("%md hello"));
   }
 }
