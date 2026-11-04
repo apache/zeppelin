@@ -12,8 +12,7 @@
 
 import { Component, Input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Params } from '@angular/router';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { MessageReceiveDataTypeMap, OP, WebSocketMessage } from '@zeppelin/sdk';
@@ -24,6 +23,7 @@ import { MessageService } from '@zeppelin/services/message.service';
 import { SecurityService } from '@zeppelin/services/security.service';
 import { TicketService } from '@zeppelin/services/ticket.service';
 
+import { NotebookCoreReadHost } from './notebook-core-read-host';
 import { NotebookCoreReadComponent } from './notebook-core-read.component';
 import template from './notebook-core-read.component.html?raw';
 
@@ -50,26 +50,25 @@ const setup = () => {
     return msgId;
   }) as MessageService['send']);
   const permissions = new Subject<Permissions>();
-  const params = new BehaviorSubject<Params>({ noteId: 'A' });
+  const securityService = { getPermissions: () => permissions } as unknown as SecurityService;
+  // The route entry owns the host; the view only receives it.
+  const host = new NotebookCoreReadHost(messageService, messageService, securityService);
+  host.open({ kind: 'note', noteId: 'A' });
 
   TestBed.configureTestingModule({
     declarations: [NotebookCoreReadComponent, ResultStubComponent],
-    providers: [
-      { provide: MessageService, useValue: messageService },
-      { provide: SecurityService, useValue: { getPermissions: () => permissions } },
-      { provide: TicketService, useValue: { ticket: { principal: 'alice', roles: '[]' } } },
-      { provide: ActivatedRoute, useValue: { params } }
-    ]
+    providers: [{ provide: TicketService, useValue: { ticket: { principal: 'alice', roles: '[]' } } }]
   }).overrideComponent(NotebookCoreReadComponent, {
     set: { template, templateUrl: undefined, styles: [], styleUrls: [] }
   });
   const fixture = TestBed.createComponent(NotebookCoreReadComponent);
+  fixture.componentRef.setInput('host', host);
   fixture.autoDetectChanges();
 
   const reply = (message: WebSocketMessage<MessageReceiveDataTypeMap>) => messageService.shortCircuit(message);
   const lastMsgId = () => sent[sent.length - 1].msgId;
   const root = () => fixture.nativeElement.querySelector('[data-testid="notebook-core-read"]') as HTMLElement;
-  return { fixture, messageService, sent, permissions, params, reply, lastMsgId, root };
+  return { fixture, host, messageService, sent, permissions, reply, lastMsgId, root };
 };
 
 const noteMessage = (noteId: string, msgId: string) =>
@@ -89,11 +88,12 @@ const noteMessage = (noteId: string, msgId: string) =>
   }) as WebSocketMessage<MessageReceiveDataTypeMap>;
 
 describe('NotebookCoreReadComponent', () => {
-  it('sends only the note read when it mounts', () => {
+  it('renders the state of the host it receives', () => {
     const { sent, root } = setup();
 
     expect(sent.map(({ op }) => op)).toEqual([OP.GET_NOTE]);
     expect(root().dataset.status).toBe('loading');
+    expect(root().dataset.noteId).toBe('A');
   });
 
   it('renders the loaded note when its reply arrives', async () => {
@@ -128,28 +128,16 @@ describe('NotebookCoreReadComponent', () => {
     expect(root().querySelector('[data-testid="notebook-core-read-permissions"]')).toBeNull();
   });
 
-  it('reads a revision and then the live note when the route parameters change, sending reads only', () => {
-    const { sent, params } = setup();
-
-    params.next({ noteId: 'A', revisionId: 'r1' });
-    params.next({ noteId: 'B' });
-
-    expect(sent.map(({ op }) => op)).toEqual([OP.GET_NOTE, OP.NOTE_REVISION, OP.GET_NOTE]);
-  });
-
-  it('disposes its Core once on unmount and sends nothing while doing so', () => {
-    const { fixture, sent, reply, lastMsgId, messageService } = setup();
+  it('leaves the host open and sends nothing when it is destroyed', () => {
+    const { fixture, host, sent, reply, lastMsgId } = setup();
     reply(noteMessage('A', lastMsgId()));
-    const { host } = fixture.componentInstance;
     const dispose = vi.spyOn(host, 'dispose');
     const sentBefore = sent.length;
 
     fixture.destroy();
-    messageService.connectedStatus$.next(false);
-    messageService.connectedStatus$.next(true);
 
-    expect(dispose).toHaveBeenCalledTimes(1);
-    expect(host.port.getSnapshot().status).toBe('disposed');
+    expect(dispose).not.toHaveBeenCalled();
+    expect(host.port.getSnapshot().status).toBe('ready');
     expect(sent).toHaveLength(sentBefore);
   });
 });

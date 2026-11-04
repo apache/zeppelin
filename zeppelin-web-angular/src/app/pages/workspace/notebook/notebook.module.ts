@@ -52,6 +52,7 @@ import { NotebookPermissionsComponent } from './permissions/permissions.componen
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
+import { NotebookCoreEntryComponent } from './core-read/notebook-core-entry.component';
 import { NotebookCoreReadComponent } from './core-read/notebook-core-read.component';
 import { NoteFormBlockComponent } from './note-form-block/note-form-block.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
@@ -66,6 +67,7 @@ import { AssistantSlotDirective } from './assistant/assistant-slots';
     AssistantHostComponent,
     AssistantSlotDirective,
     NotebookComponent,
+    NotebookCoreEntryComponent,
     NotebookCoreReadComponent,
     NotebookActionBarComponent,
     NotebookInterpreterBindingComponent,
