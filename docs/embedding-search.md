@@ -59,8 +59,8 @@ finding the right query becomes a significant productivity bottleneck.
 │  1. Embed query → cosine sim → find tables     │            │
 │  2. Re-rank with table boost → top-20          │            │
 │                                                ▼            │
-│  Index: text + title + output + tables   embedding_index.bin│
-│         (persisted to disk, versioned)                      │
+│  Index: text + title + output + tables    notes/<noteId>.bin│
+│         (persisted to disk, one shard per note)             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -68,16 +68,18 @@ finding the right query becomes a significant productivity bottleneck.
 
 - **all-MiniLM-L6-v2**: 384-dimensional sentence embeddings
 - 86MB ONNX model (quantized version available at 22MB)
-- Downloaded on first use to `zeppelin.search.index.path/models/`
+- Installed before startup with `bin/install-search-model.sh` under
+  `zeppelin.search.index.path/models/`
 - Runs on CPU via ONNX Runtime (~5ms per paragraph)
 
 ### Index
 
-- In-memory `ConcurrentHashMap<String, IndexEntry>` with `ReadWriteLock`
+- In-memory `ConcurrentHashMap<String, IndexEntry>`
 - Each entry stores: embedding (384 floats), notebook name, paragraph text,
   title, extracted SQL table names, and paragraph output
 - 10K paragraphs ≈ 15MB RAM, 50K paragraphs ≈ 75MB RAM
-- Persisted as versioned binary file (`embedding_index.bin`, currently v3)
+- Persisted as one versioned binary shard per note under
+  `{zeppelin.search.index.path}/notes/`; updating a paragraph rewrites only its note's shard
 - Brute-force cosine similarity: < 50ms for 50K paragraphs
 
 ### What gets indexed (vs. LuceneSearch)
@@ -126,8 +128,9 @@ Requires `zeppelin.search.enable = true` (already the default).
 ## Changes
 
 ### New files
-- `zeppelin-server/.../search/EmbeddingSearch.java` — Core implementation (~700 lines)
-- `zeppelin-server/.../search/EmbeddingSearchTest.java` — 11 tests including semantic validation
+- `zeppelin-server/.../search/EmbeddingSearch.java` — Core implementation
+- `zeppelin-server/.../search/EmbeddingSearchTest.java` — Tests including semantic
+  validation (requires the ONNX model, see Testing below)
 - `docs/embedding-search.md` — This document
 
 ### Modified files — Backend
@@ -188,10 +191,12 @@ For Zeppelin's scale (typically < 50K paragraphs), brute-force cosine similarity
 on normalized vectors is fast enough (< 50ms), exact (no approximation error),
 and adds zero complexity.
 
-### Why download model on first use instead of bundling?
+### Why install the model ahead of time instead of bundling it?
 
 The ONNX model is 86MB. Bundling it would bloat the Zeppelin distribution.
-Downloading on first use keeps the distribution lean and allows users to swap models.
+Installing it explicitly with `bin/install-search-model.sh` keeps the distribution lean,
+avoids network I/O and download delays during server startup, and works in air-gapped
+environments once the pinned model artifacts have been staged.
 
 ### Why not use Lucene's vector search (since 9.0)?
 
@@ -200,7 +205,8 @@ Zeppelin uses Lucene 8.7.0. Upgrading to 9.x is a separate, larger effort.
 ## Testing
 
 ```bash
-# Run embedding search tests (requires model download, ~86MB first time)
+# Install the pinned model once, then run embedding search tests
+bin/install-search-model.sh
 ZEPPELIN_EMBEDDING_TEST=true mvn test -pl zeppelin-server \
   -Dtest=EmbeddingSearchTest
 
