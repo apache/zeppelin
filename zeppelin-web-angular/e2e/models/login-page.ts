@@ -22,10 +22,10 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.userNameInput = page.getByRole('textbox', { name: 'User Name' });
-    this.passwordInput = page.getByRole('textbox', { name: 'Password' });
-    this.loginButton = page.getByRole('button', { name: 'Login' });
-    this.formContainer = page.locator('form[nz-form]');
+    this.userNameInput = page.getByRole('textbox', { name: 'User Name', exact: true });
+    this.passwordInput = page.getByRole('textbox', { name: 'Password', exact: true });
+    this.loginButton = page.getByRole('button', { name: 'Login', exact: true });
+    this.formContainer = page.locator('form').filter({ has: this.userNameInput });
     this.errorMessage = page.locator("text=The username and password that you entered don't match.").first();
   }
 
@@ -37,13 +37,5 @@ export class LoginPage extends BasePage {
     await this.userNameInput.fill(username, { timeout: 15000 });
     await this.passwordInput.fill(password, { timeout: 15000 });
     await this.loginButton.click({ timeout: 15000 });
-  }
-
-  async waitForErrorMessage(): Promise<void> {
-    await this.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
-  }
-
-  async getErrorMessageText(): Promise<string> {
-    return this.getElementText(this.errorMessage);
   }
 }
