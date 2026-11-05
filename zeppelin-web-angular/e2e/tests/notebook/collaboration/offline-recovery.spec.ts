@@ -28,7 +28,7 @@ const paragraphText = async (page: Page, noteId: string): Promise<string> => {
 
 const attemptsInFirstSecond = (snapshot: ConnectivitySnapshot, transition: 'offlineAt' | 'onlineAt'): number => {
   const started = snapshot[transition];
-  if (started === null) throw new Error(`No native ${transition} event was observed`);
+  if (started === null) throw new Error(`No ${transition} event was observed`);
   return snapshot.attempts.filter(attempt => attempt >= started && attempt < started + 1000).length;
 };
 
@@ -89,7 +89,7 @@ test.describe('Notebook offline recovery', () => {
       });
 
       await test.step('When the browser context goes offline, the socket closes without a retry storm', async () => {
-        await context.setOffline(true);
+        await view.setOffline(true);
         await expect.poll(async () => (await view.snapshot()).online).toBe(false);
         await expect.poll(async () => (await view.snapshot()).offlineAt).not.toBeNull();
         await expect(view.reconnecting).toBeVisible();
@@ -113,7 +113,7 @@ test.describe('Notebook offline recovery', () => {
       });
 
       await test.step('Then going online rehydrates the missed change in the same document with one socket', async () => {
-        await context.setOffline(false);
+        await view.setOffline(false);
         await expect.poll(async () => (await view.snapshot()).onlineAt).not.toBeNull();
         await expect(view.editorText).toContainText(missedText, { timeout: 30000 });
         await expect(view.reconnecting).toBeHidden();

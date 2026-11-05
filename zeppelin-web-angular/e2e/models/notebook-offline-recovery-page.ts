@@ -85,6 +85,17 @@ export class NotebookOfflineRecoveryPage {
     });
   }
 
+  async setOffline(offline: boolean): Promise<void> {
+    await this.page.context().setOffline(offline);
+    if (this.page.context().browser()?.browserType().name() === 'firefox') {
+      // Firefox emulates network state without emitting window connectivity events.
+      // Supply those inputs explicitly; Chromium and WebKit retain native event delivery.
+      await this.page.evaluate(offline => {
+        window.dispatchEvent(new Event(offline ? 'offline' : 'online'));
+      }, offline);
+    }
+  }
+
   async snapshot(): Promise<ConnectivitySnapshot> {
     return this.page.evaluate(() => {
       const { sockets, ...probe } = window.notebookConnectivityProbe;
@@ -102,7 +113,7 @@ export class NotebookOfflineRecoveryPage {
     const remaining = await this.page.evaluate(
       ({ transition, duration }) => {
         const started = window.notebookConnectivityProbe[transition];
-        if (started === null) throw new Error(`No native ${transition} event was observed`);
+        if (started === null) throw new Error(`No ${transition} event was observed`);
         return Math.max(0, started + duration - performance.now());
       },
       { transition, duration }
@@ -115,7 +126,8 @@ export class NotebookOfflineRecoveryPage {
 
   async replaceText(text: string): Promise<void> {
     await this.paragraph.editorViewLines.click();
-    await this.page.keyboard.press('ControlOrMeta+A');
+    const isMacintosh = await this.page.evaluate(() => navigator.userAgent.includes('Macintosh'));
+    await this.page.keyboard.press(isMacintosh ? 'Meta+A' : 'Control+A');
     await this.page.keyboard.insertText(text);
   }
 }
