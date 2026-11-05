@@ -50,7 +50,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   private CommandLine commandLine;
   private Map<String, String> envs;
-  private ExecuteWatchdog watchdog;
+  private ProcessWatchdog watchdog;
   private ProcessLogOutputStream processOutput;
   protected String errorMessage = null;
   protected volatile State state = State.NEW;
@@ -87,7 +87,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   public void launch() {
     DefaultExecutor executor = new DefaultExecutor();
     executor.setStreamHandler(new PumpStreamHandler(processOutput));
-    this.watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
+    this.watchdog = new ProcessWatchdog();
     executor.setWatchdog(watchdog);
     try {
       executor.execute(commandLine, envs, this);
@@ -161,9 +161,54 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   }
 
   public void stop() {
-    if (watchdog != null && isRunning()) {
+    if (isRunning()) {
+      destroyProcess();
+    }
+  }
+
+  /**
+   * Destroys the process whatever its state, e.g. for a launch that is given up before the
+   * process reports that it is running.
+   */
+  protected void destroyProcess() {
+    if (watchdog != null) {
       watchdog.destroyProcess();
       watchdog = null;
+    }
+  }
+
+  /**
+   * Like {@link #destroyProcess()}, but kills the process without running its shutdown hooks.
+   */
+  protected void destroyProcessForcibly() {
+    if (watchdog != null) {
+      watchdog.destroyProcessForcibly();
+      watchdog = null;
+    }
+  }
+
+  /**
+   * ExecuteWatchdog only destroys the process with Process.destroy(), so keep the process to be
+   * able to kill it forcibly.
+   */
+  private static class ProcessWatchdog extends ExecuteWatchdog {
+
+    private Process process;
+
+    ProcessWatchdog() {
+      super(ExecuteWatchdog.INFINITE_TIMEOUT);
+    }
+
+    @Override
+    public synchronized void start(Process process) {
+      this.process = process;
+      super.start(process);
+    }
+
+    synchronized void destroyProcessForcibly() {
+      if (process != null) {
+        process.destroyForcibly();
+      }
     }
   }
 
