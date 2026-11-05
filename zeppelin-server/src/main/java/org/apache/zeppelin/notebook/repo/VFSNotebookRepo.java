@@ -173,17 +173,55 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     // write to tmp file first, then rename it to the {note_name}_{note_id}.zpln
     FileObject noteJson = rootNotebookFileObject.resolveFile(
         buildNoteTempFileName(note), NameScope.DESCENDENT);
-    OutputStream out = null;
+    FileObject noteParent = noteJson.getParent();
+    FileObject existingAncestor = findExistingAncestor(noteParent);
     try {
-      out = noteJson.getContent().getOutputStream(false);
-      IOUtils.write(note.toJson().getBytes(zConf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
-    } finally {
-      if (out != null) {
-        out.close();
+      try (OutputStream out = noteJson.getContent().getOutputStream(false)) {
+        IOUtils.write(note.toJson().getBytes(zConf.getString(ConfVars.ZEPPELIN_ENCODING)), out);
       }
+      noteJson.moveTo(rootNotebookFileObject.resolveFile(
+          buildNoteFileName(note), NameScope.DESCENDENT));
+    } catch (IOException e) {
+      cleanupFailedSave(noteJson, noteParent, existingAncestor, e);
+      throw e;
     }
-    noteJson.moveTo(rootNotebookFileObject.resolveFile(
-        buildNoteFileName(note), NameScope.DESCENDENT));
+  }
+
+  private FileObject findExistingAncestor(FileObject folder) throws IOException {
+    FileObject existingAncestor = folder;
+    while (!existingAncestor.exists() && !existingAncestor.equals(rootNotebookFileObject)) {
+      existingAncestor = existingAncestor.getParent();
+    }
+    return existingAncestor;
+  }
+
+  private void cleanupFailedSave(FileObject noteJson, FileObject noteParent,
+                                 FileObject existingAncestor, IOException failure) {
+    try {
+      noteJson.refresh();
+      if (noteJson.exists()) {
+        noteJson.delete(Selectors.SELECT_SELF);
+      }
+    } catch (IOException cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
+    }
+
+    try {
+      FileObject folder = noteParent;
+      folder.refresh();
+      while (!folder.equals(existingAncestor)
+          && folder.exists()
+          && folder.getChildren().length == 0) {
+        FileObject parent = folder.getParent();
+        if (folder.delete(Selectors.SELECT_SELF) == 0) {
+          break;
+        }
+        folder = parent;
+        folder.refresh();
+      }
+    } catch (IOException cleanupFailure) {
+      failure.addSuppressed(cleanupFailure);
+    }
   }
 
   @Override
@@ -278,4 +316,3 @@ public class VFSNotebookRepo extends AbstractNotebookRepo {
     }
   }
 }
-
