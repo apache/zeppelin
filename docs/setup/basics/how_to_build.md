@@ -84,7 +84,7 @@ You can directly start Zeppelin by running the following command after successfu
 To be noticed, the spark profiles here only affect the unit test (no need to specify `SPARK_HOME`) of spark interpreter. 
 Zeppelin doesn't require you to build with different spark to make different versions of spark work in Zeppelin.
 You can run different versions of Spark in Zeppelin as long as you specify `SPARK_HOME`.
-Actually Zeppelin supports all the versions of Spark from 3.3 to 4.2, Spark 4.x requires JDK 17.
+Actually Zeppelin supports all the versions of Spark from 3.3 to 4.3, Spark 4.x requires JDK 17.
 
 To build with a specific Spark version or scala versions, define one or more of the following profiles and options:
 
@@ -95,6 +95,7 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-4.3
 -Pspark-4.2
 -Pspark-4.1
 -Pspark-4.0

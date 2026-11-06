@@ -406,6 +406,10 @@ jobs:
             python: '3.14'
             spark: '4.2'
             scala: '2.13'
+          - java: 17
+            python: '3.14'
+            spark: '4.3'
+            scala: '2.13'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
