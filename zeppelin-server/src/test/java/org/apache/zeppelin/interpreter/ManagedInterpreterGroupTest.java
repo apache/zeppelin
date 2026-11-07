@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.eclipse.aether.RepositoryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -33,8 +35,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 
 class ManagedInterpreterGroupTest {
@@ -95,6 +107,27 @@ class ManagedInterpreterGroupTest {
     // close InterpreterGroup
     interpreterGroup.close();
     assertEquals(0, interpreterGroup.getSessionNum());
+  }
+
+  @Test
+  void failedLaunchIsDiscardedSoTheNextRunLaunchesAgain() throws Exception {
+    InterpreterSetting setting = spy(interpreterSetting);
+    doReturn(mock(RecoveryStorage.class)).when(setting).getRecoveryStorage();
+    RemoteInterpreterProcess rejected = mock(RemoteInterpreterProcess.class);
+    // fabric8's KubernetesClientException, as thrown for a quota rejected pod, is unchecked.
+    doThrow(new IllegalStateException("pods is forbidden: exceeded quota"))
+        .when(rejected).start(any());
+    RemoteInterpreterProcess relaunched = mock(RemoteInterpreterProcess.class);
+    doReturn(rejected, relaunched).when(setting).createInterpreterProcess(any(), any(), any());
+    ManagedInterpreterGroup group = new ManagedInterpreterGroup("g1", setting, zConf);
+
+    assertThrows(IllegalStateException.class,
+        () -> group.getOrCreateInterpreterProcess("u", new Properties()));
+    assertNull(group.getInterpreterProcess(), "a failed launch must not be reused");
+    assertFalse(group.isLaunchingInterpreterProcess());
+    verify(rejected).stop();
+
+    assertSame(relaunched, group.getOrCreateInterpreterProcess("u", new Properties()));
   }
 
   @Test
