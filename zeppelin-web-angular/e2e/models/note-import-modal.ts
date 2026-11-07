@@ -33,10 +33,12 @@ export class NoteImportModal extends BasePage {
     this.modalTitle = page.locator('.ant-modal-title', { hasText: 'Import New Note' });
     this.closeButton = page.getByRole('button', { name: 'Close' });
     this.importAsInput = page.locator('input[name="noteImportName"]');
-    this.jsonFileTab = page.getByRole('tab', { name: 'Import From JSON File' });
+    this.jsonFileTab = page.getByRole('tab', { name: 'Import From JSON/IPYNB File', exact: true });
     this.urlTab = page.getByRole('tab', { name: 'Import From URL' });
     this.uploadArea = page.locator('nz-upload[nztype="drag"]');
-    this.uploadText = page.getByText('Click or drag JSON file to this area to upload');
+    this.uploadText = page.getByText('Click or drag Zeppelin JSON or Jupyter IPYNB file to this area to upload', {
+      exact: true
+    });
     this.fileSizeLimit = page.locator('.ant-upload-hint strong');
     this.urlInput = page.locator('input[name="importUrl"]');
     this.importNoteButton = page.getByRole('button', { name: 'Import Note' });
