@@ -15,6 +15,12 @@ import { BasePage } from './base-page';
 
 const NOTEBOOK_CORE_READ_QUERY = 'notebookCoreRead';
 
+/** The private read route once per renderer, with the `data-renderer` its entry settles on. */
+export const NOTEBOOK_CORE_READ_BRANCHES = [
+  { label: 'Angular', query: '', renderer: 'angular' },
+  { label: 'React', query: 'notebookCoreReact', renderer: 'react-mounted' }
+] as const;
+
 export class NotebookCoreReadPage extends BasePage {
   readonly view: Locator;
   readonly title: Locator;
@@ -26,6 +32,9 @@ export class NotebookCoreReadPage extends BasePage {
   readonly error: Locator;
   readonly revisionBadge: Locator;
   readonly editableNotebook: Locator;
+  readonly editableParagraphs: Locator;
+  readonly entry: Locator;
+  readonly skeleton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -39,6 +48,23 @@ export class NotebookCoreReadPage extends BasePage {
     this.error = page.getByTestId('notebook-core-read-error');
     this.revisionBadge = page.getByTestId('notebook-core-read-revision');
     this.editableNotebook = page.locator('zeppelin-notebook');
+    this.editableParagraphs = page.locator('zeppelin-notebook-paragraph');
+    this.entry = page.getByTestId('notebook-core-entry');
+    this.skeleton = page.getByTestId('notebook-read-skeleton');
+  }
+
+  /** The read status as either renderer shows it. */
+  readStatus(status: string): Locator {
+    return this.view
+      .and(this.page.locator(`[data-status="${status}"]`))
+      .or(this.skeleton.locator(`[data-read-status="${status}"]`));
+  }
+
+  /** A note or revision id as either renderer shows it. */
+  shows(id: string): Locator {
+    return this.view
+      .and(this.page.locator(`[data-note-id="${id}"], [data-revision-id="${id}"]`))
+      .or(this.skeleton.getByText(id, { exact: true }));
   }
 
   /** The rendered chart of a saved TABLE result; G2 draws into a canvas. */
@@ -68,12 +94,12 @@ export class NotebookCoreReadPage extends BasePage {
   }
 
   /** Changes only the hash, so the Shell and its socket stay up. */
-  async open(noteId: string, revisionId?: string): Promise<void> {
+  async open(noteId: string, revisionId?: string, query = ''): Promise<void> {
     const path = revisionId ? `/notebook/${noteId}/revision/${revisionId}` : `/notebook/${noteId}`;
-    await this.page.goto(`/#${path}?${NOTEBOOK_CORE_READ_QUERY}`);
+    await this.page.goto(`/#${path}?${[NOTEBOOK_CORE_READ_QUERY, query].filter(Boolean).join('&')}`);
   }
 
-  async openEditable(noteId: string): Promise<void> {
-    await this.page.goto(`/#/notebook/${noteId}`);
+  async openEditable(noteId: string, query = ''): Promise<void> {
+    await this.page.goto(`/#/notebook/${noteId}${query ? `?${query}` : ''}`);
   }
 }

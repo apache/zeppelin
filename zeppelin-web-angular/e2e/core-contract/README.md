@@ -359,6 +359,26 @@ reconnect recovery remains outside it until the lifecycle rules have an enforcea
 stale-reply mechanism. The harness does not implement those lifecycle rules, switch
 the production renderer, or move production notebook state out of Angular.
 
+## Private React read view
+
+`#/notebook/<id>?notebookCoreRead&notebookCoreReact` mounts the React read view (`./NotebookReadSkeleton`)
+on the private read route (ZEPPELIN-6727). `NotebookCoreEntryComponent` owns the route's read host and
+passes the remote its `NotebookReadPort`, the `paragraph` query parameter, `onMounted` and `onError`.
+The entry's `data-renderer` describes the mount, never whether the note is loaded:
+
+| `data-renderer`    | Meaning                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `angular`          | No `notebookCoreReact`: the Angular read view.                                                |
+| `react-loading`    | The remote is loading or has not committed its first render.                                  |
+| `react-mounted`    | The React view committed its first render.                                                    |
+| `angular-fallback` | The remote did not load (including the loader timeout) or its first render threw. The Angular read view takes over on the same host without reading the note again. |
+| `runtime-error`    | The React view failed after its first render. The failure is only reported; the view stays empty. |
+
+The renderer is chosen once on entry. Dropping `notebookCoreRead` leaves the private route and loads the
+editable notebook afresh. The fallback keeps `paragraph` in the URL but does not scroll to it.
+`notebookCoreReactFailure=mount|after-mount` makes the React view throw for tests; the entry ignores it
+without `notebookCoreReact`. `e2e/tests/notebook/core-read/notebook-core-entry.spec.ts` covers these paths.
+
 ## Private Core read view captures
 
 [notebook-read](../fixtures/notebook-read/) holds the server replies read by the private Core read
