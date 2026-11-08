@@ -17,21 +17,26 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount, NotebookReadSkeleton, NotebookReadSkeletonMountHandle } from './NotebookReadSkeleton';
 
 // The port as NotebookCoreReadHost builds it: a frozen view of the actual read store.
+// `notifyUnchanged` calls its listeners without a change, which a port is allowed to do.
 const createHostPort = () => {
   const store = createNotebookReadStore();
   let listeners = 0;
+  const subscribed = new Set<() => void>();
   const core: NotebookReadPort = Object.freeze({
     getSnapshot: () => store.getSnapshot(),
     subscribe: (listener: () => void) => {
       listeners += 1;
+      subscribed.add(listener);
       const unsubscribe = store.subscribe(listener);
       return () => {
         listeners -= 1;
+        subscribed.delete(listener);
         unsubscribe();
       };
     }
   });
-  return { store, core, listeners: () => listeners };
+  const notifyUnchanged = () => subscribed.forEach(listener => listener());
+  return { store, core, listeners: () => listeners, notifyUnchanged };
 };
 
 const note = (id: string) => ({ id, name: `${id} name`, path: `/${id}`, paragraphs: [] });
@@ -122,6 +127,7 @@ describe('NotebookReadSkeleton', () => {
     act(() => {
       request.acceptNote(note('note-a'));
       request.fail('failed');
+      port.notifyUnchanged();
     });
 
     expect(port.core.getSnapshot()).toBe(snapshot);
