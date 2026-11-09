@@ -141,7 +141,7 @@ jobs:
       - name: Run headless E2E test with Maven
         # Classic UI e2e and the notebook core port proof run only on the anonymous leg
         run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./mvnw verify -pl zeppelin-web-angular -Pweb-e2e -Dweb.e2e.classic.disabled=${{ matrix.mode != 'anonymous' }} -Dweb.e2e.core.port.proof.disabled=${{ matrix.mode != 'anonymous' }} ${MAVEN_ARGS}
-      - name: Run revision isolation E2E test with Git storage
+      - name: Run revision E2E tests with Git storage
         env:
           CI: 'true'
           ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.GitNotebookRepo
@@ -160,7 +160,11 @@ jobs:
           unset ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
           "$zeppelin_daemon" start
           cd zeppelin-web-angular
-          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- tests/notebook/revision/revision-isolation.spec.ts --output=test-results-revision --reporter=github,html
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- \
+            tests/notebook/revision/revision-isolation.spec.ts \
+            tests/notebook/core-read/notebook-core-entry.spec.ts \
+            tests/notebook/core-read/notebook-core-read.spec.ts \
+            --grep 'revision' --workers=1 --output=test-results-revision --reporter=github,html
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v6
         if: always()
