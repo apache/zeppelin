@@ -23,3 +23,14 @@ describe('Assistant React feature flag', () => {
     expect(service.isEnabled('assistantPanel', new Map([['reactAssistant', 'false']]))).toBe(false);
   });
 });
+
+describe('Notebook read React feature flag', () => {
+  const service = new ReactFeatureService();
+
+  it('is disabled by default and enabled only by its own query parameter, not by the read route flag', () => {
+    expect(service.isEnabled('notebookReadReact')).toBe(false);
+    expect(service.isEnabled('notebookReadReact', new Map([['notebookCoreRead', '']]))).toBe(false);
+    expect(service.isEnabled('notebookReadReact', new Map([['notebookCoreReact', '']]))).toBe(true);
+    expect(service.isEnabled('notebookReadReact', new Map([['notebookCoreReact', 'false']]))).toBe(false);
+  });
+});

@@ -235,6 +235,17 @@ describe('notebook core import boundary', () => {
     ).toContain(`${path}: remote notebook core import NotebookCoreUnsubscribe`);
   });
 
+  it('allows the read port and snapshot types but not the read store behind them', () => {
+    const path = reactNotebookCoreProofConsumer;
+    const read = `import type { NotebookReadPort, NotebookReadSnapshot } from '@zeppelin/notebook-core';`;
+    expect(findNotebookRemoteConsumerViolations(path, read)).toEqual([]);
+
+    const store = `import type { NotebookReadStore } from '@zeppelin/notebook-core';`;
+    expect(findNotebookRemoteConsumerViolations(path, store)).toContain(
+      `${path}: remote notebook core import NotebookReadStore`
+    );
+  });
+
   it('enforces the core boundary for built-package aliases and relative targets', () => {
     const path = reactNotebookCoreProofConsumer;
     const builtDeclaration = resolve(

@@ -14,7 +14,12 @@ import { Injectable } from '@angular/core';
 import { parseBooleanFlag } from './query-flag.util';
 
 export type ReactSurface =
-  'publishedParagraph' | 'paragraphFooter' | 'configurationTable' | 'notebookRepoList' | 'assistantPanel';
+  | 'publishedParagraph'
+  | 'paragraphFooter'
+  | 'configurationTable'
+  | 'notebookRepoList'
+  | 'assistantPanel'
+  | 'notebookReadReact';
 
 interface ReactSurfaceConfig {
   queryParam: string;
@@ -40,6 +45,11 @@ const SURFACES: Record<ReactSurface, ReactSurfaceConfig> = {
   },
   assistantPanel: {
     queryParam: 'reactAssistant',
+    defaultEnabled: false
+  },
+  // Read only on the private read route, i.e. together with `notebookCoreRead`.
+  notebookReadReact: {
+    queryParam: 'notebookCoreReact',
     defaultEnabled: false
   }
 };

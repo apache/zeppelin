@@ -83,7 +83,8 @@ module.exports = (_env, argv) => {
           './ParagraphFooter': './src/components/paragraph/ParagraphFooter',
           './ConfigurationTable': './src/pages/ConfigurationTable',
           './NotebookRepoList': './src/pages/NotebookRepoList',
-          './AssistantWorkspace': './src/pages/AssistantWorkspace'
+          './AssistantWorkspace': './src/pages/AssistantWorkspace',
+          './NotebookReadSkeleton': './src/pages/NotebookReadSkeleton'
         }
       }),
       new HtmlWebpackPlugin({
