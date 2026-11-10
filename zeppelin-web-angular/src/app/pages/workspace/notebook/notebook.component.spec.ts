@@ -87,12 +87,12 @@ describe('NotebookComponent', () => {
   it('ignores stale interpreter bindings replies', () => {
     const { component } = createComponent();
 
-    const originalBindings = [{ id: 'existing', selected: true }];
-    component.interpreterBindings = originalBindings as typeof component.interpreterBindings;
+    const originalBindings = [{ id: 'existing', name: 'Existing', selected: true, interpreters: [] }];
+    component.interpreterBindings = originalBindings;
 
     const data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS] = {
       noteId: 'note-a',
-      interpreterBindings: [{ id: 'stale', selected: false }]
+      interpreterBindings: [{ id: 'stale', name: 'Stale', selected: false, interpreters: [] }]
     };
 
     component.loadInterpreterBindings(data);
@@ -136,12 +136,14 @@ describe('NotebookComponent', () => {
 
     const data: MessageReceiveDataTypeMap[OP.INTERPRETER_BINDINGS] = {
       noteId: 'note-b',
-      interpreterBindings: [{ id: 'current', selected: true }]
+      interpreterBindings: [{ id: 'current', name: 'Current', selected: true, interpreters: [] }]
     };
 
     component.loadInterpreterBindings(data);
 
-    expect(component.interpreterBindings).toEqual([{ id: 'current', selected: true }]);
+    expect(component.interpreterBindings).toEqual([
+      { id: 'current', name: 'Current', selected: true, interpreters: [] }
+    ]);
   });
 
   it('applies revision history for the active note', () => {
@@ -179,8 +181,22 @@ describe('NotebookComponent', () => {
     const { component, messageService } = createComponent();
 
     component.note = {
-      paragraphs: []
-    } as typeof component.note;
+      id: 'note-b',
+      name: 'Notebook',
+      path: '/Notebook',
+      defaultInterpreterGroup: 'spark',
+      paragraphs: [],
+      noteParams: {},
+      noteForms: {},
+      angularObjects: {},
+      config: {
+        releaseresource: false,
+        isZeppelinNotebookCronEnable: false,
+        looknfeel: 'default',
+        personalizedMode: 'false'
+      },
+      info: {}
+    };
 
     const message: WebSocketMessage<MessageReceiveDataTypeMap, OP.PARAGRAPH_ADDED> = {
       op: OP.PARAGRAPH_ADDED,

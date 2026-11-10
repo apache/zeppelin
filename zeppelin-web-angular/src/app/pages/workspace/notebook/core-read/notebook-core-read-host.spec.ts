@@ -113,18 +113,18 @@ describe('NotebookCoreReadHost', () => {
     expect(states[states.length - 1]).toMatchObject({ connected: true, snapshot: { status: 'loading' } });
 
     replyNote('A');
-    expect(host.port.getSnapshot().status).toBe('ready');
+    expect(states[states.length - 1].snapshot.status).toBe('ready');
     expect(new Set(states.map(({ snapshot }) => snapshot)).size).toBe(states.length);
   });
 
   it('ignores a reply that arrives after the connection dropped', () => {
-    const { host, received, connectedStatus$, sent } = setup();
+    const { host, received, connectedStatus$, sent, states } = setup();
     host.open({ kind: 'note', noteId: 'A' });
 
     connectedStatus$.next(false);
     received.next({ op: OP.NOTE, data: { note: note('A') }, msgId: `msg-${sent.length}` } as Envelope);
 
-    expect(host.port.getSnapshot().status).toBe('failed');
+    expect(states[states.length - 1].snapshot.status).toBe('failed');
   });
 
   it('reads the current target again on retry', () => {
@@ -137,7 +137,7 @@ describe('NotebookCoreReadHost', () => {
   });
 
   it('tears down exactly once and ignores everything afterwards', () => {
-    const { host, received, connectedStatus$, sent, replyNote, completions } = setup();
+    const { host, received, connectedStatus$, sent, replyNote, states, completions } = setup();
     host.open({ kind: 'note', noteId: 'A' });
 
     host.dispose();
@@ -148,7 +148,7 @@ describe('NotebookCoreReadHost', () => {
     connectedStatus$.next(false);
     connectedStatus$.next(true);
 
-    expect(host.port.getSnapshot().status).toBe('disposed');
+    expect(states[states.length - 1].snapshot.status).toBe('disposed');
     expect(completions()).toBe(1);
     expect(sent).toEqual(['GET_NOTE A']);
     expect(received.observed).toBe(false);

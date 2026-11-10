@@ -28,7 +28,7 @@ describe('G2 dependency compatibility', () => {
       chart.interval().position('category*value').color('category');
       chart.render();
       expect(container.querySelector('svg')).not.toBeNull();
-      expect(chart.get('geoms')[0].get('shapeContainer').get('children')).toHaveLength(2);
+      expect(chart.get('geoms')[0].get('shapeContainer')?.get('children')).toHaveLength(2);
     } finally {
       chart.destroy();
       container.remove();

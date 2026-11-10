@@ -92,7 +92,7 @@ describe('ParagraphBase streaming state isolation', () => {
     component.ngOnDestroy();
   });
 
-  it.each(['FINISHED', 'ERROR', 'ABORT', 'RUNNING', 'PENDING'])(
+  it.each(['FINISHED', 'ERROR', 'ABORT', 'RUNNING', 'PENDING'] as const)(
     'keeps accumulating output when another paragraph becomes %s',
     status => {
       const component = new TestParagraph(paragraph('A'));
