@@ -11,6 +11,7 @@
 -->
 
 <nz-card
+  [attr.data-testid]="mode === 'create' ? 'interpreter-create-form' : 'interpreter-setting'"
   [class.edit]="mode === 'edit'"
   class="interpreter-item"
   [nzTitle]="mode !== 'create' ? viewModeTitleTemplate : undefined"
@@ -31,7 +32,7 @@
               }
             </small>
           }
-          <span class="interpreter-status">
+          <span class="interpreter-status" data-testid="interpreter-status">
             @switch (interpreter.status) {
               @case ('READY') {
                 <nz-badge nz-tooltip="Ready" nzStatus="success"></nz-badge>
@@ -62,15 +63,15 @@
   <ng-template #extraTemplate>
     <div class="extra-wrap">
       <button nz-button nzSize="small" (click)="switchToEditMode()">
-        <i nz-icon nzType="edit"></i>
+        <i nz-icon nzType="edit" aria-hidden="true"></i>
         Edit
       </button>
       <button nz-button nzSize="small" (click)="handleRestart()">
-        <i nz-icon nzType="reload"></i>
+        <i nz-icon nzType="reload" aria-hidden="true"></i>
         Restart
       </button>
       <button nz-button nzSize="small" (click)="handleRemove()">
-        <i nz-icon nzType="delete"></i>
+        <i nz-icon nzType="delete" aria-hidden="true"></i>
         Remove
       </button>
     </div>
@@ -93,7 +94,7 @@
       <nz-form-item>
         <nz-form-label nzRequired>Interpreter group</nz-form-label>
         <nz-form-control>
-          <nz-select formControlName="group" nzShowSearch>
+          <nz-select formControlName="group" nzShowSearch data-testid="interpreter-group">
             @for (item of parent.availableInterpreters; track interpretersTrackFn($index, item)) {
               <nz-option [nzValue]="item.name" [nzLabel]="item.name"></nz-option>
             }
@@ -249,7 +250,7 @@
       <nz-form-item>
         <nz-form-label>Host</nz-form-label>
         <nz-form-control>
-          <input nz-input formControlName="host" placeholder="" />
+          <input nz-input formControlName="host" placeholder="" aria-label="Host" />
         </nz-form-control>
       </nz-form-item>
       <nz-form-item>
@@ -259,6 +260,7 @@
             nz-input
             type="number"
             formControlName="port"
+            aria-label="Port"
             placeholder=""
             pattern="^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$"
           />
@@ -282,6 +284,7 @@
         >
           <nz-select
             nzMode="tags"
+            data-testid="interpreter-owners"
             class="owners-input"
             [nzTokenSeparators]="[',']"
             style="width: 100%"
@@ -304,7 +307,7 @@
   @if (propertiesFormArray.controls?.length || mode !== 'view') {
     <h3 class="form-title">Properties</h3>
     <form nz-form [formGroup]="formGroup">
-      <nz-table nzTemplateMode nzSize="small">
+      <nz-table nzTemplateMode nzSize="small" data-testid="interpreter-properties">
         <thead>
           <tr>
             <th>Name</th>
@@ -451,7 +454,7 @@
   @if (dependenciesFormArray.controls?.length || mode !== 'view') {
     <h3 class="form-title">Dependencies</h3>
     <form nz-form [formGroup]="formGroup">
-      <nz-table nzTemplateMode nzSize="small">
+      <nz-table nzTemplateMode nzSize="small" data-testid="interpreter-dependencies">
         <thead>
           <tr>
             <th>Artifact</th>

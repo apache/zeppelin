@@ -32,11 +32,11 @@
       [nzType]="showRepository ? 'primary' : 'default'"
       (click)="triggerRepository()"
     >
-      <i nz-icon nzType="database" nzTheme="outline"></i>
+      <i nz-icon nzType="database" nzTheme="outline" aria-hidden="true"></i>
       Repository
     </button>
   </ng-template>
-  <div animation-collapse [open]="showRepository">
+  <div animation-collapse [open]="showRepository" data-testid="interpreter-repositories">
     <div class="collapse-content">
       <nz-divider nzType="horizontal"></nz-divider>
       <h2>Repositories</h2>
@@ -44,6 +44,7 @@
       @for (repo of repositories; track repo) {
         <nz-tag
           class="repo-item"
+          data-testid="interpreter-repository"
           [nz-tooltip]="repo.url"
           nzTooltipPlacement="topLeft"
           [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
@@ -52,7 +53,7 @@
           {{ repo.id }}
         </nz-tag>
       }
-      <nz-tag class="editable-tag" (click)="createRepository()">
+      <nz-tag class="editable-tag" data-testid="create-interpreter-repository" (click)="createRepository()">
         <i nz-icon nzType="plus"></i>
       </nz-tag>
     </div>
