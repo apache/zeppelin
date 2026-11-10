@@ -98,6 +98,33 @@ test.describe('Notebook search route', () => {
     });
   });
 
+  test('restores the search input and results from a direct URL and after reload', async ({ page }) => {
+    const destination = `#/notebook/${noteId}`;
+    const searchUrl = `/#/search/${encodeURIComponent(noteName)}`;
+    const expectRestoredSearch = async () => {
+      await expect(page).toHaveURL(url => decodeURIComponent(url.hash) === `#/search/${noteName}`);
+      await expect(header.searchInput).toHaveValue(noteName);
+      await expect(search.resultLink(noteName, destination)).toBeVisible();
+      await expect(search.snippet(noteName, destination)).toContainText(noteName);
+      await expect(search.emptyState).not.toBeVisible();
+    };
+
+    await test.step('When an encoded search URL is opened without the existing application state', async () => {
+      await page.goto('about:blank');
+      await page.goto(searchUrl);
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the search phrase and matching result are restored from the URL', expectRestoredSearch);
+
+    await test.step('When the search page is reloaded', async () => {
+      await page.reload();
+      await waitForZeppelinReady(page);
+    });
+
+    await test.step('Then the search phrase and matching result are restored again', expectRestoredSearch);
+  });
+
   for (const action of ['title link', 'card body'] as const) {
     test(`opens the matching paragraph through its ${action} with paragraph query parameters`, async ({ page }) => {
       const destination = `#/notebook/${noteId}?paragraph=${paragraphId}&term=${paragraphTerm}`;
