@@ -4,12 +4,18 @@
     "name": "hbase",
     "className": "org.apache.zeppelin.hbase.HbaseInterpreter",
     "properties": {
-      "hbase.home": {
+      "HBASE_HOME": {
         "envName": "HBASE_HOME",
-        "propertyName": "hbase.home",
-        "defaultValue": "/usr/lib/hbase/",
+        "propertyName": "HBASE_HOME",
+        "defaultValue": "/usr/lib/hbase",
         "description": "Installation directory of HBase",
         "type": "string"
+      },
+      "shell.command.timeout.millisecs": {
+        "propertyName": "shell.command.timeout.millisecs",
+        "defaultValue": "600000",
+        "description": "HBase shell command timeout in millisecs when there is no output. Default = 600000 (10 minutes)",
+        "type": "number"
       }
     },
     "editor": {
