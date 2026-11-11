@@ -189,6 +189,7 @@ module.exports = tseslint.config(
       'src/**/*.spec.ts',
       'projects/zeppelin-{notebook-core,sdk,visualization}/**/*.spec.ts',
       'test/**/*.spec.ts',
+      'test/**/*.d.ts',
       'test/test-setup.ts',
       'test/notebook-core/**/*.ts',
       'vitest.notebook-core.config.mts',

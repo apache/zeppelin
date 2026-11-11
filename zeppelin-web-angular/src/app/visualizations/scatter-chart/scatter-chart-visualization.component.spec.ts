@@ -73,19 +73,43 @@ const createChart = (): ScatterFixture => {
 
   const chart = new G2.Chart({ container, width: 600, height: 400, renderer: 'svg', animate: false });
   component.chart = chart;
-  const points = (): MappedPoint[] =>
-    chart
-      .get('geoms')[0]
-      .get('dataArray')
+  const points = (): MappedPoint[] => {
+    const dataArray = chart.get('geoms')[0].get('dataArray');
+    if (!dataArray) {
+      throw new Error('Expected rendered scatter data');
+    }
+    return dataArray
       .flat()
+      .map(point => {
+        const { x, y, color, size } = point;
+        if (
+          typeof x !== 'number' ||
+          typeof y !== 'number' ||
+          typeof color !== 'string' ||
+          (size !== undefined && typeof size !== 'number')
+        ) {
+          throw new Error('Expected a mapped scatter point with scalar positions, color and optional size');
+        }
+        return { x, y, color, size };
+      })
       .sort((a: MappedPoint, b: MappedPoint) => a.x - b.x);
-  const radii = (): number[] =>
-    chart
-      .get('geoms')[0]
-      .get('shapeContainer')
+  };
+  const radii = (): number[] => {
+    const shapeContainer = chart.get('geoms')[0].get('shapeContainer');
+    if (!shapeContainer) {
+      throw new Error('Expected a rendered scatter shape container');
+    }
+    return shapeContainer
       .get('children')
-      .map((shape: { attr: (name: string) => number }) => shape.attr('radius'))
+      .map(shape => {
+        const radius = shape.attr('radius');
+        if (typeof radius !== 'number') {
+          throw new Error('Expected a rendered scatter marker with a numeric radius');
+        }
+        return radius;
+      })
       .sort((a: number, b: number) => a - b);
+  };
 
   const selectSize = (name?: string) => {
     config.setting.scatterChart!.size = name ? field(name, table.columns.indexOf(name)) : undefined;
@@ -144,9 +168,7 @@ describe('ScatterChartVisualizationComponent point sizes', () => {
             .map((item: { name: string; value: string }) => ({ name: item.name, value: item.value }))
         );
     const legendItems = () => {
-      const legends: Record<string, Array<{ get: (name: string) => unknown }>> = fixture.chart.get(
-        'legendController'
-      ).legends;
+      const legends = fixture.chart.get('legendController').legends;
       return Object.values(legends)
         .flat()
         .map(legend => legend.get('items'));

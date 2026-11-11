@@ -26,6 +26,7 @@ import { TicketService } from '@zeppelin/services/ticket.service';
 
 import { NotebookCoreReadComponent } from './notebook-core-read.component';
 import template from './notebook-core-read.component.html?raw';
+import { NotebookCoreReadState } from './notebook-core-read-host';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph-result',
@@ -142,6 +143,8 @@ describe('NotebookCoreReadComponent', () => {
     reply(noteMessage('A', lastMsgId()));
     const { host } = fixture.componentInstance;
     const dispose = vi.spyOn(host, 'dispose');
+    const states: NotebookCoreReadState[] = [];
+    host.state$.subscribe(state => states.push(state));
     const sentBefore = sent.length;
 
     fixture.destroy();
@@ -149,7 +152,7 @@ describe('NotebookCoreReadComponent', () => {
     messageService.connectedStatus$.next(true);
 
     expect(dispose).toHaveBeenCalledTimes(1);
-    expect(host.port.getSnapshot().status).toBe('disposed');
+    expect(states[states.length - 1].snapshot.status).toBe('disposed');
     expect(sent).toHaveLength(sentBefore);
   });
 });
