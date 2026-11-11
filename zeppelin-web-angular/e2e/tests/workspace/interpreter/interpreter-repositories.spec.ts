@@ -294,7 +294,9 @@ test.describe('Interpreter repositories', () => {
 
       await test.step('When the repository URL and optional settings are entered', async () => {
         await modal.idInput.fill(submittedId);
+        await expect(modal.idInput).toHaveValue(submittedId);
         await modal.urlInput.fill(submission.url);
+        await expect(modal.idInput).toHaveValue(submittedId);
         await modal.selectUrlProtocol(submission.protocol);
         await expect(modal.urlProtocol).toHaveText(submission.protocol);
         await expect(modal.snapshotSwitch).not.toHaveClass(/ant-switch-checked/);
