@@ -145,6 +145,12 @@ Each interpreter is an independent Maven module inheriting from `zeppelin-interp
 
 ### Module Boundaries
 
+Follow the [module dependency rules](../AGENTS.md#module-dependency-rules):
+framework modules may depend on one another sparingly, while different backend
+interpreters must remain independent. Extract shared functionality into the
+appropriate framework module rather than reusing another interpreter's
+implementation or test artifacts.
+
 Where new code should go:
 
 | If the code... | Put it in |
