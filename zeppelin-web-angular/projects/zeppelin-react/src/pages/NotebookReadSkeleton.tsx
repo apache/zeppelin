@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import type { NotebookReadPort, NotebookReadSnapshot } from '@zeppelin/notebook-core';
 import { ReactErrorBoundary } from '@/components/paragraph/ReactErrorBoundary';
@@ -22,7 +22,10 @@ export interface NotebookReadSkeletonProps {
   anchor?: string | null;
   /** Test-only: throw while mounting, or on the first render after the mount completed. */
   failure?: 'mount' | 'after-mount' | null;
-  /** Called once the first render has committed. This is not notebook readiness. */
+  /**
+   * Called when the first render has committed, and again after the view recovers from an error.
+   * This is not notebook readiness.
+   */
   onMounted?: () => void;
   onError?: (error: unknown) => void;
 }
@@ -70,10 +73,23 @@ const Skeleton = ({ anchor, failure, onMounted }: Omit<NotebookReadSkeletonProps
   );
 };
 
+// Opening another note or revision clears an earlier error, so the view can render again.
+const TargetBoundary = ({
+  onError,
+  children
+}: Pick<NotebookReadSkeletonProps, 'onError'> & { children: ReactNode }) => (
+  <ReactErrorBoundary onError={onError} resetKey={useNotebookReadSnapshot().target}>
+    {children}
+  </ReactErrorBoundary>
+);
+
+// The outer boundary also catches a port that throws while TargetBoundary reads it.
 export const NotebookReadSkeleton = ({ core, onError, ...props }: NotebookReadSkeletonProps) => (
   <ReactErrorBoundary onError={onError}>
     <NotebookReadProvider core={core}>
-      <Skeleton {...props} />
+      <TargetBoundary onError={onError}>
+        <Skeleton {...props} />
+      </TargetBoundary>
     </NotebookReadProvider>
   </ReactErrorBoundary>
 );

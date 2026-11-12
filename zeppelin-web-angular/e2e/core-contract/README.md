@@ -372,7 +372,7 @@ The entry's `data-renderer` describes the mount, never whether the note is loade
 | `react-loading`    | The remote is loading or has not committed its first render.                                  |
 | `react-mounted`    | The React view committed its first render.                                                    |
 | `angular-fallback` | The remote did not load (including the loader timeout) or its first render threw. The Angular read view takes over on the same host without reading the note again. |
-| `runtime-error`    | The React view failed after its first render. The failure is only reported; the view stays empty. |
+| `runtime-error`    | The React view failed after its first render. The failure is only reported, and the view stays empty until another note or revision opens on the same route; it then renders again while `data-renderer` stays `runtime-error`. |
 
 The renderer is chosen once on entry. Dropping `notebookCoreRead` leaves the private route and loads the
 editable notebook afresh. The fallback keeps `paragraph` in the URL but does not scroll to it.

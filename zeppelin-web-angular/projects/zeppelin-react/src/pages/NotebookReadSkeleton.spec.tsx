@@ -134,10 +134,10 @@ describe('NotebookReadSkeleton', () => {
     expect(commits).toBe(commitsBefore);
   });
 
-  it('releases its store subscription on unmount', () => {
+  it('releases its store subscriptions on unmount', () => {
     const port = createHostPort();
     const mounted = mountSkeleton({ core: port.core });
-    expect(port.listeners()).toBe(1);
+    expect(port.listeners()).toBe(2);
 
     act(() => mounted.unmount());
     handle = undefined;
@@ -145,7 +145,7 @@ describe('NotebookReadSkeleton', () => {
     expect(port.listeners()).toBe(0);
   });
 
-  it('moves its subscription to a replacement port', () => {
+  it('moves its subscriptions to a replacement port', () => {
     const previous = createHostPort();
     const next = createHostPort();
     next.store.activate({ kind: 'note', noteId: 'note-b' });
@@ -154,7 +154,7 @@ describe('NotebookReadSkeleton', () => {
     act(() => mounted.update({ core: next.core }));
 
     expect(previous.listeners()).toBe(0);
-    expect(next.listeners()).toBe(1);
+    expect(next.listeners()).toBe(2);
     expect(status().dataset.readStatus).toBe('loading');
   });
 
@@ -193,5 +193,39 @@ describe('NotebookReadSkeleton', () => {
     );
 
     expect(calls).toEqual(['mounted', 'error']);
+  });
+
+  it('renders again when another note opens after a failure after the mount', () => {
+    const port = createHostPort();
+    port.store.activate({ kind: 'note', noteId: 'note-a' });
+    const onError = vi.fn();
+    let mounted!: NotebookReadSkeletonMountHandle;
+    expectingRenderErrors(() => {
+      mounted = mountSkeleton({ core: port.core, failure: 'after-mount', onError });
+    });
+
+    act(() => mounted.update({ core: port.core, onError }));
+    expect(screen.queryByTestId('notebook-read-skeleton')).toBeNull();
+
+    act(() => port.store.activate({ kind: 'note', noteId: 'note-b' }));
+
+    expect(screen.getByText('note-b')).toBeTruthy();
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports a port that throws on the first render', () => {
+    const onMounted = vi.fn();
+    const onError = vi.fn();
+    const core: NotebookReadPort = Object.freeze({
+      getSnapshot: () => {
+        throw new Error('port failed');
+      },
+      subscribe: () => () => undefined
+    });
+
+    expectingRenderErrors(() => mountSkeleton({ core, onMounted, onError }));
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onMounted).not.toHaveBeenCalled();
   });
 });
