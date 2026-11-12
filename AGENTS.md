@@ -83,6 +83,25 @@ All interpreter modules build after `zeppelin-interpreter-shaded`. A second shad
 zeppelin-jupyter-interpreter → zeppelin-jupyter-interpreter-shaded → python
 ```
 
+## Module Dependency Rules
+
+- Framework and shared infrastructure modules in `zeppelin-*/` directories may
+  depend on one another when necessary, but keep this coupling to a minimum.
+- Backend interpreter modules (for example, `spark/`, `flink/`, `python/`, and
+  `shell/`) must not depend on one another. This includes inheriting from another
+  interpreter's implementation and depending on its test artifacts. Submodules
+  belonging to the same interpreter may depend on one another.
+- Share reusable functionality through an appropriate `zeppelin-*` framework
+  module and its API instead of introducing an interpreter-to-interpreter
+  dependency. Follow the module ownership guidance in
+  [Module Architecture](.agents/module-architecture.md).
+- These categories refer to repository module directories, not Maven artifact
+  names: for example, `python/` is an interpreter even though its artifact is
+  named `zeppelin-python`.
+- Existing cross-interpreter dependencies are legacy coupling, not a precedent
+  for adding or extending such dependencies. Remove them through separately
+  reviewed refactoring.
+
 ## Architecture References
 
 The detailed architecture is kept outside this automatically loaded file so the
