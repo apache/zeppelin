@@ -110,7 +110,7 @@ jobs:
           path: .spark-dist
           key: ${{ runner.os }}-spark-e2e-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl spark/interpreter,spark/scala-2.12,python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic,spark-scala-2.12,spark-3.5 ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl spark/interpreter,spark/scala-2.12,python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic,web-dist,spark-scala-2.12,spark-3.5 ${MAVEN_ARGS}
       - name: Run Angular shell unit tests
         if: matrix.mode == 'anonymous'
         working-directory: zeppelin-web-angular
