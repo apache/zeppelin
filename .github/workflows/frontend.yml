@@ -54,6 +54,10 @@ jobs:
     env:
       # Use VFS storage instead of Git to avoid Git-related issues in CI
       ZEPPELIN_NOTEBOOK_STORAGE: org.apache.zeppelin.notebook.repo.VFSNotebookRepo
+      # Preserve the ordinary suite's interpreter inventory even though Spark is built below.
+      ZEPPELIN_INTERPRETER_EXCLUDES: spark
+      SPARK_VERSION: '3.5.8'
+      HADOOP_VERSION: '3'
     strategy:
       # Keep both legs running so a Maven-owned failure on the auth leg cannot cancel the anonymous leg
       # before its named unit test and typecheck steps report.
@@ -100,8 +104,13 @@ jobs:
           use-mamba: true
           channels: conda-forge,defaults
           channel-priority: strict
+      - name: Cache Spark distribution
+        uses: actions/cache@v5
+        with:
+          path: .spark-dist
+          key: ${{ runner.os }}-spark-e2e-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}
       - name: Install application
-        run: ./mvnw clean install -DskipTests -am -pl python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic ${MAVEN_ARGS}
+        run: ./mvnw clean install -DskipTests -am -pl spark/interpreter,spark/scala-2.12,python,zeppelin-jupyter-interpreter,zeppelin-web,zeppelin-web-angular -Pweb-classic,spark-scala-2.12,spark-3.5 ${MAVEN_ARGS}
       - name: Run Angular shell unit tests
         if: matrix.mode == 'anonymous'
         working-directory: zeppelin-web-angular
@@ -161,6 +170,30 @@ jobs:
           "$zeppelin_daemon" start
           cd zeppelin-web-angular
           xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- tests/notebook/revision/revision-isolation.spec.ts --output=test-results-revision --reporter=github,html
+      - name: Run Spark dynamic-form E2E
+        env:
+          CI: 'true'
+          ZEPPELIN_INTERPRETER_EXCLUDES: ''
+          ZEPPELIN_E2E_REQUIRE_SPARK: 'true'
+          SPARK_HOME: ${{ github.workspace }}/spark-${{ env.SPARK_VERSION }}-bin-hadoop${{ env.HADOOP_VERSION }}
+          SPARK_MASTER: 'local[2]'
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-spark
+        run: |
+          ./testing/downloadSpark.sh "$SPARK_VERSION" "$HADOOP_VERSION"
+          test -x "$SPARK_HOME/bin/spark-submit"
+          spark_notebook_dir="$(mktemp -d "${RUNNER_TEMP}/zeppelin-spark-notebooks.XXXXXX")"
+          zeppelin_daemon="${GITHUB_WORKSPACE}/bin/zeppelin-daemon.sh"
+          cleanup() {
+            "$zeppelin_daemon" stop || true
+            rm -rf -- "$spark_notebook_dir"
+          }
+          trap cleanup EXIT
+          export ZEPPELIN_NOTEBOOK_DIR="$spark_notebook_dir"
+          # The step owns cleanup; globalSetup must not reset the ordinary suite's notebook directory.
+          unset ZEPPELIN_E2E_TEST_NOTEBOOK_DIR
+          "$zeppelin_daemon" start
+          cd zeppelin-web-angular
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./node/npm run e2e -- tests/notebook/paragraph/dynamic-forms.spec.ts --workers=1 --retries=0 --output=test-results-spark --reporter=github,html
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v6
         if: always()
@@ -170,6 +203,7 @@ jobs:
             zeppelin-web-angular/playwright-report/
             zeppelin-web-angular/playwright-report-classic/
             zeppelin-web-angular/playwright-report-revision/
+            zeppelin-web-angular/playwright-report-spark/
           retention-days: 3
       - name: Print Zeppelin logs
         if: always()
