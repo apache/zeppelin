@@ -41,6 +41,8 @@ export class NotebookParagraphPage extends BasePage {
   readonly editorViewLines: Locator;
   readonly editorLines: Locator;
   readonly dynamicForms: Locator;
+  readonly dynamicFormTextInput: Locator;
+  readonly dynamicFormSelect: Locator;
   readonly resultDisplay: Locator;
   readonly executionTime: Locator;
   readonly elapsedTime: Locator;
@@ -87,6 +89,10 @@ export class NotebookParagraphPage extends BasePage {
     this.editorViewLinesAll = codeEditors.locator('.view-lines');
     this.editorLines = this.codeEditor.locator('.view-line');
     this.dynamicForms = this.paragraphContainer.locator('zeppelin-notebook-paragraph-dynamic-forms');
+    // Both controls expose textbox roles; exclude the select's internal search input.
+    this.dynamicFormTextInput = this.dynamicForms.locator('input.ant-input');
+    // The dynamic-form template has no associated labels; nz-select owns the dropdown trigger.
+    this.dynamicFormSelect = this.dynamicForms.locator('nz-select');
     this.resultDisplay = this.paragraphContainer.locator('zeppelin-notebook-paragraph-result');
     const footerInfo = this.paragraphContainer.getByTestId('angular-paragraph-footer');
     this.executionTime = footerInfo.locator('.execution-time');
