@@ -409,6 +409,8 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .spark-dist/spark-${{ env.SPARK_VERSION }}-bin-hadoop${{ env.HADOOP_VERSION }}.tgz
+          # Bump spark-dist-v2 if the download target or archive format changes
+          # without changing the Spark/Hadoop versions.
           key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v2-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}
       - *cache-conda-python39
       - name: install environment
