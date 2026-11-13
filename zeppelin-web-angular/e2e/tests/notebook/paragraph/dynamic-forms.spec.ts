@@ -65,10 +65,11 @@ println("Age: " + z.select("age", "1", Seq(("1", "Under 18"), ("2", "18-65"), ("
 
       await test.step('Editing both forms changes the next Spark execution output', async () => {
         await paragraph.dynamicFormTextInput.fill('Zeppelin');
+        await expect(paragraph.dynamicFormTextInput).toHaveValue('Zeppelin', { timeout: 1000 });
         await paragraph.dynamicFormSelect.click();
         await page.getByText('18-65', { exact: true }).click();
-        await expect(paragraph.dynamicFormTextInput).toHaveValue('Zeppelin');
-        await expect(paragraph.dynamicFormSelect).toHaveText('18-65');
+        await expect(paragraph.dynamicFormTextInput).toHaveValue('Zeppelin', { timeout: 1000 });
+        await expect(paragraph.dynamicFormSelect).toHaveText('18-65', { timeout: 1000 });
         // Distinct output cannot be satisfied by the previous FINISHED execution.
         await runAndExpectOutput('Name: Zeppelin\nAge: 2\n', 10000);
       });
