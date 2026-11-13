@@ -118,6 +118,8 @@
     @if (!viewOnly && !revisionView) {
       <zeppelin-assistant-host
         [noteId]="note.id"
+        [paragraphs]="note.paragraphs"
+        (openParagraph)="openAssistantParagraph($event)"
         [enabled]="useReactAssistant"
         [panelWidth]="sidebarWidth"
         (panelWidthChange)="sidebarWidth = $event"

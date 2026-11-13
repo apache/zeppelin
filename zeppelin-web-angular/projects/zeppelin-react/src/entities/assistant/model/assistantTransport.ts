@@ -159,12 +159,17 @@ const unwrapBody = (value: unknown): unknown =>
   typeof value === 'object' && value !== null && 'body' in value ? value.body : value;
 
 /** Hands 401/405 to the host, which owns login redirects and logout. */
-export type AssistantAuthErrorHandler = (status: number) => void;
+export type AssistantAuthErrorHandler = (status: number, location: string | null) => void;
 
 const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler): AssistantHttpError => {
   const error = new AssistantHttpError(response.status);
   if (error.status === 401 || error.status === 405) {
-    onAuthError?.(error.status);
+    try {
+      onAuthError?.(error.status, response.headers.get('Location'));
+    } catch (handlerError) {
+      // Authentication side effects must not replace the original request failure.
+      console.error('Assistant authentication handler failed', handlerError);
+    }
   }
   return error;
 };

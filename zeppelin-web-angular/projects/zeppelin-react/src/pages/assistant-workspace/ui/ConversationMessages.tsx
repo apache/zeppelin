@@ -13,30 +13,28 @@
 import { useMemo } from 'react';
 import { AssistantAnswer } from '@/entities/assistant/ui/AssistantAnswer';
 import { AssistantMessageItem } from '@/entities/assistant/ui/AssistantMessageItem';
-import { MarkdownAnswer } from '@/entities/assistant/ui/MarkdownAnswer';
+import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
 import { useConversationScroll } from '../lib/useConversationScroll';
 import type { AssistantPanelEntry } from '../model/assistantPanelState';
 import * as styles from './AssistantConversationPanel.css';
 
-const renderMarkdown = (content: string) => (
-  <div data-conversation-markdown>
-    <MarkdownAnswer content={content} />
-  </div>
-);
+interface ConversationMessagesProps {
+  scope: object;
+  entry: AssistantPanelEntry;
+  visible: boolean;
+  loadEarlier: () => Promise<boolean>;
+  onRetry?: () => void;
+  renderAnswer?: AssistantContentRenderer;
+}
 
 export const ConversationMessages = ({
   scope,
   entry,
   visible,
   loadEarlier,
-  onRetry
-}: {
-  scope: object;
-  entry: AssistantPanelEntry;
-  visible: boolean;
-  loadEarlier: () => Promise<boolean>;
-  onRetry?: () => void;
-}) => {
+  onRetry,
+  renderAnswer
+}: ConversationMessagesProps) => {
   const { messages, messageKeys, localAnswerViews, answer, answerKey } = entry;
 
   const messageItems = useMemo(() => {
@@ -49,7 +47,7 @@ export const ConversationMessages = ({
           ) : (
             <AssistantAnswer
               view={localAnswerViews.get(message.id) ?? { status: 'done', message }}
-              renderContent={renderMarkdown}
+              renderContent={renderAnswer}
             />
           )}
         </div>
@@ -59,13 +57,13 @@ export const ConversationMessages = ({
     if (answer) {
       items.push(
         <div key={answerKey} data-message-key={answerKey} className={styles.messageRow}>
-          <AssistantAnswer view={answer} renderContent={renderMarkdown} onRetry={onRetry} />
+          <AssistantAnswer view={answer} renderContent={renderAnswer} onRetry={onRetry} />
         </div>
       );
     }
 
     return items;
-  }, [messages, messageKeys, localAnswerViews, answer, answerKey, onRetry]);
+  }, [messages, messageKeys, localAnswerViews, answer, answerKey, onRetry, renderAnswer]);
 
   const completedMessage = answer?.status === 'done' ? answer.message : undefined;
   const rowSegments = useMemo(() => {
