@@ -226,6 +226,19 @@
           <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
         </configuration>
       </plugin>
+
+      <!-- Publish the transport-neutral RPC contract suite for future transport test modules. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
 
     <resources>
