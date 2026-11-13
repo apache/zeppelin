@@ -239,6 +239,11 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterManagedProcess
     return "Running".equalsIgnoreCase(getPodPhase()) && started.get();
   }
 
+  @Override
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.KUBERNETES_POD_PHASE;
+  }
+
   public String getPodPhase() {
     try {
       Pod pod = client.pods().inNamespace(interpreterNamespace).withName(podName).get();

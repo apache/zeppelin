@@ -108,6 +108,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   }
 
   @Override
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.TCP_CONNECT;
+  }
+
+  @Override
   public void processStarted(int port, String host) {
     // assume process is externally managed. nothing to do
   }
