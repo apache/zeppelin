@@ -86,7 +86,7 @@ export const AssistantWorkspaceShell = ({
 
     const measure = () => {
       element.style.setProperty('--assistant-panel-top', `${Math.max(0, element.getBoundingClientRect().top)}px`);
-    }
+    };
     measure();
 
     window.addEventListener('scroll', measure, { capture: true, passive: true });
