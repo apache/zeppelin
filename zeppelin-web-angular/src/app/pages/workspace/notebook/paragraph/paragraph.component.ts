@@ -770,8 +770,10 @@ export class NotebookParagraphComponent
       (select && select.currentValue === true && select.previousValue !== true)
     ) {
       setTimeout(() => {
-        if (this.mode === 'command' && this.host.nativeElement) {
-          (this.host.nativeElement as HTMLElement).focus();
+        const host = this.host.nativeElement as HTMLElement;
+        // A descendant may acquire focus after this callback was scheduled.
+        if (this.mode === 'command' && host && !host.contains(host.ownerDocument.activeElement)) {
+          host.focus();
         }
       });
     }
