@@ -21,6 +21,8 @@ FROM ubuntu:22.04
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
 ARG version="0.13.0-SNAPSHOT"
+# Set automatically by buildx (amd64 or arm64)
+ARG TARGETARCH
 
 ENV VERSION="${version}" \
     ZEPPELIN_HOME="/opt/zeppelin"
@@ -28,9 +30,14 @@ ENV VERSION="${version}" \
 # Install Java for zeppelin interpreter
 # Install micromamba to install a python environment via conda
 RUN set -ex && \
+    case "${TARGETARCH}" in \
+      amd64) mamba_arch="linux-64" ;; \
+      arm64) mamba_arch="linux-aarch64" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac && \
     /usr/bin/apt-get update && \
     DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get install -y openjdk-11-jre-headless wget tini bzip2 && \
-    /usr/bin/wget --remote-encoding=utf-8 -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba && \
+    /usr/bin/wget --remote-encoding=utf-8 -qO- https://micro.mamba.pm/api/micromamba/${mamba_arch}/latest | tar -xvj bin/micromamba && \
     # Cleanup
     /usr/bin/apt-get clean && \
     /bin/rm -rf /var/lib/apt/lists/*
