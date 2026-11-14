@@ -20,7 +20,25 @@ limitations under the License.
 {% include JB/setup %}
 
 ## Introduction
-This page describes how to pre-configure a bare metal node, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark interpreter of Zeppelin.
+This page records how a bare metal node was configured to connect Zeppelin to a
+YARN cluster running Hortonworks Hadoop and how its Spark interpreter was
+configured. The version-specific instructions are historical; see the notice
+below before using them.
+
+## Historical setup notice
+
+**This page documents a legacy Hortonworks HDP 2.3.1 environment and is not a
+current Zeppelin installation guide.** Its CentOS 6/Ubuntu 14, Java 8,
+Hadoop 2.7.x and Spark 1.6.0 examples describe the cluster versions used when
+this page was written; they are not recommendations or a supported current
+development toolchain. In particular, do not use Java 8 to build the current
+Zeppelin source.
+
+For current source-build prerequisites and instructions, see
+[How to Build Zeppelin from source](../basics/how_to_build.html). To use YARN,
+choose Hadoop and Spark versions supported by the build profiles and compatible
+with your cluster; the legacy version-specific settings below may need to be
+adapted.
 
 ## Prepare Node
 
@@ -44,16 +62,23 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
 
 ### List of Prerequisites
 
+The following are historical prerequisites for the HDP 2.3.1 setup documented
+on this page, not current Zeppelin development requirements:
+
  * CentOS 6.x, Mac OSX, Ubuntu 14.X
  * Java 1.8
- * Hadoop client
- * Spark
+ * Hadoop 2.7.x client
+ * Spark 1.6.0
  * Internet connection is required.
 
-It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine.
+The original setup assumed CentOS 6.x; other distributions have not been
+validated by these instructions.
 
 #### Hadoop client
-Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
+This historical setup assumes Hadoop 2.7.x client libraries, including
+configuration files, are installed on the Zeppelin node. It also assumes
+/etc/hadoop/conf contains the Hadoop configuration files. The location of
+configuration files may vary, so use the appropriate location for the cluster.
 
 ```bash
 hadoop version
@@ -66,16 +91,21 @@ This command was run using /usr/hdp/2.3.1.0-2574/hadoop/lib/hadoop-common-2.7.1.
 ```
 
 #### Spark
-Spark is supported out of the box and to take advantage of this, you need to Download appropriate version of Spark binary packages from [Spark Download page](http://spark.apache.org/downloads.html) and unzip it.
-Zeppelin can work with multiple versions of Spark. A complete list is available [here](https://github.com/apache/zeppelin#build).
-This document assumes Spark 1.6.0 is installed at /usr/lib/spark.
+For a current build, use a Spark version supported by its selected build
+profile. Download the appropriate Spark binary package from the
+[Spark Download page](https://spark.apache.org/downloads.html) and unzip it.
+The historical example below assumes Spark 1.6.0 is installed at /usr/lib/spark.
 > Note: Spark should be installed on the same node as Zeppelin.
 
 > Note: Spark's pre-built package for CDH 4 doesn't support yarn.
 
 #### Zeppelin
 
-Checkout source code from [https://github.com/apache/zeppelin.git](https://github.com/apache/zeppelin.git) or download binary package from [Download page](https://zeppelin.apache.org/download.html).
+Clone the current source repository with
+`git clone https://github.com/apache/zeppelin.git` or download a binary package from the
+[Download page](https://zeppelin.apache.org/download.html). A current source
+checkout is not necessarily compatible with the legacy cluster versions
+documented on this page.
 You can refer [Install](../../quickstart/install.html) page for the details.
 This document assumes that Zeppelin is located under `/home/zeppelin/zeppelin`.
 
@@ -89,6 +119,7 @@ cp /home/zeppelin/zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/zeppelin
 Set the following properties
 
 ```bash
+# Historical Java 8 example for the legacy HDP environment above.
 export JAVA_HOME="/usr/java/jdk1.8.0_171"
 export HADOOP_CONF_DIR="/etc/hadoop/conf"
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
@@ -127,7 +158,9 @@ Once Zeppelin server has started successfully, visit `http://[zeppelin-server-ho
 Click on Save button. Once these configurations are updated, Zeppelin will prompt you to restart the interpreter. Accept the prompt and the interpreter will reload the configurations.
 
 ### Spark
-It was assumed that 1.6.0 version of Spark is installed at /usr/lib/spark. Look for Spark configurations and click edit button to add the following properties
+The following settings are for the historical Spark 1.6.0 example at
+/usr/lib/spark. They may not apply to current Spark versions. Look for Spark
+configurations and click edit button to add the following properties.
 
 <table class="table-configuration">
   <tr>
