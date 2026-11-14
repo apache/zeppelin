@@ -15,6 +15,7 @@ import { AssistantAnswerError } from '@/entities/assistant/ui/AssistantAnswerErr
 import { AssistantComposer } from '@/entities/assistant/ui/AssistantComposer';
 import { ConversationHeader } from '@/entities/assistant/ui/ConversationHeader';
 import { ConversationList } from '@/entities/assistant/ui/ConversationList';
+import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
 import { useDeleteConfirmation } from '../lib/useDeleteConfirmation';
 import type { AssistantDataSource } from '../model/assistantDataSource';
 import { useAssistantPanel } from '../model/useAssistantPanel';
@@ -25,11 +26,12 @@ import * as styles from './AssistantConversationPanel.css';
 export interface AssistantConversationPanelProps {
   source: AssistantDataSource;
   now?: number;
+  renderAnswer?: AssistantContentRenderer;
 }
 
 const ignoreSearchChange = () => undefined;
 
-export const AssistantConversationPanel = ({ source, now }: AssistantConversationPanelProps) => {
+export const AssistantConversationPanel = ({ source, now, renderAnswer }: AssistantConversationPanelProps) => {
   const panel = useAssistantPanel(source);
   const { entry, send: sendQuestion, reload: reloadHistory } = panel;
 
@@ -134,6 +136,7 @@ export const AssistantConversationPanel = ({ source, now }: AssistantConversatio
             visible={!listOpen}
             loadEarlier={panel.loadEarlier}
             onRetry={answerRetry}
+            renderAnswer={renderAnswer}
           />
 
           <div className={styles.composer}>

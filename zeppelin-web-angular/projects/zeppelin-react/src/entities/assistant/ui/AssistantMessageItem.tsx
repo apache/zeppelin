@@ -57,7 +57,7 @@ export const AssistantMessageItem = ({
         <span>Assistant</span>
       </header>
       {content && (
-        <div className={styles.body} data-streaming={streaming || undefined}>
+        <div className={styles.body} data-assistant-content="" data-streaming={streaming || undefined}>
           {renderContent(content)}
         </div>
       )}

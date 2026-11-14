@@ -80,6 +80,60 @@ const streamingFixture = () => {
 };
 
 describe('AssistantConversationPanel', () => {
+  it('uses the supplied renderer for saved, streaming and failed partial answers', async () => {
+    const harness = streamingFixture();
+    render(
+      <AssistantConversationPanel
+        source={harness.source}
+        now={FIXTURE_NOW}
+        renderAnswer={content => <pre>{content}</pre>}
+      />
+    );
+    await flush();
+    await select('Revenue analysis');
+    expect(within(messages()).getByText('Revenue increased in all three regions, led by Europe.').tagName).toBe('PRE');
+
+    await submit('Render this streamed answer');
+    await act(async () => harness.firstDelta.resolve());
+    expect(within(messages()).getByText('Only revenue A').tagName).toBe('PRE');
+
+    await act(async () => {
+      harness.secondDelta.resolve();
+      harness.finish.resolve();
+    });
+    expect(within(messages()).getByText('Only revenue A continues').tagName).toBe('PRE');
+    expect(within(messages()).getByText('Controlled run stopped.')).toBeTruthy();
+  });
+
+  it('updates answer rendering without losing the draft or selected conversation and uses it after completion', async () => {
+    const source = fixture();
+    const createConversation = vi.spyOn(source.api, 'createConversation');
+    const { rerender } = render(
+      <AssistantConversationPanel source={source} now={FIXTURE_NOW} renderAnswer={content => <pre>{content}</pre>} />
+    );
+    await flush();
+    await select('Notebook summary');
+    fireEvent.change(input(), { target: { value: 'Keep this question' } });
+
+    rerender(
+      <AssistantConversationPanel
+        source={source}
+        now={FIXTURE_NOW}
+        renderAnswer={content => <blockquote>{content}</blockquote>}
+      />
+    );
+    await flush();
+    expect(input().value).toBe('Keep this question');
+    expect(within(messages()).getByText('This notebook compares monthly revenue across regions.').tagName).toBe(
+      'BLOCKQUOTE'
+    );
+    await submit('Keep this question');
+
+    expect(createConversation).not.toHaveBeenCalled();
+    expect(within(messages()).getByText(/Revenue grew \*\*12%\*\*/).tagName).toBe('BLOCKQUOTE');
+    expect(within(messages()).queryByRole('table')).toBeNull();
+  });
+
   it('opens saved conversations and restores the trigger after select, Back and Escape without closing the shell', async () => {
     const source = fixture();
     const getMessages = vi.spyOn(source.api, 'getMessages');
@@ -637,71 +691,79 @@ describe('AssistantConversationPanel', () => {
     expect(run).not.toHaveBeenCalled();
   });
 
-  it('keeps a draft blocked after an initial history failure until explicit reload succeeds without resending', async () => {
-    const source = fixture();
-    const initial = deferred();
-    const retry = deferred();
-    const originalGetMessages = source.api.getMessages;
-    const getMessages = vi
-      .spyOn(source.api, 'getMessages')
-      .mockImplementationOnce(async () => {
-        await initial.promise;
-        throw new Error('Saved history is unavailable.');
-      })
-      .mockImplementationOnce(async id => {
-        await retry.promise;
-        return originalGetMessages(id);
-      });
-    const run = vi.spyOn(source, 'run');
-    await mountPanel(source);
-    await select('Revenue analysis');
+  it.each(['button', 'Enter'] as const)(
+    'preserves the draft through initial history failure and retry, then submits with %s',
+    async method => {
+      const source = fixture();
+      const initial = deferred();
+      const retry = deferred();
+      const originalGetMessages = source.api.getMessages;
+      const getMessages = vi
+        .spyOn(source.api, 'getMessages')
+        .mockImplementationOnce(async () => {
+          await initial.promise;
+          throw new Error('Saved history is unavailable.');
+        })
+        .mockImplementationOnce(async id => {
+          await retry.promise;
+          return originalGetMessages(id);
+        });
+      const run = vi.spyOn(source, 'run');
+      await mountPanel(source);
+      await select('Revenue analysis');
 
-    fireEvent.change(input(), { target: { value: 'Keep this draft after the failed lookup' } });
-    await act(async () => initial.resolve());
+      fireEvent.change(input(), { target: { value: 'Keep this draft after the failed lookup' } });
+      await act(async () => initial.resolve());
 
-    expect(screen.getByRole('alert').textContent).toContain('Saved history is unavailable.');
-    expect(input().value).toBe('Keep this draft after the failed lookup');
-    expect(input().disabled).toBe(false);
-    expect(input().readOnly).toBe(false);
-    expect(send().matches(':disabled')).toBe(true);
+      expect(screen.getByRole('alert').textContent).toContain('Saved history is unavailable.');
+      expect(input().value).toBe('Keep this draft after the failed lookup');
+      expect(input().disabled).toBe(false);
+      expect(input().readOnly).toBe(false);
+      expect(send().matches(':disabled')).toBe(true);
 
-    fireEvent.change(input(), { target: { value: 'Edited question after lookup failure' } });
-    fireEvent.click(send());
-    fireEvent.keyDown(input(), { key: 'Enter' });
-    fireEvent.submit(input().form!);
-    await flush();
+      fireEvent.change(input(), { target: { value: 'Edited question after lookup failure' } });
+      fireEvent.click(send());
+      fireEvent.keyDown(input(), { key: 'Enter' });
+      fireEvent.submit(input().form!);
+      await flush();
 
-    expect(input().value).toBe('Edited question after lookup failure');
-    expect(getMessages.mock.calls).toEqual([['c1']]);
-    expect(run).not.toHaveBeenCalled();
+      expect(input().value).toBe('Edited question after lookup failure');
+      expect(getMessages.mock.calls).toEqual([['c1']]);
+      expect(run).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reload conversation' }));
-    await flush();
+      fireEvent.click(screen.getByRole('button', { name: 'Reload conversation' }));
+      await flush();
 
-    expect(getMessages.mock.calls).toEqual([['c1'], ['c1']]);
-    expect(input().value).toBe('Edited question after lookup failure');
-    expect(send().matches(':disabled')).toBe(true);
-    expect(run).not.toHaveBeenCalled();
+      expect(getMessages.mock.calls).toEqual([['c1'], ['c1']]);
+      expect(input().value).toBe('Edited question after lookup failure');
+      expect(send().matches(':disabled')).toBe(true);
+      expect(run).not.toHaveBeenCalled();
 
-    fireEvent.keyDown(input(), { key: 'Enter' });
-    fireEvent.submit(input().form!);
-    await flush();
+      fireEvent.keyDown(input(), { key: 'Enter' });
+      fireEvent.submit(input().form!);
+      await flush();
 
-    expect(run).not.toHaveBeenCalled();
+      expect(run).not.toHaveBeenCalled();
 
-    await act(async () => retry.resolve());
+      await act(async () => retry.resolve());
 
-    expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
-    expect(screen.queryByRole('alert')).toBeNull();
-    expect(input().value).toBe('Edited question after lookup failure');
-    expect(send().matches(':disabled')).toBe(false);
-    expect(run).not.toHaveBeenCalled();
+      expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(input().value).toBe('Edited question after lookup failure');
+      expect(send().matches(':disabled')).toBe(false);
+      expect(run).not.toHaveBeenCalled();
 
-    fireEvent.click(send());
-    await flush();
+      if (method === 'button') fireEvent.click(send());
+      else fireEvent.keyDown(input(), { key: 'Enter' });
+      await flush();
 
-    expect(run).toHaveBeenCalledExactlyOnceWith('c1', 'Edited question after lookup failure', expect.any(AbortSignal));
-  });
+      expect(run).toHaveBeenCalledExactlyOnceWith(
+        'c1',
+        'Edited question after lookup failure',
+        expect.any(AbortSignal)
+      );
+    }
+  );
 
   it('confirms deletion of an active conversation and lets the API decide the result', async () => {
     const harness = streamingFixture();

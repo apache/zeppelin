@@ -11,27 +11,34 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { AssistantConversationWireMock } from '../../../models/assistant-conversation-page.util';
 import { NotebookAssistantPage } from '../../../models/notebook-assistant-page';
 import { addPageAnnotationBeforeEach, createTestNotebook, PAGES, waitForZeppelinReady } from '../../../utils';
 
-test.describe('Notebook AI Assistant fixture conversations', () => {
+test.describe('Notebook AI Assistant conversations over REST and WebSocket', () => {
   addPageAnnotationBeforeEach(PAGES.WORKSPACE.NOTEBOOK_ASSISTANT);
 
   let assistant: NotebookAssistantPage;
+  let wire: AssistantConversationWireMock;
   let noteId: string | undefined;
 
   test.beforeEach(async ({ page }) => {
     noteId = undefined;
     assistant = new NotebookAssistantPage(page);
+    wire = await AssistantConversationWireMock.install(page);
 
     await page.goto('/#/');
     await waitForZeppelinReady(page);
     ({ noteId } = await createTestNotebook(page));
+    wire.useNote(noteId);
 
     await page.goto(`/#/notebook/${noteId}?reactAssistant=true`);
     await waitForZeppelinReady(page);
     await assistant.toggleButton.click();
     await expect(assistant.question).toBeEditable();
+    await expect
+      .poll(() => wire.restRequests)
+      .toContainEqual({ method: 'GET', path: `/api/notes/${noteId}/conversations` });
   });
 
   test.afterEach(async ({ page }) => {
@@ -45,12 +52,19 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     const question = 'Explain the revenue results for this new conversation.';
 
     await assistant.sendQuestion(question);
+    await expect.poll(() => wire.sent).toEqual([{ noteId, conversationId: 'c-created-1', content: question }]);
+    expect(wire.restRequests).toContainEqual({
+      method: 'POST',
+      path: `/api/notes/${noteId}/conversations`,
+      body: {}
+    });
 
     const answer = assistant.messages.getByRole('article', { name: 'Assistant answer', exact: true });
     await expect(answer).toHaveAttribute('aria-busy', 'true');
     await expect(answer).toContainText('I checked');
     const original = await answer.elementHandle();
     expect(original).not.toBeNull();
+    wire.completeRun(0);
 
     await expect(answer.getByRole('table')).toBeVisible();
     await expect(answer).not.toHaveAttribute('aria-busy', 'true');
@@ -62,10 +76,13 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     );
     await expect(answer).toHaveCount(1);
 
+    const previousHistoryReads = wire.historyRequests.length;
     await assistant.closeButton.click();
     await expect(assistant.panel).toBeHidden();
     await assistant.toggleButton.click();
     await assistant.selectConversation('New conversation');
+    await expect.poll(() => wire.historyRequests.length).toBeGreaterThan(previousHistoryReads);
+    expect(wire.historyRequests).toContainEqual({ conversationId: 'c-created-1', cursor: null, limit: 50 });
 
     await expect(assistant.messages).not.toHaveAttribute('aria-busy', 'true');
     await expect(assistant.messages.getByRole('article', { name: 'Your question', exact: true })).toContainText(
@@ -87,6 +104,7 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     await expect(assistant.question).toBeEditable();
 
     await assistant.sendQuestion(aQuestion);
+    await expect.poll(() => wire.sent).toEqual([{ noteId, conversationId: 'c1', content: aQuestion }]);
 
     await expect(
       assistant.messages.getByRole('article', { name: 'Assistant answer', exact: true }).last()
@@ -101,7 +119,16 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     await assistant.sendButton.click();
     const bAnswer = assistant.messages.getByRole('article', { name: 'Assistant answer', exact: true }).last();
 
+    await expect
+      .poll(() => wire.sent)
+      .toEqual([
+        { noteId, conversationId: 'c1', content: aQuestion },
+        { noteId, conversationId: 'c2', content: bQuestion }
+      ]);
+    await expect(bAnswer).toHaveAttribute('aria-busy', 'true');
+    wire.completeRun(1);
     await expect(bAnswer.getByRole('table')).toBeVisible();
+    await expect(bAnswer.getByRole('table')).toContainText('Strongest regional growth');
     await expect(bAnswer).not.toHaveAttribute('aria-busy', 'true');
     await expect(assistant.question).toBeEditable();
     await expect(assistant.messages).not.toHaveAttribute('aria-busy', 'true');
@@ -110,10 +137,14 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     await expect(assistant.messages).not.toContainText(aQuestion);
 
     await assistant.question.fill('Keep this next B draft.');
+    wire.completeRun(0);
+    await expect(bAnswer.getByRole('table')).not.toContainText('118');
 
     await assistant.selectConversation('Revenue analysis');
     await expect(assistant.messages.getByText(aQuestion, { exact: true })).toHaveCount(1);
     await expect(assistant.messages.getByRole('table')).toHaveCount(1);
+    await expect(assistant.messages.getByRole('table')).toContainText('118');
+    await expect(assistant.messages).not.toContainText('Strongest regional growth');
     await expect(assistant.question).toBeEditable();
     await expect(assistant.messages).not.toContainText(bQuestion);
 
@@ -122,6 +153,8 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     await expect(assistant.question).toHaveValue('Keep this next B draft.');
     await expect(assistant.messages.getByText(bQuestion, { exact: true })).toHaveCount(1);
     await expect(assistant.messages.getByRole('table')).toHaveCount(1);
+    await expect(assistant.messages.getByRole('table')).toContainText('Strongest regional growth');
+    await expect(assistant.messages.getByRole('table')).not.toContainText('118');
     await expect(assistant.messages).toContainText(summary);
   });
 
@@ -133,11 +166,16 @@ test.describe('Notebook AI Assistant fixture conversations', () => {
     await expect(laterAnswer).toBeVisible();
     const original = await laterAnswer.elementHandle();
     expect(original).not.toBeNull();
+    expect(wire.historyRequests).toContainEqual({ conversationId: 'c1', cursor: null, limit: 50 });
+    await expect(assistant.messages).not.toContainText('How did revenue change by region?');
 
     await assistant.messages.evaluate(element => {
       element.scrollTop = 0;
     });
 
+    await expect
+      .poll(() => wire.historyRequests)
+      .toContainEqual({ conversationId: 'c1', cursor: 'c1-tool-1-result', limit: 50 });
     await expect(assistant.messages.getByText('How did revenue change by region?', { exact: true })).toHaveCount(1);
     await expect(assistant.messages).not.toHaveAttribute('aria-busy', 'true');
     const joinedAnswer = assistant.messages.getByRole('article', { name: 'Assistant answer', exact: true }).filter({
