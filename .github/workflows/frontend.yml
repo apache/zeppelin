@@ -73,24 +73,31 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
+      - name: Read locked Playwright version
+        id: playwright-version
+        run: |
+          version=$(node -p "require('./zeppelin-web-angular/package-lock.json').packages['node_modules/playwright-core'].version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Cache Playwright browsers
         uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('zeppelin-web-angular/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-      - name: Cache local Maven repository
-        uses: actions/cache@v5
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-v2-ubuntu-24.04-${{ steps.playwright-version.outputs.version }}
+      - &restore-maven
+        name: Restore Maven dependencies
+        uses: actions/cache/restore@v5
         with:
           path: |
-            ~/.m2/repository
+            ~/.m2/repository/*
+            !~/.m2/repository/org/
+            ~/.m2/repository/org/*
+            !~/.m2/repository/org/apache/
+            ~/.m2/repository/org/apache/*
             !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
+            ~/.m2/wrapper
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v3-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-zeppelin-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v3-
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
@@ -200,16 +207,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - *restore-maven
       - name: Cache npm packages
         uses: actions/cache@v5
         with:
