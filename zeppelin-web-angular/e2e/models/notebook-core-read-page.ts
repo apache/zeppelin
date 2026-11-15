@@ -93,6 +93,15 @@ export class NotebookCoreReadPage extends BasePage {
     return () => this.page.evaluate(() => (window as unknown as { coreReadStates: string[] }).coreReadStates);
   }
 
+  /**
+   * Marks the current entry element. The returned check tells whether the entry on the page is still that
+   * element.
+   */
+  async markEntry(): Promise<() => Promise<boolean>> {
+    await this.entry.evaluate(entry => Object.assign(entry, { coreEntryMark: true }));
+    return () => this.entry.evaluate(entry => 'coreEntryMark' in entry);
+  }
+
   /** Changes only the hash, so the Shell and its socket stay up. */
   async open(noteId: string, revisionId?: string, query = ''): Promise<void> {
     const path = revisionId ? `/notebook/${noteId}/revision/${revisionId}` : `/notebook/${noteId}`;

@@ -83,6 +83,8 @@ test.describe('Notebook Core read entry', () => {
           await expect(readPage.shows(a)).toBeVisible();
         });
 
+        const isSameEntry = await readPage.markEntry();
+
         await test.step('When the route moves to another note', async () => {
           await readPage.open(b, undefined, query);
         });
@@ -91,35 +93,52 @@ test.describe('Notebook Core read entry', () => {
           await expect(readPage.shows(b)).toBeVisible();
           await expect(readPage.readStatus('ready')).toBeVisible();
           await expect(readPage.entry).toHaveAttribute('data-renderer', renderer);
+          expect(await isSameEntry()).toBe(true);
           expect(probe.sentOps(from).filter(op => op !== 'PING')).toEqual(['GET_NOTE', 'GET_NOTE']);
           expect(probe.forbiddenOps(from)).toEqual([]);
         });
       });
 
-      test('enters and leaves a revision on one entry', async ({ page }) => {
+      test('enters and leaves a revision on a new entry', async ({ page }) => {
         const noteId = await importNote(page.request, 'revision');
         const revisionId = await checkpoint(page.request, noteId, 'entry revision');
         test.skip(revisionId === null, 'The configured notebook storage does not support revisions');
         const from = probe.sent.length;
 
-        await test.step('When the private route opens a revision', async () => {
-          await readPage.open(noteId, revisionId!, query);
-        });
-
-        await test.step('Then the revision is shown', async () => {
-          await expect(readPage.shows(revisionId!)).toBeVisible();
-          await expect(readPage.readStatus('ready')).toBeVisible();
-        });
-
-        await test.step('When the route moves to the live note', async () => {
+        await test.step('When the private route opens the live note', async () => {
           await readPage.open(noteId, undefined, query);
         });
 
-        await test.step('Then the live note is read on the same entry', async () => {
+        await test.step('Then the live note is shown', async () => {
+          await expect(readPage.shows(noteId)).toBeVisible();
+          await expect(readPage.readStatus('ready')).toBeVisible();
+        });
+
+        const isNoteEntry = await readPage.markEntry();
+
+        await test.step('When the route moves to a revision', async () => {
+          await readPage.open(noteId, revisionId!, query);
+        });
+
+        await test.step('Then the revision is shown on a new entry', async () => {
+          await expect(readPage.shows(revisionId!)).toBeVisible();
+          await expect(readPage.readStatus('ready')).toBeVisible();
+          await expect(readPage.entry).toHaveAttribute('data-renderer', renderer);
+          expect(await isNoteEntry()).toBe(false);
+        });
+
+        const isRevisionEntry = await readPage.markEntry();
+
+        await test.step('When the route moves back to the live note', async () => {
+          await readPage.open(noteId, undefined, query);
+        });
+
+        await test.step('Then the live note is read on a new entry', async () => {
           await expect(readPage.shows(revisionId!)).toHaveCount(0);
           await expect(readPage.readStatus('ready')).toBeVisible();
           await expect(readPage.entry).toHaveAttribute('data-renderer', renderer);
-          expect(probe.sentOps(from).filter(op => op !== 'PING')).toEqual(['NOTE_REVISION', 'GET_NOTE']);
+          expect(await isRevisionEntry()).toBe(false);
+          expect(probe.sentOps(from).filter(op => op !== 'PING')).toEqual(['GET_NOTE', 'NOTE_REVISION', 'GET_NOTE']);
         });
       });
 
