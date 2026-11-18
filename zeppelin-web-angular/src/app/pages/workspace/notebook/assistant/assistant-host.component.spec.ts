@@ -116,11 +116,36 @@ it('passes notebook connection and navigation ports without exposing credentials
   expect(ticket.handleAuthFailure).toHaveBeenCalledWith(401, '/login/redirect');
   host.paragraphs = [{ id: 'paragraph-a', title: 'Current paragraph' }];
   host.ngOnChanges({ paragraphs: new SimpleChange([], host.paragraphs, false) });
-  expect(host.assistantProps!.paragraphs).toBe(host.paragraphs);
+  expect(host.assistantProps!.paragraphs).toEqual([{ id: 'paragraph-a', title: 'Current paragraph' }]);
   const open = vi.fn();
   host.openParagraph.subscribe(open);
   host.assistantProps!.onOpenParagraph('paragraph-a');
   expect(open).toHaveBeenCalledWith('paragraph-a');
+  host.ngOnDestroy();
+});
+
+it('publishes renamed paragraph references without reopening the Assistant', () => {
+  const { host, slots } = createHost();
+  const paragraph = { id: 'paragraph-a', title: 'Original title', text: 'original text' };
+  host.paragraphs = [paragraph];
+  host.ngOnChanges({ paragraphs: new SimpleChange([], host.paragraphs, false) });
+  const original = host.assistantProps!;
+  original.onPanelVisibilityChange(true);
+
+  paragraph.text = 'edited text';
+  host.ngDoCheck();
+  expect(host.assistantProps).toBe(original);
+
+  paragraph.title = 'Renamed title';
+  host.ngDoCheck();
+  expect(host.assistantProps!.paragraphs).toEqual([{ id: 'paragraph-a', title: 'Renamed title' }]);
+  expect(original.paragraphs).toEqual([{ id: 'paragraph-a', title: 'Original title' }]);
+  expect(host.assistantProps!.connection).toBe(original.connection);
+  expect(slots.panelOpen.value).toBe(true);
+
+  host.paragraphs.unshift({ id: 'paragraph-b' });
+  host.ngDoCheck();
+  expect(host.assistantProps!.paragraphs.map(ref => ref.id)).toEqual(['paragraph-b', 'paragraph-a']);
   host.ngOnDestroy();
 });
 

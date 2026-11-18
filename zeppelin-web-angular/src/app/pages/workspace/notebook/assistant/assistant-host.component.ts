@@ -13,6 +13,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  DoCheck,
   EventEmitter,
   Input,
   OnChanges,
@@ -37,7 +38,7 @@ import { AssistantSlots } from './assistant-slots';
   `,
   standalone: false
 })
-export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
+export class AssistantHostComponent implements OnInit, OnChanges, DoCheck, OnDestroy {
   @Input() enabled = false;
   @Input() noteId!: string;
   @Input() panelWidth!: number;
@@ -106,6 +107,17 @@ export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
     if (changes.noteId || changes.enabled) this.retired = false;
     if (changes.enabled) this.failed = false;
     this.refreshProps();
+  }
+
+  ngDoCheck(): void {
+    const props = this.assistantProps;
+    if (!props) return;
+
+    const paragraphs = this.snapshotParagraphs(props.paragraphs);
+    if (paragraphs === props.paragraphs) return;
+
+    this.assistantProps = { ...props, paragraphs };
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -202,6 +214,18 @@ export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
     this.cdr.markForCheck();
   };
 
+  private snapshotParagraphs(previous?: AssistantParagraphRef[]): AssistantParagraphRef[] {
+    // Notebook edits can mutate paragraph titles and order without replacing the input array.
+    if (previous?.length === this.paragraphs.length) {
+      const unchanged = this.paragraphs.every(({ id, title }, index) => {
+        const previousParagraph = previous[index];
+        return id === previousParagraph.id && title === previousParagraph.title;
+      });
+      if (unchanged) return previous;
+    }
+    return this.paragraphs.map(({ id, title }) => ({ id, title }));
+  }
+
   private refreshProps(): void {
     if (!this.enabled || !this.noteId || this.destroyed || this.loggingOut || this.retired) return;
     if (this.awaitingLogin) return;
@@ -209,7 +233,7 @@ export class AssistantHostComponent implements OnInit, OnChanges, OnDestroy {
     this.assistantProps = {
       noteId: this.noteId,
       connection: this.connection,
-      paragraphs: this.paragraphs,
+      paragraphs: this.snapshotParagraphs(this.assistantProps?.paragraphs),
       onOpenParagraph: this.onOpenParagraph,
       slots: this.slots.slots.value,
       panelWidth: this.panelWidth,
