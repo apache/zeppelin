@@ -477,6 +477,57 @@ describe('AssistantConversationPanel', () => {
     expect((await source.api.listConversations()).some(item => item.id === 'c1')).toBe(true);
   });
 
+  it('retries a failed conversation list without closing the panel or losing the draft', async () => {
+    const source = fixture();
+    const retry = deferred();
+    const recovery = deferred();
+    const originalList = source.api.listConversations;
+    const list = vi
+      .spyOn(source.api, 'listConversations')
+      .mockRejectedValueOnce(new Error('Conversations unavailable.'))
+      .mockImplementationOnce(async () => {
+        await retry.promise;
+        throw new Error('Conversations are still unavailable.');
+      })
+      .mockImplementationOnce(async () => {
+        await recovery.promise;
+        return originalList();
+      });
+    const create = vi.spyOn(source.api, 'createConversation');
+    const run = vi.spyOn(source, 'run');
+    await mountPanel(source);
+    fireEvent.change(input(), { target: { value: 'Keep this draft through list recovery' } });
+    fireEvent.click(listTrigger());
+    expect(screen.getByRole('alert').textContent).toContain('Conversations unavailable.');
+
+    const retryButton = () => screen.getByRole('button', { name: 'Retry loading conversations' });
+    fireEvent.click(retryButton());
+    await flush();
+
+    expect(retryButton().matches(':disabled')).toBe(true);
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    fireEvent.click(retryButton());
+    expect(list).toHaveBeenCalledTimes(2);
+    await act(async () => retry.resolve());
+
+    expect(screen.getByRole('alert').textContent).toContain('Conversations are still unavailable.');
+    expect(retryButton().matches(':disabled')).toBe(false);
+    fireEvent.click(retryButton());
+    await act(async () => recovery.resolve());
+
+    expect(list).toHaveBeenCalledTimes(3);
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByText('Loading conversations…')).toBeNull();
+    expect(screen.getByRole('button', { name: /^Revenue analysis/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(input().value).toBe('Keep this draft through list recovery');
+    expect(create).not.toHaveBeenCalled();
+    expect(run).not.toHaveBeenCalled();
+
+    await select('Revenue analysis');
+    expect(within(messages()).getByText('Which region should we investigate next?')).toBeTruthy();
+  });
+
   it('shows create failure, retains the draft, and retries creation only on an explicit send', async () => {
     const source = fixture('create-failure');
     const create = vi.spyOn(source.api, 'createConversation');

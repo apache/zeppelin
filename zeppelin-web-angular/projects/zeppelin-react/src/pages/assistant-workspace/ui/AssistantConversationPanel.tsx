@@ -167,7 +167,16 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
             )}
             {panel.listError && (
               <p role="alert" className={styles.warning}>
-                {panel.listError}
+                {panel.listError}{' '}
+                <button
+                  type="button"
+                  className={styles.action}
+                  aria-label="Retry loading conversations"
+                  disabled={panel.listLoading}
+                  onClick={() => void panel.retryList()}
+                >
+                  Retry
+                </button>
               </p>
             )}
             <ConversationList

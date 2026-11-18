@@ -120,6 +120,14 @@ export class AssistantPanelModel {
     if (this.active) void this.loadList(this.generation);
   };
 
+  readonly retryList = (): Promise<void> => {
+    if (!this.active || this.listLoading || !this.listError) return Promise.resolve();
+
+    this.listLoading = true;
+    this.publish();
+    return this.loadList(this.generation);
+  };
+
   private readonly confirmed = (session: AssistantConversationSession, conversation: AssistantConversation): void => {
     if (!this.active || this.sessions.get(session.key) !== session) return;
 
@@ -228,6 +236,7 @@ export class AssistantPanelModel {
       deletingConversationIds,
       select: this.select,
       newConversation: this.newConversation,
+      retryList: this.retryList,
       setDraft: this.setDraft,
       send: this.send,
       reload: this.reload,
