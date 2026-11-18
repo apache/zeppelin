@@ -70,16 +70,20 @@ export class AssistantPanelModel {
 
   private async loadList(generation: number): Promise<void> {
     const version = ++this.listVersion;
+    const listedAtStart = new Set(this.conversations.map(conversation => conversation.id));
     try {
       const conversations = await this.source.api.listConversations();
       if (!this.active || this.generation !== generation || this.listVersion !== version) return;
 
       const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
       const refreshed = new Map(visible.map(conversation => [conversation.id, conversation]));
-      this.conversations = [
-        ...this.conversations.filter(conversation => !refreshed.has(conversation.id)),
-        ...visible
-      ].sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
+      // A list snapshot can omit conversations confirmed locally after its request began.
+      const createdDuringRequest = this.conversations.filter(
+        conversation => !listedAtStart.has(conversation.id) && !refreshed.has(conversation.id)
+      );
+      const nextConversations = [...createdDuringRequest, ...visible];
+      nextConversations.sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
+      this.conversations = nextConversations;
 
       this.sessions.forEach(session => {
         const id = session.snapshot.conversation?.id;
