@@ -166,8 +166,10 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
               </p>
             )}
             {panel.listError && (
-              <p role="alert" className={styles.warning}>
-                {panel.listError}{' '}
+              <div className={styles.listError}>
+                <div role="alert" className={styles.listErrorMessage}>
+                  {panel.listError}
+                </div>
                 <button
                   type="button"
                   className={styles.action}
@@ -177,7 +179,7 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
                 >
                   Retry
                 </button>
-              </p>
+              </div>
             )}
             <ConversationList
               conversations={panel.conversations}

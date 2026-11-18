@@ -103,6 +103,22 @@ export const warning = style({
   overflowWrap: 'anywhere'
 });
 
+export const listError = style([
+  warning,
+  {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: vars.space2
+  }
+]);
+
+export const listErrorMessage = style({
+  flex: '1 1 13rem',
+  minWidth: 0
+});
+
 export const composer = style({
   flexShrink: 0,
   minWidth: 0,
