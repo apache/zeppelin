@@ -73,10 +73,15 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
           launchingInterpreterProcess = true;
           remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
                   properties);
-          remoteInterpreterProcess.start(userName);
-          remoteInterpreterProcess.init(zConf,
-                  IdleInterpreterReclaimer.processConfigurationOverrides(zConf,
-                          interpreterSetting));
+          try {
+            remoteInterpreterProcess.start(userName);
+            remoteInterpreterProcess.init(zConf,
+                    IdleInterpreterReclaimer.processConfigurationOverrides(zConf,
+                            interpreterSetting));
+          } catch (IOException | RuntimeException e) {
+            discardFailedLaunch(e);
+            throw e;
+          }
           getInterpreterSetting().getRecoveryStorage()
                   .onInterpreterClientStart(remoteInterpreterProcess);
         }
@@ -117,6 +122,23 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   public RemoteInterpreterProcess getInterpreterProcess() {
     return remoteInterpreterProcess;
+  }
+
+  /**
+   * Without this, a failed launch (e.g. an interpreter pod rejected by a namespace quota) keeps a
+   * handle that never runs, and every later paragraph fails with "Interpreter process is not
+   * running" until the interpreter is restarted manually.
+   */
+  private void discardFailedLaunch(Exception cause) {
+    RemoteInterpreterProcess failedProcess = remoteInterpreterProcess;
+    remoteInterpreterProcess = null;
+    LOGGER.warn("Fail to launch interpreter process for InterpreterGroup: {}, discarding it so "
+        + "that the next run launches a new one", id, cause);
+    try {
+      failedProcess.stop();
+    } catch (RuntimeException e) {
+      LOGGER.warn("Fail to clean up interpreter process of InterpreterGroup: {}", id, e);
+    }
   }
 
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {
