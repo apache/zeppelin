@@ -18,10 +18,15 @@
  */
 package org.apache.zeppelin.realm;
 
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.ogdl.ReflectionBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RoleMappingLdapRealmTest {
@@ -58,5 +63,52 @@ public class RoleMappingLdapRealmTest {
     assertTrue(realm.getRoleNamesForUser("user2", null, null).contains("role2"));
     assertTrue(realm.getRoleNamesForUser("user3", null, null).contains("guest1"));
     assertTrue(realm.getRoleNamesForUser("user3", null, null).contains("guest2"));
+  }
+
+  @Test
+  public void testDefaultRoleWithQuotes() {
+    RoleMappingLdapRealm realm = new RoleMappingLdapRealm();
+    realm.setDefaultRole("\"guest1,guest2\"");
+
+    Set<String> roleNames = realm.getRoleNamesForUser("user3", null, null);
+
+    assertEquals(Set.of("guest1", "guest2"), roleNames);
+  }
+
+  @Test
+  public void testDefaultRoleWithIndividuallyQuotedRoles() {
+    RoleMappingLdapRealm realm = new RoleMappingLdapRealm();
+    realm.setDefaultRole("\"guest1\",\"guest2\"");
+
+    Set<String> roleNames = realm.getRoleNamesForUser("user3", null, null);
+
+    assertEquals(Set.of("guest1", "guest2"), roleNames);
+  }
+
+  @Test
+  public void testRolesByUsernameWithQuotedRoles() {
+    RoleMappingLdapRealm realm = new RoleMappingLdapRealm();
+    Map<String, String> rolesByUsername = new LinkedHashMap<>();
+    rolesByUsername.put("user1", "\"role1,role2\"");
+    realm.setRolesByUsername(rolesByUsername);
+
+    Set<String> roleNames = realm.getRoleNamesForUser("user1", null, null);
+
+    assertEquals(Set.of("role1", "role2"), roleNames);
+  }
+
+  @Test
+  public void testQuotedRolesParsedFromIni() {
+    Ini ini = new Ini();
+    ini.load("ldapRealm = org.apache.zeppelin.realm.RoleMappingLdapRealm\n"
+        + "ldapRealm.defaultRole = \"role1,role2\"\n"
+        + "ldapRealm.rolesByUsername = \"user1\":\"admin\",\"user2\":\"role1,role2\"\n");
+    Map<String, ?> objects = new ReflectionBuilder().buildObjects(
+        ini.getSection(Ini.DEFAULT_SECTION_NAME));
+    RoleMappingLdapRealm realm = (RoleMappingLdapRealm) objects.get("ldapRealm");
+
+    assertEquals(Set.of("admin"), realm.getRoleNamesForUser("user1", null, null));
+    assertEquals(Set.of("role1", "role2"), realm.getRoleNamesForUser("user2", null, null));
+    assertEquals(Set.of("role1", "role2"), realm.getRoleNamesForUser("user3", null, null));
   }
 }
