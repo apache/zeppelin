@@ -50,16 +50,22 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
+      # Select archive roots below org/apache; caching a parent lets tar re-include Zeppelin artifacts.
+      - &restore-maven
+        name: Restore Maven dependencies
+        uses: actions/cache/restore@v5
+        with: &maven-cache
+          path: &maven-paths |
+            ~/.m2/repository/*
+            !~/.m2/repository/org/
+            ~/.m2/repository/org/*
+            !~/.m2/repository/org/apache/
+            ~/.m2/repository/org/apache/*
             !~/.m2/repository/org/apache/zeppelin/
             ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-maven-v3-${{ hashFiles('**/pom.xml', '.mvn/**') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+            ${{ runner.os }}-${{ runner.arch }}-maven-v3-
       - name: Cache npm packages
         uses: actions/cache@v5
         with:
@@ -67,7 +73,8 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-npm-v1-${{ hashFiles('zeppelin-web/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-npm-v1-
-      - name: Cache locked Conda packages
+      - &cache-conda-python39
+        name: Cache locked Conda packages
         uses: actions/cache@v5
         with:
           path: ~/conda_pkgs_dir
@@ -113,16 +120,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - *restore-maven
       - name: Cache locked TensorFlow Conda packages
         uses: actions/cache@v5
         with:
@@ -163,23 +161,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
-      - name: Cache locked Conda packages
-        uses: actions/cache@v5
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+      - *restore-maven
+      - *cache-conda-python39
       - name: Setup conda environment with python ${{ matrix.python }}
         uses: conda-incubator/setup-miniconda@v4
         with:
@@ -216,23 +199,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
-      - name: Cache locked Conda packages
-        uses: actions/cache@v5
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+      - *restore-maven
+      - *cache-conda-python39
       - name: install environment
         run: |
           ./mvnw install -DskipTests -Pintegration -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown,flink-cmd,flink/flink-scala-2.12,jdbc,shell -am -Pweb-classic -Pflink-1.20 ${MAVEN_ARGS}
@@ -276,23 +244,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
-      - name: Cache locked Conda packages
-        uses: actions/cache@v5
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+      - *restore-maven
+      - *cache-conda-python39
       - name: Cache locked PyFlink packages
         uses: actions/cache@v5
         with:
@@ -338,23 +291,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
-      - name: Cache locked Conda packages
-        uses: actions/cache@v5
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+      - *restore-maven
+      - *cache-conda-python39
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl zeppelin-interpreter-integration,zeppelin-web,spark-submit,spark/scala-2.12,spark/scala-2.13,markdown -am -Pweb-classic -Pintegration ${MAVEN_ARGS}
@@ -420,16 +358,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - *restore-maven
       - name: Cache locked Conda packages
         uses: actions/cache@v5
         with:
@@ -474,31 +403,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 11
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.m2/wrapper
-          key: ${{ runner.os }}-${{ runner.arch }}-maven-v2-${{ hashFiles('**/pom.xml', '.mvn/**') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-maven-v2-
+      - *restore-maven
       # Only this job downloads a standalone Spark archive; spark-test uses Maven artifacts.
       - name: Cache Spark distributions
         uses: actions/cache@v5
         with:
-          path: .spark-dist
-          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-${{ hashFiles('testing/downloadSpark.sh', 'pom.xml', 'spark/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-spark-dist-v1-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}-
-      - name: Cache locked Conda packages
-        uses: actions/cache@v5
-        with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-${{ hashFiles('testing/locks/python-3.9-linux-64.conda.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-python-3.9-v1-
+          path: .spark-dist/spark-${{ env.SPARK_VERSION }}-bin-hadoop${{ env.HADOOP_VERSION }}.tgz
+          # Bump spark-dist-v2 if the download target or archive format changes
+          # without changing the Spark/Hadoop versions.
+          key: ${{ runner.os }}-${{ runner.arch }}-spark-dist-v2-${{ env.SPARK_VERSION }}-hadoop${{ env.HADOOP_VERSION }}
+      - *cache-conda-python39
       - name: install environment
         run: |
           ./mvnw install -DskipTests -pl livy -am ${MAVEN_ARGS}
@@ -535,19 +449,24 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.m2/repository
-            !~/.m2/repository/org/apache/zeppelin/
-            ~/.spark-dist
-            ~/.cache
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
+      # This full-reactor build populates the shared baseline; other Linux jobs only restore it.
+      - &restore-maven-with-output
+        name: Restore Maven dependencies
+        id: maven-cache
+        uses: actions/cache/restore@v5
+        with: *maven-cache
       - name: build without any profiles
         run: ./mvnw clean verify -DskipTests ${MAVEN_ARGS}
+      - name: Save Maven dependencies
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          matrix.java == 11 &&
+          steps.maven-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with: &save-maven
+          path: *maven-paths
+          key: ${{ steps.maven-cache.outputs.cache-primary-key }}
 
   windows-build:
     runs-on: windows-latest
@@ -563,15 +482,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - name: Cache local Maven repository
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~\.m2\repository
-            !~\.m2\repository\org\apache\zeppelin\
-          key: ${{ runner.os }}-zeppelin-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-zeppelin-
+      - *restore-maven-with-output
       - name: Build on Windows
         run: |
           .\mvnw.cmd clean package -DskipTests ^
@@ -580,3 +491,10 @@ jobs:
             -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugins.dependency.fromDependencies.CopyDependenciesMojo=warn ^
             --no-transfer-progress
         shell: cmd
+      - name: Save Maven dependencies
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          steps.maven-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with: *save-maven
