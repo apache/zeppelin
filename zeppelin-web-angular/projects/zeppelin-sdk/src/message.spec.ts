@@ -164,15 +164,25 @@ describe('Message.receive', () => {
 });
 
 describe('Message.send', () => {
-  const connectedMessage = () => {
+  const messages: Message[] = [];
+  afterEach(() => {
+    for (const message of messages.splice(0)) {
+      message.destroy();
+    }
+  });
+
+  const offlineMessage = () => {
     const message = new Message();
+    messages.push(message);
+    message.setOnline(false);
+    message.bootstrap({ principal: 'anonymous', ticket: 'ticket', roles: '[]' }, 'ws://zeppelin.test/ws');
     const next = vi.fn();
-    (message as unknown as { ws: { next: typeof next } }).ws = { next };
+    message.sent().subscribe(next);
     return { message, next };
   };
 
   it('returns the msgId of each sent message', () => {
-    const { message, next } = connectedMessage();
+    const { message, next } = offlineMessage();
 
     const commitMsgId = message.commitParagraph('p1', undefined, 'text', {}, {}, 'n1');
     const insertMsgId = message.insertParagraph(0);
@@ -183,7 +193,7 @@ describe('Message.send', () => {
   });
 
   it('returns the msgId of a note read and a revision read', () => {
-    const { message, next } = connectedMessage();
+    const { message, next } = offlineMessage();
 
     const noteMsgId = message.getNote('n1');
     const revisionMsgId = message.noteRevision('n1', 'r1');
