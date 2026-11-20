@@ -10,13 +10,12 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { selectAclCapabilities, selectOrderedParagraphs, NotebookReadSnapshot } from '@zeppelin/notebook-core';
-import { MessageService, SecurityService, TicketService } from '@zeppelin/services';
+import { TicketService } from '@zeppelin/services';
 
 import { NotebookCoreReadHost } from './notebook-core-read-host';
 import {
@@ -37,7 +36,7 @@ type ReadView = Readonly<{
 /**
  * The private read-only notebook view. It renders loaded Core snapshots and saved results only:
  * nothing here sends run, save, patch, form or configuration messages, including on mount and
- * unmount. Its host, and the port on it, live exactly as long as this route component.
+ * unmount. The route entry owns the host: this view neither opens nor disposes it.
  */
 @Component({
   selector: 'zeppelin-notebook-core-read',
@@ -46,41 +45,21 @@ type ReadView = Readonly<{
   styleUrls: ['./notebook-core-read.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookCoreReadComponent implements OnInit, OnDestroy {
-  readonly host: NotebookCoreReadHost;
-  readonly view$: Observable<ReadView>;
-  private readonly destroy$ = new Subject<void>();
+export class NotebookCoreReadComponent implements OnInit {
+  @Input({ required: true }) host!: NotebookCoreReadHost;
+  view$!: Observable<ReadView>;
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    messageService: MessageService,
-    securityService: SecurityService,
-    ticketService: TicketService
-  ) {
-    this.host = new NotebookCoreReadHost(messageService, messageService, securityService);
+  constructor(private readonly ticketService: TicketService) {}
+
+  ngOnInit(): void {
     this.view$ = this.host.state$.pipe(
       map(({ snapshot, connected }) => ({
         snapshot,
         connected,
         paragraphs: selectOrderedParagraphs(snapshot).map(toReadParagraphView),
-        access: toReadAccess(selectAclCapabilities(snapshot, toPrincipals(ticketService.ticket)))
+        access: toReadAccess(selectAclCapabilities(snapshot, toPrincipals(this.ticketService.ticket)))
       }))
     );
-  }
-
-  ngOnInit(): void {
-    this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(({ noteId, revisionId }) => {
-      if (!noteId) {
-        throw new Error('Route parameter `noteId` is required.');
-      }
-      this.host.open(revisionId ? { kind: 'revision', noteId, revisionId } : { kind: 'note', noteId });
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.host.dispose();
   }
 
   retry(): void {

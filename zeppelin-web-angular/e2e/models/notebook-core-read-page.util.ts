@@ -173,10 +173,19 @@ export const checkpoint = async (
   message: string
 ): Promise<string | null> => {
   const capabilities = await request.get('/api/notebook/capabilities');
-  if (!(await capabilities.json()).body.isRevisionSupported) return null;
+  expect(capabilities.ok(), `Notebook capabilities failed (${capabilities.status()})`).toBe(true);
+  const { body } = await capabilities.json();
+  expect(typeof body.isRevisionSupported).toBe('boolean');
+  expect(
+    body.isRevisionSupported || process.env.ZEPPELIN_E2E_REQUIRE_REVISION !== 'true',
+    'The revision CI run requires versioned notebook storage'
+  ).toBe(true);
+  if (!body.isRevisionSupported) return null;
   const response = await request.post(`/api/notebook/${noteId}/revision`, { data: { commitMessage: message } });
   expect(response.ok(), `Checkpoint failed (${response.status()})`).toBe(true);
-  return (await response.json()).body as string;
+  const revisionId = (await response.json()).body;
+  expect(revisionId, 'Checkpoint must return a non-empty revision id').toEqual(expect.stringMatching(/\S/));
+  return revisionId;
 };
 
 export const setNotePermissions = async (

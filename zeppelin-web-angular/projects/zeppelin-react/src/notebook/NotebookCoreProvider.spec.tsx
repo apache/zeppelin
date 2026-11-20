@@ -12,11 +12,13 @@
 
 import { act, StrictMode } from 'react';
 import { render, renderHook, screen } from '@testing-library/react';
-import type { NotebookCorePort, NotebookCoreSnapshot } from '@zeppelin/notebook-core';
+import { createNotebookReadStore, type NotebookCorePort, type NotebookCoreSnapshot } from '@zeppelin/notebook-core';
 import { describe, expect, it, vi } from 'vitest';
 import {
   NotebookCoreProvider,
+  NotebookReadProvider,
   useNotebookCore,
+  useNotebookReadSnapshot,
   useNotebookSelector,
   useNotebookSnapshot
 } from './NotebookCoreProvider';
@@ -195,5 +197,35 @@ describe('useNotebookSelector', () => {
     port.publish({ noteId: 'note-b', revisionId: 'revision-1' });
     expect(selectorRenders).toBe(rendersBefore + 1);
     expect(screen.getByTestId('revision').textContent).toBe('revision-1');
+  });
+});
+
+describe('NotebookReadProvider', () => {
+  it('keeps the exact read port as the tree port and reads its read state', () => {
+    const store = createNotebookReadStore();
+    const core = Object.freeze({ getSnapshot: store.getSnapshot, subscribe: store.subscribe });
+    const { result } = renderHook(() => ({ port: useNotebookCore(), snapshot: useNotebookReadSnapshot() }), {
+      wrapper: ({ children }) => <NotebookReadProvider core={core}>{children}</NotebookReadProvider>
+    });
+
+    expect(result.current.port).toBe(core);
+    expect(result.current.snapshot).toBe(store.getSnapshot());
+  });
+
+  it('throws outside NotebookReadProvider, also inside a plain NotebookCoreProvider', () => {
+    const port = createHostPort(noteSnapshot);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const preventReport = (event: ErrorEvent) => event.preventDefault();
+    window.addEventListener('error', preventReport);
+    try {
+      expect(() =>
+        renderHook(() => useNotebookReadSnapshot(), {
+          wrapper: ({ children }) => <NotebookCoreProvider core={port.core}>{children}</NotebookCoreProvider>
+        })
+      ).toThrow('useNotebookReadSnapshot must be used inside NotebookReadProvider');
+    } finally {
+      window.removeEventListener('error', preventReport);
+      consoleError.mockRestore();
+    }
   });
 });

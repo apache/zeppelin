@@ -11,7 +11,13 @@
  */
 
 import { createContext, ReactNode, useContext, useSyncExternalStore } from 'react';
-import type { NotebookCorePort, NotebookCoreRemoteProps, NotebookCoreSnapshot } from '@zeppelin/notebook-core';
+import type {
+  NotebookCorePort,
+  NotebookCoreRemoteProps,
+  NotebookCoreSnapshot,
+  NotebookReadPort,
+  NotebookReadSnapshot
+} from '@zeppelin/notebook-core';
 
 const NotebookCoreContext = createContext<NotebookCorePort | null>(null);
 
@@ -55,4 +61,22 @@ export const useNotebookSnapshot = (): NotebookCoreSnapshot => {
 export const useNotebookSelector = <T,>(selector: (snapshot: NotebookCoreSnapshot) => T): T => {
   const core = useNotebookCore();
   return useSyncExternalStore(core.subscribe, () => selector(core.getSnapshot()));
+};
+
+const NotebookReadContext = createContext<NotebookReadPort | null>(null);
+
+/** NotebookCoreProvider for a read port, so `useNotebookReadSnapshot` can read the read state. */
+export const NotebookReadProvider = ({ core, children }: Readonly<{ core: NotebookReadPort; children: ReactNode }>) => (
+  <NotebookCoreProvider core={core}>
+    <NotebookReadContext.Provider value={core}>{children}</NotebookReadContext.Provider>
+  </NotebookCoreProvider>
+);
+
+/** The read state of the host-provided read port. Throws outside NotebookReadProvider. */
+export const useNotebookReadSnapshot = (): NotebookReadSnapshot => {
+  const core = useContext(NotebookReadContext);
+  if (core === null) {
+    throw new Error('useNotebookReadSnapshot must be used inside NotebookReadProvider');
+  }
+  return useSyncExternalStore(core.subscribe, core.getSnapshot);
 };

@@ -24,7 +24,8 @@ export const createNotebookChildRoutes = (component: Type<unknown>, canMatch?: C
 /**
  * Development and test opt-in for the private Core-backed read view (ZEPPELIN-6737), e.g.
  * `#/notebook/<id>?notebookCoreRead`. Without it the editable notebook is unchanged. Navigating to
- * a notebook URL without it leaves the read view and loads the editable notebook afresh.
+ * a notebook URL without it leaves the read view and loads the editable notebook afresh. Adding
+ * `notebookCoreReact` shows the React read view there instead (ZEPPELIN-6727).
  */
 const NOTEBOOK_CORE_READ_QUERY_PARAM = 'notebookCoreRead';
 
