@@ -46,6 +46,7 @@ export const assistantThemeValues = (token: GlobalToken) => {
     textSecondary: token.colorTextSecondary,
     textTertiary: text(token.colorTextTertiary),
     bg: token.colorBgContainer,
+    bgMask: token.colorBgMask,
     fill: token.colorFillQuaternary,
     fillStrong: token.colorFillTertiary,
     border: token.colorBorderSecondary,

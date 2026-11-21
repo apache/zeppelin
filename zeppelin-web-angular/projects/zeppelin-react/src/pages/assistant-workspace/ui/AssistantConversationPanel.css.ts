@@ -175,7 +175,7 @@ export const confirmationBackdrop = style({
   alignItems: 'center',
   justifyContent: 'center',
   padding: vars.space3,
-  background: vars.bg,
+  background: vars.bgMask,
   overflowY: 'auto',
   overscrollBehavior: 'contain'
 });
