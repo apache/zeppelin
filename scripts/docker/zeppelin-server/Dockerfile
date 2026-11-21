@@ -37,10 +37,12 @@ RUN set -ex && \
     apt-get clean
 
 ARG version="0.13.0-SNAPSHOT"
+# Set automatically by buildx (amd64 or arm64), matches the openjdk install path suffix
+ARG TARGETARCH
 
 ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-${TARGETARCH} \
     VERSION="${version}" \
     HOME="/opt/zeppelin" \
     ZEPPELIN_HOME="/opt/zeppelin" \

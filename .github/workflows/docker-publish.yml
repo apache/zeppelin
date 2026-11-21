@@ -1,0 +1,86 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: docker-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Released Zeppelin version to build and tag (e.g. 0.12.0)'
+        required: true
+        type: string
+      push_latest:
+        description: 'Also push the "latest" tag'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Build only, do not log in to or push to Docker Hub'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -z "${VERSION}" ]]; then
+            echo "version is required" >&2
+            exit 1
+          fi
+          if [[ "${VERSION}" == *SNAPSHOT* ]]; then
+            echo "SNAPSHOT versions cannot be published: ${VERSION}" >&2
+            exit 1
+          fi
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "version must look like X.Y.Z: ${VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Log in to Docker Hub
+        if: ${{ !inputs.dry_run }}
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: scripts/docker/zeppelin/bin
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            Z_VERSION=${{ inputs.version }}
+          push: ${{ !inputs.dry_run }}
+          tags: |
+            apache/zeppelin:${{ inputs.version }}
+            ${{ inputs.push_latest && 'apache/zeppelin:latest' || '' }}
