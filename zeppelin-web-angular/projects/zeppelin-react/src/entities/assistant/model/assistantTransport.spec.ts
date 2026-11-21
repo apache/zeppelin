@@ -54,7 +54,7 @@ const fakeSocket = () => {
   };
 };
 
-const forNote = (noteId: string, onAuthError?: (status: number) => void) =>
+const forNote = (noteId: string, onAuthError?: (status: number, location: string | null) => void) =>
   createAssistantConversationApi('https://example.test/zeppelin/api', noteId, onAuthError);
 
 const iterate = <T>(iterable: AsyncIterable<T>): AsyncIterator<T> => iterable[Symbol.asyncIterator]();
@@ -226,7 +226,7 @@ describe('assistant transport', () => {
       'fetch',
       vi
         .fn()
-        .mockResolvedValueOnce(new Response(null, { status: 401 }))
+        .mockResolvedValueOnce(new Response(null, { status: 401, headers: { Location: '/login' } }))
         .mockResolvedValueOnce(new Response(null, { status: 405 }))
         .mockResolvedValueOnce(new Response(null, { status: 500 }))
     );
@@ -236,7 +236,28 @@ describe('assistant transport', () => {
     await expect(transport.createConversation({})).rejects.toMatchObject({ status: 405 });
     await expect(transport.getMessages('c')).rejects.toBeInstanceOf(AssistantHttpError);
 
-    expect(onAuthError.mock.calls).toEqual([[401], [405]]);
+    expect(onAuthError.mock.calls).toEqual([
+      [401, '/login'],
+      [405, null]
+    ]);
+  });
+
+  it('preserves the rejected HTTP request when host authentication handling throws', async () => {
+    const handlerError = new Error('Host navigation failed');
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 405 })));
+    try {
+      const transport = forNote('n', () => {
+        throw handlerError;
+      });
+      await expect(transport.listConversations()).rejects.toMatchObject({
+        name: 'AssistantHttpError',
+        status: 405
+      });
+      expect(logged).toHaveBeenCalledWith('Assistant authentication handler failed', handlerError);
+    } finally {
+      logged.mockRestore();
+    }
   });
 
   it('sends over the socket and yields only this conversation until a terminal event', async () => {

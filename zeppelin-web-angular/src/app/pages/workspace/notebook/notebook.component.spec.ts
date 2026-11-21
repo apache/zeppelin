@@ -10,12 +10,12 @@
  * limitations under the License.
  */
 
-import { NEVER } from 'rxjs';
+import { BehaviorSubject, NEVER, Subject } from 'rxjs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { ChangeDetectorRef } from '@angular/core';
+import { QueryList, type ChangeDetectorRef } from '@angular/core';
 import type { Title } from '@angular/platform-browser';
-import type { ActivatedRoute, Router } from '@angular/router';
+import { convertToParamMap, type ActivatedRoute, type Router } from '@angular/router';
 import { OP, type MessageReceiveDataTypeMap, type WebSocketMessage } from '@zeppelin/sdk';
 
 import type {
@@ -28,6 +28,8 @@ import type {
   TicketService
 } from '@zeppelin/services';
 import { NgZService } from '../../../services/ng-z.service';
+import type { AssistantHostComponent } from './assistant/assistant-host.component';
+import type { NotebookParagraphComponent } from './paragraph/paragraph.component';
 
 vi.mock('./paragraph/paragraph.component', () => ({
   NotebookParagraphComponent: class NotebookParagraphComponent {}
@@ -40,7 +42,11 @@ const createComponent = () => {
     receive: vi.fn(() => NEVER),
     receiveEnvelope: vi.fn(() => NEVER),
     consumeLocalAddFocusMsgId: vi.fn(() => false),
-    getInterpreterBindings: vi.fn()
+    getInterpreterBindings: vi.fn(),
+    getNote: vi.fn(),
+    listRevisionHistory: vi.fn(),
+    connectedStatus: true,
+    connectedStatus$: new Subject<boolean>()
   };
 
   const router = {
@@ -48,26 +54,33 @@ const createComponent = () => {
   } as unknown as Router;
   const ngZService = new NgZService();
   const routeParams: Record<string, string> = { noteId: 'note-b' };
+  const params = new BehaviorSubject({ ...routeParams });
+  const queryParamMap = new BehaviorSubject(convertToParamMap({}));
 
   const component = new NotebookComponent(
     messageService as unknown as MessageService,
     ngZService,
     {
+      params,
+      queryParamMap,
       snapshot: {
-        params: routeParams
+        params: routeParams,
+        queryParamMap: queryParamMap.value
       }
     } as unknown as ActivatedRoute,
     {
       markForCheck: vi.fn()
     } as unknown as ChangeDetectorRef,
     {} as NoteStatusService,
-    {} as NoteVarShareService,
+    { clear: vi.fn() } as unknown as NoteVarShareService,
     {} as TicketService,
     { getPermissions: () => NEVER } as unknown as SecurityService,
     router,
     { setTitle: vi.fn() } as unknown as Title,
     { updateMonacoTheme: vi.fn() } as unknown as ThemeService,
-    {} as ReactFeatureService
+    {
+      isEnabled: (feature, map) => map?.get(feature === 'assistantPanel' ? 'reactAssistant' : 'reactFooter') === 'true'
+    } as ReactFeatureService
   );
 
   return {
@@ -75,7 +88,9 @@ const createComponent = () => {
     router,
     messageService,
     ngZService,
-    routeParams
+    routeParams,
+    params,
+    queryParamMap
   };
 };
 
@@ -319,5 +334,49 @@ describe('NotebookComponent', () => {
     expect(recreatedOutput.localValue).toBeUndefined();
     ngZService.setContextValue('controlValue', 'live-model', 'A', false, binding);
     expect(recreatedOutput.controlValue).toBe('live-model');
+  });
+
+  it('selects referenced paragraphs and reissues scrolling when the same paragraph is activated again', () => {
+    const { component, router } = createComponent();
+    component.note = {
+      id: 'note-b',
+      config: {},
+      paragraphs: [{ id: 'A', config: {} }]
+    } as NonNullable<typeof component.note>;
+    const scrollIfNeeded = vi.fn();
+    component.listOfNotebookParagraphComponent = new QueryList<NotebookParagraphComponent>();
+    component.listOfNotebookParagraphComponent.reset([
+      { paragraph: { id: 'A' }, scrollIfNeeded } as unknown as NotebookParagraphComponent
+    ]);
+    component.openAssistantParagraph('A');
+    expect(component.selectId).toBe('A');
+    expect(component.scrolledId).toBe('A');
+    expect(scrollIfNeeded).not.toHaveBeenCalled();
+    component.openAssistantParagraph('A');
+    expect(scrollIfNeeded).toHaveBeenCalledOnce();
+    component.openAssistantParagraph('missing');
+    expect(component.selectId).toBe('A');
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('retires the assistant before the next route note loads and ignores old NOTE replies', () => {
+    const { component, params, routeParams, messageService } = createComponent();
+    const oldNote = {
+      id: 'note-b',
+      config: {},
+      paragraphs: []
+    } as NonNullable<typeof component.note>;
+    component.note = oldNote;
+    const retire = vi.fn();
+    component.assistantHost = { retire } as unknown as AssistantHostComponent;
+    component.ngOnInit();
+    routeParams.noteId = 'note-c';
+    params.next({ ...routeParams });
+    expect(retire).toHaveBeenCalledOnce();
+    expect(component.note).toBeUndefined();
+    expect(messageService.getNote).toHaveBeenLastCalledWith('note-c');
+    component.getNote({ op: OP.NOTE, data: { note: oldNote } });
+    expect(component.note).toBeUndefined();
+    component.ngOnDestroy();
   });
 });

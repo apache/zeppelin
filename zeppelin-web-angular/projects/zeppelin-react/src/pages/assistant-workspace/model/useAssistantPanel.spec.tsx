@@ -1590,6 +1590,106 @@ describe('useAssistantPanel', () => {
     });
   });
 
+  it.each([false, true])('removes server-deleted conversations after a refresh (empty=%s)', async empty => {
+    const harness = sourceHarness();
+    const panel = await mountPanel(harness.source);
+    await act(async () => panel.result.current.select('a'));
+    const remaining = empty ? [] : [conversation('a')];
+    harness.api.listConversations.mockResolvedValueOnce(remaining);
+
+    const sending = await sendQuestion(panel, 'Refresh the conversation list');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await sending.completion;
+    });
+
+    expect(panel.result.current.conversations).toEqual(remaining);
+    const selectedKey = panel.result.current.selectedKey;
+    harness.api.getMessages.mockClear();
+    await act(async () => panel.result.current.select('b'));
+
+    expect(panel.result.current.selectedKey).toBe(selectedKey);
+    expect(harness.api.getMessages).not.toHaveBeenCalled();
+  });
+
+  it('preserves a conversation confirmed locally while the initial list request is pending', async () => {
+    const harness = sourceHarness();
+    const initial = deferred<AssistantConversation[]>();
+    harness.api.listConversations.mockImplementationOnce(() => initial.promise);
+    const panel = await mountPanel(harness.source);
+    const sending = await sendQuestion(panel, 'Keep the newly created conversation');
+    act(() => panel.result.current.newConversation());
+    act(() => panel.result.current.setDraft('A separate local draft'));
+
+    await act(async () => initial.resolve([conversation('a')]));
+
+    expect(panel.result.current.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
+    expect(panel.result.current.entry.draft).toBe('A separate local draft');
+    await act(async () => panel.result.current.select('created'));
+
+    expect(panel.result.current.entry).toMatchObject({
+      conversation: { id: 'created' },
+      phase: 'pending',
+      draft: 'Keep the newly created conversation'
+    });
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.failed', message: 'Submission rejected' });
+      await sending.completion;
+    });
+  });
+
+  it.each([false, true])(
+    'reconciles deleted entries and a concurrent local creation (returned by server=%s)',
+    async returnedByServer => {
+      const harness = sourceHarness();
+      const panel = await mountPanel(harness.source);
+      const refresh = deferred<AssistantConversation[]>();
+      harness.api.listConversations.mockImplementationOnce(() => refresh.promise);
+      await act(async () => panel.result.current.select('a'));
+      const existing = await sendQuestion(panel, 'Refresh existing conversations');
+      await act(async () => {
+        harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+        await existing.completion;
+      });
+
+      act(() => panel.result.current.newConversation());
+      const created = await sendQuestion(panel, 'Keep the concurrent conversation');
+      await act(async () => panel.result.current.select('a'));
+      act(() => panel.result.current.setDraft('Keep the existing conversation draft'));
+      const serverCreated = { ...conversation('created'), title: 'Server title' };
+      await act(async () =>
+        refresh.resolve(returnedByServer ? [conversation('a'), serverCreated] : [conversation('a')])
+      );
+
+      expect(panel.result.current.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
+      expect(panel.result.current.entry.draft).toBe('Keep the existing conversation draft');
+      await act(async () => panel.result.current.select('created'));
+      expect(panel.result.current.entry).toMatchObject({
+        conversation: returnedByServer ? serverCreated : conversation('created'),
+        phase: 'pending',
+        draft: 'Keep the concurrent conversation'
+      });
+      await act(async () =>
+        harness.feeds[1].push(
+          { type: 'run.started' },
+          { type: 'message.delta', messageId: 'created-answer', delta: 'Continued answer' }
+        )
+      );
+      expect(panel.result.current.entry.answer).toMatchObject({
+        status: 'streaming',
+        content: 'Continued answer'
+      });
+
+      harness.api.listConversations.mockResolvedValueOnce([conversation('a')]);
+      await act(async () => {
+        harness.feeds[1].push({ type: 'run.completed' });
+        await created.completion;
+      });
+
+      expect(panel.result.current.conversations).toEqual([conversation('a')]);
+    }
+  );
+
   it('refreshes activity metadata and ordering after a send in an existing conversation', async () => {
     const source = createAssistantFixture({
       conversations: ASSISTANT_HISTORY_CONVERSATIONS,
@@ -1619,7 +1719,7 @@ describe('useAssistantPanel', () => {
       await sending.completion;
     });
 
-    expect(panel.result.current.conversations.map(item => item.id)).toEqual(['b', 'a', 'read-only']);
+    expect(panel.result.current.conversations.map(item => item.id)).toEqual(['b', 'a']);
   });
 
   it('preserves a session deletion failure across activity refresh without changing list errors', async () => {

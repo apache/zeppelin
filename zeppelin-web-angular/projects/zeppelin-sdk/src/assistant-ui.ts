@@ -10,6 +10,8 @@
  * limitations under the License.
  */
 
+import type { AssistantSocket } from './assistant';
+
 /** The notebook sidebar's width: its default and its resize range. The assistant panel shares it. */
 export const NOTEBOOK_SIDEBAR_WIDTH = { initial: 370, min: 280, max: 800 } as const;
 
@@ -25,9 +27,21 @@ export interface AssistantSlot {
   kind: 'navigation' | 'panel';
 }
 
-/** The layout contract; transport and conversation props are added with notebook integration. */
+/** Authentication session and notebook connection supplied by the Angular host. */
+export interface AssistantConnection {
+  apiBase: string;
+  socket: AssistantSocket;
+  /** Changes after logout or a change of authenticated user, not ordinary ticket refreshes. */
+  sessionKey: number;
+  onAuthError: (status: number, location: string | null) => void;
+}
+
+/** Props passed by the notebook host to the React Assistant. */
 export type AssistantShellProps = {
   noteId: string;
+  connection: AssistantConnection;
+  paragraphs: AssistantParagraphRef[];
+  onOpenParagraph: (paragraphId: string) => void;
   slots: AssistantSlot[];
   panelWidth: number;
   onPanelWidthChange: (width: number) => void;

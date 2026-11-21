@@ -18,6 +18,7 @@ export const themeVars = createThemeContract({
   textSecondary: null,
   textTertiary: null,
   bg: null,
+  bgMask: null,
   fill: null,
   fillStrong: null,
   border: null,
