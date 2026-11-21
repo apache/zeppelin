@@ -17,7 +17,8 @@ export const header = style({
   display: 'flex',
   alignItems: 'center',
   gap: vars.space2,
-  padding: `${vars.space1} 0`,
+  paddingBlock: vars.space1,
+  paddingInlineEnd: vars.space1,
   borderBottom: `1px solid ${vars.border}`
 });
 
