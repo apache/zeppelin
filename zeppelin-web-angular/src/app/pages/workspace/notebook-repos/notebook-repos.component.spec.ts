@@ -65,8 +65,6 @@ describe('NotebookReposComponent', () => {
     component.getRepos();
 
     expect(nzMessageService.error).toHaveBeenCalledTimes(1);
-    // Same reference: reactListProps memoizes on this identity, so a silent failure here would
-    // otherwise leave the React card's pendingSave stuck.
     expect(component.repositories).toBe(before);
   });
 
@@ -137,7 +135,150 @@ describe('NotebookReposComponent', () => {
     component.getRepos();
     const third = component.reactListProps;
     expect(third).not.toBe(first);
-    expect(third.repositories).toBe(component.repositories);
+    expect(third.snapshot).toMatchObject({ repositories: component.repositories });
+  });
+
+  it('finishes each save only after a GET started after its PUT', async () => {
+    const saveB$ = new Subject<object>();
+    const saveA$ = new Subject<object>();
+    const getA$ = new Subject<NotebookRepo[]>();
+    const getB$ = new Subject<NotebookRepo[]>();
+    const updateRepo = vi.fn().mockReturnValueOnce(saveB$).mockReturnValueOnce(saveA$);
+    const getRepos = vi.fn().mockReturnValueOnce(getA$).mockReturnValueOnce(getB$);
+    const { component } = createComponent({ updateRepo, getRepos });
+    const resultB = component.onReactRepoSave(repo());
+    const resultA = component.onReactRepoSave(repo({ name: 'Other', className: 'Other' }));
+    const finishedB = vi.fn();
+    void resultB.then(finishedB);
+
+    saveA$.next({});
+    saveB$.next({});
+    getA$.next([repo()]);
+    expect(await resultA).toMatchObject({ version: 1, repositories: [repo()] });
+    expect(finishedB).not.toHaveBeenCalled();
+
+    getB$.next([repo({ settings: [] })]);
+    expect(await resultB).toMatchObject({ version: 2, repositories: [repo({ settings: [] })] });
+  });
+
+  it('ignores a late older GET without regressing the server snapshot', async () => {
+    const older$ = new Subject<NotebookRepo[]>();
+    const newer$ = new Subject<NotebookRepo[]>();
+    const { component } = createComponent({
+      getRepos: vi.fn().mockReturnValueOnce(older$).mockReturnValueOnce(newer$),
+      updateRepo: () => of({})
+    });
+    component.getRepos();
+    const result = component.onReactRepoSave(repo());
+    newer$.next([repo({ name: 'New' })]);
+    const applied = component.reactListProps;
+    older$.next([repo({ name: 'Old' })]);
+
+    expect(component.repositories[0].name).toBe('New');
+    expect(component.reactListProps).toBe(applied);
+    expect(await result).toEqual(applied.snapshot);
+  });
+
+  it('keeps a successful older GET when a newer GET fails', () => {
+    const older$ = new Subject<NotebookRepo[]>();
+    const newer$ = new Subject<NotebookRepo[]>();
+    const { component } = createComponent({
+      getRepos: vi.fn().mockReturnValueOnce(older$).mockReturnValueOnce(newer$)
+    });
+    component.getRepos();
+    component.getRepos();
+    newer$.error(new Error('newer fetch failed'));
+    older$.next([repo()]);
+
+    expect(component.repositories).toEqual([repo()]);
+  });
+
+  it('returns actual server state after a failed PUT', async () => {
+    const response$ = new Subject<NotebookRepo[]>();
+    const { component, nzMessageService } = createComponent({
+      getRepos: () => response$,
+      updateRepo: () => throwError(() => new Error('save failed'))
+    });
+    const result = component.onReactRepoSave(repo());
+    response$.next([repo()]);
+
+    expect(await result).toMatchObject({ repositories: [repo()] });
+    expect(nzMessageService.error).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a save pending on GET failure and recovers on a later GET', async () => {
+    const response$ = new Subject<NotebookRepo[]>();
+    const { component } = createComponent({
+      getRepos: vi
+        .fn()
+        .mockReturnValueOnce(throwError(() => new Error('fetch failed')))
+        .mockReturnValueOnce(response$),
+      updateRepo: () => of({})
+    });
+    const result = component.onReactRepoSave(repo());
+    const finished = vi.fn();
+    void result.then(finished);
+    await Promise.resolve();
+    expect(finished).not.toHaveBeenCalled();
+
+    component.getRepos();
+    response$.next([repo()]);
+    expect(await result).toMatchObject({ repositories: [repo()], version: 2 });
+  });
+
+  it('does not confirm a failed refetch with an earlier GET arriving late', async () => {
+    const earlier$ = new Subject<NotebookRepo[]>();
+    const later$ = new Subject<NotebookRepo[]>();
+    const { component } = createComponent({
+      getRepos: vi
+        .fn()
+        .mockReturnValueOnce(earlier$)
+        .mockReturnValueOnce(throwError(() => new Error('save refetch failed')))
+        .mockReturnValueOnce(later$),
+      updateRepo: () => of({})
+    });
+    component.getRepos();
+    const result = component.onReactRepoSave(repo());
+    const finished = vi.fn();
+    void result.then(finished);
+    earlier$.next([repo()]);
+    await Promise.resolve();
+    expect(finished).not.toHaveBeenCalled();
+
+    component.getRepos();
+    later$.next([repo()]);
+    expect(await result).toMatchObject({ version: 3 });
+  });
+
+  it('cancels a pending PUT when the view is destroyed', async () => {
+    const response$ = new Subject<object>();
+    const getRepos = vi.fn(() => of([]));
+    const { component } = createComponent({ getRepos, updateRepo: () => response$ });
+    const result = component.onReactRepoSave(repo());
+    component.ngOnDestroy();
+    await expect(result).rejects.toThrow();
+    response$.next({});
+
+    expect(getRepos).not.toHaveBeenCalled();
+    expect(component.repositories).toEqual([]);
+  });
+
+  it('cancels the recovery wait after a failed GET when the view is destroyed', async () => {
+    const response$ = new Subject<NotebookRepo[]>();
+    const { component } = createComponent({
+      getRepos: vi
+        .fn()
+        .mockReturnValueOnce(throwError(() => new Error('fetch failed')))
+        .mockReturnValueOnce(response$),
+      updateRepo: () => of({})
+    });
+    const result = component.onReactRepoSave(repo());
+    component.getRepos();
+    component.ngOnDestroy();
+    await expect(result).rejects.toThrow();
+    response$.next([repo()]);
+
+    expect(component.repositories).toEqual([]);
   });
 
   it('falls back to the Angular list once the React remote reports an error', () => {

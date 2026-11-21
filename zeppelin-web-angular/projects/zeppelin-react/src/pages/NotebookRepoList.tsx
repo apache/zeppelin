@@ -10,7 +10,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { CloseOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { Button, Card, Input, Select, Space, Table } from 'antd';
@@ -31,10 +31,16 @@ export interface NotebookRepo {
   settings: NotebookRepoSetting[];
 }
 
+export interface NotebookRepoListSnapshot {
+  repositories: NotebookRepo[];
+  /** Host-assigned sequence of the GET that produced this list. */
+  version: number;
+}
+
 export interface NotebookRepoListProps {
-  repositories?: NotebookRepo[];
-  /** The host owns the PUT and the refetch; this only reports the edited repo. */
-  onRepoChange?: (repo: NotebookRepo) => void;
+  snapshot?: NotebookRepoListSnapshot;
+  /** Resolves with server state fetched after this save request, including after a failed PUT. */
+  onSave?: (repo: NotebookRepo) => Promise<NotebookRepoListSnapshot>;
   onError?: (error: unknown) => void;
 }
 
@@ -43,13 +49,14 @@ const REPO_TOKENS = { fontWeightStrong: 500 };
 
 // The Angular card spaces itself with @card-padding-base from the default theme.
 const CARD_GAP = 24;
+const EMPTY_SNAPSHOT: NotebookRepoListSnapshot = { repositories: [], version: 0 };
 
 // Stricter than the Angular form's Validators.required, which accepts whitespace-only input.
 const isBlank = (value: string): boolean => value.trim().length === 0;
 
 interface RepoCardProps {
   repo: NotebookRepo;
-  onRepoChange?: (repo: NotebookRepo) => void;
+  onSave: (repo: NotebookRepo) => Promise<void> | undefined;
 }
 
 // `setting.name` is the join key everywhere below (draft, save, cancel, render), never array
@@ -58,54 +65,26 @@ interface RepoCardProps {
 const draftFromSettings = (settings: NotebookRepoSetting[]): Record<string, string> =>
   Object.fromEntries(settings.map(setting => [setting.name, setting.selected]));
 
-const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
+const RepoCard = ({ repo, onSave }: RepoCardProps) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Record<string, string>>(() => draftFromSettings(repo.settings));
-  // Set on save, cleared by the next `repo` prop change (the host's refetch, success or failure,
-  // is the source of truth for what got persisted). View mode reads the draft while this is true,
-  // so the card shows the saved value instead of the pre-edit one during the round trip. Not
-  // gated on the refetch matching what was submitted, since several NotebookRepo implementations
-  // legitimately refetch something else (plugin repos' updateSettings is a no-op, VFS/Git
-  // normalize the path), and that has to win immediately.
-  const [pendingSave, setPendingSave] = useState(false);
-  const editingRef = useRef(editing);
-  editingRef.current = editing;
-  // The draft submitted by the most recent unconfirmed save, paired with the `repo` it was made
-  // against. Lets cancel() tell apart "no refetch yet" (repo unchanged, restore the saved draft)
-  // from "a refetch already landed mid-edit" (repo changed, that refetch wins).
-  const savedRef = useRef<{ repo: NotebookRepo; draft: Record<string, string> } | null>(null);
+  const [pendingSave, setPendingSave] = useState<{
+    request: Promise<void>;
+    draft: Record<string, string>;
+  } | null>(null);
 
-  // Rebuilds the draft from a refetched repo. Skipped while editing, so an unrelated refetch
-  // (e.g. another card's save) can't discard in-progress keystrokes. Deps only on `repo`, so
-  // toggling `editing` doesn't re-run this against a repo prop the host hasn't updated yet. Still
-  // resyncs if the setting names changed underneath the edit, since view mode and save() look
-  // values up by name, so a missing name would render/submit `undefined`.
-  //
-  // KNOWN LIMITATION (ZEPPELIN-6707): this only guards an in-progress *edit*, not an in-progress
-  // *pendingSave* on a different card. If card B calls save() and, before B's own refetch lands,
-  // card A's independent save triggers the host's list-wide getRepos(), B isn't editing so this
-  // effect fires, resets B's pendingSave to B's still-stale server value, and B's display
-  // flickers backward before jumping forward again once B's own refetch arrives. A real fix needs
-  // the host to tell B's refetch apart from A's, since value or reference comparison alone can't
-  // (see the ticket).
   useEffect(() => {
-    // Object.hasOwn, not `in`, since `in` walks the prototype chain, so a setting literally named
-    // e.g. "toString" would read as already present.
     const namesUnchanged =
       repo.settings.length === Object.keys(draft).length &&
       repo.settings.every(setting => Object.hasOwn(draft, setting.name));
-    if (editingRef.current && namesUnchanged) {
+    if (namesUnchanged && (editing || pendingSave)) {
       return;
     }
-    savedRef.current = null;
+    setPendingSave(null);
     setDraft(draftFromSettings(repo.settings));
-    setPendingSave(false);
-    // Deliberately `[repo]` only, not `draft`, since the effect must run exactly when `repo`
-    // changes, not when `draft` does (typing would retrigger it). `draft` inside the guard is
-    // read from this render's closure regardless of what's in the deps array, so it's always
-    // current when the effect actually runs.
+    // Resync on server updates or save completion, not on keystrokes or toggling edit mode.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [repo]);
+  }, [repo, pendingSave]);
 
   const invalid = Object.values(draft).some(isBlank);
 
@@ -114,27 +93,24 @@ const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
       return;
     }
     const values = { ...draft };
-    onRepoChange?.({
+    const request = onSave({
       ...repo,
       settings: repo.settings.map(setting => ({ ...setting, selected: values[setting.name] }))
     });
-    savedRef.current = { repo, draft: values };
-    setPendingSave(true);
+    // The mount bridge can return undefined when the host callback throws.
+    if (!request) {
+      return;
+    }
+    setPendingSave({ request, draft: values });
     setEditing(false);
+    const finish = () => {
+      setPendingSave(current => (current?.request === request ? null : current));
+    };
+    void request.then(finish, finish);
   };
 
   const cancel = () => {
-    // Pending and still against the same repo: restore the saved draft, not the stale pre-edit
-    // `repo` value or a further in-progress edit. Otherwise a refetch already moved `repo` on, so
-    // defer to it instead.
-    const saved = savedRef.current;
-    if (pendingSave && saved && saved.repo === repo) {
-      setDraft(saved.draft);
-    } else {
-      savedRef.current = null;
-      setPendingSave(false);
-      setDraft(draftFromSettings(repo.settings));
-    }
+    setDraft(pendingSave ? pendingSave.draft : draftFromSettings(repo.settings));
     setEditing(false);
   };
 
@@ -148,7 +124,7 @@ const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
       render: (_: unknown, setting: NotebookRepoSetting) => {
         if (!editing) {
           // While waiting on the host's refetch, show what was just saved rather than the pre-edit value still sitting in `repo`.
-          return pendingSave ? draft[setting.name] : setting.selected;
+          return pendingSave ? pendingSave.draft[setting.name] : setting.selected;
         }
         if (setting.type === 'DROPDOWN') {
           return (
@@ -208,19 +184,29 @@ const RepoCard = ({ repo, onRepoChange }: RepoCardProps) => {
   );
 };
 
-export const NotebookRepoList = ({ repositories = [], onRepoChange }: NotebookRepoListProps) => (
-  <div data-testid="notebook-repo-list">
-    {repositories.map((repo, index) => (
-      // Suffixed with the index, since zeppelin.notebook.storage isn't deduped server-side, so
-      // className alone would collide if listed twice. Trade-off: repo objects carry no stable
-      // id, so a same-length reorder (the host sorts by `name.charCodeAt(0)` only, which doesn't
-      // fully order same-first-letter names) changes this key too, remounting the card and losing
-      // any in-progress edit - the index can't tell "this repo moved" from "a different repo is
-      // now here".
-      <RepoCard key={`${repo.className}-${index}`} repo={repo} onRepoChange={onRepoChange} />
-    ))}
-  </div>
-);
+export const NotebookRepoList = ({ snapshot = EMPTY_SNAPSHOT, onSave }: NotebookRepoListProps) => {
+  const [latestSnapshot, setLatestSnapshot] = useState(snapshot);
+  const currentSnapshot = snapshot.version > latestSnapshot.version ? snapshot : latestSnapshot;
+  useEffect(() => {
+    setLatestSnapshot(current => (snapshot.version > current.version ? snapshot : current));
+  }, [snapshot]);
+
+  const saveRepo = (repo: NotebookRepo): Promise<void> | undefined =>
+    onSave?.(repo)?.then(result => {
+      // The result may arrive before Angular forwards the new props. Publish it before the card leaves pending.
+      setLatestSnapshot(current => (result.version > current.version ? result : current));
+    });
+
+  return (
+    <div data-testid="notebook-repo-list">
+      {currentSnapshot.repositories.map((repo, index) => (
+        // Include the index because zeppelin.notebook.storage can contain duplicate classes.
+        // Reordering repositories can still remount cards; the server supplies no stable repository ID.
+        <RepoCard key={`${repo.className}-${index}`} repo={repo} onSave={saveRepo} />
+      ))}
+    </div>
+  );
+};
 
 export interface NotebookRepoListMountHandle {
   update: (props: NotebookRepoListProps) => void;
