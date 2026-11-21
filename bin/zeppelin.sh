@@ -21,74 +21,84 @@
 
 # pre-requisites for checking that we're running in container
 if [ -f /proc/self/cgroup ] && [ -n "$(command -v getent)" ]; then
-    # checks if we're running in container...
-    if awk -F: '/cpu/ && $3 ~ /^\/$/{ c=1 } END { exit c }' /proc/self/cgroup; then
-        # Check whether there is a passwd entry for the container UID
-        myuid="$(id -u)"
-        mygid="$(id -g)"
-        # turn off -e for getent because it will return error code in anonymous uid case
-        set +e
-        uidentry="$(getent passwd "$myuid")"
-        set -e
-
-        # If there is no passwd entry for the container UID, attempt to create one
-        if [ -z "$uidentry" ] ; then
-            if [ -w /etc/passwd ] ; then
-                echo "zeppelin:x:$myuid:$mygid:anonymous uid:$ZEPPELIN_HOME:/bin/false" >> /etc/passwd
-            else
-                echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
-            fi
-        fi
+  # checks if we're running in container...
+  if awk -F: '/cpu/ && $3 ~ /^\/$/{ c=1 } END { exit c }' /proc/self/cgroup; then
+    # Check whether there is a passwd entry for the container UID
+    myuid="$(id -u)"
+    mygid="$(id -g)"
+    # Allow getent to fail for anonymous UIDs without exiting the script
+    if ! uidentry="$(getent passwd "$myuid")"; then
+      uidentry=""
     fi
+
+    # If there is no passwd entry for the container UID, attempt to create one
+    if [ -z "$uidentry" ] ; then
+      if [ -w /etc/passwd ] ; then
+        echo "zeppelin:x:$myuid:$mygid:anonymous uid:$ZEPPELIN_HOME:/bin/false" >> /etc/passwd
+      else
+        echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+      fi
+    fi
+  fi
 fi
 
 function usage() {
-    echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>] [--version|-v]"
+  echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>] [--version|-v]"
 }
 
-POSITIONAL=()
 VERSION_ONLY=false
 while [[ $# -gt 0 ]]
 do
   key="$1"
   case $key in
     --config)
-    export ZEPPELIN_CONF_DIR="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    --run)
-    export ZEPPELIN_NOTEBOOK_RUN_ID="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    -v|--version)
-    VERSION_ONLY=true
-    shift
-    ;;
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    *)
-        echo "Unsupported argument."
-        usage
+      if [[ $# -lt 2 || -z "$2" || "$2" == -* ]]; then
+        echo "Missing or invalid value for --config. Use ./ for paths starting with '-'." >&2
+        usage >&2
         exit 1
-        ;;
+      fi
+      export ZEPPELIN_CONF_DIR="$2"
+      shift 2
+      ;;
+    --run)
+      if [[ $# -lt 2 || -z "$2" || "$2" == -* ]]; then
+        echo "Missing or invalid value for --run." >&2
+        usage >&2
+        exit 1
+      fi
+      export ZEPPELIN_NOTEBOOK_RUN_ID="$2"
+      shift 2
+      ;;
+    -v|--version)
+      VERSION_ONLY=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unsupported argument."
+      usage
+      exit 1
+      ;;
   esac
 done
-set -- "${POSITIONAL[@]}" # restore positional parameters
 
 bin="$(dirname "${BASH_SOURCE-$0}")"
 bin="$(cd "${bin}">/dev/null; pwd)"
 
 . "${bin}/common.sh"
 
-check_java_version
-
 if [[ "${VERSION_ONLY}" == true ]]; then
+  (
+    set -e
     getZeppelinVersion
+  )
+  exit $?
 fi
+
+check_java_version
 
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
@@ -122,23 +132,32 @@ if [[ "${USE_HADOOP}" != "false"  ]]; then
   else
     ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
     if [ -n "${HADOOP_HOME}" ]; then
-      ZEPPELIN_CLASSPATH+=":`${HADOOP_HOME}/bin/hadoop classpath`"
-    elif ! [ -x "$(command -v hadoop)" ]; then
-      echo 'hadoop command is not in PATH when HADOOP_CONF_DIR is specified.'
+      hadoop_command="${HADOOP_HOME}/bin/hadoop"
+    elif hadoop_command="$(command -v hadoop)" && [ -x "${hadoop_command}" ]; then
+      : # Use Hadoop from PATH
     else
-      ZEPPELIN_CLASSPATH+=":`hadoop classpath`"
+      echo 'hadoop command is not in PATH when HADOOP_CONF_DIR is specified.' >&2
+      exit 1
+    fi
+
+    if hadoop_classpath="$("${hadoop_command}" classpath)"; then
+      ZEPPELIN_CLASSPATH+=":${hadoop_classpath}"
+    else
+      hadoop_status=$?
+      echo "Failed to obtain Hadoop classpath (exit ${hadoop_status})." >&2
+      exit "${hadoop_status}"
     fi
   fi
 fi
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
-  mkdir -p "${ZEPPELIN_LOG_DIR}"
+  mkdir -p "${ZEPPELIN_LOG_DIR}" || exit 1
 fi
 
 if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
-  mkdir -p "${ZEPPELIN_PID_DIR}"
+  mkdir -p "${ZEPPELIN_PID_DIR}" || exit 1
 fi
 
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"
