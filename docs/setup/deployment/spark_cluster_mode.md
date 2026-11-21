@@ -37,6 +37,8 @@ You can simply set up Spark standalone environment with below steps.
 
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
+The image uses the official Apache Spark Ubuntu image with Java 11. Its Spark 3.5.8 and Scala 2.12 defaults match Zeppelin's build versions.
+You can override these versions with the `JAVA_VERSION`, `SPARK_VERSION`, and `SCALA_VERSION` build arguments when a matching Apache Spark image tag is available.
 
 ```bash
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_standalone
@@ -82,6 +84,10 @@ You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/runnin
 
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
+The image uses the official Apache Spark Ubuntu image with Java 11. Its Spark 3.5.8, Scala 2.12, and Hadoop 3.3.6 defaults match Zeppelin's build versions.
+You can override `JAVA_VERSION`, `SPARK_VERSION`, and `SCALA_VERSION` when a matching Apache Spark image tag is available.
+The image supports `linux/amd64` and `linux/arm64`; override `HADOOP_VERSION` only when the Apache Hadoop archive provides a release artifact for the selected target architecture.
+Hadoop 3.3.x supports Java 8 and Java 11 at runtime, so keep `JAVA_VERSION=11` when using the default Hadoop 3.3.6. Use another Java version only with a Hadoop release that officially supports it.
 
 ```bash
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn_cluster
@@ -108,7 +114,7 @@ docker run -it \
  -p 50010:50010 \
  -p 50075:50075 \
  -p 50020:50020 \
- -p 50070:50070 \
+ -p 50070:9870 \
  --name spark_yarn \
  -h sparkmaster \
  spark_yarn bash;
@@ -136,9 +142,7 @@ export SPARK_HOME=[your_spark_home_path]
 
 `HADOOP_CONF_DIR`(Hadoop configuration path) is defined in `/scripts/docker/spark-cluster-managers/spark_yarn_cluster/hdfs_conf`.
 
-Don't forget to set Spark `spark.master` as `yarn-client` in Zeppelin **Interpreters** setting page like below.
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_yarn_conf.png" />
+Don't forget to set Spark `spark.master` as `yarn` and `spark.submit.deployMode` as `client` in Zeppelin **Interpreters** setting page.
 
 ### 5. Run Zeppelin with Spark interpreter
 After running a single paragraph with Spark interpreter in Zeppelin, browse `http://<hostname>:8088/cluster/apps` and check Zeppelin application is running well or not.
