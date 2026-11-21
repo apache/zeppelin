@@ -377,6 +377,12 @@ Sources descending by priority:
     <td>Interpreter process connect timeout. Default time unit is msec</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_HEALTHCHECK_TIMEOUT</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.healthcheck.timeout</h6></td>
+    <td>3s</td>
+    <td>How long one interpreter health check request waits, shared by all interpreter processes of the setting. Default time unit is msec</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_DEP_LOCALREPO</h6></td>
     <td><h6 class="properties">zeppelin.dep.localrepo</h6></td>
     <td>local-repo</td>
