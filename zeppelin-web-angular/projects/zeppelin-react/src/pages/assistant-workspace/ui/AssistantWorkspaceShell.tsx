@@ -39,7 +39,8 @@ const createPanelSession = (noteId: string, connection: AssistantShellProps['con
   return {
     model: new AssistantPanelModel({
       api: createAssistantConversationApi(connection.apiBase, noteId, () => activeViewAuthHandler),
-      run: (conversationId, content, signal) => socketRun(connection.socket, { noteId, conversationId, content }, signal)
+      run: (conversationId, content, signal) =>
+        socketRun(connection.socket, { noteId, conversationId, content }, signal)
     }),
     attachView: () => {
       const onAuthError: AssistantAuthErrorHandler = (status, location) => {

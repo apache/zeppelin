@@ -244,7 +244,10 @@ describe('assistant transport', () => {
 
   it('does not forward a background request failure to a view attached while fetching', async () => {
     const response = Promise.withResolvers<Response>();
-    vi.stubGlobal('fetch', vi.fn(() => response.promise));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => response.promise)
+    );
     const onAuthError = vi.fn();
     let viewAttached = false;
     const transport = createAssistantConversationApi('/api', 'note', () => (viewAttached ? onAuthError : undefined));

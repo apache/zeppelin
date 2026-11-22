@@ -472,7 +472,11 @@ describe('AssistantWorkspace', () => {
 
     const start = () => {
       socket.emit({ conversationId: 'saved', type: 'run.started', payload: { runId: 'run-1' } });
-      socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: 'Draft answer' } });
+      socket.emit({
+        conversationId: 'saved',
+        type: 'message.delta',
+        payload: { messageId: 'a1', delta: 'Draft answer' }
+      });
     };
     if (reopen === 'before') await act(async () => start());
     expect(Boolean(screen.queryByText('Draft answer'))).toBe(reopen === 'before');
@@ -542,7 +546,11 @@ describe('AssistantWorkspace', () => {
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
     await update({ slots: [] });
     await act(async () => {
-      socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: ' continues' } });
+      socket.emit({
+        conversationId: 'saved',
+        type: 'message.delta',
+        payload: { messageId: 'a1', delta: ' continues' }
+      });
     });
     await update({ slots });
     await open();
