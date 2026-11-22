@@ -55,7 +55,7 @@ const fakeSocket = () => {
 };
 
 const forNote = (noteId: string, onAuthError?: (status: number, location: string | null) => void) =>
-  createAssistantConversationApi('https://example.test/zeppelin/api', noteId, onAuthError);
+  createAssistantConversationApi('https://example.test/zeppelin/api', noteId, () => onAuthError);
 
 const iterate = <T>(iterable: AsyncIterable<T>): AsyncIterator<T> => iterable[Symbol.asyncIterator]();
 
@@ -240,6 +240,21 @@ describe('assistant transport', () => {
       [401, '/login'],
       [405, null]
     ]);
+  });
+
+  it('does not forward a background request failure to a view attached while fetching', async () => {
+    const response = Promise.withResolvers<Response>();
+    vi.stubGlobal('fetch', vi.fn(() => response.promise));
+    const onAuthError = vi.fn();
+    let viewAttached = false;
+    const transport = createAssistantConversationApi('/api', 'note', () => (viewAttached ? onAuthError : undefined));
+
+    const result = transport.getMessages('conversation');
+    viewAttached = true;
+    response.resolve(new Response(null, { status: 401, headers: { Location: '/login' } }));
+
+    await expect(result).rejects.toMatchObject({ status: 401 });
+    expect(onAuthError).not.toHaveBeenCalled();
   });
 
   it('preserves the rejected HTTP request when host authentication handling throws', async () => {

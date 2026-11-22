@@ -31,6 +31,7 @@ export class AssistantPanelModel {
   private active = false;
   private generation = 0;
   private listVersion = 0;
+  private closedWithRun = false;
   private snapshot: AssistantPanel;
 
   constructor(private readonly source: AssistantDataSource) {
@@ -45,11 +46,42 @@ export class AssistantPanelModel {
     return () => this.listeners.delete(listener);
   };
 
+  /** Discard view state except for conversations with a submitted run. */
+  close(): boolean {
+    let firstRun: string | undefined;
+    this.sessions.forEach(session => {
+      if (session.hasSubmittedRun) firstRun ??= session.key;
+    });
+    if (firstRun === undefined) return false;
+
+    this.closedWithRun = true;
+    ++this.listVersion;
+    this.sessions.forEach((session, key) => {
+      if (session.hasSubmittedRun) return;
+      session.dispose();
+      this.sessions.delete(key);
+    });
+    this.draftKey = undefined;
+    if (!this.sessions.has(this.selectedKey)) this.selectedKey = firstRun;
+    this.publish();
+    return true;
+  }
+
+  reopen(): void {
+    if (!this.closedWithRun) return;
+    this.closedWithRun = false;
+    this.listLoading = true;
+    this.listError = undefined;
+    this.publish();
+    this.refreshConversations();
+  }
+
   start(): void {
     if (this.active) return;
 
     this.active = true;
     const generation = ++this.generation;
+    this.closedWithRun = false;
 
     this.sessions.forEach(session => session.dispose());
     this.sessions.clear();
@@ -117,7 +149,7 @@ export class AssistantPanelModel {
   }
 
   private readonly refreshConversations = (): void => {
-    if (this.active) void this.loadList(this.generation);
+    if (this.active && !this.closedWithRun) void this.loadList(this.generation);
   };
 
   readonly retryList = (): Promise<void> => {

@@ -17,32 +17,31 @@ import { ConversationHeader } from '@/entities/assistant/ui/ConversationHeader';
 import { ConversationList } from '@/entities/assistant/ui/ConversationList';
 import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
 import { useDeleteConfirmation } from '../lib/useDeleteConfirmation';
-import type { AssistantDataSource } from '../model/assistantDataSource';
-import { useAssistantPanel } from '../model/useAssistantPanel';
+import type { AssistantPanel } from '../model/assistantPanelState';
 import { ConversationMessages } from './ConversationMessages';
 import { DeleteConversationDialog } from './DeleteConversationDialog';
 import * as styles from './AssistantConversationPanel.css';
 
 export interface AssistantConversationPanelProps {
-  source: AssistantDataSource;
+  panel: AssistantPanel;
+  scope: object;
   now?: number;
   renderAnswer?: AssistantContentRenderer;
 }
 
 const ignoreSearchChange = () => undefined;
 
-export const AssistantConversationPanel = ({ source, now, renderAnswer }: AssistantConversationPanelProps) => {
-  const panel = useAssistantPanel(source);
+export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: AssistantConversationPanelProps) => {
   const { entry, send: sendQuestion, reload: reloadHistory } = panel;
 
   const [listOpen, setListOpen] = useState(false);
   const listTrigger = useRef<HTMLButtonElement>(null);
   const back = useRef<HTMLButtonElement>(null);
-  const navigation = useRef({ scope: source, open: false });
+  const navigation = useRef({ scope, open: false });
 
   const fallbackFocus = useCallback(() => (listOpen ? back.current : listTrigger.current), [listOpen]);
   const confirmation = useDeleteConfirmation({
-    scope: source,
+    scope,
     conversations: panel.conversations,
     listLoading: panel.listLoading,
     deletingConversationIds: panel.deletingConversationIds,
@@ -51,8 +50,8 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
   });
 
   useLayoutEffect(() => {
-    if (navigation.current.scope !== source) {
-      navigation.current = { scope: source, open: false };
+    if (navigation.current.scope !== scope) {
+      navigation.current = { scope, open: false };
       setListOpen(false);
       return;
     }
@@ -63,7 +62,7 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
     navigation.current.open = listOpen;
     if (listOpen && !wasOpen) back.current?.focus();
     else if (!listOpen && wasOpen) listTrigger.current?.focus();
-  }, [source, listOpen, confirmation.target]);
+  }, [scope, listOpen, confirmation.target]);
 
   const closeList = () => setListOpen(false);
 
@@ -131,7 +130,7 @@ export const AssistantConversationPanel = ({ source, now, renderAnswer }: Assist
 
           <ConversationMessages
             key={entry.key}
-            scope={source}
+            scope={scope}
             entry={entry}
             visible={!listOpen}
             loadEarlier={panel.loadEarlier}

@@ -19,6 +19,7 @@ import {
   ASSISTANT_HISTORY_CONVERSATIONS,
   FIXTURE_NOW
 } from '../fixtures/assistantFixtureData';
+import { useAssistantPanel } from '../model/useAssistantPanel';
 import { AssistantConversationPanel } from './AssistantConversationPanel';
 
 type PanelDemonstration =
@@ -50,10 +51,11 @@ const FixturePanel = ({ demonstration }: { demonstration: PanelDemonstration }) 
       }),
     [demonstration]
   );
+  const panel = useAssistantPanel(source);
 
   return (
     <div style={{ width: 370, maxWidth: '100%', height: 600, display: 'flex', minWidth: 0 }}>
-      <AssistantConversationPanel source={source} now={FIXTURE_NOW} />
+      <AssistantConversationPanel panel={panel} scope={source} now={FIXTURE_NOW} />
     </div>
   );
 };

@@ -15,14 +15,19 @@ import type { AssistantDataSource } from './assistantDataSource';
 import { AssistantPanelModel } from './assistantPanelModel';
 import type { AssistantPanel } from './assistantPanelState';
 
-export const useAssistantPanel = (source: AssistantDataSource): AssistantPanel => {
-  const model = useMemo(() => new AssistantPanelModel(source), [source]);
-  const panel = useSyncExternalStore(model.subscribe, model.getSnapshot);
-
+export const useAssistantPanelLifecycle = (model: AssistantPanelModel): void => {
   useEffect(() => {
     model.start();
     return () => model.dispose();
   }, [model]);
+};
 
-  return panel;
+export const useAssistantPanelSnapshot = (model: AssistantPanelModel): AssistantPanel =>
+  useSyncExternalStore(model.subscribe, model.getSnapshot);
+
+export const useAssistantPanel = (source: AssistantDataSource): AssistantPanel => {
+  const model = useMemo(() => new AssistantPanelModel(source), [source]);
+  useAssistantPanelLifecycle(model);
+
+  return useAssistantPanelSnapshot(model);
 };

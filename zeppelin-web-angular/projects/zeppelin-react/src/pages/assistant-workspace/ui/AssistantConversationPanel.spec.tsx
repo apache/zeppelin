@@ -16,7 +16,19 @@ import { AssistantConnectionError, type AssistantRunEvent } from '@/entities/ass
 import { createAssistantFixture, type AssistantFixtureScenario } from '../fixtures/assistantFixture';
 import { ASSISTANT_HISTORY_CONVERSATIONS, FIXTURE_NOW } from '../fixtures/assistantFixtureData';
 import type { AssistantDataSource } from '../model/assistantDataSource';
-import { AssistantConversationPanel } from './AssistantConversationPanel';
+import { useAssistantPanel } from '../model/useAssistantPanel';
+import {
+  AssistantConversationPanel as ConversationPanel,
+  type AssistantConversationPanelProps
+} from './AssistantConversationPanel';
+
+const AssistantConversationPanel = ({
+  source,
+  ...props
+}: Omit<AssistantConversationPanelProps, 'panel' | 'scope'> & { source: AssistantDataSource }) => {
+  const panel = useAssistantPanel(source);
+  return <ConversationPanel {...props} panel={panel} scope={source} />;
+};
 
 const flush = async () => {
   await act(async () => {});

@@ -236,8 +236,54 @@ describe('AssistantWorkspace', () => {
       props = { ...props, ...changes };
       await act(async () => updateRoot!(props));
     };
-    return { toggle, open, unmount, update, onPanelVisibilityChange, onPanelWidthChange };
+    return { toggle, open, unmount, update, slots: props.slots, onPanelVisibilityChange, onPanelWidthChange };
   };
+
+  it('waits for the panel slot before loading conversations', async () => {
+    const fetch = vi.fn((url: string) =>
+      Promise.resolve(
+        url.includes('/messages')
+          ? json({ messages: [{ id: 'first-answer', role: 'assistant', content: 'Saved first answer' }], cursor: null })
+          : json([conversation])
+      )
+    );
+    vi.stubGlobal('fetch', fetch);
+    const { open, update, slots } = await setup();
+    await update({ slots: slots.filter(slot => slot.kind === 'navigation') });
+    await open();
+    expect(screen.queryByRole('complementary')).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+
+    await update({ slots });
+    await selectSaved();
+    expect(screen.getByText('Saved first answer')).toBeTruthy();
+  });
+
+  it('does not forward auth failures from a replaced portal view', async () => {
+    const oldList = Promise.withResolvers<Response>();
+    const host = connection();
+    const fetch = vi
+      .fn()
+      .mockReturnValueOnce(oldList.promise)
+      .mockResolvedValueOnce(new Response(null, { status: 405, headers: { Location: '/current-login' } }));
+    vi.stubGlobal('fetch', fetch);
+    const { open, update, slots } = await setup({ connection: host });
+    await open();
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    const oldSlot = slots.find(slot => slot.kind === 'panel')!;
+    const replacement = oldSlot.element.appendChild(document.createElement('div'));
+    await update({ slots: slots.map(slot => (slot === oldSlot ? { ...slot, element: replacement } : slot)) });
+    expect(replacement.querySelector('aside')).not.toBeNull();
+    await act(async () =>
+      oldList.resolve(new Response(null, { status: 401, headers: { Location: '/obsolete-login' } }))
+    );
+    expect(host.onAuthError).not.toHaveBeenCalled();
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Retry loading conversations' })));
+    expect(host.onAuthError).toHaveBeenCalledExactlyOnceWith(405, '/current-login');
+  });
 
   it('keeps the latest conversation list during StrictMode replay and ignores auth errors after close', async () => {
     const obsolete = Promise.withResolvers<Response>();
@@ -406,7 +452,112 @@ describe('AssistantWorkspace', () => {
     ]);
   });
 
-  it.each(['close', 'note', 'session', 'unmount'] as const)(
+  it.each(['before', 'after'] as const)('restores the answer when reopened %s completion', async reopen => {
+    const socket = socketHarness();
+    const history = Promise.withResolvers<Response>();
+    let completed = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => {
+        if (url.includes('/messages')) {
+          return completed ? history.promise : Promise.resolve(json({ messages: [], cursor: null }));
+        }
+        return Promise.resolve(json([conversation]));
+      })
+    );
+    const { open } = await setup({ connection: connection(socket) });
+    await open();
+    await selectSaved();
+    await submit('Keep this question');
+
+    const start = () => {
+      socket.emit({ conversationId: 'saved', type: 'run.started', payload: { runId: 'run-1' } });
+      socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: 'Draft answer' } });
+    };
+    if (reopen === 'before') await act(async () => start());
+    expect(Boolean(screen.queryByText('Draft answer'))).toBe(reopen === 'before');
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    expect(screen.queryByRole('complementary')).toBeNull();
+
+    if (reopen === 'after') await act(async () => start());
+    if (reopen === 'before') await open();
+    expect(Boolean(screen.queryByText('Draft answer'))).toBe(reopen === 'before');
+
+    completed = true;
+    await act(async () => {
+      socket.emit({ conversationId: 'saved', type: 'run.completed', payload: { runId: 'run-1' } });
+      history.resolve(
+        json({
+          messages: [
+            { id: 'a1', role: 'assistant', content: 'Saved final answer' },
+            { id: 'u1', role: 'user', content: 'Keep this question' }
+          ],
+          cursor: null
+        })
+      );
+    });
+    if (reopen === 'after') await open();
+
+    expect(screen.getAllByText('Saved final answer')).toHaveLength(1);
+    expect(screen.getAllByText('Keep this question')).toHaveLength(1);
+    expect(screen.queryByText('Draft answer')).toBeNull();
+    expect(socket.send).toHaveBeenCalledTimes(1);
+    expect(socket.consumers()).toEqual([0, 0]);
+  });
+
+  it('keeps the submitted run across slot removal without restoring unrelated drafts or auth errors', async () => {
+    const socket = socketHarness();
+    const host = connection(socket);
+    const oldHistory = Promise.withResolvers<Response>();
+    const empty = { messages: [], cursor: null };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => {
+        if (url.includes('/unrelated-history/messages')) return oldHistory.promise;
+        if (url.includes('/messages')) return Promise.resolve(json(empty));
+        return Promise.resolve(
+          json([
+            conversation,
+            { ...conversation, id: 'unrelated-draft', title: 'Other conversation' },
+            { ...conversation, id: 'unrelated-history', title: 'Pending history' }
+          ])
+        );
+      })
+    );
+    const { open, slots, update } = await setup({ connection: host });
+    const select = async (title: RegExp) => {
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: title })));
+    };
+    await open();
+    await selectSaved();
+    await submit('Keep the submitted run');
+    await act(async () => {
+      socket.emit({ conversationId: 'saved', type: 'run.started', payload: { runId: 'run-1' } });
+      socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: 'Reply' } });
+    });
+    await select(/^Other conversation/);
+    await act(async () => fireEvent.change(question(), { target: { value: 'Do not keep this draft' } }));
+    await select(/^Pending history/);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    await update({ slots: [] });
+    await act(async () => {
+      socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: ' continues' } });
+    });
+    await update({ slots });
+    await open();
+
+    expect(screen.getByText('Reply continues')).toBeTruthy();
+    await act(async () =>
+      oldHistory.resolve(new Response(null, { status: 401, headers: { Location: '/obsolete-login' } }))
+    );
+    expect(host.onAuthError).not.toHaveBeenCalled();
+    await select(/^Other conversation/);
+    expect(question().value).toBe('');
+    expect(socket.send).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['note', 'session', 'unmount'] as const)(
     'disposes the real socket consumer on %s and never shows its late answer in a new panel',
     async change => {
       const socket = socketHarness();
@@ -430,10 +581,8 @@ describe('AssistantWorkspace', () => {
       });
       expect(screen.getByText('Previous session answer')).toBeTruthy();
 
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
       switch (change) {
-        case 'close':
-          await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
-          break;
         case 'note':
           await update({ noteId: 'note-b' });
           break;

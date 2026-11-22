@@ -10,50 +10,73 @@
  * limitations under the License.
  */
 
-import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import CloseOutlined from '@ant-design/icons/CloseOutlined';
 import { theme } from 'antd';
 import type { AssistantShellProps } from '@zeppelin/sdk';
 import { assistantThemeStyles } from '@/shared/ui/assistant-theme/AssistantScope';
-import { createAssistantConversationApi, socketRun } from '@/entities/assistant/model/assistantTransport';
+import {
+  createAssistantConversationApi,
+  socketRun,
+  type AssistantAuthErrorHandler
+} from '@/entities/assistant/model/assistantTransport';
 import { scope } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { usePanelResize } from '../lib/usePanelResize';
-import type { AssistantDataSource } from '../model/assistantDataSource';
+import { AssistantPanelModel } from '../model/assistantPanelModel';
+import { useAssistantPanelSnapshot } from '../model/useAssistantPanel';
 import { AssistantConversationPanel } from './AssistantConversationPanel';
 import { createNotebookAnswerRenderer } from './createNotebookAnswerRenderer';
 import * as styles from '../../AssistantWorkspace.css';
 
+interface PanelSession {
+  attachView: () => () => void;
+  model: AssistantPanelModel;
+}
+
+const createPanelSession = (noteId: string, connection: AssistantShellProps['connection']): PanelSession => {
+  let activeViewAuthHandler: AssistantAuthErrorHandler | undefined;
+  return {
+    model: new AssistantPanelModel({
+      api: createAssistantConversationApi(connection.apiBase, noteId, () => activeViewAuthHandler),
+      run: (conversationId, content, signal) => socketRun(connection.socket, { noteId, conversationId, content }, signal)
+    }),
+    attachView: () => {
+      const onAuthError: AssistantAuthErrorHandler = (status, location) => {
+        if (activeViewAuthHandler === onAuthError) connection.onAuthError(status, location);
+      };
+      activeViewAuthHandler = onAuthError;
+      return () => {
+        if (activeViewAuthHandler === onAuthError) activeViewAuthHandler = undefined;
+      };
+    }
+  };
+};
+
+const PanelSessionOwner = ({ session, children }: { session: PanelSession; children: ReactNode }) => {
+  useEffect(() => () => session.model.dispose(), [session]);
+  return children;
+};
+
 const OpenConversationPanel = ({
-  noteId,
-  connection,
+  session,
   paragraphs,
   onOpenParagraph
-}: Pick<AssistantShellProps, 'noteId' | 'connection' | 'paragraphs' | 'onOpenParagraph'>) => {
-  const active = useRef(false);
-  const [dataSource] = useState<AssistantDataSource>(() => ({
-    api: createAssistantConversationApi(connection.apiBase, noteId, (status, location) => {
-      if (active.current) {
-        connection.onAuthError(status, location);
-      }
-    }),
-    run: (conversationId, content, signal) => socketRun(connection.socket, { noteId, conversationId, content }, signal)
-  }));
+}: Pick<AssistantShellProps, 'paragraphs' | 'onOpenParagraph'> & { session: PanelSession }) => {
+  const panel = useAssistantPanelSnapshot(session.model);
 
-  // Invalidate authentication callbacks at unmount, before passive request cleanup runs.
-  useLayoutEffect(() => {
-    active.current = true;
-    return () => {
-      active.current = false;
-    };
-  }, []);
+  useLayoutEffect(() => session.attachView(), [session]);
+  useEffect(() => {
+    session.model.start();
+    session.model.reopen();
+  }, [session]);
 
   const renderAnswer = useMemo(
     () => createNotebookAnswerRenderer(paragraphs, onOpenParagraph),
     [paragraphs, onOpenParagraph]
   );
 
-  return <AssistantConversationPanel source={dataSource} renderAnswer={renderAnswer} />;
+  return <AssistantConversationPanel panel={panel} scope={session.model} renderAnswer={renderAnswer} />;
 };
 
 export const AssistantWorkspaceShell = ({
@@ -69,16 +92,28 @@ export const AssistantWorkspaceShell = ({
 }: AssistantShellProps) => {
   const { token } = theme.useToken();
   const themeStyles = assistantThemeStyles(token);
-  const [visible, setVisible] = useState(false);
+  const [sidebar, setSidebar] = useState<{ session: PanelSession; open: boolean }>();
+  const session = sidebar?.session;
+  const visible = sidebar?.open ?? false;
   const button = useRef<HTMLButtonElement>(null);
   const navigation = slots.find(slot => slot.kind === 'navigation');
   const panel = slots.find(slot => slot.kind === 'panel');
   const { handleProps } = usePanelResize(panel?.element, panelWidth, onPanelWidthChange);
-  const notifyVisibility = useEffectEvent(onPanelVisibilityChange);
+  const notifyUnmount = useEffectEvent(() => onPanelVisibilityChange(false));
+  useEffect(() => () => notifyUnmount(), []);
 
-  useEffect(() => notifyVisibility(visible), [visible]);
-  useEffect(() => () => notifyVisibility(false), []);
-  useEffect(() => subscribePanelClose(() => setVisible(false)), [subscribePanelClose]);
+  const openPanel = () => {
+    setSidebar({ open: true, session: session ?? createPanelSession(noteId, connection) });
+    onPanelVisibilityChange(true);
+  };
+  const hidePanel = () => {
+    if (!sidebar?.open) return;
+    const retain = sidebar.session.model.close();
+    setSidebar(retain ? { session: sidebar.session, open: false } : undefined);
+    onPanelVisibilityChange(false);
+  };
+  const hideFromHost = useEffectEvent(hidePanel);
+  useEffect(() => subscribePanelClose(() => hideFromHost()), [subscribePanelClose]);
 
   useLayoutEffect(() => {
     const element = panel?.element;
@@ -100,7 +135,7 @@ export const AssistantWorkspaceShell = ({
   }, [panel?.element, visible]);
 
   const close = () => {
-    setVisible(false);
+    hidePanel();
     button.current?.focus();
   };
 
@@ -115,7 +150,7 @@ export const AssistantWorkspaceShell = ({
               style={themeStyles}
               aria-label="Toggle AI Assistant"
               aria-pressed={visible}
-              onClick={() => setVisible(open => !open)}
+              onClick={visible ? hidePanel : openPanel}
             >
               <span className={styles.navIcon} aria-hidden="true">
                 AI
@@ -124,33 +159,32 @@ export const AssistantWorkspaceShell = ({
             navigation.element
           )
         : null}
-      {visible && panel
-        ? createPortal(
-            <aside
-              className={`${scope} ${styles.panel}`}
-              aria-label="AI Assistant workspace"
-              style={themeStyles}
-              onKeyDown={event => {
-                if (event.key === 'Escape') close();
-              }}
-            >
-              <header className={styles.header}>
-                <h2 className={styles.title}>AI Assistant</h2>
-                <button type="button" className={styles.close} aria-label="Close AI Assistant" onClick={close}>
-                  <CloseOutlined aria-hidden="true" />
-                </button>
-              </header>
-              <OpenConversationPanel
-                noteId={noteId}
-                connection={connection}
-                paragraphs={paragraphs}
-                onOpenParagraph={onOpenParagraph}
-              />
-              <div className={styles.resize} {...handleProps} />
-            </aside>,
-            panel.element
-          )
-        : null}
+      {session && (
+        <PanelSessionOwner session={session}>
+          {visible && panel
+            ? createPortal(
+                <aside
+                  className={`${scope} ${styles.panel}`}
+                  aria-label="AI Assistant workspace"
+                  style={themeStyles}
+                  onKeyDown={event => {
+                    if (event.key === 'Escape') close();
+                  }}
+                >
+                  <header className={styles.header}>
+                    <h2 className={styles.title}>AI Assistant</h2>
+                    <button type="button" className={styles.close} aria-label="Close AI Assistant" onClick={close}>
+                      <CloseOutlined aria-hidden="true" />
+                    </button>
+                  </header>
+                  <OpenConversationPanel session={session} paragraphs={paragraphs} onOpenParagraph={onOpenParagraph} />
+                  <div className={styles.resize} {...handleProps} />
+                </aside>,
+                panel.element
+              )
+            : null}
+        </PanelSessionOwner>
+      )}
     </>
   );
 };
