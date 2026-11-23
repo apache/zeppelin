@@ -17,19 +17,5 @@
   "high": true,
   "report-type": "summary",
   "allowlist": [
-    {
-      "GHSA-vfj7-8cjw-p6xm|patch-package>find-yarn-workspace-root>micromatch>braces": {
-        "active": true,
-        "notes": "braces 3.0.3 is patched locally from micromatch/braces#72; remove after a fixed release",
-        "expiry": "2026-12-04"
-      }
-    },
-    {
-      "GHSA-vfj7-8cjw-p6xm|webpack-dev-server>http-proxy-middleware>micromatch>braces": {
-        "active": true,
-        "notes": "braces 3.0.3 is patched locally from micromatch/braces#72; remove after a fixed release",
-        "expiry": "2026-12-04"
-      }
-    }
   ]
 }
