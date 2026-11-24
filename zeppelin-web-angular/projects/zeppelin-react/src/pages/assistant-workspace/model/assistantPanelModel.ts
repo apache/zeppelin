@@ -54,34 +54,16 @@ export class AssistantPanelModel {
 
   /** Keep submitted runs and unsent text, but discard ordinary history requests with the view. */
   close(): boolean {
-    // Rebuild draft-only sessions without publishing a partially updated selection.
     this.closed = true;
     ++this.listVersion;
 
     let firstRun: string | undefined;
     let hasDraft = false;
     this.sessions.forEach((session, key) => {
-      if (session.hasSubmittedRun) {
-        firstRun ??= key;
-        return;
-      }
-
-      const { conversation, deleting, draft, phase, uncertainty } = session.snapshot;
-      // A pending create belongs to an explicit submission, not to an unsent draft.
-      if (!draft || phase === 'creating') {
-        session.dispose();
-        this.sessions.delete(key);
-        return;
-      }
-
-      hasDraft = true;
-      // Keep the operation that could delete the draft, or the warning and recovery for an uncertain send.
-      if (deleting || uncertainty) {
-        session.invalidateViewHistory();
-      } else {
-        session.dispose();
-        this.createSession(key, conversation).setDraft(draft);
-      }
+      const retention = session.onSidebarClosed();
+      if (retention === 'submitted-run') firstRun ??= key;
+      else if (retention === 'draft') hasDraft = true;
+      else this.sessions.delete(key);
     });
     if (firstRun === undefined) {
       if (!hasDraft) return false;
@@ -104,7 +86,7 @@ export class AssistantPanelModel {
     this.closed = false;
     this.publish();
     this.refreshConversations();
-    this.sessions.get(this.selectedKey)!.ensureHistory();
+    this.sessions.get(this.selectedKey)!.onSelected();
   }
 
   start(): void {
@@ -216,7 +198,7 @@ export class AssistantPanelModel {
     this.selectedKey = session.key;
     this.publish();
 
-    session.ensureHistory();
+    session.onSelected();
   };
 
   private selectDraft(): void {

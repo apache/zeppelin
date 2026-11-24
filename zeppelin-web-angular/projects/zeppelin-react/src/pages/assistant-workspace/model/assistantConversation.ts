@@ -32,8 +32,8 @@ export class AssistantConversationSession {
   private uncertainty?: string;
   private submittedQuestion?: string;
   private deleting = false;
-  private historyRefreshPending = false;
-  private historyPausedForDelete = false;
+  private postRunHistoryRefreshPending = false;
+  private deferredInitialHistory?: 'awaiting-selection' | 'awaiting-delete';
 
   private disposed = false;
   private controller?: AbortController;
@@ -56,10 +56,6 @@ export class AssistantConversationSession {
 
   get snapshot(): AssistantPanelEntry {
     return this.entry;
-  }
-
-  get hasSubmittedRun(): boolean {
-    return this.phase === 'pending' || this.phase === 'running';
   }
 
   /** Does not emit a change notification. */
@@ -110,22 +106,37 @@ export class AssistantConversationSession {
     this.changed();
   }
 
-  invalidateViewHistory(): void {
-    this.history.invalidateRequests();
-    this.historyRefreshPending = false;
-    this.historyPausedForDelete = this.deleting && !this.entry.loaded;
+  onSidebarClosed(): 'submitted-run' | 'draft' | 'discarded' {
+    if (this.phase === 'pending' || this.phase === 'running') return 'submitted-run';
+
+    // A pending create is part of a submission, not an unsent draft.
+    if (!this.draft || this.phase === 'creating') {
+      this.dispose();
+      return 'discarded';
+    }
+
+    this.postRunHistoryRefreshPending = false;
+    this.deferredInitialHistory = this.deleting && !this.entry.loaded ? 'awaiting-selection' : undefined;
+    if (this.deleting || this.uncertainty) {
+      this.history.ignorePendingResponses();
+    } else {
+      // Keep the draft and its conversation, not the history and errors from the closed view.
+      this.history.reset(!!this.conversation);
+      this.failure = undefined;
+      this.submittedQuestion = undefined;
+    }
+
     this.publish();
+    return 'draft';
   }
 
-  ensureHistory(): void {
-    const history = this.history.snapshot;
-    if (history.loaded || history.loading || this.phase !== 'idle') return;
+  onSelected(): void {
+    if (this.entry.loaded || this.entry.loading || this.phase !== 'idle') return;
     if (this.deleting) {
-      // Reopening can need a fresh initial page, but only if the pending delete fails.
-      this.historyRefreshPending ||= this.historyPausedForDelete;
+      if (this.deferredInitialHistory === 'awaiting-selection') this.deferredInitialHistory = 'awaiting-delete';
       return;
     }
-    void this.reload(this.historyPausedForDelete);
+    void this.reload(this.deferredInitialHistory !== undefined);
   }
 
   async reload(preserveFailure = false): Promise<void> {
@@ -133,8 +144,8 @@ export class AssistantConversationSession {
       return;
     }
 
-    this.historyRefreshPending = false;
-    this.historyPausedForDelete = false;
+    this.postRunHistoryRefreshPending = false;
+    this.deferredInitialHistory = undefined;
     if (!preserveFailure) this.failure = undefined;
     const result = await this.history.loadLatest(this.source.api, this.conversation.id);
     if (this.disposed || result.status === 'ignored' || !this.history.isCurrent(result)) return;
@@ -152,8 +163,8 @@ export class AssistantConversationSession {
     this.publish();
   }
 
-  private async refreshHistory(): Promise<void> {
-    if (!this.historyRefreshPending || this.disposed || this.deleting || this.phase !== 'idle') return;
+  private async refreshHistoryAfterRun(): Promise<void> {
+    if (!this.postRunHistoryRefreshPending || this.disposed || this.deleting || this.phase !== 'idle') return;
 
     await this.reload(this.failure?.kind === 'failed');
   }
@@ -204,7 +215,7 @@ export class AssistantConversationSession {
     this.submittedQuestion = content;
     this.failure = undefined;
     this.phase = this.conversation ? 'pending' : 'creating';
-    if (this.history.snapshot.loading) this.historyRefreshPending = true;
+    if (this.history.snapshot.loading) this.postRunHistoryRefreshPending = true;
     const answerKey = this.history.beginTurn();
 
     const conversation = this.conversation ?? (await this.createConversation(controller));
@@ -256,12 +267,12 @@ export class AssistantConversationSession {
     if (this.disposed) return;
 
     // The next send must wait for this consumer to release the conversation.
-    this.historyRefreshPending ||= run.snapshot.outcome === 'completed';
+    this.postRunHistoryRefreshPending ||= run.snapshot.outcome === 'completed';
     this.phase = run.snapshot.outcome === 'unknown' ? 'unknown' : 'idle';
     this.publish();
 
     if (run.snapshot.accepted) this.activity();
-    await this.refreshHistory();
+    await this.refreshHistoryAfterRun();
   }
 
   private async createConversation(controller: AbortController): Promise<AssistantConversation | undefined> {
@@ -309,7 +320,9 @@ export class AssistantConversationSession {
       this.deleting = false;
       this.failure = { message, kind: 'failed' };
       this.publish();
-      void this.refreshHistory();
+      // Resume a discarded initial GET only if the view selected this session while DELETE was pending.
+      if (this.deferredInitialHistory === 'awaiting-delete') void this.reload(true);
+      else void this.refreshHistoryAfterRun();
 
       return { status: 'failed', message };
     }
