@@ -11,8 +11,8 @@
  */
 
 import { ArrowUpOutlined, LockOutlined } from '@ant-design/icons';
-import { Button, Input } from 'antd';
-import { useId, type FormEvent, type KeyboardEvent } from 'react';
+import { Button, Input, type GetRef } from 'antd';
+import { useId, useRef, type FormEvent, type KeyboardEvent } from 'react';
 import * as styles from './AssistantComposer.css';
 
 export interface AssistantComposerProps {
@@ -39,12 +39,16 @@ export const AssistantComposer = ({
   sending = false
 }: AssistantComposerProps) => {
   const hintId = useId();
+  const inputRef = useRef<GetRef<typeof Input.TextArea>>(null);
   const question = value.trim();
   // The server rejects a blank question, and it accepts one question per conversation at a time.
   const canSubmit = question !== '' && !readOnly && !sending && !submitDisabled;
 
   const submit = () => {
-    if (canSubmit) onSubmit(question);
+    if (!canSubmit) return;
+
+    inputRef.current?.focus({ preventScroll: true });
+    onSubmit(question);
   };
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -68,6 +72,7 @@ export const AssistantComposer = ({
       )}
       <div className={styles.field} data-disabled={readOnly || sending || undefined}>
         <Input.TextArea
+          ref={inputRef}
           className={styles.input}
           variant="borderless"
           autoSize={{ minRows: 2, maxRows: 8 }}

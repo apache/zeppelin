@@ -16,6 +16,7 @@ import { scope, vars } from '@/shared/ui/assistant-theme/AssistantScope.css';
 export const composer = style({
   display: 'flex',
   flexDirection: 'column',
+  minHeight: 0,
   gap: vars.space2
 });
 
@@ -31,6 +32,7 @@ export const note = style({
 export const field = style({
   display: 'flex',
   flexDirection: 'column',
+  minHeight: 0,
   gap: vars.space1,
   padding: vars.space2,
   borderRadius: vars.radiusLg,
@@ -45,6 +47,9 @@ export const field = style({
 });
 
 export const input = style({
+  // Ant's inline autosize styles know the row count, not the space left in the panel.
+  minHeight: '0 !important',
+  overflowY: 'auto !important' as 'auto',
   padding: `${vars.space1} ${vars.space2}`,
   fontSize: vars.fontSize
 });
@@ -55,6 +60,7 @@ globalStyle(`${scope} ${input}::placeholder`, { color: vars.textTertiary });
 
 export const footer = style({
   display: 'flex',
+  flexShrink: 0,
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: vars.space2,

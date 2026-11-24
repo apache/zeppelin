@@ -120,8 +120,10 @@ export const listErrorMessage = style({
 });
 
 export const composer = style({
-  flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'column',
   minWidth: 0,
+  minHeight: 0,
   margin: 0,
   padding: 0,
   border: 0

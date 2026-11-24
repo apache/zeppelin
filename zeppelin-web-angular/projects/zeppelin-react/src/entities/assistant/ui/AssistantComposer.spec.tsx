@@ -43,10 +43,18 @@ describe('AssistantComposer', () => {
     expect(onSubmit).toHaveBeenCalledWith('Explain this notebook');
   });
 
-  it('sends the trimmed question from the button and from Enter', () => {
-    const { onSubmit } = renderComposer({ value: '  Explain this notebook\n' });
-    fireEvent.click(send());
+  it('focuses the input during accepted submission and sends the trimmed question', () => {
+    const onSubmit = vi.fn(() => expect(document.activeElement).toBe(input()));
+    renderComposer({ value: '  Explain this notebook\n', onSubmit });
+
+    const button = send();
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    fireEvent.click(button);
+    expect(document.activeElement).toBe(input());
+
     pressEnter();
+    expect(document.activeElement).toBe(input());
     expect(onSubmit.mock.calls).toEqual([['Explain this notebook'], ['Explain this notebook']]);
   });
 
