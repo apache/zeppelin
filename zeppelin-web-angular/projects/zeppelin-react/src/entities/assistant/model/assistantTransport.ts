@@ -159,12 +159,18 @@ const unwrapBody = (value: unknown): unknown =>
   typeof value === 'object' && value !== null && 'body' in value ? value.body : value;
 
 /** Hands 401/405 to the host, which owns login redirects and logout. */
-export type AssistantAuthErrorHandler = (status: number) => void;
+export type AssistantAuthErrorHandler = (status: number, location: string | null) => void;
+type CaptureAuthErrorHandler = () => AssistantAuthErrorHandler | undefined;
 
 const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler): AssistantHttpError => {
   const error = new AssistantHttpError(response.status);
   if (error.status === 401 || error.status === 405) {
-    onAuthError?.(error.status);
+    try {
+      onAuthError?.(error.status, response.headers.get('Location'));
+    } catch (handlerError) {
+      // Authentication side effects must not replace the original request failure.
+      console.error('Assistant authentication handler failed', handlerError);
+    }
   }
   return error;
 };
@@ -172,8 +178,9 @@ const httpError = (response: Response, onAuthError?: AssistantAuthErrorHandler):
 const requestJson = async <T>(
   url: string,
   init: { method?: string; body?: unknown } = {},
-  onAuthError?: AssistantAuthErrorHandler
+  captureAuthError?: CaptureAuthErrorHandler
 ): Promise<T> => {
+  const onAuthError = captureAuthError?.();
   const response = await fetch(url, {
     method: init.method ?? 'GET',
     credentials: 'include',
@@ -295,11 +302,12 @@ const HISTORY_PAGE_SIZE = 50;
 
 /**
  * REST client for a note's conversations and history. `apiBase` is the host's REST base, e.g. `.../api`.
+ * Capture the view's auth handler at request start, before the request can outlive that view.
  */
 export const createAssistantConversationApi = (
   apiBase: string,
   noteId: string,
-  onAuthError?: AssistantAuthErrorHandler
+  captureAuthError?: CaptureAuthErrorHandler
 ): AssistantConversationApi => {
   const base = `${apiBase.replace(/\/$/, '')}/notes/${encodeURIComponent(noteId)}/conversations`;
   const toAssistantConversation = (conversation: ConversationMetadataResponse): AssistantConversation => {
@@ -314,7 +322,7 @@ export const createAssistantConversationApi = (
   return {
     // Latest activity first, so the panel opens on it.
     listConversations: async () =>
-      (await collectionRequest<ConversationMetadataResponse[]>(base, {}, onAuthError))
+      (await collectionRequest<ConversationMetadataResponse[]>(base, {}, captureAuthError))
         .map(conversation => ({
           conversation,
           time: Date.parse(conversation.updatedAt) || 0
@@ -326,18 +334,18 @@ export const createAssistantConversationApi = (
         await collectionRequest<ConversationMetadataResponse>(
           base,
           { method: 'POST', body: title === undefined ? {} : { title } },
-          onAuthError
+          captureAuthError
         )
       ),
     deleteConversation: async conversationId => {
-      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE' }, onAuthError);
+      await requestJson<void>(`${base}/${encodeURIComponent(conversationId)}`, { method: 'DELETE' }, captureAuthError);
     },
     getMessages: async (conversationId, before): Promise<AssistantMessagePage> => {
       const cursor = before ? `&cursor=${encodeURIComponent(before)}` : '';
       const page = await requestJson<MessagePage>(
         `${base}/${encodeURIComponent(conversationId)}/messages?limit=${HISTORY_PAGE_SIZE}${cursor}`,
         {},
-        onAuthError
+        captureAuthError
       );
       // The server pages from the latest message backwards; the panel renders oldest to newest.
       return { messages: toVisibleMessages([...page.messages].reverse()), cursor: page.cursor ?? null };

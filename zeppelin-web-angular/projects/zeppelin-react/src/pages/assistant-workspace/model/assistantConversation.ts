@@ -57,6 +57,10 @@ export class AssistantConversationSession {
     return this.entry;
   }
 
+  get hasSubmittedRun(): boolean {
+    return this.phase === 'pending' || this.phase === 'running';
+  }
+
   /** Does not emit a change notification. */
   updateConversation(conversation: AssistantConversation): void {
     const current = this.conversation;

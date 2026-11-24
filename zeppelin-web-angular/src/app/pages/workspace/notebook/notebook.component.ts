@@ -18,6 +18,7 @@ import {
   OnDestroy,
   OnInit,
   QueryList,
+  ViewChild,
   ViewChildren
 } from '@angular/core';
 import { Title } from '@angular/platform-browser';
@@ -54,6 +55,7 @@ import {
 import { scrollIntoViewIfNeeded } from '@zeppelin/utility';
 import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 import { AssistantSlots } from './assistant/assistant-slots';
+import { AssistantHostComponent } from './assistant/assistant-host.component';
 
 @Component({
   selector: 'zeppelin-notebook',
@@ -65,6 +67,7 @@ import { AssistantSlots } from './assistant/assistant-slots';
 })
 export class NotebookComponent extends MessageListenersManager implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren(NotebookParagraphComponent) listOfNotebookParagraphComponent!: QueryList<NotebookParagraphComponent>;
+  @ViewChild(AssistantHostComponent) assistantHost?: AssistantHostComponent;
   private destroy$ = new Subject<void>();
   private searchTerm = '';
   note?: Exclude<Note['note'], undefined>;
@@ -95,6 +98,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     if (isNil(note)) {
       this.router.navigate(['/']).then();
     } else {
+      if (note.id !== this.activatedRoute.snapshot.params.noteId) return;
       const { paragraphId } = this.activatedRoute.snapshot.params;
       const nextNote = paragraphId ? this.cleanParagraphExcept(note, paragraphId) : note;
       this.removeObsoleteParagraphBindings(nextNote);
@@ -343,6 +347,18 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.scrolledId = id;
   }
 
+  openAssistantParagraph(id: string): void {
+    if (!this.note?.paragraphs.some(paragraph => paragraph.id === id)) return;
+    const alreadyScrolled = this.scrolledId === id;
+    this.onParagraphSelect(id);
+    this.onParagraphScrolled(id);
+    // Angular does not rerun an unchanged boolean input when the same link is clicked again.
+    if (alreadyScrolled) {
+      this.listOfNotebookParagraphComponent?.find(paragraph => paragraph.paragraph.id === id)?.scrollIfNeeded();
+    }
+    this.cdr.markForCheck();
+  }
+
   onSelectAtIndex(index: number) {
     if (!this.note) {
       throw new Error(`"note" is not defined. Please check if note data is loaded before calling this method.`);
@@ -487,7 +503,17 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         this.useReactAssistant = this.reactFeature.isEnabled('assistantPanel', data);
         this.cdr.markForCheck();
       });
-    this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(() => {
+    this.activatedRoute.params.pipe(takeUntil(this.destroy$), distinctUntilKeyChanged('noteId')).subscribe(params => {
+      if (this.note && this.note.id !== params.noteId) {
+        this.assistantHost?.retire();
+        this.saveNote();
+        this.killSaveTimer();
+        this.removeObsoleteParagraphBindings();
+        this.note = undefined;
+        this.selectId = null;
+        this.scrolledId = null;
+        this.cdr.markForCheck();
+      }
       this.noteVarShareService.clear();
     });
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe(param => {

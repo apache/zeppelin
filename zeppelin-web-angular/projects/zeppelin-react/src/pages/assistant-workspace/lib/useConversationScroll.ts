@@ -39,11 +39,11 @@ interface ScrollState {
   contentHeight: number;
 }
 
-const markdownBlocks =
-  '[data-conversation-markdown] p, [data-conversation-markdown] pre, ' +
-  '[data-conversation-markdown] table, [data-conversation-markdown] li, ' +
-  '[data-conversation-markdown] h1, [data-conversation-markdown] h2, ' +
-  '[data-conversation-markdown] h3, [data-conversation-markdown] blockquote';
+const contentBlocks =
+  '[data-assistant-content] p, [data-assistant-content] pre, ' +
+  '[data-assistant-content] table, [data-assistant-content] li, ' +
+  '[data-assistant-content] h1, [data-assistant-content] h2, ' +
+  '[data-assistant-content] h3, [data-assistant-content] blockquote';
 
 const captureAnchor = (
   viewport: HTMLElement,
@@ -58,7 +58,7 @@ const captureAnchor = (
     if (rect.bottom <= top || rect.top >= bottom) continue;
 
     // Anchor within an answer because older pages can extend that same row.
-    const blocks = Array.from(row.querySelectorAll<HTMLElement>(markdownBlocks));
+    const blocks = Array.from(row.querySelectorAll<HTMLElement>(contentBlocks));
     const block =
       blocks.find(element => {
         const bounds = element.getBoundingClientRect();
@@ -154,7 +154,7 @@ export const useConversationScroll = ({
       } else if (current.anchor) {
         const { row, block, text, blockIndex, blockCount, firstSegment, rowOffset, blockOffset, neighbors } =
           current.anchor;
-        const blocks = stack.contains(row) ? Array.from(row.querySelectorAll<HTMLElement>(markdownBlocks)) : [];
+        const blocks = stack.contains(row) ? Array.from(row.querySelectorAll<HTMLElement>(contentBlocks)) : [];
 
         // Repeated paragraphs need segment identity, not text matching alone.
         const prepended =
