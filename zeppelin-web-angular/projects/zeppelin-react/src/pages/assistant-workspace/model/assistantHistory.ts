@@ -264,7 +264,7 @@ export class AssistantHistory {
     this.changed();
   }
 
-  private invalidateRequests(): void {
+  invalidateRequests(): void {
     ++this.requestVersion;
     this.requestStatus = 'idle';
   }

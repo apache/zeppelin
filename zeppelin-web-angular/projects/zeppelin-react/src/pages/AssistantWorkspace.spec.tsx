@@ -11,7 +11,7 @@
  */
 
 import { act, StrictMode } from 'react';
-import { fireEvent, render, screen, type RenderResult } from '@testing-library/react';
+import { fireEvent, render, screen, within, type RenderResult } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   NOTEBOOK_SIDEBAR_WIDTH,
@@ -357,6 +357,32 @@ describe('AssistantWorkspace', () => {
     expect(onPanelVisibilityChange).toHaveBeenLastCalledWith(true);
   });
 
+  it('restores an unsent new conversation without sending and ignores the previous list response', async () => {
+    const oldList = Promise.withResolvers<Response>();
+    const socket = socketHarness();
+    const fetch = vi
+      .fn()
+      .mockReturnValueOnce(oldList.promise)
+      .mockResolvedValueOnce(json([conversation]));
+    vi.stubGlobal('fetch', fetch);
+    const { open } = await setup({ connection: connection(socket) });
+    await open();
+    await act(async () => fireEvent.change(question(), { target: { value: 'Keep this unsent question' } }));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    await open();
+    expect(question().value).toBe('Keep this unsent question');
+
+    await act(async () => oldList.resolve(json([{ ...conversation, id: 'old', title: 'Obsolete conversation' }])));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+    expect(screen.getByRole('button', { name: /^Saved conversation/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Obsolete conversation/ })).toBeNull();
+    expect(fetch.mock.calls).toEqual([
+      ['/zeppelin/api/notes/note-a/conversations', expect.objectContaining({ method: 'GET' })],
+      ['/zeppelin/api/notes/note-a/conversations', expect.objectContaining({ method: 'GET' })]
+    ]);
+    expect(socket.send).not.toHaveBeenCalled();
+  });
+
   it('uses the host REST and socket by default and resolves saved and streaming paragraph references', async () => {
     const paragraphId = 'paragraph_1423500782552_-1439281894';
     const unknownId = 'paragraph_1423500782553_1439281894';
@@ -509,15 +535,27 @@ describe('AssistantWorkspace', () => {
     expect(socket.consumers()).toEqual([0, 0]);
   });
 
-  it('keeps the submitted run across slot removal without restoring unrelated drafts or auth errors', async () => {
+  it.each(['before', 'after'] as const)('keeps a separate draft when reopened %s completion', async reopen => {
     const socket = socketHarness();
     const host = connection(socket);
     const oldHistory = Promise.withResolvers<Response>();
     const empty = { messages: [], cursor: null };
+    let completed = false;
     vi.stubGlobal(
       'fetch',
       vi.fn((url: string) => {
         if (url.includes('/unrelated-history/messages')) return oldHistory.promise;
+        if (url.includes('/saved/messages') && completed) {
+          return Promise.resolve(
+            json({
+              messages: [
+                { id: 'a1', role: 'assistant', content: 'Saved final reply' },
+                { id: 'u1', role: 'user', content: 'Keep the submitted run' }
+              ],
+              cursor: null
+            })
+          );
+        }
         if (url.includes('/messages')) return Promise.resolve(json(empty));
         return Promise.resolve(
           json([
@@ -541,7 +579,7 @@ describe('AssistantWorkspace', () => {
       socket.emit({ conversationId: 'saved', type: 'message.delta', payload: { messageId: 'a1', delta: 'Reply' } });
     });
     await select(/^Other conversation/);
-    await act(async () => fireEvent.change(question(), { target: { value: 'Do not keep this draft' } }));
+    await act(async () => fireEvent.change(question(), { target: { value: 'Keep this separate draft' } }));
     await select(/^Pending history/);
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
     await update({ slots: [] });
@@ -552,17 +590,26 @@ describe('AssistantWorkspace', () => {
         payload: { messageId: 'a1', delta: ' continues' }
       });
     });
-    await update({ slots });
-    await open();
+    const restorePanel = async () => {
+      await update({ slots });
+      await open();
+    };
+    if (reopen === 'before') await restorePanel();
+    expect(Boolean(screen.queryByText('Reply continues'))).toBe(reopen === 'before');
 
-    expect(screen.getByText('Reply continues')).toBeTruthy();
+    completed = true;
+    await act(async () => socket.emit({ conversationId: 'saved', type: 'run.completed', payload: { runId: 'run-1' } }));
+    if (reopen === 'after') await restorePanel();
+    expect(screen.getAllByText('Saved final reply')).toHaveLength(1);
+    expect(screen.getAllByText('Keep the submitted run')).toHaveLength(1);
     await act(async () =>
       oldHistory.resolve(new Response(null, { status: 401, headers: { Location: '/obsolete-login' } }))
     );
     expect(host.onAuthError).not.toHaveBeenCalled();
     await select(/^Other conversation/);
-    expect(question().value).toBe('');
+    expect(question().value).toBe('Keep this separate draft');
     expect(socket.send).toHaveBeenCalledTimes(1);
+    expect(socket.consumers()).toEqual([0, 0]);
   });
 
   it.each(['note', 'session', 'unmount'] as const)(
@@ -589,6 +636,8 @@ describe('AssistantWorkspace', () => {
       });
       expect(screen.getByText('Previous session answer')).toBeTruthy();
 
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'New conversation' })));
+      await act(async () => fireEvent.change(question(), { target: { value: 'Previous session draft' } }));
       await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
       switch (change) {
         case 'note':
@@ -612,6 +661,8 @@ describe('AssistantWorkspace', () => {
       );
       if (change !== 'unmount') await open();
       expect(screen.queryByText(/Previous session answer|Late old answer/)).toBeNull();
+      const field = screen.queryByRole('textbox', { name: 'Question' }) as HTMLTextAreaElement | null;
+      expect(field?.value).toBe(change === 'unmount' ? undefined : '');
       expect(socket.send).toHaveBeenCalledTimes(1);
     }
   );
@@ -652,16 +703,29 @@ describe('AssistantWorkspace', () => {
     }
   );
 
-  it.each(['close', 'note', 'session', 'unmount'] as const)('ignores late history data after %s', async change => {
+  it.each(['close', 'note', 'session', 'unmount'] as const)('ignores stale history after %s', async change => {
     const pending = Promise.withResolvers<Response>();
-    const host = connection();
-    const fetch = vi.fn((url: string) =>
-      url.includes('/messages') ? pending.promise : Promise.resolve(json([conversation]))
-    );
+    const socket = socketHarness();
+    const host = connection(socket);
+    let historyRequests = 0;
+    const fetch = vi.fn((url: string, _options?: RequestInit) => {
+      if (!url.includes('/messages')) return Promise.resolve(json([conversation]));
+      if (++historyRequests === 1) return pending.promise;
+      return Promise.resolve(
+        json({ messages: [{ id: 'current', role: 'assistant', content: 'Current saved answer' }], cursor: null })
+      );
+    });
     vi.stubGlobal('fetch', fetch);
     const { open, update, unmount } = await setup({ connection: host });
     await open();
     await selectSaved();
+    await act(async () => fireEvent.change(question(), { target: { value: 'Existing conversation draft' } }));
+    expect(screen.getByText('Loading conversation…')).toBeTruthy();
+    expect(historyRequests).toBe(1);
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/notes/note-a/conversations/saved/messages'),
+      expect.objectContaining({ method: 'GET' })
+    );
     switch (change) {
       case 'close':
         await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
@@ -677,15 +741,89 @@ describe('AssistantWorkspace', () => {
         break;
     }
     expect(screen.queryByRole('complementary')).toBeNull();
-    if (change !== 'unmount') await open();
+    if (change !== 'unmount') {
+      await open();
+      if (change !== 'close') await selectSaved();
+    }
+    expect(historyRequests).toBe(change === 'unmount' ? 1 : 2);
+    expect(Boolean(screen.queryByText('Current saved answer'))).toBe(change !== 'unmount');
     await act(async () =>
       pending.resolve(
         json({ messages: [{ id: 'old', role: 'assistant', content: 'Obsolete saved answer' }], cursor: null })
       )
     );
     expect(screen.queryByText('Obsolete saved answer')).toBeNull();
+    expect(Boolean(screen.queryByText('Current saved answer'))).toBe(change !== 'unmount');
     const field = screen.queryByRole('textbox', { name: 'Question' }) as HTMLTextAreaElement | null;
-    expect(field?.value).toBe(change === 'unmount' ? undefined : '');
+    expect(field?.value).toBe(
+      change === 'close' ? 'Existing conversation draft' : change === 'unmount' ? undefined : ''
+    );
+    expect(fetch.mock.calls.every(([, options]) => options?.method === 'GET')).toBe(true);
+    expect(socket.send).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { result: 'succeeds', settles: 'before' },
+    { result: 'succeeds', settles: 'after' },
+    { result: 'fails', settles: 'before' },
+    { result: 'fails', settles: 'after' }
+  ])('handles an outstanding draft deletion that $result $settles reopening', async ({ result, settles }) => {
+    const oldHistory = Promise.withResolvers<Response>();
+    const deletion = Promise.withResolvers<Response>();
+    const socket = socketHarness();
+    const succeeds = result === 'succeeds';
+    let deleted = false;
+    let historyRequests = 0;
+    const fetch = vi.fn((url: string, options?: RequestInit) => {
+      if (options?.method === 'DELETE') return deletion.promise;
+      if (!url.includes('/messages')) return Promise.resolve(json(deleted ? [] : [conversation]));
+      if (++historyRequests === 1) return oldHistory.promise;
+      if (deleted) return Promise.resolve(new Response(null, { status: 404 }));
+      return Promise.resolve(
+        json({ messages: [{ id: 'current', role: 'assistant', content: 'Current saved answer' }], cursor: null })
+      );
+    });
+    vi.stubGlobal('fetch', fetch);
+    const { open } = await setup({ connection: connection(socket) });
+    await open();
+    await selectSaved();
+    await act(async () => fireEvent.change(question(), { target: { value: 'Unsent deletion draft' } }));
+    expect(screen.getByText('Loading conversation…')).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Delete Saved conversation' })));
+    const confirm = within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' });
+    await act(async () => fireEvent.click(confirm));
+    expect(fetch).toHaveBeenCalledWith(
+      '/zeppelin/api/notes/note-a/conversations/saved',
+      expect.objectContaining({ method: 'DELETE' })
+    );
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    expect(screen.queryByRole('complementary')).toBeNull();
+    if (settles === 'after') await open();
+    expect(historyRequests).toBe(1);
+
+    await act(async () =>
+      oldHistory.resolve(
+        json({ messages: [{ id: 'old', role: 'assistant', content: 'Obsolete saved answer' }], cursor: null })
+      )
+    );
+    expect(screen.queryByText('Obsolete saved answer')).toBeNull();
+    expect(historyRequests).toBe(1);
+
+    await act(async () => {
+      deleted = succeeds;
+      deletion.resolve(new Response(null, { status: succeeds ? 204 : 500 }));
+    });
+    expect(historyRequests).toBe(!succeeds && settles === 'after' ? 2 : 1);
+    if (settles === 'before') await open();
+
+    expect(historyRequests).toBe(succeeds ? 1 : 2);
+    expect(question().value).toBe(succeeds ? '' : 'Unsent deletion draft');
+    expect(screen.queryByText('Obsolete saved answer')).toBeNull();
+    expect(Boolean(screen.queryByText('Current saved answer'))).toBe(!succeeds);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+    expect(Boolean(screen.queryByRole('button', { name: /^Saved conversation/ }))).toBe(!succeeds);
+    expect(fetch.mock.calls.filter(([, options]) => options?.method !== 'GET')).toHaveLength(1);
+    expect(socket.send).not.toHaveBeenCalled();
   });
 
   it.each(['close', 'note', 'session', 'unmount'] as const)(
@@ -694,14 +832,17 @@ describe('AssistantWorkspace', () => {
       const pending = Promise.withResolvers<Response>();
       const socket = socketHarness();
       const host = connection(socket);
-      vi.stubGlobal(
-        'fetch',
-        vi.fn((_url: string, options?: RequestInit) =>
-          options?.method === 'POST' ? pending.promise : Promise.resolve(json([]))
-        )
-      );
+      const fetch = vi.fn((url: string, options?: RequestInit) => {
+        if (options?.method === 'POST') return pending.promise;
+        if (url.includes('/messages')) return Promise.resolve(json({ messages: [], cursor: null }));
+        return Promise.resolve(json([conversation]));
+      });
+      vi.stubGlobal('fetch', fetch);
       const { open, update, unmount } = await setup({ connection: host });
       await open();
+      await selectSaved();
+      await act(async () => fireEvent.change(question(), { target: { value: 'Unrelated unsent draft' } }));
+      await act(async () => fireEvent.click(screen.getByRole('button', { name: 'New conversation' })));
       await submit('Obsolete creation');
       switch (change) {
         case 'close':
@@ -718,10 +859,21 @@ describe('AssistantWorkspace', () => {
           break;
       }
       if (change !== 'unmount') await open();
-      await act(async () => pending.resolve(json(conversation, 201)));
+      await act(async () => pending.resolve(json({ ...conversation, id: 'created', title: 'Obsolete creation' }, 201)));
       expect(socket.send).not.toHaveBeenCalled();
       const field = screen.queryByRole('textbox', { name: 'Question' }) as HTMLTextAreaElement | null;
       expect(field?.value).toBe(change === 'unmount' ? undefined : '');
+      if (change !== 'unmount') await selectSaved();
+      const savedField = screen.queryByRole('textbox', { name: 'Question' }) as HTMLTextAreaElement | null;
+      expect(savedField?.value).toBe(
+        change === 'close' ? 'Unrelated unsent draft' : change === 'unmount' ? undefined : ''
+      );
+      // None of the list responses contain the newly created ID, so only the obsolete POST could introduce it.
+      if (change !== 'unmount') {
+        await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+      }
+      expect(screen.queryByRole('button', { name: /^Obsolete creation/ })).toBeNull();
+      expect(fetch.mock.calls.filter(([, options]) => options?.method === 'POST')).toHaveLength(1);
     }
   );
 
@@ -739,13 +891,16 @@ describe('AssistantWorkspace', () => {
     expect(socket.send).not.toHaveBeenCalled();
   });
 
-  it('keeps unknown outcome after a real history reload and a subsequent 409 without automatically resending', async () => {
+  it('preserves unknown outcome through reopen, history reload, and an explicit retry rejected with 409', async () => {
     const socket = socketHarness();
+    const oldHistory = Promise.withResolvers<Response>();
+    let historyRequests = 0;
     vi.stubGlobal(
       'fetch',
-      vi.fn((url: string) =>
-        Promise.resolve(url.includes('/messages') ? json({ messages: [], cursor: null }) : json([conversation]))
-      )
+      vi.fn((url: string) => {
+        if (!url.includes('/messages')) return Promise.resolve(json([conversation]));
+        return ++historyRequests === 2 ? oldHistory.promise : Promise.resolve(json({ messages: [], cursor: null }));
+      })
     );
     const { open } = await setup({ connection: connection(socket) });
     await open();
@@ -754,6 +909,21 @@ describe('AssistantWorkspace', () => {
     await act(async () => socket.close());
     expect(screen.getByText(/The outcome of an earlier question is unknown/)).toBeTruthy();
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Reload conversation' })));
+    expect(historyRequests).toBe(2);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    await open();
+    await act(async () =>
+      oldHistory.resolve(
+        json({ messages: [{ id: 'old', role: 'assistant', content: 'Obsolete saved answer' }], cursor: null })
+      )
+    );
+    expect(historyRequests).toBe(2);
+    expect(screen.queryByText('Obsolete saved answer')).toBeNull();
+    expect(screen.getByText(/The outcome of an earlier question is unknown/)).toBeTruthy();
+    expect(question().value).toBe('Uncertain question');
+    expect(socket.send).toHaveBeenCalledTimes(1);
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Reload conversation' })));
+    expect(historyRequests).toBe(3);
     expect(screen.getByText(/The outcome of an earlier question is unknown/)).toBeTruthy();
     expect(socket.send).toHaveBeenCalledTimes(1);
 
@@ -766,6 +936,13 @@ describe('AssistantWorkspace', () => {
     expect(question().value).toBe('Explicit new submission');
     expect(socket.send).toHaveBeenCalledTimes(2);
     expect(socket.consumers()).toEqual([0, 0]);
+
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+    await open();
+    expect(screen.getByText(/The outcome of an earlier question is unknown/)).toBeTruthy();
+    expect(question().value).toBe('Explicit new submission');
+    expect(historyRequests).toBe(3);
+    expect(socket.send).toHaveBeenCalledTimes(2);
   });
 
   it('marks the toggle as pressed while the panel is open', async () => {

@@ -33,6 +33,7 @@ export class AssistantConversationSession {
   private submittedQuestion?: string;
   private deleting = false;
   private historyRefreshPending = false;
+  private historyPausedForDelete = false;
 
   private disposed = false;
   private controller?: AbortController;
@@ -109,9 +110,22 @@ export class AssistantConversationSession {
     this.changed();
   }
 
+  invalidateViewHistory(): void {
+    this.history.invalidateRequests();
+    this.historyRefreshPending = false;
+    this.historyPausedForDelete = this.deleting && !this.entry.loaded;
+    this.publish();
+  }
+
   ensureHistory(): void {
     const history = this.history.snapshot;
-    if (!history.loaded && !history.loading && !this.deleting && this.phase === 'idle') void this.reload();
+    if (history.loaded || history.loading || this.phase !== 'idle') return;
+    if (this.deleting) {
+      // Reopening can need a fresh initial page, but only if the pending delete fails.
+      this.historyRefreshPending ||= this.historyPausedForDelete;
+      return;
+    }
+    void this.reload(this.historyPausedForDelete);
   }
 
   async reload(preserveFailure = false): Promise<void> {
@@ -120,6 +134,7 @@ export class AssistantConversationSession {
     }
 
     this.historyRefreshPending = false;
+    this.historyPausedForDelete = false;
     if (!preserveFailure) this.failure = undefined;
     const result = await this.history.loadLatest(this.source.api, this.conversation.id);
     if (this.disposed || result.status === 'ignored' || !this.history.isCurrent(result)) return;
