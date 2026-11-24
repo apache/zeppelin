@@ -974,7 +974,7 @@ describe('AssistantConversationPanel', () => {
     );
   });
 
-  it.each(['Cancel', 'Escape'])(
+  it.each(['Close', 'Escape'])(
     'dismisses a pending delete with %s without cancelling the API or changing a later confirmation',
     async dismissal => {
       const source = fixture();
@@ -987,18 +987,23 @@ describe('AssistantConversationPanel', () => {
       await mountPanel(source);
       await select('Revenue analysis');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Delete Revenue analysis' }));
+      const trigger = screen.getByRole('button', { name: 'Delete Revenue analysis' });
+      trigger.focus();
+      fireEvent.click(trigger);
       const confirm = within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' });
       fireEvent.click(confirm);
       fireEvent.click(confirm);
 
       expect(remove).toHaveBeenCalledExactlyOnceWith('c1');
 
-      const cancel = within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' });
-      if (dismissal === 'Escape') fireEvent.keyDown(cancel, { key: 'Escape' });
-      else fireEvent.click(cancel);
+      const pendingDialog = screen.getByRole('dialog');
+      expect(document.activeElement).toBe(pendingDialog);
+      const close = within(pendingDialog).getByRole('button', { name: 'Close' });
+      if (dismissal === 'Escape') fireEvent.keyDown(pendingDialog, { key: 'Escape' });
+      else fireEvent.click(close);
 
       expect(screen.queryByRole('dialog')).toBeNull();
+      expect(document.activeElement).toBe(trigger);
 
       await select('Notebook summary');
       fireEvent.click(screen.getByRole('button', { name: 'Delete Notebook summary' }));
@@ -1036,10 +1041,10 @@ describe('AssistantConversationPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete Revenue analysis' }));
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' }));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete Revenue analysis' }));
 
-    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' })).toBeTruthy();
 
     await act(async () => gate.resolve());
 
@@ -1091,7 +1096,7 @@ describe('AssistantConversationPanel', () => {
     fireEvent.click(listTrigger());
     fireEvent.click(screen.getByRole('button', { name: 'Delete Revenue analysis' }));
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' }));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete Notebook summary' }));
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete conversation' }));
 

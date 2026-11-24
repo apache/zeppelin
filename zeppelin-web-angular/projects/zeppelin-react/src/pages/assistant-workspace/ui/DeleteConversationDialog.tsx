@@ -94,7 +94,7 @@ export const DeleteConversationDialog = ({
         )}
         <div className={styles.confirmationActions}>
           <button ref={cancel} type="button" className={styles.action} onClick={onCancel}>
-            Cancel
+            {deleting ? 'Close' : 'Cancel'}
           </button>
           <button type="button" className={styles.primaryAction} disabled={deleting} onClick={onConfirm}>
             Delete conversation
