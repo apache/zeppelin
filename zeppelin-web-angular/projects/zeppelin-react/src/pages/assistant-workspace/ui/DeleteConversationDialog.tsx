@@ -11,6 +11,7 @@
  */
 
 import { useId, useLayoutEffect, useRef, type KeyboardEvent } from 'react';
+import { action, note, warning } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import * as styles from './AssistantConversationPanel.css';
 
 interface DeleteConversationDialogProps {
@@ -83,17 +84,17 @@ export const DeleteConversationDialog = ({
           Delete “{title}”? This conversation and its messages will be removed.
         </p>
         {error && (
-          <p role="alert" className={styles.warning}>
+          <p role="alert" className={warning}>
             {error}
           </p>
         )}
         {deleting && (
-          <p role="status" className={styles.note}>
+          <p role="status" className={note}>
             Deleting conversation…
           </p>
         )}
         <div className={styles.confirmationActions}>
-          <button ref={cancel} type="button" className={styles.action} onClick={onCancel}>
+          <button ref={cancel} type="button" className={action} onClick={onCancel}>
             {deleting ? 'Close' : 'Cancel'}
           </button>
           <button type="button" className={styles.primaryAction} disabled={deleting} onClick={onConfirm}>

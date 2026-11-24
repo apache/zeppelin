@@ -11,6 +11,7 @@
  */
 
 import type { AssistantConversation, AssistantMessage } from '@/entities/assistant/model/assistantContract';
+import type { ConversationListQuery } from '@/entities/assistant/model/conversationListQuery';
 import type { AssistantAnswerErrorKind, AssistantAnswerView } from '@/entities/assistant/ui/answerView';
 
 export type AssistantPanelPhase = 'idle' | 'creating' | 'pending' | 'running' | 'unknown';
@@ -58,11 +59,7 @@ export interface AssistantPanelEntry extends AssistantPanelHistory {
 }
 
 export interface AssistantPanelSnapshot {
-  conversations: AssistantConversation[];
-  /** Whether a successful list response has been applied, independent of local rows. */
-  listLoaded: boolean;
-  listLoading: boolean;
-  listError?: string;
+  readonly conversationList: ConversationListQuery;
 
   selectedKey: string;
   entry: AssistantPanelEntry;

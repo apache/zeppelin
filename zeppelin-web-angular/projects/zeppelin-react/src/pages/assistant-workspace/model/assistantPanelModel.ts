@@ -11,15 +11,20 @@
  */
 
 import type { AssistantConversation } from '@/entities/assistant/model/assistantContract';
+import type { ConversationListQuery } from '@/entities/assistant/model/conversationListQuery';
 import { AssistantConversationSession } from './assistantConversation';
 import type { AssistantDataSource } from './assistantDataSource';
 import type { AssistantDeletionResult, AssistantPanel } from './assistantPanelState';
 
+const INITIAL_CONVERSATION_LIST: ConversationListQuery = {
+  conversations: [],
+  hasLoaded: false,
+  loading: true,
+  error: undefined
+};
+
 export class AssistantPanelModel {
-  private conversations: AssistantConversation[] = [];
-  private listLoaded = false;
-  private listLoading = true;
-  private listError?: string;
+  private conversationList = INITIAL_CONVERSATION_LIST;
 
   private selectedKey = 'draft:0';
   private draftKey: string | undefined = 'draft:0';
@@ -71,8 +76,7 @@ export class AssistantPanelModel {
   reopen(): void {
     if (!this.closedWithRun) return;
     this.closedWithRun = false;
-    this.listLoading = true;
-    this.listError = undefined;
+    this.conversationList = { ...this.conversationList, loading: true, error: undefined };
     this.publish();
     this.refreshConversations();
   }
@@ -88,10 +92,7 @@ export class AssistantPanelModel {
     this.sessions.clear();
     this.deleted.clear();
 
-    this.conversations = [];
-    this.listLoaded = false;
-    this.listLoading = true;
-    this.listError = undefined;
+    this.conversationList = INITIAL_CONVERSATION_LIST;
     this.selectedKey = 'draft:0';
     this.draftKey = 'draft:0';
     this.draftSequence = 0;
@@ -104,7 +105,7 @@ export class AssistantPanelModel {
 
   private async loadList(generation: number): Promise<void> {
     const version = ++this.listVersion;
-    const listedAtStart = new Set(this.conversations.map(conversation => conversation.id));
+    const listedAtStart = new Set(this.conversationList.conversations.map(conversation => conversation.id));
     try {
       const conversations = await this.source.api.listConversations();
       if (!this.active || this.generation !== generation || this.listVersion !== version) return;
@@ -112,12 +113,11 @@ export class AssistantPanelModel {
       const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
       const refreshed = new Map(visible.map(conversation => [conversation.id, conversation]));
       // A list snapshot can omit conversations confirmed locally after its request began.
-      const createdDuringRequest = this.conversations.filter(
+      const createdDuringRequest = this.conversationList.conversations.filter(
         conversation => !listedAtStart.has(conversation.id) && !refreshed.has(conversation.id)
       );
       const nextConversations = [...createdDuringRequest, ...visible];
       nextConversations.sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
-      this.conversations = nextConversations;
 
       this.sessions.forEach(session => {
         const id = session.snapshot.conversation?.id;
@@ -125,14 +125,15 @@ export class AssistantPanelModel {
         if (conversation) session.updateConversation(conversation);
       });
 
-      this.listLoaded = true;
-      this.listLoading = false;
-      this.listError = undefined;
+      this.conversationList = { conversations: nextConversations, hasLoaded: true, loading: false, error: undefined };
     } catch (error) {
       if (!this.active || this.generation !== generation || this.listVersion !== version) return;
 
-      this.listLoading = false;
-      this.listError = error instanceof Error ? error.message : 'Could not load conversations.';
+      this.conversationList = {
+        ...this.conversationList,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Could not load conversations.'
+      };
     }
 
     this.publish();
@@ -156,9 +157,9 @@ export class AssistantPanelModel {
   };
 
   readonly retryList = (): Promise<void> => {
-    if (!this.active || this.listLoading || !this.listError) return Promise.resolve();
+    if (!this.active || this.conversationList.loading || !this.conversationList.error) return Promise.resolve();
 
-    this.listLoading = true;
+    this.conversationList = { ...this.conversationList, loading: true };
     this.publish();
     return this.loadList(this.generation);
   };
@@ -167,14 +168,17 @@ export class AssistantPanelModel {
     if (!this.active || this.sessions.get(session.key) !== session) return;
 
     if (this.draftKey === session.key) this.draftKey = undefined;
-    this.conversations = [conversation, ...this.conversations.filter(item => item.id !== conversation.id)];
+    this.conversationList = {
+      ...this.conversationList,
+      conversations: [conversation, ...this.conversationList.conversations.filter(item => item.id !== conversation.id)]
+    };
     this.publish();
   };
 
   readonly select = (id: string): void => {
     if (!this.active) return;
 
-    const conversation = this.conversations.find(item => item.id === id);
+    const conversation = this.conversationList.conversations.find(item => item.id === id);
     if (!conversation) return;
 
     const session =
@@ -230,7 +234,7 @@ export class AssistantPanelModel {
   readonly deleteConversation = async (id: string): Promise<AssistantDeletionResult> => {
     if (!this.active) return { status: 'ignored' };
 
-    const conversation = this.conversations.find(item => item.id === id);
+    const conversation = this.conversationList.conversations.find(item => item.id === id);
     if (!conversation) return { status: 'ignored' };
 
     const session =
@@ -248,7 +252,10 @@ export class AssistantPanelModel {
 
     this.deleted.add(id);
     this.sessions.delete(session.key);
-    this.conversations = this.conversations.filter(item => item.id !== id);
+    this.conversationList = {
+      ...this.conversationList,
+      conversations: this.conversationList.conversations.filter(item => item.id !== id)
+    };
     if (this.selectedKey === session.key) this.selectDraft();
     this.publish();
     return result;
@@ -262,10 +269,7 @@ export class AssistantPanelModel {
     });
 
     return {
-      conversations: this.conversations,
-      listLoaded: this.listLoaded,
-      listLoading: this.listLoading,
-      listError: this.listError,
+      conversationList: this.conversationList,
       selectedKey: this.selectedKey,
       entry: this.sessions.get(this.selectedKey)!.snapshot,
       creatingConversation: !!this.draftKey && this.sessions.get(this.draftKey)!.snapshot.phase === 'creating',

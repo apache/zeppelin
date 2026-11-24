@@ -16,6 +16,7 @@ import { AssistantComposer } from '@/entities/assistant/ui/AssistantComposer';
 import { ConversationHeader } from '@/entities/assistant/ui/ConversationHeader';
 import { ConversationList } from '@/entities/assistant/ui/ConversationList';
 import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
+import { action, note, warning } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { useDeleteConfirmation } from '../lib/useDeleteConfirmation';
 import type { AssistantPanel } from '../model/assistantPanelState';
 import { ConversationMessages } from './ConversationMessages';
@@ -32,7 +33,7 @@ export interface AssistantConversationPanelProps {
 const ignoreSearchChange = () => undefined;
 
 export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: AssistantConversationPanelProps) => {
-  const { entry, send: sendQuestion, reload: reloadHistory } = panel;
+  const { conversationList, entry, send: sendQuestion, reload: reloadHistory, retryList } = panel;
 
   const [listOpen, setListOpen] = useState(false);
   const listTrigger = useRef<HTMLButtonElement>(null);
@@ -42,8 +43,8 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
   const fallbackFocus = useCallback(() => (listOpen ? back.current : listTrigger.current), [listOpen]);
   const confirmation = useDeleteConfirmation({
     scope,
-    conversations: panel.conversations,
-    listLoading: panel.listLoading,
+    conversations: conversationList.conversations,
+    listLoading: conversationList.loading,
     deletingConversationIds: panel.deletingConversationIds,
     onDelete: panel.deleteConversation,
     fallbackFocus
@@ -108,13 +109,13 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
           />
 
           <div className={styles.statusArea}>
-            {panel.listError && (
-              <p role="alert" className={styles.warning}>
-                {panel.listError}
+            {conversationList.error && (
+              <p role="alert" className={warning}>
+                {conversationList.error}
               </p>
             )}
             {entry.uncertainty && (
-              <p role="alert" className={styles.warning}>
+              <p role="alert" className={warning}>
                 {entry.uncertainty}
               </p>
             )}
@@ -122,7 +123,7 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
               <AssistantAnswerError kind={entry.failure.kind} message={entry.failure.message} onRetry={retry} />
             )}
             {(entry.phase === 'creating' || entry.phase === 'pending') && (
-              <p className={styles.note} role="status">
+              <p className={note} role="status">
                 {entry.phase === 'creating' ? 'Creating conversation…' : 'Sending question…'}
               </p>
             )}
@@ -155,34 +156,13 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
         {listOpen && (
           <div className={styles.listView}>
             <div className={styles.listNavigation}>
-              <button ref={back} type="button" className={styles.action} onClick={closeList}>
+              <button ref={back} type="button" className={action} onClick={closeList}>
                 Back
               </button>
             </div>
-            {panel.listLoading && (
-              <p role="status" className={styles.note}>
-                Loading conversations…
-              </p>
-            )}
-            {panel.listError && (
-              <div className={styles.listError}>
-                <div role="alert" className={styles.listErrorMessage}>
-                  {panel.listError}
-                </div>
-                <button
-                  type="button"
-                  className={styles.action}
-                  aria-label="Retry loading conversations"
-                  disabled={panel.listLoading}
-                  onClick={() => void panel.retryList()}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
             <ConversationList
-              conversations={panel.conversations}
-              showEmptyState={panel.listLoaded}
+              query={conversationList}
+              onRetry={() => void retryList()}
               selectedId={entry.conversation?.id}
               onSelect={id => {
                 panel.select(id);

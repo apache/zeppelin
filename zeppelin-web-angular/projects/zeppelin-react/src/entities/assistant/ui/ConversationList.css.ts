@@ -11,7 +11,7 @@
  */
 
 import { style } from '@vanilla-extract/css';
-import { vars, visuallyHidden } from '@/shared/ui/assistant-theme/AssistantScope.css';
+import { vars, visuallyHidden, warning } from '@/shared/ui/assistant-theme/AssistantScope.css';
 
 export { visuallyHidden };
 
@@ -97,6 +97,22 @@ export const rowMeta = style({
   gap: vars.space1,
   color: vars.textTertiary,
   fontSize: vars.fontSizeXs
+});
+
+export const listError = style([
+  warning,
+  {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: vars.space2
+  }
+]);
+
+export const listErrorMessage = style({
+  flex: '1 1 13rem',
+  minWidth: 0
 });
 
 export const empty = style({

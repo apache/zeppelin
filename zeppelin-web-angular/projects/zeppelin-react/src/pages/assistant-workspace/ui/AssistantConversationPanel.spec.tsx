@@ -149,6 +149,7 @@ describe('AssistantConversationPanel', () => {
   it('opens saved conversations and restores the trigger after select, Back and Escape without closing the shell', async () => {
     const source = fixture();
     const getMessages = vi.spyOn(source.api, 'getMessages');
+    const listConversations = vi.spyOn(source.api, 'listConversations');
     const { onKeyDown } = await mountPanel(source);
 
     await select('Revenue analysis');
@@ -177,6 +178,7 @@ describe('AssistantConversationPanel', () => {
     expect(document.activeElement).toBe(listTrigger());
     expect(onKeyDown).not.toHaveBeenCalled();
     expect(getMessages.mock.calls).toEqual([['c1']]);
+    expect(listConversations).toHaveBeenCalledTimes(1);
 
     fireEvent.keyDown(input(), { key: 'ArrowLeft' });
 
@@ -556,6 +558,7 @@ describe('AssistantConversationPanel', () => {
     const create = vi.spyOn(source.api, 'createConversation');
     const run = vi.spyOn(source, 'run');
     await mountPanel(source);
+    expect(screen.getByRole('alert').textContent).toContain('Conversations unavailable.');
     fireEvent.change(input(), { target: { value: 'Keep this draft through list recovery' } });
     fireEvent.click(listTrigger());
     expect(screen.getByRole('alert').textContent).toContain('Conversations unavailable.');

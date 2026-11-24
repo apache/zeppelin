@@ -75,6 +75,46 @@ globalStyle(`${scope} .zeppelin-ai-btn:not(:disabled):focus-visible`, {
 });
 globalStyle(`${scope} :focus:not(:focus-visible)`, { outline: 'none' });
 
+export const note = style({
+  flexShrink: 0,
+  margin: 0,
+  padding: `${vars.space2} ${vars.space3}`,
+  color: vars.textSecondary,
+  fontSize: vars.fontSizeSm,
+  overflowWrap: 'anywhere'
+});
+
+export const warning = style({
+  flexShrink: 0,
+  margin: vars.space2,
+  padding: vars.space2,
+  color: vars.text,
+  background: vars.fill,
+  border: `1px solid ${vars.borderStrong}`,
+  borderRadius: vars.radiusSm,
+  fontSize: vars.fontSizeSm,
+  overflowWrap: 'anywhere'
+});
+
+export const action = style({
+  minHeight: 30,
+  maxWidth: '100%',
+  padding: `${vars.space1} ${vars.space2}`,
+  border: `1px solid ${vars.borderStrong}`,
+  borderRadius: vars.radiusSm,
+  color: vars.text,
+  background: vars.bg,
+  font: 'inherit',
+  fontSize: vars.fontSizeSm,
+  lineHeight: vars.lineHeight,
+  cursor: 'pointer',
+  overflowWrap: 'anywhere',
+  selectors: {
+    '&:hover:not(:disabled)': { background: vars.fill },
+    '&:disabled': { cursor: 'not-allowed', opacity: 0.6 }
+  }
+});
+
 export const visuallyHidden = style({
   position: 'absolute',
   width: 1,
