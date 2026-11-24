@@ -161,7 +161,7 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
               </button>
             </div>
             <ConversationList
-              query={conversationList}
+              listState={conversationList}
               onRetry={() => void retryList()}
               selectedId={entry.conversation?.id}
               onSelect={id => {

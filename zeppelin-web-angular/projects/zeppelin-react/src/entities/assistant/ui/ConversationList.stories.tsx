@@ -35,7 +35,7 @@ const meta = {
   title: 'Assistant/ConversationList',
   component: ConversationList,
   args: {
-    query: { conversations, hasLoaded: true, loading: false, error: undefined },
+    listState: { conversations, hasLoaded: true, loading: false, error: undefined },
     onRetry: fn(),
     onSelect: fn(),
     onCreate: fn(),
@@ -52,7 +52,7 @@ export const TodayAndEarlier: Story = {};
 
 export const Selected: Story = { args: { selectedId: 'a' } };
 
-export const Empty: Story = { args: { query: { ...meta.args.query, conversations: [] } } };
+export const Empty: Story = { args: { listState: { ...meta.args.listState, conversations: [] } } };
 
 export const Search: Story = {
   play: async ({ canvasElement, args }) => {

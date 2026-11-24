@@ -11,12 +11,12 @@
  */
 
 import type { AssistantConversation } from '@/entities/assistant/model/assistantContract';
-import type { ConversationListQuery } from '@/entities/assistant/model/conversationListQuery';
+import type { ConversationListState } from '@/entities/assistant/model/conversationListState';
 import { AssistantConversationSession } from './assistantConversation';
 import type { AssistantDataSource } from './assistantDataSource';
 import type { AssistantDeletionResult, AssistantPanel } from './assistantPanelState';
 
-const INITIAL_CONVERSATION_LIST: ConversationListQuery = {
+const INITIAL_CONVERSATION_LIST: ConversationListState = {
   conversations: [],
   hasLoaded: false,
   loading: true,

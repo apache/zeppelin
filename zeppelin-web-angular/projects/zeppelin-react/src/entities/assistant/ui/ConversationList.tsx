@@ -16,7 +16,7 @@ import { Button, Input } from 'antd';
 import { isSameDay } from 'date-fns';
 import { action, note } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import type { AssistantConversation } from '../model/assistantContract';
-import type { ConversationListQuery } from '../model/conversationListQuery';
+import type { ConversationListState } from '../model/conversationListState';
 import { conversationTitle } from './conversationTitle';
 import * as styles from './ConversationList.css';
 
@@ -34,7 +34,7 @@ const matchesSearch = (conversation: AssistantConversation, needle: string) =>
   conversationTitle(conversation).toLowerCase().includes(needle);
 
 export interface ConversationListProps {
-  query: ConversationListQuery;
+  listState: ConversationListState;
   onRetry: () => void;
   selectedId?: string;
   onSelect: (conversationId: string) => void;
@@ -103,7 +103,7 @@ const ConversationRow = ({
 };
 
 export const ConversationList = ({
-  query: { conversations, hasLoaded, loading, error },
+  listState: { conversations, hasLoaded, loading, error },
   onRetry,
   selectedId,
   onSelect,

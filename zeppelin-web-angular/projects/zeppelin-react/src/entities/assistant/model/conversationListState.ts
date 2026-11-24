@@ -12,7 +12,7 @@
 
 import type { AssistantConversation } from './assistantContract';
 
-export interface ConversationListQuery {
+export interface ConversationListState {
   readonly conversations: readonly AssistantConversation[];
   /** A successful response has been applied, independent of local rows or the latest request. */
   readonly hasLoaded: boolean;
