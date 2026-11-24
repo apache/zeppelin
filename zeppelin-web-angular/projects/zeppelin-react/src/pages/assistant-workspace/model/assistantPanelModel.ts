@@ -17,6 +17,7 @@ import type { AssistantDeletionResult, AssistantPanel } from './assistantPanelSt
 
 export class AssistantPanelModel {
   private conversations: AssistantConversation[] = [];
+  private listLoaded = false;
   private listLoading = true;
   private listError?: string;
 
@@ -88,6 +89,7 @@ export class AssistantPanelModel {
     this.deleted.clear();
 
     this.conversations = [];
+    this.listLoaded = false;
     this.listLoading = true;
     this.listError = undefined;
     this.selectedKey = 'draft:0';
@@ -123,6 +125,7 @@ export class AssistantPanelModel {
         if (conversation) session.updateConversation(conversation);
       });
 
+      this.listLoaded = true;
       this.listLoading = false;
       this.listError = undefined;
     } catch (error) {
@@ -260,6 +263,7 @@ export class AssistantPanelModel {
 
     return {
       conversations: this.conversations,
+      listLoaded: this.listLoaded,
       listLoading: this.listLoading,
       listError: this.listError,
       selectedKey: this.selectedKey,

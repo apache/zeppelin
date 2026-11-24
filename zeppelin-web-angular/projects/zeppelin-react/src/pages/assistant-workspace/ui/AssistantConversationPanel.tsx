@@ -182,6 +182,7 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
             )}
             <ConversationList
               conversations={panel.conversations}
+              showEmptyState={panel.listLoaded}
               selectedId={entry.conversation?.id}
               onSelect={id => {
                 panel.select(id);

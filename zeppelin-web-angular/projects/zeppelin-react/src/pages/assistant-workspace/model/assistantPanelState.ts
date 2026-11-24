@@ -59,6 +59,8 @@ export interface AssistantPanelEntry extends AssistantPanelHistory {
 
 export interface AssistantPanelSnapshot {
   conversations: AssistantConversation[];
+  /** Whether a successful list response has been applied, independent of local rows. */
+  listLoaded: boolean;
   listLoading: boolean;
   listError?: string;
 

@@ -33,6 +33,7 @@ const matchesSearch = (conversation: AssistantConversation, needle: string) =>
 
 export interface ConversationListProps {
   conversations: AssistantConversation[];
+  showEmptyState?: boolean;
   selectedId?: string;
   onSelect: (conversationId: string) => void;
   onCreate: () => void;
@@ -101,6 +102,7 @@ const ConversationRow = ({
 
 export const ConversationList = ({
   conversations,
+  showEmptyState = true,
   selectedId,
   onSelect,
   onCreate,
@@ -156,11 +158,12 @@ export const ConversationList = ({
           onChange={event => handleSearchChange(event.target.value)}
         />
       </div>
-      {shown.length === 0 ? (
+      {shown.length === 0 && showEmptyState && (
         <p className={styles.empty} role="status">
           {searching ? 'No conversations match your search.' : 'No conversations yet.'}
         </p>
-      ) : (
+      )}
+      {shown.length > 0 && (
         <>
           {!searching && today.length > 0 && (
             <>
