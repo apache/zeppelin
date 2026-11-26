@@ -203,4 +203,6 @@ HTML is displayed as text and dangerous link URLs are blocked.
 
 Markdown images load only after you select **Load image**. Review the displayed destination first: loading may transmit information included in the URL. Only HTTP(S) URLs are supported.
 
+If loading fails, the image description remains visible. Select **Retry image** to try the same URL again. The remote server's cache directives still apply.
+
 See **Assistant / MarkdownAnswer** in Storybook for examples in both themes.

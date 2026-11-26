@@ -137,6 +137,20 @@ export const imageDescription = style({
   fontWeight: 600
 });
 
+export const loadableImageDescription = style([
+  imageDescription,
+  {
+    selectors: {
+      '&:focus-visible': { outline: `2px solid ${vars.focus}`, outlineOffset: 2 }
+    }
+  }
+]);
+
+export const imageFailure = style({
+  display: 'block',
+  fontWeight: 600
+});
+
 export const imageDetails = style({
   display: 'flex',
   flexDirection: 'column',
@@ -156,7 +170,8 @@ export const loadImage = style({
   font: 'inherit',
   cursor: 'pointer',
   selectors: {
-    '&:hover': { color: vars.accentTextHover }
+    '&:hover': { color: vars.accentTextHover },
+    '&:focus-visible': { outline: `2px solid ${vars.focus}`, outlineOffset: 2 }
   }
 });
 

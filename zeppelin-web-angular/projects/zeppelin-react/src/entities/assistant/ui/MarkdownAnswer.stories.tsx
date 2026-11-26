@@ -38,11 +38,23 @@ const streamingImageChunks = [
   '\n\nThe updated chart includes the final month of the quarter.'
 ];
 
-const StreamingImagesExample = (args: MarkdownAnswerProps) => {
+const streamingImageFrames = streamingImageChunks.map((_, step) => {
+  const version = step === streamingImageChunks.length - 1 ? 'B' : 'A';
+  return `${streamingImageChunks.slice(0, step + 1).join('')}\n\n[revenue-chart]: ${imageFixtureUrl}${imageQuerySeparator}version=${version}`;
+});
+
+const externalImageUrl = 'https://images.example.test/plot.svg?q=SYNTHETIC_NOTEBOOK_VALUE';
+const revisedExternalImageUrl = 'https://images.example.test/plot.svg?q=UPDATED_NOTEBOOK_VALUE';
+const externalImageContent = '![Earlier chart][earlier-chart] ![Quarterly revenue chart][revenue-chart]';
+const externalImageFrames = [
+  `${externalImageContent}\n\n[revenue-chart]: ${externalImageUrl}`,
+  `${externalImageContent}\n\n[revenue-chart]: ${revisedExternalImageUrl}`,
+  `${externalImageContent}\n\nMore streamed text.\n\n[revenue-chart]: ${revisedExternalImageUrl}\n[earlier-chart]: ${revisedExternalImageUrl}`
+];
+
+const StreamingImagesExample = ({ frames, ...args }: MarkdownAnswerProps & { frames: readonly string[] }) => {
   const [step, setStep] = useState(0);
-  const completed = step === streamingImageChunks.length - 1;
-  const version = completed ? 'B' : 'A';
-  const content = `${streamingImageChunks.slice(0, step + 1).join('')}\n\n[revenue-chart]: ${imageFixtureUrl}${imageQuerySeparator}version=${version}`;
+  const completed = step === frames.length - 1;
 
   return (
     <div>
@@ -53,9 +65,9 @@ const StreamingImagesExample = (args: MarkdownAnswerProps) => {
         Restart stream
       </button>
       <p role="status">
-        Chunk {step + 1} of {streamingImageChunks.length}
+        Chunk {step + 1} of {frames.length}
       </p>
-      <MarkdownAnswer {...args} content={content} />
+      <MarkdownAnswer {...args} content={frames[step]} />
     </div>
   );
 };
@@ -287,7 +299,13 @@ export const ImageLoading: Story = {
 };
 
 export const StreamingImages: Story = {
-  render: args => <StreamingImagesExample {...args} />,
-  args: { content: streamingImageChunks[0] },
+  render: args => <StreamingImagesExample {...args} frames={streamingImageFrames} />,
+  args: { content: streamingImageFrames[0] },
+  argTypes: { content: { control: false } }
+};
+
+export const ExternalImageApproval: Story = {
+  render: args => <StreamingImagesExample {...args} frames={externalImageFrames} />,
+  args: { content: externalImageFrames[0] },
   argTypes: { content: { control: false } }
 };
