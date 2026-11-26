@@ -442,7 +442,58 @@ describe('MarkdownAnswer', () => {
       expect(image.hasAttribute('srcset')).toBe(false);
     });
 
-    it('accepts activation before passive image registration has run', () => {
+    it('keeps a failed image at its source occurrence through streaming and retries only that destination', () => {
+      const initial = `![New][later] ![Existing][plot]\n\n[plot]: ${sourceA}`;
+      const { rerender } = render(<MarkdownAnswer content={initial} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Load image: Existing' }));
+      fireEvent.error(screen.getByRole('img', { name: 'Existing' }));
+
+      rerender(<MarkdownAnswer content={`${initial}\n[later]: ${sourceA}`} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Load image: New' })).toBeTruthy();
+      expect(screen.getByText('Image could not be loaded.').getAttribute('role')).toBe('status');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Retry image: Existing' }));
+      const image = screen.getByRole('img', { name: 'Existing' });
+      expect(image.getAttribute('src')).toBe(sourceA);
+      fireEvent.error(image);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Retry image: Existing' })).toBeTruthy();
+
+      rerender(<MarkdownAnswer content={`${initial.replace(sourceA, sourceB)}\n[later]: ${sourceA}`} />);
+      expect(screen.queryByRole('img')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Retry image: Existing' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Load image: Existing' })).toBeTruthy();
+    });
+
+    it.each(['retry', 'fail'])('handles an early %s when streaming rekeys the approved image', action => {
+      const initial = `![New][later] ![Existing](${sourceA})`;
+      const rekeyed = `${initial}\n\n[later]: ${sourceB}`;
+      const OnRekey = ({ content }: { content: string }) => {
+        useLayoutEffect(() => {
+          if (content !== rekeyed) return;
+          if (action === 'retry') {
+            fireEvent.click(screen.getByRole('button', { name: 'Retry image: Existing' }));
+          } else {
+            fireEvent.error(screen.getByRole('img', { name: 'Existing' }));
+          }
+        }, [content]);
+        return <MarkdownAnswer content={content} />;
+      };
+      const { rerender } = render(<OnRekey content={initial} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Load image: Existing' }));
+      if (action === 'retry') fireEvent.error(screen.getByRole('img', { name: 'Existing' }));
+
+      rerender(<OnRekey content={rekeyed} />);
+
+      expect(screen.getByRole('button', { name: 'Load image: New' })).toBeTruthy();
+      expect(screen.queryByRole('img', { name: 'Existing' })?.getAttribute('src')).toBe(
+        action === 'retry' ? sourceA : undefined
+      );
+      expect(Boolean(screen.queryByRole('button', { name: 'Retry image: Existing' }))).toBe(action === 'fail');
+    });
+
+    it('accepts activation from a parent layout effect on initial mount', () => {
       const ActivateOnMount = () => {
         useLayoutEffect(() => {
           fireEvent.click(screen.getByRole('button', { name: /load image/i }));
