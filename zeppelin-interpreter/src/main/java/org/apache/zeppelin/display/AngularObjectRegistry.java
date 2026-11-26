@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * AngularObjectRegistry keeps all the object that binded to Angular Display System.
@@ -32,7 +33,7 @@ import java.util.Map;
  */
 public class AngularObjectRegistry {
   Map<String, Map<String, AngularObject>> registry = new HashMap<>();
-  private final String GLOBAL_KEY = "_GLOBAL_";
+  private static final String GLOBAL_KEY = "_GLOBAL_";
   private AngularObjectRegistryListener listener;
   private String interpreterGroupId;
   private AngularObjectListener angularObjectListener;
@@ -41,14 +42,12 @@ public class AngularObjectRegistry {
       final AngularObjectRegistryListener listener) {
     this.interpreterGroupId = interpreterGroupId;
     this.listener = listener;
-    angularObjectListener = new AngularObjectListener() {
-      @Override
-      public void updated(AngularObject updatedObject) {
-        if (listener != null) {
-          listener.onUpdateAngularObject(interpreterGroupId, updatedObject);
-        }
+    angularObjectListener = (AngularObject updatedObject) -> {
+      if (listener != null) {
+        listener.onUpdateAngularObject(interpreterGroupId, updatedObject);
       }
     };
+
   }
 
   public AngularObjectRegistryListener getListener() {
@@ -83,15 +82,11 @@ public class AngularObjectRegistry {
       }
     }
   }
-  
+
   private Map<String, AngularObject> getRegistryForKey(String noteId, String paragraphId) {
     synchronized (registry) {
       String key = getRegistryKey(noteId, paragraphId);
-      if (!registry.containsKey(key)) {
-        registry.put(key, new HashMap<String, AngularObject>());
-      }
-      
-      return registry.get(key);
+      return registry.computeIfAbsent(key, k -> new HashMap<>());
     }
   }
 
@@ -214,7 +209,7 @@ public class AngularObjectRegistry {
     }
     return all;
   }
-  
+
   /**
    * Get all angular object related to specific note.
    * That includes all global scope objects, notebook scope objects and paragraph scope objects
@@ -230,9 +225,9 @@ public class AngularObjectRegistry {
       if (global != null) {
         all.addAll(global.values());
       }
-      for (String key : registry.keySet()) {
-        if (key.startsWith(noteId)) {
-          all.addAll(registry.get(key).values());
+      for (Entry<String, Map<String, AngularObject>> registryEntry : registry.entrySet()) {
+        if (registryEntry.getKey().startsWith(noteId)) {
+          all.addAll(registryEntry.getValue().values());
         }
       }
     }
