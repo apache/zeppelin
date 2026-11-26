@@ -44,11 +44,7 @@ class ConversationListView extends Component<ConversationListViewProps> {
   // A layout effect would read focus after React removes the row.
   getSnapshotBeforeUpdate(previous: ConversationListViewProps): Element | null {
     const { scope, inert, list } = this.props;
-    if (
-      inert ||
-      previous.scope !== scope ||
-      previous.list.listState.conversations === list.listState.conversations
-    ) {
+    if (inert || previous.scope !== scope || previous.list.listState.conversations === list.listState.conversations) {
       return null;
     }
 
