@@ -153,6 +153,7 @@ describe('AssistantConversationPanel', () => {
     const { onKeyDown } = await mountPanel(source);
 
     await select('Revenue analysis');
+    expect(listConversations).toHaveBeenCalledTimes(1);
 
     expect(screen.getByText('Revenue increased in all three regions, led by Europe.')).toBeTruthy();
     expect(document.activeElement).toBe(listTrigger());
@@ -167,6 +168,7 @@ describe('AssistantConversationPanel', () => {
 
     expect(input().value).toBe('Keep my selected draft');
     expect(document.activeElement).toBe(listTrigger());
+    await flush();
 
     fireEvent.click(listTrigger());
     const search = screen.getByRole('textbox', { name: 'Search conversations' });
@@ -178,7 +180,7 @@ describe('AssistantConversationPanel', () => {
     expect(document.activeElement).toBe(listTrigger());
     expect(onKeyDown).not.toHaveBeenCalled();
     expect(getMessages.mock.calls).toEqual([['c1']]);
-    expect(listConversations).toHaveBeenCalledTimes(1);
+    expect(listConversations).toHaveBeenCalledTimes(3);
 
     fireEvent.keyDown(input(), { key: 'ArrowLeft' });
 
@@ -491,15 +493,130 @@ describe('AssistantConversationPanel', () => {
     expect((await source.api.listConversations()).some(item => item.id === 'c1')).toBe(true);
   });
 
+  it('refreshes the reopened list and reuses its pending request across another reopen', async () => {
+    const source = fixture();
+    const pending = deferred();
+    const list = vi.spyOn(source.api, 'listConversations');
+    const readList = source.api.listConversations;
+    await mountPanel(source);
+    fireEvent.click(listTrigger());
+
+    const back = () => screen.getByRole('button', { name: 'Back' });
+    const removed = () => screen.queryByRole('button', { name: /^Revenue analysis/ });
+    const added = () => screen.queryByRole('button', { name: /^From another tab/ });
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(removed()).toBeTruthy();
+    fireEvent.click(back());
+
+    await source.api.createConversation({ title: 'From another tab' });
+    await source.api.deleteConversation('c1');
+    const snapshot = await readList();
+    list.mockClear();
+    list.mockImplementationOnce(async () => {
+      await pending.promise;
+      return snapshot;
+    });
+
+    fireEvent.click(listTrigger());
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(removed()).toBeTruthy();
+    expect(added()).toBeNull();
+    fireEvent.click(back());
+    fireEvent.click(listTrigger());
+    expect(list).toHaveBeenCalledTimes(1);
+
+    await act(async () => pending.resolve());
+
+    expect(removed()).toBeNull();
+    expect(added()).toBeTruthy();
+    expect(screen.queryByText('Loading conversations…')).toBeNull();
+    expect(list).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['removed row', 'surviving row', 'external control', 'delete dialog'] as const)(
+    'restores focus on list row removal only when focus is lost (focused: %s)',
+    async focusTarget => {
+      const source = fixture();
+      const refresh = deferred();
+      const list = vi.spyOn(source.api, 'listConversations');
+      render(
+        <>
+          <AssistantConversationPanel source={source} now={FIXTURE_NOW} />
+          <button type="button">Notebook action</button>
+        </>
+      );
+      await flush();
+      fireEvent.click(listTrigger());
+      fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+      list.mockImplementationOnce(async () => {
+        await refresh.promise;
+        return ASSISTANT_HISTORY_CONVERSATIONS.map(item => item.conversation).filter(item => item.id !== 'c1');
+      });
+      fireEvent.click(listTrigger());
+
+      const back = screen.getByRole('button', { name: 'Back' });
+      const removed = screen.getByRole('button', { name: /^Revenue analysis/ });
+      let focused: HTMLElement;
+      if (focusTarget === 'delete dialog') {
+        fireEvent.click(screen.getByRole('button', { name: 'Delete Notebook summary' }));
+        focused = within(screen.getByRole('dialog', { name: 'Delete conversation' })).getByRole('button', {
+          name: 'Cancel'
+        });
+      } else {
+        focused = {
+          'removed row': removed,
+          'surviving row': screen.getByRole('button', { name: /^Notebook summary/ }),
+          'external control': screen.getByRole('button', { name: 'Notebook action' })
+        }[focusTarget];
+        focused.focus();
+      }
+      expect(document.activeElement).toBe(focused);
+
+      await act(async () => refresh.resolve());
+
+      expect(removed.isConnected).toBe(false);
+      expect(document.activeElement).toBe(focusTarget === 'removed row' ? back : focused);
+    }
+  );
+
+  it('keeps cached rows on a failed reopen and reloads the list on retry', async () => {
+    const source = fixture();
+    const list = vi.spyOn(source.api, 'listConversations');
+    await mountPanel(source);
+    fireEvent.click(listTrigger());
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+
+    await source.api.createConversation({ title: 'Available after retry' });
+    list.mockRejectedValueOnce(new Error('Conversation refresh unavailable.'));
+    fireEvent.click(listTrigger());
+    await flush();
+
+    expect(screen.getByRole('alert').textContent).toContain('Conversation refresh unavailable.');
+    expect(screen.getByRole('button', { name: /^Revenue analysis/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Available after retry/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry loading conversations' }));
+    await flush();
+
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('button', { name: /^Available after retry/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Revenue analysis/ })).toBeTruthy();
+    expect(list).toHaveBeenCalledTimes(3);
+  });
+
   it('shows empty and search no-match states only after the initial list loads', async () => {
     const source = fixture();
     const initial = deferred();
-    vi.spyOn(source.api, 'listConversations').mockImplementationOnce(async () => {
+    const list = vi.spyOn(source.api, 'listConversations').mockImplementationOnce(async () => {
       await initial.promise;
       return [];
     });
     await mountPanel(source);
     fireEvent.click(listTrigger());
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    fireEvent.click(listTrigger());
+    expect(list).toHaveBeenCalledTimes(1);
 
     const search = screen.getByRole('textbox', { name: 'Search conversations' });
     expect(screen.getByText('Loading conversations…')).toBeTruthy();
