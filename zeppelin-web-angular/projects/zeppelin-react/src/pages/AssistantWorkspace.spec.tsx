@@ -386,7 +386,13 @@ describe('AssistantWorkspace', () => {
   it('does not show an empty conversation list while reloading a restored draft', async () => {
     const reload = Promise.withResolvers<Response>();
     const socket = socketHarness();
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(json([conversation])).mockReturnValueOnce(reload.promise));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(json([conversation]))
+        .mockReturnValueOnce(reload.promise)
+    );
     const { open } = await setup({ connection: connection(socket) });
     const openList = async () =>
       act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
