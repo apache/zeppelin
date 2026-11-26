@@ -17,14 +17,18 @@ FROM ubuntu:20.04
 
 LABEL maintainer="Apache Software Foundation <dev@zeppelin.apache.org>"
 
-ENV Z_VERSION="0.13.0-SNAPSHOT"
+ARG Z_VERSION="0.13.0-SNAPSHOT"
+ENV Z_VERSION=${Z_VERSION}
+
+# Set automatically by buildx (amd64 or arm64), matches the openjdk install path suffix
+ARG TARGETARCH
 
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     ZEPPELIN_HOME="/opt/zeppelin" \
     HOME="/opt/zeppelin" \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
-    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk-${TARGETARCH} \
     ZEPPELIN_ADDR="0.0.0.0"
 
 RUN echo "$LOG_TAG install basic packages" && \
@@ -39,12 +43,18 @@ RUN echo "$LOG_TAG install basic packages" && \
 # Install conda to manage python packages
 ARG miniconda_version="py39_24.1.2-0"
 # Hashes via https://docs.conda.io/en/latest/miniconda_hashes.html
-ARG miniconda_sha256="2ec135e4ae2154bb41e8df9ecac7ef23a7d6ca59fc1c8071cfe5298505c19140"
+ARG miniconda_sha256_amd64="2ec135e4ae2154bb41e8df9ecac7ef23a7d6ca59fc1c8071cfe5298505c19140"
+ARG miniconda_sha256_arm64="b3e7d8ad4a4c9106594b268ab1cd9494ce982eaf7734bb2cd13a47e14e92a43e"
 # Install python packages via conda
 COPY env_python_3.yml /env_python_3.yml
 
 RUN set -ex && \
-    wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-x86_64.sh -O miniconda.sh && \
+    case "${TARGETARCH}" in \
+      amd64) miniconda_arch="x86_64"; miniconda_sha256="${miniconda_sha256_amd64}" ;; \
+      arm64) miniconda_arch="aarch64"; miniconda_sha256="${miniconda_sha256_arm64}" ;; \
+      *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac && \
+    wget -nv https://repo.anaconda.com/miniconda/Miniconda3-${miniconda_version}-Linux-${miniconda_arch}.sh -O miniconda.sh && \
     echo "${miniconda_sha256} miniconda.sh" > anaconda.sha256 && \
     sha256sum --strict -c anaconda.sha256 && \
     bash miniconda.sh -b -p /opt/conda && \
@@ -52,7 +62,7 @@ RUN set -ex && \
     conda config --set always_yes yes --set changeps1 no && \
     conda info -a && \
     conda install mamba -c conda-forge && \
-    mamba env update -f /env_python_3.yml --prune && \
+    mamba env create -f /env_python_3.yml && \
     # Cleanup
     rm -v miniconda.sh anaconda.sha256  && \
     # Cleanup based on https://github.com/ContinuumIO/docker-images/commit/cac3352bf21a26fa0b97925b578fb24a0fe8c383
