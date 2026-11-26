@@ -10,9 +10,9 @@
  * limitations under the License.
  */
 
-import { interval, Observable, Subject, Subscription } from 'rxjs';
-import { delay, filter, map, mergeMap, retryWhen, take } from 'rxjs/operators';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { Observable, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { WebSocketSubject } from 'rxjs/webSocket';
 
 import { Ticket } from './interfaces/message-common.interface';
 import {
@@ -25,6 +25,7 @@ import { OP } from './interfaces/message-operator.interface';
 import { ParagraphConfig, ParagraphParams, SendParagraph } from './interfaces/message-paragraph.interface';
 import { WebSocketMessage } from './interfaces/websocket-message.interface';
 
+import { MessageConnection } from './message-connection';
 import { getMessagePayloadGuard } from './message-payload-guards';
 
 export type ArgumentsType<T> = T extends (...args: infer U) => void ? U : never;
@@ -37,57 +38,51 @@ export type ReceiveArgumentsType<K extends keyof MessageReceiveDataTypeMap> =
   MessageReceiveDataTypeMap[K] extends undefined ? () => void : (data: MessageReceiveDataTypeMap[K]) => void;
 
 export class Message {
-  public connectedStatus = false;
-  public connectedStatus$ = new Subject<boolean>();
-  private ws: WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null = null;
-  private wsSubscription: Subscription | null = null;
-  private open$ = new Subject<Event>();
-  private close$ = new Subject<CloseEvent>();
-  private sent$ = new Subject<WebSocketMessage<MessageSendDataTypeMap>>();
   private received$ = new Subject<WebSocketMessage<MessageReceiveDataTypeMap>>();
-  private pingIntervalSubscription = new Subscription();
-  private wsUrl?: string;
-  private ticket?: Ticket;
   private uniqueClientId = Math.random().toString(36).substring(2, 7);
   // TODO: Clean up this variable with `msgId` in server-side. See ZEPPELIN-6419, ZEPPELIN-4985
   private lastMsgIdSeqSent = 0;
-  private readonly normalCloseCode = 1000;
+  private readonly connection = new MessageConnection({
+    nextMessageId: () => `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
+    interceptReceived: message => this.interceptReceived(message),
+    received: this.received$,
+    ping: () => this.ping()
+  });
 
-  constructor() {
-    this.open$.subscribe(() => {
-      this.connectedStatus = true;
-      this.connectedStatus$.next(this.connectedStatus);
-      this.pingIntervalSubscription.unsubscribe();
-      this.pingIntervalSubscription = interval(1000 * 10).subscribe(() => this.ping());
-    });
-    this.close$.subscribe(event => {
-      this.connectedStatus = false;
-      this.connectedStatus$.next(this.connectedStatus);
-      this.pingIntervalSubscription.unsubscribe();
+  get connectedStatus(): boolean {
+    return this.connection.connectedStatus;
+  }
 
-      if (event.code !== this.normalCloseCode) {
-        console.log('WebSocket closed unexpectedly. Reconnecting...');
-        this.connect();
-      }
-    });
+  get connectedStatus$(): Subject<boolean> {
+    return this.connection.connectedStatus$;
+  }
+
+  set connectedStatus(connected: boolean) {
+    this.connection.connectedStatus = connected;
+  }
+
+  set connectedStatus$(status: Subject<boolean>) {
+    this.connection.connectedStatus$ = status;
+  }
+
+  setOnline(online: boolean): void {
+    this.connection.setOnline(online);
   }
 
   bootstrap(ticket: Ticket, wsUrl: string) {
-    this.setTicket(ticket);
-    this.setWsUrl(wsUrl);
-    this.connect();
+    this.connection.bootstrap(ticket, wsUrl);
   }
 
-  getWsInstance(): Message['ws'] {
-    return this.ws;
+  getWsInstance(): WebSocketSubject<WebSocketMessage<MessageDataTypeMap>> | null {
+    return this.connection.getWsInstance();
   }
 
   setWsUrl(wsUrl: string): void {
-    this.wsUrl = wsUrl;
+    this.connection.setWsUrl(wsUrl);
   }
 
   setTicket(ticket: Ticket): void {
-    this.ticket = ticket;
+    this.connection.setTicket(ticket);
   }
 
   interceptReceived(data: WebSocketMessage<MessageReceiveDataTypeMap>): WebSocketMessage<MessageReceiveDataTypeMap> {
@@ -95,37 +90,7 @@ export class Message {
   }
 
   connect() {
-    if (!this.wsUrl) {
-      throw new Error('WebSocket URL is not set. Please call setWsUrl() before connect()');
-    }
-
-    // Unsubscribe from existing subscription first
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-      this.wsSubscription = null;
-    }
-
-    // Then close existing WebSocket
-    if (this.ws) {
-      this.ws.complete();
-      this.ws = null;
-    }
-
-    this.ws = webSocket<WebSocketMessage<MessageDataTypeMap>>({
-      url: this.wsUrl,
-      openObserver: this.open$,
-      closeObserver: this.close$
-    });
-
-    this.wsSubscription = this.ws
-      .pipe(
-        // reconnect
-        retryWhen(errors => errors.pipe(mergeMap(() => this.close$.pipe(take(1), delay(4000)))))
-      )
-      .subscribe(e => {
-        console.log('Receive:', e.op);
-        this.received$.next(this.interceptReceived(e as WebSocketMessage<MessageReceiveDataTypeMap>));
-      });
+    this.connection.connect();
   }
 
   ping() {
@@ -133,19 +98,19 @@ export class Message {
   }
 
   close() {
-    this.close$.next(new CloseEvent('close', { code: this.normalCloseCode }));
+    this.connection.close();
   }
 
   opened(): Observable<Event> {
-    return this.open$.asObservable();
+    return this.connection.opened();
   }
 
   closed(): Observable<CloseEvent> {
-    return this.close$.asObservable();
+    return this.connection.closed();
   }
 
   sent(): Observable<WebSocketMessage<MessageSendDataTypeMap>> {
-    return this.sent$.asObservable();
+    return this.connection.sent();
   }
 
   received(): Observable<WebSocketMessage<MessageReceiveDataTypeMap>> {
@@ -153,21 +118,8 @@ export class Message {
   }
 
   send<K extends keyof MessageSendDataTypeMap>(...args: SendArgumentsType<K>): string {
-    if (!this.ws) {
-      throw new Error('WebSocket is not connected. Bootstrap first.');
-    }
     const [op, data] = args;
-    const message = {
-      op,
-      msgId: `${this.uniqueClientId}-${++this.lastMsgIdSeqSent}`,
-      data,
-      ...this.ticket
-    };
-    console.log('Send:', message.op, message.principal);
-
-    this.ws.next(message);
-    this.sent$.next(message);
-    return message.msgId;
+    return this.connection.send(op, data);
   }
 
   receive<K extends keyof MessageReceiveDataTypeMap>(op: K): Observable<Record<K, MessageReceiveDataTypeMap[K]>[K]> {
@@ -187,14 +139,7 @@ export class Message {
   }
 
   destroy(): void {
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-      this.wsSubscription = null;
-    }
-    if (this.ws) {
-      this.ws.complete();
-      this.ws = null;
-    }
+    this.connection.destroy();
   }
 
   getHomeNote(): void {

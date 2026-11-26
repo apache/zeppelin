@@ -53,7 +53,12 @@ export class MessageService extends Message implements OnDestroy {
   }
 
   bootstrap(): void {
+    const online = navigator.onLine;
+    if (!online) {
+      this.setOnline(false);
+    }
     super.bootstrap(this.ticketService.originTicket, this.baseUrlService.getWebsocketUrl());
+    this.setOnline(online);
   }
 
   ping() {
