@@ -72,6 +72,7 @@ export interface AssistantPanelSnapshot {
 export interface AssistantPanelActions {
   select(id: string): void;
   newConversation(): void;
+  openList(): void;
   retryList(): Promise<void>;
 
   setDraft(value: string): void;

@@ -1414,6 +1414,40 @@ describe('useAssistantPanel', () => {
     model.dispose();
   });
 
+  it('does not reuse or apply a pending list request after disposal and restart', async () => {
+    const harness = sourceHarness();
+    const model = new AssistantPanelModel(harness.source);
+    const obsolete = deferred<AssistantConversation[]>();
+    const current = deferred<AssistantConversation[]>();
+    model.start();
+    await Promise.resolve();
+    harness.api.listConversations.mockImplementationOnce(() => obsolete.promise);
+    model.openList();
+    model.openList();
+    expect(harness.api.listConversations).toHaveBeenCalledTimes(2);
+
+    model.dispose();
+    harness.api.listConversations.mockImplementationOnce(() => current.promise);
+    model.start();
+    obsolete.resolve([conversation('obsolete')]);
+    await Promise.resolve();
+
+    expect(model.getSnapshot().conversationList).toMatchObject({ conversations: [], loading: true });
+    model.openList();
+    model.openList();
+    expect(harness.api.listConversations).toHaveBeenCalledTimes(3);
+
+    current.resolve([conversation('current')]);
+    await Promise.resolve();
+
+    expect(model.getSnapshot().conversationList).toMatchObject({
+      conversations: [conversation('current')],
+      loading: false,
+      hasLoaded: true
+    });
+    model.dispose();
+  });
+
   it('keeps a loaded failed answer after a later reload fails and permits the next send', async () => {
     const harness = sourceHarness();
     const panel = await mountPanel(harness.source);
@@ -1640,18 +1674,23 @@ describe('useAssistantPanel', () => {
   });
 
   it.each([false, true])(
-    'reconciles deleted entries and a concurrent local creation (returned by server=%s)',
+    'reuses an activity refresh and reconciles server deletions with a local creation (returned by server=%s)',
     async returnedByServer => {
       const harness = sourceHarness();
       const panel = await mountPanel(harness.source);
       const refresh = deferred<AssistantConversation[]>();
       harness.api.listConversations.mockImplementationOnce(() => refresh.promise);
+      act(() => panel.result.current.openList());
       await act(async () => panel.result.current.select('a'));
       const existing = await sendQuestion(panel, 'Refresh existing conversations');
       await act(async () => {
         harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
         await existing.completion;
       });
+      act(() => panel.result.current.openList());
+
+      expect(harness.api.listConversations).toHaveBeenCalledTimes(2);
+      expect(panel.result.current.conversationList.loading).toBe(true);
 
       act(() => panel.result.current.newConversation());
       const created = await sendQuestion(panel, 'Keep the concurrent conversation');
@@ -1663,6 +1702,7 @@ describe('useAssistantPanel', () => {
       );
 
       expect(panel.result.current.conversationList.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
+      expect(panel.result.current.conversationList.loading).toBe(false);
       expect(panel.result.current.entry.draft).toBe('Keep the existing conversation draft');
       await act(async () => panel.result.current.select('created'));
       expect(panel.result.current.entry).toMatchObject({
@@ -1772,6 +1812,79 @@ describe('useAssistantPanel', () => {
     expect(panel.result.current.conversationList.error).toBeUndefined();
     expect(panel.result.current.conversationList.hasLoaded).toBe(true);
     expect(panel.result.current.conversationList.conversations.map(item => item.id)).toContain('a');
+  });
+
+  it('reuses an activity refresh when explicitly retrying a failed list read', async () => {
+    const harness = sourceHarness();
+    const activity = deferred<AssistantConversation[]>();
+    harness.api.listConversations
+      .mockRejectedValueOnce(new Error('List unavailable'))
+      .mockImplementationOnce(() => activity.promise);
+    const panel = await mountPanel(harness.source);
+    const sending = await sendQuestion(panel, 'Start a conversation');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await sending.completion;
+    });
+
+    let retryFinished = false;
+    await act(async () => {
+      void panel.result.current.retryList().then(() => {
+        retryFinished = true;
+      });
+    });
+
+    expect(harness.api.listConversations).toHaveBeenCalledTimes(2);
+    expect(panel.result.current.conversationList).toMatchObject({ error: 'List unavailable', loading: true });
+    expect(retryFinished).toBe(false);
+
+    const refreshed = [conversation('created'), conversation('from another tab')];
+    await act(async () => activity.resolve(refreshed));
+
+    expect(panel.result.current.conversationList).toMatchObject({
+      conversations: refreshed,
+      loading: false,
+      error: undefined
+    });
+    expect(retryFinished).toBe(true);
+  });
+
+  it('applies a reopened list before reading later activity, retaining the rows if activity refresh fails', async () => {
+    const harness = sourceHarness();
+    const reopened = deferred<AssistantConversation[]>();
+    const activity = deferred<AssistantConversation[]>();
+    const panel = await mountPanel(harness.source);
+    harness.api.listConversations
+      .mockImplementationOnce(() => reopened.promise)
+      .mockImplementationOnce(() => activity.promise);
+    await act(async () => panel.result.current.select('a'));
+    act(() => panel.result.current.openList());
+    act(() => panel.result.current.openList());
+
+    const first = await sendQuestion(panel, 'First activity while the list refreshes');
+    await act(async () => {
+      harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
+      await first.completion;
+    });
+    const second = await sendQuestion(panel, 'Second activity while the list refreshes');
+    await act(async () => {
+      harness.feeds[1].push({ type: 'run.started' }, { type: 'run.completed' });
+      await second.completion;
+    });
+    expect(harness.api.listConversations).toHaveBeenCalledTimes(2);
+
+    const refreshed = [conversation('a'), conversation('from another tab')];
+    await act(async () => reopened.resolve(refreshed));
+    expect(harness.api.listConversations).toHaveBeenCalledTimes(3);
+    expect(panel.result.current.conversationList.conversations).toEqual(refreshed);
+
+    await act(async () => activity.reject(new Error('Activity refresh unavailable')));
+
+    expect(panel.result.current.conversationList).toMatchObject({
+      conversations: refreshed,
+      loading: false,
+      error: 'Activity refresh unavailable'
+    });
   });
 
   it('ignores an older activity refresh that resolves after a newer send', async () => {

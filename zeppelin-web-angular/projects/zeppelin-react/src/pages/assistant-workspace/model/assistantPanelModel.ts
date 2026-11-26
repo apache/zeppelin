@@ -23,6 +23,12 @@ const INITIAL_CONVERSATION_LIST: ConversationListState = {
   error: undefined
 };
 
+interface ListRequest {
+  blocksActivityRefresh: boolean;
+  needsActivityRefresh: boolean;
+  readonly completion: Promise<void>;
+}
+
 export class AssistantPanelModel {
   private conversationList = INITIAL_CONVERSATION_LIST;
 
@@ -36,7 +42,8 @@ export class AssistantPanelModel {
   private readonly listeners = new Set<() => void>();
   private active = false;
   private generation = 0;
-  private listVersion = 0;
+  private activeListRequest?: ListRequest;
+  private hasOpenedList = false;
   private closedWithRun = false;
   private snapshot: AssistantPanel;
 
@@ -61,7 +68,7 @@ export class AssistantPanelModel {
     if (firstRun === undefined) return false;
 
     this.closedWithRun = true;
-    ++this.listVersion;
+    this.activeListRequest = undefined;
     this.sessions.forEach((session, key) => {
       if (session.hasSubmittedRun) return;
       session.dispose();
@@ -78,14 +85,14 @@ export class AssistantPanelModel {
     this.closedWithRun = false;
     this.conversationList = { ...this.conversationList, loading: true, error: undefined };
     this.publish();
-    this.refreshConversations();
+    this.refreshListInBackground();
   }
 
   start(): void {
     if (this.active) return;
 
     this.active = true;
-    const generation = ++this.generation;
+    ++this.generation;
     this.closedWithRun = false;
 
     this.sessions.forEach(session => session.dispose());
@@ -93,6 +100,7 @@ export class AssistantPanelModel {
     this.deleted.clear();
 
     this.conversationList = INITIAL_CONVERSATION_LIST;
+    this.hasOpenedList = false;
     this.selectedKey = 'draft:0';
     this.draftKey = 'draft:0';
     this.draftSequence = 0;
@@ -100,43 +108,67 @@ export class AssistantPanelModel {
     this.createSession(this.selectedKey);
     this.publish();
 
-    void this.loadList(generation);
+    void this.startListRequest();
   }
 
-  private async loadList(generation: number): Promise<void> {
-    const version = ++this.listVersion;
-    const listedAtStart = new Set(this.conversationList.conversations.map(conversation => conversation.id));
+  private startListRequest(blocksActivityRefresh = false): Promise<void> {
+    if (!this.active || this.closedWithRun) return Promise.resolve();
+
+    // Publish the completion before starting the read, without deferring the read itself.
+    const { promise: completion, resolve, reject } = Promise.withResolvers<void>();
+    const request: ListRequest = { blocksActivityRefresh, needsActivityRefresh: false, completion };
+    this.activeListRequest = request;
+    void this.loadList(request, resolve, reject);
+    return completion;
+  }
+
+  private async loadList(request: ListRequest, resolve: () => void, reject: (error: unknown) => void): Promise<void> {
     try {
-      const conversations = await this.source.api.listConversations();
-      if (!this.active || this.generation !== generation || this.listVersion !== version) return;
+      const listedAtStart = new Set(this.conversationList.conversations.map(conversation => conversation.id));
+      try {
+        const conversations = await this.source.api.listConversations();
+        if (this.activeListRequest === request) this.applyListSnapshot(conversations, listedAtStart);
+      } catch (error) {
+        if (this.activeListRequest === request) {
+          this.conversationList = {
+            ...this.conversationList,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Could not load conversations.'
+          };
+        }
+      }
 
-      const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
-      const refreshed = new Map(visible.map(conversation => [conversation.id, conversation]));
-      // A list snapshot can omit conversations confirmed locally after its request began.
-      const createdDuringRequest = this.conversationList.conversations.filter(
-        conversation => !listedAtStart.has(conversation.id) && !refreshed.has(conversation.id)
-      );
-      const nextConversations = [...createdDuringRequest, ...visible];
-      nextConversations.sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
-
-      this.sessions.forEach(session => {
-        const id = session.snapshot.conversation?.id;
-        const conversation = id && refreshed.get(id);
-        if (conversation) session.updateConversation(conversation);
-      });
-
-      this.conversationList = { conversations: nextConversations, hasLoaded: true, loading: false, error: undefined };
+      if (this.activeListRequest === request) {
+        this.activeListRequest = undefined;
+        const generation = this.generation;
+        this.publish();
+        if (request.needsActivityRefresh && this.generation === generation && !this.activeListRequest) {
+          void this.startListRequest();
+        }
+      }
+      resolve();
     } catch (error) {
-      if (!this.active || this.generation !== generation || this.listVersion !== version) return;
-
-      this.conversationList = {
-        ...this.conversationList,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Could not load conversations.'
-      };
+      reject(error);
     }
+  }
 
-    this.publish();
+  private applyListSnapshot(conversations: AssistantConversation[], listedAtStart: ReadonlySet<string>): void {
+    const visible = conversations.filter(conversation => !this.deleted.has(conversation.id));
+    const refreshed = new Map(visible.map(conversation => [conversation.id, conversation]));
+    // A list snapshot can omit conversations confirmed locally after its request began.
+    const createdDuringRequest = this.conversationList.conversations.filter(
+      conversation => !listedAtStart.has(conversation.id) && !refreshed.has(conversation.id)
+    );
+    const nextConversations = [...createdDuringRequest, ...visible];
+    nextConversations.sort((a, b) => (Date.parse(b.updatedAt) || 0) - (Date.parse(a.updatedAt) || 0));
+
+    this.sessions.forEach(session => {
+      const id = session.snapshot.conversation?.id;
+      const conversation = id && refreshed.get(id);
+      if (conversation) session.updateConversation(conversation);
+    });
+
+    this.conversationList = { conversations: nextConversations, hasLoaded: true, loading: false, error: undefined };
   }
 
   private createSession(key: string, conversation?: AssistantConversation): AssistantConversationSession {
@@ -146,22 +178,48 @@ export class AssistantPanelModel {
       this.source,
       this.publish,
       this.confirmed,
-      this.refreshConversations
+      this.refreshListInBackground
     );
     this.sessions.set(key, session);
     return session;
   }
 
-  private readonly refreshConversations = (): void => {
-    if (this.active && !this.closedWithRun) void this.loadList(this.generation);
+  private readonly refreshListInBackground = (): void => {
+    if (this.activeListRequest?.blocksActivityRefresh) {
+      // Apply the requested view refresh before reading the newer run activity.
+      this.activeListRequest.needsActivityRefresh = true;
+      return;
+    }
+    void this.startListRequest();
   };
 
-  readonly retryList = (): Promise<void> => {
-    if (!this.active || this.conversationList.loading || !this.conversationList.error) return Promise.resolve();
+  readonly openList = (): void => {
+    if (!this.active || this.closedWithRun) return;
 
-    this.conversationList = { ...this.conversationList, loading: true };
-    this.publish();
-    return this.loadList(this.generation);
+    // The first list entry uses the load already initiated by the sidebar.
+    if (!this.hasOpenedList) {
+      this.hasOpenedList = true;
+      return;
+    }
+    void this.refreshListForView();
+  };
+
+  private async refreshListForView(): Promise<void> {
+    const request = this.activeListRequest;
+    if (request) request.blocksActivityRefresh = true;
+    const completion = request ? request.completion : this.startListRequest(true);
+    if (this.activeListRequest && !this.conversationList.loading) {
+      this.conversationList = { ...this.conversationList, loading: true };
+      this.publish();
+    }
+    return completion;
+  }
+
+  readonly retryList = (): Promise<void> => {
+    if (!this.active || this.closedWithRun || this.conversationList.loading || !this.conversationList.error) {
+      return Promise.resolve();
+    }
+    return this.refreshListForView();
   };
 
   private readonly confirmed = (session: AssistantConversationSession, conversation: AssistantConversation): void => {
@@ -276,6 +334,7 @@ export class AssistantPanelModel {
       deletingConversationIds,
       select: this.select,
       newConversation: this.newConversation,
+      openList: this.openList,
       retryList: this.retryList,
       setDraft: this.setDraft,
       send: this.send,
@@ -295,6 +354,7 @@ export class AssistantPanelModel {
   dispose(): void {
     this.active = false;
     ++this.generation;
+    this.activeListRequest = undefined;
 
     this.sessions.forEach(session => session.dispose());
   }

@@ -10,11 +10,11 @@
  * limitations under the License.
  */
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Component, createRef, type RefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { AssistantAnswerError } from '@/entities/assistant/ui/AssistantAnswerError';
 import { AssistantComposer } from '@/entities/assistant/ui/AssistantComposer';
 import { ConversationHeader } from '@/entities/assistant/ui/ConversationHeader';
-import { ConversationList } from '@/entities/assistant/ui/ConversationList';
+import { ConversationList, type ConversationListProps } from '@/entities/assistant/ui/ConversationList';
 import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
 import { action, note, warning } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { useDeleteConfirmation } from '../lib/useDeleteConfirmation';
@@ -28,6 +28,56 @@ export interface AssistantConversationPanelProps {
   scope: object;
   now?: number;
   renderAnswer?: AssistantContentRenderer;
+}
+
+interface ConversationListViewProps {
+  scope: object;
+  inert: boolean;
+  backRef: RefObject<HTMLButtonElement | null>;
+  onBack: () => void;
+  list: ConversationListProps;
+}
+
+class ConversationListView extends Component<ConversationListViewProps> {
+  private readonly root = createRef<HTMLDivElement>();
+
+  // A layout effect would read focus after React removes the row.
+  getSnapshotBeforeUpdate(previous: ConversationListViewProps): Element | null {
+    const { scope, inert, list } = this.props;
+    if (
+      inert ||
+      previous.scope !== scope ||
+      previous.list.listState.conversations === list.listState.conversations
+    ) {
+      return null;
+    }
+
+    const root = this.root.current;
+    if (!root) return null;
+
+    const row = root.ownerDocument.activeElement?.closest('li');
+    return row && root.contains(row) ? row : null;
+  }
+
+  componentDidUpdate(_previous: ConversationListViewProps, _state: unknown, row: Element | null): void {
+    if (!row || row.isConnected || row.ownerDocument.activeElement !== row.ownerDocument.body) return;
+
+    this.props.backRef.current?.focus();
+  }
+
+  render() {
+    const { backRef, onBack, list } = this.props;
+    return (
+      <div ref={this.root} className={styles.listView}>
+        <div className={styles.listNavigation}>
+          <button ref={backRef} type="button" className={action} onClick={onBack}>
+            Back
+          </button>
+        </div>
+        <ConversationList {...list} />
+      </div>
+    );
+  }
 }
 
 const ignoreSearchChange = () => undefined;
@@ -49,6 +99,7 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
     onDelete: panel.deleteConversation,
     fallbackFocus
   });
+  const contentInert = !!confirmation.target;
 
   useLayoutEffect(() => {
     if (navigation.current.scope !== scope) {
@@ -64,6 +115,11 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
     if (listOpen && !wasOpen) back.current?.focus();
     else if (!listOpen && wasOpen) listTrigger.current?.focus();
   }, [scope, listOpen, confirmation.target]);
+
+  const openList = () => {
+    panel.openList();
+    setListOpen(true);
+  };
 
   const closeList = () => setListOpen(false);
 
@@ -97,14 +153,14 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
         }
       }}
     >
-      <div className={styles.content} inert={!!confirmation.target}>
+      <div className={styles.content} inert={contentInert}>
         <div className={`${styles.conversation} ${listOpen ? styles.hidden : ''}`} hidden={listOpen}>
           <ConversationHeader
             conversation={entry.conversation}
             onCreate={createDraft}
             newDisabled={panel.creatingConversation}
             onDelete={confirmation.request}
-            onOpenList={() => setListOpen(true)}
+            onOpenList={openList}
             listTriggerRef={listTrigger}
           />
 
@@ -154,27 +210,26 @@ export const AssistantConversationPanel = ({ panel, scope, now, renderAnswer }: 
         </div>
 
         {listOpen && (
-          <div className={styles.listView}>
-            <div className={styles.listNavigation}>
-              <button ref={back} type="button" className={action} onClick={closeList}>
-                Back
-              </button>
-            </div>
-            <ConversationList
-              listState={conversationList}
-              onRetry={() => void retryList()}
-              selectedId={entry.conversation?.id}
-              onSelect={id => {
+          <ConversationListView
+            scope={scope}
+            inert={contentInert}
+            backRef={back}
+            onBack={closeList}
+            list={{
+              listState: conversationList,
+              onRetry: () => void retryList(),
+              selectedId: entry.conversation?.id,
+              onSelect: id => {
                 panel.select(id);
                 closeList();
-              }}
-              onCreate={createDraft}
-              newDisabled={panel.creatingConversation}
-              onDelete={confirmation.request}
-              onSearchTermChange={ignoreSearchChange}
-              now={now}
-            />
-          </div>
+              },
+              onCreate: createDraft,
+              newDisabled: panel.creatingConversation,
+              onDelete: confirmation.request,
+              onSearchTermChange: ignoreSearchChange,
+              now
+            }}
+          />
         )}
       </div>
 
