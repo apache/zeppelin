@@ -67,8 +67,10 @@ export class AssistantPanelModel {
     });
     if (firstRun === undefined) {
       if (!hasDraft) return false;
-      this.conversationList = { ...this.conversationList, conversations: [] };
+      this.conversationList = INITIAL_CONVERSATION_LIST;
       this.deleted.clear();
+    } else {
+      this.conversationList = { ...this.conversationList, loading: true, error: undefined };
     }
 
     if (this.draftKey && !this.sessions.has(this.draftKey)) this.draftKey = undefined;
@@ -76,7 +78,6 @@ export class AssistantPanelModel {
       if (firstRun !== undefined) this.selectedKey = firstRun;
       else this.selectDraft();
     }
-    this.conversationList = { ...this.conversationList, loading: true, error: undefined };
     this.snapshot = this.project();
     return true;
   }

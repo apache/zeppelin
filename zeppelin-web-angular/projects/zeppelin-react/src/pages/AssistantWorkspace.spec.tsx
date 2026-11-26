@@ -383,6 +383,33 @@ describe('AssistantWorkspace', () => {
     expect(socket.send).not.toHaveBeenCalled();
   });
 
+  it('does not show an empty conversation list while reloading a restored draft', async () => {
+    const reload = Promise.withResolvers<Response>();
+    const socket = socketHarness();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(json([conversation])).mockReturnValueOnce(reload.promise));
+    const { open } = await setup({ connection: connection(socket) });
+    const openList = async () =>
+      act(async () => fireEvent.click(screen.getByRole('button', { name: 'Open conversations' })));
+
+    await open();
+    await openList();
+    expect(screen.getByRole('button', { name: /^Saved conversation/ })).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Back' })));
+    await act(async () => fireEvent.change(question(), { target: { value: 'Keep this unsent question' } }));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Close AI Assistant' })));
+
+    await open();
+    expect(question().value).toBe('Keep this unsent question');
+    await openList();
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(screen.queryByText('No conversations yet.')).toBeNull();
+
+    await act(async () => reload.resolve(json([])));
+    expect(screen.queryByText('Loading conversations…')).toBeNull();
+    expect(screen.getByText('No conversations yet.')).toBeTruthy();
+    expect(socket.send).not.toHaveBeenCalled();
+  });
+
   it('uses the host REST and socket by default and resolves saved and streaming paragraph references', async () => {
     const paragraphId = 'paragraph_1423500782552_-1439281894';
     const unknownId = 'paragraph_1423500782553_1439281894';
