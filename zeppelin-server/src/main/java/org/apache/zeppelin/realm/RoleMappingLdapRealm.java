@@ -33,11 +33,15 @@ import java.util.stream.Collectors;
 
 /**
  * RoleMappingLdapRealm is a simple LDAP realm that returns configured role for specific users.
- * Multiple roles(quoted string, comma separated) can be specified for a user.
+ * Multiple roles (comma separated) can be specified for a user.
  * Example configurations:
  * ldapRealm = org.apache.zeppelin.realm.RoleMappingLdapRealm
  * ldapRealm.rolesByUsername = "user1":"admin","user2":"role1,role2","user3":"role3"
- * ldapRealm.defaultRole = "role1,role2"
+ * ldapRealm.defaultRole = role1,role2
+ *
+ * <p>Quotes are required around a {@code rolesByUsername} value that contains a comma, because
+ * the map entries themselves are comma separated. Quotes are not needed for {@code defaultRole}
+ * and are stripped if present.
  */
 public class RoleMappingLdapRealm extends DefaultLdapRealm {
 
@@ -79,9 +83,21 @@ public class RoleMappingLdapRealm extends DefaultLdapRealm {
     String roleString = rolesByUsername.getOrDefault(username, defaultRole);
 
     Set<String> roleNames = Arrays.stream(roleString.split(ROLE_NAMES_DELIMITER))
-        .map(String::trim).collect(Collectors.toSet());
+        .map(RoleMappingLdapRealm::stripQuotes).collect(Collectors.toSet());
 
     LOGGER.debug("For user {}, RoleMappingLdapRealm returns {} as the role", username, roleNames);
     return roleNames;
+  }
+
+  // Shiro's Ini parser does not strip quotes for String properties such as defaultRole.
+  private static String stripQuotes(String role) {
+    String stripped = role.trim();
+    if (stripped.startsWith("\"")) {
+      stripped = stripped.substring(1);
+    }
+    if (stripped.endsWith("\"")) {
+      stripped = stripped.substring(0, stripped.length() - 1);
+    }
+    return stripped.trim();
   }
 }
