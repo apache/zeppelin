@@ -149,6 +149,7 @@ describe('AssistantConversationPanel', () => {
   it('opens saved conversations and restores the trigger after select, Back and Escape without closing the shell', async () => {
     const source = fixture();
     const getMessages = vi.spyOn(source.api, 'getMessages');
+    const listConversations = vi.spyOn(source.api, 'listConversations');
     const { onKeyDown } = await mountPanel(source);
 
     await select('Revenue analysis');
@@ -177,6 +178,7 @@ describe('AssistantConversationPanel', () => {
     expect(document.activeElement).toBe(listTrigger());
     expect(onKeyDown).not.toHaveBeenCalled();
     expect(getMessages.mock.calls).toEqual([['c1']]);
+    expect(listConversations).toHaveBeenCalledTimes(1);
 
     fireEvent.keyDown(input(), { key: 'ArrowLeft' });
 
@@ -489,7 +491,55 @@ describe('AssistantConversationPanel', () => {
     expect((await source.api.listConversations()).some(item => item.id === 'c1')).toBe(true);
   });
 
-  it('retries a failed conversation list without closing the panel or losing the draft', async () => {
+  it('shows empty and search no-match states only after the initial list loads', async () => {
+    const source = fixture();
+    const initial = deferred();
+    vi.spyOn(source.api, 'listConversations').mockImplementationOnce(async () => {
+      await initial.promise;
+      return [];
+    });
+    await mountPanel(source);
+    fireEvent.click(listTrigger());
+
+    const search = screen.getByRole('textbox', { name: 'Search conversations' });
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(screen.queryByText('No conversations yet.')).toBeNull();
+    fireEvent.change(search, { target: { value: 'Revenue' } });
+    expect(screen.queryByText('No conversations match your search.')).toBeNull();
+
+    await act(async () => initial.resolve());
+
+    expect(screen.queryByText('Loading conversations…')).toBeNull();
+    expect(screen.getByText('No conversations match your search.')).toBeTruthy();
+    fireEvent.change(search, { target: { value: '' } });
+    expect(screen.getByText('No conversations yet.')).toBeTruthy();
+  });
+
+  it('keeps a locally created row visible while the initial list is pending', async () => {
+    const source = fixture('send-rejection');
+    const initial = deferred();
+    vi.spyOn(source.api, 'listConversations').mockImplementationOnce(async () => {
+      await initial.promise;
+      return ASSISTANT_HISTORY_CONVERSATIONS.map(item => item.conversation);
+    });
+    await mountPanel(source);
+    await submit('Create a local row');
+    fireEvent.click(listTrigger());
+
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(screen.getByRole('listitem').textContent).toContain('New conversation');
+    const search = screen.getByRole('textbox', { name: 'Search conversations' });
+    fireEvent.change(search, { target: { value: 'Revenue' } });
+    expect(screen.queryByText('No conversations match your search.')).toBeNull();
+
+    await act(async () => initial.resolve());
+
+    expect(screen.getByRole('button', { name: /^Revenue analysis/ })).toBeTruthy();
+    fireEvent.change(search, { target: { value: 'New conversation' } });
+    expect(screen.getByRole('listitem').textContent).toContain('New conversation');
+  });
+
+  it.each([false, true])('recovers the list without closing the panel or losing the draft (empty=%s)', async empty => {
     const source = fixture();
     const retry = deferred();
     const recovery = deferred();
@@ -503,14 +553,20 @@ describe('AssistantConversationPanel', () => {
       })
       .mockImplementationOnce(async () => {
         await recovery.promise;
-        return originalList();
+        return empty ? [] : originalList();
       });
     const create = vi.spyOn(source.api, 'createConversation');
     const run = vi.spyOn(source, 'run');
     await mountPanel(source);
+    expect(screen.getByRole('alert').textContent).toContain('Conversations unavailable.');
     fireEvent.change(input(), { target: { value: 'Keep this draft through list recovery' } });
     fireEvent.click(listTrigger());
     expect(screen.getByRole('alert').textContent).toContain('Conversations unavailable.');
+    expect(screen.queryByText('No conversations yet.')).toBeNull();
+    const search = screen.getByRole('textbox', { name: 'Search conversations' });
+    fireEvent.change(search, { target: { value: 'Revenue' } });
+    expect(screen.queryByText('No conversations match your search.')).toBeNull();
+    fireEvent.change(search, { target: { value: '' } });
 
     const retryButton = () => screen.getByRole('button', { name: 'Retry loading conversations' });
     fireEvent.click(retryButton());
@@ -518,6 +574,10 @@ describe('AssistantConversationPanel', () => {
 
     expect(retryButton().matches(':disabled')).toBe(true);
     expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(screen.queryByText('No conversations yet.')).toBeNull();
+    fireEvent.change(search, { target: { value: 'Revenue' } });
+    expect(screen.queryByText('No conversations match your search.')).toBeNull();
+    fireEvent.change(search, { target: { value: '' } });
     fireEvent.click(retryButton());
     expect(list).toHaveBeenCalledTimes(2);
     await act(async () => retry.resolve());
@@ -525,19 +585,22 @@ describe('AssistantConversationPanel', () => {
     expect(screen.getByRole('alert').textContent).toContain('Conversations are still unavailable.');
     expect(retryButton().matches(':disabled')).toBe(false);
     fireEvent.click(retryButton());
+    expect(screen.getByText('Loading conversations…')).toBeTruthy();
+    expect(screen.queryByText('No conversations yet.')).toBeNull();
     await act(async () => recovery.resolve());
 
     expect(list).toHaveBeenCalledTimes(3);
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.queryByText('Loading conversations…')).toBeNull();
-    expect(screen.getByRole('button', { name: /^Revenue analysis/ })).toBeTruthy();
+    expect(!!screen.queryByText('No conversations yet.')).toBe(empty);
+    expect(!!screen.queryByRole('button', { name: /^Revenue analysis/ })).toBe(!empty);
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(input().value).toBe('Keep this draft through list recovery');
     expect(create).not.toHaveBeenCalled();
     expect(run).not.toHaveBeenCalled();
 
-    await select('Revenue analysis');
-    expect(within(messages()).getByText('Which region should we investigate next?')).toBeTruthy();
+    if (!empty) await select('Revenue analysis');
+    expect(!!within(messages()).queryByText('Which region should we investigate next?')).toBe(!empty);
   });
 
   it('shows create failure, retains the draft, and retries creation only on an explicit send', async () => {

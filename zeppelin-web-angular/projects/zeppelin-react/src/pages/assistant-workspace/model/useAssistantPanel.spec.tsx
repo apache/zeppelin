@@ -1090,9 +1090,9 @@ describe('useAssistantPanel', () => {
     });
 
     expect(deletion).toEqual({ status: 'failed', message: 'Conversation busy' });
-    expect(panel.result.current.conversations.map(item => item.id)).toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).toContain('a');
     expect(panel.result.current.entry.failure).toEqual({ message: 'Conversation busy', kind: 'failed' });
-    expect(panel.result.current.listError).toBeUndefined();
+    expect(panel.result.current.conversationList.error).toBeUndefined();
     expect(panel.result.current.entry.failure?.recovery).toBeUndefined();
 
     await act(async () => {
@@ -1100,7 +1100,7 @@ describe('useAssistantPanel', () => {
     });
 
     expect(deletion).toEqual({ status: 'deleted' });
-    expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).not.toContain('a');
 
     await act(async () =>
       history.resolve({ messages: [{ id: 'late', role: 'user', content: 'Deleted history' }], cursor: null })
@@ -1169,7 +1169,7 @@ describe('useAssistantPanel', () => {
 
     expect(deletion).toEqual({ status: 'deleted' });
     expect(harness.api.deleteConversation).toHaveBeenCalledWith('a');
-    expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).not.toContain('a');
     expect(panel.result.current.entry.conversation).toBeUndefined();
   });
 
@@ -1195,7 +1195,7 @@ describe('useAssistantPanel', () => {
     });
 
     expect(panel.result.current.entry.deleting).toBe(true);
-    expect(panel.result.current.conversations.map(item => item.id)).toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).toContain('a');
     expect(signal.aborted).toBe(false);
 
     await act(async () =>
@@ -1261,7 +1261,7 @@ describe('useAssistantPanel', () => {
 
     expect(result).toEqual({ status: 'deleted' });
     expect(signal.aborted).toBe(true);
-    expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).not.toContain('a');
 
     await act(async () => panel.result.current.select('b'));
     const next = await sendQuestion(panel, 'B question');
@@ -1337,7 +1337,7 @@ describe('useAssistantPanel', () => {
     expect(newHarness.run).not.toHaveBeenCalled();
     expect(panel.result.current.entry).toMatchObject({ draft: '', messages: [], phase: 'idle' });
     expect(panel.result.current.entry.conversation).toBeUndefined();
-    expect(panel.result.current.conversations.map(item => item.id)).not.toContain('obsolete-created');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).not.toContain('obsolete-created');
   });
 
   it('ignores StrictMode cleanup results and stale source responses', async () => {
@@ -1354,8 +1354,8 @@ describe('useAssistantPanel', () => {
     await act(async () => panel.rerender({ source: newHarness.source }));
     await act(async () => obsolete.resolve([conversation('obsolete')]));
 
-    expect(panel.result.current.conversations.map(item => item.id)).toEqual(['new-source']);
-    expect(panel.result.current.listLoading).toBe(false);
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).toEqual(['new-source']);
+    expect(panel.result.current.conversationList.loading).toBe(false);
     expect(panel.result.current.entry.draft).toBe('');
     expect(panel.result.current.entry.phase).toBe('idle');
   });
@@ -1480,8 +1480,9 @@ describe('useAssistantPanel', () => {
 
     const firstNewRender = renders.find(render => render.source === newHarness.source)!;
     expect(firstNewRender.panel.entry).toMatchObject({ key: 'draft:0', draft: '', messages: [], phase: 'idle' });
-    expect(firstNewRender.panel.conversations).toEqual([]);
-    expect(firstNewRender.panel.listLoading).toBe(true);
+    expect(firstNewRender.panel.conversationList.conversations).toEqual([]);
+    expect(firstNewRender.panel.conversationList.hasLoaded).toBe(false);
+    expect(firstNewRender.panel.conversationList.loading).toBe(true);
   });
 
   it.each([
@@ -1603,7 +1604,7 @@ describe('useAssistantPanel', () => {
       await sending.completion;
     });
 
-    expect(panel.result.current.conversations).toEqual(remaining);
+    expect(panel.result.current.conversationList.conversations).toEqual(remaining);
     const selectedKey = panel.result.current.selectedKey;
     harness.api.getMessages.mockClear();
     await act(async () => panel.result.current.select('b'));
@@ -1623,7 +1624,7 @@ describe('useAssistantPanel', () => {
 
     await act(async () => initial.resolve([conversation('a')]));
 
-    expect(panel.result.current.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
+    expect(panel.result.current.conversationList.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
     expect(panel.result.current.entry.draft).toBe('A separate local draft');
     await act(async () => panel.result.current.select('created'));
 
@@ -1661,7 +1662,7 @@ describe('useAssistantPanel', () => {
         refresh.resolve(returnedByServer ? [conversation('a'), serverCreated] : [conversation('a')])
       );
 
-      expect(panel.result.current.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
+      expect(panel.result.current.conversationList.conversations.map(item => item.id).sort()).toEqual(['a', 'created']);
       expect(panel.result.current.entry.draft).toBe('Keep the existing conversation draft');
       await act(async () => panel.result.current.select('created'));
       expect(panel.result.current.entry).toMatchObject({
@@ -1686,7 +1687,7 @@ describe('useAssistantPanel', () => {
         await created.completion;
       });
 
-      expect(panel.result.current.conversations).toEqual([conversation('a')]);
+      expect(panel.result.current.conversationList.conversations).toEqual([conversation('a')]);
     }
   );
 
@@ -1701,9 +1702,11 @@ describe('useAssistantPanel', () => {
     await act(async () => panel.result.current.send('Follow-up question'));
 
     const saved = await source.api.listConversations();
-    expect(panel.result.current.conversations).toEqual(saved);
-    expect(panel.result.current.conversations[0].id).toBe('c2');
-    expect(panel.result.current.conversations[0].updatedAt).toBe(new Date(FIXTURE_NOW + 1_000).toISOString());
+    expect(panel.result.current.conversationList.conversations).toEqual(saved);
+    expect(panel.result.current.conversationList.conversations[0].id).toBe('c2');
+    expect(panel.result.current.conversationList.conversations[0].updatedAt).toBe(
+      new Date(FIXTURE_NOW + 1_000).toISOString()
+    );
   });
 
   it('orders refreshed activity by instant across ISO timestamp formats', async () => {
@@ -1719,7 +1722,7 @@ describe('useAssistantPanel', () => {
       await sending.completion;
     });
 
-    expect(panel.result.current.conversations.map(item => item.id)).toEqual(['b', 'a']);
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).toEqual(['b', 'a']);
   });
 
   it('preserves a session deletion failure across activity refresh without changing list errors', async () => {
@@ -1742,11 +1745,11 @@ describe('useAssistantPanel', () => {
     });
 
     expect(result).toEqual({ status: 'failed', message: 'Conversation busy' });
-    expect(panel.result.current.listError).toBeUndefined();
+    expect(panel.result.current.conversationList.error).toBeUndefined();
 
     await act(async () => refresh.resolve([conversation('a'), conversation('b')]));
 
-    expect(panel.result.current.listError).toBeUndefined();
+    expect(panel.result.current.conversationList.error).toBeUndefined();
     expect(panel.result.current.entry.failure).toBeUndefined();
 
     await act(async () => panel.result.current.select('b'));
@@ -1758,15 +1761,17 @@ describe('useAssistantPanel', () => {
     const harness = sourceHarness();
     harness.api.listConversations.mockRejectedValueOnce(new Error('List unavailable'));
     const panel = await mountPanel(harness.source);
-    expect(panel.result.current.listError).toBe('List unavailable');
+    expect(panel.result.current.conversationList.error).toBe('List unavailable');
+    expect(panel.result.current.conversationList.hasLoaded).toBe(false);
     const sending = await sendQuestion(panel, 'Start a conversation');
     await act(async () => {
       harness.feeds[0].push({ type: 'run.started' }, { type: 'run.completed' });
       await sending.completion;
     });
 
-    expect(panel.result.current.listError).toBeUndefined();
-    expect(panel.result.current.conversations.map(item => item.id)).toContain('a');
+    expect(panel.result.current.conversationList.error).toBeUndefined();
+    expect(panel.result.current.conversationList.hasLoaded).toBe(true);
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).toContain('a');
   });
 
   it('ignores an older activity refresh that resolves after a newer send', async () => {
@@ -1792,7 +1797,7 @@ describe('useAssistantPanel', () => {
     await act(async () => newer.resolve([fresh]));
     await act(async () => older.resolve([conversation('a')]));
 
-    expect(panel.result.current.conversations.find(item => item.id === 'a')).toEqual(fresh);
+    expect(panel.result.current.conversationList.conversations.find(item => item.id === 'a')).toEqual(fresh);
   });
 
   it.each([true, false])(
@@ -2167,7 +2172,7 @@ describe('useAssistantPanel', () => {
       await removing;
     });
 
-    expect(panel.result.current.conversations.map(item => item.id)).not.toContain('a');
+    expect(panel.result.current.conversationList.conversations.map(item => item.id)).not.toContain('a');
     expect(panel.result.current.entry.conversation).toBeUndefined();
     expect(harness.api.getMessages).toHaveBeenCalledTimes(1);
   });

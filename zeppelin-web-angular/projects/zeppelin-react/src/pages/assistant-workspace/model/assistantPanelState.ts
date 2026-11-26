@@ -11,6 +11,7 @@
  */
 
 import type { AssistantConversation, AssistantMessage } from '@/entities/assistant/model/assistantContract';
+import type { ConversationListState } from '@/entities/assistant/model/conversationListState';
 import type { AssistantAnswerErrorKind, AssistantAnswerView } from '@/entities/assistant/ui/answerView';
 
 export type AssistantPanelPhase = 'idle' | 'creating' | 'pending' | 'running' | 'unknown';
@@ -58,9 +59,7 @@ export interface AssistantPanelEntry extends AssistantPanelHistory {
 }
 
 export interface AssistantPanelSnapshot {
-  conversations: AssistantConversation[];
-  listLoading: boolean;
-  listError?: string;
+  readonly conversationList: ConversationListState;
 
   selectedKey: string;
   entry: AssistantPanelEntry;

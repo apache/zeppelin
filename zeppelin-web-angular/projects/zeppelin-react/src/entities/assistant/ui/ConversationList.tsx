@@ -14,7 +14,9 @@ import { useState } from 'react';
 import { DeleteOutlined, LockOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Input } from 'antd';
 import { isSameDay } from 'date-fns';
+import { action, note } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import type { AssistantConversation } from '../model/assistantContract';
+import type { ConversationListState } from '../model/conversationListState';
 import { conversationTitle } from './conversationTitle';
 import * as styles from './ConversationList.css';
 
@@ -32,7 +34,8 @@ const matchesSearch = (conversation: AssistantConversation, needle: string) =>
   conversationTitle(conversation).toLowerCase().includes(needle);
 
 export interface ConversationListProps {
-  conversations: AssistantConversation[];
+  listState: ConversationListState;
+  onRetry: () => void;
   selectedId?: string;
   onSelect: (conversationId: string) => void;
   onCreate: () => void;
@@ -100,7 +103,8 @@ const ConversationRow = ({
 };
 
 export const ConversationList = ({
-  conversations,
+  listState: { conversations, hasLoaded, loading, error },
+  onRetry,
   selectedId,
   onSelect,
   onCreate,
@@ -109,15 +113,15 @@ export const ConversationList = ({
   onSearchTermChange,
   now = Date.now()
 }: ConversationListProps) => {
-  const [query, setQuery] = useState('');
-  const needle = query.trim().toLowerCase();
+  const [searchTerm, setSearchTerm] = useState('');
+  const needle = searchTerm.trim().toLowerCase();
   const searching = needle.length > 0;
   const shown = searching ? conversations.filter(conversation => matchesSearch(conversation, needle)) : conversations;
   const today = shown.filter(conversation => conversation.updatedAt && isSameDay(conversation.updatedAt, now));
   const earlier = shown.filter(conversation => !today.includes(conversation));
 
   const handleSearchChange = (value: string) => {
-    setQuery(value);
+    setSearchTerm(value);
     onSearchTermChange(value);
   };
 
@@ -134,49 +138,73 @@ export const ConversationList = ({
   );
 
   return (
-    <section aria-label="Conversations" className={styles.list}>
-      <div className={styles.header}>
-        <h3 className={styles.title}>Conversations</h3>
-        <Button
-          size="small"
-          type="text"
-          icon={<PlusOutlined />}
-          aria-label="New conversation"
-          disabled={newDisabled}
-          onClick={onCreate}
-        />
-      </div>
-      <div className={styles.search}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined aria-hidden="true" />}
-          placeholder="Search conversations"
-          aria-label="Search conversations"
-          value={query}
-          onChange={event => handleSearchChange(event.target.value)}
-        />
-      </div>
-      {shown.length === 0 ? (
-        <p className={styles.empty} role="status">
-          {searching ? 'No conversations match your search.' : 'No conversations yet.'}
+    <>
+      {loading && (
+        <p role="status" className={note}>
+          Loading conversations…
         </p>
-      ) : (
-        <>
-          {!searching && today.length > 0 && (
-            <>
-              <div className={styles.sectionLabel}>Today</div>
-              <ul className={styles.items}>{today.map(conversation => row(conversation, true))}</ul>
-            </>
-          )}
-          {!searching && earlier.length > 0 && (
-            <>
-              <div className={styles.sectionLabel}>Earlier</div>
-              <ul className={styles.items}>{earlier.map(conversation => row(conversation, false))}</ul>
-            </>
-          )}
-          {searching && <ul className={styles.items}>{shown.map(conversation => row(conversation, false))}</ul>}
-        </>
       )}
-    </section>
+      {error && (
+        <div className={styles.listError}>
+          <div role="alert" className={styles.listErrorMessage}>
+            {error}
+          </div>
+          <button
+            type="button"
+            className={action}
+            aria-label="Retry loading conversations"
+            disabled={loading}
+            onClick={onRetry}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      <section aria-label="Conversations" className={styles.list}>
+        <div className={styles.header}>
+          <h3 className={styles.title}>Conversations</h3>
+          <Button
+            size="small"
+            type="text"
+            icon={<PlusOutlined />}
+            aria-label="New conversation"
+            disabled={newDisabled}
+            onClick={onCreate}
+          />
+        </div>
+        <div className={styles.search}>
+          <Input
+            allowClear
+            prefix={<SearchOutlined aria-hidden="true" />}
+            placeholder="Search conversations"
+            aria-label="Search conversations"
+            value={searchTerm}
+            onChange={event => handleSearchChange(event.target.value)}
+          />
+        </div>
+        {hasLoaded && shown.length === 0 && (
+          <p className={styles.empty} role="status">
+            {searching ? 'No conversations match your search.' : 'No conversations yet.'}
+          </p>
+        )}
+        {shown.length > 0 && (
+          <>
+            {!searching && today.length > 0 && (
+              <>
+                <div className={styles.sectionLabel}>Today</div>
+                <ul className={styles.items}>{today.map(conversation => row(conversation, true))}</ul>
+              </>
+            )}
+            {!searching && earlier.length > 0 && (
+              <>
+                <div className={styles.sectionLabel}>Earlier</div>
+                <ul className={styles.items}>{earlier.map(conversation => row(conversation, false))}</ul>
+              </>
+            )}
+            {searching && <ul className={styles.items}>{shown.map(conversation => row(conversation, false))}</ul>}
+          </>
+        )}
+      </section>
+    </>
   );
 };

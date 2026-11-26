@@ -13,6 +13,7 @@
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { AssistantConversation } from '../model/assistantContract';
+import type { ConversationListState } from '../model/conversationListState';
 import { ConversationList } from './ConversationList';
 
 const NOW = new Date(2026, 9, 15, 12).getTime();
@@ -34,13 +35,21 @@ const conversations: AssistantConversation[] = [
   conversation('c', 'Shared analysis', at(9, 9), false)
 ];
 
+const resolvedList = (conversations: readonly AssistantConversation[]): ConversationListState => ({
+  conversations,
+  hasLoaded: true,
+  loading: false,
+  error: undefined
+});
+
 const noop = () => {};
 
 describe('ConversationList', () => {
   it('shows an empty-list message when there are no conversations', () => {
     render(
       <ConversationList
-        conversations={[]}
+        listState={resolvedList([])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -54,7 +63,8 @@ describe('ConversationList', () => {
   it('shows a different message for a search with no matches', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -71,7 +81,8 @@ describe('ConversationList', () => {
   it('shows the no-match message for an empty list passed while searching', () => {
     render(
       <ConversationList
-        conversations={[]}
+        listState={resolvedList([])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -83,10 +94,31 @@ describe('ConversationList', () => {
     expect(screen.getByRole('status').textContent).toBe('No conversations match your search.');
   });
 
+  it.each([
+    { loading: true, error: undefined },
+    { loading: false, error: 'Could not refresh conversations.' }
+  ])('keeps the last successful rows and search available when loading=$loading, error=$error', request => {
+    render(
+      <ConversationList
+        listState={{ ...resolvedList(conversations), ...request }}
+        onRetry={noop}
+        onSelect={noop}
+        onCreate={noop}
+        onDelete={noop}
+        onSearchTermChange={noop}
+        now={NOW}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Draft a query' })).toBeTruthy();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search conversations' }), { target: { value: 'missing' } });
+    expect(screen.getByText('No conversations match your search.')).toBeTruthy();
+  });
+
   it('filters by title, case-insensitively and trimmed', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -105,7 +137,8 @@ describe('ConversationList', () => {
     const onSearchTermChange = vi.fn();
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -120,7 +153,8 @@ describe('ConversationList', () => {
   it('marks the selected conversation', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         selectedId="a"
         onSelect={noop}
         onCreate={noop}
@@ -138,7 +172,8 @@ describe('ConversationList', () => {
     const onSelect = vi.fn();
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={onSelect}
         onCreate={noop}
         onDelete={noop}
@@ -154,7 +189,8 @@ describe('ConversationList', () => {
     const onDelete = vi.fn();
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={onDelete}
@@ -169,7 +205,8 @@ describe('ConversationList', () => {
   it('shows a fallback title for a missing or empty title', () => {
     render(
       <ConversationList
-        conversations={[conversation('x', undefined, at(10, 9)), conversation('y', '', at(10, 9))]}
+        listState={resolvedList([conversation('x', undefined, at(10, 9)), conversation('y', '', at(10, 9))])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -184,7 +221,8 @@ describe('ConversationList', () => {
   it('matches an untitled conversation by its fallback title', () => {
     render(
       <ConversationList
-        conversations={[...conversations, conversation('x', '', at(10, 9))]}
+        listState={resolvedList([...conversations, conversation('x', '', at(10, 9))])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -202,7 +240,8 @@ describe('ConversationList', () => {
   it('marks a read-only conversation and no other', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -217,7 +256,8 @@ describe('ConversationList', () => {
   it('offers no delete button for a read-only conversation', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -232,7 +272,8 @@ describe('ConversationList', () => {
     const onCreate = vi.fn();
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={onCreate}
         onDelete={noop}
@@ -247,7 +288,8 @@ describe('ConversationList', () => {
   it('splits today from earlier conversations, each under its own section', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -266,10 +308,11 @@ describe('ConversationList', () => {
   it('splits at local midnight', () => {
     render(
       <ConversationList
-        conversations={[
+        listState={resolvedList([
           conversation('x', 'After midnight', at(15, 0, 1)),
           conversation('y', 'Before midnight', at(14, 23, 59))
-        ]}
+        ])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -285,7 +328,8 @@ describe('ConversationList', () => {
   it('hides a section heading when that section is empty', () => {
     render(
       <ConversationList
-        conversations={[conversations[0]]}
+        listState={resolvedList([conversations[0]])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -300,7 +344,8 @@ describe('ConversationList', () => {
   it('shows a relative time for a today conversation and none for an earlier one', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -315,11 +360,12 @@ describe('ConversationList', () => {
   it('formats a relative time as now, minutes, or hours', () => {
     render(
       <ConversationList
-        conversations={[
+        listState={resolvedList([
           conversation('x', 'Seconds ago', at(15, 11, 59, 40)),
           conversation('y', 'Minutes ago', at(15, 11, 55)),
           conversation('z', 'Hours ago', at(15, 9))
-        ]}
+        ])}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -335,7 +381,8 @@ describe('ConversationList', () => {
   it('drops section headings while searching', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}
@@ -351,7 +398,8 @@ describe('ConversationList', () => {
   it('does not match by date, only by title', () => {
     render(
       <ConversationList
-        conversations={conversations}
+        listState={resolvedList(conversations)}
+        onRetry={noop}
         onSelect={noop}
         onCreate={noop}
         onDelete={noop}

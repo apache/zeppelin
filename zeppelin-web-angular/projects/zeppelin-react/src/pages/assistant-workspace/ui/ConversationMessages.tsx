@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { AssistantAnswer } from '@/entities/assistant/ui/AssistantAnswer';
 import { AssistantMessageItem } from '@/entities/assistant/ui/AssistantMessageItem';
 import type { AssistantContentRenderer } from '@/entities/assistant/ui/answerView';
+import { note } from '@/shared/ui/assistant-theme/AssistantScope.css';
 import { useConversationScroll } from '../lib/useConversationScroll';
 import type { AssistantPanelEntry } from '../model/assistantPanelState';
 import * as styles from './AssistantConversationPanel.css';
@@ -96,12 +97,12 @@ export const ConversationMessages = ({
     >
       <div ref={content} className={styles.messageStack}>
         {entry.loadingEarlier && (
-          <p className={styles.note} role="status">
+          <p className={note} role="status">
             Loading earlier messages…
           </p>
         )}
         {entry.loading && messages.length === 0 && !answer && (
-          <p className={styles.note} role="status">
+          <p className={note} role="status">
             Loading conversation…
           </p>
         )}
