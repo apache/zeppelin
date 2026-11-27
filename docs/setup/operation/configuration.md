@@ -508,6 +508,36 @@ Sources descending by priority:
       <td>true</td>
       <td>Value to enable/disable version control support in Notes.</td>
     </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_OWNER_ROLE</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.default.owner.username</h6></td>
+      <td></td>
+      <td>Username of the Zeppelin Note Administrator</td>
+    </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_OWNER_ROLES</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.default.owners</h6></td>
+      <td></td>
+      <td>Comma-separated list of global note owners, which are de facto note administrators.</td>
+    </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_WRITER_ROLES</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.default.writers</h6></td>
+      <td></td>
+      <td>Comma-separated list of global note writers.</td>
+    </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_RUNNER_ROLES</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.default.runners</h6></td>
+      <td></td>
+      <td>Comma-separated list of global note runners.</td>
+    </tr>
+    <tr>
+      <td><h6 class="properties">ZEPPELIN_READER_ROLES</h6></td>
+      <td><h6 class="properties">zeppelin.notebook.default.readers</h6></td>
+      <td></td>
+      <td>Comma-separated list of global note readers.</td>
+    </tr>
 </table>
 
 
