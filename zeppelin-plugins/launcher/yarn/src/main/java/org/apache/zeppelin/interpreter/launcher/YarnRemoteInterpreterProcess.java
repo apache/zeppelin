@@ -644,4 +644,9 @@ public class YarnRemoteInterpreterProcess extends RemoteInterpreterProcess {
   public boolean isRunning() {
     return isYarnAppRunning.get();
   }
+
+  @Override
+  public CheckMethod getCheckMethod() {
+    return CheckMethod.YARN_APPLICATION_STATE;
+  }
 }

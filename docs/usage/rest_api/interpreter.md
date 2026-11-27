@@ -521,6 +521,154 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+### Health check an interpreter
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method probes the interpreter processes of the given interpreter setting
+        and reports what their launchers say about them. Useful right after a restart, which only
+        closes the processes and leaves the next use to start them again. The check never starts
+        an interpreter: a setting with nothing running is reported with the reason
+        ```NOT_RUNNING```. A setting can own one process per user or note, so the response holds
+        an entry per interpreter group. The server bounds how long it waits, set by
+        ```zeppelin.interpreter.healthcheck.timeout``` (3 seconds by default), and a group whose
+        probe did not finish in time is reported with the reason ```PROBE_TIMEOUT``` rather than
+        holding the request.<br/><br/>
+        The check does not ask the interpreter itself to reply. Each launcher looks at its own
+        state, reported per group as ```checkMethod``` (see below), so ```healthy``` means the
+        launcher reports the interpreter as running, not that the interpreter is known to answer.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/[interpreter ID]/healthcheck```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 403 if the note of the request may not be acted on, 404 if there is no such interpreter setting </td>
+    </tr>
+    <tr>
+      <td>Sample JSON input (Optional)</td>
+      <td>The note to authorize the caller against, needed only when the caller is not allowed to
+        reach the interpreter endpoints on their own. Running a paragraph of that note is enough.
+
+```json
+{
+  "noteId": "2AVQJVC8N"
+}
+```
+</td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>```healthy``` follows what the launcher reported. ```alive```, ```running``` and
+        ```probeTookMs``` are left out when no probe was made, so that an interpreter found dead
+        stays distinguishable from one that was never asked.
+
+```json
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "settingId": "2CH2VMY7B",
+    "settingName": "spark",
+    "groups": [
+      {
+        "groupId": "2CH2VMY7B-shared_process",
+        "healthy": true,
+        "reason": "OK",
+        "checkMethod": "KUBERNETES_POD_PHASE",
+        "alive": true,
+        "running": true,
+        "probeTookMs": 3
+      },
+      {
+        "groupId": "2CH2VMY7B-user2",
+        "healthy": false,
+        "reason": "NOT_REACHABLE",
+        "checkMethod": "KUBERNETES_POD_PHASE",
+        "alive": true,
+        "running": false,
+        "probeTookMs": 1004
+      },
+      {
+        "groupId": "2CH2VMY7B-user3",
+        "healthy": false,
+        "reason": "PROBE_TIMEOUT",
+        "checkMethod": "KUBERNETES_POD_PHASE",
+        "probeTookMs": 3000
+      }
+    ]
+  }
+}
+```
+</td>
+    </tr>
+    <tr>
+      <td>Reasons</td>
+      <td>Only ```OK``` is healthy. The other reasons are not equally bad and are worth telling
+        apart.
+        <ul>
+          <li>```OK```: the launcher reports the interpreter as running.</li>
+          <li>```NOT_REACHABLE```: a process exists, but the launcher reports it as not running,
+            or the probe failed.</li>
+          <li>```PROBE_TIMEOUT```: the probe started but did not finish within the budget.</li>
+          <li>```PROBE_UNAVAILABLE```: the probe never started, because every probe thread was
+            busy, typically with earlier probes of unreachable hosts. Nothing was checked, so this
+            says nothing about the interpreter.</li>
+          <li>```LAUNCHING```: the process is still being launched and was left unprobed.</li>
+          <li>```NOT_RUNNING```: no process is running, the normal state right after a restart.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>Check methods</td>
+      <td>What ```checkMethod``` says the launcher looked at. None of them is a reply from the
+        interpreter.
+        <ul>
+          <li>```LOCAL_PROCESS_STATE``` (standard, Spark and Flink launchers, when they start the
+            interpreter process themselves): the state of the process as last recorded by the
+            server. An interpreter that stopped answering but whose
+            process is still up is reported as running.</li>
+          <li>```YARN_APPLICATION_STATE``` (YARN launcher): whether the YARN application reached
+            RUNNING once. It is not cleared afterwards, so a failed application is still reported
+            as running.</li>
+          <li>```TCP_CONNECT``` (Docker launcher, an interpreter set to connect to an existing
+            process, and processes recovered after a server restart): a TCP connect to the
+            interpreter port succeeded.</li>
+          <li>```KUBERNETES_POD_PHASE``` (Kubernetes launcher): the Pod phase is ```Running```
+            and the interpreter registered with the server once.</li>
+          <li>```UNKNOWN```: a launcher that does not describe its check.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response of an interpreter that is not running</td>
+      <td>
+
+```json
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "settingId": "2CH2VMY7B",
+    "settingName": "spark",
+    "reason": "NOT_RUNNING",
+    "groups": []
+  }
+}
+```
+</td>
+    </tr>
+  </table>
+
+<br/>
 ### Add a new repository for dependency resolving
 
   <table class="table-configuration">
