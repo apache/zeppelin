@@ -29,6 +29,15 @@
     }
   }
 
+  .editable-tag {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid @primary-color;
+      outline-offset: 2px;
+    }
+  }
+
   .content {
     padding: @card-padding-base / 2;
 
@@ -41,7 +50,7 @@
 
 :host-context(.light) {
   background: #f0f0f0;
-  
+
   .editable-tag {
     background: #fff;
     border-style: dashed;

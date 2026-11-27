@@ -53,9 +53,15 @@
           {{ repo.id }}
         </nz-tag>
       }
-      <nz-tag class="editable-tag" data-testid="create-interpreter-repository" (click)="createRepository()">
-        <i nz-icon nzType="plus"></i>
-      </nz-tag>
+      <button
+        type="button"
+        class="ant-tag editable-tag"
+        data-testid="create-interpreter-repository"
+        aria-label="Add repository"
+        (click)="createRepository()"
+      >
+        <i nz-icon nzType="plus" aria-hidden="true"></i>
+      </button>
     </div>
   </div>
 </zeppelin-page-header>

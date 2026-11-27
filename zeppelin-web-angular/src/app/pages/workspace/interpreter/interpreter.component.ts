@@ -135,6 +135,8 @@ export class InterpreterComponent implements OnInit, OnDestroy {
       nzTitle: 'Add New Repository',
       nzContent: InterpreterCreateRepositoryModalComponent,
       nzFooter: null,
+      // Keep focus on the field the user reached while the modal was opening.
+      nzAutofocus: null,
       nzWidth: '600px'
     });
     modalRef.afterClose.subscribe(data => {
