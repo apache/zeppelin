@@ -208,6 +208,57 @@ test.describe('Interpreter repositories', () => {
     });
   });
 
+  test('preserves repository ID entry when the opening animation ends', async ({ page }) => {
+    const pauseOpening = await page.addStyleTag({
+      content: '.ant-modal.ant-zoom-enter-active { animation-play-state: paused !important; }'
+    });
+    await modal.openCreateModal();
+    const animatedPanel = modal.dialog.getByRole('document');
+    await expect(animatedPanel).toHaveClass(/ant-zoom-enter-active/);
+
+    // Establish focus while the animation is paused, then type without refocusing the field.
+    await modal.idInput.focus();
+    await expect(modal.idInput).toBeFocused();
+    await pauseOpening.evaluate(style => {
+      style.parentNode?.removeChild(style);
+    });
+    await expect(animatedPanel).not.toHaveClass(/ant-zoom-enter-active/);
+    // Allow the focus trap's scheduled render to run before checking focus.
+    await page.evaluate(() => {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      return promise;
+    });
+
+    await expect(modal.idInput).toBeFocused();
+    await page.keyboard.insertText('opening-repository');
+    await expect(modal.idInput).toHaveValue('opening-repository');
+  });
+
+  test('keeps keyboard focus inside the repository dialog and returns it on Escape', async ({ page }) => {
+    const opener = page.getByRole('button', { name: 'Add repository', exact: true });
+    await modal.repositoryTrigger.press('Enter');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    await expect(opener).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(modal.dialog).toBeFocused();
+
+    const closeButton = modal.dialog.getByRole('button', { name: 'Close', exact: true });
+    await page.keyboard.press('Tab');
+    await expect(closeButton).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(modal.dismissButton).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(closeButton).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(modal.idInput).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(modal.dialog).toBeHidden();
+    await expect(opener).toBeFocused();
+  });
+
   test('requires both repository ID and URL before enabling Add', async ({ interpreterWrites }) => {
     await test.step('When the add repository modal is opened', async () => {
       await modal.openCreateModal();
