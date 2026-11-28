@@ -75,7 +75,7 @@ public abstract class HBaseIntegrationTest {
   @Test
   public void testHBaseInterpreter() throws Exception {
     InterpreterSetting hbaseInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("hbase");
-    hbaseInterpreterSetting.setProperty("hbase.home", hbaseHome);
+    hbaseInterpreterSetting.setProperty("HBASE_HOME", hbaseHome);
 
     Interpreter hbaseInterpreter = interpreterFactory.getInterpreter("hbase", new ExecutionContext("user1", "note1", "hbase"));
 

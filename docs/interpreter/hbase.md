@@ -39,9 +39,14 @@ Zeppelin is built against HBase 1.x and 2.x releases.
     <th>Description</th>
   </tr>
   <tr>
-    <td>hbase.home</td>
+    <td>HBASE_HOME</td>
     <td>/usr/lib/hbase</td>
     <td>Installation directory of HBase, defaults to HBASE_HOME in environment</td>
+  </tr>
+  <tr>
+    <td>shell.command.timeout.millisecs</td>
+    <td>600000</td>
+    <td>HBase shell command timeout in millisecs when there is no output, defaults to 10 minutes</td>
   </tr>
 </table>
 
