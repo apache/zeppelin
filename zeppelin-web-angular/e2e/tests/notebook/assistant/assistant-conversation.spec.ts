@@ -92,6 +92,86 @@ test.describe('Notebook AI Assistant conversations over REST and WebSocket', () 
     await expect(answer.getByRole('table')).toBeVisible();
   });
 
+  test('keeps Send reachable on a short viewport and only refocuses the composer on submission', async ({ page }) => {
+    const viewport = { width: 1000, height: 300 };
+    await page.setViewportSize(viewport);
+    const { panel, question, sendButton, messages } = assistant;
+    const conversation = panel.getByRole('region', { name: 'Assistant conversation panel' });
+    const initialLines = Array.from({ length: 6 }, (_, index) => `Question line ${index + 1}`).join('\n');
+    const lastLine = 'Question line 7';
+    const multilineQuestion = `${initialLines}\n${lastLine}`;
+
+    await question.fill(initialLines);
+    await question.press('Shift+Enter');
+    await page.keyboard.insertText(lastLine);
+    await expect(question).toHaveValue(multilineQuestion);
+    await expect
+      .poll(() =>
+        question.evaluate(element => ({
+          overflowing: element.clientHeight > 0 && element.scrollHeight > element.clientHeight,
+          overflowY: getComputedStyle(element).overflowY
+        }))
+      )
+      .toEqual({ overflowing: true, overflowY: 'auto' });
+    await expect.poll(() => question.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+
+    // Playwright's visibility check alone also passes for a button clipped by an overflow:hidden ancestor.
+    await expect
+      .poll(
+        async () => {
+          const [button, sidebar, section] = await Promise.all([
+            sendButton.boundingBox(),
+            panel.boundingBox(),
+            conversation.boundingBox()
+          ]);
+          if (!button || !sidebar || !section) return false;
+          return [{ x: 0, y: 0, ...viewport }, sidebar, section].every(
+            bounds =>
+              button.x >= bounds.x &&
+              button.y >= bounds.y &&
+              button.x + button.width <= bounds.x + bounds.width &&
+              button.y + button.height <= bounds.y + bounds.height
+          );
+        },
+        { message: 'Send fits fully within the viewport and both clipped Assistant containers' }
+      )
+      .toBe(true);
+
+    await page.keyboard.press('Tab');
+    await expect(sendButton).toBeFocused();
+    await sendButton.click();
+    await expect(question).toBeFocused();
+    const firstSend = { noteId, conversationId: 'c-created-1', content: multilineQuestion };
+    await expect.poll(() => wire.sent).toEqual([firstSend]);
+    await expect(question).not.toBeEditable();
+    await question.press('Enter');
+    wire.completeRun(0);
+    await expect(question).toBeEditable();
+
+    const followUp = 'Show the regional breakdown.';
+    await question.fill(followUp);
+    await question.press('Enter');
+    await expect(question).toBeFocused();
+    const expectedSends = [firstSend, { ...firstSend, content: followUp }];
+    await expect.poll(() => wire.sent).toEqual(expectedSends);
+
+    const notebookControl = page.getByRole('button', { name: 'Toggle Table of Contents' });
+    await notebookControl.focus();
+    await expect(notebookControl).toBeFocused();
+    const delta = 'The results are grouped by region.';
+    wire.appendRunDelta(1, ` ${delta}`);
+    const answer = messages.getByRole('article', { name: 'Assistant answer', exact: true }).filter({ hasText: delta });
+    await expect(answer).toHaveAttribute('aria-busy', 'true');
+    await expect(notebookControl).toBeFocused();
+
+    wire.completeRun(1);
+    await expect(answer.getByRole('table')).toBeVisible();
+    await expect(answer).not.toHaveAttribute('aria-busy', 'true');
+    await expect(question).toBeEditable();
+    await expect(notebookControl).toBeFocused();
+    expect(wire.sent).toEqual(expectedSends);
+  });
+
   test('keeps B draft and results separate when switching away from an active A run', async () => {
     const aQuestion = 'Compare revenue for conversation A.';
     const bQuestion = 'Summarize the regions for conversation B.';

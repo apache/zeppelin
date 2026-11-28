@@ -110,7 +110,12 @@ export class AssistantConversationWireMock {
   readonly restRequests: Array<{ method: string; path: string; body?: unknown }> = [];
   private noteId?: string;
   private readonly conversations = new Map<string, { metadata: ConversationMetadata; messages: RawMessage[] }>();
-  private readonly runs: Array<{ socket: WebSocketRoute; request: SendMessage; completed: boolean }> = [];
+  private readonly runs: Array<{
+    socket: WebSocketRoute;
+    request: SendMessage;
+    completed: boolean;
+    streamedContent: string;
+  }> = [];
   private createdCount = 0;
 
   static async install(page: Page): Promise<AssistantConversationWireMock> {
@@ -146,13 +151,20 @@ export class AssistantConversationWireMock {
     ]);
   }
 
+  appendRunDelta(index: number, delta: string): void {
+    const run = this.runs[index];
+    if (!run || run.completed) throw new Error(`No pending assistant run at index ${index}`);
+    run.streamedContent += delta;
+    this.emit(run.socket, run.request.conversationId, 'message.delta', { messageId: `run-${index}-answer`, delta });
+  }
+
   // No timer can complete a stream: the test releases it after observing the busy DOM.
   completeRun(index: number): void {
     const run = this.runs[index];
     if (!run || run.completed) throw new Error(`No pending assistant run at index ${index}`);
     run.completed = true;
     const content = [
-      STREAM_PREFIX,
+      run.streamedContent,
       run.request.conversationId === 'c2'
         ? '| Region | Summary |\n| --- | --- |\n| Europe | Strongest regional growth |'
         : '| Region | Revenue |\n| --- | --- |\n| Europe | 118 |'
@@ -240,15 +252,12 @@ export class AssistantConversationWireMock {
     const request = { noteId: data.noteId, conversationId: data.conversationId, content: data.content };
     const index = this.runs.length;
     this.sent.push(request);
-    this.runs.push({ socket, request, completed: false });
+    this.runs.push({ socket, request, completed: false, streamedContent: '' });
     this.conversations
       .get(request.conversationId)!
       .messages.push(message(`run-${index}-user`, 'user', request.content));
     this.emit(socket, request.conversationId, 'run.started', { runId: `run-${index}`, createdAt: CREATED_AT });
-    this.emit(socket, request.conversationId, 'message.delta', {
-      messageId: `run-${index}-answer`,
-      delta: STREAM_PREFIX
-    });
+    this.appendRunDelta(index, STREAM_PREFIX);
   }
 
   private emit(socket: WebSocketRoute, conversationId: string, type: string, payload: unknown): void {
