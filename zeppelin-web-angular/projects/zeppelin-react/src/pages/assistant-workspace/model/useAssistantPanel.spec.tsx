@@ -1414,6 +1414,99 @@ describe('useAssistantPanel', () => {
     model.dispose();
   });
 
+  it('reloads a saved draft on reopen without carrying over its loaded history or prior error', async () => {
+    const harness = sourceHarness();
+    const oldMessage = { id: 'old', role: 'user', content: 'Earlier history' } as const;
+    const currentMessage = { id: 'current', role: 'user', content: 'Refreshed history' } as const;
+    const reopened = Promise.withResolvers<AssistantMessagePage>();
+    harness.api.getMessages
+      .mockResolvedValueOnce({ messages: [oldMessage], cursor: 'older' })
+      .mockRejectedValueOnce(new Error('Obsolete reload failure'))
+      .mockReturnValueOnce(reopened.promise);
+    const model = new AssistantPanelModel(harness.source);
+    model.start();
+    await Promise.resolve();
+    model.select('a');
+    await Promise.resolve();
+    model.setDraft('Still editing');
+    await model.reload();
+    expect(model.getSnapshot().entry).toMatchObject({
+      messages: [oldMessage],
+      cursor: 'older',
+      failure: { message: 'Obsolete reload failure' }
+    });
+
+    expect(model.close()).toBe(true);
+    model.reopen();
+    expect(model.getSnapshot().entry).toMatchObject({
+      conversation: { id: 'a' },
+      draft: 'Still editing',
+      loaded: false,
+      loading: true,
+      messages: [],
+      cursor: null,
+      failure: undefined
+    });
+    expect(harness.api.getMessages.mock.calls).toEqual([['a'], ['a'], ['a']]);
+
+    reopened.resolve({ messages: [currentMessage], cursor: null });
+    await reopened.promise;
+    expect(model.getSnapshot().entry).toMatchObject({
+      draft: 'Still editing',
+      loaded: true,
+      loading: false,
+      messages: [currentMessage]
+    });
+    expect(harness.run).not.toHaveBeenCalled();
+    model.dispose();
+  });
+
+  it('ignores an earlier-page response from before close while the reopened draft loads its first page', async () => {
+    const harness = sourceHarness();
+    const earlier = Promise.withResolvers<AssistantMessagePage>();
+    const reopened = Promise.withResolvers<AssistantMessagePage>();
+    harness.api.getMessages
+      .mockResolvedValueOnce({ messages: [], cursor: 'before-close' })
+      .mockReturnValueOnce(earlier.promise)
+      .mockReturnValueOnce(reopened.promise);
+
+    const model = new AssistantPanelModel(harness.source);
+    model.start();
+    await Promise.resolve();
+    model.select('a');
+    await Promise.resolve();
+    model.setDraft('Still editing');
+
+    const loadingEarlier = model.loadEarlier();
+    expect(harness.api.getMessages).toHaveBeenNthCalledWith(2, 'a', 'before-close');
+    expect(model.close()).toBe(true);
+    model.reopen();
+    expect(harness.api.getMessages).toHaveBeenNthCalledWith(3, 'a');
+
+    earlier.resolve({
+      messages: [{ id: 'old', role: 'user', content: 'Stale earlier page' }],
+      cursor: 'obsolete'
+    });
+    await expect(loadingEarlier).resolves.toBe(false);
+    expect(model.getSnapshot().entry).toMatchObject({
+      draft: 'Still editing',
+      loading: true,
+      loadingEarlier: false,
+      messages: [],
+      cursor: null
+    });
+    const fresh = { id: 'fresh', role: 'user', content: 'Fresh initial page' } as const;
+    reopened.resolve({ messages: [fresh], cursor: 'fresh-cursor' });
+    await reopened.promise;
+    expect(model.getSnapshot().entry).toMatchObject({
+      draft: 'Still editing',
+      loading: false,
+      messages: [fresh],
+      cursor: 'fresh-cursor'
+    });
+    model.dispose();
+  });
+
   it('keeps a loaded failed answer after a later reload fails and permits the next send', async () => {
     const harness = sourceHarness();
     const panel = await mountPanel(harness.source);

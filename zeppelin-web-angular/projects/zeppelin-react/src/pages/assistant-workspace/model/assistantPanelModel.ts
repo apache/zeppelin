@@ -37,7 +37,7 @@ export class AssistantPanelModel {
   private active = false;
   private generation = 0;
   private listVersion = 0;
-  private closedWithRun = false;
+  private closed = false;
   private snapshot: AssistantPanel;
 
   constructor(private readonly source: AssistantDataSource) {
@@ -52,33 +52,42 @@ export class AssistantPanelModel {
     return () => this.listeners.delete(listener);
   };
 
-  /** Discard view state except for conversations with a submitted run. */
+  /** Keep submitted runs and unsent text, but discard ordinary history requests with the view. */
   close(): boolean {
-    let firstRun: string | undefined;
-    this.sessions.forEach(session => {
-      if (session.hasSubmittedRun) firstRun ??= session.key;
-    });
-    if (firstRun === undefined) return false;
-
-    this.closedWithRun = true;
+    this.closed = true;
     ++this.listVersion;
+
+    let firstRun: string | undefined;
+    let hasDraft = false;
     this.sessions.forEach((session, key) => {
-      if (session.hasSubmittedRun) return;
-      session.dispose();
-      this.sessions.delete(key);
+      const retention = session.onSidebarClosed();
+      if (retention === 'submitted-run') firstRun ??= key;
+      else if (retention === 'draft') hasDraft = true;
+      else this.sessions.delete(key);
     });
-    this.draftKey = undefined;
-    if (!this.sessions.has(this.selectedKey)) this.selectedKey = firstRun;
-    this.publish();
+    if (firstRun === undefined) {
+      if (!hasDraft) return false;
+      this.conversationList = INITIAL_CONVERSATION_LIST;
+      this.deleted.clear();
+    } else {
+      this.conversationList = { ...this.conversationList, loading: true, error: undefined };
+    }
+
+    if (this.draftKey && !this.sessions.has(this.draftKey)) this.draftKey = undefined;
+    if (!this.sessions.has(this.selectedKey)) {
+      if (firstRun !== undefined) this.selectedKey = firstRun;
+      else this.selectDraft();
+    }
+    this.snapshot = this.project();
     return true;
   }
 
   reopen(): void {
-    if (!this.closedWithRun) return;
-    this.closedWithRun = false;
-    this.conversationList = { ...this.conversationList, loading: true, error: undefined };
+    if (!this.closed) return;
+    this.closed = false;
     this.publish();
     this.refreshConversations();
+    this.sessions.get(this.selectedKey)!.onSelected();
   }
 
   start(): void {
@@ -86,7 +95,7 @@ export class AssistantPanelModel {
 
     this.active = true;
     const generation = ++this.generation;
-    this.closedWithRun = false;
+    this.closed = false;
 
     this.sessions.forEach(session => session.dispose());
     this.sessions.clear();
@@ -153,11 +162,13 @@ export class AssistantPanelModel {
   }
 
   private readonly refreshConversations = (): void => {
-    if (this.active && !this.closedWithRun) void this.loadList(this.generation);
+    if (this.active && !this.closed) void this.loadList(this.generation);
   };
 
   readonly retryList = (): Promise<void> => {
-    if (!this.active || this.conversationList.loading || !this.conversationList.error) return Promise.resolve();
+    if (!this.active || this.closed || this.conversationList.loading || !this.conversationList.error) {
+      return Promise.resolve();
+    }
 
     this.conversationList = { ...this.conversationList, loading: true };
     this.publish();
@@ -176,7 +187,7 @@ export class AssistantPanelModel {
   };
 
   readonly select = (id: string): void => {
-    if (!this.active) return;
+    if (!this.active || this.closed) return;
 
     const conversation = this.conversationList.conversations.find(item => item.id === id);
     if (!conversation) return;
@@ -188,7 +199,7 @@ export class AssistantPanelModel {
     this.selectedKey = session.key;
     this.publish();
 
-    session.ensureHistory();
+    session.onSelected();
   };
 
   private selectDraft(): void {
@@ -201,38 +212,39 @@ export class AssistantPanelModel {
   }
 
   readonly newConversation = (): void => {
-    if (!this.active || (this.draftKey && this.sessions.get(this.draftKey)!.snapshot.phase === 'creating')) return;
+    if (!this.active || this.closed) return;
+    if (this.draftKey && this.sessions.get(this.draftKey)!.snapshot.phase === 'creating') return;
 
     this.selectDraft();
     this.publish();
   };
 
   readonly setDraft = (value: string): void => {
-    if (!this.active) return;
+    if (!this.active || this.closed) return;
 
     this.sessions.get(this.selectedKey)!.setDraft(value);
   };
 
   readonly send = (question?: string): Promise<void> => {
-    if (!this.active) return Promise.resolve();
+    if (!this.active || this.closed) return Promise.resolve();
 
     return this.sessions.get(this.selectedKey)!.send(question);
   };
 
   readonly reload = (): Promise<void> => {
-    if (!this.active) return Promise.resolve();
+    if (!this.active || this.closed) return Promise.resolve();
 
     return this.sessions.get(this.selectedKey)!.reload();
   };
 
   readonly loadEarlier = (): Promise<boolean> => {
-    if (!this.active) return Promise.resolve(false);
+    if (!this.active || this.closed) return Promise.resolve(false);
 
     return this.sessions.get(this.selectedKey)!.loadEarlier();
   };
 
   readonly deleteConversation = async (id: string): Promise<AssistantDeletionResult> => {
-    if (!this.active) return { status: 'ignored' };
+    if (!this.active || this.closed) return { status: 'ignored' };
 
     const conversation = this.conversationList.conversations.find(item => item.id === id);
     if (!conversation) return { status: 'ignored' };
@@ -248,16 +260,17 @@ export class AssistantPanelModel {
     if (!this.active || this.generation !== generation || this.sessions.get(session.key) !== session) {
       return { status: 'ignored' };
     }
-    if (result.status !== 'deleted') return result;
-
-    this.deleted.add(id);
-    this.sessions.delete(session.key);
-    this.conversationList = {
-      ...this.conversationList,
-      conversations: this.conversationList.conversations.filter(item => item.id !== id)
-    };
-    if (this.selectedKey === session.key) this.selectDraft();
-    this.publish();
+    if (result.status === 'deleted') {
+      this.deleted.add(id);
+      this.sessions.delete(session.key);
+      this.conversationList = {
+        ...this.conversationList,
+        conversations: this.conversationList.conversations.filter(item => item.id !== id)
+      };
+      if (this.selectedKey === session.key) this.selectDraft();
+    }
+    if (this.closed) this.snapshot = this.project();
+    else if (result.status === 'deleted') this.publish();
     return result;
   };
 
@@ -286,7 +299,7 @@ export class AssistantPanelModel {
   }
 
   private readonly publish = (): void => {
-    if (!this.active) return;
+    if (!this.active || this.closed) return;
 
     this.snapshot = this.project();
     this.listeners.forEach(listener => listener());

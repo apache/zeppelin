@@ -217,7 +217,7 @@ export class AssistantHistory {
 
   /** Starts a new turn and retains any preceding unreconciled answer. */
   beginTurn(): string {
-    this.invalidateRequests();
+    this.ignorePendingResponses();
     this.promoteTurn();
 
     const sequence = ++this.turnSequence;
@@ -264,9 +264,22 @@ export class AssistantHistory {
     this.changed();
   }
 
-  private invalidateRequests(): void {
+  /** Makes in-flight results ineligible to commit without cancelling HTTP or clearing loaded history. */
+  ignorePendingResponses(): void {
     ++this.requestVersion;
     this.requestStatus = 'idle';
+  }
+
+  reset(hasConversation: boolean): void {
+    this.ignorePendingResponses();
+    this.messages = [];
+    this.messageKeys = new Map();
+    this.localAnswerViews = new Map();
+    this.cursor = null;
+    this.loaded = !hasConversation;
+    this.consumedCursors.clear();
+    this.turnSequence = 0;
+    this.turn = undefined;
   }
 
   async loadLatest(api: AssistantConversationApi, conversationId: string): Promise<HistoryLoadResult> {
@@ -349,6 +362,6 @@ export class AssistantHistory {
 
   dispose(): void {
     this.disposed = true;
-    this.invalidateRequests();
+    this.ignorePendingResponses();
   }
 }
